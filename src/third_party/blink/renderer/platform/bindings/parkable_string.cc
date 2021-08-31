@@ -4,6 +4,12 @@
 
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 
+// parkable_string.h is a widely included header and its size impacts build
+// time. Try not to raise this limit unless necessary. See
+// https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
+#pragma clang max_tokens_here 760000
+
+#include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/bind.h"
 #include "base/check_op.h"
@@ -16,6 +22,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
 #include "third_party/blink/renderer/platform/crypto.h"
+#include "third_party/blink/renderer/platform/disk_data_allocator.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -23,6 +30,7 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/sanitizers.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -294,6 +302,7 @@ void ParkableStringImpl::Lock() {
 
   MutexLocker locker(metadata_->mutex_);
   metadata_->lock_depth_ += 1;
+  CHECK_NE(metadata_->lock_depth_, 0u);
   // Make young as this is a strong (but not certain) indication that the string
   // will be accessed soon.
   MakeYoung();
@@ -304,8 +313,8 @@ void ParkableStringImpl::Unlock() {
     return;
 
   MutexLocker locker(metadata_->mutex_);
-  DCHECK_GT(metadata_->lock_depth_, 0);
   metadata_->lock_depth_ -= 1;
+  CHECK_NE(metadata_->lock_depth_, std::numeric_limits<unsigned int>::max());
 
 #if defined(ADDRESS_SANITIZER) && DCHECK_IS_ON()
   // There are no external references to the data, nobody should touch the data.
@@ -575,10 +584,13 @@ String ParkableStringImpl::UnparkInternal() {
   //
   // (1) is data corruption, and (2) is OOM. In all cases, we cannot
   // recover the string we need, nothing else to do than to abort.
-  //
-  // Stability sheriffs: If you see this, this is likely an OOM.
-  CHECK(compression::GzipUncompress(compressed_string_piece,
-                                    uncompressed_string_piece));
+  if (!compression::GzipUncompress(compressed_string_piece,
+                                   uncompressed_string_piece)) {
+    // Since this is almost always OOM, report it as such. We don't have
+    // certainty, but memory corruption should be much rarer, and could make us
+    // crash anywhere else.
+    OOM_CRASH(uncompressed_string_piece.size());
+  }
 
   base::TimeDelta elapsed = timer.Elapsed();
   manager.RecordUnparkingTime(elapsed);
@@ -623,7 +635,7 @@ void ParkableStringImpl::CompressInBackground(
   bool ok;
   base::StringPiece data(reinterpret_cast<const char*>(params->data),
                          params->size);
-  std::unique_ptr<Vector<uint8_t>> compressed = nullptr;
+  std::unique_ptr<Vector<uint8_t>> compressed;
 
   // This runs in background, making CPU starvation likely, and not an issue.
   // Hence, report thread time instead of wall clock time.
@@ -727,18 +739,19 @@ void ParkableStringImpl::PostBackgroundWritingTask() {
         this, metadata_->compressed_->data(), metadata_->compressed_->size(),
         Thread::Current()->GetTaskRunner());
     worker_pool::PostTask(
-        FROM_HERE, {base::MayBlock(), base::ThreadPool()},
+        FROM_HERE, {base::MayBlock()},
         CrossThreadBindOnce(&ParkableStringImpl::WriteToDiskInBackground,
-                            std::move(params)));
+                            std::move(params),
+                            WTF::CrossThreadUnretained(&data_allocator)));
   }
 }
 
 // static
 void ParkableStringImpl::WriteToDiskInBackground(
-    std::unique_ptr<BackgroundTaskParams> params) {
-  auto& allocator = ParkableStringManager::Instance().data_allocator();
+    std::unique_ptr<BackgroundTaskParams> params,
+    DiskDataAllocator* data_allocator) {
   base::ElapsedTimer timer;
-  auto metadata = allocator.Write(params->data, params->size);
+  auto metadata = data_allocator->Write(params->data, params->size);
   base::TimeDelta elapsed = timer.Elapsed();
   RecordStatistics(params->size, elapsed, ParkingAction::kWritten);
 

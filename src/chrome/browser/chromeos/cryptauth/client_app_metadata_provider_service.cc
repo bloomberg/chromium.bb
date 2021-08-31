@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/cryptauth/client_app_metadata_provider_service.h"
 
-#include <map>
 #include <string>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
@@ -22,7 +22,6 @@
 #include "chrome/browser/chromeos/cryptauth/cryptauth_device_id_provider_impl.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/services/device_sync/proto/cryptauth_better_together_feature_metadata.pb.h"
@@ -79,6 +78,13 @@ const cryptauthv2::FeatureMetadata& GenerateFeatureMetadata() {
           inner_metadata.add_supported_features(
               cryptauthv2::
                   BetterTogetherFeatureMetadata_FeatureName_WIFI_SYNC_CLIENT);
+        }
+
+        // Eche is only supported if the associated flag is enabled.
+        if (features::IsEcheSWAEnabled()) {
+          inner_metadata.add_supported_features(
+              cryptauthv2::
+                  BetterTogetherFeatureMetadata_FeatureName_ECHE_CLIENT);
         }
 
         // Note: |inner_metadata|'s enabled_features field is deprecated and
@@ -250,7 +256,7 @@ void ClientAppMetadataProviderService::OnInstanceIdFetched(
       device_sync::
           kCryptAuthV2EnrollmentAuthorizedEntity /* authorized_entity */,
       kInstanceIdScope /* scope */, base::TimeDelta() /* time_to_live */,
-      std::map<std::string, std::string>() /* options */, {} /* flags */,
+      {} /* flags */,
       base::BindOnce(
           &ClientAppMetadataProviderService::OnInstanceIdTokenFetched,
           weak_ptr_factory_.GetWeakPtr(), bluetooth_adapter, hardware_info,

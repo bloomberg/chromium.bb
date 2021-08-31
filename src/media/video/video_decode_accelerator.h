@@ -12,7 +12,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/cdm_context.h"
@@ -22,6 +21,7 @@
 #include "media/base/status.h"
 #include "media/base/video_decoder_config.h"
 #include "media/video/picture.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -37,6 +37,8 @@ class SharedImageStub;
 }
 
 namespace media {
+
+class CommandBufferHelper;
 
 // Video decoder interface.
 // This interface is extended by the various components that ultimately
@@ -154,7 +156,7 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
 
     // The CDM that the VDA should use to decode encrypted streams. Must be
     // set to a valid ID if |is_encrypted|.
-    base::Optional<base::UnguessableToken> cdm_id;
+    absl::optional<base::UnguessableToken> cdm_id;
 
     // Whether the client supports deferred initialization.
     bool is_deferred_initialization_allowed = false;
@@ -187,7 +189,7 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     gfx::ColorSpace target_color_space;
 
     // HDR metadata specified by the container.
-    base::Optional<gfx::HDRMetadata> hdr_metadata;
+    absl::optional<gfx::HDRMetadata> hdr_metadata;
   };
 
   // Interface for collaborating with picture interface to provide memory for
@@ -261,6 +263,10 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     // Return the SharedImageStub through which SharedImages may be created.
     // Default implementation returns nullptr.
     virtual gpu::SharedImageStub* GetSharedImageStub() const;
+
+    // Return the CommandBufferHelper through which GL passthrough textures may
+    // be created. Default implementation returns nullptr.
+    virtual CommandBufferHelper* GetCommandBufferHelper() const;
 
    protected:
     virtual ~Client() {}
@@ -417,6 +423,15 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   // Returns true if the decoder supports SharedImage backed picture buffers.
   // May be called on any thread at any time.
   virtual bool SupportsSharedImagePictureBuffers() const;
+
+  enum class TextureAllocationMode {
+    kDoNotAllocateGLTextures,
+    kAllocateGLTextures
+  };
+
+  // Returns an enum used to allocate GL textures for shared images.
+  // May be called on any thread at any time.
+  virtual TextureAllocationMode GetSharedImageTextureAllocationMode() const;
 
  protected:
   // Do not delete directly; use Destroy() or own it with a scoped_ptr, which

@@ -132,7 +132,8 @@ def _GenerateMethods(output_lines, source, class_node):
       args = []
       for p in node.parameters:
         arg = _GenerateArg(source[p.start:p.end])
-        args.append(_EscapeForMacro(arg))
+        if arg != 'void':
+          args.append(_EscapeForMacro(arg))
 
       # Create the mock method definition.
       output_lines.extend([
@@ -159,12 +160,13 @@ def _GenerateMocks(filename, source, ast_list, desired_class_names):
 
       # Add template args for templated classes.
       if class_node.templated_types:
-        # TODO(paulchang): The AST doesn't preserve template argument order,
-        # so we have to make up names here.
         # TODO(paulchang): Handle non-type template arguments (e.g.
         # template<typename T, int N>).
-        template_arg_count = len(class_node.templated_types.keys())
-        template_args = ['T%d' % n for n in range(template_arg_count)]
+
+        # class_node.templated_types is an OrderedDict from strings to a tuples.
+        # The key is the name of the template, and the value is
+        # (type_name, default). Both type_name and default could be None.
+        template_args = class_node.templated_types.keys()
         template_decls = ['typename ' + arg for arg in template_args]
         lines.append('template <' + ', '.join(template_decls) + '>')
         parent_name += '<' + ', '.join(template_args) + '>'

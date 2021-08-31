@@ -43,6 +43,7 @@
 #include "media/base/media_switches.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/history/session_history_constants.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
@@ -72,7 +73,6 @@
 #include "third_party/blink/public/web/web_range.h"
 #include "third_party/blink/public/web/web_render_theme.h"
 #include "third_party/blink/public/web/web_view_client.h"
-#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
@@ -115,10 +115,9 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
-#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/frame/web_remote_frame_impl.h"
-#include "third_party/blink/renderer/core/frame/web_view_frame_widget.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
@@ -135,7 +134,7 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
-#include "third_party/blink/renderer/core/loader/prerenderer_client.h"
+#include "third_party/blink/renderer/core/loader/no_state_prefetch_client.h"
 #include "third_party/blink/renderer/core/page/chrome_client_impl.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/context_menu_provider.h"
@@ -168,6 +167,8 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_lifecycle_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
+#include "third_party/blink/renderer/platform/theme/web_theme_engine_helper.h"
+#include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "ui/base/ui_base_features.h"
@@ -190,6 +191,8 @@
 // Get rid of WTF's pow define so we can use std::pow.
 #undef pow
 #include <cmath>  // for std::pow
+
+#include "build/chromeos_buildflags.h"
 
 // The following constants control parameters for automated scaling of webpages
 // (such as due to a double tap gesture or find in page etc.). These are
@@ -219,6 +222,8 @@ static const float leftBoxRatio = 0.3f;
 static const int caretPadding = 10;
 
 namespace blink {
+
+using mojom::blink::EffectiveConnectionType;
 
 // Historically, these values came from Webkit in
 // WebKitLegacy/mac/WebView/WebView.mm (named MinimumZoomMultiplier and
@@ -250,47 +255,47 @@ class EmptyEventListener final : public NativeEventListener {
 };
 
 typedef void (*SetFontFamilyWrapper)(blink::WebSettings*,
-                                     const base::string16&,
+                                     const std::u16string&,
                                      UScriptCode);
 
 void SetStandardFontFamilyWrapper(WebSettings* settings,
-                                  const base::string16& font,
+                                  const std::u16string& font,
                                   UScriptCode script) {
   settings->SetStandardFontFamily(WebString::FromUTF16(font), script);
 }
 
 void SetFixedFontFamilyWrapper(WebSettings* settings,
-                               const base::string16& font,
+                               const std::u16string& font,
                                UScriptCode script) {
   settings->SetFixedFontFamily(WebString::FromUTF16(font), script);
 }
 
 void SetSerifFontFamilyWrapper(WebSettings* settings,
-                               const base::string16& font,
+                               const std::u16string& font,
                                UScriptCode script) {
   settings->SetSerifFontFamily(WebString::FromUTF16(font), script);
 }
 
 void SetSansSerifFontFamilyWrapper(WebSettings* settings,
-                                   const base::string16& font,
+                                   const std::u16string& font,
                                    UScriptCode script) {
   settings->SetSansSerifFontFamily(WebString::FromUTF16(font), script);
 }
 
 void SetCursiveFontFamilyWrapper(WebSettings* settings,
-                                 const base::string16& font,
+                                 const std::u16string& font,
                                  UScriptCode script) {
   settings->SetCursiveFontFamily(WebString::FromUTF16(font), script);
 }
 
 void SetFantasyFontFamilyWrapper(WebSettings* settings,
-                                 const base::string16& font,
+                                 const std::u16string& font,
                                  UScriptCode script) {
   settings->SetFantasyFontFamily(WebString::FromUTF16(font), script);
 }
 
 void SetPictographFontFamilyWrapper(WebSettings* settings,
-                                    const base::string16& font,
+                                    const std::u16string& font,
                                     UScriptCode script) {
   settings->SetPictographFontFamily(WebString::FromUTF16(font), script);
 }
@@ -379,11 +384,9 @@ void ApplyCommandLineToSettings(WebSettings* settings) {
 
 WebMediaPlayer::SurfaceLayerMode GetVideoSurfaceLayerMode() {
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(media::kDisableSurfaceLayerForVideo) &&
-      !::features::IsUsingVizForWebView())
-    return WebMediaPlayer::SurfaceLayerMode::kNever;
-#endif  // OS_ANDROID
-
+  if (!::features::UseSurfaceLayerForVideo())
+    return blink::WebMediaPlayer::SurfaceLayerMode::kNever;
+#endif
   return WebMediaPlayer::SurfaceLayerMode::kAlways;
 }
 
@@ -410,7 +413,9 @@ ui::mojom::blink::WindowOpenDisposition NavigationPolicyToDisposition(
 #if !defined(OS_MAC) && !defined(OS_WIN)
 SkFontHinting RendererPreferencesToSkiaHinting(
     const blink::RendererPreferences& prefs) {
-#if defined(OS_LINUX)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   if (!prefs.should_antialias_text) {
     // When anti-aliasing is off, GTK maps all non-zero hinting settings to
     // 'Normal' hinting so we do the same. Otherwise, folks who have 'Slight'
@@ -454,16 +459,19 @@ WebView* WebView::Create(
     bool is_hidden,
     bool is_inside_portal,
     bool compositing_enabled,
+    bool widgets_never_composited,
     WebView* opener,
     CrossVariantMojoAssociatedReceiver<mojom::PageBroadcastInterfaceBase>
         page_handle,
-    scheduler::WebAgentGroupScheduler& agent_group_scheduler) {
+    scheduler::WebAgentGroupScheduler& agent_group_scheduler,
+    const SessionStorageNamespaceId& session_storage_namespace_id) {
   return WebViewImpl::Create(
       client,
       is_hidden ? mojom::blink::PageVisibilityState::kHidden
                 : mojom::blink::PageVisibilityState::kVisible,
-      is_inside_portal, compositing_enabled, static_cast<WebViewImpl*>(opener),
-      std::move(page_handle), agent_group_scheduler);
+      is_inside_portal, compositing_enabled, widgets_never_composited,
+      static_cast<WebViewImpl*>(opener), std::move(page_handle),
+      agent_group_scheduler, session_storage_namespace_id);
 }
 
 WebViewImpl* WebViewImpl::Create(
@@ -471,14 +479,17 @@ WebViewImpl* WebViewImpl::Create(
     mojom::blink::PageVisibilityState visibility,
     bool is_inside_portal,
     bool compositing_enabled,
+    bool widgets_never_composited,
     WebViewImpl* opener,
     mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle,
-    blink::scheduler::WebAgentGroupScheduler& agent_group_scheduler) {
+    blink::scheduler::WebAgentGroupScheduler& agent_group_scheduler,
+    const SessionStorageNamespaceId& session_storage_namespace_id) {
   // Take a self-reference for WebViewImpl that is released by calling Close(),
   // then return a raw pointer to the caller.
   auto web_view = base::AdoptRef(
       new WebViewImpl(client, visibility, is_inside_portal, compositing_enabled,
-                      opener, std::move(page_handle), agent_group_scheduler));
+                      widgets_never_composited, opener, std::move(page_handle),
+                      agent_group_scheduler, session_storage_namespace_id));
   web_view->AddRef();
   return web_view.get();
 }
@@ -491,11 +502,12 @@ void WebView::ResetVisitedLinkState(bool invalidate_visited_link_hashes) {
   Page::AllVisitedStateChanged(invalidate_visited_link_hashes);
 }
 
-void WebViewImpl::SetPrerendererClient(
-    WebPrerendererClient* prerenderer_client) {
+void WebViewImpl::SetNoStatePrefetchClient(
+    WebNoStatePrefetchClient* no_state_prefetch_client) {
   DCHECK(page_);
-  ProvidePrerendererClientTo(*page_, MakeGarbageCollected<PrerendererClient>(
-                                         *page_, prerenderer_client));
+  ProvideNoStatePrefetchClientTo(*page_,
+                                 MakeGarbageCollected<NoStatePrefetchClient>(
+                                     *page_, no_state_prefetch_client));
 }
 
 void WebViewImpl::CloseWindowSoon() {
@@ -533,10 +545,13 @@ WebViewImpl::WebViewImpl(
     mojom::blink::PageVisibilityState visibility,
     bool is_inside_portal,
     bool does_composite,
+    bool widgets_never_composited,
     WebViewImpl* opener,
     mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle,
-    blink::scheduler::WebAgentGroupScheduler& agent_group_scheduler)
-    : web_view_client_(client),
+    blink::scheduler::WebAgentGroupScheduler& agent_group_scheduler,
+    const SessionStorageNamespaceId& session_storage_namespace_id)
+    : widgets_never_composited_(widgets_never_composited),
+      web_view_client_(client),
       chrome_client_(MakeGarbageCollected<ChromeClientImpl>(this)),
       minimum_zoom_level_(PageZoomFactorToZoomLevel(kMinimumPageZoomFactor)),
       maximum_zoom_level_(PageZoomFactorToZoomLevel(kMaximumPageZoomFactor)),
@@ -544,15 +559,15 @@ WebViewImpl::WebViewImpl(
       fullscreen_controller_(std::make_unique<FullscreenController>(this)),
       receiver_(this,
                 std::move(page_handle),
-                agent_group_scheduler.DefaultTaskRunner()) {
+                agent_group_scheduler.DefaultTaskRunner()),
+      session_storage_namespace_id_(session_storage_namespace_id) {
   if (!web_view_client_)
     DCHECK(!does_composite_);
-  Page::PageClients page_clients;
-  page_clients.chrome_client = chrome_client_.Get();
-  page_ =
-      Page::CreateOrdinary(page_clients, opener ? opener->GetPage() : nullptr,
-                           agent_group_scheduler);
-  CoreInitializer::GetInstance().ProvideModulesToPage(*page_, web_view_client_);
+  page_ = Page::CreateOrdinary(*chrome_client_,
+                               opener ? opener->GetPage() : nullptr,
+                               agent_group_scheduler);
+  CoreInitializer::GetInstance().ProvideModulesToPage(
+      *page_, session_storage_namespace_id_);
 
   SetVisibilityState(visibility, /*is_initial_state=*/true);
 
@@ -637,8 +652,8 @@ void WebViewImpl::EnableFakePageScaleAnimationForTesting(bool enable) {
 }
 
 void WebViewImpl::AcceptLanguagesChanged() {
-  if (web_view_client_)
-    FontCache::AcceptLanguagesChanged(web_view_client_->AcceptLanguages());
+  FontCache::AcceptLanguagesChanged(
+      String::FromUTF8(renderer_preferences_.accept_languages));
 
   if (!GetPage())
     return;
@@ -646,38 +661,39 @@ void WebViewImpl::AcceptLanguagesChanged() {
   GetPage()->AcceptLanguagesChanged();
 }
 
-WebRect WebViewImpl::WidenRectWithinPageBounds(const WebRect& source,
-                                               int target_margin,
-                                               int minimum_margin) {
+gfx::Rect WebViewImpl::WidenRectWithinPageBounds(const gfx::Rect& source,
+                                                 int target_margin,
+                                                 int minimum_margin) {
   // Caller should guarantee that the main frame exists and is local.
   DCHECK(MainFrame());
   DCHECK(MainFrame()->IsWebLocalFrame());
-  WebSize max_size = MainFrame()->ToWebLocalFrame()->DocumentSize();
-  IntSize scroll_offset = MainFrame()->ToWebLocalFrame()->GetScrollOffset();
+  gfx::Size max_size = MainFrame()->ToWebLocalFrame()->DocumentSize();
+  gfx::ScrollOffset scroll_offset =
+      MainFrame()->ToWebLocalFrame()->GetScrollOffset();
 
   int left_margin = target_margin;
   int right_margin = target_margin;
 
-  const int absolute_source_x = source.x + scroll_offset.Width();
+  const int absolute_source_x = source.x() + scroll_offset.x();
   if (left_margin > absolute_source_x) {
     left_margin = absolute_source_x;
     right_margin = std::max(left_margin, minimum_margin);
   }
 
   const int maximum_right_margin =
-      max_size.width - (source.width + absolute_source_x);
+      max_size.width() - (source.width() + absolute_source_x);
   if (right_margin > maximum_right_margin) {
     right_margin = maximum_right_margin;
     left_margin = std::min(left_margin, std::max(right_margin, minimum_margin));
   }
 
-  const int new_width = source.width + left_margin + right_margin;
-  const int new_x = source.x - left_margin;
+  const int new_width = source.width() + left_margin + right_margin;
+  const int new_x = source.x() - left_margin;
 
   DCHECK_GE(new_width, 0);
-  DCHECK_LE(scroll_offset.Width() + new_x + new_width, max_size.width);
+  DCHECK_LE(scroll_offset.x() + new_x + new_width, max_size.width());
 
-  return WebRect(new_x, source.y, new_width, source.height);
+  return gfx::Rect(new_x, source.y(), new_width, source.height());
 }
 
 float WebViewImpl::MaximumLegiblePageScale() const {
@@ -694,7 +710,7 @@ float WebViewImpl::MaximumLegiblePageScale() const {
 
 void WebViewImpl::ComputeScaleAndScrollForBlockRect(
     const gfx::Point& hit_point_in_root_frame,
-    const WebRect& block_rect_in_root_frame,
+    const gfx::Rect& block_rect_in_root_frame,
     float padding,
     float default_scale_when_already_legible,
     float& scale,
@@ -702,7 +718,7 @@ void WebViewImpl::ComputeScaleAndScrollForBlockRect(
   scale = PageScaleFactor();
   scroll = IntPoint();
 
-  WebRect rect = block_rect_in_root_frame;
+  gfx::Rect rect = block_rect_in_root_frame;
 
   if (!rect.IsEmpty()) {
     float default_margin = doubleTapZoomContentDefaultMargin;
@@ -714,10 +730,10 @@ void WebViewImpl::ComputeScaleAndScrollForBlockRect(
     // correct if we end up fully zooming to it, and won't matter if we
     // don't.
     rect = WidenRectWithinPageBounds(
-        rect, static_cast<int>(default_margin * rect.width / size_.width()),
-        static_cast<int>(minimum_margin * rect.width / size_.width()));
+        rect, static_cast<int>(default_margin * rect.width() / size_.width()),
+        static_cast<int>(minimum_margin * rect.width() / size_.width()));
     // Fit block to screen, respecting limits.
-    scale = static_cast<float>(size_.width()) / rect.width;
+    scale = static_cast<float>(size_.width()) / rect.width();
     scale = std::min(scale, MaximumLegiblePageScale());
     if (PageScaleFactor() < default_scale_when_already_legible)
       scale = std::max(scale, default_scale_when_already_legible);
@@ -735,25 +751,25 @@ void WebViewImpl::ComputeScaleAndScrollForBlockRect(
   float screen_height = size_.height() / scale;
 
   // Scroll to vertically align the block.
-  if (rect.height < screen_height) {
+  if (rect.height() < screen_height) {
     // Vertically center short blocks.
-    rect.y -= 0.5 * (screen_height - rect.height);
+    rect.Offset(0, -0.5 * (screen_height - rect.height()));
   } else {
     // Ensure position we're zooming to (+ padding) isn't off the bottom of
     // the screen.
-    rect.y = std::max<float>(
-        rect.y, hit_point_in_root_frame.y() + padding - screen_height);
+    rect.set_y(std::max<float>(
+        rect.y(), hit_point_in_root_frame.y() + padding - screen_height));
   }  // Otherwise top align the block.
 
   // Do the same thing for horizontal alignment.
-  if (rect.width < screen_width) {
-    rect.x -= 0.5 * (screen_width - rect.width);
+  if (rect.width() < screen_width) {
+    rect.Offset(-0.5 * (screen_width - rect.width()), 0);
   } else {
-    rect.x = std::max<float>(
-        rect.x, hit_point_in_root_frame.x() + padding - screen_width);
+    rect.set_x(std::max<float>(
+        rect.x(), hit_point_in_root_frame.x() + padding - screen_width));
   }
-  scroll.SetX(rect.x);
-  scroll.SetY(rect.y);
+  scroll.SetX(rect.x());
+  scroll.SetY(rect.y());
 
   scale = ClampPageScaleFactorToLimits(scale);
   scroll = MainFrameImpl()->GetFrameView()->RootFrameToDocument(scroll);
@@ -761,29 +777,17 @@ void WebViewImpl::ComputeScaleAndScrollForBlockRect(
       GetPage()->GetVisualViewport().ClampDocumentOffsetAtScale(scroll, scale);
 }
 
-static Node* FindCursorDefiningAncestor(Node* node, LocalFrame* frame) {
+static Node* FindLinkHighlightAncestor(Node* node) {
   // Go up the tree to find the node that defines a mouse cursor style
   while (node) {
-    if (node->GetLayoutObject()) {
-      ECursor cursor = node->GetLayoutObject()->Style()->Cursor();
-      if (cursor != ECursor::kAuto ||
-          frame->GetEventHandler().UseHandCursor(node, node->IsLink()))
-        break;
-    }
+    const LinkHighlightCandidate type = node->IsLinkHighlightCandidate();
+    if (type == LinkHighlightCandidate::kYes)
+      return node;
+    if (type == LinkHighlightCandidate::kNo)
+      return nullptr;
     node = LayoutTreeBuilderTraversal::Parent(*node);
   }
-
-  return node;
-}
-
-static bool ShowsHandCursor(Node* node, LocalFrame* frame) {
-  if (!node || !node->GetLayoutObject())
-    return false;
-
-  ECursor cursor = node->GetLayoutObject()->Style()->Cursor();
-  return cursor == ECursor::kPointer ||
-         (cursor == ECursor::kAuto &&
-          frame->GetEventHandler().UseHandCursor(node, node->IsLink()));
+  return nullptr;
 }
 
 // This is for tap (link) highlight and is tested in
@@ -812,28 +816,21 @@ Node* WebViewImpl::BestTapNode(
   if (HasEditableStyle(*best_touch_node))
     return nullptr;
 
-  Node* cursor_defining_ancestor = FindCursorDefiningAncestor(
-      best_touch_node, page->DeprecatedLocalMainFrame());
+  Node* hand_cursor_ancestor = FindLinkHighlightAncestor(best_touch_node);
   // We show a highlight on tap only when the current node shows a hand cursor
-  if (!cursor_defining_ancestor ||
-      !ShowsHandCursor(cursor_defining_ancestor,
-                       page->DeprecatedLocalMainFrame())) {
+  if (!hand_cursor_ancestor) {
     return nullptr;
   }
 
   // We should pick the largest enclosing node with hand cursor set. We do this
-  // by first jumping up to cursorDefiningAncestor (which is already known to
-  // have hand cursor set). Then we locate the next cursor-defining ancestor up
-  // in the the tree and repeat the jumps as long as the node has hand cursor
-  // set.
+  // by first jumping up to the closest ancestor with hand cursor set. Then we
+  // locate the next ancestor up in the the tree and repeat the jumps as long as
+  // the node has hand cursor set.
   do {
-    best_touch_node = cursor_defining_ancestor;
-    cursor_defining_ancestor = FindCursorDefiningAncestor(
-        LayoutTreeBuilderTraversal::Parent(*best_touch_node),
-        page->DeprecatedLocalMainFrame());
-  } while (cursor_defining_ancestor &&
-           ShowsHandCursor(cursor_defining_ancestor,
-                           page->DeprecatedLocalMainFrame()));
+    best_touch_node = hand_cursor_ancestor;
+    hand_cursor_ancestor = FindLinkHighlightAncestor(
+        LayoutTreeBuilderTraversal::Parent(*best_touch_node));
+  } while (hand_cursor_ancestor);
 
   // This happens in cases like:
   // <div style="display: contents; cursor: pointer">Text</div>.
@@ -848,14 +845,15 @@ Node* WebViewImpl::BestTapNode(
 
 void WebViewImpl::EnableTapHighlightAtPoint(
     const GestureEventWithHitTestResults& targeted_tap_event) {
+  DCHECK(MainFrameImpl());
   Node* touch_node = BestTapNode(targeted_tap_event);
   GetPage()->GetLinkHighlight().SetTapHighlight(touch_node);
-  UpdateLifecycle(WebLifecycleUpdate::kAll,
-                  DocumentUpdateReason::kTapHighlight);
+  MainFrameWidget()->UpdateLifecycle(WebLifecycleUpdate::kAll,
+                                     DocumentUpdateReason::kTapHighlight);
 }
 
 void WebViewImpl::AnimateDoubleTapZoom(const gfx::Point& point_in_root_frame,
-                                       const WebRect& rect_to_zoom) {
+                                       const gfx::Rect& rect_to_zoom) {
   DCHECK(MainFrameImpl());
 
   float scale;
@@ -899,13 +897,14 @@ void WebViewImpl::AnimateDoubleTapZoom(const gfx::Point& point_in_root_frame,
   }
 }
 
-void WebViewImpl::ZoomToFindInPageRect(const WebRect& rect_in_root_frame) {
+void WebViewImpl::ZoomToFindInPageRect(const gfx::Rect& rect_in_root_frame) {
   DCHECK(MainFrameImpl());
 
-  WebRect block_bounds = MainFrameImpl()->FrameWidgetImpl()->ComputeBlockBound(
-      gfx::Point(rect_in_root_frame.x + rect_in_root_frame.width / 2,
-                 rect_in_root_frame.y + rect_in_root_frame.height / 2),
-      true);
+  gfx::Rect block_bounds =
+      MainFrameImpl()->FrameWidgetImpl()->ComputeBlockBound(
+          gfx::Point(rect_in_root_frame.x() + rect_in_root_frame.width() / 2,
+                     rect_in_root_frame.y() + rect_in_root_frame.height() / 2),
+          true);
 
   if (block_bounds.IsEmpty()) {
     // Keep current scale (no need to scroll as x,y will normally already
@@ -916,9 +915,9 @@ void WebViewImpl::ZoomToFindInPageRect(const WebRect& rect_in_root_frame) {
   float scale;
   IntPoint scroll;
 
-  ComputeScaleAndScrollForBlockRect(
-      gfx::Point(rect_in_root_frame.x, rect_in_root_frame.y), block_bounds,
-      nonUserInitiatedPointPadding, MinimumPageScaleFactor(), scale, scroll);
+  ComputeScaleAndScrollForBlockRect(rect_in_root_frame.origin(), block_bounds,
+                                    nonUserInitiatedPointPadding,
+                                    MinimumPageScaleFactor(), scale, scroll);
 
   StartPageScaleAnimation(scroll, false, scale, kFindInPageAnimationDuration);
 }
@@ -962,15 +961,47 @@ WebPagePopupImpl* WebViewImpl::OpenPagePopup(PagePopupClient* client) {
   CancelPagePopup();
   DCHECK(!page_popup_);
 
-  WebLocalFrameImpl* frame = WebLocalFrameImpl::FromFrame(
-      client->OwnerElement().GetDocument().GetFrame()->LocalFrameRoot());
-  WebPagePopup* popup_widget = web_view_client_->CreatePopup(frame);
+  LocalFrame* opener_frame = client->OwnerElement().GetDocument().GetFrame();
+  WebLocalFrameImpl* web_opener_frame =
+      WebLocalFrameImpl::FromFrame(opener_frame);
+
+  mojo::PendingAssociatedRemote<mojom::blink::Widget> widget;
+  mojo::PendingAssociatedReceiver<mojom::blink::Widget> widget_receiver =
+      widget.InitWithNewEndpointAndPassReceiver();
+
+  mojo::PendingAssociatedRemote<mojom::blink::WidgetHost> widget_host;
+  mojo::PendingAssociatedReceiver<mojom::blink::WidgetHost>
+      widget_host_receiver = widget_host.InitWithNewEndpointAndPassReceiver();
+
+  mojo::PendingAssociatedRemote<mojom::blink::PopupWidgetHost>
+      popup_widget_host;
+  mojo::PendingAssociatedReceiver<mojom::blink::PopupWidgetHost>
+      popup_widget_host_receiver =
+          popup_widget_host.InitWithNewEndpointAndPassReceiver();
+
+  opener_frame->GetLocalFrameHostRemote().CreateNewPopupWidget(
+      std::move(popup_widget_host_receiver), std::move(widget_host_receiver),
+      std::move(widget));
+  WebFrameWidgetImpl* opener_widget = web_opener_frame->LocalRootFrameWidget();
+
+  scheduler::WebAgentGroupScheduler& agent_group_scheduler =
+      opener_frame->GetPage()->GetPageScheduler()->GetAgentGroupScheduler();
+  // The returned WebPagePopup is self-referencing, so the pointer here is not
+  // an owning pointer. It is de-referenced by the PopupWidgetHost disconnecting
+  // and calling Close().
+  WebPagePopup* popup_widget = WebPagePopup::Create(
+      std::move(popup_widget_host), std::move(widget_host),
+      std::move(widget_receiver), agent_group_scheduler.DefaultTaskRunner());
+  popup_widget->InitializeCompositing(agent_group_scheduler,
+                                      opener_widget->GetOriginalScreenInfos(),
+                                      /*settings=*/nullptr);
+
   // CreatePopup returns nullptr if this renderer process is about to die.
   if (!popup_widget)
     return nullptr;
   page_popup_ = To<WebPagePopupImpl>(popup_widget);
   page_popup_->Initialize(this, client);
-  EnablePopupMouseWheelEventListener(frame);
+  EnablePopupMouseWheelEventListener(web_opener_frame->LocalRoot());
   return page_popup_.get();
 }
 
@@ -1058,6 +1089,9 @@ void WebViewImpl::Close() {
   // deleted.
   web_view_client_ = nullptr;
 
+  for (auto& observer : observers_)
+    observer.WebViewDestroyed();
+
   Release();  // Balances a reference acquired in WebView::Create
 }
 
@@ -1066,7 +1100,7 @@ gfx::Size WebViewImpl::Size() {
 }
 
 void WebViewImpl::ResizeVisualViewport(const gfx::Size& new_size) {
-  GetPage()->GetVisualViewport().SetSize(WebSize(new_size));
+  GetPage()->GetVisualViewport().SetSize(IntSize(new_size));
   GetPage()->GetVisualViewport().ClampToBoundaries();
 }
 
@@ -1144,7 +1178,7 @@ void WebViewImpl::DidUpdateBrowserControls() {
   if (!main_frame)
     return;
 
-  WebFrameWidgetBase* widget = main_frame->LocalRootFrameWidget();
+  WebFrameWidgetImpl* widget = main_frame->LocalRootFrameWidget();
   widget->SetBrowserControlsShownRatio(GetBrowserControls().TopShownRatio(),
                                        GetBrowserControls().BottomShownRatio());
   widget->SetBrowserControlsParams(GetBrowserControls().Params());
@@ -1190,10 +1224,10 @@ void WebViewImpl::ResizeViewWhileAnchored(
 
   fullscreen_controller_->UpdateSize();
 
-  // Update lifecycle phases immediately to recalculate the minimum scale limit
-  // for rotation anchoring, and to make sure that no lifecycle states are
-  // stale if this WebView is embedded in another one.
-  UpdateLifecycle(WebLifecycleUpdate::kAll, DocumentUpdateReason::kSizeChange);
+  // Page scale constraints may need to be updated; running layout now will
+  // do that.
+  MainFrameWidget()->UpdateLifecycle(WebLifecycleUpdate::kLayout,
+                                     DocumentUpdateReason::kSizeChange);
 }
 
 void WebViewImpl::ResizeWithBrowserControls(
@@ -1280,15 +1314,16 @@ void WebViewImpl::Resize(const gfx::Size& new_size) {
 }
 
 void WebViewImpl::SetScreenOrientationOverrideForTesting(
-    base::Optional<blink::mojom::ScreenOrientation> orientation) {
+    absl::optional<blink::mojom::ScreenOrientation> orientation) {
   screen_orientation_override_ = orientation;
 
   // Since we updated the override value, notify all widgets.
   for (WebFrame* frame = MainFrame(); frame; frame = frame->TraverseNext()) {
     if (frame->IsWebLocalFrame()) {
-      if (WebFrameWidgetBase* widget = static_cast<WebFrameWidgetBase*>(
-              frame->ToWebLocalFrame()->FrameWidget()))
-        widget->UpdateScreenInfo(widget->GetScreenInfo());
+      if (WebFrameWidgetImpl* widget = static_cast<WebFrameWidgetImpl*>(
+              frame->ToWebLocalFrame()->FrameWidget())) {
+        widget->UpdateScreenInfo(widget->GetScreenInfos());
+      }
     }
   }
 }
@@ -1302,7 +1337,7 @@ void WebViewImpl::SetWindowRectSynchronouslyForTesting(
   web_widget_->SetWindowRectSynchronouslyForTesting(new_window_rect);
 }
 
-base::Optional<mojom::blink::ScreenOrientation>
+absl::optional<mojom::blink::ScreenOrientation>
 WebViewImpl::ScreenOrientationOverride() {
   return screen_orientation_override_;
 }
@@ -1315,7 +1350,8 @@ void WebViewImpl::DidExitFullscreen() {
   fullscreen_controller_->DidExitFullscreen();
 }
 
-void WebViewImpl::SetMainFrameViewWidget(WebViewFrameWidget* widget) {
+void WebViewImpl::SetMainFrameViewWidget(WebFrameWidgetImpl* widget) {
+  DCHECK(!widget || widget->ForMainFrame());
   web_widget_ = widget;
 }
 
@@ -1329,63 +1365,8 @@ void WebViewImpl::SetKeyboardFocusURL(const KURL& url) {
   UpdateTargetURL(focus_url_, mouse_over_url_);
 }
 
-WebViewFrameWidget* WebViewImpl::MainFrameViewWidget() {
+WebFrameWidgetImpl* WebViewImpl::MainFrameViewWidget() {
   return web_widget_;
-}
-
-void WebViewImpl::UpdateLifecycle(WebLifecycleUpdate requested_update,
-                                  DocumentUpdateReason reason) {
-  TRACE_EVENT0("blink", "WebViewImpl::updateAllLifecyclePhases");
-  if (!MainFrameImpl())
-    return;
-
-  PageWidgetDelegate::UpdateLifecycle(*page_, *MainFrameImpl()->GetFrame(),
-                                      requested_update, reason);
-  if (requested_update != WebLifecycleUpdate::kAll)
-    return;
-
-  UpdatePagePopup();
-
-  // There is no background color for non-composited WebViews (eg printing).
-  if (does_composite_) {
-    SkColor background_color = BackgroundColor();
-    MainFrameImpl()->FrameWidgetImpl()->SetBackgroundColor(background_color);
-    if (background_color != last_background_color_) {
-      last_background_color_ = background_color;
-      if (Page* page = page_.Get()) {
-        if (auto* main_local_frame = DynamicTo<LocalFrame>(page->MainFrame())) {
-          main_local_frame->DidChangeBackgroundColor(background_color,
-                                                     false /* color_adjust */);
-        }
-      }
-    }
-  }
-
-  if (LocalFrameView* view = MainFrameImpl()->GetFrameView()) {
-    LocalFrame* frame = MainFrameImpl()->GetFrame();
-    WebFrameWidgetBase* frame_widget =
-        WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
-
-    if (should_dispatch_first_visually_non_empty_layout_ &&
-        view->IsVisuallyNonEmpty()) {
-      should_dispatch_first_visually_non_empty_layout_ = false;
-      // TODO(esprehn): Move users of this callback to something
-      // better, the heuristic for "visually non-empty" is bad.
-      frame_widget->DidMeaningfulLayout(WebMeaningfulLayout::kVisuallyNonEmpty);
-    }
-
-    if (should_dispatch_first_layout_after_finished_parsing_ &&
-        frame->GetDocument()->HasFinishedParsing()) {
-      should_dispatch_first_layout_after_finished_parsing_ = false;
-      frame_widget->DidMeaningfulLayout(WebMeaningfulLayout::kFinishedParsing);
-    }
-
-    if (should_dispatch_first_layout_after_finished_loading_ &&
-        frame->GetDocument()->IsLoadCompleted()) {
-      should_dispatch_first_layout_after_finished_loading_ = false;
-      frame_widget->DidMeaningfulLayout(WebMeaningfulLayout::kFinishedLoading);
-    }
-  }
 }
 
 void WebViewImpl::PaintContent(cc::PaintCanvas* canvas, const gfx::Rect& rect) {
@@ -1457,6 +1438,8 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
   settings->SetSyncXHRInDocumentsEnabled(prefs.sync_xhr_in_documents_enabled);
   settings->SetTargetBlankImpliesNoOpenerEnabledWillBeRemoved(
       prefs.target_blank_implies_no_opener_enabled_will_be_removed);
+  settings->SetAllowNonEmptyNavigatorPlugins(
+      prefs.allow_non_empty_navigator_plugins);
   RuntimeEnabledFeatures::SetDatabaseEnabled(prefs.databases_enabled);
   settings->SetOfflineWebApplicationCacheEnabled(
       prefs.application_cache_enabled);
@@ -1552,6 +1535,9 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
     RuntimeEnabledFeatures::SetKeyboardFocusableScrollersEnabled(true);
 
   settings->SetSelectionIncludesAltImageText(true);
+
+  RuntimeEnabledFeatures::SetFakeNoAllocDirectCallForTestingEnabled(
+      prefs.fake_no_alloc_direct_call_for_testing_enabled);
 
   settings->SetV8CacheOptions(prefs.v8_cache_options);
 
@@ -1654,8 +1640,6 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
       prefs.css_hex_alpha_color_enabled);
   RuntimeEnabledFeatures::SetScrollTopLeftInteropEnabled(
       prefs.scroll_top_left_interop_enabled);
-  RuntimeEnabledFeatures::SetSurfaceEmbeddingFeaturesEnabled(
-      !prefs.disable_features_depending_on_viz);
   RuntimeEnabledFeatures::SetAcceleratedSmallCanvasesEnabled(
       !prefs.disable_accelerated_small_canvases);
 #endif  // defined(OS_ANDROID)
@@ -1701,31 +1685,31 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
   for (const auto& ect_distance_pair :
        prefs.lazy_frame_loading_distance_thresholds_px) {
     switch (ect_distance_pair.first) {
-      case net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
+      case EffectiveConnectionType::kEffectiveConnectionUnknownType:
         settings->SetLazyFrameLoadingDistanceThresholdPxUnknown(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_OFFLINE:
+      case EffectiveConnectionType::kEffectiveConnectionOfflineType:
         settings->SetLazyFrameLoadingDistanceThresholdPxOffline(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
+      case EffectiveConnectionType::kEffectiveConnectionSlow2GType:
         settings->SetLazyFrameLoadingDistanceThresholdPxSlow2G(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_2G:
+      case EffectiveConnectionType::kEffectiveConnection2GType:
         settings->SetLazyFrameLoadingDistanceThresholdPx2G(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_3G:
+      case EffectiveConnectionType::kEffectiveConnection3GType:
         settings->SetLazyFrameLoadingDistanceThresholdPx3G(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_4G:
+      case EffectiveConnectionType::kEffectiveConnection4GType:
         settings->SetLazyFrameLoadingDistanceThresholdPx4G(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_LAST:
+      case EffectiveConnectionType::kEffectiveConnectionTypeLast:
         continue;
     }
     NOTREACHED();
@@ -1734,31 +1718,31 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
   for (const auto& ect_distance_pair :
        prefs.lazy_image_loading_distance_thresholds_px) {
     switch (ect_distance_pair.first) {
-      case net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
+      case EffectiveConnectionType::kEffectiveConnectionUnknownType:
         settings->SetLazyImageLoadingDistanceThresholdPxUnknown(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_OFFLINE:
+      case EffectiveConnectionType::kEffectiveConnectionOfflineType:
         settings->SetLazyImageLoadingDistanceThresholdPxOffline(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
+      case EffectiveConnectionType::kEffectiveConnectionSlow2GType:
         settings->SetLazyImageLoadingDistanceThresholdPxSlow2G(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_2G:
+      case EffectiveConnectionType::kEffectiveConnection2GType:
         settings->SetLazyImageLoadingDistanceThresholdPx2G(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_3G:
+      case EffectiveConnectionType::kEffectiveConnection3GType:
         settings->SetLazyImageLoadingDistanceThresholdPx3G(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_4G:
+      case EffectiveConnectionType::kEffectiveConnection4GType:
         settings->SetLazyImageLoadingDistanceThresholdPx4G(
             ect_distance_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_LAST:
+      case EffectiveConnectionType::kEffectiveConnectionTypeLast:
         continue;
     }
     NOTREACHED();
@@ -1766,24 +1750,24 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
 
   for (const auto& fully_load_k_pair : prefs.lazy_image_first_k_fully_load) {
     switch (fully_load_k_pair.first) {
-      case net::EFFECTIVE_CONNECTION_TYPE_OFFLINE:
+      case EffectiveConnectionType::kEffectiveConnectionOfflineType:
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
+      case EffectiveConnectionType::kEffectiveConnectionUnknownType:
         settings->SetLazyImageFirstKFullyLoadUnknown(fully_load_k_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
+      case EffectiveConnectionType::kEffectiveConnectionSlow2GType:
         settings->SetLazyImageFirstKFullyLoadSlow2G(fully_load_k_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_2G:
+      case EffectiveConnectionType::kEffectiveConnection2GType:
         settings->SetLazyImageFirstKFullyLoad2G(fully_load_k_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_3G:
+      case EffectiveConnectionType::kEffectiveConnection3GType:
         settings->SetLazyImageFirstKFullyLoad3G(fully_load_k_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_4G:
+      case EffectiveConnectionType::kEffectiveConnection4GType:
         settings->SetLazyImageFirstKFullyLoad4G(fully_load_k_pair.second);
         continue;
-      case net::EFFECTIVE_CONNECTION_TYPE_LAST:
+      case EffectiveConnectionType::kEffectiveConnectionTypeLast:
         continue;
     }
     NOTREACHED();
@@ -1791,6 +1775,7 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
 
   settings->SetTouchDragDropEnabled(prefs.touch_drag_drop_enabled);
   settings->SetTouchDragEndContextMenu(prefs.touch_dragend_context_menu);
+  settings->SetWebXRImmersiveArAllowed(prefs.webxr_immersive_ar_allowed);
 
 #if defined(OS_MAC)
   web_view_impl->SetMaximumLegibleScale(
@@ -1806,14 +1791,8 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
 }
 
 void WebViewImpl::ThemeChanged() {
-  if (!GetPage())
-    return;
-  if (!GetPage()->MainFrame()->IsLocalFrame())
-    return;
-  LocalFrameView* view = GetPage()->DeprecatedLocalMainFrame()->View();
-
-  WebRect damaged_rect(0, 0, size_.width(), size_.height());
-  view->InvalidateRect(damaged_rect);
+  if (auto* page = GetPage())
+    page->InvalidatePaint();
 }
 
 void WebViewImpl::EnterFullscreen(LocalFrame& frame,
@@ -1827,8 +1806,11 @@ void WebViewImpl::ExitFullscreen(LocalFrame& frame) {
 }
 
 void WebViewImpl::FullscreenElementChanged(Element* old_element,
-                                           Element* new_element) {
-  fullscreen_controller_->FullscreenElementChanged(old_element, new_element);
+                                           Element* new_element,
+                                           const FullscreenOptions* options,
+                                           FullscreenRequestType request_type) {
+  fullscreen_controller_->FullscreenElementChanged(old_element, new_element,
+                                                   options, request_type);
 }
 
 bool WebViewImpl::HasHorizontalScrollbar() {
@@ -1842,14 +1824,7 @@ bool WebViewImpl::HasVerticalScrollbar() {
   return MainFrameImpl()->GetFrameView()->LayoutViewport()->VerticalScrollbar();
 }
 
-void WebViewImpl::MouseCaptureLost() {
-  TRACE_EVENT_NESTABLE_ASYNC_END0("input", "capturing mouse",
-                                  TRACE_ID_LOCAL(this));
-  if (page_->DeprecatedLocalMainFrame())
-    page_->DeprecatedLocalMainFrame()->Client()->SetMouseCapture(false);
-}
-
-void WebViewImpl::SetFocus(bool enable) {
+void WebViewImpl::SetPageFocus(bool enable) {
   if (enable)
     page_->GetFocusController().SetActive(true);
   page_->GetFocusController().SetFocused(enable);
@@ -1877,19 +1852,10 @@ void WebViewImpl::SetFocus(bool enable) {
         }
       }
     }
-    ime_accept_events_ = true;
   } else {
     CancelPagePopup();
 
-    // Clear focus on the currently focused frame if any.
-    if (!page_)
-      return;
-
-    LocalFrame* frame = DynamicTo<LocalFrame>(page_->MainFrame());
-    if (!frame)
-      return;
-
-    LocalFrame* focused_frame = FocusedLocalFrameInWidget();
+    LocalFrame* focused_frame = page_->GetFocusController().FocusedFrame();
     if (focused_frame) {
       // Finish an ongoing composition to delete the composition node.
       if (focused_frame->GetInputMethodController().HasComposition()) {
@@ -1902,7 +1868,6 @@ void WebViewImpl::SetFocus(bool enable) {
         focused_frame->GetInputMethodController().FinishComposingText(
             InputMethodController::kKeepSelection);
       }
-      ime_accept_events_ = false;
     }
   }
 }
@@ -1939,7 +1904,12 @@ WebString WebViewImpl::PageEncoding() const {
 
 WebFrame* WebViewImpl::MainFrame() {
   Page* page = page_.Get();
-  return WebFrame::FromFrame(page ? page->MainFrame() : nullptr);
+  return WebFrame::FromCoreFrame(page ? page->MainFrame() : nullptr);
+}
+
+const WebFrame* WebViewImpl::MainFrame() const {
+  Page* page = page_.Get();
+  return WebFrame::FromCoreFrame(page ? page->MainFrame() : nullptr);
 }
 
 WebLocalFrameImpl* WebViewImpl::MainFrameImpl() const {
@@ -1947,6 +1917,18 @@ WebLocalFrameImpl* WebViewImpl::MainFrameImpl() const {
   if (!page)
     return nullptr;
   return WebLocalFrameImpl::FromFrame(DynamicTo<LocalFrame>(page->MainFrame()));
+}
+
+std::string WebViewImpl::GetNullFrameReasonForBug1139104() const {
+  Page* page = page_.Get();
+  if (!page)
+    return "WebViewImpl::page";
+  if (!page->MainFrame())
+    return "WebViewImpl::page->MainFrame";
+  LocalFrame* local_frame = DynamicTo<LocalFrame>(page->MainFrame());
+  if (!local_frame)
+    return "WebViewImpl::local_frame";
+  return WebLocalFrameImpl::GetNullFrameReasonForBug1139104(local_frame);
 }
 
 void WebViewImpl::DidAttachLocalMainFrame() {
@@ -1976,22 +1958,26 @@ void WebViewImpl::DidAttachLocalMainFrame() {
   }
 }
 
-void WebViewImpl::DidAttachRemoteMainFrame() {
+void WebViewImpl::DidAttachRemoteMainFrame(
+    CrossVariantMojoAssociatedRemote<
+        mojom::blink::RemoteMainFrameHostInterfaceBase> main_frame_host,
+    CrossVariantMojoAssociatedReceiver<
+        mojom::blink::RemoteMainFrameInterfaceBase> main_frame) {
+  DCHECK(main_frame_host);
+  DCHECK(main_frame);
   DCHECK(!MainFrameImpl());
 
   RemoteFrame* remote_frame = DynamicTo<RemoteFrame>(GetPage()->MainFrame());
-  remote_frame->WasAttachedAsRemoteMainFrame();
+  remote_frame->WasAttachedAsRemoteMainFrame(std::move(main_frame));
 
-  remote_frame->GetRemoteAssociatedInterfaces()->GetInterface(
-      remote_main_frame_host_remote_.BindNewEndpointAndPassReceiver(
-          GetPage()
-              ->GetPageScheduler()
-              ->GetAgentGroupScheduler()
-              .DefaultTaskRunner()));
+  remote_main_frame_host_remote_.Bind(std::move(main_frame_host));
+
+  auto& viewport = GetPage()->GetVisualViewport();
+  viewport.Reset();
 }
 
 void WebViewImpl::DidDetachLocalMainFrame() {
-  // The WebWidgetClient that generated the |scoped_defer_main_frame_update_|
+  // The WebFrameWidget that generated the |scoped_defer_main_frame_update_|
   // for a local main frame is going away.
   scoped_defer_main_frame_update_ = nullptr;
   local_main_frame_host_remote_.reset();
@@ -2019,67 +2005,6 @@ void WebViewImpl::SetFocusedFrame(WebFrame* frame) {
   }
   LocalFrame* core_frame = To<WebLocalFrameImpl>(frame)->GetFrame();
   core_frame->GetPage()->GetFocusController().SetFocusedFrame(core_frame);
-}
-
-// TODO(dglazkov): Remove and replace with Node:hasEditableStyle.
-// http://crbug.com/612560
-static bool IsElementEditable(const Element* element) {
-  element->GetDocument().UpdateStyleAndLayoutTree();
-  if (HasEditableStyle(*element))
-    return true;
-
-  if (auto* text_control = ToTextControlOrNull(element)) {
-    if (!text_control->IsDisabledOrReadOnly())
-      return true;
-  }
-
-  return EqualIgnoringASCIICase(
-      element->FastGetAttribute(html_names::kRoleAttr), "textbox");
-}
-
-bool WebViewImpl::ScrollFocusedEditableElementIntoView() {
-  DCHECK(MainFrameImpl());
-  LocalFrameView* main_frame_view = MainFrameImpl()->GetFrame()->View();
-  if (!main_frame_view)
-    return false;
-
-  Element* element = FocusedElement();
-  if (!element || !IsElementEditable(element))
-    return false;
-
-  element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kSelection);
-
-  LayoutObject* layout_object = element->GetLayoutObject();
-  if (!layout_object)
-    return false;
-
-  // Since the page has been resized, the layout may have changed. The page
-  // scale animation started by ZoomAndScrollToFocusedEditableRect will scroll
-  // only the visual and layout viewports. We'll call ScrollRectToVisible with
-  // the stop_at_main_frame_layout_viewport param to ensure the element is
-  // actually visible in the page.
-  auto params = ScrollAlignment::CreateScrollIntoViewParams(
-      ScrollAlignment::CenterIfNeeded(), ScrollAlignment::CenterIfNeeded(),
-      mojom::blink::ScrollType::kProgrammatic, false,
-      mojom::blink::ScrollBehavior::kInstant);
-  params->stop_at_main_frame_layout_viewport = true;
-  layout_object->ScrollRectToVisible(
-      PhysicalRect(layout_object->AbsoluteBoundingBoxRect()),
-      std::move(params));
-
-  ZoomAndScrollToFocusedEditableElementRect(
-      main_frame_view->RootFrameToDocument(
-          element->GetDocument().View()->ConvertToRootFrame(
-              layout_object->AbsoluteBoundingBoxRect())),
-      main_frame_view->RootFrameToDocument(
-          element->GetDocument().View()->ConvertToRootFrame(
-              element->GetDocument()
-                  .GetFrame()
-                  ->Selection()
-                  .ComputeRectToScroll(kDoNotRevealExtent))),
-      ShouldZoomToLegibleScale(*element));
-
-  return true;
 }
 
 bool WebViewImpl::ShouldZoomToLegibleScale(const Element& element) {
@@ -2292,7 +2217,8 @@ double WebViewImpl::SetZoomLevel(double zoom_level) {
   PropagateZoomFactorToLocalFrameRoots(page_->MainFrame(), zoom_factor);
 
   if (old_zoom_level != zoom_level_) {
-    Client()->ZoomLevelChanged();
+    for (auto& observer : observers_)
+      observer.OnZoomLevelChanged();
     CancelPagePopup();
   }
 
@@ -2410,6 +2336,8 @@ void WebViewImpl::SetPageLifecycleStateInternal(
       (new_state->pagehide_dispatch ==
        mojom::blink::PagehideDispatch::kNotDispatched) &&
       GetPage()->DispatchedPagehideAndStillHidden();
+  bool eviction_changed =
+      new_state->eviction_enabled != old_state->eviction_enabled;
 
   if (dispatching_pagehide) {
     RemoveFocusAndTextInputState();
@@ -2430,18 +2358,16 @@ void WebViewImpl::SetPageLifecycleStateInternal(
   }
   if (freezing_page)
     SetPageFrozen(true);
-  if (storing_in_bfcache)
-    HookBackForwardCacheEviction(true);
   if (restoring_from_bfcache) {
     DCHECK(page_restore_params);
-    // Update the history offset and length value saved in RenderViewImpl, as
-    // pages that are kept in the back-forward cache do not get notified about
-    // updates on these values, so the currently saved value might be stale.
-    web_view_client_->OnSetHistoryOffsetAndLength(
-        page_restore_params->pending_history_list_offset,
-        page_restore_params->current_history_list_length);
-    HookBackForwardCacheEviction(false);
+    // Update the history offset and length value, as pages that are kept in
+    // the back-forward cache do not get notified about updates on these
+    // values, so the currently saved value might be stale.
+    SetHistoryOffsetAndLength(page_restore_params->pending_history_list_offset,
+                              page_restore_params->current_history_list_length);
   }
+  if (eviction_changed)
+    HookBackForwardCacheEviction(new_state->eviction_enabled);
   if (resuming_page)
     SetPageFrozen(false);
   if (showing_page) {
@@ -2455,6 +2381,10 @@ void WebViewImpl::SetPageLifecycleStateInternal(
     DCHECK(dispatching_pageshow);
     DCHECK(page_restore_params);
     Scheduler()->SetPageBackForwardCached(new_state->is_in_back_forward_cache);
+    if (MainFrame()->IsWebLocalFrame()) {
+      LocalFrame* local_frame = To<LocalFrame>(page->MainFrame());
+      probe::DidRestoreFromBackForwardCache(local_frame);
+    }
   }
 
   // Make sure no TrackedFeaturesUpdate message is sent after the ACK
@@ -2504,7 +2434,7 @@ void WebViewImpl::RemoveFocusAndTextInputState() {
   // Note that the TextInputState itself is cleared when we clear the focus,
   // but no updates to the browser will be triggered until the next animation
   // frame, which won't happen if we're freezing the page.
-  if (auto* widget = static_cast<WebFrameWidgetBase*>(
+  if (auto* widget = static_cast<WebFrameWidgetImpl*>(
           focused_frame->GetWidgetForLocalRoot())) {
     widget->FinishComposingText(false /* keep_selection */);
     widget->UpdateTextInputState();
@@ -2610,7 +2540,7 @@ void WebViewImpl::DisableAutoResizeForTesting(
 }
 
 void WebViewImpl::SetDefaultPageScaleLimits(float min_scale, float max_scale) {
-  GetPage()->SetDefaultPageScaleLimits(min_scale, max_scale);
+  dev_tools_emulator_->SetDefaultPageScaleLimits(min_scale, max_scale);
 }
 
 void WebViewImpl::SetInitialPageScaleOverride(
@@ -2751,6 +2681,10 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
       MainFrameImpl()->GetFrameView()->SetNeedsLayout();
   }
 
+  if (does_composite_) {
+    MainFrameImpl()->FrameWidgetImpl()->UpdateViewportDescription(description);
+  }
+
   UpdateMainFrameLayoutSize();
 }
 
@@ -2866,7 +2800,7 @@ void WebViewImpl::TakeFocus(bool reverse) {
   }
 }
 
-void WebViewImpl::Show(const base::UnguessableToken& opener_frame_token,
+void WebViewImpl::Show(const LocalFrameToken& opener_frame_token,
                        NavigationPolicy policy,
                        const gfx::Rect& rect,
                        bool opened_by_user_gesture) {
@@ -2886,16 +2820,11 @@ void WebViewImpl::DidShowCreatedWindow() {
   web_widget_->AckPendingWindowRect();
 }
 
-void WebViewImpl::SetWindowRect(const gfx::Rect& bounds) {
+void WebViewImpl::SendWindowRectToMainFrameHost(
+    const gfx::Rect& bounds,
+    base::OnceClosure ack_callback) {
   DCHECK(local_main_frame_host_remote_);
-  DCHECK(web_widget_);
-  web_widget_->SetPendingWindowRect(bounds);
-  local_main_frame_host_remote_->SetWindowRect(
-      bounds, WTF::Bind(&WebViewImpl::DidSetWindowRect, WTF::Unretained(this)));
-}
-
-void WebViewImpl::DidSetWindowRect() {
-  web_widget_->AckPendingWindowRect();
+  local_main_frame_host_remote_->SetWindowRect(bounds, std::move(ack_callback));
 }
 
 void WebViewImpl::UpdateTargetURL(const WebURL& url,
@@ -3081,8 +3010,8 @@ void WebViewImpl::DidCloseContextMenu() {
 }
 
 SkColor WebViewImpl::BackgroundColor() const {
-  if (background_color_override_enabled_)
-    return background_color_override_;
+  if (background_color_override_for_fullscreen_controller_)
+    return background_color_override_for_fullscreen_controller_.value();
   Page* page = page_.Get();
   if (!page)
     return BaseBackgroundColor().Rgb();
@@ -3095,9 +3024,11 @@ SkColor WebViewImpl::BackgroundColor() const {
 }
 
 Color WebViewImpl::BaseBackgroundColor() const {
-  return base_background_color_override_enabled_
-             ? base_background_color_override_
-             : base_background_color_;
+  if (override_base_background_color_to_transparent_)
+    return SK_ColorTRANSPARENT;
+  if (base_background_color_override_for_inspector_)
+    return base_background_color_override_for_inspector_.value();
+  return base_background_color_;
 }
 
 void WebViewImpl::SetBaseBackgroundColor(SkColor color) {
@@ -3108,44 +3039,31 @@ void WebViewImpl::SetBaseBackgroundColor(SkColor color) {
   UpdateBaseBackgroundColor();
 }
 
-void WebViewImpl::SetBaseBackgroundColorOverride(SkColor color) {
-  if (base_background_color_override_enabled_ &&
-      base_background_color_override_ == color) {
+void WebViewImpl::SetBaseBackgroundColorOverrideTransparent(
+    bool override_to_transparent) {
+  DCHECK(does_composite_);
+  if (override_base_background_color_to_transparent_ == override_to_transparent)
     return;
-  }
-
-  base_background_color_override_enabled_ = true;
-  base_background_color_override_ = color;
-  if (MainFrameImpl()) {
-    // Force lifecycle update to ensure we're good to call
-    // LocalFrameView::setBaseBackgroundColor().
-    MainFrameImpl()
-        ->GetFrame()
-        ->View()
-        ->UpdateLifecycleToCompositingCleanPlusScrolling(
-            DocumentUpdateReason::kBaseColor);
-  }
+  override_base_background_color_to_transparent_ = override_to_transparent;
   UpdateBaseBackgroundColor();
 }
 
-void WebViewImpl::ClearBaseBackgroundColorOverride() {
-  if (!base_background_color_override_enabled_)
+void WebViewImpl::SetBaseBackgroundColorOverrideForInspector(
+    absl::optional<SkColor> optional_color) {
+  if (base_background_color_override_for_inspector_ == optional_color)
     return;
-
-  base_background_color_override_enabled_ = false;
-  if (MainFrameImpl()) {
-    // Force lifecycle update to ensure we're good to call
-    // LocalFrameView::setBaseBackgroundColor().
-    MainFrameImpl()
-        ->GetFrame()
-        ->View()
-        ->UpdateLifecycleToCompositingCleanPlusScrolling(
-            DocumentUpdateReason::kBaseColor);
-  }
+  base_background_color_override_for_inspector_ = optional_color;
   UpdateBaseBackgroundColor();
 }
 
 void WebViewImpl::UpdateBaseBackgroundColor() {
+  if (MainFrameImpl()) {
+    // Force lifecycle update to ensure we're good to call
+    // LocalFrameView::setBaseBackgroundColor().
+    MainFrameImpl()->GetFrame()->View()->UpdateAllLifecyclePhasesExceptPaint(
+        DocumentUpdateReason::kBaseColor);
+  }
+
   Color color = BaseBackgroundColor();
   if (auto* local_frame = DynamicTo<LocalFrame>(page_->MainFrame())) {
     LocalFrameView* view = local_frame->View();
@@ -3161,13 +3079,14 @@ void WebViewImpl::UpdateFontRenderingFromRendererPrefs() {
 #if defined(OS_WIN)
   // Cache the system font metrics in blink.
   WebFontRendering::SetMenuFontMetrics(
-      renderer_preferences_.menu_font_family_name.c_str(),
+      WebString::FromUTF16(renderer_preferences_.menu_font_family_name),
       renderer_preferences_.menu_font_height);
   WebFontRendering::SetSmallCaptionFontMetrics(
-      renderer_preferences_.small_caption_font_family_name.c_str(),
+      WebString::FromUTF16(
+          renderer_preferences_.small_caption_font_family_name),
       renderer_preferences_.small_caption_font_height);
   WebFontRendering::SetStatusFontMetrics(
-      renderer_preferences_.status_font_family_name.c_str(),
+      WebString::FromUTF16(renderer_preferences_.status_font_family_name),
       renderer_preferences_.status_font_height);
   WebFontRendering::SetAntialiasedTextEnabled(
       renderer_preferences_.should_antialias_text);
@@ -3185,12 +3104,15 @@ void WebViewImpl::UpdateFontRenderingFromRendererPrefs() {
       gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE);
   WebFontRenderStyle::SetSubpixelPositioning(
       renderer_preferences_.use_subpixel_positioning);
-#if defined(OS_LINUX) && !defined(OS_ANDROID)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && !defined(OS_ANDROID)
   if (!renderer_preferences_.system_font_family_name.empty()) {
     WebFontRenderStyle::SetSystemFontFamily(blink::WebString::FromUTF8(
         renderer_preferences_.system_font_family_name));
   }
-#endif  // defined(OS_LINUX) && !defined(OS_ANDROID)
+#endif  // (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) &&
+        // !defined(OS_ANDROID)
 #endif  // defined(OS_WIN)
 #endif  // !defined(OS_MAC)
 }
@@ -3216,7 +3138,7 @@ void WebViewImpl::SetRendererPreferences(
   UpdateRendererPreferences(preferences);
 }
 
-const RendererPreferences& WebViewImpl::GetRendererPreferences() {
+const RendererPreferences& WebViewImpl::GetRendererPreferences() const {
   return renderer_preferences_;
 }
 
@@ -3228,9 +3150,7 @@ void WebViewImpl::UpdateRendererPreferences(
   for (auto& watcher : renderer_preference_watchers_)
     watcher->NotifyUpdate(renderer_preferences_);
 
-  // TODO(crbug.com/1102442): Remove once we no longer need to update theme
-  // preferences on Windows via content::WebThemeEngineDefault.
-  web_view_client_->DidUpdateRendererPreferences();
+  WebThemeEngineHelper::DidUpdateRendererPreferences(preferences);
   UpdateFontRenderingFromRendererPrefs();
 
   blink::SetCaretBlinkInterval(
@@ -3265,12 +3185,47 @@ void WebViewImpl::UpdateRendererPreferences(
   GetSettings()->SetSelectionClipboardBufferAvailable(
       renderer_preferences_.selection_clipboard_buffer_available);
 #endif  // defined(USE_X11) || defined(USE_OZONE)
+
+  SetExplicitlyAllowedPorts(
+      renderer_preferences_.explicitly_allowed_network_ports);
 }
 
 void WebViewImpl::SetHistoryOffsetAndLength(int32_t history_offset,
                                             int32_t history_length) {
-  DCHECK(web_view_client_);
-  web_view_client_->OnSetHistoryOffsetAndLength(history_offset, history_length);
+  // -1 <= history_offset < history_length <= kMaxSessionHistoryEntries.
+  DCHECK_LE(-1, history_offset);
+  DCHECK_LT(history_offset, history_length);
+  DCHECK_LE(history_length, kMaxSessionHistoryEntries);
+
+  history_list_offset_ = history_offset;
+  history_list_length_ = history_length;
+}
+
+void WebViewImpl::SetHistoryListFromNavigation(
+    int32_t history_offset,
+    absl::optional<int32_t> history_length) {
+  if (!history_length.has_value()) {
+    history_list_offset_ = history_offset;
+    return;
+  }
+
+  SetHistoryOffsetAndLength(history_offset, *history_length);
+}
+
+void WebViewImpl::IncreaseHistoryListFromNavigation() {
+  // Advance our offset in session history, applying the length limit.
+  // There is now no forward history.
+  history_list_offset_ =
+      std::min(history_list_offset_ + 1, kMaxSessionHistoryEntries - 1);
+  history_list_length_ = history_list_offset_ + 1;
+}
+
+int32_t WebViewImpl::HistoryBackListCount() const {
+  return std::max(history_list_offset_, 0);
+}
+
+int32_t WebViewImpl::HistoryForwardListCount() const {
+  return history_list_length_ - HistoryBackListCount() - 1;
 }
 
 void WebViewImpl::SetWebPreferences(
@@ -3287,6 +3242,14 @@ void WebViewImpl::UpdateWebPreferences(
   web_preferences_ = preferences;
   ApplyWebPreferences(preferences, this);
   ApplyCommandLineToSettings(SettingsImpl());
+}
+
+void WebViewImpl::AddObserver(WebViewObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void WebViewImpl::RemoveObserver(WebViewObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void WebViewImpl::SetIsActive(bool active) {
@@ -3309,9 +3272,8 @@ void WebViewImpl::SetOpenedByDOM() {
 void WebViewImpl::DidCommitLoad(bool is_new_navigation,
                                 bool is_navigation_within_page) {
   if (!is_navigation_within_page) {
-    should_dispatch_first_visually_non_empty_layout_ = true;
-    should_dispatch_first_layout_after_finished_parsing_ = true;
-    should_dispatch_first_layout_after_finished_loading_ = true;
+    if (web_widget_)
+      web_widget_->ResetMeaningfulLayoutStateForMainFrame();
 
     if (is_new_navigation)
       GetPageScaleConstraintsSet().SetNeedsReset(true);
@@ -3321,10 +3283,15 @@ void WebViewImpl::DidCommitLoad(bool is_new_navigation,
   GetPage()->GetVisualViewport().MainFrameDidChangeSize();
 }
 
+void WebViewImpl::DidCommitCompositorFrameForLocalMainFrame() {
+  for (auto& observer : observers_)
+    observer.DidCommitCompositorFrame();
+}
+
 void WebViewImpl::ResizeAfterLayout() {
   DCHECK(MainFrameImpl());
 
-  if (!web_view_client_ || !web_view_client_->CanUpdateLayout())
+  if (!web_view_client_)
     return;
 
   if (should_auto_resize_) {
@@ -3355,7 +3322,8 @@ void WebViewImpl::MainFrameLayoutUpdated() {
   if (!web_view_client_)
     return;
 
-  web_view_client_->DidUpdateMainFrameLayout();
+  for (auto& observer : observers_)
+    observer.DidUpdateMainFrameLayout();
   needs_preferred_size_update_ = true;
 }
 
@@ -3417,20 +3385,11 @@ void WebViewImpl::TextAutosizerPageInfoChanged(
       page_info.Clone());
 }
 
-void WebViewImpl::SetBackgroundColorOverride(SkColor color) {
+void WebViewImpl::SetBackgroundColorOverrideForFullscreenController(
+    absl::optional<SkColor> optional_color) {
   DCHECK(does_composite_);
 
-  background_color_override_enabled_ = true;
-  background_color_override_ = color;
-  if (MainFrameImpl()) {
-    MainFrameImpl()->FrameWidgetImpl()->SetBackgroundColor(BackgroundColor());
-  }
-}
-
-void WebViewImpl::ClearBackgroundColorOverride() {
-  DCHECK(does_composite_);
-
-  background_color_override_enabled_ = false;
+  background_color_override_for_fullscreen_controller_ = optional_color;
   if (MainFrameImpl()) {
     MainFrameImpl()->FrameWidgetImpl()->SetBackgroundColor(BackgroundColor());
   }
@@ -3491,12 +3450,17 @@ bool WebViewImpl::TabsToLinks() const {
 }
 
 void WebViewImpl::DidChangeRootLayer(bool root_layer_exists) {
+  // The Layer is removed when the main frame's `Document` changes. It also is
+  // removed when the whole `LocalFrame` goes away, in which case we don't
+  // need to DeferMainFrameUpdate() as we will do so if a local MainFrame is
+  // attached in the future.
   if (!MainFrameImpl()) {
     DCHECK(!root_layer_exists);
     return;
   }
   if (root_layer_exists) {
-    UpdateDeviceEmulationTransform();
+    if (!device_emulation_transform_.IsIdentity())
+      UpdateDeviceEmulationTransform();
   } else {
     // When the document in an already-attached main frame is being replaced by
     // a navigation then DidChangeRootLayer(false) will be called. Since we are
@@ -3510,13 +3474,16 @@ void WebViewImpl::DidChangeRootLayer(bool root_layer_exists) {
   }
 }
 
-void WebViewImpl::InvalidateRect(const IntRect& rect) {
-  // This is only for WebViewPlugin.
+void WebViewImpl::InvalidateContainer() {
+  // This is only for non-composited WebViewPlugin.
   if (!does_composite_ && web_view_client_)
-    web_view_client_->DidInvalidateRect(rect);
+    web_view_client_->InvalidateContainer();
 }
 
 void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
+  // TODO(https://crbug.com/1160652): Figure out if Page is null.
+  CHECK(page_);
+
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
 
   // Store the desired offsets the visual viewport before setting the top
@@ -3543,30 +3510,10 @@ void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
                                    args.elastic_overscroll_delta.y());
   UpdateBrowserControlsConstraint(args.browser_controls_constraint);
 
-  if (args.scroll_gesture_did_end)
+  if (args.scroll_gesture_did_end) {
+    // TODO(https://crbug.com/1160652): Figure out if MainFrameImpl is null.
+    CHECK(MainFrameImpl());
     MainFrameImpl()->GetFrame()->GetEventHandler().MarkHoverStateDirty();
-}
-
-void WebViewImpl::RecordManipulationTypeCounts(cc::ManipulationInfo info) {
-  if (!MainFrameImpl())
-    return;
-
-  if ((info & cc::kManipulationInfoWheel) == cc::kManipulationInfoWheel) {
-    UseCounter::Count(MainFrameImpl()->GetDocument(),
-                      WebFeature::kScrollByWheel);
-  }
-  if ((info & cc::kManipulationInfoTouch) == cc::kManipulationInfoTouch) {
-    UseCounter::Count(MainFrameImpl()->GetDocument(),
-                      WebFeature::kScrollByTouch);
-  }
-  if ((info & cc::kManipulationInfoPinchZoom) ==
-      cc::kManipulationInfoPinchZoom) {
-    UseCounter::Count(MainFrameImpl()->GetDocument(), WebFeature::kPinchZoom);
-  }
-  if ((info & cc::kManipulationInfoPrecisionTouchPad) ==
-      cc::kManipulationInfoPrecisionTouchPad) {
-    UseCounter::Count(MainFrameImpl()->GetDocument(),
-                      WebFeature::kScrollByPrecisionTouchPad);
   }
 }
 
@@ -3597,13 +3544,18 @@ Node* WebViewImpl::FindNodeFromScrollableCompositorElementId(
 void WebViewImpl::UpdateDeviceEmulationTransform() {
   GetPage()->GetVisualViewport().SetNeedsPaintPropertyUpdate();
 
-  if (MainFrameImpl()) {
+  if (auto* main_frame = MainFrameImpl()) {
     // When the device emulation transform is updated, to avoid incorrect
     // scales and fuzzy raster from the compositor, force all content to
     // pick ideal raster scales.
     // TODO(wjmaclean): This is only done on the main frame's widget currently,
     // it should update all local frames.
-    MainFrameImpl()->FrameWidgetImpl()->SetNeedsRecalculateRasterScales();
+    main_frame->FrameWidgetImpl()->SetNeedsRecalculateRasterScales();
+
+    // Device emulation transform also affects the overriding visible rect
+    // which is used as the overflow rect of the main frame layout view.
+    if (auto* view = main_frame->GetFrameView())
+      view->SetNeedsPaintPropertyUpdate();
   }
 }
 
@@ -3618,7 +3570,8 @@ void WebViewImpl::SetVisibilityState(
   DCHECK(GetPage());
   if (!is_initial_state) {
     // Preserve the side effects of visibility change.
-    web_view_client_->OnPageVisibilityChanged(visibility_state);
+    for (auto& observer : observers_)
+      observer.OnPageVisibilityChanged(visibility_state);
   }
   GetPage()->SetVisibilityState(visibility_state, is_initial_state);
   GetPage()->GetPageScheduler()->SetPageVisible(
@@ -3648,10 +3601,6 @@ LocalFrame* WebViewImpl::FocusedLocalFrameInWidget() const {
   if (focused_frame->LocalFrameRoot() != MainFrameImpl()->GetFrame())
     return nullptr;
   return focused_frame;
-}
-
-LocalFrame* WebViewImpl::FocusedLocalFrameAvailableForIme() const {
-  return ime_accept_events_ ? FocusedLocalFrameInWidget() : nullptr;
 }
 
 void WebViewImpl::SetPageFrozen(bool frozen) {
@@ -3689,11 +3638,9 @@ void WebViewImpl::SetDeviceColorSpaceForTesting(
   web_widget_->SetDeviceColorSpaceForTesting(color_space);
 }
 
-void WebViewImpl::RunPaintBenchmark(int repeat_count,
-                                    cc::PaintBenchmarkResult& result) {
-  DCHECK(MainFrameImpl());
-  if (auto* frame_view = MainFrameImpl()->GetFrameView())
-    frame_view->RunPaintBenchmark(repeat_count, result);
+const SessionStorageNamespaceId& WebViewImpl::GetSessionStorageNamespaceId() {
+  CHECK(!session_storage_namespace_id_.empty());
+  return session_storage_namespace_id_;
 }
 
 }  // namespace blink

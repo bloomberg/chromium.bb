@@ -9,23 +9,43 @@
 
 #include "base/check_op.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "components/content_settings/core/common/content_settings.h"
+#include "components/services/app_service/public/cpp/file_handler.h"
+#include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 
-struct InstallableData;
 struct WebApplicationInfo;
 
+namespace webapps {
+struct InstallableData;
+}
+
 namespace web_app {
+
+// Checks for whether file handlers have changed. Ignores differences in names,
+// which aren't stored in the apps::FileHandlers, and ordering, which may
+// change after being inserted into a set or map.
+bool HaveFileHandlersChanged(
+    const apps::FileHandlers* old_handlers,
+    const std::vector<blink::Manifest::FileHandler>& new_handlers);
+
+// Checks whether protocol handlers have changed. Ignores differences in
+// ordering, which may change after being inserted into a set or map.
+bool HaveProtocolHandlersChanged(
+    const apps::ProtocolHandlers* old_handlers,
+    const std::vector<blink::Manifest::ProtocolHandler>& new_handlers);
 
 class AppIconManager;
 class AppRegistrar;
 class WebAppUiManager;
 class InstallManager;
+class OsIntegrationManager;
 enum class InstallResultCode;
 
 // This enum is recorded by UMA, the numeric values must not change.
@@ -42,7 +62,10 @@ enum ManifestUpdateResult {
   kAppIsSystemWebApp = 9,
   kIconDownloadFailed = 10,
   kIconReadFromDiskFailed = 11,
-  kMaxValue = kIconReadFromDiskFailed,
+  kAppIdMismatch = 12,
+  kAppAssociationsUpdateFailed = 13,
+  kAppAssociationsUpdated = 14,
+  kMaxValue = kAppAssociationsUpdated,
 };
 
 // Checks whether the installed web app associated with a given WebContents has
@@ -75,7 +98,8 @@ class ManifestUpdateTask final
                      const AppRegistrar& registrar,
                      const AppIconManager& icon_manager,
                      WebAppUiManager* ui_manager,
-                     InstallManager* install_manager);
+                     InstallManager* install_manager,
+                     OsIntegrationManager& os_integration_manager);
 
   ~ManifestUpdateTask() override;
 
@@ -94,10 +118,12 @@ class ManifestUpdateTask final
     kPendingIconDownload,
     kPendingIconReadFromDisk,
     kPendingWindowsClosed,
+    kPendingMaybeReadExistingIcons,
     kPendingInstallation,
+    kPendingAssociationsUpdate,
   };
 
-  void OnDidGetInstallableData(const InstallableData& data);
+  void OnDidGetInstallableData(const webapps::InstallableData& data);
   bool IsUpdateNeededForManifest() const;
   void LoadAndCheckIconContents();
   void OnIconsDownloaded(bool success, IconsMap icons_map);
@@ -106,11 +132,15 @@ class ManifestUpdateTask final
   bool IsUpdateNeededForIconContents(
       const IconBitmaps& disk_icon_bitmaps) const;
   void OnAllShortcutsMenuIconsRead(
-      ShortcutsMenuIconsBitmaps disk_shortcuts_menu_icons);
+      ShortcutsMenuIconBitmaps disk_shortcuts_menu_icons);
   bool IsUpdateNeededForShortcutsMenuIconsContents(
-      const ShortcutsMenuIconsBitmaps& disk_shortcuts_menu_icons) const;
+      const ShortcutsMenuIconBitmaps& disk_shortcuts_menu_icons) const;
+  bool IsUpdateNeededForWebAppOriginAssociations() const;
+  void NoManifestUpdateRequired();
+  void OnWebAppOriginAssociationsUpdated(bool success);
   void UpdateAfterWindowsClose();
   void OnAllAppWindowsClosed();
+  void OnExistingIconsRead(IconBitmaps icon_bitmaps);
   void OnInstallationComplete(
       const AppId& app_id,
       InstallResultCode code);
@@ -120,10 +150,11 @@ class ManifestUpdateTask final
   const AppIconManager& icon_manager_;
   WebAppUiManager& ui_manager_;
   InstallManager& install_manager_;
+  OsIntegrationManager& os_integration_manager_;
 
   Stage stage_;
-  base::Optional<WebApplicationInfo> web_application_info_;
-  base::Optional<WebAppIconDownloader> icon_downloader_;
+  absl::optional<WebApplicationInfo> web_application_info_;
+  absl::optional<WebAppIconDownloader> icon_downloader_;
 
   const GURL url_;
   const AppId app_id_;

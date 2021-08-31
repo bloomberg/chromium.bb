@@ -72,9 +72,8 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
 
   CSSSelectorList selector_list = CSSParser::ParseSelector(
       MakeGarbageCollected<CSSParserContext>(
-          *document, NullURL(), true /* origin_clean */,
-          network::mojom::ReferrerPolicy::kDefault, WTF::TextEncoding(),
-          CSSParserContext::kSnapshotProfile),
+          *document, NullURL(), true /* origin_clean */, Referrer(),
+          WTF::TextEncoding(), CSSParserContext::kSnapshotProfile),
       nullptr, "span::before");
   std::unique_ptr<SelectorQuery> query =
       SelectorQuery::Adopt(std::move(selector_list));
@@ -83,9 +82,8 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
 
   selector_list = CSSParser::ParseSelector(
       MakeGarbageCollected<CSSParserContext>(
-          *document, NullURL(), true /* origin_clean */,
-          network::mojom::ReferrerPolicy::kDefault, WTF::TextEncoding(),
-          CSSParserContext::kSnapshotProfile),
+          *document, NullURL(), true /* origin_clean */, Referrer(),
+          WTF::TextEncoding(), CSSParserContext::kSnapshotProfile),
       nullptr, "span");
   query = SelectorQuery::Adopt(std::move(selector_list));
   elm = query->QueryFirst(*document);
@@ -103,9 +101,8 @@ TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
 
   CSSSelectorList selector_list = CSSParser::ParseSelector(
       MakeGarbageCollected<CSSParserContext>(
-          *document, NullURL(), true /* origin_clean */,
-          network::mojom::ReferrerPolicy::kDefault, WTF::TextEncoding(),
-          CSSParserContext::kSnapshotProfile),
+          *document, NullURL(), true /* origin_clean */, Referrer(),
+          WTF::TextEncoding(), CSSParserContext::kSnapshotProfile),
       nullptr, "p:last-of-type");
   std::unique_ptr<SelectorQuery> query =
       SelectorQuery::Adopt(std::move(selector_list));
@@ -214,14 +211,6 @@ TEST(SelectorQueryTest, StandardsModeFastPaths) {
       // sure it's worth it unless we're dealing with ids.
       {"#a, #b", false, 1, {5, 0, 0, 0, 0, 5, 0}},
       {"#a, #b", true, 2, {14, 0, 0, 0, 0, 14, 0}},
-
-      // Anything that crosses shadow boundaries is slow path.
-      {"#foo /deep/ .a", false, 0, {14, 0, 0, 0, 0, 0, 14}},
-      {"#foo::shadow .a", false, 0, {14, 0, 0, 0, 0, 0, 14}},
-      {"::content .a", false, 0, {14, 0, 0, 0, 0, 14, 0}},
-      {"#foo /deep/ .a", true, 0, {14, 0, 0, 0, 0, 0, 14}},
-      {"#foo::shadow .a", true, 0, {14, 0, 0, 0, 0, 0, 14}},
-      {"::content .a", true, 0, {14, 0, 0, 0, 0, 14, 0}},
   };
   RunTests(*document, kTestCases);
 }

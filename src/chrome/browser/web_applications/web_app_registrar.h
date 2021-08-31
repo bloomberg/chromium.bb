@@ -12,12 +12,12 @@
 #include <vector>
 
 #include "base/check_op.h"
-#include "base/optional.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace web_app {
 
@@ -37,41 +37,63 @@ class WebAppRegistrar : public AppRegistrar, public ProfileManagerObserver {
 
   const WebApp* GetAppById(const AppId& app_id) const;
 
+  // TODO(https://crbug.com/1182363): should be removed when id is introduced to
+  // manifest.
+  const WebApp* GetAppByStartUrl(const GURL& start_url) const;
+  std::vector<AppId> GetAppsInSyncInstall();
+
+  // Returns true if the app was preinstalled and NOT installed via any other
+  // mechanism.
+  bool WasInstalledByDefaultOnly(const AppId& app_id) const;
+
   // AppRegistrar:
   void Start() override;
   void Shutdown() override;
   bool IsInstalled(const AppId& app_id) const override;
   bool IsLocallyInstalled(const AppId& app_id) const override;
   bool WasInstalledByUser(const AppId& app_id) const override;
+  bool WasInstalledByOem(const AppId& app_id) const override;
   int CountUserInstalledApps() const override;
   std::string GetAppShortName(const AppId& app_id) const override;
   std::string GetAppDescription(const AppId& app_id) const override;
-  base::Optional<SkColor> GetAppThemeColor(const AppId& app_id) const override;
-  base::Optional<SkColor> GetAppBackgroundColor(
+  absl::optional<SkColor> GetAppThemeColor(const AppId& app_id) const override;
+  absl::optional<SkColor> GetAppBackgroundColor(
       const AppId& app_id) const override;
   const GURL& GetAppStartUrl(const AppId& app_id) const override;
   const std::string* GetAppLaunchQueryParams(
       const AppId& app_id) const override;
   const apps::ShareTarget* GetAppShareTarget(
       const AppId& app_id) const override;
-  base::Optional<GURL> GetAppScopeInternal(const AppId& app_id) const override;
+  blink::mojom::CaptureLinks GetAppCaptureLinks(
+      const AppId& app_id) const override;
+  const apps::FileHandlers* GetAppFileHandlers(
+      const AppId& app_id) const override;
+  const apps::ProtocolHandlers* GetAppProtocolHandlers(
+      const AppId& app_id) const override;
+  bool IsAppFileHandlerPermissionBlocked(
+      const web_app::AppId& app_id) const override;
+  absl::optional<GURL> GetAppScopeInternal(const AppId& app_id) const override;
   DisplayMode GetAppDisplayMode(const AppId& app_id) const override;
   DisplayMode GetAppUserDisplayMode(const AppId& app_id) const override;
   std::vector<DisplayMode> GetAppDisplayModeOverride(
       const AppId& app_id) const override;
-  base::Time GetAppLastLaunchTime(const web_app::AppId& app_id) const override;
-  base::Time GetAppInstallTime(const web_app::AppId& app_id) const override;
+  apps::UrlHandlers GetAppUrlHandlers(const AppId& app_id) const override;
+  GURL GetAppManifestUrl(const AppId& app_id) const override;
+  base::Time GetAppLastBadgingTime(const AppId& app_id) const override;
+  base::Time GetAppLastLaunchTime(const AppId& app_id) const override;
+  base::Time GetAppInstallTime(const AppId& app_id) const override;
   std::vector<WebApplicationIconInfo> GetAppIconInfos(
       const AppId& app_id) const override;
   SortedSizesPx GetAppDownloadedIconSizesAny(
       const AppId& app_id) const override;
   std::vector<WebApplicationShortcutsMenuItemInfo> GetAppShortcutsMenuItemInfos(
       const AppId& app_id) const override;
-  std::vector<std::vector<SquareSizePx>>
-  GetAppDownloadedShortcutsMenuIconsSizes(const AppId& app_id) const override;
+  std::vector<IconSizes> GetAppDownloadedShortcutsMenuIconsSizes(
+      const AppId& app_id) const override;
   RunOnOsLoginMode GetAppRunOnOsLoginMode(const AppId& app_id) const override;
   std::vector<AppId> GetAppIds() const override;
   WebAppRegistrar* AsWebAppRegistrar() override;
+  const WebAppRegistrar* AsWebAppRegistrar() const override;
 
   // ProfileManagerObserver:
   void OnProfileMarkedForPermanentDeletion(

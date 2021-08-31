@@ -17,12 +17,11 @@
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_block.h"
 
 namespace blink {
 
 enum class NGBaselineAlgorithmType;
-class NGPaintFragment;
-class NGPhysicalFragment;
 struct NGInlineNodeData;
 
 // This mixin holds code shared between LayoutNG subclasses of LayoutBlockFlow.
@@ -41,26 +40,12 @@ class LayoutNGBlockFlowMixin : public LayoutNGMixin<Base> {
   LayoutUnit FirstLineBoxBaseline() const final;
   LayoutUnit InlineBlockBaseline(LineDirectionMode) const final;
 
-  void Paint(const PaintInfo&) const override;
-
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation&,
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 
   PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
-
-  const NGPaintFragment* PaintFragment() const final {
-    // TODO(layout-dev) crbug.com/963103
-    // Safer option here is to return nullptr only if
-    // Lifecycle > DocumentLifecycle::kAfterPerformLayout, but this breaks
-    // some layout tests.
-    if (Base::NeedsLayout())
-      return nullptr;
-    return paint_fragment_.get();
-  }
-  void SetPaintFragment(const NGBlockBreakToken*,
-                        scoped_refptr<const NGPhysicalFragment>) final;
 
   using LayoutNGMixin<Base>::CurrentFragment;
 
@@ -81,13 +66,11 @@ class LayoutNGBlockFlowMixin : public LayoutNGMixin<Base> {
   void UpdateNGBlockLayout();
 
   std::unique_ptr<NGInlineNodeData> ng_inline_node_data_;
-  scoped_refptr<NGPaintFragment> paint_fragment_;
 
   friend class NGBaseLayoutAlgorithmTest;
 
  private:
   void AddScrollingOverflowFromChildren();
-  void UpdateMargins();
 };
 
 // If you edit these export templates, also update templates in
@@ -104,6 +87,8 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT
     LayoutNGBlockFlowMixin<LayoutRubyRun>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     LayoutNGBlockFlowMixin<LayoutRubyText>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    LayoutNGBlockFlowMixin<LayoutSVGBlock>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     LayoutNGBlockFlowMixin<LayoutTableCaption>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT

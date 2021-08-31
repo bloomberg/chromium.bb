@@ -11,9 +11,7 @@
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
 #include "third_party/blink/renderer/core/paint/box_painter_base.h"
-#include "third_party/blink/renderer/core/paint/nine_piece_image_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
@@ -77,35 +75,6 @@ void InlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
   }
 }
 
-static PhysicalRect ClipRectForNinePieceImageStrip(
-    const InlineFlowBox& box,
-    const NinePieceImage& image,
-    const PhysicalRect& paint_rect) {
-  PhysicalRect clip_rect = paint_rect;
-  const ComputedStyle& style = box.GetLineLayoutItem().StyleRef();
-  LayoutRectOutsets outsets = style.ImageOutsets(image);
-  if (box.IsHorizontal()) {
-    clip_rect.SetY(paint_rect.Y() - outsets.Top());
-    clip_rect.SetHeight(paint_rect.Height() + outsets.Top() + outsets.Bottom());
-    if (box.IncludeLogicalLeftEdge()) {
-      clip_rect.SetX(paint_rect.X() - outsets.Left());
-      clip_rect.SetWidth(paint_rect.Width() + outsets.Left());
-    }
-    if (box.IncludeLogicalRightEdge())
-      clip_rect.SetWidth(clip_rect.Width() + outsets.Right());
-  } else {
-    clip_rect.SetX(paint_rect.X() - outsets.Left());
-    clip_rect.SetWidth(paint_rect.Width() + outsets.Left() + outsets.Right());
-    if (box.IncludeLogicalLeftEdge()) {
-      clip_rect.SetY(paint_rect.Y() - outsets.Top());
-      clip_rect.SetHeight(paint_rect.Height() + outsets.Top());
-    }
-    if (box.IncludeLogicalRightEdge())
-      clip_rect.SetHeight(clip_rect.Height() + outsets.Bottom());
-  }
-  return clip_rect;
-}
-
 PhysicalRect InlineFlowBoxPainter::PaintRectForImageStrip(
     const PhysicalRect& paint_rect,
     TextDirection direction) const {
@@ -155,28 +124,26 @@ InlineFlowBoxPainter::GetBorderPaintType(
     IntRect& adjusted_clip_rect,
     bool object_has_multiple_boxes) const {
   adjusted_clip_rect = PixelSnappedIntRect(adjusted_frame_rect);
-  if (inline_flow_box_.Parent() &&
-      inline_flow_box_.GetLineLayoutItem().StyleRef().HasBorderDecoration()) {
-    const NinePieceImage& border_image =
-        inline_flow_box_.GetLineLayoutItem().StyleRef().BorderImage();
-    StyleImage* border_image_source = border_image.GetImage();
-    bool has_border_image =
-        border_image_source && border_image_source->CanRender();
-    if (has_border_image && !border_image_source->IsLoaded())
-      return kDontPaintBorders;
+  if (!inline_flow_box_.Parent() || !style_.HasBorderDecoration())
+    return kDontPaintBorders;
+  const NinePieceImage& border_image = style_.BorderImage();
+  StyleImage* border_image_source = border_image.GetImage();
+  bool has_border_image =
+      border_image_source && border_image_source->CanRender();
+  if (has_border_image && !border_image_source->IsLoaded())
+    return kDontPaintBorders;
 
-    // The simple case is where we either have no border image or we are the
-    // only box for this object.  In those cases only a single call to draw is
-    // required.
-    if (!has_border_image || !object_has_multiple_boxes)
-      return kPaintBordersWithoutClip;
+  // The simple case is where we either have no border image or we are the
+  // only box for this object.  In those cases only a single call to draw is
+  // required.
+  if (!has_border_image || !object_has_multiple_boxes)
+    return kPaintBordersWithoutClip;
 
-    // We have a border image that spans multiple lines.
-    adjusted_clip_rect = PixelSnappedIntRect(ClipRectForNinePieceImageStrip(
-        inline_flow_box_, border_image, adjusted_frame_rect));
-    return kPaintBordersWithClip;
-  }
-  return kDontPaintBorders;
+  // We have a border image that spans multiple lines.
+  adjusted_clip_rect = PixelSnappedIntRect(
+      ClipRectForNinePieceImageStrip(style_, inline_flow_box_.SidesToInclude(),
+                                     border_image, adjusted_frame_rect));
+  return kPaintBordersWithClip;
 }
 
 void InlineFlowBoxPainter::PaintBackgroundBorderShadow(
@@ -229,10 +196,7 @@ void InlineFlowBoxPainter::PaintBackgroundBorderShadow(
 void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
                                      const PhysicalOffset& paint_offset) {
   DCHECK_EQ(PaintPhase::kMask, paint_info.phase);
-  const auto& box_model = *To<LayoutBoxModelObject>(
-      LineLayoutAPIShim::LayoutObjectFrom(inline_flow_box_.BoxModelObject()));
-  if (!box_model.HasMask() ||
-      box_model.StyleRef().Visibility() != EVisibility::kVisible)
+  if (!style_.HasMask() || style_.Visibility() != EVisibility::kVisible)
     return;
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(
@@ -243,47 +207,15 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
   DrawingRecorder recorder(paint_info.context, inline_flow_box_,
                            paint_info.phase, VisualRect(paint_rect));
 
-  const auto& mask_nine_piece_image = box_model.StyleRef().MaskBoxImage();
-  const auto* mask_box_image = mask_nine_piece_image.GetImage();
   bool object_has_multiple_boxes = inline_flow_box_.PrevForSameLayoutObject() ||
                                    inline_flow_box_.NextForSameLayoutObject();
-
-  // Figure out if we need to push a transparency layer to render our mask.
+  const auto& box_model = *To<LayoutBoxModelObject>(
+      LineLayoutAPIShim::LayoutObjectFrom(inline_flow_box_.BoxModelObject()));
   BackgroundImageGeometry geometry(box_model);
   BoxModelObjectPainter box_painter(box_model, &inline_flow_box_);
-  PaintFillLayers(box_painter, paint_info, Color::kTransparent,
-                  box_model.StyleRef().MaskLayers(), paint_rect, geometry,
-                  object_has_multiple_boxes);
-
-  bool has_box_image = mask_box_image && mask_box_image->CanRender();
-  if (!has_box_image || !mask_box_image->IsLoaded()) {
-    // Don't paint anything while we wait for the image to load.
-    return;
-  }
-
-  // The simple case is where we are the only box for this object. In those
-  // cases only a single call to draw is required.
-  if (!object_has_multiple_boxes) {
-    NinePieceImagePainter::Paint(paint_info.context, box_model,
-                                 box_model.GetDocument(), GetNode(&box_model),
-                                 paint_rect, box_model.StyleRef(),
-                                 mask_nine_piece_image);
-  } else {
-    // We have a mask image that spans multiple lines.
-    // FIXME: What the heck do we do with RTL here? The math we're using is
-    // obviously not right, but it isn't even clear how this should work at all.
-    PhysicalRect image_strip_paint_rect =
-        PaintRectForImageStrip(paint_rect, TextDirection::kLtr);
-    FloatRect clip_rect(ClipRectForNinePieceImageStrip(
-        inline_flow_box_, mask_nine_piece_image, paint_rect));
-    GraphicsContextStateSaver state_saver(paint_info.context);
-    // TODO(chrishtr): this should be pixel-snapped.
-    paint_info.context.Clip(clip_rect);
-    NinePieceImagePainter::Paint(paint_info.context, box_model,
-                                 box_model.GetDocument(), GetNode(&box_model),
-                                 image_strip_paint_rect, box_model.StyleRef(),
-                                 mask_nine_piece_image);
-  }
+  InlineBoxPainterBase::PaintMask(box_painter, paint_info, paint_rect, geometry,
+                                  object_has_multiple_boxes,
+                                  inline_flow_box_.SidesToInclude());
 }
 
 // This method should not be needed. See crbug.com/530659.

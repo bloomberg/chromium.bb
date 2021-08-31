@@ -14,13 +14,6 @@ class ReadLaterBrowserTest extends PolymerTest {
     throw 'this is abstract and should be overriden by subclasses';
   }
 
-  get extraLibraries() {
-    return [
-      '//third_party/mocha/mocha.js',
-      '//chrome/test/data/webui/mocha_adapter.js',
-    ];
-  }
-
   /** @override */
   get featureList() {
     return {enabled: ['reading_list::switches::kReadLater']};
@@ -31,7 +24,7 @@ class ReadLaterBrowserTest extends PolymerTest {
 var ReadLaterAppTest = class extends ReadLaterBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://read-later/test_loader.html?module=read_later/read_later_app_test.js';
+    return 'chrome://read-later.top-chrome/test_loader.html?module=read_later/read_later_app_test.js';
   }
 };
 

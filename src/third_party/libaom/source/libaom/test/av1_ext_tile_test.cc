@@ -64,8 +64,7 @@ class AV1ExtTileTest
   }
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
+    InitializeConfig(encoding_mode_);
 
     cfg_.g_lag_in_frames = 0;
     cfg_.rc_end_usage = AOM_VBR;

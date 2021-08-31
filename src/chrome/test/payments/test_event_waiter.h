@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/time.h"
 
 namespace payments {
 
@@ -28,6 +27,7 @@ enum class TestEvent : int32_t {
   kAppListReady,
   kPaymentCompleted,
   kMinimalUIReady,
+  kUIDisplayed,
 };
 
 std::ostream& operator<<(std::ostream& out, TestEvent event);

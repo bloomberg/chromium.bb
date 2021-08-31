@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/encryptedmedia/encrypted_media_utils.h"
 
 #include "media/base/eme_constants.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -13,7 +12,6 @@ namespace {
 
 const char kTemporary[] = "temporary";
 const char kPersistentLicense[] = "persistent-license";
-const char kPersistentUsageRecord[] = "persistent-usage-record";
 
 }  // namespace
 
@@ -56,11 +54,6 @@ WebEncryptedMediaSessionType EncryptedMediaUtils::ConvertToSessionType(
     return WebEncryptedMediaSessionType::kTemporary;
   if (session_type == kPersistentLicense)
     return WebEncryptedMediaSessionType::kPersistentLicense;
-  if (session_type == kPersistentUsageRecord &&
-      RuntimeEnabledFeatures::
-          EncryptedMediaPersistentUsageRecordSessionEnabled()) {
-    return WebEncryptedMediaSessionType::kPersistentUsageRecord;
-  }
 
   // |sessionType| is not restricted in the idl, so anything is possible.
   return WebEncryptedMediaSessionType::kUnknown;
@@ -74,12 +67,6 @@ String EncryptedMediaUtils::ConvertFromSessionType(
       return kTemporary;
     case WebEncryptedMediaSessionType::kPersistentLicense:
       return kPersistentLicense;
-    case WebEncryptedMediaSessionType::kPersistentUsageRecord:
-      if (RuntimeEnabledFeatures::
-              EncryptedMediaPersistentUsageRecordSessionEnabled()) {
-        return kPersistentUsageRecord;
-      }
-      FALLTHROUGH;
     case WebEncryptedMediaSessionType::kUnknown:
       // Unexpected session type from Chromium.
       NOTREACHED();

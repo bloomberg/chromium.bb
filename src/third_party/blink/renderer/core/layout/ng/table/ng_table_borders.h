@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_TABLE_NG_TABLE_BORDERS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_TABLE_NG_TABLE_BORDERS_H_
 
+#include "base/dcheck_is_on.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
@@ -66,6 +67,7 @@ class NGTableBorders : public RefCounted<NGTableBorders> {
 #if DCHECK_IS_ON()
   String DumpEdges();
   void ShowEdges();
+  bool operator==(const NGTableBorders& other) const;
 #endif
 
 
@@ -78,6 +80,7 @@ class NGTableBorders : public RefCounted<NGTableBorders> {
   // Edge is defined by a style, and box side. Box side specifies which
   // style border defines the edge.
   struct Edge {
+    DISALLOW_NEW();
     scoped_refptr<const ComputedStyle> style;
     EdgeSide edge_side;
     // Box order is used to compute edge painting precedence.
@@ -203,11 +206,7 @@ class NGTableBorders : public RefCounted<NGTableBorders> {
   // visual overflow rect use different borders.
   // Border rect uses inline start/end of the first row.
   // Visual rect uses largest inline start/end of the entire table.
-  std::pair<LayoutUnit, LayoutUnit> GetCollapsedBorderVisualInlineStrut()
-      const {
-    return std::make_pair(collapsed_visual_inline_start_,
-                          collapsed_visual_inline_end_);
-  }
+  NGBoxStrut GetCollapsedBorderVisualSizeDiff() const;
 
   NGBoxStrut CellBorder(const NGBlockNode& cell,
                         wtf_size_t row,
@@ -328,7 +327,7 @@ class NGTableBorders : public RefCounted<NGTableBorders> {
   wtf_size_t edges_per_row_ = 0;
   // Table border/padding are expensive to compute for collapsed tables.
   // We compute them once, and cache them.
-  base::Optional<NGBoxStrut> cached_table_border_;
+  absl::optional<NGBoxStrut> cached_table_border_;
   // Collapsed tables use first border to compute inline start/end.
   // Visual overflow use enclosing rectangle of all borders
   // to compute inline start/end.
@@ -344,5 +343,7 @@ class NGTableBorders : public RefCounted<NGTableBorders> {
 }  // namespace blink
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::NGTableBorders::Edge)
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
+    blink::NGTableBorders::Section)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_TABLE_NG_TABLE_BORDERS_H_

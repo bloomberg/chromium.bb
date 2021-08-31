@@ -70,14 +70,14 @@ Polymer({
     },
 
     /**
-     * The value of the Nearby Share feature flag which controls if the
-     * Nearby Share settings and subpage are accessible.
+     * Whether or not Nearby Share is supported which controls if the Nearby
+     * Share settings and subpage are accessible.
      * @private {boolean}
      */
-    nearbySharingFeatureEnabled_: {
+    isNearbyShareSupported_: {
       type: Boolean,
       value: function() {
-        return loadTimeData.getBoolean('nearbySharingFeatureFlag');
+        return loadTimeData.getBoolean('isNearbyShareSupported');
       }
     },
 
@@ -132,17 +132,6 @@ Polymer({
     }
 
     this.attemptDeepLink();
-  },
-
-  /**
-   * CSS class for the <div> containing all the text in the multidevice-item
-   * <div>, i.e. the label and sublabel. If the host is set, the Better Together
-   * icon appears so before the text (i.e. text div is 'middle' class).
-   * @return {string}
-   * @private
-   */
-  getMultiDeviceItemLabelBlockCssClass_() {
-    return this.isHostSet() ? 'middle' : 'start';
   },
 
   /**
@@ -480,6 +469,17 @@ Polymer({
     this.authToken_ = e.detail;
   },
 
+  /**
+   * @return {boolean} Whether Nearby Share is disallowed by enterprise policy.
+   * @private
+   */
+  isNearbyShareDisallowedByPolicy_() {
+    if (!this.pageContentData) {
+      return false;
+    }
+
+    return this.pageContentData.isNearbyShareDisallowedByPolicy;
+  },
 
   /**
    * @param {boolean} state boolean state that determines which string to show
@@ -493,10 +493,50 @@ Polymer({
   },
 
   /**
+   * @param {boolean} isOnboardingComplete
+   * @return {boolean}
+   * @private
+   */
+  showNearbyShareToggle_(isOnboardingComplete) {
+    return isOnboardingComplete || this.isNearbyShareDisallowedByPolicy_();
+  },
+
+  /**
+   * @param {boolean} isOnboardingComplete
+   * @return {boolean}
+   * @private
+   */
+  showNearbyShareSetupButton_(isOnboardingComplete) {
+    return !isOnboardingComplete && !this.isNearbyShareDisallowedByPolicy_();
+  },
+
+  /**
+   * @param {boolean} isOnboardingComplete
+   * @return {boolean}
+   * @private
+   */
+  showNearbyShareOnOffString_(isOnboardingComplete) {
+    return isOnboardingComplete && !this.isNearbyShareDisallowedByPolicy_();
+  },
+
+  /**
+   * @param {boolean} isOnboardingComplete
+   * @return {boolean}
+   * @private
+   */
+  showNearbyShareDescription_(isOnboardingComplete) {
+    return !isOnboardingComplete || this.isNearbyShareDisallowedByPolicy_();
+  },
+
+  /**
    * @param {!Event} event
    * @private
    */
   nearbyShareClick_(event) {
+    if (this.isNearbyShareDisallowedByPolicy_()) {
+      return;
+    }
+
     const nearbyEnabled = this.getPref('nearby_sharing.enabled').value;
     const onboardingComplete =
         this.getPref('nearby_sharing.onboarding_complete').value;
@@ -521,5 +561,15 @@ Polymer({
   /** @private */
   onHideNotificationSetupAccessDialog_() {
     this.showNotificationAccessSetupDialog_ = false;
+  },
+
+  /** @private */
+  handleNearbySetUpClick_() {
+    const params = new URLSearchParams();
+    params.set('onboarding', '');
+    // Set by metrics to determine entrypoint for onboarding
+    params.set('entrypoint', 'settings');
+    settings.Router.getInstance().navigateTo(
+        settings.routes.NEARBY_SHARE, params);
   },
 });

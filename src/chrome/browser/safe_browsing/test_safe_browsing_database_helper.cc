@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -32,9 +33,8 @@ class FakeSafeBrowsingUIManager
   ~FakeSafeBrowsingUIManager() override {}
 
   void DisplayBlockingPage(const UnsafeResource& resource) override {
-    resource.callback_thread->PostTask(
-        FROM_HERE, base::BindOnce(resource.callback, true /* proceed */,
-                                  true /* showed_interstitial */));
+    resource.DispatchCallback(FROM_HERE, true /* proceed */,
+                              true /* showed_interstitial */);
   }
 
  private:

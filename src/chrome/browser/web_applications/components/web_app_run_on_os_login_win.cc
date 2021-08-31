@@ -21,12 +21,13 @@ bool RegisterRunOnOsLogin(const ShortcutInfo& shortcut_info) {
   locations.in_startup = true;
 
   return CreatePlatformShortcuts(shortcut_data_dir, locations,
-                                 SHORTCUT_CREATION_BY_USER, shortcut_info);
+                                 SHORTCUT_CREATION_AUTOMATED, shortcut_info);
 }
 
-bool UnregisterRunOnOsLogin(const base::FilePath& profile_path,
-                            const base::string16& shortcut_title) {
-  web_app::ShortcutLocations all_shortcut_locations;
+bool UnregisterRunOnOsLogin(const std::string& app_id,
+                            const base::FilePath& profile_path,
+                            const std::u16string& shortcut_title) {
+  ShortcutLocations all_shortcut_locations;
   all_shortcut_locations.in_startup = true;
   std::vector<base::FilePath> all_paths =
       GetShortcutPaths(all_shortcut_locations);

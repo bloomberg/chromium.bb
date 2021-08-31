@@ -350,6 +350,11 @@ void MdnsResponderAdapterImpl::OnError(UdpSocket* socket, Error error) {
   OSP_UNIMPLEMENTED();
 }
 
+void MdnsResponderAdapterImpl::OnBound(UdpSocket* socket) {
+  // TODO(crbug.com/openscreen/67): Implement this method.
+  OSP_UNIMPLEMENTED();
+}
+
 Clock::duration MdnsResponderAdapterImpl::RunTasks() {
   TRACE_SCOPED(TraceCategory::kMdns, "MdnsResponderAdapterImpl::RunTasks");
 

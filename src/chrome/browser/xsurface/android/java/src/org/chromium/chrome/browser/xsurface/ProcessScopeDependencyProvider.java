@@ -58,6 +58,11 @@ public interface ProcessScopeDependencyProvider {
         return null;
     }
 
+    @Nullable
+    default PersistentKeyValueCache getPersistentKeyValueCache() {
+        return null;
+    }
+
     // Posts task to the UI thread.
     int TASK_TYPE_UI_THREAD = 1;
     // Posts to a background thread. The task may block.
@@ -78,6 +83,25 @@ public interface ProcessScopeDependencyProvider {
      */
     @Nullable
     default LibraryResolver getLibraryResolver() {
+        return null;
+    }
+
+    default boolean isXsurfaceUsageAndCrashReportingEnabled() {
+        return false;
+    }
+
+    @Deprecated
+    default boolean isStableChannel() {
+        return false;
+    }
+
+    /** Returns the reliability logging id. */
+    default long getReliabilityLoggingId() {
+        return 0L;
+    }
+
+    /** Returns the google API key. */
+    default String getGoogleApiKey() {
         return null;
     }
 }

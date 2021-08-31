@@ -33,7 +33,6 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
@@ -88,15 +87,17 @@ class InterceptingCanvasBase : public SkCanvas {
   void onDrawOval(const SkRect&, const SkPaint&) override = 0;
   void onDrawRRect(const SkRRect&, const SkPaint&) override = 0;
   void onDrawPath(const SkPath&, const SkPaint&) override = 0;
-  void onDrawImage(const SkImage*,
-                   SkScalar,
-                   SkScalar,
-                   const SkPaint*) override = 0;
-  void onDrawImageRect(const SkImage*,
-                       const SkRect* src,
-                       const SkRect& dst,
-                       const SkPaint*,
-                       SrcRectConstraint) override = 0;
+  void onDrawImage2(const SkImage*,
+                    SkScalar,
+                    SkScalar,
+                    const SkSamplingOptions&,
+                    const SkPaint*) override = 0;
+  void onDrawImageRect2(const SkImage*,
+                        const SkRect& src,
+                        const SkRect& dst,
+                        const SkSamplingOptions&,
+                        const SkPaint*,
+                        SrcRectConstraint) override = 0;
   void onDrawVerticesObject(const SkVertices*,
                             SkBlendMode bmode,
                             const SkPaint&) override = 0;
@@ -115,9 +116,8 @@ class InterceptingCanvasBase : public SkCanvas {
   void onDrawPicture(const SkPicture*,
                      const SkMatrix*,
                      const SkPaint*) override = 0;
-  void didSetMatrix(const SkMatrix&) override = 0;
+  void didSetM44(const SkM44&) override = 0;
   void didConcat44(const SkM44&) override = 0;
-  void didConcat(const SkMatrix&) override = 0;
   void didScale(SkScalar, SkScalar) override = 0;
   void didTranslate(SkScalar, SkScalar) override = 0;
   void willSave() override = 0;
@@ -148,7 +148,7 @@ class InterceptingCanvas : public InterceptingCanvasBase {
 
   void onDrawPaint(const SkPaint& paint) override {
     Interceptor interceptor(this);
-    this->SkCanvas::onDrawPaint(paint);
+    SkCanvas::onDrawPaint(paint);
   }
 
   void onDrawPoints(PointMode mode,
@@ -156,58 +156,60 @@ class InterceptingCanvas : public InterceptingCanvasBase {
                     const SkPoint pts[],
                     const SkPaint& paint) override {
     Interceptor interceptor(this);
-    this->SkCanvas::onDrawPoints(mode, count, pts, paint);
+    SkCanvas::onDrawPoints(mode, count, pts, paint);
   }
 
   void onDrawRect(const SkRect& rect, const SkPaint& paint) override {
     Interceptor interceptor(this);
-    this->SkCanvas::onDrawRect(rect, paint);
+    SkCanvas::onDrawRect(rect, paint);
   }
 
   void onDrawOval(const SkRect& rect, const SkPaint& paint) override {
     Interceptor interceptor(this);
-    this->SkCanvas::onDrawOval(rect, paint);
+    SkCanvas::onDrawOval(rect, paint);
   }
 
   void onDrawRRect(const SkRRect& rrect, const SkPaint& paint) override {
     Interceptor interceptor(this);
-    this->SkCanvas::onDrawRRect(rrect, paint);
+    SkCanvas::onDrawRRect(rrect, paint);
   }
 
   void onDrawPath(const SkPath& path, const SkPaint& paint) override {
     Interceptor interceptor(this);
-    this->SkCanvas::onDrawPath(path, paint);
+    SkCanvas::onDrawPath(path, paint);
   }
 
-  void onDrawImage(const SkImage* image,
-                   SkScalar x,
-                   SkScalar y,
-                   const SkPaint* paint) override {
+  void onDrawImage2(const SkImage* image,
+                    SkScalar x,
+                    SkScalar y,
+                    const SkSamplingOptions& sampling,
+                    const SkPaint* paint) override {
     Interceptor interceptor(this);
-    this->SkCanvas::onDrawImage(image, x, y, paint);
+    SkCanvas::onDrawImage2(image, x, y, sampling, paint);
   }
 
-  void onDrawImageRect(const SkImage* image,
-                       const SkRect* src,
-                       const SkRect& dst,
-                       const SkPaint* paint,
-                       SrcRectConstraint constraint) override {
+  void onDrawImageRect2(const SkImage* image,
+                        const SkRect& src,
+                        const SkRect& dst,
+                        const SkSamplingOptions& sampling,
+                        const SkPaint* paint,
+                        SrcRectConstraint constraint) override {
     Interceptor interceptor(this);
-    this->SkCanvas::onDrawImageRect(image, src, dst, paint, constraint);
+    SkCanvas::onDrawImageRect2(image, src, dst, sampling, paint, constraint);
   }
 
   void onDrawVerticesObject(const SkVertices* vertices,
                             SkBlendMode bmode,
                             const SkPaint& paint) override {
     Interceptor interceptor(this);
-    this->SkCanvas::onDrawVerticesObject(vertices, bmode, paint);
+    SkCanvas::onDrawVerticesObject(vertices, bmode, paint);
   }
 
   void onDrawDRRect(const SkRRect& outer,
                     const SkRRect& inner,
                     const SkPaint& paint) override {
     Interceptor interceptor(this);
-    this->SkCanvas::onDrawDRRect(outer, inner, paint);
+    SkCanvas::onDrawDRRect(outer, inner, paint);
   }
 
   void onDrawTextBlob(const SkTextBlob* blob,
@@ -215,50 +217,44 @@ class InterceptingCanvas : public InterceptingCanvasBase {
                       SkScalar y,
                       const SkPaint& paint) override {
     Interceptor interceptor(this);
-    this->SkCanvas::onDrawTextBlob(blob, x, y, paint);
+    SkCanvas::onDrawTextBlob(blob, x, y, paint);
   }
 
   void onClipRect(const SkRect& rect,
                   SkClipOp op,
                   ClipEdgeStyle edge_style) override {
     Interceptor interceptor(this);
-    this->SkCanvas::onClipRect(rect, op, edge_style);
+    SkCanvas::onClipRect(rect, op, edge_style);
   }
 
   void onClipRRect(const SkRRect& rrect,
                    SkClipOp op,
                    ClipEdgeStyle edge_style) override {
     Interceptor interceptor(this);
-    this->SkCanvas::onClipRRect(rrect, op, edge_style);
+    SkCanvas::onClipRRect(rrect, op, edge_style);
   }
 
   void onClipPath(const SkPath& path,
                   SkClipOp op,
                   ClipEdgeStyle edge_style) override {
     Interceptor interceptor(this);
-    this->SkCanvas::onClipPath(path, op, edge_style);
+    SkCanvas::onClipPath(path, op, edge_style);
   }
 
   void onClipRegion(const SkRegion& region, SkClipOp op) override {
     Interceptor interceptor(this);
-    this->SkCanvas::onClipRegion(region, op);
+    SkCanvas::onClipRegion(region, op);
   }
 
   void onDrawPicture(const SkPicture* picture,
                      const SkMatrix* matrix,
                      const SkPaint* paint) override {
-    this->UnrollDrawPicture(picture, matrix, paint, nullptr);
+    UnrollDrawPicture(picture, matrix, paint, nullptr);
   }
 
-  void didSetMatrix(const SkMatrix& matrix) override {
-    Interceptor interceptor(this);
-  }
+  void didSetM44(const SkM44&) override { Interceptor interceptor(this); }
 
   void didConcat44(const SkM44&) override { Interceptor interceptor(this); }
-
-  void didConcat(const SkMatrix& matrix) override {
-    Interceptor interceptor(this);
-  }
 
   void didScale(SkScalar x, SkScalar y) override {
     Interceptor interceptor(this);
@@ -270,18 +266,18 @@ class InterceptingCanvas : public InterceptingCanvasBase {
 
   void willSave() override {
     Interceptor interceptor(this);
-    this->SkCanvas::willSave();
+    SkCanvas::willSave();
   }
 
   SkCanvas::SaveLayerStrategy getSaveLayerStrategy(
       const SaveLayerRec& rec) override {
     Interceptor interceptor(this);
-    return this->SkCanvas::getSaveLayerStrategy(rec);
+    return SkCanvas::getSaveLayerStrategy(rec);
   }
 
   void willRestore() override {
     Interceptor interceptor(this);
-    this->SkCanvas::willRestore();
+    SkCanvas::willRestore();
   }
 };
 

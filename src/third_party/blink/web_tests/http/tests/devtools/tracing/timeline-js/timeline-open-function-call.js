@@ -4,7 +4,7 @@
 
 (async function() {
   TestRunner.addResult(`Checks the FunctionCall with no closing event processed properly.\n`);
-  await TestRunner.loadModule('performance_test_runner');
+  await TestRunner.loadModule('timeline'); await TestRunner.loadTestModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
 
   var sessionId = '6.23';
@@ -62,6 +62,6 @@
   PerformanceTestRunner.createPerformanceModelWithEvents(rawTraceEvents);
   const event = PerformanceTestRunner.mainTrackEvents().find(
       e => e.name === TimelineModel.TimelineModel.RecordType.FunctionCall);
-  TestRunner.addResult(`${event.startTime} ${event.endTime}`);
+  TestRunner.addResult(`${event.name} ${event.startTime}`);
   TestRunner.completeTest();
 })();

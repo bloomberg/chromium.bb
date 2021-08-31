@@ -68,8 +68,10 @@ class RendererStartupHelper : public KeyedService,
   void OnExtensionUnloaded(const Extension& extension);
   void OnExtensionLoaded(const Extension& extension);
 
-  // Returns mojom::Renderer* corresponding to |process|. Note that the callers
-  // should pass a valid content::RenderProcessHost*.
+  // Returns mojom::Renderer* corresponding to |process|. This would return
+  // nullptr when it's called before |process| is inserted to
+  // |process_mojo_map_| or after it's deleted. Note that the callers should
+  // pass a valid content::RenderProcessHost*.
   mojom::Renderer* GetRenderer(content::RenderProcessHost* process);
 
  protected:
@@ -79,6 +81,7 @@ class RendererStartupHelper : public KeyedService,
 
  private:
   friend class RendererStartupHelperTest;
+  friend class RendererStartupHelperInterceptor;
 
   // Initializes the specified process, informing it of system state and loaded
   // extensions.

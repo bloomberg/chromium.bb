@@ -163,10 +163,7 @@ struct BlendDesc
     void reset();
     void reset(MTLColorWriteMask writeMask);
 
-    void updateWriteMask(const gl::BlendState &blendState);
-    void updateBlendFactors(const gl::BlendState &blendState);
-    void updateBlendOps(const gl::BlendState &blendState);
-    void updateBlendEnabled(const gl::BlendState &blendState);
+    void updateWriteMask(const uint8_t angleMask);
 
     // Use uint8_t instead of MTLColorWriteMask to compact space
     uint8_t writeMask : 4;
@@ -185,6 +182,9 @@ struct BlendDesc
     bool blendingEnabled : 1;
 };
 
+using BlendDescArray = std::array<BlendDesc, kMaxRenderTargets>;
+using WriteMaskArray = std::array<uint8_t, kMaxRenderTargets>;
+
 struct alignas(2) RenderPipelineColorAttachmentDesc : public BlendDesc
 {
     bool operator==(const RenderPipelineColorAttachmentDesc &rhs) const;
@@ -197,9 +197,9 @@ struct alignas(2) RenderPipelineColorAttachmentDesc : public BlendDesc
     void reset();
     void reset(MTLPixelFormat format);
     void reset(MTLPixelFormat format, MTLColorWriteMask writeMask);
-    void reset(MTLPixelFormat format, const BlendDesc &blendState);
+    void reset(MTLPixelFormat format, const BlendDesc &blendDesc);
 
-    void update(const BlendDesc &blendState);
+    void update(const BlendDesc &blendDesc);
 
     // Use uint16_t instead of MTLPixelFormat to compact space
     uint16_t pixelFormat : 16;
@@ -367,10 +367,10 @@ struct RenderPassDesc
     void populateRenderPipelineOutputDesc(RenderPipelineOutputDesc *outDesc) const;
     // This will populate the RenderPipelineOutputDesc with default blend state and the specified
     // MTLColorWriteMask
-    void populateRenderPipelineOutputDesc(MTLColorWriteMask colorWriteMask,
+    void populateRenderPipelineOutputDesc(const WriteMaskArray &writeMaskArray,
                                           RenderPipelineOutputDesc *outDesc) const;
     // This will populate the RenderPipelineOutputDesc with the specified blend state
-    void populateRenderPipelineOutputDesc(const BlendDesc &blendState,
+    void populateRenderPipelineOutputDesc(const BlendDescArray &blendDescArray,
                                           RenderPipelineOutputDesc *outDesc) const;
 
     bool equalIgnoreLoadStoreOptions(const RenderPassDesc &other) const;
@@ -475,7 +475,7 @@ class RenderPipelineCache final : angle::NonCopyable
     bool hasDefaultAttribs(const RenderPipelineDesc &desc) const;
 
     // One table with default attrib and one table without.
-    std::unordered_map<RenderPipelineDesc, AutoObjCPtr<id<MTLRenderPipelineState>>>
+    angle::HashMap<RenderPipelineDesc, AutoObjCPtr<id<MTLRenderPipelineState>>>
         mRenderPipelineStates[2];
 
     RenderPipelineCacheSpecializeShaderFactory *mSpecializedShaderFactory;
@@ -503,8 +503,8 @@ class StateCache final : angle::NonCopyable
 
   private:
     AutoObjCPtr<id<MTLDepthStencilState>> mNullDepthStencilState = nil;
-    std::unordered_map<DepthStencilDesc, AutoObjCPtr<id<MTLDepthStencilState>>> mDepthStencilStates;
-    std::unordered_map<SamplerDesc, AutoObjCPtr<id<MTLSamplerState>>> mSamplerStates;
+    angle::HashMap<DepthStencilDesc, AutoObjCPtr<id<MTLDepthStencilState>>> mDepthStencilStates;
+    angle::HashMap<SamplerDesc, AutoObjCPtr<id<MTLSamplerState>>> mSamplerStates;
 };
 
 }  // namespace mtl

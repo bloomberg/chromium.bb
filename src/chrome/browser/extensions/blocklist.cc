@@ -6,14 +6,15 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/callback_list.h"
+#include "base/containers/contains.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/blocklist_factory.h"
@@ -54,8 +55,8 @@ class LazySafeBrowsingDatabaseManager {
     database_changed_callback_list_.Notify();
   }
 
-  std::unique_ptr<base::RepeatingClosureList::Subscription>
-  RegisterDatabaseChangedCallback(const base::RepeatingClosure& cb) {
+  base::CallbackListSubscription RegisterDatabaseChangedCallback(
+      const base::RepeatingClosure& cb) {
     return database_changed_callback_list_.Add(cb);
   }
 
@@ -277,13 +278,14 @@ void Blocklist::RequestExtensionsBlocklistState(
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!state_fetcher_)
-    state_fetcher_.reset(new BlocklistStateFetcher());
+    state_fetcher_ = std::make_unique<BlocklistStateFetcher>();
 
   state_requests_.emplace_back(std::vector<std::string>(ids.begin(), ids.end()),
                                std::move(callback));
   for (const auto& id : ids) {
     state_fetcher_->Request(
-        id, base::Bind(&Blocklist::OnBlocklistStateReceived, AsWeakPtr(), id));
+        id,
+        base::BindOnce(&Blocklist::OnBlocklistStateReceived, AsWeakPtr(), id));
   }
 }
 
@@ -325,7 +327,11 @@ BlocklistStateFetcher* Blocklist::ResetBlocklistStateFetcherForTest() {
 }
 
 void Blocklist::ResetDatabaseUpdatedListenerForTest() {
-  database_updated_subscription_.reset();
+  database_updated_subscription_ = {};
+}
+
+void Blocklist::ResetBlocklistStateCacheForTest() {
+  blocklist_state_cache_.clear();
 }
 
 void Blocklist::AddObserver(Observer* observer) {
@@ -353,13 +359,13 @@ void Blocklist::ObserveNewDatabase() {
   auto database_manager = GetDatabaseManager();
   if (database_manager.get()) {
     // Using base::Unretained is safe because when this object goes away, the
-    // subscription to the callback list will automatically be destroyed.
+    // subscription from the callback list will automatically be destroyed.
     database_updated_subscription_ =
         database_manager.get()->RegisterDatabaseUpdatedCallback(
             base::BindRepeating(&Blocklist::NotifyObservers,
                                 base::Unretained(this)));
   } else {
-    database_updated_subscription_.reset();
+    database_updated_subscription_ = {};
   }
 }
 

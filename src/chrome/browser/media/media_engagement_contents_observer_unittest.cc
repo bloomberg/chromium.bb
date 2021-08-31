@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
@@ -25,6 +24,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/web_contents_tester.h"
@@ -32,6 +32,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 // TODO(crbug/1004580) All these tests crash on Android
 #if !defined(OS_ANDROID)
@@ -76,7 +77,7 @@ class MediaEngagementContentsObserverTest
   }
 
   bool IsTimerRunningForPlayer(int id) const {
-    content::MediaPlayerId player_id(nullptr /* RenderFrameHost */, id);
+    content::MediaPlayerId player_id(content::GlobalFrameRoutingId(), id);
     auto audible_row = contents_observer_->audible_players_.find(player_id);
     return audible_row != contents_observer_->audible_players_.end() &&
            audible_row->second.second;
@@ -116,7 +117,7 @@ class MediaEngagementContentsObserverTest
   }
 
   void SimulateResizeEvent(int id, gfx::Size size) {
-    content::MediaPlayerId player_id(nullptr /* RenderFrameHost */, id);
+    content::MediaPlayerId player_id(content::GlobalFrameRoutingId(), id);
     contents_observer_->MediaResized(size, player_id);
   }
 
@@ -132,7 +133,7 @@ class MediaEngagementContentsObserverTest
       content::WebContentsObserver::MediaPlayerInfo player_info,
       int id,
       bool muted_state) {
-    content::MediaPlayerId player_id(nullptr /* RenderFrameHost */, id);
+    content::MediaPlayerId player_id(content::GlobalFrameRoutingId(), id);
     contents_observer_->MediaStartedPlaying(player_info, player_id);
     SimulateMutedStateChange(id, muted_state);
   }
@@ -143,7 +144,7 @@ class MediaEngagementContentsObserverTest
     test_clock_.Advance(elapsed);
 
     content::WebContentsObserver::MediaPlayerInfo player_info(true, true);
-    content::MediaPlayerId player_id(nullptr /* RenderFrameHost */, id);
+    content::MediaPlayerId player_id(content::GlobalFrameRoutingId(), id);
     contents_observer_->MediaStoppedPlaying(
         player_info, player_id,
         finished
@@ -157,7 +158,7 @@ class MediaEngagementContentsObserverTest
   }
 
   void SimulateMutedStateChange(int id, bool muted) {
-    content::MediaPlayerId player_id(nullptr /* RenderFrameHost */, id);
+    content::MediaPlayerId player_id(content::GlobalFrameRoutingId(), id);
     contents_observer_->MediaMutedStatusChanged(player_id, muted);
   }
 
@@ -203,7 +204,7 @@ class MediaEngagementContentsObserverTest
 
   void SimulateSignificantPlaybackTimeForPlayer(int id) {
     SimulateLongMediaPlayback(id);
-    content::MediaPlayerId player_id(nullptr /* RenderFrameHost */, id);
+    content::MediaPlayerId player_id(content::GlobalFrameRoutingId(), id);
     contents_observer_->OnSignificantMediaPlaybackTimeForPlayer(player_id);
   }
 
@@ -213,6 +214,11 @@ class MediaEngagementContentsObserverTest
 
   void SimulateAudioContextPlaybackTimerFired() {
     task_runner_->FastForwardBy(kMaxWaitingTime);
+  }
+
+  void SimulateMediaDestroyed(int id) {
+    content::MediaPlayerId player_id(content::GlobalFrameRoutingId(), id);
+    contents_observer_->MediaDestroyed(player_id);
   }
 
   void ExpectScores(const url::Origin origin,
@@ -335,7 +341,7 @@ class MediaEngagementContentsObserverTest
   }
 
   void ForceUpdateTimer(int id) {
-    content::MediaPlayerId player_id(nullptr /* RenderFrameHost */, id);
+    content::MediaPlayerId player_id(content::GlobalFrameRoutingId(), id);
     contents_observer_->UpdatePlayerTimer(player_id);
   }
 
@@ -366,7 +372,7 @@ class MediaEngagementContentsObserverTest
   }
 
   void ExpectPlaybackTime(int id, base::TimeDelta expected_time) {
-    content::MediaPlayerId player_id(nullptr /* RenderFrameHost */, id);
+    content::MediaPlayerId player_id(content::GlobalFrameRoutingId(), id);
     EXPECT_EQ(expected_time, contents_observer_->GetPlayerState(player_id)
                                  .playback_timer->Elapsed());
   }
@@ -1341,6 +1347,20 @@ TEST_F(MediaEngagementContentsObserverTest, IgnoreAudioContextIfDisabled) {
 
   SimulateAudioContextPlaybackTimerFired();
   EXPECT_FALSE(WasSignificantAudioContextPlaybackRecorded());
+}
+
+TEST_F(MediaEngagementContentsObserverTest, PlayerStateIsCleanedUp) {
+  Navigate(GURL("https://www.example.com"));
+
+  EXPECT_EQ(0u, GetStoredPlayerStatesCount());
+  SimulateSignificantVideoPlayer(0);
+  EXPECT_EQ(1u, GetStoredPlayerStatesCount());
+  SimulateSignificantVideoPlayer(1);
+  EXPECT_EQ(2u, GetStoredPlayerStatesCount());
+  SimulateMediaDestroyed(0);
+  EXPECT_EQ(1u, GetStoredPlayerStatesCount());
+  SimulateMediaDestroyed(1);
+  EXPECT_EQ(0u, GetStoredPlayerStatesCount());
 }
 
 #endif  // !defined(OS_ANDROID)

@@ -11,9 +11,11 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/format_macros.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -48,7 +50,7 @@ class TestHttpClient {
     base::RunLoop run_loop;
     int net_error = net::ERR_FAILED;
     factory_.CreateTCPConnectedSocket(
-        base::nullopt /* local address */, addresses,
+        absl::nullopt /* local address */, addresses,
         nullptr /* tcp_connected_socket_options */,
         TRAFFIC_ANNOTATION_FOR_TESTS, socket_.BindNewPipeAndPassReceiver(),
         mojo::NullRemote() /* observer */,
@@ -56,8 +58,8 @@ class TestHttpClient {
             [](base::RunLoop* run_loop, int* result_out,
                mojo::ScopedDataPipeConsumerHandle* receive_pipe_handle_out,
                mojo::ScopedDataPipeProducerHandle* send_pipe_handle_out,
-               int result, const base::Optional<net::IPEndPoint>& local_addr,
-               const base::Optional<net::IPEndPoint>& peer_addr,
+               int result, const absl::optional<net::IPEndPoint>& local_addr,
+               const absl::optional<net::IPEndPoint>& peer_addr,
                mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
                mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
               *receive_pipe_handle_out = std::move(receive_pipe_handle);
@@ -177,7 +179,7 @@ class HttpServerTest : public testing::Test, public HttpServer::Delegate {
         base::BindOnce(
             [](base::RunLoop* run_loop, int* result_out,
                net::IPEndPoint* local_addr_out, int result,
-               const base::Optional<net::IPEndPoint>& local_addr) {
+               const absl::optional<net::IPEndPoint>& local_addr) {
               *result_out = result;
               if (local_addr)
                 *local_addr_out = local_addr.value();
@@ -188,7 +190,7 @@ class HttpServerTest : public testing::Test, public HttpServer::Delegate {
     run_loop.Run();
     EXPECT_EQ(net::OK, net_error);
 
-    server_.reset(new HttpServer(std::move(server_socket_), this));
+    server_ = std::make_unique<HttpServer>(std::move(server_socket_), this);
   }
 
   void OnConnect(int connection_id) override {
@@ -459,6 +461,19 @@ TEST_F(HttpServerTest, RequestWithBody) {
   ASSERT_EQ(body.length(), GetRequest(0).data.length());
   ASSERT_EQ('a', body[0]);
   ASSERT_EQ('c', *body.rbegin());
+}
+
+// Tests that |HttpServer::HandleReadResult| will ignore Upgrade header if value
+// is not WebSocket.
+TEST_F(HttpServerTest, UpgradeIgnored) {
+  TestHttpClient client;
+  CreateConnection(&client);
+  client.Send(
+      "GET /test HTTP/1.1\r\n"
+      "Upgrade: h2c\r\n"
+      "Connection: SomethingElse, Upgrade\r\n"
+      "\r\n");
+  RunUntilRequestsReceived(1);
 }
 
 // Tests that |HttpServer:OnReadable()| will notice the closure of the connected

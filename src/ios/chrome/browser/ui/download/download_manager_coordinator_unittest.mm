@@ -34,7 +34,7 @@
 #import "ios/chrome/test/fakes/fake_contained_presenter.h"
 #import "ios/chrome/test/scoped_key_window.h"
 #import "ios/web/public/test/fakes/fake_download_task.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher_response_writer.h"
@@ -85,8 +85,8 @@ class DownloadManagerCoordinatorTest : public PlatformTest {
       : presenter_([[FakeContainedPresenter alloc] init]),
         base_view_controller_([[UIViewController alloc] init]),
         browser_(std::make_unique<TestBrowser>()),
-        document_interaction_controller_class_(
-            OCMClassMock([UIDocumentInteractionController class])),
+        activity_view_controller_class_(
+            OCMClassMock([UIActivityViewController class])),
         tab_helper_(&web_state_),
         coordinator_([[DownloadManagerCoordinator alloc]
             initWithBaseViewController:base_view_controller_
@@ -103,7 +103,7 @@ class DownloadManagerCoordinatorTest : public PlatformTest {
       [coordinator_ stop];
     }
 
-    [document_interaction_controller_class_ stopMocking];
+    [activity_view_controller_class_ stopMocking];
     [application_ stopMocking];
     [[InstallationNotifier sharedInstance] stopPolling];
   }
@@ -113,8 +113,8 @@ class DownloadManagerCoordinatorTest : public PlatformTest {
   UIViewController* base_view_controller_;
   std::unique_ptr<Browser> browser_;
   ScopedKeyWindow scoped_key_window_;
-  web::TestWebState web_state_;
-  id document_interaction_controller_class_;
+  web::FakeWebState web_state_;
+  id activity_view_controller_class_;
   StubTabHelper tab_helper_;
   // Application can be lazily created by tests, but it has to be OCMock.
   // Destructor will call -stopMocking on this object to make sure that
@@ -556,7 +556,7 @@ TEST_F(DownloadManagerCoordinatorTest, QuitDuringInProgressDownload) {
   auto task = CreateTestTask();
   coordinator_.downloadTask = task.get();
   web::DownloadTask* task_ptr = task.get();
-  auto web_state = std::make_unique<web::TestWebState>();
+  auto web_state = std::make_unique<web::FakeWebState>();
   browser_->GetWebStateList()->InsertWebState(
       0, std::move(web_state), WebStateList::INSERT_NO_FLAGS, WebStateOpener());
   [coordinator_ start];

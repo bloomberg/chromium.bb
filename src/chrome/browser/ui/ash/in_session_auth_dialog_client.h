@@ -9,10 +9,10 @@
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace aura {
 class Window;
@@ -87,13 +87,13 @@ class InSessionAuthDialogClient : public ash::InSessionAuthDialogClient,
 
   void OnFingerprintAuthDone(
       base::OnceCallback<void(bool, ash::FingerprintState)> callback,
-      cryptohome::CryptohomeErrorCode error);
+      user_data_auth::CryptohomeErrorCode error);
 
   // Used to authenticate the user to unlock supervised users.
   scoped_refptr<chromeos::ExtendedAuthenticator> extended_authenticator_;
 
   // State associated with a pending authentication attempt.
-  base::Optional<AuthState> pending_auth_state_;
+  absl::optional<AuthState> pending_auth_state_;
 
   base::WeakPtrFactory<InSessionAuthDialogClient> weak_factory_{this};
 };

@@ -19,7 +19,7 @@ struct ComponentExtensionIME;
 class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
     ComponentExtensionIMEManagerDelegate {
  public:
-  virtual ~ComponentExtensionIMEManagerDelegate() {}
+  virtual ~ComponentExtensionIMEManagerDelegate() = default;
 
   // Lists installed component extension IMEs.
   virtual std::vector<ComponentExtensionIME> ListIME() = 0;
@@ -30,6 +30,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
                     const std::string& extension_id,
                     const std::string& manifest,
                     const base::FilePath& path) = 0;
+
+  virtual bool IsInLoginLayoutAllowlist(const std::string& layout) = 0;
 };
 
 }  // namespace chromeos

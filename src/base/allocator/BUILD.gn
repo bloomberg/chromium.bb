@@ -221,7 +221,10 @@ if (use_allocator == "tcmalloc") {
       configs -= [ "//build/config/compiler:afdo" ]
     }
 
-    deps = [ ":buildflags" ]
+    deps = [
+      ":buildflags",
+      "//build:chromeos_buildflags",
+    ]
 
     if (enable_profiling) {
       sources += [
@@ -286,6 +289,8 @@ buildflag_header("buildflags") {
   header = "buildflags.h"
   _use_partition_alloc = use_allocator == "partition"
   _use_tcmalloc = use_allocator == "tcmalloc"
+  assert(use_allocator_shim || !_use_partition_alloc,
+         "Partition alloc requires the allocator shim")
 
   flags = [
     "USE_ALLOCATOR_SHIM=$use_allocator_shim",
@@ -315,5 +320,9 @@ config("wrap_malloc_symbols") {
 
     # <unistd.h> functions
     "-Wl,-wrap,getcwd",
+
+    # <stdio.h> functions
+    "-Wl,-wrap,asprintf",
+    "-Wl,-wrap,vasprintf",
   ]
 }

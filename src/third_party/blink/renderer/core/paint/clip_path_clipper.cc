@@ -4,14 +4,12 @@
 
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 
-#include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_clipper.h"
-#include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
-#include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
@@ -25,22 +23,23 @@ namespace blink {
 
 namespace {
 
+SVGResourceClient* GetResourceClient(const LayoutObject& object) {
+  if (object.IsSVGChild())
+    return SVGResources::GetClient(object);
+  CHECK(object.IsBoxModelObject());
+  return To<LayoutBoxModelObject>(object).Layer()->ResourceInfo();
+}
+
 LayoutSVGResourceClipper* ResolveElementReference(
-    const LayoutObject& layout_object,
+    const LayoutObject& object,
     const ReferenceClipPathOperation& reference_clip_path_operation) {
-  LayoutSVGResourceClipper* resource_clipper = nullptr;
-  if (layout_object.IsSVGChild()) {
-    // The reference will have been resolved in
-    // SVGResources::buildResources, so we can just use the LayoutObject's
-    // SVGResources.
-    SVGResources* resources =
-        SVGResourcesCache::CachedResourcesForLayoutObject(layout_object);
-    resource_clipper = resources ? resources->Clipper() : nullptr;
-  } else {
-    // TODO(fs): Doesn't work with external SVG references (crbug.com/109212.)
-    resource_clipper = GetSVGResourceAsType<LayoutSVGResourceClipper>(
-        reference_clip_path_operation.Resource());
-  }
+  SVGResourceClient* client = GetResourceClient(object);
+  // We may not have a resource client for some non-rendered elements (like
+  // filter primitives) that we visit during paint property tree construction.
+  if (!client)
+    return nullptr;
+  LayoutSVGResourceClipper* resource_clipper =
+      GetSVGResourceAsType(*client, reference_clip_path_operation);
   if (resource_clipper) {
     SECURITY_DCHECK(!resource_clipper->NeedsLayout());
     resource_clipper->ClearInvalidationMask();
@@ -66,10 +65,10 @@ FloatRect ClipPathClipper::LocalReferenceBox(const LayoutObject& object) {
   return FloatRect(To<LayoutInline>(object).ReferenceBoxForClipPath());
 }
 
-base::Optional<FloatRect> ClipPathClipper::LocalClipPathBoundingBox(
+absl::optional<FloatRect> ClipPathClipper::LocalClipPathBoundingBox(
     const LayoutObject& object) {
-  if (object.IsText() || !object.StyleRef().ClipPath())
-    return base::nullopt;
+  if (object.IsText() || !object.StyleRef().HasClipPath())
+    return absl::nullopt;
 
   FloatRect reference_box = LocalReferenceBox(object);
   ClipPathOperation& clip_path = *object.StyleRef().ClipPath();
@@ -86,7 +85,7 @@ base::Optional<FloatRect> ClipPathClipper::LocalClipPathBoundingBox(
   LayoutSVGResourceClipper* clipper = ResolveElementReference(
       object, To<ReferenceClipPathOperation>(clip_path));
   if (!clipper)
-    return base::nullopt;
+    return absl::nullopt;
 
   FloatRect bounding_box = clipper->ResourceBoundingBox(reference_box);
   if (UsesZoomedReferenceBox(object) &&
@@ -120,7 +119,7 @@ static AffineTransform MaskToContentTransform(
   return mask_to_content;
 }
 
-static base::Optional<Path> PathBasedClipInternal(
+static absl::optional<Path> PathBasedClipInternal(
     const LayoutObject& clip_path_owner,
     bool uses_zoomed_reference_box,
     const FloatRect& reference_box) {
@@ -130,8 +129,8 @@ static base::Optional<Path> PathBasedClipInternal(
     LayoutSVGResourceClipper* resource_clipper =
         ResolveElementReference(clip_path_owner, *reference_clip);
     if (!resource_clipper)
-      return base::nullopt;
-    base::Optional<Path> path = resource_clipper->AsPath();
+      return absl::nullopt;
+    absl::optional<Path> path = resource_clipper->AsPath();
     if (!path)
       return path;
     path->Transform(MaskToContentTransform(
@@ -194,9 +193,9 @@ void ClipPathClipper::PaintClipPathAsMaskImage(
     else
       context.BeginLayer(1.f, SkBlendMode::kDstIn);
 
-    if (resource_clipper->StyleRef().ClipPath()) {
+    if (resource_clipper->StyleRef().HasClipPath()) {
       // Try to apply nested clip-path as path-based clip.
-      if (const base::Optional<Path>& path = PathBasedClipInternal(
+      if (const absl::optional<Path>& path = PathBasedClipInternal(
               *resource_clipper, uses_zoomed_reference_box, reference_box)) {
         context.ClipPath(path->GetSkPath(), kAntiAliased);
         rest_of_the_chain_already_appled = true;
@@ -218,7 +217,7 @@ void ClipPathClipper::PaintClipPathAsMaskImage(
 }
 
 bool ClipPathClipper::ShouldUseMaskBasedClip(const LayoutObject& object) {
-  if (object.IsText())
+  if (object.IsText() || !object.StyleRef().HasClipPath())
     return false;
   const auto* reference_clip =
       DynamicTo<ReferenceClipPathOperation>(object.StyleRef().ClipPath());
@@ -231,7 +230,7 @@ bool ClipPathClipper::ShouldUseMaskBasedClip(const LayoutObject& object) {
   return !resource_clipper->AsPath();
 }
 
-base::Optional<Path> ClipPathClipper::PathBasedClip(
+absl::optional<Path> ClipPathClipper::PathBasedClip(
     const LayoutObject& clip_path_owner) {
   return PathBasedClipInternal(clip_path_owner,
                                UsesZoomedReferenceBox(clip_path_owner),

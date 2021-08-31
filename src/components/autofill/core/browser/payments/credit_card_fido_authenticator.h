@@ -6,8 +6,8 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_CREDIT_CARD_FIDO_AUTHENTICATOR_H_
 
 #include <memory>
+#include <string>
 
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_driver.h"
@@ -18,7 +18,7 @@
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "device/fido/fido_constants.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
+#include "third_party/blink/public/mojom/webauthn/authenticator.mojom-forward.h"
 
 namespace autofill {
 
@@ -82,7 +82,7 @@ class CreditCardFIDOAuthenticator
     virtual void OnFIDOAuthenticationComplete(
         bool did_succeed,
         const CreditCard* card = nullptr,
-        const base::string16& cvc = base::string16()) = 0;
+        const std::u16string& cvc = std::u16string()) = 0;
     virtual void OnFidoAuthorizationComplete(bool did_succeed) = 0;
   };
   CreditCardFIDOAuthenticator(AutofillDriver* driver, AutofillClient* client);
@@ -144,7 +144,7 @@ class CreditCardFIDOAuthenticator
   Flow current_flow() { return current_flow_; }
 
  private:
-  friend class AutofillManagerTest;
+  friend class BrowserAutofillManagerTest;
   friend class CreditCardAccessManagerTest;
   friend class CreditCardFIDOAuthenticatorTest;
   friend class TestCreditCardFIDOAuthenticator;
@@ -193,8 +193,9 @@ class CreditCardFIDOAuthenticator
   void OnFullCardRequestSucceeded(
       const payments::FullCardRequest& full_card_request,
       const CreditCard& card,
-      const base::string16& cvc) override;
-  void OnFullCardRequestFailed() override;
+      const std::u16string& cvc) override;
+  void OnFullCardRequestFailed(
+      payments::FullCardRequest::FailureType failure_type) override;
 
   // Converts |request_options| from JSON to mojom pointer.
   PublicKeyCredentialRequestOptionsPtr ParseRequestOptions(

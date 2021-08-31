@@ -14,10 +14,12 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/phone_number.h"
 #include "components/autofill/core/browser/form_parsing/form_field.h"
 #include "components/autofill/core/browser/pattern_provider/pattern_provider.h"
+#include "components/autofill/core/common/language_code.h"
 
 namespace autofill {
 
@@ -36,7 +38,7 @@ class PhoneField : public FormField {
   PhoneField& operator=(const PhoneField&) = delete;
 
   static std::unique_ptr<FormField> Parse(AutofillScanner* scanner,
-                                          const std::string& page_language,
+                                          const LanguageCode& page_language,
                                           LogManager* log_manager);
 
 #if defined(UNIT_TEST)
@@ -91,7 +93,7 @@ class PhoneField : public FormField {
   PhoneField();
 
   // Returns the regular expression string corresponding to |regex_id|
-  static std::string GetRegExp(RegexType regex_id);
+  static std::u16string GetRegExp(RegexType regex_id);
 
   // Returns the constant name of the regex corresponding to |regex_id|.
   // This is useful for logging purposes.
@@ -103,12 +105,12 @@ class PhoneField : public FormField {
 
   // Convenient wrapper for ParseFieldSpecifics().
   static bool ParsePhoneField(AutofillScanner* scanner,
-                              const std::string& regex,
+                              base::StringPiece16 regex,
                               AutofillField** field,
                               const RegExLogging& logging,
                               const bool is_country_code_field,
                               const std::string& json_field_type,
-                              const std::string& page_language);
+                              const LanguageCode& page_language);
 
   // Returns true if |scanner| points to a <select> field that appears to be the
   // phone country code by looking at its option contents.

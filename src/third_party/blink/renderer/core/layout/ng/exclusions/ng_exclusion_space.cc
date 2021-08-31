@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion.h"
 
 namespace blink {
@@ -103,8 +103,8 @@ void CollectSolidEdges(
 bool Intersects(const NGLayoutOpportunity& opportunity,
                 const NGBfcOffset& offset,
                 const LayoutUnit inline_size) {
-  return opportunity.rect.LineEndOffset() > offset.line_offset &&
-         opportunity.rect.LineStartOffset() <
+  return opportunity.rect.LineEndOffset() >= offset.line_offset &&
+         opportunity.rect.LineStartOffset() <=
              offset.line_offset + inline_size &&
          opportunity.rect.BlockEndOffset() > offset.block_offset;
 }
@@ -157,10 +157,7 @@ NGLayoutOpportunity CreateLayoutOpportunity(
 }  // namespace
 
 NGExclusionSpaceInternal::NGExclusionSpaceInternal()
-    : exclusions_(base::MakeRefCounted<NGExclusionPtrArray>()),
-      num_exclusions_(0),
-      track_shape_exclusions_(false),
-      derived_geometry_(nullptr) {}
+    : exclusions_(base::MakeRefCounted<NGExclusionPtrArray>()) {}
 
 NGExclusionSpaceInternal::NGExclusionSpaceInternal(
     const NGExclusionSpaceInternal& other)
@@ -280,7 +277,7 @@ void NGExclusionSpaceInternal::DerivedGeometry::Add(
   for (wtf_size_t i = 0; i < shelves_.size(); ++i) {
     // We modify the current shelf in-place. However we need to keep a copy of
     // the shelf if we need to insert a new shelf later in the loop.
-    base::Optional<NGShelf> shelf_copy;
+    absl::optional<NGShelf> shelf_copy;
 
     bool is_between_shelves;
 
@@ -379,8 +376,8 @@ void NGExclusionSpaceInternal::DerivedGeometry::Add(
         // In the above example the "NEW" exclusion *doesn't* overlap with the
         // above drawn shelf, and a new opportunity hasn't been created.
         bool is_overlapping =
-            exclusion.rect.LineStartOffset() < shelf.line_right &&
-            exclusion.rect.LineEndOffset() > shelf.line_left;
+            exclusion.rect.LineStartOffset() <= shelf.line_right &&
+            exclusion.rect.LineEndOffset() >= shelf.line_left;
 
         // Insert a closed-off layout opportunity if needed.
         if (has_solid_edges && is_overlapping) {
@@ -448,8 +445,22 @@ void NGExclusionSpaceInternal::DerivedGeometry::Add(
         if (exclusion.shape_data)
           shelf.has_shape_exclusions = true;
 
-        // Just in case the shelf has a negative inline-size.
-        shelf.line_right = std::max(shelf.line_left, shelf.line_right);
+        // A shelf can be completely closed off and not needed anymore. For
+        // example:
+        //
+        //    0 1 2 3 4 5 6 7 8
+        // 0  +---+X----------X
+        //    |xxx|
+        // 10 |xxx|
+        //    +---+
+        // 20
+        //       +-----------+
+        // 30    |NEW (right)|
+        //       +-----------+
+        //
+        // In the above example "NEW (right)" will have shrunk the shelf such
+        // that line_right will now be smaller than line_left.
+        bool is_closed_off = shelf.line_left > shelf.line_right;
 
         // We can end up in a situation where a shelf is the same as the
         // previous one. For example:
@@ -469,7 +480,7 @@ void NGExclusionSpaceInternal::DerivedGeometry::Add(
         bool is_same_as_previous =
             (i > 0) && shelf.line_left == shelves_[i - 1].line_left &&
             shelf.line_right == shelves_[i - 1].line_right;
-        if (is_same_as_previous) {
+        if (is_closed_off || is_same_as_previous) {
           shelves_.EraseAt(i);
           --i;
         }

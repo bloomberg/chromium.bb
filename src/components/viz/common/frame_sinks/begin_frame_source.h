@@ -8,12 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <string>
+#include <memory>
 
 #include "base/check.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
-#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
@@ -33,7 +32,7 @@ namespace viz {
 // objects.
 class VIZ_COMMON_EXPORT BeginFrameObserver {
  public:
-  virtual ~BeginFrameObserver() {}
+  virtual ~BeginFrameObserver() = default;
 
   // The |args| given to OnBeginFrame is guaranteed to have
   // |args|.IsValid()==true. If |args|.frame_id.source_id did not change

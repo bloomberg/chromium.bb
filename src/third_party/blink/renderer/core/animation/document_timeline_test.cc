@@ -33,11 +33,13 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalue_double.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
+#include "third_party/blink/renderer/core/animation/timing_calculations.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
@@ -53,6 +55,10 @@ namespace {
 base::TimeTicks TimeTicksFromMillisecondsD(double seconds) {
   return base::TimeTicks() + base::TimeDelta::FromMillisecondsD(seconds);
 }
+
+#define EXPECT_TIME_NEAR(expected, value)                              \
+  EXPECT_NEAR((expected).InMillisecondsF(), (value).InMillisecondsF(), \
+              Animation::kTimeToleranceMs)
 }  // namespace
 
 namespace blink {
@@ -209,16 +215,16 @@ TEST_F(AnimationDocumentTimelineTest, CurrentTimeSeconds) {
 }
 
 TEST_F(AnimationDocumentTimelineTest, PlaybackRateNormal) {
-  base::TimeTicks zero_time = timeline->ZeroTime();
+  base::TimeTicks zero_time = timeline->CalculateZeroTime();
 
   timeline->SetPlaybackRate(1.0);
   EXPECT_EQ(1.0, timeline->PlaybackRate());
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(1000));
-  EXPECT_EQ(zero_time, timeline->ZeroTime());
+  EXPECT_EQ(zero_time, timeline->CalculateZeroTime());
   EXPECT_EQ(1000, timeline->CurrentTimeMilliseconds());
 
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(2000));
-  EXPECT_EQ(zero_time, timeline->ZeroTime());
+  EXPECT_EQ(zero_time, timeline->CalculateZeroTime());
   EXPECT_EQ(2000, timeline->CurrentTimeMilliseconds());
 }
 
@@ -229,33 +235,33 @@ TEST_F(AnimationDocumentTimelineTest, PlaybackRateNormalWithOriginTime) {
   timeline->ResetForTesting();
 
   EXPECT_EQ(1.0, timeline->PlaybackRate());
-  EXPECT_EQ(base::TimeTicks() + origin_time, timeline->ZeroTime());
+  EXPECT_EQ(base::TimeTicks() + origin_time, timeline->CalculateZeroTime());
   EXPECT_EQ(1000, timeline->CurrentTimeMilliseconds());
 
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(100));
-  EXPECT_EQ(base::TimeTicks() + origin_time, timeline->ZeroTime());
+  EXPECT_EQ(base::TimeTicks() + origin_time, timeline->CalculateZeroTime());
   EXPECT_EQ(1100, timeline->CurrentTimeMilliseconds());
 
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(200));
-  EXPECT_EQ(base::TimeTicks() + origin_time, timeline->ZeroTime());
+  EXPECT_EQ(base::TimeTicks() + origin_time, timeline->CalculateZeroTime());
   EXPECT_EQ(1200, timeline->CurrentTimeMilliseconds());
 }
 
 TEST_F(AnimationDocumentTimelineTest, PlaybackRatePause) {
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(1000));
-  EXPECT_EQ(base::TimeTicks(), timeline->ZeroTime());
+  EXPECT_EQ(base::TimeTicks(), timeline->CalculateZeroTime());
   EXPECT_EQ(1000, timeline->CurrentTimeMilliseconds());
 
   timeline->SetPlaybackRate(0.0);
   EXPECT_EQ(0.0, timeline->PlaybackRate());
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(2000));
-  EXPECT_EQ(TimeTicksFromMillisecondsD(1000), timeline->ZeroTime());
+  EXPECT_EQ(TimeTicksFromMillisecondsD(1000), timeline->CalculateZeroTime());
   EXPECT_EQ(1000, timeline->CurrentTimeMilliseconds());
 
   timeline->SetPlaybackRate(1.0);
   EXPECT_EQ(1.0, timeline->PlaybackRate());
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(4000));
-  EXPECT_EQ(TimeTicksFromMillisecondsD(1000), timeline->ZeroTime());
+  EXPECT_EQ(TimeTicksFromMillisecondsD(1000), timeline->CalculateZeroTime());
   EXPECT_EQ(3000, timeline->CurrentTimeMilliseconds());
 }
 
@@ -265,61 +271,61 @@ TEST_F(AnimationDocumentTimelineTest, PlaybackRatePauseWithOriginTime) {
       document.Get(), origin_time, platform_timing);
   timeline->ResetForTesting();
 
-  EXPECT_EQ(base::TimeTicks() + origin_time, timeline->ZeroTime());
+  EXPECT_EQ(base::TimeTicks() + origin_time, timeline->CalculateZeroTime());
   EXPECT_EQ(1000, timeline->CurrentTimeMilliseconds());
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(100));
-  EXPECT_EQ(base::TimeTicks() + origin_time, timeline->ZeroTime());
+  EXPECT_EQ(base::TimeTicks() + origin_time, timeline->CalculateZeroTime());
   EXPECT_EQ(1100, timeline->CurrentTimeMilliseconds());
 
   timeline->SetPlaybackRate(0.0);
   EXPECT_EQ(0.0, timeline->PlaybackRate());
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(200));
-  EXPECT_EQ(TimeTicksFromMillisecondsD(1100), timeline->ZeroTime());
+  EXPECT_EQ(TimeTicksFromMillisecondsD(1100), timeline->CalculateZeroTime());
   EXPECT_EQ(1100, timeline->CurrentTimeMilliseconds());
 
   timeline->SetPlaybackRate(1.0);
   EXPECT_EQ(1.0, timeline->PlaybackRate());
-  EXPECT_EQ(TimeTicksFromMillisecondsD(-900), timeline->ZeroTime());
+  EXPECT_EQ(TimeTicksFromMillisecondsD(-900), timeline->CalculateZeroTime());
   EXPECT_EQ(1100, timeline->CurrentTimeMilliseconds());
 
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(400));
-  EXPECT_EQ(TimeTicksFromMillisecondsD(-900), timeline->ZeroTime());
+  EXPECT_EQ(TimeTicksFromMillisecondsD(-900), timeline->CalculateZeroTime());
   EXPECT_EQ(1300, timeline->CurrentTimeMilliseconds());
 }
 
 TEST_F(AnimationDocumentTimelineTest, PlaybackRateSlow) {
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(1000));
-  EXPECT_EQ(base::TimeTicks(), timeline->ZeroTime());
+  EXPECT_EQ(base::TimeTicks(), timeline->CalculateZeroTime());
   EXPECT_EQ(1000, timeline->CurrentTimeMilliseconds());
 
   timeline->SetPlaybackRate(0.5);
   EXPECT_EQ(0.5, timeline->PlaybackRate());
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(3000));
-  EXPECT_EQ(TimeTicksFromMillisecondsD(-1000), timeline->ZeroTime());
+  EXPECT_EQ(TimeTicksFromMillisecondsD(-1000), timeline->CalculateZeroTime());
   EXPECT_EQ(2000, timeline->CurrentTimeMilliseconds());
 
   timeline->SetPlaybackRate(1.0);
   EXPECT_EQ(1.0, timeline->PlaybackRate());
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(4000));
-  EXPECT_EQ(TimeTicksFromMillisecondsD(1000), timeline->ZeroTime());
+  EXPECT_EQ(TimeTicksFromMillisecondsD(1000), timeline->CalculateZeroTime());
   EXPECT_EQ(3000, timeline->CurrentTimeMilliseconds());
 }
 
 TEST_F(AnimationDocumentTimelineTest, PlaybackRateFast) {
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(1000));
-  EXPECT_EQ(base::TimeTicks(), timeline->ZeroTime());
+  EXPECT_EQ(base::TimeTicks(), timeline->CalculateZeroTime());
   EXPECT_EQ(1000, timeline->CurrentTimeMilliseconds());
 
   timeline->SetPlaybackRate(2.0);
   EXPECT_EQ(2.0, timeline->PlaybackRate());
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(3000));
-  EXPECT_EQ(TimeTicksFromMillisecondsD(500), timeline->ZeroTime());
+  EXPECT_EQ(TimeTicksFromMillisecondsD(500), timeline->CalculateZeroTime());
   EXPECT_EQ(5000, timeline->CurrentTimeMilliseconds());
 
   timeline->SetPlaybackRate(1.0);
   EXPECT_EQ(1.0, timeline->PlaybackRate());
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(4000));
-  EXPECT_EQ(TimeTicksFromMillisecondsD(-2000), timeline->ZeroTime());
+  EXPECT_EQ(TimeTicksFromMillisecondsD(-2000), timeline->CalculateZeroTime());
   EXPECT_EQ(6000, timeline->CurrentTimeMilliseconds());
 }
 
@@ -329,30 +335,33 @@ TEST_F(AnimationDocumentTimelineTest, PlaybackRateFastWithOriginTime) {
   timeline->ResetForTesting();
 
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(100000));
-  EXPECT_EQ(TimeTicksFromMillisecondsD(-1000000), timeline->ZeroTime());
+  EXPECT_EQ(TimeTicksFromMillisecondsD(-1000000),
+            timeline->CalculateZeroTime());
   EXPECT_EQ(1100000, timeline->CurrentTimeMilliseconds());
 
   timeline->SetPlaybackRate(2.0);
   EXPECT_EQ(2.0, timeline->PlaybackRate());
-  EXPECT_EQ(TimeTicksFromMillisecondsD(-450000), timeline->ZeroTime());
+  EXPECT_EQ(TimeTicksFromMillisecondsD(-450000), timeline->CalculateZeroTime());
   EXPECT_EQ(1100000, timeline->CurrentTimeMilliseconds());
 
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(300000));
-  EXPECT_EQ(TimeTicksFromMillisecondsD(-450000), timeline->ZeroTime());
+  EXPECT_EQ(TimeTicksFromMillisecondsD(-450000), timeline->CalculateZeroTime());
   EXPECT_EQ(1500000, timeline->CurrentTimeMilliseconds());
 
   timeline->SetPlaybackRate(1.0);
   EXPECT_EQ(1.0, timeline->PlaybackRate());
-  EXPECT_EQ(TimeTicksFromMillisecondsD(-1200000), timeline->ZeroTime());
+  EXPECT_EQ(TimeTicksFromMillisecondsD(-1200000),
+            timeline->CalculateZeroTime());
   EXPECT_EQ(1500000, timeline->CurrentTimeMilliseconds());
 
   GetAnimationClock().UpdateTime(TimeTicksFromMillisecondsD(400000));
-  EXPECT_EQ(TimeTicksFromMillisecondsD(-1200000), timeline->ZeroTime());
+  EXPECT_EQ(TimeTicksFromMillisecondsD(-1200000),
+            timeline->CalculateZeroTime());
   EXPECT_EQ(1600000, timeline->CurrentTimeMilliseconds());
 }
 
 TEST_F(AnimationDocumentTimelineTest, PauseForTesting) {
-  float seek_time = 1;
+  AnimationTimeDelta seek_time = AnimationTimeDelta::FromSecondsD(1);
   timing.fill_mode = Timing::FillMode::FORWARDS;
   auto* anim1 = MakeGarbageCollected<KeyframeEffect>(
       element.Get(), CreateEmptyEffectModel(), timing);
@@ -362,13 +371,27 @@ TEST_F(AnimationDocumentTimelineTest, PauseForTesting) {
   Animation* animation2 = timeline->Play(anim2);
   timeline->PauseAnimationsForTesting(seek_time);
 
-  EXPECT_FLOAT_EQ(seek_time * 1000, animation1->currentTime().value());
-  EXPECT_FLOAT_EQ(seek_time * 1000, animation2->currentTime().value());
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  V8CSSNumberish* current_time = animation1->currentTime();
+  EXPECT_NEAR(seek_time.InMillisecondsF(), current_time->GetAsDouble(),
+              Animation::kTimeToleranceMs);
+  current_time = animation2->currentTime();
+  EXPECT_NEAR(seek_time.InMillisecondsF(), current_time->GetAsDouble(),
+              Animation::kTimeToleranceMs);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  CSSNumberish current_time;
+  animation1->currentTime(current_time);
+  EXPECT_NEAR(seek_time.InMillisecondsF(), current_time.GetAsDouble(),
+              Animation::kTimeToleranceMs);
+  animation2->currentTime(current_time);
+  EXPECT_NEAR(seek_time.InMillisecondsF(), current_time.GetAsDouble(),
+              Animation::kTimeToleranceMs);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 }
 
 TEST_F(AnimationDocumentTimelineTest, DelayBeforeAnimationStart) {
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(2);
-  timing.start_delay = 5;
+  timing.start_delay = AnimationTimeDelta::FromSecondsD(5);
 
   auto* keyframe_effect = MakeGarbageCollected<KeyframeEffect>(
       element.Get(), CreateEmptyEffectModel(), timing);
@@ -377,13 +400,14 @@ TEST_F(AnimationDocumentTimelineTest, DelayBeforeAnimationStart) {
 
   // TODO: Put the animation startTime in the future when we add the capability
   // to change animation startTime
-  EXPECT_CALL(*platform_timing, WakeAfter(base::TimeDelta::FromSecondsD(
-                                    timing.start_delay - MinimumDelay())));
+  EXPECT_CALL(*platform_timing,
+              WakeAfter(base::TimeDelta::FromSecondsD(
+                  timing.start_delay.InSecondsF() - MinimumDelay())));
   UpdateClockAndService(0);
 
   EXPECT_CALL(*platform_timing,
-              WakeAfter(base::TimeDelta::FromSecondsD(timing.start_delay -
-                                                      MinimumDelay() - 1.5)));
+              WakeAfter(base::TimeDelta::FromSecondsD(
+                  timing.start_delay.InSecondsF() - MinimumDelay() - 1.5)));
   UpdateClockAndService(1500);
 
   timeline->ScheduleServiceOnNextFrame();
@@ -397,12 +421,17 @@ TEST_F(AnimationDocumentTimelineTest, UseAnimationAfterTimelineDeref) {
   Animation* animation = timeline->Play(nullptr);
   timeline.Clear();
   // Test passes if this does not crash.
-  animation->setStartTime(0);
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  animation->setStartTime(MakeGarbageCollected<V8CSSNumberish>(0),
+                          ASSERT_NO_EXCEPTION);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  animation->setStartTime(CSSNumberish::FromDouble(0));
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 }
 
 TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref) {
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(2);
-  timing.start_delay = 5;
+  timing.start_delay = AnimationTimeDelta::FromSecondsD(5);
 
   DocumentTimeline* timeline = &document->Timeline();
   document = nullptr;
@@ -459,8 +488,9 @@ TEST_F(AnimationDocumentTimelineRealTimeTest,
   DocumentTimeline* timeline =
       MakeGarbageCollected<DocumentTimeline>(document.Get(), origin_time);
   timeline->SetPlaybackRate(0.5);
-  EXPECT_EQ(origin_time * 2,
-            timeline->ZeroTime() - document->Timeline().ZeroTime());
+
+  EXPECT_TIME_NEAR(AnimationTimeDelta(origin_time) * 2,
+                   timeline->ZeroTime() - document->Timeline().ZeroTime());
 }
 
 }  // namespace blink

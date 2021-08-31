@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
 
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 
 namespace content {
@@ -15,10 +16,10 @@ using blink::scheduler::WebSchedulerTrackedFeature;
 
 std::string DescribeFeatures(uint64_t blocklisted_features) {
   std::vector<std::string> features;
-  for (size_t i = 0;
-       i <= static_cast<size_t>(WebSchedulerTrackedFeature::kMaxValue); ++i) {
-    if (blocklisted_features & (1 << i)) {
-      features.push_back(blink::scheduler::FeatureToString(
+  for (uint32_t i = 0;
+       i <= static_cast<uint32_t>(WebSchedulerTrackedFeature::kMaxValue); ++i) {
+    if (blocklisted_features & (1ULL << i)) {
+      features.push_back(blink::scheduler::FeatureToHumanReadableString(
           static_cast<WebSchedulerTrackedFeature>(i)));
     }
   }
@@ -30,6 +31,18 @@ std::string DescribeFeatures(uint64_t blocklisted_features) {
 bool BackForwardCacheCanStoreDocumentResult::CanStore() const {
   return not_stored_reasons_.none();
 }
+
+namespace {
+std::string DisabledReasonsToString(
+    const std::set<BackForwardCache::DisabledReason>& reasons) {
+  std::vector<std::string> descriptions;
+  for (const auto& reason : reasons) {
+    descriptions.push_back(base::StringPrintf(
+        "%d:%d:%s", reason.source, reason.id, reason.description.c_str()));
+  }
+  return base::JoinString(descriptions, ", ");
+}
+}  // namespace
 
 std::string BackForwardCacheCanStoreDocumentResult::ToString() const {
   using Reason = BackForwardCacheMetrics::NotRestoredReason;
@@ -72,10 +85,7 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "blocklisted features: " + DescribeFeatures(blocklisted_features_);
     case Reason::kDisableForRenderFrameHostCalled:
       return "BackForwardCache::DisableForRenderFrameHost() was called: " +
-             base::JoinString(
-                 std::vector<std::string>(disabled_reasons_.begin(),
-                                          disabled_reasons_.end()),
-                 ", ");
+             DisabledReasonsToString(disabled_reasons_);
     case Reason::kDomainNotAllowed:
       return "This domain is not allowed to be stored in BackForwardCache";
     case Reason::kHTTPMethodNotGET:
@@ -86,6 +96,8 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "timeout";
     case Reason::kCacheLimit:
       return "cache limit";
+    case Reason::kForegroundCacheLimit:
+      return "foreground cache limit";
     case Reason::kJavaScriptExecution:
       return "JavaScript execution";
     case Reason::kRendererProcessKilled:
@@ -110,10 +122,6 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "postMessage from service worker";
     case Reason::kEnteredBackForwardCacheBeforeServiceWorkerHostAdded:
       return "frame already in the cache when service worker host was added";
-    case Reason::kRenderFrameHostReused_SameSite:
-      return "RenderFrameHost is reused for a same-site navigation";
-    case Reason::kRenderFrameHostReused_CrossSite:
-      return "RenderFrameHost is reused for a cross-site navigation";
     case Reason::kNotMostRecentNavigationEntry:
       return "navigation entry is not the most recent one for this document";
     case Reason::kServiceWorkerClaim:
@@ -131,20 +139,33 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "BackForwardCache is disabled through command line (may include "
              "cases where the embedder disabled it due to, e.g., enterprise "
              "policy)";
-    case Reason::kFrameTreeNodeStateReset:
-      return "document-associated state stored in FrameTreeNode was lost after "
-             "navigating away";
     case Reason::kNavigationCancelledWhileRestoring:
       return "Navigation request was cancelled after js eviction was disabled";
-    case Reason::kNetworkRequestDatapipeDrained:
-      return "Network requests' datapipe is drained already upon bfcache "
-             "entrance";
     case Reason::kNetworkRequestRedirected:
       return "Network request is redirected in bfcache";
     case Reason::kNetworkRequestTimeout:
       return "Network request is open for too long and exceeds time limit";
     case Reason::kNetworkExceedsBufferLimit:
       return "Network request reads too much data and exceeds buffer limit";
+    case Reason::kBackForwardCacheDisabledForPrerender:
+      return "BackForwardCache is disabled for Prerender";
+    case Reason::kUserAgentOverrideDiffers:
+      return "User-agent override differs";
+    case Reason::kNetworkRequestDatapipeDrainedAsBytesConsumer:
+      return "Network requests' datapipe has been passed as bytes consumer";
+    case Reason::kBrowsingInstanceNotSwapped:
+      return "Browsing instance is not swapped";
+    case Reason::kBackForwardCacheDisabledForDelegate:
+      return "BackForwardCache is not supported by delegate";
+    case Reason::kOptInUnloadHeaderNotPresent:
+      return "BFCache-Opt-In header not present, or does not include `unload` "
+             "token, and an experimental config which requires it is active.";
+    case Reason::kUnloadHandlerExistsInMainFrame:
+      return "Unload handler exists in the main frame, and the current "
+             "experimental config doesn't permit it to be BFCached.";
+    case Reason::kUnloadHandlerExistsInSubFrame:
+      return "Unload handler exists in a sub frame, and the current "
+             "experimental config doesn't permit it to be BFCached.";
   }
 }
 
@@ -160,22 +181,24 @@ void BackForwardCacheCanStoreDocumentResult::NoDueToFeatures(
   blocklisted_features_ |= features;
 }
 
-void BackForwardCacheCanStoreDocumentResult::NoDueToRelatedActiveContents(
-    base::Optional<ShouldSwapBrowsingInstance>
-        browsing_instance_not_swapped_reason) {
-  not_stored_reasons_.set(static_cast<size_t>(
-      BackForwardCacheMetrics::NotRestoredReason::kRelatedActiveContentsExist));
-  browsing_instance_not_swapped_reason_ = browsing_instance_not_swapped_reason;
-}
-
 void BackForwardCacheCanStoreDocumentResult::
     NoDueToDisableForRenderFrameHostCalled(
-        const std::set<std::string>& reasons) {
+        const std::set<BackForwardCache::DisabledReason>& reasons) {
   not_stored_reasons_.set(
       static_cast<size_t>(BackForwardCacheMetrics::NotRestoredReason::
                               kDisableForRenderFrameHostCalled));
-  for (const std::string& reason : reasons)
+  for (const BackForwardCache::DisabledReason& reason : reasons)
     disabled_reasons_.insert(reason);
+}
+
+void BackForwardCacheCanStoreDocumentResult::AddReasonsFrom(
+    const BackForwardCacheCanStoreDocumentResult& other) {
+  not_stored_reasons_ |= other.not_stored_reasons();
+  blocklisted_features_ |= other.blocklisted_features();
+  for (const BackForwardCache::DisabledReason& reason :
+       other.disabled_reasons()) {
+    disabled_reasons_.insert(reason);
+  }
 }
 
 BackForwardCacheCanStoreDocumentResult::

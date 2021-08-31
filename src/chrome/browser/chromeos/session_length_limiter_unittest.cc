@@ -8,8 +8,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/power_monitor/test/fake_power_monitor_source.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/power_monitor_test.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -48,7 +48,7 @@ class WallClockForwarder {
   base::TestMockTimeTaskRunner* const runner_;
 
   // Used to simulate a power suspend and resume.
-  base::test::ScopedFakePowerMonitorSource fake_power_monitor_source_;
+  base::test::ScopedPowerMonitorTestSource fake_power_monitor_source_;
 };
 
 }  // namespace
@@ -234,8 +234,8 @@ void SessionLengthLimiterTest::CreateSessionLengthLimiter(
       .WillByDefault(
           Invoke(runner_.get(), &base::TestMockTimeTaskRunner::GetMockClock));
   EXPECT_CALL(*delegate_, StopSession()).Times(0);
-  session_length_limiter_.reset(
-      new SessionLengthLimiter(delegate_, browser_restarted));
+  session_length_limiter_ =
+      std::make_unique<SessionLengthLimiter>(delegate_, browser_restarted);
 }
 
 void SessionLengthLimiterTest::DestroySessionLengthLimiter() {

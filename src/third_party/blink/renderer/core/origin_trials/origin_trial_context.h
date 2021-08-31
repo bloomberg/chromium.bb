@@ -5,10 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ORIGIN_TRIALS_ORIGIN_TRIAL_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ORIGIN_TRIALS_ORIGIN_TRIAL_CONTEXT_H_
 
+#include "third_party/blink/public/common/origin_trials/trial_token.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -18,6 +20,31 @@ namespace blink {
 
 class ExecutionContext;
 class ScriptState;
+class TrialToken;
+
+enum class OriginTrialStatus {
+  kEnabled = 0,
+  kValidTokenNotProvided = 1,
+  kOSNotSupported = 2,
+  kTrialNotAllowed = 3,
+};
+
+struct OriginTrialTokenResult {
+  OriginTrialTokenResult(const String& raw_token,
+                         OriginTrialTokenStatus status,
+                         const absl::optional<TrialToken>& parsed_token);
+  ~OriginTrialTokenResult() = default;
+
+  String raw_token;
+  OriginTrialTokenStatus status;
+  absl::optional<TrialToken> parsed_token;
+};
+
+struct OriginTrialResult {
+  String trial_name;
+  OriginTrialStatus status;
+  Vector<OriginTrialTokenResult> token_results;
+};
 
 // The Origin Trials Framework provides limited access to experimental features,
 // on a per-origin basis (origin trials). This class provides the implementation
@@ -123,6 +150,14 @@ class CORE_EXPORT OriginTrialContext final
 
   void Trace(Visitor*) const;
 
+  // A copy of the HashMap is returned as new entries can be added to
+  // `trial_results_` afterwards, which potentially causes
+  // inconsistency.
+  const HashMap<String, OriginTrialResult> GetOriginTrialResultsForDevtools()
+      const {
+    return trial_results_;
+  }
+
  private:
   // Handle token from document origin or third party origins, initialize
   // features if the token is valid.
@@ -138,7 +173,8 @@ class CORE_EXPORT OriginTrialContext final
 
   // Enable features by trial name. Returns true or false to indicate whether
   // some features are enabled as the result.
-  bool EnableTrialFromName(const String& trial_name, base::Time expiry_time);
+  OriginTrialStatus EnableTrialFromName(const String& trial_name,
+                                        base::Time expiry_time);
 
   // Validate the trial token. If valid, the trial named in the token is
   // added to the list of enabled trials. Returns true or false to indicate if
@@ -162,19 +198,29 @@ class CORE_EXPORT OriginTrialContext final
                                              bool is_third_party);
 
   // Installs JavaScript bindings on the relevant objects for the specified
-  // OriginTrialFeature.
-  void InstallFeature(OriginTrialFeature, ScriptState*);
+  // OriginTrialFeature. Returns true if the feature was not already added
+  // before, otherwise false.
+  bool InstallFeature(OriginTrialFeature, ScriptState*);
+
+  // Caches raw origin trial token along with the parse result to
+  // `trial_results_`.
+  void CacheToken(const String& raw_token,
+                  const TrialTokenResult&,
+                  OriginTrialStatus);
 
   const SecurityOrigin* GetSecurityOrigin();
   bool IsSecureContext();
 
-  Vector<String> tokens_;
   HashSet<OriginTrialFeature> enabled_features_;
   HashSet<OriginTrialFeature> installed_features_;
   HashSet<OriginTrialFeature> navigation_activated_features_;
   WTF::HashMap<OriginTrialFeature, base::Time> feature_expiry_times_;
   std::unique_ptr<TrialTokenValidator> trial_token_validator_;
   Member<ExecutionContext> context_;
+  // Stores raw origin trial token along with the parse result.
+  // This field is mainly used for devtools support, but
+  // `OriginTrialContext::GetTokens` also depends on the structure.
+  HashMap</* Trial Name */ String, OriginTrialResult> trial_results_;
 };
 
 }  // namespace blink

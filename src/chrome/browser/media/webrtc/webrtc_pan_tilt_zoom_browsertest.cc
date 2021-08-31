@@ -39,11 +39,6 @@ class WebRtcPanTiltZoomPermissionBrowserTest
     : public WebRtcTestBase,
       public testing::WithParamInterface<PermissionTestConfig> {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "MediaCapturePanTilt");
-  }
-
   void SetUpInProcessBrowserTestFixture() override {
     DetectErrorsInJavaScript();
   }
@@ -415,9 +410,8 @@ class WebRtcPanTiltZoomPermissionRequestBrowserTest
           bool /* IsPanTiltZoomSupported() */> {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures,
-        "MediaCapturePanTilt,PermissionsRequestRevoke");
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "PermissionsRequestRevoke");
   }
 
   bool IsPanTiltZoomSupported() const { return GetParam(); }
@@ -433,7 +427,7 @@ class WebRtcPanTiltZoomPermissionRequestBrowserTest
     blink::MediaStreamDevice fake_video_device(
         blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, "fake_video_dev",
         "Fake Video Device", control_support, media::MEDIA_VIDEO_FACING_NONE,
-        base::nullopt);
+        absl::nullopt);
     video_devices.push_back(fake_video_device);
     MediaCaptureDevicesDispatcher::GetInstance()->SetTestVideoCaptureDevices(
         video_devices);
@@ -472,9 +466,8 @@ INSTANTIATE_TEST_SUITE_P(RequestPanTiltZoomPermission,
 class WebRtcPanTiltZoomCameraDevicesBrowserTest : public WebRtcTestBase {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures,
-        "MediaCapturePanTilt,PermissionsRequestRevoke");
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "PermissionsRequestRevoke");
   }
 
   void SetVideoCaptureDevice(bool pan_supported,
@@ -484,7 +477,7 @@ class WebRtcPanTiltZoomCameraDevicesBrowserTest : public WebRtcTestBase {
     blink::MediaStreamDevice fake_video_device(
         blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, "fake_video_dev",
         "Fake Video Device", {pan_supported, tilt_supported, zoom_supported},
-        media::MEDIA_VIDEO_FACING_NONE, base::nullopt);
+        media::MEDIA_VIDEO_FACING_NONE, absl::nullopt);
     video_devices.push_back(fake_video_device);
     MediaCaptureDevicesDispatcher::GetInstance()->SetTestVideoCaptureDevices(
         video_devices);
@@ -592,7 +585,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcPanTiltZoomFakeCameraDevicesBrowserTest,
 
   // Hide page.
   tab->WasHidden();
-  base::string16 expected_title = base::ASCIIToUTF16("hidden");
+  std::u16string expected_title = u"hidden";
   EXPECT_EQ(expected_title,
             content::TitleWatcher(tab, expected_title).WaitAndGetTitle());
 
@@ -616,7 +609,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcPanTiltZoomFakeCameraDevicesBrowserTest,
 
   // Show page.
   tab->WasShown();
-  expected_title = base::ASCIIToUTF16("visible");
+  expected_title = u"visible";
   EXPECT_EQ(expected_title,
             content::TitleWatcher(tab, expected_title).WaitAndGetTitle());
 

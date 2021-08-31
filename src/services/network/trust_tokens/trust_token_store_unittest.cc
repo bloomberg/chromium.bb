@@ -50,7 +50,7 @@ TEST(TrustTokenStoreTest, RecordsIssuances) {
   base::test::TaskEnvironment env(
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
-  EXPECT_EQ(my_store->TimeSinceLastIssuance(issuer), base::nullopt);
+  EXPECT_EQ(my_store->TimeSinceLastIssuance(issuer), absl::nullopt);
 
   // Recording an issuance should result in the time
   // since last issuance being correctly returned.
@@ -73,7 +73,7 @@ TEST(TrustTokenStoreTest, DoesntReportMissingOrMalformedIssuanceTimestamps) {
   auto issuer_config_with_no_time = std::make_unique<TrustTokenIssuerConfig>();
   raw_persister->SetIssuerConfig(issuer, std::move(issuer_config_with_no_time));
 
-  EXPECT_EQ(my_store->TimeSinceLastIssuance(issuer), base::nullopt);
+  EXPECT_EQ(my_store->TimeSinceLastIssuance(issuer), absl::nullopt);
 
   auto issuer_config_with_malformed_time =
       std::make_unique<TrustTokenIssuerConfig>();
@@ -82,7 +82,7 @@ TEST(TrustTokenStoreTest, DoesntReportMissingOrMalformedIssuanceTimestamps) {
   raw_persister->SetIssuerConfig(issuer,
                                  std::move(issuer_config_with_malformed_time));
 
-  EXPECT_EQ(my_store->TimeSinceLastIssuance(issuer), base::nullopt);
+  EXPECT_EQ(my_store->TimeSinceLastIssuance(issuer), absl::nullopt);
 }
 
 TEST(TrustTokenStoreTest, DoesntReportNegativeTimeSinceLastIssuance) {
@@ -106,7 +106,7 @@ TEST(TrustTokenStoreTest, DoesntReportNegativeTimeSinceLastIssuance) {
 
   // TimeSinceLastIssuance shouldn't return negative values.
 
-  EXPECT_EQ(my_store->TimeSinceLastIssuance(issuer), base::nullopt);
+  EXPECT_EQ(my_store->TimeSinceLastIssuance(issuer), absl::nullopt);
 }
 
 TEST(TrustTokenStore, RecordsRedemptions) {
@@ -122,7 +122,7 @@ TEST(TrustTokenStore, RecordsRedemptions) {
   base::test::TaskEnvironment env(
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
-  EXPECT_EQ(my_store->TimeSinceLastRedemption(issuer, toplevel), base::nullopt);
+  EXPECT_EQ(my_store->TimeSinceLastRedemption(issuer, toplevel), absl::nullopt);
 
   // Recording a redemption should result in the time
   // since last redemption being correctly returned.
@@ -150,7 +150,7 @@ TEST(TrustTokenStoreTest, DoesntReportMissingOrMalformedRedemptionTimestamps) {
   raw_persister->SetIssuerToplevelPairConfig(issuer, toplevel,
                                              std::move(config_with_no_time));
 
-  EXPECT_EQ(my_store->TimeSinceLastRedemption(issuer, toplevel), base::nullopt);
+  EXPECT_EQ(my_store->TimeSinceLastRedemption(issuer, toplevel), absl::nullopt);
 
   auto config_with_malformed_time =
       std::make_unique<TrustTokenIssuerToplevelPairConfig>();
@@ -159,7 +159,7 @@ TEST(TrustTokenStoreTest, DoesntReportMissingOrMalformedRedemptionTimestamps) {
   raw_persister->SetIssuerToplevelPairConfig(
       issuer, toplevel, std::move(config_with_malformed_time));
 
-  EXPECT_EQ(my_store->TimeSinceLastRedemption(issuer, toplevel), base::nullopt);
+  EXPECT_EQ(my_store->TimeSinceLastRedemption(issuer, toplevel), absl::nullopt);
 }
 
 TEST(TrustTokenStoreTest, DoesntReportNegativeTimeSinceLastRedemption) {
@@ -187,7 +187,7 @@ TEST(TrustTokenStoreTest, DoesntReportNegativeTimeSinceLastRedemption) {
 
   // TimeSinceLastRedemption shouldn't return negative values.
 
-  EXPECT_EQ(my_store->TimeSinceLastRedemption(issuer, toplevel), base::nullopt);
+  EXPECT_EQ(my_store->TimeSinceLastRedemption(issuer, toplevel), absl::nullopt);
 }
 
 TEST(TrustTokenStore, AssociatesToplevelsWithIssuers) {
@@ -282,6 +282,32 @@ TEST(TrustTokenStore, CountsTokens) {
   my_store->AddTokens(issuer, std::vector<std::string>(2),
                       /*issuing_key=*/"");
   EXPECT_EQ(my_store->CountTokens(issuer), 3);
+}
+
+TEST(TrustTokenStore, GetsAllStoredTokens) {
+  auto my_store = TrustTokenStore::CreateForTesting(
+      std::make_unique<InMemoryTrustTokenPersister>());
+
+  // A freshly initialized store should be storing zero tokens.
+  EXPECT_TRUE(my_store->GetStoredTrustTokenCounts().empty());
+
+  // Add a token; the count should increase.
+  SuitableTrustTokenOrigin issuer_a =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer-a.com"));
+  my_store->AddTokens(issuer_a, std::vector<std::string>(1),
+                      /*issuing_key=*/"");
+  auto result = my_store->GetStoredTrustTokenCounts();
+  EXPECT_TRUE(result.contains(issuer_a));
+  EXPECT_EQ(result.find(issuer_a)->second, 1);
+
+  // Add two tokens for a different issuer.
+  SuitableTrustTokenOrigin issuer_b =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer-b.com"));
+  my_store->AddTokens(issuer_b, std::vector<std::string>(2),
+                      /*issuing_key=*/"");
+  result = my_store->GetStoredTrustTokenCounts();
+  EXPECT_TRUE(result.contains(issuer_b));
+  EXPECT_EQ(result.find(issuer_b)->second, 2);
 }
 
 TEST(TrustTokenStore, PrunesDataAssociatedWithRemovedKeyCommitments) {
@@ -450,7 +476,7 @@ TEST(TrustTokenStore, SetsAndRetrievesRedemptionRecord) {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
   EXPECT_EQ(my_store->RetrieveNonstaleRedemptionRecord(issuer, toplevel),
-            base::nullopt);
+            absl::nullopt);
 
   // Providing a redemption record should mean that subsequent
   // queries (modulo the record's staleness) should return that
@@ -480,7 +506,7 @@ TEST(TrustTokenStore, RetrieveRedemptionRecordHandlesConfigWithNoRecord) {
       issuer, toplevel, std::make_unique<TrustTokenIssuerToplevelPairConfig>());
 
   EXPECT_EQ(my_store->RetrieveNonstaleRedemptionRecord(issuer, toplevel),
-            base::nullopt);
+            absl::nullopt);
 }
 
 TEST(TrustTokenStore, SetRedemptionRecordOverwritesExisting) {
@@ -536,7 +562,7 @@ TEST(TrustTokenStore, DoesNotReturnStaleRedemptionRecord) {
   my_store->SetRedemptionRecord(issuer, toplevel, my_record);
 
   EXPECT_EQ(my_store->RetrieveNonstaleRedemptionRecord(issuer, toplevel),
-            base::nullopt);
+            absl::nullopt);
 }
 
 TEST(TrustTokenStore, EmptyFilter) {
@@ -671,6 +697,44 @@ TEST(TrustTokenStore, RemovesDataForNullFilter) {
   EXPECT_FALSE(store->CountTokens(issuer));
   EXPECT_FALSE(store->IsAssociated(issuer, toplevel));
   EXPECT_FALSE(store->RetrieveNonstaleRedemptionRecord(issuer, toplevel));
+}
+
+TEST(TrustTokenStore, RemovesTrustTokensByIssuer) {
+  auto store = TrustTokenStore::CreateForTesting();
+  auto issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://www.issuer.com"));
+
+  // Add token for issuer.
+  store->AddTokens(issuer, std::vector<std::string>{"token"}, "key");
+
+  EXPECT_TRUE(store->CountTokens(issuer));
+  EXPECT_TRUE(store->DeleteStoredTrustTokens(issuer));
+  EXPECT_FALSE(store->CountTokens(issuer));
+}
+
+TEST(TrustTokenStore, RemoveReturnsFalseWhenNoTrustTokensAreDeleted) {
+  auto store = TrustTokenStore::CreateForTesting();
+  auto issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://www.issuer.com"));
+
+  EXPECT_FALSE(store->CountTokens(issuer));
+  EXPECT_FALSE(store->DeleteStoredTrustTokens(issuer));
+}
+
+TEST(TrustTokenStore, RemovesTrustTokensByIssuerAndKeepsOthers) {
+  auto store = TrustTokenStore::CreateForTesting();
+  auto issuer_foo =
+      *SuitableTrustTokenOrigin::Create(GURL("https://www.issuer-foo.com"));
+  auto issuer_bar =
+      *SuitableTrustTokenOrigin::Create(GURL("https://www.issuer-bar.com"));
+
+  // Add tokens for both issuers.
+  store->AddTokens(issuer_foo, std::vector<std::string>{"token"}, "key");
+  store->AddTokens(issuer_bar, std::vector<std::string>{"token"}, "key");
+
+  EXPECT_TRUE(store->DeleteStoredTrustTokens(issuer_foo));
+  EXPECT_FALSE(store->CountTokens(issuer_foo));
+  EXPECT_TRUE(store->CountTokens(issuer_bar));
 }
 
 }  // namespace trust_tokens

@@ -1,3 +1,0 @@
-# this table simpy checks if files can be inlcuded from a local dir and from the global dir
-include pass2.ctb
-include braille-patterns.cti

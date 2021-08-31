@@ -58,9 +58,6 @@ class ManagePasswordsTest : public InProcessBrowserTest {
   // Put the controller, icon, and bubble into the "More problems to fix" state.
   void SetupMoreToFixState();
 
-  // Put the controller, icon, and bubble into the "Some problems to fix" state.
-  void SetupUnsafeState();
-
   // Put the controller, icon, and bubble into a moving-password state.
   void SetupMovingPasswords();
 
@@ -87,9 +84,7 @@ class ManagePasswordsTest : public InProcessBrowserTest {
   password_manager::StubPasswordManagerDriver driver_;
   password_manager::FakeFormFetcher fetcher_;
 
-  std::unique_ptr<
-      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
-      create_services_subscription_;
+  base::CallbackListSubscription create_services_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsTest);
 };

@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 #
 # Copyright 2018 The ANGLE Project Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -10,11 +10,14 @@
 # List of supported extensions. Add to this list to enable new extensions
 # available in gl.xml.
 
-import sys
 import os
+import sys
 import xml.etree.ElementTree as etree
 
+from enum import Enum
+
 xml_inputs = [
+    'cl.xml',
     'gl.xml',
     'gl_angle_ext.xml',
     'egl.xml',
@@ -33,6 +36,7 @@ angle_extensions = [
     "GL_CHROMIUM_lose_context",
     "GL_ANGLE_copy_texture_3d",
     "GL_ANGLE_get_image",
+    "GL_ANGLE_get_serialized_context_string",
     "GL_ANGLE_get_tex_level_parameter",
     "GL_ANGLE_program_binary",
     "GL_ANGLE_request_extension",
@@ -63,9 +67,12 @@ gles_extensions = [
     "GL_ANGLE_semaphore_fuchsia",
     "GL_ANGLE_texture_multisample",
     "GL_ANGLE_translated_shader_source",
+    "GL_KHR_blend_equation_advanced",
     "GL_EXT_blend_func_extended",
     "GL_EXT_buffer_storage",
     "GL_EXT_copy_image",
+    "GL_EXT_clip_control",
+    "GL_EXT_debug_label",
     "GL_EXT_debug_marker",
     "GL_EXT_discard_framebuffer",
     "GL_EXT_disjoint_timer_query",
@@ -82,11 +89,17 @@ gles_extensions = [
     "GL_EXT_multisampled_render_to_texture",
     "GL_EXT_multisampled_render_to_texture2",
     "GL_EXT_occlusion_query_boolean",
+    "GL_EXT_primitive_bounding_box",
     "GL_EXT_read_format_bgra",
     "GL_EXT_robustness",
     "GL_EXT_semaphore",
     "GL_EXT_semaphore_fd",
+    "GL_EXT_separate_shader_objects",
+    "GL_EXT_shader_framebuffer_fetch_non_coherent",
+    "GL_EXT_shader_io_blocks",
     "GL_EXT_sRGB",
+    "GL_EXT_tessellation_shader",
+    "GL_EXT_texture_border_clamp",
     "GL_EXT_texture_buffer",
     "GL_EXT_texture_compression_bptc",
     "GL_EXT_texture_compression_dxt1",
@@ -98,9 +111,12 @@ gles_extensions = [
     "GL_EXT_texture_format_BGRA8888",
     "GL_EXT_texture_storage",
     "GL_EXT_texture_sRGB_R8",
+    "GL_EXT_texture_sRGB_RG8",
+    "GL_EXT_YUV_target",
     "GL_KHR_debug",
     "GL_KHR_parallel_shader_compile",
     "GL_NV_fence",
+    "GL_NV_framebuffer_blit",
     "GL_OES_compressed_ETC1_RGB8_texture",
     "GL_EXT_compressed_ETC1_RGB8_sub_texture",
     "GL_OES_copy_image",
@@ -111,6 +127,7 @@ gles_extensions = [
     "GL_OES_get_program_binary",
     "GL_OES_mapbuffer",
     "GL_OES_sample_shading",
+    "GL_OES_shader_io_blocks",
     "GL_OES_texture_3D",
     "GL_OES_texture_border_clamp",
     "GL_OES_texture_buffer",
@@ -155,6 +172,7 @@ supported_egl_extensions = [
     "EGL_EXT_pixel_format_float",
     "EGL_EXT_platform_base",
     "EGL_EXT_platform_device",
+    "EGL_EXT_protected_content",
     "EGL_IMG_context_priority",
     "EGL_KHR_debug",
     "EGL_KHR_fence_sync",
@@ -174,6 +192,11 @@ supported_egl_extensions = [
     "EGL_KHR_wait_sync",
     "EGL_NV_post_sub_buffer",
     "EGL_NV_stream_consumer_gltexture_yuv",
+]
+
+supported_cl_extensions = [
+    "cl_khr_extended_versioning",
+    "cl_khr_icd",
 ]
 
 # Strip these suffixes from Context entry point names. NV is excluded (for now).
@@ -202,6 +225,24 @@ unsupported_enum_group_names = {
     'ClampColorModeARB',
 }
 
+# Versions (major, minor). Note that GLES intentionally places 1.0 last.
+DESKTOP_GL_VERSIONS = [(1, 0), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (2, 0), (2, 1), (3, 0),
+                       (3, 1), (3, 2), (3, 3), (4, 0), (4, 1), (4, 2), (4, 3), (4, 4), (4, 5),
+                       (4, 6)]
+GLES_VERSIONS = [(2, 0), (3, 0), (3, 1), (3, 2), (1, 0)]
+EGL_VERSIONS = [(1, 0), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5)]
+WGL_VERSIONS = [(1, 0)]
+CL_VERSIONS = [(1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2), (3, 0)]
+
+
+# API types
+class apis:
+    GL = 'GL'
+    GLES = 'GLES'
+    WGL = 'WGL'
+    EGL = 'EGL'
+    CL = 'CL'
+
 
 def script_relative(path):
     return os.path.join(os.path.dirname(sys.argv[0]), path)
@@ -211,7 +252,17 @@ def path_to(folder, file):
     return os.path.join(script_relative(".."), "src", folder, file)
 
 
-class GLCommandNames:
+def strip_api_prefix(cmd_name):
+    return cmd_name.lstrip("cwegl")
+
+
+def get_cmd_name(command_node):
+    proto = command_node.find('proto')
+    cmd_name = proto.find('name').text
+    return cmd_name
+
+
+class CommandNames:
 
     def __init__(self):
         self.command_names = {}
@@ -222,7 +273,7 @@ class GLCommandNames:
     def get_all_commands(self):
         cmd_names = []
         # Combine all the version lists into a single list
-        for version, version_cmd_names in sorted(self.command_names.iteritems()):
+        for version, version_cmd_names in sorted(self.command_names.items()):
             cmd_names += version_cmd_names
 
         return cmd_names
@@ -243,7 +294,7 @@ class RegistryXML:
         if (ext_file):
             self._AppendANGLEExts(ext_file)
         self.all_commands = self.root.findall('commands/command')
-        self.all_cmd_names = GLCommandNames()
+        self.all_cmd_names = CommandNames()
         self.commands = {}
 
     def _AppendANGLEExts(self, ext_file):
@@ -282,6 +333,8 @@ class RegistryXML:
             return 'eglext'
         elif 'wgl' in supported:
             return 'wglext'
+        elif 'cl' in supported:
+            return 'clext'
         else:
             assert False
             return 'unknown'
@@ -320,7 +373,7 @@ class RegistryXML:
 
             self.ext_data[extension_name] = sorted(ext_cmd_names)
 
-        for extension_name, ext_cmd_names in sorted(self.ext_data.iteritems()):
+        for extension_name, ext_cmd_names in sorted(self.ext_data.items()):
 
             # Detect and filter duplicate extensions.
             dupes = []
@@ -334,3 +387,33 @@ class RegistryXML:
             self.ext_data[extension_name] = sorted(ext_cmd_names)
             self.ext_dupes[extension_name] = dupes
             self.all_cmd_names.add_commands(ext_annotations[extension_name], ext_cmd_names)
+
+
+class EntryPoints:
+
+    def __init__(self, api, xml, commands):
+        self.api = api
+        self._cmd_info = []
+
+        for command_node in xml.all_commands:
+            cmd_name = get_cmd_name(command_node)
+
+            if api == apis.WGL:
+                cmd_name = cmd_name if cmd_name[:3] == 'wgl' else 'wgl' + cmd_name
+
+            if cmd_name not in commands:
+                continue
+
+            param_text = ["".join(param.itertext()) for param in command_node.findall('param')]
+
+            # Treat (void) as ()
+            if len(param_text) == 1 and param_text[0].strip() == 'void':
+                param_text = []
+
+            proto = command_node.find('proto')
+            proto_text = "".join(proto.itertext())
+
+            self._cmd_info.append((cmd_name, command_node, param_text, proto_text))
+
+    def get_infos(self):
+        return self._cmd_info

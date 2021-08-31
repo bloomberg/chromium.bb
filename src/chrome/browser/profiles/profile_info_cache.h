@@ -9,7 +9,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -17,10 +16,11 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_init_params.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_info_interface.h"
@@ -51,25 +51,13 @@ class ProfileInfoCache : public ProfileInfoInterface,
   ProfileInfoCache& operator=(const ProfileInfoCache&) = delete;
   ~ProfileInfoCache() override;
 
-  // If the |supervised_user_id| is non-empty, the profile will be marked to be
-  // omitted from the avatar-menu list on desktop versions. This is used while a
-  // supervised user is in the process of being registered with the server. Use
-  // SetIsOmittedProfileAtIndex() to clear the flag when the profile is ready to
-  // be shown in the menu.
   // Deprecated. Use AddProfile instead.
-  void AddProfileToCache(const base::FilePath& profile_path,
-                         const base::string16& name,
-                         const std::string& gaia_id,
-                         const base::string16& user_name,
-                         bool is_consented_primary_account,
-                         size_t icon_index,
-                         const std::string& supervised_user_id,
-                         const AccountId& account_id);
+  void AddProfileToCache(ProfileAttributesInitParams params);
   // Deprecated. Use RemoveProfile instead.
   void DeleteProfileFromCache(const base::FilePath& profile_path);
 
   // ProfileInfoInterface:
-  size_t GetNumberOfProfiles() const override;
+  size_t GetNumberOfProfiles(bool include_guest_profile = false) const override;
   // Don't cache this value and reuse, because resorting the menu could cause
   // the item being referred to to change out from under you.
   // Deprecated. Prefer using the ProfileAttributesStorage interface instead of
@@ -109,19 +97,12 @@ class ProfileInfoCache : public ProfileInfoInterface,
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // ProfileAttributesStorage:
-  void AddProfile(const base::FilePath& profile_path,
-                  const base::string16& name,
-                  const std::string& gaia_id,
-                  const base::string16& user_name,
-                  bool is_consented_primary_account,
-                  size_t icon_index,
-                  const std::string& supervised_user_id,
-                  const AccountId& account_id) override;
+  void AddProfile(ProfileAttributesInitParams) override;
   void RemoveProfileByAccountId(const AccountId& account_id) override;
   void RemoveProfile(const base::FilePath& profile_path) override;
 
-  bool GetProfileAttributesWithPath(const base::FilePath& path,
-                                    ProfileAttributesEntry** entry) override;
+  ProfileAttributesEntry* GetProfileAttributesWithPath(
+      const base::FilePath& path) override;
   void DisableProfileMetricsForTesting() override;
 
   void NotifyProfileAuthInfoChanged(const base::FilePath& profile_path);
@@ -129,6 +110,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void NotifyProfileSupervisedUserIdChanged(const base::FilePath& profile_path);
   void NotifyProfileIsOmittedChanged(const base::FilePath& profile_path);
   void NotifyProfileThemeColorsChanged(const base::FilePath& profile_path);
+  void NotifyProfileHostedDomainChanged(const base::FilePath& profile_path);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest,
@@ -145,7 +127,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   std::string CacheKeyFromProfilePath(const base::FilePath& profile_path) const;
   std::vector<std::string>::iterator FindPositionForProfile(
       const std::string& search_key,
-      const base::string16& search_name);
+      const std::u16string& search_name);
 
   // Updates the position of the profile at the given index so that the list
   // of profiles is still sorted.
@@ -176,7 +158,10 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void LoadGAIAPictureIfNeeded();
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  ProfileAttributesEntry* InitEntryWithKey(const std::string& key,
+                                           bool is_omitted);
+
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // Migrate any legacy profile names ("First user", "Default Profile") to
   // new style default names ("Person 1"). Rename any duplicates of "Person n"
   // i.e. Two or more profiles with the profile name "Person 1" would be
@@ -185,7 +170,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   static void SetLegacyProfileMigrationForTesting(bool value);
 
   std::unique_ptr<signin::PersistentRepeatingTimer> repeating_timer_;
-#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
   std::vector<std::string> keys_;
   const base::FilePath user_data_dir_;

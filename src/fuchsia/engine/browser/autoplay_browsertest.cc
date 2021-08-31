@@ -6,12 +6,19 @@
 
 #include "base/files/file_path.h"
 #include "content/public/test/browser_test.h"
-#include "fuchsia/base/frame_test_util.h"
-#include "fuchsia/base/test_navigation_listener.h"
+#include "fuchsia/base/test/frame_test_util.h"
+#include "fuchsia/base/test/test_navigation_listener.h"
+#include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/test/test_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom.h"
+
+namespace {
+
+constexpr char kAutoplayVp8Url[] = "/play_video.html?autoplay=1&codecs=vp8";
+
+}  // namespace
 
 class AutoplayTest : public cr_fuchsia::WebEngineBrowserTest {
  public:
@@ -52,7 +59,7 @@ class AutoplayTest : public cr_fuchsia::WebEngineBrowserTest {
 IN_PROC_BROWSER_TEST_F(
     AutoplayTest,
     UserActivationPolicy_UserActivatedViaSimulatedInteraction) {
-  const GURL kUrl(embedded_test_server()->GetURL("/play_vp8.html?autoplay=1"));
+  const GURL kUrl(embedded_test_server()->GetURL(kAutoplayVp8Url));
   constexpr const char kPageLoadedTitle[] = "initial title";
 
   fuchsia::web::FramePtr frame =
@@ -75,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(AutoplayTest,
                        UserActivationPolicy_UserActivatedNavigation) {
-  const GURL kUrl(embedded_test_server()->GetURL("/play_vp8.html?autoplay=1"));
+  const GURL kUrl(embedded_test_server()->GetURL(kAutoplayVp8Url));
 
   fuchsia::web::FramePtr frame =
       CreateFrame(fuchsia::web::AutoplayPolicy::REQUIRE_USER_ACTIVATION);
@@ -89,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(AutoplayTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AutoplayTest, UserActivationPolicy_NoUserActivation) {
-  const GURL kUrl(embedded_test_server()->GetURL("/play_vp8.html?autoplay=1"));
+  const GURL kUrl(embedded_test_server()->GetURL(kAutoplayVp8Url));
 
   fuchsia::web::FramePtr frame =
       CreateFrame(fuchsia::web::AutoplayPolicy::REQUIRE_USER_ACTIVATION);
@@ -104,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(AutoplayTest, UserActivationPolicy_NoUserActivation) {
 
 IN_PROC_BROWSER_TEST_F(AutoplayTest,
                        AllowAllPolicy_DefaultNotUserActivatedNavigation) {
-  const GURL kUrl(embedded_test_server()->GetURL("/play_vp8.html?autoplay=1"));
+  const GURL kUrl(embedded_test_server()->GetURL(kAutoplayVp8Url));
 
   fuchsia::web::FramePtr frame =
       CreateFrame(fuchsia::web::AutoplayPolicy::ALLOW);

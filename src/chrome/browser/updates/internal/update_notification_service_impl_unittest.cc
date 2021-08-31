@@ -26,8 +26,8 @@ namespace {
 using testing::_;
 using ::testing::Invoke;
 
-const auto kTestTitle = base::UTF8ToUTF16("hello");
-const auto kTestMessage = base::UTF8ToUTF16("world");
+constexpr char16_t kTestTitle[] = u"hello";
+constexpr char16_t kTestMessage[] = u"world";
 
 class UpdateNotificationServiceImplTest : public testing::Test {
  public:
@@ -97,9 +97,9 @@ TEST_F(UpdateNotificationServiceImplTest, Schedule) {
                                 config()->deliver_window_evening,
                                 &deliver_window);
   expected_schedule_params.deliver_time_start =
-      base::make_optional(std::move(deliver_window.first));
+      absl::make_optional(std::move(deliver_window.first));
   expected_schedule_params.deliver_time_end =
-      base::make_optional(std::move(deliver_window.second));
+      absl::make_optional(std::move(deliver_window.second));
 
   notifications::NotificationData expected_notification_data;
   expected_notification_data.title = kTestTitle;

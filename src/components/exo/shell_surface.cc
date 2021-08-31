@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "components/exo/shell_surface_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -23,6 +24,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/compositor/layer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/transient_window_manager.h"
@@ -92,20 +94,20 @@ ShellSurface::ScopedConfigure::~ScopedConfigure() {
 
 ShellSurface::ShellSurface(Surface* surface,
                            const gfx::Point& origin,
-                           bool activatable,
                            bool can_minimize,
                            int container)
-    : ShellSurfaceBase(surface, origin, activatable, can_minimize, container) {}
+    : ShellSurfaceBase(surface, origin, can_minimize, container) {}
 
 ShellSurface::ShellSurface(Surface* surface)
     : ShellSurfaceBase(surface,
                        gfx::Point(),
-                       true,
-                       true,
+                       /*can_minimize=*/true,
                        ash::desks_util::GetActiveDeskContainerId()) {}
 
 ShellSurface::~ShellSurface() {
   DCHECK(!scoped_configure_);
+  // Client is gone by now, so don't call callback.
+  configure_callback_.Reset();
   if (widget_)
     ash::WindowState::Get(widget_->GetNativeWindow())->RemoveObserver(this);
 }
@@ -235,11 +237,6 @@ void ShellSurface::StartResize(int component) {
   AttemptToStartDrag(component);
 }
 
-bool ShellSurface::ShouldAutoMaximize() {
-  // Unless a child class overrides the behaviour, we will never auto-maximize.
-  return false;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // SurfaceDelegate overrides:
 
@@ -291,10 +288,10 @@ void ShellSurface::InitializeWindowState(ash::WindowState* window_state) {
   MaybeMakeTransient();
 }
 
-base::Optional<gfx::Rect> ShellSurface::GetWidgetBounds() const {
+absl::optional<gfx::Rect> ShellSurface::GetWidgetBounds() const {
   // Defer if configure requests are pending.
   if (!pending_configs_.empty() || scoped_configure_)
-    return base::nullopt;
+    return absl::nullopt;
 
   gfx::Rect visible_bounds = GetVisibleBounds();
   gfx::Rect new_widget_bounds =
@@ -423,7 +420,11 @@ void ShellSurface::OnPostWindowStateTypeChange(
     ash::WindowState* window_state,
     chromeos::WindowStateType old_type) {
   chromeos::WindowStateType new_type = window_state->GetStateType();
-  if (chromeos::IsMaximizedOrFullscreenOrPinnedWindowStateType(new_type)) {
+  // For exo-client using client-side decoration, window-state information is
+  // needed to toggle the maximize and restore buttons. When the window is
+  // restored, we show a maximized button; otherwise we show a restore button.
+  if (chromeos::IsMaximizedOrFullscreenOrPinnedWindowStateType(old_type) ||
+      chromeos::IsMaximizedOrFullscreenOrPinnedWindowStateType(new_type)) {
     Configure();
   }
 
@@ -479,10 +480,6 @@ bool ShellSurface::OnPreWidgetCommit() {
       Configure();
       return false;
     }
-
-    // Allow the window to maximize itself on launch.
-    if (ShouldAutoMaximize())
-      initial_show_state_ = ui::SHOW_STATE_MAXIMIZED;
 
     CreateShellSurfaceWidget(initial_show_state_);
   }
@@ -547,8 +544,8 @@ void ShellSurface::Configure(bool ends_drag) {
   // If surface is being resized, save the resize direction.
   if (window_state && window_state->is_dragged() && !ends_drag)
     resize_component = window_state->drag_details()->window_component;
-
   uint32_t serial = 0;
+
   if (!configure_callback_.is_null()) {
     if (window_state) {
       serial = configure_callback_.Run(
@@ -600,7 +597,8 @@ void ShellSurface::AttemptToStartDrag(int component) {
   }
   auto end_drag = [](ShellSurface* shell_surface,
                      ash::ToplevelWindowEventHandler::DragResult result) {
-    shell_surface->EndDrag();
+    if (result != ash::ToplevelWindowEventHandler::DragResult::WINDOW_DESTROYED)
+      shell_surface->EndDrag();
   };
 
   if (gesture_target) {

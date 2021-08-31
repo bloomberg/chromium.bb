@@ -13,21 +13,23 @@
 #include "base/values.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/trust_tokens/suitable_trust_token_origin.h"
+#include "services/network/trust_tokens/types.h"
 
 namespace network {
 
 const char kTrustTokenKeyCommitmentProtocolVersionField[] = "protocol_version";
 const char kTrustTokenKeyCommitmentIDField[] = "id";
 const char kTrustTokenKeyCommitmentBatchsizeField[] = "batchsize";
+const char kTrustTokenKeyCommitmentKeysField[] = "keys";
 const char kTrustTokenKeyCommitmentExpiryField[] = "expiry";
 const char kTrustTokenKeyCommitmentKeyField[] = "Y";
 const char kTrustTokenKeyCommitmentRequestIssuanceLocallyOnField[] =
     "request_issuance_locally_on";
-const char kTrustTokenLocalIssuanceOsAndroid[] = "android";
-const char kTrustTokenKeyCommitmentUnavailableLocalIssuanceFallbackField[] =
-    "unavailable_local_issuance_fallback";
-const char kTrustTokenLocalIssuanceFallbackWebIssuance[] = "web_issuance";
-const char kTrustTokenLocalIssuanceFallbackReturnWithError[] =
+const char kTrustTokenLocalOperationOsAndroid[] = "android";
+const char kTrustTokenKeyCommitmentUnavailableLocalOperationFallbackField[] =
+    "unavailable_local_operation_fallback";
+const char kTrustTokenLocalOperationFallbackWebIssuance[] = "web_issuance";
+const char kTrustTokenLocalOperationFallbackReturnWithError[] =
     "return_with_error";
 
 namespace {
@@ -85,28 +87,28 @@ ParseKeyResult ParseSingleKeyExceptLabel(
   return ParseKeyResult::kSucceed;
 }
 
-base::Optional<mojom::TrustTokenKeyCommitmentResult::Os> ParseOs(
+absl::optional<mojom::TrustTokenKeyCommitmentResult::Os> ParseOs(
     base::StringPiece os_string) {
-  if (os_string == kTrustTokenLocalIssuanceOsAndroid)
+  if (os_string == kTrustTokenLocalOperationOsAndroid)
     return mojom::TrustTokenKeyCommitmentResult::Os::kAndroid;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 // Attempts to parse a string representation of a member of the
-// UnavailableLocalIssuanceFallback enum, returning true on success and false on
-// failure.
-bool ParseUnavailableLocalIssuanceFallback(
+// UnavailableLocalOperationFallback enum, returning true on success and false
+// on failure.
+bool ParseUnavailableLocalOperationFallback(
     base::StringPiece fallback_string,
-    mojom::TrustTokenKeyCommitmentResult::UnavailableLocalIssuanceFallback*
+    mojom::TrustTokenKeyCommitmentResult::UnavailableLocalOperationFallback*
         fallback_out) {
-  if (fallback_string == kTrustTokenLocalIssuanceFallbackWebIssuance) {
+  if (fallback_string == kTrustTokenLocalOperationFallbackWebIssuance) {
     *fallback_out = mojom::TrustTokenKeyCommitmentResult::
-        UnavailableLocalIssuanceFallback::kWebIssuance;
+        UnavailableLocalOperationFallback::kWebIssuance;
     return true;
   }
-  if (fallback_string == kTrustTokenLocalIssuanceFallbackReturnWithError) {
+  if (fallback_string == kTrustTokenLocalOperationFallbackReturnWithError) {
     *fallback_out = mojom::TrustTokenKeyCommitmentResult::
-        UnavailableLocalIssuanceFallback::kReturnWithError;
+        UnavailableLocalOperationFallback::kReturnWithError;
     return true;
   }
   return false;
@@ -114,12 +116,12 @@ bool ParseUnavailableLocalIssuanceFallback(
 
 // Given a per-issuer key commitment dictionary, looks for the local Trust
 // Tokens issuance-related fields request_issuance_locally_on and
-// unavailable_local_issuance_fallback.
+// unavailable_local_operation_fallback.
 //
 // Returns true if both are absent, or if both are present and well-formed; in
 // the latter case, updates |result| to with their parsed values. Otherwise,
 // returns false.
-bool ParseLocalIssuanceFieldsIfPresent(
+bool ParseLocalOperationFieldsIfPresent(
     const base::Value& value,
     mojom::TrustTokenKeyCommitmentResult* result) {
   const base::Value* maybe_request_issuance_locally_on =
@@ -137,7 +139,7 @@ bool ParseLocalIssuanceFieldsIfPresent(
        maybe_request_issuance_locally_on->GetList()) {
     if (!maybe_os_value.is_string())
       return false;
-    base::Optional<mojom::TrustTokenKeyCommitmentResult::Os> maybe_os =
+    absl::optional<mojom::TrustTokenKeyCommitmentResult::Os> maybe_os =
         ParseOs(maybe_os_value.GetString());
     if (!maybe_os)
       return false;
@@ -151,10 +153,10 @@ bool ParseLocalIssuanceFieldsIfPresent(
   oses.erase(to_remove, oses.end());
 
   const std::string* maybe_fallback = value.FindStringKey(
-      kTrustTokenKeyCommitmentUnavailableLocalIssuanceFallbackField);
+      kTrustTokenKeyCommitmentUnavailableLocalOperationFallbackField);
   if (!maybe_fallback ||
-      !ParseUnavailableLocalIssuanceFallback(
-          *maybe_fallback, &result->unavailable_local_issuance_fallback)) {
+      !ParseUnavailableLocalOperationFallback(
+          *maybe_fallback, &result->unavailable_local_operation_fallback)) {
     return false;
   }
 
@@ -162,47 +164,59 @@ bool ParseLocalIssuanceFieldsIfPresent(
 }
 
 mojom::TrustTokenKeyCommitmentResultPtr ParseSingleIssuer(
-    const base::Value& value) {
-  if (!value.is_dict())
+    const base::Value& commitments_by_version) {
+  if (!commitments_by_version.is_dict())
     return nullptr;
 
   auto result = mojom::TrustTokenKeyCommitmentResult::New();
 
-  // Confirm that the protocol_version field is present.
-  const std::string* maybe_version =
-      value.FindStringKey(kTrustTokenKeyCommitmentProtocolVersionField);
-  if (!maybe_version)
-    return nullptr;
-  if (*maybe_version == "TrustTokenV2PMB") {
-    result->protocol_version =
-        mojom::TrustTokenProtocolVersion::kTrustTokenV2Pmb;
-  } else if (*maybe_version == "TrustTokenV2VOPRF") {
-    result->protocol_version =
-        mojom::TrustTokenProtocolVersion::kTrustTokenV2Voprf;
-  } else {
-    return nullptr;
+  const base::Value* value = nullptr;
+  // Confirm that the protocol_version field is present. If the server supports
+  // multiple versions, we prefer the VOPRF version, since it's more efficient
+  // (and we're free to choose which version to use).
+  for (auto version : {mojom::TrustTokenProtocolVersion::kTrustTokenV3Voprf,
+                       mojom::TrustTokenProtocolVersion::kTrustTokenV3Pmb}) {
+    std::string version_label = internal::ProtocolVersionToString(version);
+    if (commitments_by_version.FindKey(version_label)) {
+      value = commitments_by_version.FindKey(version_label);
+      if (!value->is_dict())
+        return nullptr;
+      const std::string* maybe_version =
+          value->FindStringKey(kTrustTokenKeyCommitmentProtocolVersionField);
+      if (!maybe_version || *maybe_version != version_label)
+        return nullptr;
+      result->protocol_version = version;
+      break;
+    }
   }
+  if (!value)
+    return nullptr;
 
   // Confirm that the id field is present and type-safe.
-  base::Optional<int> maybe_id =
-      value.FindIntKey(kTrustTokenKeyCommitmentIDField);
+  absl::optional<int> maybe_id =
+      value->FindIntKey(kTrustTokenKeyCommitmentIDField);
   if (!maybe_id || *maybe_id <= 0)
     return nullptr;
   result->id = *maybe_id;
 
   // Confirm that the batchsize field is present and type-safe.
-  base::Optional<int> maybe_batch_size =
-      value.FindIntKey(kTrustTokenKeyCommitmentBatchsizeField);
+  absl::optional<int> maybe_batch_size =
+      value->FindIntKey(kTrustTokenKeyCommitmentBatchsizeField);
   if (!maybe_batch_size || *maybe_batch_size <= 0)
     return nullptr;
   result->batch_size = *maybe_batch_size;
 
-  if (!ParseLocalIssuanceFieldsIfPresent(value, result.get()))
+  if (!ParseLocalOperationFieldsIfPresent(*value, result.get()))
     return nullptr;
 
-  // Parse the key commitments in the result (these are exactly the
-  // key-value pairs in the dictionary with dictionary-typed values).
-  for (const auto& kv : value.DictItems()) {
+  // Parse the key commitments in the result if available.
+  const base::Value* maybe_keys =
+      value->FindKey(kTrustTokenKeyCommitmentKeysField);
+  if (!maybe_keys)
+    return result;
+  if (!maybe_keys->is_dict())
+    return nullptr;
+  for (const auto& kv : maybe_keys->DictItems()) {
     const base::Value& item = kv.second;
     if (!item.is_dict())
       continue;
@@ -242,34 +256,9 @@ mojom::TrustTokenKeyCommitmentResultPtr& commitment(Entry& e) {
 
 }  // namespace
 
-// https://docs.google.com/document/d/1TNnya6B8pyomDK2F1R9CL3dY10OAmqWlnCxsWyOBDVQ/edit#bookmark=id.6wh9crbxdizi
-// {
-//   "protocol_version" : ..., // Protocol Version; value of type string.
-//   "id" : ...,               // ID; value of type int.
-//   "batchsize" : ...,        // Batch size; value of type int.
-//
-//   // Optional operating systems on which to request issuance via system
-//   // mediation (valid values are: "android"), and (required if at least one
-//   // OS is specified) fallback behavior on other operating systems:
-//   "request_issuance_locally_on": [<os 1>, ..., <os N>],
-//   "unavailable_local_issuance_fallback": "web_issuance" | "return_with_error"
-//
-//   "1" : {                   // Key label, a number in uint32_t range; ignored
-//                             // except for checking that it is present and
-//                             // type-safe.
-//     "Y" : ...,              // Required token issuance verification key, in
-//                             // base64.
-//     "expiry" : ...,         // Required token issuance key expiry time, in
-//                             // microseconds since the Unix epoch.
-//   },
-//   "17" : {                  // No guarantee that key labels (1, 7) are dense.
-//     "Y" : ...,
-//     "expiry" : ...,
-//   }
-// }
 mojom::TrustTokenKeyCommitmentResultPtr TrustTokenKeyCommitmentParser::Parse(
     base::StringPiece response_body) {
-  base::Optional<base::Value> maybe_value =
+  absl::optional<base::Value> maybe_value =
       base::JSONReader::Read(response_body);
   if (!maybe_value)
     return nullptr;
@@ -281,7 +270,7 @@ std::unique_ptr<base::flat_map<SuitableTrustTokenOrigin,
                                mojom::TrustTokenKeyCommitmentResultPtr>>
 TrustTokenKeyCommitmentParser::ParseMultipleIssuers(
     base::StringPiece response_body) {
-  base::Optional<base::Value> maybe_value =
+  absl::optional<base::Value> maybe_value =
       base::JSONReader::Read(response_body);
   if (!maybe_value)
     return nullptr;
@@ -300,7 +289,7 @@ TrustTokenKeyCommitmentParser::ParseMultipleIssuers(
 
   for (const auto& kv : maybe_value->DictItems()) {
     const std::string& raw_key_from_json = kv.first;
-    base::Optional<SuitableTrustTokenOrigin> maybe_issuer =
+    absl::optional<SuitableTrustTokenOrigin> maybe_issuer =
         SuitableTrustTokenOrigin::Create(GURL(raw_key_from_json));
 
     if (!maybe_issuer)

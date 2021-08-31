@@ -22,10 +22,8 @@ bool DefaultBrowserIsDisabledByPolicy() {
       g_browser_process->local_state()->FindPreference(
           prefs::kDefaultBrowserSettingEnabled);
   DCHECK(pref);
-  bool may_set_default_browser;
-  bool success = pref->GetValue()->GetAsBoolean(&may_set_default_browser);
-  DCHECK(success);
-  return pref->IsManaged() && !may_set_default_browser;
+  DCHECK(pref->GetValue()->is_bool());
+  return pref->IsManaged() && !pref->GetValue()->GetBool();
 }
 
 }  // namespace
@@ -50,8 +48,8 @@ void DefaultBrowserHandler::OnJavascriptAllowed() {
   local_state_pref_registrar_.Init(prefs);
   local_state_pref_registrar_.Add(
       prefs::kDefaultBrowserSettingEnabled,
-      base::Bind(&DefaultBrowserHandler::RequestDefaultBrowserState,
-                 base::Unretained(this), nullptr));
+      base::BindRepeating(&DefaultBrowserHandler::RequestDefaultBrowserState,
+                          base::Unretained(this), nullptr));
   default_browser_worker_ = new shell_integration::DefaultBrowserWorker();
 }
 

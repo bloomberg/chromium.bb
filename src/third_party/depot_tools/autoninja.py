@@ -11,18 +11,12 @@ makes using remote build acceleration simpler and safer, and avoids errors that
 can cause slow goma builds or swap-storms on unaccelerated builds.
 """
 
-# [VPYTHON:BEGIN]
-# wheel: <
-#   name: "infra/python/wheels/psutil/${vpython_platform}"
-#   version: "version:5.6.2"
-# >
-# [VPYTHON:END]
-
 from __future__ import print_function
 
+import multiprocessing
 import os
-import psutil
 import re
+import subprocess
 import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -67,7 +61,17 @@ for index, arg in enumerate(input_args[1:]):
 # Strip -o/--offline so ninja doesn't see them.
 input_args = [ arg for arg in input_args if arg != '-o' and arg != '--offline']
 
-use_remote_build = False
+use_goma = False
+use_rbe = False
+
+# Currently get reclient binary and config dirs relative to output_dir.  If
+# they exist and using rbe, then automatically call bootstrap to start
+# reproxy.  This works under the current assumption that the output
+# directory is two levels up from chromium/src.
+reclient_bin_dir = os.path.join(
+  output_dir, '..', '..', 'buildtools', 'reclient')
+reclient_cfg = os.path.join(
+  output_dir, '..', '..', 'buildtools', 'reclient_cfgs', 'reproxy.cfg')
 
 # Attempt to auto-detect remote build acceleration. We support gn-based
 # builds, where we look for args.gn in the build tree, and cmake-based builds
@@ -83,16 +87,26 @@ if os.path.exists(os.path.join(output_dir, 'args.gn')):
       #
       # Anything after a comment is not consider a valid argument.
       line_without_comment = line.split('#')[0]
-      if re.search(r'(^|\s)(use_goma|use_rbe)\s*=\s*true($|\s)',
+      if re.search(r'(^|\s)(use_goma)\s*=\s*true($|\s)',
                    line_without_comment):
-        use_remote_build = True
+        use_goma = True
         continue
-elif os.path.exists(os.path.join(output_dir, 'rules.ninja')):
-  with open(os.path.join(output_dir, 'rules.ninja')) as file_handle:
-    for line in file_handle:
-      if re.match(r'^\s*command\s*=\s*\S+gomacc', line):
-        use_remote_build = True
-        break
+      if re.search(r'(^|\s)(use_rbe)\s*=\s*true($|\s)',
+                   line_without_comment):
+        use_rbe = True
+        continue
+else:
+  for relative_path in [
+      '',  # GN keeps them in the root of output_dir
+      'CMakeFiles'
+  ]:
+    path = os.path.join(output_dir, relative_path, 'rules.ninja')
+    if os.path.exists(path):
+      with open(path) as file_handle:
+        for line in file_handle:
+          if re.match(r'^\s*command\s*=\s*\S+gomacc', line):
+            use_goma = True
+            break
 
 # If GOMA_DISABLED is set to "true", "t", "yes", "y", or "1" (case-insensitive)
 # then gomacc will use the local compiler instead of doing a goma compile. This
@@ -103,7 +117,27 @@ elif os.path.exists(os.path.join(output_dir, 'rules.ninja')):
 # autoninja uses an appropriate -j value in this situation.
 goma_disabled_env = os.environ.get('GOMA_DISABLED', '0').lower()
 if offline or goma_disabled_env in ['true', 't', 'yes', 'y', '1']:
-  use_remote_build = False
+  use_goma = False
+
+if use_goma:
+  gomacc_file = 'gomacc.exe' if sys.platform.startswith('win') else 'gomacc'
+  goma_dir = os.environ.get('GOMA_DIR', os.path.join(SCRIPT_DIR, '.cipd_bin'))
+  gomacc_path = os.path.join(goma_dir, gomacc_file)
+  # Don't invoke gomacc if it doesn't exist.
+  if os.path.exists(gomacc_path):
+    # Check to make sure that goma is running. If not, don't start the build.
+    status = subprocess.call([gomacc_path, 'port'], stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE, shell=False)
+    if status == 1:
+      print('Goma is not running. Use "goma_ctl ensure_start" to start it.',
+            file=sys.stderr)
+      if sys.platform.startswith('win'):
+        # Set an exit code of 1 in the batch file.
+        print('cmd "/c exit 1"')
+      else:
+        # Set an exit code of 1 by executing 'false' in the bash script.
+        print('false')
+      sys.exit(1)
 
 # Specify ninja.exe on Windows so that ninja.bat can call autoninja and not
 # be called back.
@@ -124,9 +158,9 @@ if (sys.platform.startswith('linux')
 # or fail to execute ninja if depot_tools is not in PATH.
 args = prefix_args + [ninja_exe_path] + input_args[1:]
 
-num_cores = psutil.cpu_count()
+num_cores = multiprocessing.cpu_count()
 if not j_specified and not t_specified:
-  if use_remote_build:
+  if use_goma or use_rbe:
     args.append('-j')
     core_multiplier = int(os.environ.get('NINJA_CORE_MULTIPLIER', '40'))
     j_value = num_cores * core_multiplier
@@ -160,10 +194,24 @@ for i in range(len(args)):
 if os.environ.get('NINJA_SUMMARIZE_BUILD', '0') == '1':
   args += ['-d', 'stats']
 
+# If using rbe and the necessary environment variables are set, also start
+# reproxy (via bootstrap) before running ninja.
+if (not offline and use_rbe and os.path.exists(reclient_bin_dir)
+    and os.path.exists(reclient_cfg)):
+  bootstrap = os.path.join(reclient_bin_dir, 'bootstrap')
+  setup_args = [
+    bootstrap,
+    '--cfg=' + reclient_cfg,
+    '--re_proxy=' + os.path.join(reclient_bin_dir, 'reproxy')]
+
+  teardown_args = [bootstrap, '--cfg=' + reclient_cfg, '--shutdown']
+
+  cmd_sep = '\n' if sys.platform.startswith('win') else '&&'
+  args = setup_args + [cmd_sep] + args + [cmd_sep] + teardown_args
+
 if offline and not sys.platform.startswith('win'):
-  # Tell goma to do local compiles. On Windows this environment variable is set
-  # by the wrapper batch file.
-  print('GOMA_DISABLED=1 ' + ' '.join(args))
+  # Tell goma or reclient to do local compiles. On Windows these environment
+  # variables are set by the wrapper batch file.
+  print('RBE_remote_disabled=1 GOMA_DISABLED=1 ' + ' '.join(args))
 else:
   print(' '.join(args))
-

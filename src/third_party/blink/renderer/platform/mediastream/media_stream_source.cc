@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/mediastream/webaudio_destination_consumer.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -68,6 +67,20 @@ const char* ReadyStateToString(MediaStreamSource::ReadyState state) {
       NOTREACHED();
   }
   return "Invalid";
+}
+
+const char* EchoCancellationModeToString(
+    MediaStreamSource::EchoCancellationMode mode) {
+  switch (mode) {
+    case MediaStreamSource::EchoCancellationMode::kDisabled:
+      return "disabled";
+    case MediaStreamSource::EchoCancellationMode::kBrowser:
+      return "browser";
+    case MediaStreamSource::EchoCancellationMode::kAec3:
+      return "AEC3";
+    case MediaStreamSource::EchoCancellationMode::kSystem:
+      return "system";
+  }
 }
 
 void GetSourceSettings(const blink::WebMediaStreamSource& web_source,
@@ -154,7 +167,7 @@ MediaStreamSource::MediaStreamSource(const String& id,
   SendLogMessage(
       String::Format(
           "MediaStreamSource({id=%s}, {type=%s}, {name=%s}, {remote=%d}, "
-          "{ready_state=%s}",
+          "{ready_state=%s})",
           id.Utf8().c_str(), StreamTypeToString(type), name.Utf8().c_str(),
           remote, ReadyStateToString(ready_state))
           .Utf8());
@@ -217,6 +230,13 @@ void MediaStreamSource::SetAudioProcessingProperties(
     EchoCancellationMode echo_cancellation_mode,
     bool auto_gain_control,
     bool noise_supression) {
+  SendLogMessage(
+      String::Format("%s({echo_cancellation_mode=%s}, {auto_gain_control=%d}, "
+                     "{noise_supression=%d})",
+                     __func__,
+                     EchoCancellationModeToString(echo_cancellation_mode),
+                     auto_gain_control, noise_supression)
+          .Utf8());
   echo_cancellation_mode_ = echo_cancellation_mode;
   auto_gain_control_ = auto_gain_control;
   noise_supression_ = noise_supression;
@@ -285,12 +305,12 @@ void MediaStreamSource::SetAudioFormat(size_t number_of_channels,
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("mediastream"),
                "MediaStreamSource::SetAudioFormat");
 
-  SendLogMessage(
-      String::Format(
-          "SetAudioFormat({id=%s}, {number_of_channels=%d}, {sample_rate=%f})",
-          Id().Utf8().c_str(), static_cast<int>(number_of_channels),
-          sample_rate)
-          .Utf8());
+  SendLogMessage(String::Format("SetAudioFormat({id=%s}, "
+                                "{number_of_channels=%d}, {sample_rate=%.0f})",
+                                Id().Utf8().c_str(),
+                                static_cast<int>(number_of_channels),
+                                sample_rate)
+                     .Utf8());
   DCHECK(requires_consumer_);
   MutexLocker locker(audio_consumers_lock_);
   for (AudioDestinationConsumer* consumer : audio_consumers_)
@@ -305,6 +325,28 @@ void MediaStreamSource::ConsumeAudio(AudioBus* bus, size_t number_of_frames) {
   MutexLocker locker(audio_consumers_lock_);
   for (AudioDestinationConsumer* consumer : audio_consumers_)
     consumer->ConsumeAudio(bus, number_of_frames);
+}
+
+void MediaStreamSource::OnDeviceCaptureHandleChange(
+    const MediaStreamDevice& device) {
+  if (!platform_source_) {
+    return;
+  }
+
+  auto capture_handle = media::mojom::CaptureHandle::New();
+  if (device.display_media_info.has_value()) {
+    capture_handle = device.display_media_info.value()->capture_handle.Clone();
+  }
+
+  platform_source_->SetCaptureHandle(capture_handle.Clone());
+
+  // Observers may dispatch events which create and add new Observers;
+  // take a snapshot so as to safely iterate.
+  HeapVector<Member<Observer>> observers;
+  CopyToVector(observers_, observers);
+  for (auto observer : observers) {
+    observer->SourceChangedCaptureHandle(capture_handle.Clone());
+  }
 }
 
 void MediaStreamSource::Trace(Visitor* visitor) const {

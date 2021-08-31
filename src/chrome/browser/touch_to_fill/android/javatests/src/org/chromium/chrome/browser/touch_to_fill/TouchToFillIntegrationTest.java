@@ -32,9 +32,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
@@ -45,6 +45,7 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.content_public.browser.test.util.TouchCommon;
+import org.chromium.url.GURL;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,14 +55,13 @@ import java.util.Collections;
  * end up rendering a View.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@Batch(Batch.PER_CLASS)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class TouchToFillIntegrationTest {
-    private static final String EXAMPLE_URL = "https://www.example.xyz";
+    private static GURL sExampleUrl;
     private static final String MOBILE_URL = "https://m.example.xyz";
-    private static final Credential ANA =
-            new Credential("Ana", "S3cr3t", "Ana", EXAMPLE_URL, false, false);
-    private static final Credential BOB =
-            new Credential("Bob", "*****", "Bob", MOBILE_URL, true, false);
+    private static Credential sAna;
+    private static Credential sBob;
 
     private final TouchToFillComponent mTouchToFill = new TouchToFillCoordinator();
 
@@ -79,6 +79,11 @@ public class TouchToFillIntegrationTest {
 
     @Before
     public void setUp() throws InterruptedException {
+        sExampleUrl = new GURL("https://www.example.xyz");
+        // TODO(https://crbug.com/783819): Migrate Credential to GURL.
+        sAna = new Credential("Ana", "S3cr3t", "Ana", sExampleUrl.getSpec(), false, false, 0);
+        sBob = new Credential("Bob", "*****", "Bob", MOBILE_URL, true, false, 0);
+
         mActivityTestRule.startMainActivityOnBlankPage();
         runOnUiThreadBlocking(() -> {
             mBottomSheetController = BottomSheetControllerProvider.from(
@@ -90,17 +95,16 @@ public class TouchToFillIntegrationTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1012221")
     public void testClickingSuggestionsTriggersCallback() {
         runOnUiThreadBlocking(() -> {
-            mTouchToFill.showCredentials(EXAMPLE_URL, true, Collections.singletonList(ANA));
+            mTouchToFill.showCredentials(sExampleUrl, true, Collections.singletonList(sAna));
         });
         pollUiThread(() -> getBottomSheetState() == BottomSheetController.SheetState.HALF);
 
         pollUiThread(() -> getCredentials().getChildAt(1) != null);
         TouchCommon.singleClickView(getCredentials().getChildAt(1));
 
-        waitForEvent(mMockBridge).onCredentialSelected(ANA);
+        waitForEvent(mMockBridge).onCredentialSelected(sAna);
         verify(mMockBridge, never()).onDismissed();
     }
 
@@ -108,7 +112,7 @@ public class TouchToFillIntegrationTest {
     @MediumTest
     public void testBackDismissesAndCallsCallback() {
         runOnUiThreadBlocking(() -> {
-            mTouchToFill.showCredentials(EXAMPLE_URL, true, Arrays.asList(ANA, BOB));
+            mTouchToFill.showCredentials(sExampleUrl, true, Arrays.asList(sAna, sBob));
         });
         pollUiThread(() -> getBottomSheetState() == BottomSheetController.SheetState.HALF);
 
@@ -183,7 +187,7 @@ public class TouchToFillIntegrationTest {
         Espresso.onView(withText("Another bottom sheet content")).check(matches(isDisplayed()));
 
         runOnUiThreadBlocking(() -> {
-            mTouchToFill.showCredentials(EXAMPLE_URL, true, Arrays.asList(ANA, BOB));
+            mTouchToFill.showCredentials(sExampleUrl, true, Arrays.asList(sAna, sBob));
         });
         waitForEvent(mMockBridge).onDismissed();
         verify(mMockBridge, never()).onCredentialSelected(any());

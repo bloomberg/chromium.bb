@@ -4,7 +4,6 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/autofill/autofill_uitest_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/autofill/payments/payments_ui_constants.h"
@@ -15,18 +14,14 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
-#include "components/autofill/core/browser/test_autofill_manager.h"
-#include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/autofill/core/browser/test_browser_autofill_manager.h"
 #include "content/public/test/browser_test.h"
 
 namespace autofill {
 
 class CreditCardAccessManagerBrowserTest : public InProcessBrowserTest {
  public:
-  CreditCardAccessManagerBrowserTest() {
-    feature_list_.InitAndEnableFeature(features::kAutofillCacheServerCardInfo);
-  }
-
+  CreditCardAccessManagerBrowserTest() = default;
   ~CreditCardAccessManagerBrowserTest() override = default;
 
  protected:
@@ -35,6 +30,10 @@ class CreditCardAccessManagerBrowserTest : public InProcessBrowserTest {
     embedded_test_server()->ServeFilesFromSourceDirectory(
         "components/test/data/autofill");
     embedded_test_server()->StartAcceptingConnections();
+
+    // Wait for Personal Data Manager to be fully loaded to prevent that
+    // spurious notifications deceive the tests.
+    WaitForPersonalDataManagerToBeLoaded(browser()->profile());
   }
 
   CreditCardAccessManager* GetCreditCardAccessManager() {
@@ -43,7 +42,8 @@ class CreditCardAccessManagerBrowserTest : public InProcessBrowserTest {
     ContentAutofillDriver* autofill_driver =
         ContentAutofillDriverFactory::FromWebContents(web_contents)
             ->DriverForFrame(web_contents->GetMainFrame());
-    return autofill_driver->autofill_manager()->credit_card_access_manager();
+    return autofill_driver->browser_autofill_manager()
+        ->credit_card_access_manager();
   }
 
   CreditCard SaveServerCard(std::string card_number) {
@@ -54,12 +54,9 @@ class CreditCardAccessManagerBrowserTest : public InProcessBrowserTest {
                          card_number.substr(0, 12));
     server_card.set_record_type(CreditCard::FULL_SERVER_CARD);
     server_card.set_server_id("full_id_" + card_number);
-    AddTestServerCreditCard(browser(), server_card);
+    AddTestServerCreditCard(browser()->profile(), server_card);
     return server_card;
   }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(CreditCardAccessManagerBrowserTest,
@@ -69,8 +66,7 @@ IN_PROC_BROWSER_TEST_F(CreditCardAccessManagerBrowserTest,
   // CreditCardAccessManager is completely recreated on page navigation, so to
   // ensure we're not using stale pointers, always re-fetch it on use.
   EXPECT_TRUE(GetCreditCardAccessManager()->UnmaskedCardCacheIsEmpty());
-  GetCreditCardAccessManager()->CacheUnmaskedCardInfo(card,
-                                                      base::UTF8ToUTF16("123"));
+  GetCreditCardAccessManager()->CacheUnmaskedCardInfo(card, u"123");
   EXPECT_FALSE(GetCreditCardAccessManager()->UnmaskedCardCacheIsEmpty());
 
   // Cache should reset upon navigation.

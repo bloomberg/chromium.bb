@@ -13,7 +13,7 @@ namespace content {
 class ContactsProvider {
  public:
   using ContactsSelectedCallback = base::OnceCallback<void(
-      base::Optional<std::vector<blink::mojom::ContactInfoPtr>> contacts,
+      absl::optional<std::vector<blink::mojom::ContactInfoPtr>> contacts,
       int percentage_shared,
       ContactsPickerPropertiesRequested properties_requested)>;
 
@@ -34,4 +34,4 @@ class ContactsProvider {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_CONTACTS_CONTACTS_PROVIDER_ANDROID_H_
+#endif  // CONTENT_BROWSER_CONTACTS_CONTACTS_PROVIDER_H_

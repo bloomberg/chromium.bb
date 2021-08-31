@@ -56,9 +56,9 @@ static av_cold int init_mv_table(MVTable *tab)
 
     /* mark all entries as not used */
     for(i=0;i<4096;i++)
-        tab->table_mv_index[i] = tab->n;
+        tab->table_mv_index[i] = MSMPEG4_MV_TABLES_NB_ELEMS;
 
-    for(i=0;i<tab->n;i++) {
+    for (i = 0; i < MSMPEG4_MV_TABLES_NB_ELEMS; i++) {
         x = tab->table_mvx[i];
         y = tab->table_mvy[i];
         tab->table_mv_index[(x << 6) | y] = i;
@@ -225,7 +225,7 @@ void ff_msmpeg4_encode_picture_header(MpegEncContext * s, int picture_number)
 {
     find_best_tables(s);
 
-    avpriv_align_put_bits(&s->pb);
+    align_put_bits(&s->pb);
     put_bits(&s->pb, 2, s->pict_type - 1);
 
     put_bits(&s->pb, 5, s->qscale);
@@ -320,7 +320,7 @@ void ff_msmpeg4_encode_motion(MpegEncContext * s,
     put_bits(&s->pb,
              mv->table_mv_bits[code],
              mv->table_mv_code[code]);
-    if (code == mv->n) {
+    if (code == MSMPEG4_MV_TABLES_NB_ELEMS) {
         /* escape : code literally */
         put_bits(&s->pb, 6, mx);
         put_bits(&s->pb, 6, my);

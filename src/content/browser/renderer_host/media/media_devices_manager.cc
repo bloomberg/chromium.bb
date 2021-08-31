@@ -14,6 +14,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/sequence_checker.h"
 #include "base/stl_util.h"
@@ -27,7 +28,6 @@
 #include "content/browser/media/media_devices_permission_checker.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
-#include "content/browser/service_manager/service_manager_context.h"
 #include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -39,6 +39,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/device_notifications.mojom.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
+#include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 
 #if defined(OS_MAC)
 #include "base/callback_helpers.h"
@@ -590,7 +591,7 @@ media::VideoCaptureFormats MediaDevicesManager::GetVideoInputFormats(
   media::VideoCaptureFormats formats;
 
   if (try_in_use_first) {
-    base::Optional<media::VideoCaptureFormat> format =
+    absl::optional<media::VideoCaptureFormat> format =
         video_capture_manager_->GetDeviceFormatInUse(
             blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, device_id);
     if (format.has_value()) {
@@ -810,7 +811,7 @@ void MediaDevicesManager::GetAudioInputCapabilities(
 void MediaDevicesManager::GotAudioInputCapabilities(
     size_t state_id,
     size_t capabilities_index,
-    const base::Optional<media::AudioParameters>& parameters) {
+    const absl::optional<media::AudioParameters>& parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(base::Contains(enumeration_states_, state_id));
 
@@ -934,10 +935,9 @@ void MediaDevicesManager::AudioDevicesEnumerated(
 
   blink::WebMediaDeviceInfoArray snapshot;
   for (const media::AudioDeviceDescription& description : device_descriptions) {
-    snapshot.emplace_back(description.unique_id, description.device_name,
-                          description.group_id,
-                          media::VideoCaptureControlSupport(),
-                          media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE);
+    snapshot.emplace_back(
+        description.unique_id, description.device_name, description.group_id,
+        media::VideoCaptureControlSupport(), blink::mojom::FacingMode::NONE);
   }
   DevicesEnumerated(type, snapshot);
 }

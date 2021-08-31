@@ -1,0 +1,122 @@
+<style>
+  :host {
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
+    --emoji-picker-search-margins: 14px;
+  }
+  cr-search-field {
+    --cr-search-field-clear-icon-margin-end: var(--emoji-picker-search-margins);
+    --cr-search-field-clear-icon-size:20px;
+    --cr-search-field-input-border-bottom: none;
+    --cr-search-field-input-padding-bottom: 0;
+    --cr-search-field-input-padding-start: 8px;
+    --cr-search-field-input-padding-top: 0;
+    --cr-search-field-input-width: 100%;
+    --cr-search-field-search-icon-display: none;
+    --cr-search-field-search-icon-fill: var(--cr-secondary-text-color);
+    --cr-search-field-search-icon-inline-display: block;
+    --cr-search-field-search-icon-inline-margin-start:
+      var(--emoji-picker-search-margins);
+    --cr-search-field-underline-display: none;
+    align-items: center;
+    background-color: var(--google-grey-100);
+    border: 2px solid transparent;
+    border-radius: 40px;
+    height: 40px;
+    line-height: 40px;
+    margin-bottom: 8px;
+  }
+
+  cr-search-field:focus-within {
+    border: 2px solid var(--cr-focus-outline-color);
+  }
+
+  .result {
+    border: 2px solid transparent;
+    border-radius: 40px;
+    display: flex;
+    margin-inline-end: var(--emoji-picker-search-margins);
+  }
+  .result:focus,
+  .result:active {
+    border-color: var(--cr-focus-outline-color);
+    border-style: solid;
+    border-width: 2px;
+    outline-style: none;
+  }
+
+  .result:hover {
+    background-color: var(--cr-hover-background-color);
+  }
+
+  emoji-button {
+    margin-inline-end: 12px;
+  }
+
+  .name {
+    color: var(--cr-primary-text-color);
+    font-size: 13px;
+    line-height: var(--emoji-size);
+  }
+
+  .sr-only {
+    color: transparent;
+    position: absolute;
+    z-index: -2;
+  }
+
+  .no-result {
+    color: var(--google-grey-600);
+    font-family: 'Google Sans';
+    left: 50%;
+    line-height: 24px;
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+  #search-shadow {
+    background-color: var(--cr-card-background-color);
+    margin-inline-end: calc(0px - var(--emoji-picker-side-padding));
+    margin-inline-start: calc(0px - var(--emoji-picker-side-padding));
+    padding-inline-end: var(--emoji-picker-side-padding);
+    padding-inline-start: var(--emoji-picker-side-padding);
+    position: sticky;
+    top:0;
+    width: calc(var(--emoji-picker-width) - 2*var(--emoji-picker-side-padding));
+  }
+
+  #results {
+    flex-grow: 1;
+    margin-inline-end: var(--emoji-picker-side-padding);
+    overflow-y: scroll;
+  }
+</style>
+
+<div id="search-shadow">
+<cr-search-field id="search" label="Search" autofocus="true"></cr-search-field>
+</div>
+
+<template is="dom-if" if="[[search]]">
+  <div id="results" on-scroll="onSearchScroll">
+    <div class="sr-only" role="heading" aria-level="1">
+      Emoji Search Results
+    </div>
+    <template is="dom-repeat" items="[[results]]">
+      <div class="result" tabindex="0" on-click="onResultClick">
+        <emoji-button tabindex="-1"
+            emoji="[[item.item.base.string]]"
+            variants="[[item.item.alternates]]">
+        </emoji-button>
+        <div class="name">[[item.item.base.name]]</div>
+      </div>
+    </template>
+    <template is="dom-if" if="[[!results.length]]">
+      <div class="no-result">
+        <img src="no_results.svg">
+        No emoji found
+        </div>
+    </template>
+  </div>
+</template>

@@ -4,6 +4,22 @@
 
 import("//build/config/ios/asset_catalog.gni")
 
+imageset("bookmark") {
+  sources = [
+    "bookmark.imageset/Contents.json",
+    "bookmark.imageset/bookmark@2x.png",
+    "bookmark.imageset/bookmark@3x.png",
+  ]
+}
+
+imageset("close") {
+  sources = [
+    "close.imageset/Contents.json",
+    "close.imageset/close@2x.png",
+    "close.imageset/close@3x.png",
+  ]
+}
+
 imageset("copy_link_url") {
   sources = [
     "copy_link_url.imageset/Contents.json",
@@ -52,6 +68,14 @@ imageset("open_new_window") {
   ]
 }
 
+imageset("read_later") {
+  sources = [
+    "read_later.imageset/Contents.json",
+    "read_later.imageset/read_later@2x.png",
+    "read_later.imageset/read_later@3x.png",
+  ]
+}
+
 imageset("remove") {
   sources = [
     "remove.imageset/Contents.json",
@@ -89,5 +113,13 @@ imageset("offline") {
     "offline.imageset/Contents.json",
     "offline.imageset/offline@2x.png",
     "offline.imageset/offline@3x.png",
+  ]
+}
+
+imageset("open") {
+  sources = [
+    "open.imageset/Contents.json",
+    "open.imageset/open@2x.png",
+    "open.imageset/open@3x.png",
   ]
 }

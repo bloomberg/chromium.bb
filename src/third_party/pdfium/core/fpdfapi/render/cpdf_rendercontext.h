@@ -27,12 +27,19 @@ class CPDF_RenderContext {
  public:
   class Layer {
    public:
-    Layer();
+    Layer(CPDF_PageObjectHolder* pHolder, const CFX_Matrix& matrix);
     Layer(const Layer& that);
     ~Layer();
 
-    UnownedPtr<CPDF_PageObjectHolder> m_pObjectHolder;
-    CFX_Matrix m_Matrix;
+    CPDF_PageObjectHolder* GetObjectHolder() { return m_pObjectHolder.Get(); }
+    const CPDF_PageObjectHolder* GetObjectHolder() const {
+      return m_pObjectHolder.Get();
+    }
+    const CFX_Matrix& GetMatrix() const { return m_Matrix; }
+
+   private:
+    UnownedPtr<CPDF_PageObjectHolder> const m_pObjectHolder;
+    const CFX_Matrix m_Matrix;
   };
 
   CPDF_RenderContext(CPDF_Document* pDoc,
@@ -41,7 +48,7 @@ class CPDF_RenderContext {
   ~CPDF_RenderContext();
 
   void AppendLayer(CPDF_PageObjectHolder* pObjectHolder,
-                   const CFX_Matrix* pObject2Device);
+                   const CFX_Matrix& mtObject2Device);
 
   void Render(CFX_RenderDevice* pDevice,
               const CPDF_RenderOptions* pOptions,

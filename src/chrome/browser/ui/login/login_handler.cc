@@ -18,10 +18,10 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
-#include "chrome/browser/prefetch/no_state_prefetch/chrome_prerender_contents_delegate.h"
+#include "chrome/browser/prefetch/no_state_prefetch/chrome_no_state_prefetch_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
-#include "components/no_state_prefetch/browser/prerender_contents.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/http_auth_manager.h"
 #include "components/strings/grit/components_strings.h"
@@ -42,6 +42,7 @@
 #include "net/http/http_auth_scheme.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/common/loader/network_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
@@ -51,6 +52,7 @@
 #include "components/guest_view/browser/guest_view_base.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/view_type_utils.h"
+#include "extensions/common/mojom/view_type.mojom.h"
 #endif
 
 using content::BrowserThread;
@@ -143,8 +145,8 @@ void LoginHandler::ShowLoginPromptAfterCommit(const GURL& request_url) {
   ShowLoginPrompt(request_url);
 }
 
-void LoginHandler::SetAuth(const base::string16& username,
-                           const base::string16& password) {
+void LoginHandler::SetAuth(const std::u16string& username,
+                           const std::u16string& password) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::unique_ptr<password_manager::BrowserSavePasswordProgressLogger> logger;
@@ -203,7 +205,7 @@ void LoginHandler::CancelAuth() {
 
   NotifyAuthCancelled();
   CloseContents();
-  std::move(callback).Run(base::nullopt);
+  std::move(callback).Run(absl::nullopt);
 }
 
 void LoginHandler::Observe(int type,
@@ -294,7 +296,7 @@ void LoginHandler::StartInternal(
       FROM_HERE,
       base::BindOnce(&LoginHandler::MaybeSetUpLoginPromptBeforeCommit,
                      weak_factory_.GetWeakPtr(), request_url, request_id,
-                     is_main_frame, base::nullopt, false /* should_cancel */));
+                     is_main_frame, absl::nullopt, false /* should_cancel */));
 }
 
 void LoginHandler::NotifyAuthNeeded() {
@@ -313,8 +315,8 @@ void LoginHandler::NotifyAuthNeeded() {
                   content::Details<LoginNotificationDetails>(&details));
 }
 
-void LoginHandler::NotifyAuthSupplied(const base::string16& username,
-                                      const base::string16& password) {
+void LoginHandler::NotifyAuthSupplied(const std::u16string& username,
+                                      const std::u16string& password) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(WasAuthHandled());
 
@@ -418,8 +420,8 @@ PasswordForm LoginHandler::MakeInputForPasswordManager(
 // static
 void LoginHandler::GetDialogStrings(const GURL& request_url,
                                     const net::AuthChallengeInfo& auth_info,
-                                    base::string16* authority,
-                                    base::string16* explanation) {
+                                    std::u16string* authority,
+                                    std::u16string* explanation) {
   GURL authority_url;
 
   if (auth_info.is_proxy) {
@@ -439,7 +441,7 @@ void LoginHandler::GetDialogStrings(const GURL& request_url,
     authority_url = request_url;
   }
 
-  if (!blink::network_utils::IsOriginSecure(authority_url)) {
+  if (!network::IsUrlPotentiallyTrustworthy(authority_url)) {
     // TODO(asanka): The string should be different for proxies and servers.
     // http://crbug.com/620756
     *explanation = l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_NOT_PRIVATE);
@@ -452,7 +454,7 @@ void LoginHandler::MaybeSetUpLoginPromptBeforeCommit(
     const GURL& request_url,
     const content::GlobalRequestID& request_id,
     bool is_request_for_main_frame,
-    const base::Optional<net::AuthCredentials>& credentials,
+    const absl::optional<net::AuthCredentials>& credentials,
     bool cancelled_by_extension) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -519,17 +521,17 @@ void LoginHandler::ShowLoginPrompt(const GURL& request_url) {
     CancelAuth();
     return;
   }
-  prerender::PrerenderContents* prerender_contents =
-      prerender::ChromePrerenderContentsDelegate::FromWebContents(
+  prerender::NoStatePrefetchContents* no_state_prefetch_contents =
+      prerender::ChromeNoStatePrefetchContentsDelegate::FromWebContents(
           web_contents());
-  if (prerender_contents) {
-    prerender_contents->Destroy(prerender::FINAL_STATUS_AUTH_NEEDED);
+  if (no_state_prefetch_contents) {
+    no_state_prefetch_contents->Destroy(prerender::FINAL_STATUS_AUTH_NEEDED);
     CancelAuth();
     return;
   }
 
-  base::string16 authority;
-  base::string16 explanation;
+  std::u16string authority;
+  std::u16string explanation;
   GetDialogStrings(request_url, auth_info(), &authority, &explanation);
 
   password_manager::HttpAuthManager* httpauth_manager =
@@ -542,7 +544,7 @@ void LoginHandler::ShowLoginPrompt(const GURL& request_url) {
     const auto* guest =
         guest_view::GuestViewBase::FromWebContents(web_contents());
     if (guest && extensions::GetViewType(guest->owner_web_contents()) !=
-                     extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+                     extensions::mojom::ViewType::kExtensionBackgroundPage) {
       BuildViewAndNotify(authority, explanation, nullptr);
       return;
     }
@@ -567,8 +569,8 @@ void LoginHandler::ShowLoginPrompt(const GURL& request_url) {
 }
 
 void LoginHandler::BuildViewAndNotify(
-    const base::string16& authority,
-    const base::string16& explanation,
+    const std::u16string& authority,
+    const std::u16string& explanation,
     LoginHandler::LoginModelData* login_model_data) {
   if (login_model_data)
     password_form_ = login_model_data->form;

@@ -31,6 +31,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
+#import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
@@ -92,10 +93,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @implementation TableCellCatalogViewController
 
 - (instancetype)init {
-  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
-                               ? UITableViewStylePlain
-                               : UITableViewStyleGrouped;
-  return [super initWithStyle:style];
+  return [super initWithStyle:ChromeTableViewStyle()];
 }
 
 - (void)viewDidLoad {
@@ -232,6 +230,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
   detailIconItem.iconImageName = @"settings_article_suggestions";
   detailIconItem.detailText = @"Short";
   [model addItem:detailIconItem toSectionWithIdentifier:SectionIdentifierText];
+
+  TableViewDetailIconItem* detailIconItemVerticalTextLayout =
+      [[TableViewDetailIconItem alloc] initWithType:ItemTypeTextSettingsDetail];
+  detailIconItemVerticalTextLayout.iconImageName =
+      @"settings_article_suggestions";
+  detailIconItemVerticalTextLayout.text = @"Detail Icon Item Cell";
+  detailIconItemVerticalTextLayout.detailText = @"Short subtitle";
+  detailIconItemVerticalTextLayout.textLayoutConstraintAxis =
+      UILayoutConstraintAxisVertical;
+  [model addItem:detailIconItemVerticalTextLayout
+      toSectionWithIdentifier:SectionIdentifierText];
 
   TableViewDetailIconItem* detailIconItemLeftLong =
       [[TableViewDetailIconItem alloc] initWithType:ItemTypeTextSettingsDetail];
@@ -379,8 +388,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
           initWithType:ItemTypeTableViewInfoButtonWithImage];
   tableViewInfoButtonItemWithLeadingImage.text = @"Info button item";
   tableViewInfoButtonItemWithLeadingImage.statusText = @"Status";
-  tableViewInfoButtonItemWithLeadingImage.iconImageName =
-      @"settings_article_suggestions";
+  tableViewInfoButtonItemWithLeadingImage.image =
+      [UIImage imageNamed:@"settings_article_suggestions"];
   [model addItem:tableViewInfoButtonItemWithLeadingImage
       toSectionWithIdentifier:SectionIdentifierSettings];
 
@@ -491,10 +500,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewSigninPromoItem* signinPromo =
       [[TableViewSigninPromoItem alloc] initWithType:ItemTypeAccount];
   signinPromo.configurator = [[SigninPromoViewConfigurator alloc]
-      initWithUserEmail:@"jonhdoe@example.com"
-           userFullName:@"John Doe"
-              userImage:nil
-         hasCloseButton:NO];
+      initWithSigninPromoViewMode:SigninPromoViewModeSigninWithAccount
+                        userEmail:@"jonhdoe@example.com"
+                    userGivenName:@"John Doe"
+                        userImage:nil
+                   hasCloseButton:NO];
   signinPromo.text = @"Signin promo text example";
   [model addItem:signinPromo toSectionWithIdentifier:SectionIdentifierAccount];
 

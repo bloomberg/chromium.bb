@@ -31,10 +31,10 @@ namespace {
 
 struct RoutingInfoKey {
   int routing_id;
-  int script_id;
+  std::string script_id;
 
-  RoutingInfoKey(int routing_id, int script_id)
-      : routing_id(routing_id), script_id(script_id) {}
+  RoutingInfoKey(int routing_id, std::string script_id)
+      : routing_id(routing_id), script_id(std::move(script_id)) {}
 
   bool operator<(const RoutingInfoKey& other) const {
     return std::tie(routing_id, script_id) <
@@ -99,37 +99,29 @@ UserScriptInjector::UserScriptInjector(const UserScript* script,
       user_script_set_(script_list),
       script_id_(script_->id()),
       host_id_(script_->host_id()),
-      is_declarative_(is_declarative),
-      user_script_set_observer_(this) {
-  user_script_set_observer_.Add(script_list);
+      is_declarative_(is_declarative) {
+  user_script_set_observation_.Observe(script_list);
 }
 
 UserScriptInjector::~UserScriptInjector() {
 }
 
-void UserScriptInjector::OnUserScriptsUpdated(
-    const std::set<HostID>& changed_hosts,
-    const UserScriptList& scripts) {
-  // When user scripts are updated, all the old script pointers are invalidated.
+void UserScriptInjector::OnUserScriptsUpdated() {
+  // When user scripts are updated, this means the host causing this injection
+  // has changed. All old script pointers are invalidated and this injection
+  // will be removed as there's no guarantee the backing script still exists.
   script_ = nullptr;
-  // If the host causing this injection changed, then this injection
-  // will be removed, and there's no guarantee the backing script still exists.
-  if (changed_hosts.count(host_id_) > 0)
-    return;
-
-  for (const std::unique_ptr<UserScript>& script : scripts) {
-    if (script->id() == script_id_) {
-      script_ = script.get();
-      break;
-    }
-  }
-  // If |host_id_| wasn't in |changed_hosts|, then the script for this injection
-  // should be guaranteed to exist.
-  DCHECK(script_);
 }
 
-UserScript::InjectionType UserScriptInjector::script_type() const {
-  return UserScript::CONTENT_SCRIPT;
+void UserScriptInjector::OnUserScriptSetDestroyed() {
+  user_script_set_observation_.Reset();
+  // Invalidate the script pointer as the UserScriptSet which this script
+  // belongs to has been destroyed.
+  script_ = nullptr;
+}
+
+mojom::InjectionType UserScriptInjector::script_type() const {
+  return mojom::InjectionType::kContentScript;
 }
 
 bool UserScriptInjector::IsUserGesture() const {
@@ -140,8 +132,8 @@ bool UserScriptInjector::ExpectsResults() const {
   return false;
 }
 
-base::Optional<CSSOrigin> UserScriptInjector::GetCssOrigin() const {
-  return base::nullopt;
+mojom::CSSOrigin UserScriptInjector::GetCssOrigin() const {
+  return mojom::CSSOrigin::kAuthor;
 }
 
 bool UserScriptInjector::IsRemovingCSS() const {
@@ -152,12 +144,12 @@ bool UserScriptInjector::IsAddingCSS() const {
   return script_ && !script_->css_scripts().empty();
 }
 
-const base::Optional<std::string> UserScriptInjector::GetInjectionKey() const {
-  return base::nullopt;
+const absl::optional<std::string> UserScriptInjector::GetInjectionKey() const {
+  return absl::nullopt;
 }
 
 bool UserScriptInjector::ShouldInjectJs(
-    UserScript::RunLocation run_location,
+    mojom::RunLocation run_location,
     const std::set<std::string>& executing_scripts) const {
   return script_ && script_->run_location() == run_location &&
          !script_->js_scripts().empty() &&
@@ -165,9 +157,9 @@ bool UserScriptInjector::ShouldInjectJs(
 }
 
 bool UserScriptInjector::ShouldInjectOrRemoveCss(
-    UserScript::RunLocation run_location,
+    mojom::RunLocation run_location,
     const std::set<std::string>& injected_stylesheets) const {
-  return script_ && run_location == UserScript::DOCUMENT_START &&
+  return script_ && run_location == mojom::RunLocation::kDocumentStart &&
          !script_->css_scripts().empty() &&
          ShouldInjectScripts(script_->css_scripts(), injected_stylesheets);
 }
@@ -222,7 +214,7 @@ PermissionsData::PageAccess UserScriptInjector::CanExecuteOnFrame(
 }
 
 std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(
-    UserScript::RunLocation run_location,
+    mojom::RunLocation run_location,
     std::set<std::string>* executing_scripts,
     size_t* num_injected_js_scripts) const {
   DCHECK(script_);
@@ -255,11 +247,11 @@ std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(
 }
 
 std::vector<blink::WebString> UserScriptInjector::GetCssSources(
-    UserScript::RunLocation run_location,
+    mojom::RunLocation run_location,
     std::set<std::string>* injected_stylesheets,
     size_t* num_injected_stylesheets) const {
   DCHECK(script_);
-  DCHECK_EQ(UserScript::DOCUMENT_START, run_location);
+  DCHECK_EQ(mojom::RunLocation::kDocumentStart, run_location);
 
   std::vector<blink::WebString> sources;
 
@@ -280,11 +272,8 @@ std::vector<blink::WebString> UserScriptInjector::GetCssSources(
 
 void UserScriptInjector::OnInjectionComplete(
     std::unique_ptr<base::Value> execution_result,
-    UserScript::RunLocation run_location,
-    content::RenderFrame* render_frame) {}
+    mojom::RunLocation run_location) {}
 
-void UserScriptInjector::OnWillNotInject(InjectFailureReason reason,
-                                         content::RenderFrame* render_frame) {
-}
+void UserScriptInjector::OnWillNotInject(InjectFailureReason reason) {}
 
 }  // namespace extensions

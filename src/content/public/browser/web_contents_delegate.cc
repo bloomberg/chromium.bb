@@ -52,9 +52,9 @@ bool WebContentsDelegate::ShouldPreserveAbortedURLs(WebContents* source) {
 bool WebContentsDelegate::DidAddMessageToConsole(
     WebContents* source,
     blink::mojom::ConsoleMessageLevel log_level,
-    const base::string16& message,
+    const std::u16string& message,
     int32_t line_no,
-    const base::string16& source_id) {
+    const std::u16string& source_id) {
   return false;
 }
 
@@ -136,7 +136,7 @@ WebContents* WebContentsDelegate::CreateCustomWebContents(
     const GURL& opener_url,
     const std::string& frame_name,
     const GURL& target_url,
-    const std::string& partition_id,
+    const StoragePartitionId& partition_id,
     SessionStorageNamespace* session_storage_namespace) {
   return nullptr;
 }
@@ -148,7 +148,7 @@ JavaScriptDialogManager* WebContentsDelegate::GetJavaScriptDialogManager(
 
 void WebContentsDelegate::CreateSmsPrompt(
     RenderFrameHost* host,
-    const url::Origin& origin,
+    const std::vector<url::Origin>& origin_list,
     const std::string& one_time_code,
     base::OnceCallback<void()> on_confirm,
     base::OnceCallback<void()> on_cancel) {}
@@ -166,6 +166,18 @@ blink::mojom::DisplayMode WebContentsDelegate::GetDisplayMode(
 blink::ProtocolHandlerSecurityLevel
 WebContentsDelegate::GetProtocolHandlerSecurityLevel(RenderFrameHost*) {
   return blink::ProtocolHandlerSecurityLevel::kStrict;
+}
+
+void WebContentsDelegate::RequestToLockMouse(WebContents* web_contents,
+                                             bool user_gesture,
+                                             bool last_unlocked_by_target) {
+  web_contents->GotResponseToLockMouseRequest(
+      blink::mojom::PointerLockResult::kUnknownError);
+}
+
+void WebContentsDelegate::RequestKeyboardLock(WebContents* web_contents,
+                                              bool esc_key_locked) {
+  web_contents->GotResponseToKeyboardLockRequest(false);
 }
 
 ColorChooser* WebContentsDelegate::OpenColorChooser(
@@ -227,14 +239,6 @@ bool WebContentsDelegate::ShouldBlockMediaRequest(const GURL& url) {
 }
 #endif
 
-void WebContentsDelegate::RequestPpapiBrokerPermission(
-    WebContents* web_contents,
-    const GURL& url,
-    const base::FilePath& plugin_path,
-    base::OnceCallback<void(bool)> callback) {
-  std::move(callback).Run(false);
-}
-
 WebContentsDelegate::~WebContentsDelegate() {
   while (!attached_contents_.empty()) {
     WebContents* web_contents = *attached_contents_.begin();
@@ -266,7 +270,9 @@ bool WebContentsDelegate::GuestSaveFrame(WebContents* guest_web_contents) {
   return false;
 }
 
-bool WebContentsDelegate::SaveFrame(const GURL& url, const Referrer& referrer) {
+bool WebContentsDelegate::SaveFrame(const GURL& url,
+                                    const Referrer& referrer,
+                                    content::RenderFrameHost* rfh) {
   return false;
 }
 
@@ -324,6 +330,10 @@ bool WebContentsDelegate::ShouldAllowLazyLoad() {
   return true;
 }
 
+bool WebContentsDelegate::IsBackForwardCacheSupported() {
+  return false;
+}
+
 std::unique_ptr<WebContents> WebContentsDelegate::ActivatePortalWebContents(
     WebContents* predecessor_contents,
     std::unique_ptr<WebContents> portal_contents) {
@@ -339,12 +349,6 @@ void WebContentsDelegate::UpdateInspectedWebContentsIfNecessary(
 
 bool WebContentsDelegate::ShouldShowStaleContentOnEviction(
     WebContents* source) {
-  return false;
-}
-
-bool WebContentsDelegate::IsFrameLowPriority(
-    const WebContents* web_contents,
-    const RenderFrameHost* render_frame_host) {
   return false;
 }
 

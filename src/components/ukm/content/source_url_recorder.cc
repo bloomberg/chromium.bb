@@ -54,11 +54,6 @@ class SourceUrlRecorderWebContentsObserver
       public content::WebContentsUserData<
           SourceUrlRecorderWebContentsObserver> {
  public:
-  // Creates a SourceUrlRecorderWebContentsObserver for the given
-  // WebContents. If a SourceUrlRecorderWebContentsObserver is already
-  // associated with the WebContents, this method is a no-op.
-  static void CreateForWebContents(content::WebContents* web_contents);
-
   // content::WebContentsObserver:
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -321,6 +316,22 @@ void SourceUrlRecorderWebContentsObserver::MaybeRecordUrl(
 
   navigation_data.is_same_document_navigation =
       navigation_handle->IsSameDocument();
+
+  navigation_data.same_origin_status =
+      UkmSource::NavigationData::SameOriginStatus::UNSET;
+  // Only set the same origin flag for committed non-error,
+  // non-same-document navigations.
+  if (navigation_handle->HasCommitted() && !navigation_handle->IsErrorPage() &&
+      !navigation_handle->IsSameDocument()) {
+    navigation_data.same_origin_status =
+        navigation_handle->IsSameOrigin()
+            ? UkmSource::NavigationData::SameOriginStatus::SAME_ORIGIN
+            : UkmSource::NavigationData::SameOriginStatus::CROSS_ORIGIN;
+  }
+  navigation_data.is_renderer_initiated =
+      navigation_handle->IsRendererInitiated();
+  navigation_data.is_error_page = navigation_handle->IsErrorPage();
+
   navigation_data.previous_source_id =
       last_committed_full_navigation_source_id_;
 
@@ -342,17 +353,6 @@ void SourceUrlRecorderWebContentsObserver::MaybeRecordUrl(
   const ukm::SourceId source_id = ukm::ConvertToSourceId(
       navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
   ukm_recorder->RecordNavigation(source_id, navigation_data);
-}
-
-// static
-void SourceUrlRecorderWebContentsObserver::CreateForWebContents(
-    content::WebContents* web_contents) {
-  if (!SourceUrlRecorderWebContentsObserver::FromWebContents(web_contents)) {
-    web_contents->SetUserData(
-        SourceUrlRecorderWebContentsObserver::UserDataKey(),
-        base::WrapUnique(
-            new SourceUrlRecorderWebContentsObserver(web_contents)));
-  }
 }
 
 }  // namespace internal

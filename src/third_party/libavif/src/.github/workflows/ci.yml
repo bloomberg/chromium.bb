@@ -2,44 +2,54 @@ name: CI
 on: [push, pull_request]
 jobs:
   build:
-    runs-on: ubuntu-18.04
-    env:
-      CC: gcc-10
-      CXX: g++-10
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
     steps:
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
-    - name: Install dependencies
-      run: |
-        DEBIAN_FRONTEND=noninteractive sudo apt-get update || true
-        DEBIAN_FRONTEND=noninteractive sudo apt-get install -y ninja-build gcc-10 g++-10
-        pip install --upgrade pip
-        pip install setuptools
-        pip install meson
-    - name: Install nasm
-      run: |
-        curl -L https://download.videolan.org/contrib/nasm/nasm-2.14.tar.gz | tar xvz
-        cd nasm-2.14
-        ./configure && make -j2 && sudo make install
-        nasm --version
     - uses: actions/checkout@v2
-    - name: Setup aom
+    - name: Set GCC & G++ 10 compiler (on Linux)
+      if: runner.os == 'Linux'
+      run: echo "CC=gcc-10" >> $GITHUB_ENV && echo "CXX=g++-10" >> $GITHUB_ENV
+    - uses: actions/setup-python@v2
+
+    - name: Cache external dependencies
+      id: cache-ext
+      uses: actions/cache@v2
+      with:
+        path: ext
+        key: ${{ runner.os }}-${{ hashFiles('ext/*.cmd') }}
+    - uses: ilammy/setup-nasm@v1
+      if: steps.cache-ext.outputs.cache-hit != 'true'
+      with:
+        version: 2.15.05
+    - uses: seanmiddleditch/gha-setup-ninja@v3
+      if: steps.cache-ext.outputs.cache-hit != 'true'
+    - run: pip install meson
+      if: steps.cache-ext.outputs.cache-hit != 'true'
+    - name: Build aom
+      if: steps.cache-ext.outputs.cache-hit != 'true'
       working-directory: ./ext
       run: bash aom.cmd
-    - name: Setup dav1d
+    - name: Build dav1d
+      if: steps.cache-ext.outputs.cache-hit != 'true'
       working-directory: ./ext
       run: bash dav1d.cmd
-    - name: Setup rav1e
+    - name: Build rav1e
+      if: steps.cache-ext.outputs.cache-hit != 'true'
       working-directory: ./ext
       run: bash rav1e.cmd
-    - name: Setup libgav1
+    - name: Build libgav1
+      if: steps.cache-ext.outputs.cache-hit != 'true'
       working-directory: ./ext
       run: bash libgav1.cmd
-    - name: Setup libyuv
+    - name: Build libyuv
+      if: steps.cache-ext.outputs.cache-hit != 'true'
       working-directory: ./ext
       run: bash libyuv.cmd
+
     - name: Prepare libavif (cmake)
       run: |
         mkdir build && cd build
@@ -47,6 +57,7 @@ jobs:
     - name: Build libavif (make)
       working-directory: ./build
       run: make -j $(($(nproc) + 1))
-    - name: Run AVIF Tests
+    - name: Run AVIF Tests (on Linux)
+      if: runner.os == 'Linux'
       working-directory: ./build
       run: ./aviftest ../tests/data

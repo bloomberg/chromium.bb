@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
@@ -34,13 +34,15 @@ class MediaStringView : public views::View,
                         public media_session::mojom::MediaControllerObserver,
                         public ui::ImplicitAnimationObserver {
  public:
+  METADATA_HEADER(MediaStringView);
+
   MediaStringView();
   MediaStringView(const MediaStringView&) = delete;
   MediaStringView& operator=(const MediaStringView&) = delete;
   ~MediaStringView() override;
 
   // views::View:
-  const char* GetClassName() const override;
+  void OnThemeChanged() override;
 
   // views::ViewObserver:
   void OnViewBoundsChanged(views::View* observed_view) override;
@@ -49,14 +51,14 @@ class MediaStringView : public views::View,
   void MediaSessionInfoChanged(
       media_session::mojom::MediaSessionInfoPtr session_info) override;
   void MediaSessionMetadataChanged(
-      const base::Optional<media_session::MediaMetadata>& metadata) override;
+      const absl::optional<media_session::MediaMetadata>& metadata) override;
   void MediaSessionActionsChanged(
       const std::vector<media_session::mojom::MediaSessionAction>& actions)
       override {}
   void MediaSessionChanged(
-      const base::Optional<base::UnguessableToken>& request_id) override {}
+      const absl::optional<base::UnguessableToken>& request_id) override {}
   void MediaSessionPositionChanged(
-      const base::Optional<media_session::MediaPosition>& position) override {}
+      const absl::optional<media_session::MediaPosition>& position) override {}
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
@@ -99,7 +101,8 @@ class MediaStringView : public views::View,
   mojo::Receiver<media_session::mojom::MediaControllerObserver>
       observer_receiver_{this};
 
-  ScopedObserver<views::View, views::ViewObserver> observed_view_{this};
+  base::ScopedObservation<views::View, views::ViewObserver> observed_view_{
+      this};
 
   base::WeakPtrFactory<MediaStringView> weak_factory_{this};
 };

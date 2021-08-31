@@ -10,15 +10,17 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/policy/core/common/features.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
@@ -26,6 +28,7 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/values_util.h"
 #include "components/policy/policy_constants.h"
+#include "components/strings/grit/components_strings.h"
 #include "extensions/buildflags/buildflags.h"
 
 #if defined(OS_ANDROID)
@@ -81,10 +84,10 @@ void RemapProxyPolicies(PolicyMap* policies) {
   }
 }
 
-// Maps the separate policies for proxy settings into a single Dictionary
-// policy. This allows to keep the logic of merging policies from different
-// sources simple, as all separate proxy policies should be considered as a
-// single whole during merging.
+// Maps the separate renamed policies into a single Dictionary policy. This
+// allows to keep the logic of merging policies from different sources simple,
+// as all separate renamed policies should be considered as a single whole
+// during merging.
 void RemapRenamedPolicies(PolicyMap* policies) {
   // For all renamed policies we need to explicitly merge the value of the
   // old policy with the new one or else merging will not be carried over
@@ -113,7 +116,7 @@ void RemapRenamedPolicies(PolicyMap* policies) {
       {policy::key::kNativeMessagingWhitelist,
        policy::key::kNativeMessagingAllowlist},
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       {policy::key::kAttestationExtensionWhitelist,
        policy::key::kAttestationExtensionAllowlist},
       {policy::key::kExternalPrintServersWhitelist,
@@ -132,7 +135,7 @@ void RemapRenamedPolicies(PolicyMap* policies) {
       {policy::key::kPrintingAPIExtensionsWhitelist,
        policy::key::kPrintingAPIExtensionsAllowlist},
 #endif  // defined(USE_CUPS)
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }};
   for (const auto& policy_pair : renamed_policies) {
     PolicyMap::Entry* old_policy = policies->GetMutable(policy_pair.first);
@@ -140,13 +143,36 @@ void RemapRenamedPolicies(PolicyMap* policies) {
     if (old_policy &&
         (!new_policy || old_policy->has_higher_priority_than(*new_policy))) {
       PolicyMap::Entry policy_entry = old_policy->DeepCopy();
-      // TODO(pastarmovj): Re-add the policy errors in a way that does not
-      // depend on resources being loaded that early.
+      policy_entry.AddMessage(PolicyMap::MessageType::kWarning,
+                              IDS_POLICY_MIGRATED_NEW_POLICY,
+                              {base::UTF8ToUTF16(policy_pair.first)});
+      old_policy->AddMessage(PolicyMap::MessageType::kError,
+                             IDS_POLICY_MIGRATED_OLD_POLICY,
+                             {base::UTF8ToUTF16(policy_pair.second)});
       policies->Set(policy_pair.second, std::move(policy_entry));
     }
     if (policy_lists_to_merge.contains(policy_pair.first) &&
         !policy_lists_to_merge.contains(policy_pair.second)) {
       merge_list->Append(base::Value(policy_pair.second));
+    }
+  }
+}
+
+// Metrics should not be enforced so if this policy is set as mandatory
+// downgrade it to a recommended level policy.
+void DowngradeMetricsReportingToRecommendedPolicy(PolicyMap* policies) {
+  // Capture both the Chrome-only and device-level policies on Chrome OS.
+  const std::vector<const char*> metrics_keys = {
+      policy::key::kMetricsReportingEnabled,
+      policy::key::kDeviceMetricsReportingEnabled};
+  for (const char* policy_key : metrics_keys) {
+    PolicyMap::Entry* policy = policies->GetMutable(policy_key);
+    if (policy && policy->level != POLICY_LEVEL_RECOMMENDED &&
+        policy->value() && policy->value()->is_bool() &&
+        policy->value()->GetBool()) {
+      policy->level = POLICY_LEVEL_RECOMMENDED;
+      policy->AddMessage(PolicyMap::MessageType::kInfo,
+                         IDS_POLICY_IGNORED_MANDATORY_REPORTING_POLICY);
     }
   }
 }
@@ -202,10 +228,7 @@ PolicyServiceImpl::~PolicyServiceImpl() {
 void PolicyServiceImpl::AddObserver(PolicyDomain domain,
                                     PolicyService::Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  std::unique_ptr<Observers>& list = observers_[domain];
-  if (!list)
-    list = std::make_unique<Observers>();
-  list->AddObserver(observer);
+  observers_[domain].AddObserver(observer);
 }
 
 void PolicyServiceImpl::RemoveObserver(PolicyDomain domain,
@@ -214,8 +237,8 @@ void PolicyServiceImpl::RemoveObserver(PolicyDomain domain,
   auto it = observers_.find(domain);
   if (it == observers_.end())
     return;
-  it->second->RemoveObserver(observer);
-  if (!it->second->might_have_observers()) {
+  it->second.RemoveObserver(observer);
+  if (it->second.empty()) {
     observers_.erase(it);
   }
 }
@@ -326,7 +349,7 @@ void PolicyServiceImpl::NotifyNamespaceUpdated(
   DCHECK(thread_checker_.CalledOnValidThread());
   auto iterator = observers_.find(ns.domain);
   if (iterator != observers_.end()) {
-    for (auto& observer : *iterator->second)
+    for (auto& observer : iterator->second)
       observer.OnPolicyUpdated(ns, previous, current);
   }
 }
@@ -352,6 +375,8 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
     provided_bundle.CopyFrom(provider->policies());
     RemapProxyPolicies(&provided_bundle.Get(chrome_namespace));
     RemapRenamedPolicies(&provided_bundle.Get(chrome_namespace));
+    DowngradeMetricsReportingToRecommendedPolicy(
+        &provided_bundle.Get(chrome_namespace));
     bundle.MergeFrom(provided_bundle);
   }
 
@@ -383,6 +408,16 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
   PolicyDictionaryMerger policy_dictionary_merger(
       std::move(policy_dictionaries_to_merge));
 
+  // Pass affiliation and CloudUserPolicyMerge values to both mergers.
+  const bool is_affiliated = chrome_policies.IsUserAffiliated();
+  const bool is_user_cloud_merging_enabled =
+      chrome_policies.GetValue(key::kCloudUserPolicyMerge) &&
+      chrome_policies.GetValue(key::kCloudUserPolicyMerge)->GetBool();
+  policy_list_merger.SetAllowUserCloudPolicyMerging(
+      is_affiliated && is_user_cloud_merging_enabled);
+  policy_dictionary_merger.SetAllowUserCloudPolicyMerging(
+      is_affiliated && is_user_cloud_merging_enabled);
+
   std::vector<PolicyMerger*> mergers{&policy_list_merger,
                                      &policy_dictionary_merger};
 
@@ -390,8 +425,8 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
   if (atomic_policy_group_enabled)
     mergers.push_back(&policy_group_merger);
 
-  for (auto it = bundle.begin(); it != bundle.end(); ++it)
-    it->second->MergeValues(mergers);
+  for (auto& entry : bundle)
+    entry.second.MergeValues(mergers);
 
   for (auto& migrator : migrators_)
     migrator->Migrate(&bundle);
@@ -409,16 +444,16 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
   while (it_new != end_new && it_old != end_old) {
     if (it_new->first < it_old->first) {
       // A new namespace is available.
-      NotifyNamespaceUpdated(it_new->first, kEmpty, *it_new->second);
+      NotifyNamespaceUpdated(it_new->first, kEmpty, it_new->second);
       ++it_new;
     } else if (it_old->first < it_new->first) {
       // A previously available namespace is now gone.
-      NotifyNamespaceUpdated(it_old->first, *it_old->second, kEmpty);
+      NotifyNamespaceUpdated(it_old->first, it_old->second, kEmpty);
       ++it_old;
     } else {
-      if (!it_new->second->Equals(*it_old->second)) {
+      if (!it_new->second.Equals(it_old->second)) {
         // An existing namespace's policies have changed.
-        NotifyNamespaceUpdated(it_new->first, *it_old->second, *it_new->second);
+        NotifyNamespaceUpdated(it_new->first, it_old->second, it_new->second);
       }
       ++it_new;
       ++it_old;
@@ -427,11 +462,11 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
 
   // Send updates for the remaining new namespaces, if any.
   for (; it_new != end_new; ++it_new)
-    NotifyNamespaceUpdated(it_new->first, kEmpty, *it_new->second);
+    NotifyNamespaceUpdated(it_new->first, kEmpty, it_new->second);
 
   // Sends updates for the remaining removed namespaces, if any.
   for (; it_old != end_old; ++it_old)
-    NotifyNamespaceUpdated(it_old->first, *it_old->second, kEmpty);
+    NotifyNamespaceUpdated(it_old->first, it_old->second, kEmpty);
 
   CheckPolicyDomainStatus();
   CheckRefreshComplete();
@@ -478,7 +513,7 @@ void PolicyServiceImpl::MaybeNotifyPolicyDomainStatusChange(
   if (iter == observers_.end())
     return;
 
-  for (auto& observer : *iter->second) {
+  for (auto& observer : iter->second) {
     observer.OnPolicyServiceInitialized(policy_domain);
     if (policy_domain_status_[policy_domain] ==
         PolicyDomainStatus::kPolicyReady)

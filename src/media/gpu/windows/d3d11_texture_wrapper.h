@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/threading/sequence_bound.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -20,6 +19,7 @@
 #include "media/gpu/command_buffer_helper.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/windows/d3d11_com_defs.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/hdr_metadata.h"
 #include "ui/gl/gl_bindings.h"
@@ -74,9 +74,7 @@ class MEDIA_GPU_EXPORT DefaultTexture2DWrapper : public Texture2DWrapper {
 
   // While the specific texture instance can change on every call to
   // ProcessTexture, the dxgi format must be the same for all of them.
-  DefaultTexture2DWrapper(const gfx::Size& size,
-                          DXGI_FORMAT dxgi_format,
-                          VideoPixelFormat pixel_format);
+  DefaultTexture2DWrapper(const gfx::Size& size, DXGI_FORMAT dxgi_format);
   ~DefaultTexture2DWrapper() override;
 
   Status Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
@@ -99,36 +97,17 @@ class MEDIA_GPU_EXPORT DefaultTexture2DWrapper : public Texture2DWrapper {
   // can use the mailbox.
   class GpuResources {
    public:
-    GpuResources(OnErrorCB on_error_cb);
+    GpuResources(OnErrorCB on_error_cb,
+                 GetCommandBufferHelperCB get_helper_cb,
+                 const std::vector<gpu::Mailbox>& mailboxes,
+                 const gfx::Size& size,
+                 DXGI_FORMAT dxgi_format,
+                 ComD3D11Texture2D texture,
+                 size_t array_slice);
     ~GpuResources();
 
-    void Init(
-        GetCommandBufferHelperCB get_helper_cb,
-        const std::vector<gpu::Mailbox> mailboxes,
-        GLenum target,
-        gfx::Size size,
-        size_t textures_per_picture,
-        std::array<viz::ResourceFormat, VideoFrame::kMaxPlanes> texture_formats,
-        VideoPixelFormat pixel_format,
-        ComD3D11Texture2D texture,
-        size_t array_slice);
-
-    std::vector<uint32_t> service_ids_;
-
    private:
-    // Push a new |texture|, |array_slice| to |gl_image_|.
-    // Both |texture| and |array_slice| were set by Init.
-    void PushNewTexture();
-
-    // Notify our wrapper about |status|, if we haven't before.
-    void NotifyError(Status status);
-
-    // May be empty if we've already sent an error.
-    OnErrorCB on_error_cb_;
-
     scoped_refptr<CommandBufferHelper> helper_;
-    scoped_refptr<gl::GLImageDXGI> gl_image_;
-    EGLStreamKHR stream_;
 
     std::vector<std::unique_ptr<gpu::SharedImageRepresentationFactoryRef>>
         shared_images_;
@@ -140,13 +119,12 @@ class MEDIA_GPU_EXPORT DefaultTexture2DWrapper : public Texture2DWrapper {
   void OnError(Status status);
 
   // The first error status that we've received from |gpu_resources_|, if any.
-  base::Optional<Status> received_error_;
+  absl::optional<Status> received_error_;
 
   gfx::Size size_;
   base::SequenceBound<GpuResources> gpu_resources_;
   MailboxHolderArray mailbox_holders_;
   DXGI_FORMAT dxgi_format_;
-  VideoPixelFormat pixel_format_;
 
   base::WeakPtrFactory<DefaultTexture2DWrapper> weak_factory_{this};
 };

@@ -10,12 +10,14 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom.h"
 
 BackgroundFetchPermissionContext::BackgroundFetchPermissionContext(
     content::BrowserContext* browser_context)
     : PermissionContextBase(browser_context,
                             ContentSettingsType::BACKGROUND_FETCH,
-                            blink::mojom::FeaturePolicyFeature::kNotFound) {}
+                            blink::mojom::PermissionsPolicyFeature::kNotFound) {
+}
 
 bool BackgroundFetchPermissionContext::IsRestrictedToSecureOrigins() const {
   return true;
@@ -56,9 +58,18 @@ ContentSetting BackgroundFetchPermissionContext::GetPermissionStatusInternal(
 
   // The set of valid settings for automatic downloads is defined as
   // {CONTENT_SETTING_ALLOW, CONTENT_SETTING_ASK, CONTENT_SETTING_BLOCK}.
-  return host_content_settings_map->GetContentSetting(
+  ContentSetting setting = host_content_settings_map->GetContentSetting(
       requesting_origin, requesting_origin,
       ContentSettingsType::AUTOMATIC_DOWNLOADS);
+
+  // Due to privacy concerns as outlined in https://crbug.com/896311 the most
+  // permissive state BGF can be in for non top level frames or service workers
+  // is ASK. This causes background fetches that do not originate in a main
+  // frame to start paused.
+  if (setting == CONTENT_SETTING_ALLOW)
+    setting = CONTENT_SETTING_ASK;
+
+  return setting;
 }
 
 void BackgroundFetchPermissionContext::DecidePermission(

@@ -16,6 +16,10 @@ namespace service_manager {
 class LocalInterfaceProvider;
 }  // namespace service_manager
 
+namespace subresource_filter {
+class UnverifiedRulesetDealer;
+}
+
 namespace weblayer {
 class WebLayerRenderThreadObserver;
 
@@ -34,15 +38,14 @@ class ContentRendererClientImpl : public content::ContentRendererClient {
                         const blink::WebURLError& error,
                         const std::string& http_method,
                         std::string* error_html) override;
-  std::unique_ptr<content::URLLoaderThrottleProvider>
+  std::unique_ptr<blink::URLLoaderThrottleProvider>
   CreateURLLoaderThrottleProvider(
-      content::URLLoaderThrottleProviderType provider_type) override;
+      blink::URLLoaderThrottleProviderType provider_type) override;
   void AddSupportedKeySystems(
       std::vector<std::unique_ptr<::media::KeySystemProperties>>* key_systems)
       override;
   void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() override;
-  bool IsPrefetchOnly(content::RenderFrame* render_frame,
-                      const blink::WebURLRequest& request) override;
+  bool IsPrefetchOnly(content::RenderFrame* render_frame) override;
   bool DeferMediaLoad(content::RenderFrame* render_frame,
                       bool has_played_media_before,
                       base::OnceClosure closure) override;
@@ -53,6 +56,9 @@ class ContentRendererClientImpl : public content::ContentRendererClient {
       local_interface_provider_;
   std::unique_ptr<SpellCheck> spellcheck_;
 #endif
+
+  std::unique_ptr<subresource_filter::UnverifiedRulesetDealer>
+      subresource_filter_ruleset_dealer_;
 
   std::unique_ptr<WebLayerRenderThreadObserver> weblayer_observer_;
 
