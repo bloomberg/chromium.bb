@@ -11,11 +11,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
-#if !BUILDFLAG(IS_LACROS)
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/common/pref_names.h"
 #endif
 
@@ -26,7 +27,7 @@ namespace {
 constexpr int kForceMaximizeWidthLimit = 1366;
 
 bool ShouldForceMaximizeOnFirstRun(Profile* profile) {
-#if BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
   // TODO(https://crbug.com/1110548): Support the ForceMaximizeOnFirstRun policy
   // in lacros-chrome.
   return false;

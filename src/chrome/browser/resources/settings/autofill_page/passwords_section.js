@@ -16,9 +16,10 @@ import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/po
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
-import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import {OpenWindowProxyImpl} from '../open_window_proxy.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
@@ -29,19 +30,19 @@ import {IronA11yKeysBehavior} from 'chrome://resources/polymer/v3_0/iron-a11y-ke
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 
-import '../controls/extension_controlled_indicator.m.js';
-import '../controls/settings_toggle_button.m.js';
-import {GlobalScrollTargetBehavior} from '../global_scroll_target_behavior.m.js';
+import '../controls/extension_controlled_indicator.js';
+import '../controls/settings_toggle_button.js';
+import {GlobalScrollTargetBehavior} from '../global_scroll_target_behavior.js';
 import {loadTimeData} from '../i18n_setup.js';
-import {SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '../people_page/sync_browser_proxy.m.js';
-import '../prefs/prefs.m.js';
-import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+import {SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '../people_page/sync_browser_proxy.js';
+import '../prefs/prefs.js';
+import {PrefsBehavior} from '../prefs/prefs_behavior.js';
 import {routes} from '../route.js';
 import {MergeExceptionsStoreCopiesBehavior} from './merge_exceptions_store_copies_behavior.js';
 import {MergePasswordsStoreCopiesBehavior} from './merge_passwords_store_copies_behavior.js';
 import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
-import {Router} from '../router.m.js';
-import '../settings_shared_css.m.js';
+import {Router} from '../router.js';
+import '../settings_shared_css.js';
 import '../site_favicon.js';
 import {PasswordCheckBehavior} from './password_check_behavior.js';
 import './password_list_item.js';
@@ -51,7 +52,7 @@ import './passwords_export_dialog.js';
 import './passwords_shared_css.js';
 import './avatar_icon.js';
 // <if expr="chromeos">
-import '../controls/password_prompt_dialog.m.js';
+import '../controls/password_prompt_dialog.js';
 import {BlockingRequestManager} from './blocking_request_manager.js';
 // </if>
 
@@ -198,6 +199,16 @@ Polymer({
           'isOptedInForAccountStorage_, numberOfDevicePasswords_)',
     },
 
+    /**
+     * Whether the entry point leading to enroll in trusted vault encryption
+     * should be shown.
+     * @private
+     */
+    shouldOfferTrustedVaultOptIn_: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private */
     hasLeakedCredentials_: {
       type: Boolean,
@@ -229,13 +240,6 @@ Polymer({
     },
 
     /** @private */
-    devicePasswordsLinkLabel_: {
-      type: String,
-      value: '',
-      computed: 'computeDevicePasswordsLinkLabel_(numberOfDevicePasswords_)',
-    },
-
-    /** @private */
     profileEmail_: {
       type: String,
       value: '',
@@ -256,12 +260,6 @@ Polymer({
 
     /** @private {SyncStatus} */
     syncStatus_: Object,
-
-    /** @private {!MultiStorePasswordUiEntry} */
-    lastFocused_: Object,
-
-    /** @private */
-    listBlurred_: Boolean,
 
     // <if expr="chromeos">
     /** @private */
@@ -350,6 +348,12 @@ Polymer({
     syncBrowserProxy.getStoredAccounts().then(storedAccountsChanged);
     this.addWebUIListener('stored-accounts-updated', storedAccountsChanged);
     // </if>
+
+    syncBrowserProxy.sendOfferTrustedVaultOptInChanged();
+    this.addWebUIListener(
+        'offer-trusted-vault-opt-in-changed', (offerOptIn) => {
+          this.shouldOfferTrustedVaultOptIn_ = offerOptIn;
+        });
 
     afterNextRender(this, function() {
       IronA11yAnnouncer.requestAvailability();
@@ -466,17 +470,6 @@ Polymer({
   },
 
   /**
-   * @private
-   * @return {string}
-   */
-  computeDevicePasswordsLinkLabel_() {
-    return this.numberOfDevicePasswords_ === 1 ?
-        this.i18n('devicePasswordsLinkLabelSingular') :
-        this.i18n(
-            'devicePasswordsLinkLabelPlural', this.numberOfDevicePasswords_);
-  },
-
-  /**
    * Shows the check passwords sub page.
    * @private
    */
@@ -485,6 +478,15 @@ Polymer({
         routes.CHECK_PASSWORDS, new URLSearchParams('start=true'));
     this.passwordManager_.recordPasswordCheckReferrer(
         PasswordManagerProxy.PasswordCheckReferrer.PASSWORD_SETTINGS);
+  },
+
+  /**
+   * Shows the page to opt in to trusted vault encryption.
+   * @private
+   */
+  onTrustedVaultOptInClick_() {
+    OpenWindowProxyImpl.getInstance().openURL(
+        loadTimeData.getString('trustedVaultOptInUrl'));
   },
 
   /**
@@ -530,28 +532,21 @@ Polymer({
   // </if>
 
   /**
-   * @param {string} filter
-   * @return {!Array<!MultiStorePasswordUiEntry>}
+   * @return {function(!MultiStorePasswordUiEntry): boolean}
    * @private
    */
-  getFilteredPasswords_(filter) {
-    if (!filter) {
-      return this.savedPasswords.slice();
-    }
-
-    return this.savedPasswords.filter(
-        p => [p.urls.shown, p.username].some(
-            term => term.toLowerCase().includes(filter.toLowerCase())));
+  passwordFilter_() {
+    return password => [password.urls.shown, password.username].some(
+               term => term.toLowerCase().includes(this.filter.toLowerCase()));
   },
 
   /**
-   * @param {string} filter
    * @return {function(!chrome.passwordsPrivate.ExceptionEntry): boolean}
    * @private
    */
-  passwordExceptionFilter_(filter) {
+  passwordExceptionFilter_() {
     return exception => exception.urls.shown.toLowerCase().includes(
-               filter.toLowerCase());
+               this.filter.toLowerCase());
   },
 
   /**

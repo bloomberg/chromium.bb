@@ -6,13 +6,15 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "content/renderer/loader/web_url_loader_impl.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
 #include "content/renderer/render_frame_impl.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/platform/resource_load_info_notifier_wrapper.h"
 #include "third_party/blink/public/platform/web_code_cache_loader.h"
+#include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 
 namespace content {
@@ -59,6 +61,15 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
                     : network::mojom::RequestDestination::kIframe,
       is_main_frame ? net::HIGHEST : net::LOWEST);
   size_t redirect_count = commit_params->redirect_response.size();
+
+  if (redirect_count != commit_params->redirects.size()) {
+    // We currently incorrectly send empty redirect_response and redirect_infos
+    // on frame reloads and some cases involving throttles.
+    // TODO(https://crbug.com/1171225): Fix this.
+    DCHECK_EQ(0u, redirect_count);
+    DCHECK_EQ(0u, commit_params->redirect_infos.size());
+    DCHECK_NE(0u, commit_params->redirects.size());
+  }
   navigation_params->redirects.reserve(redirect_count);
   navigation_params->redirects.resize(redirect_count);
   for (size_t i = 0; i < redirect_count; ++i) {
@@ -66,7 +77,7 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
         navigation_params->redirects[i];
     auto& redirect_info = commit_params->redirect_infos[i];
     auto& redirect_response = commit_params->redirect_response[i];
-    WebURLLoaderImpl::PopulateURLResponse(
+    blink::WebURLLoader::PopulateURLResponse(
         url, *redirect_response, &redirect.redirect_response,
         response_head->ssl_info.has_value(), request_id);
     resource_load_info_notifier_wrapper->NotifyResourceRedirectReceived(
@@ -84,7 +95,7 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
     url = redirect_info.new_url;
   }
 
-  WebURLLoaderImpl::PopulateURLResponse(
+  blink::WebURLLoader::PopulateURLResponse(
       url, *response_head, &navigation_params->response,
       response_head->ssl_info.has_value(), request_id);
   if (url.SchemeIs(url::kDataScheme))
@@ -94,7 +105,7 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
     navigation_params->body_loader.reset(new NavigationBodyLoader(
         original_url, std::move(response_head), std::move(response_body),
         std::move(url_loader_client_endpoints), task_runner,
-        std::move(resource_load_info_notifier_wrapper)));
+        std::move(resource_load_info_notifier_wrapper), is_main_frame));
   }
 }
 
@@ -105,7 +116,8 @@ NavigationBodyLoader::NavigationBodyLoader(
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
-        resource_load_info_notifier_wrapper)
+        resource_load_info_notifier_wrapper,
+    bool is_main_frame)
     : response_head_(std::move(response_head)),
       response_body_(std::move(response_body)),
       endpoints_(std::move(endpoints)),
@@ -115,13 +127,20 @@ NavigationBodyLoader::NavigationBodyLoader(
                       task_runner_),
       resource_load_info_notifier_wrapper_(
           std::move(resource_load_info_notifier_wrapper)),
-      original_url_(original_url) {}
+      original_url_(original_url),
+      is_main_frame_(is_main_frame) {}
 
 NavigationBodyLoader::~NavigationBodyLoader() {
   if (!has_received_completion_ || !has_seen_end_of_data_) {
     resource_load_info_notifier_wrapper_->NotifyResourceLoadCanceled(
         net::ERR_ABORTED);
   }
+}
+
+void NavigationBodyLoader::OnReceiveEarlyHints(
+    network::mojom::EarlyHintsPtr early_hints) {
+  // This has already happened in the browser process.
+  NOTREACHED();
 }
 
 void NavigationBodyLoader::OnReceiveResponse(
@@ -208,7 +227,7 @@ void NavigationBodyLoader::StartLoadingBody(
     code_cache_loader_->FetchFromCodeCache(
         blink::mojom::CodeCacheType::kJavascript, original_url_,
         base::BindOnce(&NavigationBodyLoader::CodeCacheReceived,
-                       weak_factory_.GetWeakPtr(),
+                       weak_factory_.GetWeakPtr(), base::TimeTicks::Now(),
                        response_head_response_time));
     return;
   }
@@ -217,9 +236,14 @@ void NavigationBodyLoader::StartLoadingBody(
 }
 
 void NavigationBodyLoader::CodeCacheReceived(
+    base::TimeTicks start_time,
     base::Time response_head_response_time,
     base::Time response_time,
     mojo_base::BigBuffer data) {
+  base::UmaHistogramTimes(
+      base::StrCat({"Navigation.CodeCacheTime.",
+                    is_main_frame_ ? "MainFrame" : "Subframe"}),
+      base::TimeTicks::Now() - start_time);
   // Check that the times match to ensure that the code cache data is for this
   // response. See https://crbug.com/1099587.
   if (response_head_response_time == response_time && client_) {
@@ -323,9 +347,9 @@ void NavigationBodyLoader::NotifyCompletionIfAppropriate() {
 
   handle_watcher_.Cancel();
 
-  base::Optional<blink::WebURLError> error;
+  absl::optional<blink::WebURLError> error;
   if (status_.error_code != net::OK) {
-    error = WebURLLoaderImpl::PopulateURLError(status_, original_url_);
+    error = blink::WebURLLoader::PopulateURLError(status_, original_url_);
   }
 
   resource_load_info_notifier_wrapper_->NotifyResourceLoadCompleted(status_);

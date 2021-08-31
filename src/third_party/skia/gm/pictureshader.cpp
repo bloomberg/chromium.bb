@@ -163,6 +163,7 @@ private:
 
         auto pictureShader = fPicture->makeShader(kTileConfigs[tileMode].tmx,
                                                   kTileConfigs[tileMode].tmy,
+                                                  SkFilterMode::kNearest,
                                                   fUseLocalMatrixWrapper ? nullptr : &localMatrix,
                                                   nullptr);
         paint.setShader(fUseLocalMatrixWrapper
@@ -172,11 +173,10 @@ private:
 
         canvas->translate(fSceneSize * 1.1f, 0);
 
-        auto bitmapShader = fBitmap.makeShader(
-                                                       kTileConfigs[tileMode].tmx,
-                                                       kTileConfigs[tileMode].tmy,
-                                                       fUseLocalMatrixWrapper
-                                                           ? nullptr : &localMatrix);
+        auto bitmapShader = fBitmap.makeShader(kTileConfigs[tileMode].tmx,
+                                               kTileConfigs[tileMode].tmy,
+                                               SkSamplingOptions(),
+                                               fUseLocalMatrixWrapper ? nullptr : &localMatrix);
         paint.setShader(fUseLocalMatrixWrapper
                             ? bitmapShader->makeWithLocalMatrix(localMatrix)
                             : bitmapShader);
@@ -223,6 +223,7 @@ DEF_SIMPLE_GM(tiled_picture_shader, canvas, 400, 400) {
     p.setColor(0xFFB6B6B6);  // gray
     canvas->drawPaint(p);
 
-    p.setShader(picture->makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat));
+    p.setShader(picture->makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat,
+                                    SkFilterMode::kNearest));
     canvas->drawPaint(p);
 }

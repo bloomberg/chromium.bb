@@ -27,7 +27,7 @@ class ComputeSharedMemoryTests : public DawnTest {
 
 void ComputeSharedMemoryTests::BasicTest(const char* shader) {
     // Set up shader and pipeline
-    auto module = utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, shader);
+    auto module = utils::CreateShaderModule(device, shader);
 
     wgpu::ComputePipelineDescriptor csDesc;
     csDesc.computeStage.module = module;
@@ -71,27 +71,30 @@ void ComputeSharedMemoryTests::BasicTest(const char* shader) {
 // Basic shared memory test
 TEST_P(ComputeSharedMemoryTests, Basic) {
     BasicTest(R"(
-        #version 450
-        const uint kTileSize = 4;
-        const uint kInstances = 11;
+        let kTileSize : u32 = 4u;
+        let kInstances : u32 = 11u;
 
-        layout(local_size_x = kTileSize, local_size_y = kTileSize, local_size_z = 1) in;
-        layout(std140, set = 0, binding = 0) buffer Dst { uint x; } dst;
-        shared uint tmp;
+        [[block]] struct Dst {
+            x : u32;
+        };
 
-        void main() {
-            uint index = gl_LocalInvocationID.y * kTileSize + gl_LocalInvocationID.x;
-            if (index == 0) {
-                tmp = 0;
+        [[group(0), binding(0)]] var<storage> dst : [[access(write)]] Dst;
+        var<workgroup> tmp : u32;
+
+        [[stage(compute), workgroup_size(4,4,1)]]
+        fn main([[builtin(local_invocation_id)]] LocalInvocationID : vec3<u32>) {
+            let index : u32 = LocalInvocationID.y * kTileSize + LocalInvocationID.x;
+            if (index == 0u) {
+                tmp = 0u;
             }
-            barrier();
-            for (uint i = 0; i < kInstances; ++i) {
+            workgroupBarrier();
+            for (var i : u32 = 0u; i < kInstances; i = i + 1u) {
                 if (i == index) {
-                    tmp++;
+                    tmp = tmp + 1u;
                 }
-                barrier();
+                workgroupBarrier();
             }
-            if (index == 0) {
+            if (index == 0u) {
                 dst.x = tmp;
             }
         })");
@@ -101,4 +104,5 @@ DAWN_INSTANTIATE_TEST(ComputeSharedMemoryTests,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

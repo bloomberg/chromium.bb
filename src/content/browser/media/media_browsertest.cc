@@ -4,10 +4,13 @@
 
 #include "content/browser/media/media_browsertest.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -28,7 +31,7 @@ namespace content {
 
 #if defined(OS_ANDROID)
 // Title set by android cleaner page after short timeout.
-const char kClean[] = "CLEAN";
+const char16_t kClean[] = u"CLEAN";
 #endif
 
 void MediaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
@@ -53,6 +56,10 @@ void MediaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
     // failures. http://crbug.com/986021
     features::kAudioServiceOutOfProcess,
 #endif
+
+#if defined(OS_CHROMEOS)
+    media::kDeprecateLowUsageCodecs,
+#endif
   };
 
   scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
@@ -66,7 +73,7 @@ void MediaBrowserTest::RunMediaTestPage(const std::string& html_page,
   std::string query = media::GetURLQueryString(query_params);
   std::unique_ptr<net::EmbeddedTestServer> http_test_server;
   if (http) {
-    http_test_server.reset(new net::EmbeddedTestServer);
+    http_test_server = std::make_unique<net::EmbeddedTestServer>();
     http_test_server->ServeFilesFromSourceDirectory(media::GetTestDataPath());
     CHECK(http_test_server->Start());
     gurl = http_test_server->GetURL("/" + html_page + "?" + query);
@@ -85,7 +92,7 @@ std::string MediaBrowserTest::RunTest(const GURL& gurl,
                              base::ASCIIToUTF16(expected_title));
   AddTitlesToAwait(&title_watcher);
   EXPECT_TRUE(NavigateToURL(shell(), gurl));
-  base::string16 result = title_watcher.WaitAndGetTitle();
+  std::u16string result = title_watcher.WaitAndGetTitle();
 
   CleanupTest();
   return base::UTF16ToASCII(result);
@@ -95,12 +102,12 @@ void MediaBrowserTest::CleanupTest() {
 #if defined(OS_ANDROID)
   // We only do this cleanup on Android, as a workaround for a test-only OOM
   // bug. See http://crbug.com/727542
-  const base::string16 cleaner_title = base::ASCIIToUTF16(kClean);
+  const std::u16string cleaner_title = kClean;
   TitleWatcher clean_title_watcher(shell()->web_contents(), cleaner_title);
   GURL cleaner_url = content::GetFileUrlWithQuery(
       media::GetTestDataFilePath("cleaner.html"), "");
   EXPECT_TRUE(NavigateToURL(shell(), cleaner_url));
-  base::string16 cleaner_result = clean_title_watcher.WaitAndGetTitle();
+  std::u16string cleaner_result = clean_title_watcher.WaitAndGetTitle();
   EXPECT_EQ(cleaner_result, cleaner_title);
 #endif
 }
@@ -288,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(MediaTest, LoadManyVideos) {
 }
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearAviMp3Mpeg4) {
   PlayVideo("bear_mpeg4_mp3.avi", GetParam());
 }
@@ -312,7 +319,7 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBear3gpAmrnbMpeg4) {
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavGsmms) {
   PlayAudio("bear_gsm_ms.wav", GetParam());
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearFlac) {

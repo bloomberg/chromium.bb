@@ -6,12 +6,12 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/command.h"
-#include "chrome/common/extensions/sync_helper.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/api/extension_action/action_info.h"
@@ -21,13 +21,13 @@
 
 namespace {
 
-base::Optional<extensions::Command> CommandForExtensionAction(
+absl::optional<extensions::Command> CommandForExtensionAction(
     const extensions::Extension* extension,
     Profile* profile) {
   const auto* info = extensions::ActionInfo::GetExtensionActionInfo(extension);
 
   if (!info)
-    return base::nullopt;
+    return absl::nullopt;
 
   auto* service = extensions::CommandService::Get(profile);
   extensions::Command command;
@@ -38,13 +38,13 @@ base::Optional<extensions::Command> CommandForExtensionAction(
     return command;
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
-base::string16 MakeHowToUseText(const extensions::ActionInfo* action,
-                                base::Optional<extensions::Command> command,
+std::u16string MakeHowToUseText(const extensions::ActionInfo* action,
+                                absl::optional<extensions::Command> command,
                                 const std::string& keyword) {
-  base::string16 extra;
+  std::u16string extra;
   if (command.has_value())
     extra = command->accelerator().GetShortcutText();
 
@@ -64,7 +64,7 @@ base::string16 MakeHowToUseText(const extensions::ActionInfo* action,
   }
 
   if (!message_id)
-    return base::string16();
+    return std::u16string();
 
   return extra.empty() ? l10n_util::GetStringUTF16(message_id)
                        : l10n_util::GetStringFUTF16(message_id, extra);
@@ -80,7 +80,7 @@ ExtensionInstalledBubbleModel::ExtensionInstalledBubbleModel(
       extension_id_(extension->id()),
       extension_name_(extension->name()) {
   const std::string& keyword = extensions::OmniboxInfo::GetKeyword(extension);
-  base::Optional<extensions::Command> command =
+  absl::optional<extensions::Command> command =
       CommandForExtensionAction(extension, profile);
   const auto* action_info =
       extensions::ActionInfo::GetExtensionActionInfo(extension);
@@ -100,7 +100,7 @@ ExtensionInstalledBubbleModel::ExtensionInstalledBubbleModel(
   show_how_to_manage_ = !command.has_value() || anchor_to_omnibox_;
   show_key_binding_ = command.has_value();
 
-  show_sign_in_promo_ = extensions::sync_helper::IsSyncable(extension) &&
+  show_sign_in_promo_ = extensions::util::ShouldSync(extension, profile) &&
                         SyncPromoUI::ShouldShowSyncPromo(profile);
 
   if (show_how_to_use_)
@@ -109,7 +109,7 @@ ExtensionInstalledBubbleModel::ExtensionInstalledBubbleModel(
 
 ExtensionInstalledBubbleModel::~ExtensionInstalledBubbleModel() = default;
 
-base::string16 ExtensionInstalledBubbleModel::GetHowToUseText() const {
+std::u16string ExtensionInstalledBubbleModel::GetHowToUseText() const {
   DCHECK(show_how_to_use_);
   return how_to_use_text_;
 }

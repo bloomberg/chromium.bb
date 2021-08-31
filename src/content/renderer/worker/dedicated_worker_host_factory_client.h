@@ -13,19 +13,20 @@
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info_notifier.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom-forward.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom-forward.h"
+#include "third_party/blink/public/mojom/worker/dedicated_worker_host.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 
 namespace blink {
 class ChildURLLoaderFactoryBundle;
+class WebDedicatedOrSharedWorkerFetchContext;
 class WebDedicatedWorker;
-class WebWorkerFetchContext;
 }  // namespace blink
 
 namespace content {
 
 class ServiceWorkerProviderContext;
-class WebWorkerFetchContextImpl;
 
 // DedicatedWorkerHostFactoryClient intermediates between
 // blink::(Web)DedicatedWorker and content::DedicatedWorkerHostFactory. This
@@ -44,6 +45,7 @@ class DedicatedWorkerHostFactoryClient final
   // Implements blink::WebDedicatedWorkerHostFactoryClient.
   void CreateWorkerHostDeprecated(
       const blink::DedicatedWorkerToken& dedicated_worker_token,
+      const blink::WebURL& script_url,
       base::OnceCallback<void(const network::CrossOriginEmbedderPolicy&)>
           callback) override;
   void CreateWorkerHost(
@@ -57,7 +59,8 @@ class DedicatedWorkerHostFactoryClient final
       blink::WebWorkerFetchContext* web_worker_fetch_context,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
-  scoped_refptr<WebWorkerFetchContextImpl> CreateWorkerFetchContext(
+  scoped_refptr<blink::WebDedicatedOrSharedWorkerFetchContext>
+  CreateWorkerFetchContext(
       const blink::RendererPreferences& renderer_preference,
       mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
           watcher_receiver,
@@ -68,7 +71,9 @@ class DedicatedWorkerHostFactoryClient final
   // Implements blink::mojom::DedicatedWorkerHostFactoryClient.
   void OnWorkerHostCreated(
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
-          browser_interface_broker) override;
+          browser_interface_broker,
+      mojo::PendingRemote<blink::mojom::DedicatedWorkerHost>
+          dedicated_worker_host) override;
   void OnScriptLoadStarted(
       blink::mojom::ServiceWorkerContainerInfoForClientPtr
           service_worker_container_info,

@@ -20,7 +20,7 @@ if (!build_with_chromium) {
     }
   }
 
-  source_set("standalone_sender") {
+  executable("cast_sender") {
     deps = [
       "../../platform",
       "../../third_party/jsoncpp",
@@ -28,10 +28,11 @@ if (!build_with_chromium) {
       "../common:public",
       "../common/channel/proto:channel_proto",
       "../sender:channel",
+      "../streaming:common",
       "../streaming:sender",
     ]
 
-    sources = []
+    sources = [ "main.cc" ]
     include_dirs = []
     lib_dirs = []
     libs = []
@@ -43,6 +44,8 @@ if (!build_with_chromium) {
         "looping_file_cast_agent.h",
         "looping_file_sender.cc",
         "looping_file_sender.h",
+        "receiver_chooser.cc",
+        "receiver_chooser.h",
         "simulated_capturer.cc",
         "simulated_capturer.h",
         "streaming_opus_encoder.cc",
@@ -56,22 +59,11 @@ if (!build_with_chromium) {
       libs += ffmpeg_libs + libopus_libs + libvpx_libs
     }
 
+    configs += [ "../common:certificate_config" ]
+
     public_configs = [
       "../../build:openscreen_include_dirs",
       ":standalone_external_libs",
-    ]
-  }
-
-  executable("cast_sender") {
-    sources = [ "main.cc" ]
-
-    configs += [ "../common:certificate_config" ]
-
-    deps = [
-      ":standalone_sender",
-      "../../third_party/jsoncpp",
-      "../common/channel/proto:channel_proto",
-      "../streaming:common",
     ]
   }
 }

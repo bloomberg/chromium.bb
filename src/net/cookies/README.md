@@ -52,13 +52,13 @@ extensions
 A cookie starts as a `Set-Cookie` header sent in the server's response to an
 HTTP request:
 
-<pre>
+```
 HTTP/1.1 200 OK
 Date: ...
 Server: ...
 ...
-<b>Set-Cookie: chocolate_chip=tasty; Secure; SameSite=Lax; Max-Age=3600</b>
-</pre>
+Set-Cookie: chocolate_chip=tasty; Secure; SameSite=Lax; Max-Age=3600
+```
 
 The response passes through the `HttpNetworkTransaction` and
 `HttpCache::Transaction` to the `URLRequestHttpJob`. (See
@@ -76,9 +76,10 @@ name and value.
 The `ParsedCookie` is then converted into a `CanonicalCookie`. This is the main
 data type representing cookies. Any cookie consumer that does not deal directly
 with HTTP headers operates on `CanonicalCookie`s. A `CanonicalCookie` has some
-additional guarantees of validity over a `ParsedCookie`, such as sane expiration
-times, valid domain and path attributes, etc. Once a `CanonicalCookie` is
-created, you will almost never see a `ParsedCookie` used for anything else.
+additional guarantees of validity over a `ParsedCookie`, such as valid
+expiration times, valid domain and path attributes, etc. Once a
+`CanonicalCookie` is created, you will almost never see a `ParsedCookie` used
+for anything else.
 
 If a valid `CanonicalCookie` could not be created (due to some illegal syntax,
 inconsistent attribute values, or other circumstances preventing parsing), then
@@ -188,13 +189,13 @@ The included cookies are serialized into a `Cookie` header string (if the
 settings). The `URLRequestHttpJob` attaches this `Cookie` header to the outgoing
 request headers:
 
-<pre>
+```
 GET /me/want/cookie/omnomnomnom HTTP/1.1
 Host: ...
 User-Agent: ...
-<b>Cookie: chocolate_chip=tasty</b>
+Cookie: chocolate_chip=tasty
 ...
-</pre>
+```
 
 The included cookies, excluded cookies, and their corresponding
 `CookieInclusionStatus`es are also stored in the `URLRequest` to notify

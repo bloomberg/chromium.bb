@@ -32,10 +32,8 @@
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/platform/mac/web_scrollbar_theme.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/core/scroll/ns_scroller_imp_details.h"
-#include "third_party/blink/renderer/core/scroll/scroll_animator_mac.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
@@ -50,15 +48,16 @@
   BOOL _suppressSetScrollbarsHidden;
   CGFloat _saved_knob_alpha;
 }
-- (id)initWithScrollbar:(blink::Scrollbar*)scrollbar
-                painter:(const base::scoped_nsobject<ScrollbarPainter>&)painter;
+- (instancetype)
+    initWithScrollbar:(blink::Scrollbar*)scrollbar
+              painter:(const base::scoped_nsobject<ScrollbarPainter>&)painter;
 @end
 
 @implementation BlinkScrollbarObserver
 
-- (id)initWithScrollbar:(blink::Scrollbar*)scrollbar
-                painter:
-                    (const base::scoped_nsobject<ScrollbarPainter>&)painter {
+- (instancetype)
+    initWithScrollbar:(blink::Scrollbar*)scrollbar
+              painter:(const base::scoped_nsobject<ScrollbarPainter>&)painter {
   if (!(self = [super init]))
     return nil;
   _scrollbar = scrollbar;
@@ -182,17 +181,23 @@ ScrollbarPart ScrollbarThemeMac::PartsToInvalidateOnThumbPositionChange(
     const Scrollbar& scrollbar,
     float old_position,
     float new_position) const {
-  // ScrollAnimatorMac will invalidate scrollbar parts if necessary.
+  // MacScrollbarAnimatorImpl will invalidate scrollbar parts if necessary.
   return kNoPart;
 }
 
 void ScrollbarThemeMac::RegisterScrollbar(Scrollbar& scrollbar) {
   GetScrollbarSet().insert(&scrollbar);
 
+  NSControlSize size;
+  if (scrollbar.CSSScrollbarWidth() == EScrollbarWidth::kThin)
+    size = NSSmallControlSize;
+  else
+    size = NSRegularControlSize;
+
   bool is_horizontal = scrollbar.Orientation() == kHorizontalScrollbar;
   base::scoped_nsobject<ScrollbarPainter> scrollbar_painter([[NSClassFromString(
       @"NSScrollerImp") scrollerImpWithStyle:RecommendedScrollerStyle()
-                                 controlSize:NSRegularControlSize
+                                 controlSize:size
                                   horizontal:is_horizontal
                         replacingScrollerImp:nil] retain]);
   base::scoped_nsobject<BlinkScrollbarObserver> observer(
@@ -354,16 +359,6 @@ void ScrollbarThemeMac::PaintThumbInternal(GraphicsContext& context,
         base::scoped_policy::RETAIN);
     ScrollbarPainter scrollbar_painter = [observer painter];
     [scrollbar_painter setEnabled:scrollbar.Enabled()];
-    // drawKnob aligns the thumb to right side of the draw rect.
-    // If the vertical overlay scrollbar is on the left, use trackWidth instead
-    // of scrollbar width, to avoid the gap on the left side of the thumb.
-    IntRect draw_rect = IntRect(rect);
-    if (UsesOverlayScrollbars() && scrollbar.IsLeftSideVerticalScrollbar()) {
-      int thumb_width = [scrollbar_painter trackWidth];
-      draw_rect.SetWidth(thumb_width);
-    }
-    [scrollbar_painter
-        setBoundsSize:NSSizeFromCGSize(CGSize(draw_rect.Size()))];
 
     [scrollbar_painter setDoubleValue:0];
     [scrollbar_painter setKnobProportion:1];
@@ -417,10 +412,20 @@ void ScrollbarThemeMac::PaintThumbInternal(GraphicsContext& context,
     context.EndLayer();
 }
 
-int ScrollbarThemeMac::ScrollbarThickness(float scale_from_dip) {
+int ScrollbarThemeMac::ScrollbarThickness(float scale_from_dip,
+                                          EScrollbarWidth scrollbar_width) {
+  if (scrollbar_width == EScrollbarWidth::kNone)
+    return 0;
+
+  NSControlSize size;
+  if (scrollbar_width == EScrollbarWidth::kThin)
+    size = NSSmallControlSize;
+  else
+    size = NSRegularControlSize;
+
   ScrollbarPainter scrollbar_painter = [NSClassFromString(@"NSScrollerImp")
       scrollerImpWithStyle:RecommendedScrollerStyle()
-               controlSize:NSRegularControlSize
+               controlSize:size
                 horizontal:NO
       replacingScrollerImp:nil];
   BOOL was_expanded = NO;
@@ -494,8 +499,8 @@ bool ScrollbarThemeMac::JumpOnTrackClick() const {
 
 // static
 void ScrollbarThemeMac::UpdateScrollbarsWithNSDefaults(
-    base::Optional<float> initial_button_delay,
-    base::Optional<float> autoscroll_button_delay,
+    absl::optional<float> initial_button_delay,
+    absl::optional<float> autoscroll_button_delay,
     NSScrollerStyle preferred_scroller_style,
     bool redraw,
     bool jump_on_track_click) {

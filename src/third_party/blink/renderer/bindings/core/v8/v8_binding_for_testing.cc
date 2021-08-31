@@ -18,7 +18,8 @@ std::unique_ptr<DummyPageHolder> V8TestingScope::CreateDummyPageHolder(
   std::unique_ptr<DummyPageHolder> holder = std::make_unique<DummyPageHolder>();
   if (url.IsValid()) {
     holder->GetFrame().Loader().CommitNavigation(
-        WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(), url),
+        WebNavigationParams::CreateWithHTMLBufferForTesting(
+            SharedBuffer::Create(), url),
         nullptr /* extra_data */);
     blink::test::RunPendingTasks();
   }
@@ -30,7 +31,9 @@ V8TestingScope::V8TestingScope(const KURL& url)
       handle_scope_(GetIsolate()),
       context_(GetScriptState()->GetContext()),
       context_scope_(GetContext()),
-      try_catch_(GetIsolate()) {
+      try_catch_(GetIsolate()),
+      microtasks_scope_(GetIsolate(),
+                        v8::MicrotasksScope::kDoNotRunMicrotasks) {
   GetFrame().GetSettings()->SetScriptEnabled(true);
 }
 

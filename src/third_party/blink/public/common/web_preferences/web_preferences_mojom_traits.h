@@ -11,69 +11,43 @@
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom.h"
-#include "ui/base/pointer/pointer_device.h"
 
 namespace mojo {
 
 template <>
-struct BLINK_COMMON_EXPORT
-    EnumTraits<blink::mojom::PointerType, ui::PointerType> {
-  static blink::mojom::PointerType ToMojom(ui::PointerType type);
-
-  static bool FromMojom(blink::mojom::PointerType input, ui::PointerType* out);
-};
-
-template <>
-struct BLINK_COMMON_EXPORT EnumTraits<blink::mojom::HoverType, ui::HoverType> {
-  static blink::mojom::HoverType ToMojom(ui::HoverType type);
-
-  static bool FromMojom(blink::mojom::HoverType input, ui::HoverType* out);
-};
-
-template <>
-struct BLINK_COMMON_EXPORT EnumTraits<blink::mojom::EffectiveConnectionType,
-                                      net::EffectiveConnectionType> {
-  static blink::mojom::EffectiveConnectionType ToMojom(
-      net::EffectiveConnectionType policy);
-
-  static bool FromMojom(blink::mojom::EffectiveConnectionType input,
-                        net::EffectiveConnectionType* out);
-};
-
-template <>
 struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
                                         blink::web_pref::WebPreferences> {
-  static const std::map<std::string, base::string16>& standard_font_family_map(
+  static const std::map<std::string, std::u16string>& standard_font_family_map(
       const blink::web_pref::WebPreferences& r) {
     return r.standard_font_family_map;
   }
 
-  static const std::map<std::string, base::string16>& fixed_font_family_map(
+  static const std::map<std::string, std::u16string>& fixed_font_family_map(
       const blink::web_pref::WebPreferences& r) {
     return r.fixed_font_family_map;
   }
 
-  static const std::map<std::string, base::string16>& serif_font_family_map(
+  static const std::map<std::string, std::u16string>& serif_font_family_map(
       const blink::web_pref::WebPreferences& r) {
     return r.serif_font_family_map;
   }
 
-  static const std::map<std::string, base::string16>&
+  static const std::map<std::string, std::u16string>&
   sans_serif_font_family_map(const blink::web_pref::WebPreferences& r) {
     return r.sans_serif_font_family_map;
   }
 
-  static const std::map<std::string, base::string16>& cursive_font_family_map(
+  static const std::map<std::string, std::u16string>& cursive_font_family_map(
       const blink::web_pref::WebPreferences& r) {
     return r.cursive_font_family_map;
   }
 
-  static const std::map<std::string, base::string16>& fantasy_font_family_map(
+  static const std::map<std::string, std::u16string>& fantasy_font_family_map(
       const blink::web_pref::WebPreferences& r) {
     return r.fantasy_font_family_map;
   }
 
-  static const std::map<std::string, base::string16>&
+  static const std::map<std::string, std::u16string>&
   pictograph_font_family_map(const blink::web_pref::WebPreferences& r) {
     return r.pictograph_font_family_map;
   }
@@ -356,7 +330,7 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
     return r.available_pointer_types;
   }
 
-  static ui::PointerType primary_pointer_type(
+  static blink::mojom::PointerType primary_pointer_type(
       const blink::web_pref::WebPreferences& r) {
     return r.primary_pointer_type;
   }
@@ -366,7 +340,7 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
     return r.available_hover_types;
   }
 
-  static ui::HoverType primary_hover_type(
+  static blink::mojom::HoverType primary_hover_type(
       const blink::web_pref::WebPreferences& r) {
     return r.primary_hover_type;
   }
@@ -389,6 +363,11 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
   static bool target_blank_implies_no_opener_enabled_will_be_removed(
       const blink::web_pref::WebPreferences& r) {
     return r.target_blank_implies_no_opener_enabled_will_be_removed;
+  }
+
+  static bool allow_non_empty_navigator_plugins(
+      const blink::web_pref::WebPreferences& r) {
+    return r.allow_non_empty_navigator_plugins;
   }
 
   static uint32_t number_of_cpu_cores(
@@ -451,6 +430,11 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
 
   static bool navigate_on_drag_drop(const blink::web_pref::WebPreferences& r) {
     return r.navigate_on_drag_drop;
+  }
+
+  static bool fake_no_alloc_direct_call_for_testing_enabled(
+      const blink::web_pref::WebPreferences& r) {
+    return r.fake_no_alloc_direct_call_for_testing_enabled;
   }
 
   static const blink::mojom::V8CacheOptions& v8_cache_options(
@@ -669,11 +653,6 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
     return r.scroll_top_left_interop_enabled;
   }
 
-  static bool disable_features_depending_on_viz(
-      const blink::web_pref::WebPreferences& r) {
-    return r.disable_features_depending_on_viz;
-  }
-
   static bool disable_accelerated_small_canvases(
       const blink::web_pref::WebPreferences& r) {
     return r.disable_accelerated_small_canvases;
@@ -727,7 +706,7 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
     return r.preferred_contrast;
   }
 
-  static net::EffectiveConnectionType low_priority_iframes_threshold(
+  static blink::mojom::EffectiveConnectionType low_priority_iframes_threshold(
       const blink::web_pref::WebPreferences& r) {
     return r.low_priority_iframes_threshold;
   }
@@ -742,7 +721,8 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
     return r.translate_service_available;
   }
 
-  static net::EffectiveConnectionType network_quality_estimator_web_holdback(
+  static blink::mojom::EffectiveConnectionType
+  network_quality_estimator_web_holdback(
       const blink::web_pref::WebPreferences& r) {
     return r.network_quality_estimator_web_holdback;
   }
@@ -751,19 +731,19 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
     return r.lazy_load_enabled;
   }
 
-  static const std::map<net::EffectiveConnectionType, int32_t>&
+  static const std::map<blink::mojom::EffectiveConnectionType, int32_t>&
   lazy_frame_loading_distance_thresholds_px(
       const blink::web_pref::WebPreferences& r) {
     return r.lazy_frame_loading_distance_thresholds_px;
   }
 
-  static const std::map<net::EffectiveConnectionType, int32_t>&
+  static const std::map<blink::mojom::EffectiveConnectionType, int32_t>&
   lazy_image_loading_distance_thresholds_px(
       const blink::web_pref::WebPreferences& r) {
     return r.lazy_image_loading_distance_thresholds_px;
   }
 
-  static const std::map<net::EffectiveConnectionType, int32_t>&
+  static const std::map<blink::mojom::EffectiveConnectionType, int32_t>&
   lazy_image_first_k_fully_load(const blink::web_pref::WebPreferences& r) {
     return r.lazy_image_first_k_fully_load;
   }
@@ -780,6 +760,11 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
   static bool touch_drag_drop_enabled(
       const blink::web_pref::WebPreferences& r) {
     return r.touch_drag_drop_enabled;
+  }
+
+  static bool webxr_immersive_ar_allowed(
+      const blink::web_pref::WebPreferences& r) {
+    return r.webxr_immersive_ar_allowed;
   }
 
   static bool Read(blink::mojom::WebPreferencesDataView r,

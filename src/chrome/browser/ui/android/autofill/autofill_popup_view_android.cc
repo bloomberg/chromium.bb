@@ -54,8 +54,8 @@ void AutofillPopupViewAndroid::Hide() {
 }
 
 void AutofillPopupViewAndroid::OnSelectedRowChanged(
-    base::Optional<int> previous_row_selection,
-    base::Optional<int> current_row_selection) {}
+    absl::optional<int> previous_row_selection,
+    absl::optional<int> current_row_selection) {}
 
 void AutofillPopupViewAndroid::OnSuggestionsChanged() {
   if (java_object_.is_null())
@@ -101,7 +101,7 @@ void AutofillPopupViewAndroid::OnSuggestionsChanged() {
             env, base::FeatureList::IsEnabled(
                      features::kAutofillEnableOffersInDownstream)
                      ? suggestion.offer_label
-                     : base::string16());
+                     : std::u16string());
     Java_AutofillPopupBridge_addToAutofillSuggestionArray(
         env, data_array, i, value, label, item_tag, android_icon_id,
         /*icon_at_start=*/false, suggestion.frontend_id, is_deletable,
@@ -112,9 +112,9 @@ void AutofillPopupViewAndroid::OnSuggestionsChanged() {
                                 controller_->IsRTL());
 }
 
-base::Optional<int32_t> AutofillPopupViewAndroid::GetAxUniqueId() {
+absl::optional<int32_t> AutofillPopupViewAndroid::GetAxUniqueId() {
   NOTIMPLEMENTED() << "See https://crbug.com/985927";
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void AutofillPopupViewAndroid::SuggestionSelected(
@@ -133,7 +133,7 @@ void AutofillPopupViewAndroid::DeletionRequested(
   if (!controller_ || java_object_.is_null())
     return;
 
-  base::string16 confirmation_title, confirmation_body;
+  std::u16string confirmation_title, confirmation_body;
   if (!controller_->GetRemovalConfirmationText(list_index, &confirmation_title,
           &confirmation_body)) {
     return;

@@ -4,6 +4,8 @@
 
 package org.chromium.base.library_loader;
 
+import android.os.Build;
+
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JniIgnoreNatives;
 import org.chromium.base.metrics.RecordHistogram;
@@ -20,64 +22,69 @@ import javax.annotation.concurrent.GuardedBy;
  */
 @JniIgnoreNatives
 class ModernLinker extends Linker {
-    // Log tag for this class.
     private static final String TAG = "ModernLinker";
+
+    // Whether to use memfd_create(2) for creating RELRO FD on supported systems.
+    // TODO(pasko): Remove this compile time constant when memfd reaches Stable (M91).
+    private static final boolean ALLOW_MEMFD = true;
 
     ModernLinker() {}
 
     @Override
-    @GuardedBy("sLock")
-    void loadLibraryImplLocked(String library, boolean isFixedAddressPermitted) {
-        // We expect to load monochrome, if it's not the case, log.
-        if (!"monochrome".equals(library) || DEBUG) {
-            Log.i(TAG, "loadLibraryImpl: %s, %b", library, isFixedAddressPermitted);
-        }
+    protected boolean keepMemoryReservationUntilLoad() {
+        return true;
+    }
 
-        ensureInitializedLocked();
+    private static boolean useMemfd() {
+        return ALLOW_MEMFD && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R);
+    }
+
+    @Override
+    @GuardedBy("mLock")
+    protected void loadLibraryImplLocked(String library, @RelroSharingMode int relroMode) {
+        // Only loading monochrome is supported.
+        if (!"monochrome".equals(library) || DEBUG) {
+            Log.i(TAG, "loadLibraryImplLocked: %s, relroMode=%d", library, relroMode);
+        }
         assert mState == State.INITIALIZED; // Only one successful call.
 
         String libFilePath = System.mapLibraryName(library);
-        boolean loadNoRelro = !isFixedAddressPermitted;
-        boolean provideRelro = isFixedAddressPermitted && mInBrowserProcess;
-        long loadAddress = isFixedAddressPermitted ? mBaseLoadAddress : 0;
-
-        if (loadNoRelro) {
-            // Cannot use System.loadLibrary(), as the library name is transformed (adding the "lib"
-            // prefix and ".so" suffix), making the name incorrect.
-            boolean ok = nativeLoadLibraryNoRelros(libFilePath);
-            if (!ok) resetAndThrow("Cannot load without relro sharing");
+        if (relroMode == RelroSharingMode.NO_SHARING) {
+            // System.loadLibrary() below implements the fallback.
             mState = State.DONE;
-        } else if (provideRelro) {
-            // We are in the browser, and with a current load address that indicates that there
-            // is enough address space for shared RELRO to operate. Create the shared RELRO, and
-            // store it in the map.
-            LibInfo libInfo = new LibInfo();
-            libInfo.mLibFilePath = libFilePath;
-            if (!nativeLoadLibraryCreateRelros(libFilePath, loadAddress, libInfo)) {
-                Log.e(TAG, "Unable to create relro, retrying without");
-                nativeLoadLibraryNoRelros(libFilePath);
-                libInfo.mRelroFd = -1;
+        } else if (relroMode == RelroSharingMode.PRODUCE) {
+            // Create the shared RELRO, and store it.
+            mLocalLibInfo.mLibFilePath = libFilePath;
+            if (nativeLoadLibrary(
+                        libFilePath, mLocalLibInfo, true /* spawnRelroRegion */, useMemfd())) {
+                Log.d(TAG, "Successfully spawned RELRO: mLoadAddress=0x%x, mLoadSize=%d",
+                        mLocalLibInfo.mLoadAddress, mLocalLibInfo.mLoadSize);
+            } else {
+                Log.e(TAG, "Unable to load with ModernLinker, using the system linker instead");
+                // System.loadLibrary() below implements the fallback.
+                mLocalLibInfo.mRelroFd = -1;
             }
-            mLibInfo = libInfo;
-            // Next state is still to provide relro (even if we don't have any), as child processes
-            // would wait for them.
+            RecordHistogram.recordBooleanHistogram(
+                    "ChromiumAndroidLinker.RelroProvidedSuccessfully",
+                    mLocalLibInfo.mRelroFd != -1);
+
+            // Next state is still to "provide relro", even if there is none, to indicate that
+            // consuming RELRO is not expected with this Linker instance.
             mState = State.DONE_PROVIDE_RELRO;
         } else {
-            // We are in a service process, again with a current load address that is suitable for
-            // shared RELRO, and we are to wait for shared RELROs. So do that, then use the LibInfo
-            // we received.
-            waitForSharedRelrosLocked();
-            assert libFilePath.equals(mLibInfo.mLibFilePath);
-            if (!nativeLoadLibraryUseRelros(libFilePath, loadAddress, mLibInfo.mRelroFd)) {
+            assert relroMode == RelroSharingMode.CONSUME;
+            assert libFilePath.equals(mRemoteLibInfo.mLibFilePath);
+            if (!nativeLoadLibrary(
+                        libFilePath, mLocalLibInfo, false /* spawnRelroRegion */, useMemfd())) {
                 resetAndThrow(String.format("Unable to load library: %s", libFilePath));
             }
+            assert mLocalLibInfo.mRelroFd == -1;
 
-            mLibInfo.close();
-            mLibInfo = null;
+            // Done loading the library, but using an externally provided RELRO may happen later.
             mState = State.DONE;
         }
 
-        // Load the library a second time, in order to keep using lazy JNI registration.  When
+        // Load the library a second time, in order to keep using lazy JNI registration. When
         // loading the library with the Chromium linker, ART doesn't know about our library, so
         // cannot resolve JNI methods lazily. Loading the library a second time makes sure it
         // knows about us.
@@ -87,30 +94,38 @@ class ModernLinker extends Linker {
         try {
             System.loadLibrary(library);
         } catch (UnsatisfiedLinkError e) {
-            throw new UnsatisfiedLinkError(
-                    "Unable to load the library a second time with the system linker");
-        }
-
-        // Record whether using shared relocations succeeded, only when an attempt was made.
-        if (!loadNoRelro && !provideRelro) {
-            int status = nativeGetRelroSharingResult();
-            assert status != RelroSharingStatus.NOT_ATTEMPTED;
-            RecordHistogram.recordEnumeratedHistogram(
-                    "ChromiumAndroidLinker.RelroSharingStatus", status, RelroSharingStatus.COUNT);
+            resetAndThrow("Failed at System.loadLibrary()");
         }
     }
 
-    @GuardedBy("sLock")
+    @Override
+    @GuardedBy("mLock")
+    protected void atomicReplaceRelroLocked(boolean relroAvailableImmediately) {
+        assert mRemoteLibInfo != null;
+        assert mState == State.DONE;
+        if (mRemoteLibInfo.mRelroFd == -1) return;
+        Log.d(TAG, "Received mRemoteLibInfo: mLoadAddress=0x%x, mLoadSize=%d",
+                mRemoteLibInfo.mLoadAddress, mRemoteLibInfo.mLoadSize);
+        nativeUseRelros(mRemoteLibInfo, useMemfd());
+        mRemoteLibInfo.close();
+        Log.d(TAG, "Immediate RELRO availability: %b", relroAvailableImmediately);
+        RecordHistogram.recordBooleanHistogram(
+                "ChromiumAndroidLinker.RelroAvailableImmediately", relroAvailableImmediately);
+        int status = nativeGetRelroSharingResult();
+        assert status != RelroSharingStatus.NOT_ATTEMPTED;
+        RecordHistogram.recordEnumeratedHistogram(
+                "ChromiumAndroidLinker.RelroSharingStatus", status, RelroSharingStatus.COUNT);
+    }
+
+    @GuardedBy("mLock")
     private void resetAndThrow(String message) {
         mState = State.INITIALIZED;
         Log.e(TAG, message);
         throw new UnsatisfiedLinkError(message);
     }
 
-    private static native boolean nativeLoadLibraryCreateRelros(
-            String dlopenExtPath, long loadAddress, LibInfo libInfo);
-    private static native boolean nativeLoadLibraryUseRelros(
-            String dlopenExtPath, long loadAddress, int fd);
-    private static native boolean nativeLoadLibraryNoRelros(String dlopenExtPath);
+    private static native boolean nativeLoadLibrary(
+            String libFilePath, LibInfo libInfo, boolean spawnRelroRegion, boolean useMemfd);
+    private static native boolean nativeUseRelros(LibInfo libInfo, boolean useMemfd);
     private static native int nativeGetRelroSharingResult();
 }

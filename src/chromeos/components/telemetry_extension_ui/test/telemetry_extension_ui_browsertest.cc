@@ -4,6 +4,7 @@
 
 #include "chromeos/components/telemetry_extension_ui/test/telemetry_extension_ui_browsertest.h"
 
+#include "ash/constants/ash_switches.h"
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -12,10 +13,9 @@
 #include "base/path_service.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/wilco_dtc_supportd/mojo_utils.h"
+#include "chrome/browser/ash/wilco_dtc_supportd/mojo_utils.h"
 #include "chromeos/components/telemetry_extension_ui/url_constants.h"
 #include "chromeos/components/web_applications/test/sandboxed_web_ui_test_base.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/cros_healthd/fake_cros_healthd_client.h"
 
@@ -38,6 +38,11 @@ constexpr base::FilePath::CharType kUntrustedTestHandlers[] = FILE_PATH_LITERAL(
     "chromeos/components/telemetry_extension_ui/test/"
     "untrusted_test_handlers.js");
 
+// File containing utils functions for JS unit tests.
+constexpr base::FilePath::CharType kUntrustedTestUtils[] = FILE_PATH_LITERAL(
+    "chromeos/components/telemetry_extension_ui/test/"
+    "untrusted_test_utils.js");
+
 // Test cases that run in the untrusted context.
 constexpr base::FilePath::CharType kUntrustedTestCases[] = FILE_PATH_LITERAL(
     "chromeos/components/telemetry_extension_ui/test/untrusted_browsertest.js");
@@ -50,6 +55,7 @@ TelemetryExtensionUiBrowserTest::TelemetryExtensionUiBrowserTest()
           chromeos::kChromeUIUntrustedTelemetryExtensionURL,
           {base::FilePath(kCr), base::FilePath(kWebUiTestUtil),
            base::FilePath(kUntrustedTestHandlers),
+           base::FilePath(kUntrustedTestUtils),
            base::FilePath(kUntrustedTestCases)}) {}
 
 TelemetryExtensionUiBrowserTest::~TelemetryExtensionUiBrowserTest() = default;
@@ -168,6 +174,8 @@ void TelemetryExtensionUiBrowserTest::SetUpOnMainThread() {
 
     auto system_info = chromeos::cros_healthd::mojom::SystemInfo::New();
     system_info->product_sku_number = "sku-18";
+    system_info->product_serial_number = "5CD9132880";
+    system_info->product_model_name = "XX ModelName 007 XY";
     system_info->os_version = std::move(os_version);
 
     telemetry_info->system_result =

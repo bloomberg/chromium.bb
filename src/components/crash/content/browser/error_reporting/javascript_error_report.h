@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/component_export.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 enum class WindowType {
   // No browser found, thus no window exists.
@@ -33,9 +33,21 @@ struct COMPONENT_EXPORT(JS_ERROR_REPORTING) JavaScriptErrorReport {
   // The error message. Must be present
   std::string message;
 
-  // URL where the error occurred. Must be the full URL, containing the protocol
-  // (e.g. http://www.example.com).
+  // URL of the resource that threw or reported the error. Generally the URL of
+  // the JavaScript, not the page's URL. Must include the protocol (e.g.
+  // http://www.example.com/main.js) but not query, fragment, or other
+  // privacy-sensitive details we don't want to send.
   std::string url;
+
+  // The system that created the error report. Useful for checking that each of
+  // the various different systems that generate JavaScript error reports is
+  // working as expected.
+  enum class SourceSystem {
+    kUnknown,
+    kCrashReportApi,
+    kWebUIObserver,
+  };
+  SourceSystem source_system = SourceSystem::kUnknown;
 
   // Name of the product where the error occurred. If empty, use the product
   // variant of Chrome that is hosting the extension. (e.g. "Chrome" or
@@ -47,16 +59,21 @@ struct COMPONENT_EXPORT(JS_ERROR_REPORTING) JavaScriptErrorReport {
   std::string version;
 
   // Line number where the error occurred. Not sent if not present.
-  base::Optional<int> line_number;
+  absl::optional<int> line_number;
 
   // Column number where the error occurred. Not sent if not present.
-  base::Optional<int> column_number;
+  absl::optional<int> column_number;
 
   // String containing the stack trace for the error. Not sent if not present.
-  base::Optional<std::string> stack_trace;
+  absl::optional<std::string> stack_trace;
 
   // String containing the application locale. Not sent if not present.
-  base::Optional<std::string> app_locale;
+  absl::optional<std::string> app_locale;
+
+  // URL of the page the user was on when the error occurred. Must include the
+  // protocol (e.g. http://www.example.com) but not query, fragment, or other
+  // privacy-sensitive details we don't want to send.
+  absl::optional<std::string> page_url;
 
   // Uptime of the renderer process in milliseconds. 0 if the callee
   // |web_contents| is null (shouldn't really happen as this is caled from a JS
@@ -65,7 +82,7 @@ struct COMPONENT_EXPORT(JS_ERROR_REPORTING) JavaScriptErrorReport {
   int renderer_process_uptime_ms = 0;
 
   // The window type of the JS context that reported this error.
-  base::Optional<WindowType> window_type;
+  absl::optional<WindowType> window_type;
 
   // If true (the default), send this report to the production server. If false,
   // send to the staging server. This should be set to false for errors from

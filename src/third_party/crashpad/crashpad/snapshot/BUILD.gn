@@ -239,23 +239,18 @@ crashpad_static_library("snapshot") {
 
   public_configs = [ "..:crashpad_config" ]
 
-  configs = [ "..:disable_ubsan" ]
-
   public_deps = [ ":context" ]
 
   deps = [
-    "../client",
+    "../client:common",
     "../compat",
     "../minidump:format",
     "../third_party/mini_chromium:base",
     "../util",
   ]
 
-  if (crashpad_is_ios) {
-    deps -= [ "../client" ]
-  }
-
   if (crashpad_is_win) {
+    deps += [ "../client" ]
     cflags = [ "/wd4201" ]  # nonstandard extension used : nameless struct/union
     libs = [ "powrprof.lib" ]
   }
@@ -288,6 +283,7 @@ if (crashpad_is_linux) {
     deps = [
       ":snapshot",
       "../third_party/mini_chromium:base",
+      "../util:util",
     ]
     seed_corpus = "elf/elf_image_reader_fuzzer_corpus"
   }
@@ -368,6 +364,8 @@ source_set("snapshot_test") {
       "linux/exception_snapshot_linux_test.cc",
       "linux/process_reader_linux_test.cc",
       "linux/system_snapshot_linux_test.cc",
+      "linux/test_modules.cc",
+      "linux/test_modules.h",
       "sanitized/process_snapshot_sanitized_test.cc",
       "sanitized/sanitization_information_test.cc",
     ]
@@ -422,7 +420,7 @@ source_set("snapshot_test") {
 
   deps = [
     ":test_support",
-    "../client",
+    "../client:common",
     "../compat",
     "../minidump:format",
     "../test",
@@ -430,6 +428,10 @@ source_set("snapshot_test") {
     "../third_party/mini_chromium:base",
     "../util",
   ]
+
+  if (crashpad_is_win) {
+    deps += [ "../client" ]
+  }
 
   data_deps = [
     ":crashpad_snapshot_test_module",

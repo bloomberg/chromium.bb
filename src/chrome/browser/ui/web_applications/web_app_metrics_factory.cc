@@ -29,7 +29,7 @@ WebAppMetricsFactory::WebAppMetricsFactory()
     : BrowserContextKeyedServiceFactory(
           "WebAppMetrics",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(SiteEngagementServiceFactory::GetInstance());
+  DependsOn(site_engagement::SiteEngagementServiceFactory::GetInstance());
   DependsOn(WebAppProviderFactory::GetInstance());
 }
 
@@ -44,6 +44,10 @@ KeyedService* WebAppMetricsFactory::BuildServiceInstanceFor(
 content::BrowserContext* WebAppMetricsFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return GetBrowserContextForWebAppMetrics(context);
+}
+
+bool WebAppMetricsFactory::ServiceIsCreatedWithBrowserContext() const {
+  return true;
 }
 
 }  //  namespace web_app

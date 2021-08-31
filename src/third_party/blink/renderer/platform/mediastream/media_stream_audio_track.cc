@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_track.h"
 
+#include <string>
 #include <utility>
 
 #include "base/check_op.h"
@@ -89,6 +90,11 @@ void MediaStreamAudioTrack::SetEnabled(bool enabled) {
     sink->OnEnabledChanged(enabled);
 }
 
+bool MediaStreamAudioTrack::IsEnabled() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return is_enabled_;
+}
+
 void MediaStreamAudioTrack::SetContentHint(
     WebMediaStreamTrack::ContentHintType content_hint) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -97,6 +103,10 @@ void MediaStreamAudioTrack::SetContentHint(
   deliverer_.GetConsumerList(&sinks_to_notify);
   for (WebMediaStreamAudioSink* sink : sinks_to_notify)
     sink->OnContentHintChanged(content_hint);
+}
+
+int MediaStreamAudioTrack::NumPreferredChannels() const {
+  return deliverer_.NumPreferredChannels();
 }
 
 void* MediaStreamAudioTrack::GetClassIdentifier() const {
@@ -139,8 +149,9 @@ void MediaStreamAudioTrack::OnSetFormat(const media::AudioParameters& params) {
 
 void MediaStreamAudioTrack::OnData(const media::AudioBus& audio_bus,
                                    base::TimeTicks reference_time) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("mediastream"),
-               "MediaStreamAudioTrack::OnData");
+  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("mediastream"),
+               "MediaStreamAudioTrack::OnData", "this",
+               static_cast<void*>(this), "frame", audio_bus.frames());
 
   if (!received_audio_callback_) {
     // Add log message with unique this pointer id to mark the audio track as

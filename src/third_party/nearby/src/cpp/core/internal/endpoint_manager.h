@@ -22,14 +22,13 @@
 #include "core/internal/endpoint_channel.h"
 #include "core/internal/endpoint_channel_manager.h"
 #include "core/listeners.h"
-#include "proto/connections/offline_wire_formats.pb.h"
 #include "platform/base/byte_array.h"
 #include "platform/base/runnable.h"
 #include "platform/public/count_down_latch.h"
 #include "platform/public/multi_thread_executor.h"
 #include "platform/public/single_thread_executor.h"
 #include "platform/public/system_clock.h"
-#include "proto/connections_enums.pb.h"
+#include "absl/base/thread_annotations.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/time/time.h"
@@ -60,8 +59,6 @@ class EndpointManager {
  public:
   class FrameProcessor {
    public:
-    using Handle = void*;
-
     virtual ~FrameProcessor() = default;
 
     // @EndpointManagerReaderThread
@@ -93,12 +90,11 @@ class EndpointManager {
   // Invoked from the constructors of the various *Manager components that make
   // up the OfflineServiceController implementation.
   // FrameProcessor* instances are of dynamic duration and survive all sessions.
-  // returns unique handle to be used for unregistering.
   // Blocks until registration is complete.
-  FrameProcessor::Handle RegisterFrameProcessor(V1Frame::FrameType frame_type,
-                                                FrameProcessor* processor);
+  void RegisterFrameProcessor(V1Frame::FrameType frame_type,
+                              FrameProcessor* processor);
   void UnregisterFrameProcessor(V1Frame::FrameType frame_type,
-                                const void* handle, bool sync = false);
+                                const FrameProcessor* processor);
 
   // Invoked from the different PcpHandler implementations (of which there can
   // be only one at a time).
@@ -149,16 +145,35 @@ class EndpointManager {
     ClientProxy* client;
     // Execution barrier, used to ensure that all workers associated with an
     // endpoint on handlers_executor_ and keep_alive_executor_ are terminated.
-    CountDownLatch barrier{2};
+    std::shared_ptr<CountDownLatch> barrier =
+        std::make_shared<CountDownLatch>(2);
   };
 
-  FrameProcessor* GetFrameProcessor(V1Frame::FrameType frame_type);
+  // RAII accessor for FrameProcessor
+  class LockedFrameProcessor;
+
+  // Provides a mutex per FrameProcessor to prevent unregistering (and
+  // destroying) a FrameProcessor when it's in use.
+  class FrameProcessorWithMutex {
+   public:
+    explicit FrameProcessorWithMutex(FrameProcessor* frame_processor = nullptr)
+        : frame_processor_{frame_processor} {}
+
+   private:
+    FrameProcessor* frame_processor_;
+    Mutex mutex_;
+    friend class LockedFrameProcessor;
+  };
+
+  LockedFrameProcessor GetFrameProcessor(V1Frame::FrameType frame_type);
 
   ExceptionOr<bool> HandleData(const std::string& endpoint_id,
                                ClientProxy* client_proxy,
                                EndpointChannel* endpoint_channel);
 
-  ExceptionOr<bool> HandleKeepAlive(EndpointChannel* endpoint_channel);
+  ExceptionOr<bool> HandleKeepAlive(EndpointChannel* endpoint_channel,
+                                    absl::Duration keep_alive_interval,
+                                    absl::Duration keep_alive_timeout);
 
   // Waits for a given endpoint EndpointChannelLoopRunnable() workers to
   // terminate.
@@ -169,7 +184,7 @@ class EndpointManager {
 
   void EndpointChannelLoopRunnable(
       const std::string& runnable_name, ClientProxy* client_proxy,
-      const std::string& endpoint_id, CountDownLatch* barrier,
+      const std::string& endpoint_id, std::weak_ptr<CountDownLatch> barrier,
       std::function<ExceptionOr<bool>(EndpointChannel*)> handler);
 
   static void WaitForLatch(const std::string& method_name,
@@ -177,10 +192,6 @@ class EndpointManager {
   static void WaitForLatch(const std::string& method_name,
                            CountDownLatch* latch, std::int32_t timeout_millis);
 
-  static constexpr absl::Duration kKeepAliveWriteInterval =
-      absl::Milliseconds(5000);
-  static constexpr absl::Duration kKeepAliveReadTimeout =
-      absl::Milliseconds(30000);
   static constexpr absl::Duration kProcessEndpointDisconnectionTimeout =
       absl::Milliseconds(2000);
   static constexpr std::int32_t kMaxConcurrentEndpoints = 50;
@@ -197,6 +208,9 @@ class EndpointManager {
 
   void WaitForEndpointDisconnectionProcessing(ClientProxy* client,
                                               const std::string& endpoint_id);
+
+  CountDownLatch NotifyFrameProcessorsOnEndpointDisconnect(
+      ClientProxy* client, const std::string& endpoint_id);
 
   std::vector<std::string> SendTransferFrameBytes(
       const std::vector<std::string>& endpoint_ids,
@@ -216,11 +230,13 @@ class EndpointManager {
   void StartEndpointKeepAliveManager(Runnable runnable);
 
   // Executes all jobs sequentially, on a serial_executor_.
-  void RunOnEndpointManagerThread(Runnable runnable);
+  void RunOnEndpointManagerThread(const std::string& name, Runnable runnable);
 
   EndpointChannelManager* channel_manager_;
 
-  absl::flat_hash_map<V1Frame::FrameType, FrameProcessor*> frame_processors_;
+  RecursiveMutex frame_processors_lock_;
+  absl::flat_hash_map<V1Frame::FrameType, FrameProcessorWithMutex>
+      frame_processors_ ABSL_GUARDED_BY(frame_processors_lock_);
 
   // We keep track of all registered channel endpoints here.
   absl::flat_hash_map<std::string, EndpointState> endpoints_;

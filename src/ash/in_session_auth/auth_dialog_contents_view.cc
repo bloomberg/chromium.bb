@@ -24,6 +24,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -91,14 +92,14 @@ class AuthDialogContentsView::FingerprintView : public views::View {
       node_data->SetName(accessible_name_);
     }
 
-    void SetAccessibleName(const base::string16& name) {
+    void SetAccessibleName(const std::u16string& name) {
       accessible_name_ = name;
       NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
                                true /*send_native_event*/);
     }
 
    private:
-    base::string16 accessible_name_;
+    std::u16string accessible_name_;
   };
 
   FingerprintView() {
@@ -202,7 +203,7 @@ class AuthDialogContentsView::FingerprintView : public views::View {
     SetVisible(state_ != FingerprintState::UNAVAILABLE);
     SetIcon(state_);
     if (state_ != FingerprintState::UNAVAILABLE) {
-      base::string16 fingerprint_text =
+      std::u16string fingerprint_text =
           l10n_util::GetStringUTF16(GetTextIdFromState());
       label_->SetText(fingerprint_text);
       label_->SetAccessibleName(
@@ -276,7 +277,7 @@ class AuthDialogContentsView::TitleLabel : public views::Label {
     SetFontList(base_font_list.Derive(kTitleFontSizeDeltaDp,
                                       gfx::Font::FontStyle::NORMAL,
                                       gfx::Font::Weight::MEDIUM));
-    SetMaximumWidth(kContainerPreferredWidth);
+    SetMaximumWidthSingleLine(kContainerPreferredWidth);
     SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
 
     SetPreferredSize(gfx::Size(kContainerPreferredWidth,
@@ -287,7 +288,7 @@ class AuthDialogContentsView::TitleLabel : public views::Label {
   bool IsShowingError() const { return is_showing_error_; }
 
   void ShowTitle() {
-    base::string16 title =
+    std::u16string title =
         l10n_util::GetStringUTF16(IDS_ASH_IN_SESSION_AUTH_TITLE);
     SetText(title);
     SetEnabledColor(kTextColorPrimary);
@@ -295,7 +296,7 @@ class AuthDialogContentsView::TitleLabel : public views::Label {
     SetAccessibleName(title);
   }
 
-  void ShowError(const base::string16& error_text) {
+  void ShowError(const std::u16string& error_text) {
     SetText(error_text);
     SetEnabledColor(kErrorColor);
     is_showing_error_ = true;
@@ -311,14 +312,14 @@ class AuthDialogContentsView::TitleLabel : public views::Label {
   }
 
  private:
-  void SetAccessibleName(const base::string16& name) {
+  void SetAccessibleName(const std::u16string& name) {
     accessible_name_ = name;
     NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
                              true /*send_native_event*/);
   }
 
   bool is_showing_error_ = false;
-  base::string16 accessible_name_;
+  std::u16string accessible_name_;
 };
 
 AuthDialogContentsView::AuthDialogContentsView(
@@ -329,11 +330,9 @@ AuthDialogContentsView::AuthDialogContentsView(
     : auth_methods_(auth_methods),
       origin_name_(origin_name),
       auth_metadata_(auth_metadata) {
-  DCHECK(auth_methods_ & kAuthPassword);
-
   SetLayoutManager(std::make_unique<views::FillLayout>());
   auto border = std::make_unique<views::BubbleBorder>(
-      views::BubbleBorder::FLOAT, views::BubbleBorder::BIG_SHADOW,
+      views::BubbleBorder::FLOAT, views::BubbleBorder::STANDARD_SHADOW,
       kBackgroundColor);
   border->SetCornerRadius(kCornerRadius);
   SetBackground(std::make_unique<views::BubbleBackground>(border.get()));
@@ -420,8 +419,8 @@ void AuthDialogContentsView::AddOriginNameView() {
   origin_name_view_->SetText(
       l10n_util::GetStringFUTF16(IDS_ASH_IN_SESSION_AUTH_ORIGIN_NAME_PROMPT,
                                  base::UTF8ToUTF16(origin_name_)));
-  origin_name_view_->SetMaximumWidth(kContainerPreferredWidth);
   origin_name_view_->SetMultiLine(true);
+  origin_name_view_->SetMaximumWidth(kContainerPreferredWidth);
   origin_name_view_->SetLineHeight(kOriginNameLineHeight);
 
   origin_name_view_->SetPreferredSize(gfx::Size(
@@ -439,7 +438,7 @@ void AuthDialogContentsView::AddPinTextInputView() {
   pin_text_input_view_->SetDisplayPasswordButtonVisible(true);
   pin_text_input_view_->SetEnabled(true);
   pin_text_input_view_->SetEnabledOnEmptyPassword(false);
-  pin_text_input_view_->SetFocusEnabledForChildViews(true);
+  pin_text_input_view_->SetFocusEnabledForTextfield(true);
   pin_text_input_view_->SetVisible(true);
 
   pin_text_input_view_->SetPlaceholderText(
@@ -574,7 +573,7 @@ void AuthDialogContentsView::OnNeedHelpButtonPressed(const ui::Event& event) {
   InSessionAuthDialogController::Get()->OpenInSessionAuthHelpPage();
 }
 
-void AuthDialogContentsView::OnAuthSubmit(const base::string16& pin) {
+void AuthDialogContentsView::OnAuthSubmit(const std::u16string& pin) {
   if (pin_autosubmit_on_) {
     pin_digit_input_view_->SetReadOnly(true);
   } else {
@@ -587,13 +586,13 @@ void AuthDialogContentsView::OnAuthSubmit(const base::string16& pin) {
 }
 
 // TODO(b/156258540): Clear PIN if auth failed and retry is allowed.
-void AuthDialogContentsView::OnPinAuthComplete(base::Optional<bool> success) {
+void AuthDialogContentsView::OnPinAuthComplete(absl::optional<bool> success) {
   // On success, do nothing, and the dialog will dismiss.
   if (success.has_value() && success.value())
     return;
 
   pin_attempts_++;
-  base::string16 error_text =
+  std::u16string error_text =
       pin_attempts_ >= kMaxPinAttempts
           ? l10n_util::GetStringUTF16(
                 IDS_ASH_IN_SESSION_AUTH_PIN_TOO_MANY_ATTEMPTS)

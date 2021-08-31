@@ -119,12 +119,18 @@ namespace dawn_native { namespace opengl {
 
     class Adapter : public AdapterBase {
       public:
-        Adapter(InstanceBase* instance) : AdapterBase(instance, wgpu::BackendType::OpenGL) {
+        Adapter(InstanceBase* instance, wgpu::BackendType backendType)
+            : AdapterBase(instance, backendType) {
         }
 
         MaybeError Initialize(const AdapterDiscoveryOptions* options) {
             // Use getProc to populate the dispatch table
             DAWN_TRY(mFunctions.Initialize(options->getProc));
+            if (mFunctions.GetVersion().IsES()) {
+                ASSERT(GetBackendType() == wgpu::BackendType::OpenGLES);
+            } else {
+                ASSERT(GetBackendType() == wgpu::BackendType::OpenGL);
+            }
 
             // Use the debug output functionality to get notified about GL errors
             // TODO(cwallez@chromium.org): add support for the KHR_debug and ARB_debug_output
@@ -160,8 +166,12 @@ namespace dawn_native { namespace opengl {
             mFunctions.Enable(GL_DEPTH_TEST);
             mFunctions.Enable(GL_SCISSOR_TEST);
             mFunctions.Enable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
-            mFunctions.Enable(GL_MULTISAMPLE);
-            mFunctions.Enable(GL_FRAMEBUFFER_SRGB);
+            if (mFunctions.GetVersion().IsDesktop()) {
+                // These are not necessary on GLES. The functionality is enabled by default, and
+                // works by specifying sample counts and SRGB textures, respectively.
+                mFunctions.Enable(GL_MULTISAMPLE);
+                mFunctions.Enable(GL_FRAMEBUFFER_SRGB);
+            }
             mFunctions.Enable(GL_SAMPLE_MASK);
 
             mPCIInfo.name = reinterpret_cast<const char*>(mFunctions.GetString(GL_RENDERER));
@@ -172,6 +182,10 @@ namespace dawn_native { namespace opengl {
 
             mDriverDescription = std::string("OpenGL version ") +
                                  reinterpret_cast<const char*>(mFunctions.GetString(GL_VERSION));
+
+            if (mPCIInfo.name.find("SwiftShader") != std::string::npos) {
+                mAdapterType = wgpu::AdapterType::CPU;
+            }
 
             InitializeSupportedExtensions();
 
@@ -194,7 +208,10 @@ namespace dawn_native { namespace opengl {
             {
                 // BC1, BC2 and BC3 are not supported in OpenGL or OpenGL ES core features.
                 bool supportsS3TC =
-                    mFunctions.IsGLExtensionSupported("GL_EXT_texture_compression_s3tc");
+                    mFunctions.IsGLExtensionSupported("GL_EXT_texture_compression_s3tc") ||
+                    (mFunctions.IsGLExtensionSupported("GL_EXT_texture_compression_dxt1") &&
+                     mFunctions.IsGLExtensionSupported("GL_ANGLE_texture_compression_dxt3") &&
+                     mFunctions.IsGLExtensionSupported("GL_ANGLE_texture_compression_dxt5"));
 
                 // COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT, COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT and
                 // COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT requires both GL_EXT_texture_sRGB and
@@ -203,8 +220,14 @@ namespace dawn_native { namespace opengl {
                 bool supportsTextureSRGB = mFunctions.IsGLExtensionSupported("GL_EXT_texture_sRGB");
 
                 // GL_EXT_texture_compression_s3tc_srgb is an extension in OpenGL ES.
+                // NVidia GLES drivers don't support this extension, but they do support
+                // GL_NV_sRGB_formats. (Note that GL_EXT_texture_sRGB does not exist on ES.
+                // GL_EXT_sRGB does (core in ES 3.0), but it does not automatically provide S3TC
+                // SRGB support even if S3TC is supported; see
+                // https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_sRGB.txt.)
                 bool supportsS3TCSRGB =
-                    mFunctions.IsGLExtensionSupported("GL_EXT_texture_compression_s3tc_srgb");
+                    mFunctions.IsGLExtensionSupported("GL_EXT_texture_compression_s3tc_srgb") ||
+                    mFunctions.IsGLExtensionSupported("GL_NV_sRGB_formats");
 
                 // BC4 and BC5
                 bool supportsRGTC =
@@ -229,8 +252,8 @@ namespace dawn_native { namespace opengl {
 
     // Implementation of the OpenGL backend's BackendConnection
 
-    Backend::Backend(InstanceBase* instance)
-        : BackendConnection(instance, wgpu::BackendType::OpenGL) {
+    Backend::Backend(InstanceBase* instance, wgpu::BackendType backendType)
+        : BackendConnection(instance, backendType) {
     }
 
     std::vector<std::unique_ptr<AdapterBase>> Backend::DiscoverDefaultAdapters() {
@@ -246,7 +269,7 @@ namespace dawn_native { namespace opengl {
             return DAWN_VALIDATION_ERROR("The OpenGL backend can only create a single adapter");
         }
 
-        ASSERT(optionsBase->backendType == WGPUBackendType_OpenGL);
+        ASSERT(static_cast<wgpu::BackendType>(optionsBase->backendType) == GetType());
         const AdapterDiscoveryOptions* options =
             static_cast<const AdapterDiscoveryOptions*>(optionsBase);
 
@@ -254,7 +277,8 @@ namespace dawn_native { namespace opengl {
             return DAWN_VALIDATION_ERROR("AdapterDiscoveryOptions::getProc must be set");
         }
 
-        std::unique_ptr<Adapter> adapter = std::make_unique<Adapter>(GetInstance());
+        std::unique_ptr<Adapter> adapter = std::make_unique<Adapter>(
+            GetInstance(), static_cast<wgpu::BackendType>(optionsBase->backendType));
         DAWN_TRY(adapter->Initialize(options));
 
         mCreatedAdapter = true;
@@ -263,8 +287,8 @@ namespace dawn_native { namespace opengl {
         return std::move(adapters);
     }
 
-    BackendConnection* Connect(InstanceBase* instance) {
-        return new Backend(instance);
+    BackendConnection* Connect(InstanceBase* instance, wgpu::BackendType backendType) {
+        return new Backend(instance, backendType);
     }
 
 }}  // namespace dawn_native::opengl

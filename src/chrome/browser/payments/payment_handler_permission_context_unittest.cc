@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/payments/payment_handler_permission_context.h"
+#include "components/permissions/contexts/payment_handler_permission_context.h"
 
 #include <string>
 
@@ -22,7 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/infobars/infobar_service.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #else
 #include "components/permissions/permission_request_manager.h"
 #endif
@@ -64,7 +64,7 @@ class PaymentHandlerPermissionContextTests
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 #if defined(OS_ANDROID)
-    InfoBarService::CreateForWebContents(web_contents());
+    infobars::ContentInfoBarManager::CreateForWebContents(web_contents());
 #else
     permissions::PermissionRequestManager::CreateForWebContents(web_contents());
 #endif
@@ -81,7 +81,8 @@ TEST_F(PaymentHandlerPermissionContextTests, TestInsecureRequestingUrl) {
 
   const permissions::PermissionRequestID id(
       web_contents()->GetMainFrame()->GetProcess()->GetID(),
-      web_contents()->GetMainFrame()->GetRoutingID(), -1);
+      web_contents()->GetMainFrame()->GetRoutingID(),
+      permissions::PermissionRequestID::RequestLocalId());
   permission_context.RequestPermission(
       web_contents(), id, url, true,
       base::BindOnce(&TestPermissionContext::TrackPermissionDecision,

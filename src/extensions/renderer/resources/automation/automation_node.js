@@ -18,6 +18,14 @@ var IsInteractPermitted = natives.IsInteractPermitted;
 var GetRootID = natives.GetRootID;
 
 /**
+ * Similar to above, but may move to ancestor roots if the current tree
+ * has multiple roots.
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @return {{treeID: string, nodeID: number}}
+ */
+var GetPublicRoot = natives.GetPublicRoot;
+
+/**
  * @param {string} axTreeID The id of the accessibility tree.
  * @return {?string} The title of the document.
  */
@@ -417,7 +425,6 @@ var GetStandardActions = natives.GetStandardActions;
  */
 var GetDefaultActionVerb = natives.GetDefaultActionVerb;
 
-
 /**
  * @param {string} axTreeID The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
@@ -425,6 +432,12 @@ var GetDefaultActionVerb = natives.GetDefaultActionVerb;
  */
 var GetHasPopup = natives.GetHasPopup;
 
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {automation.AriaCurrentState}
+ */
+var GetAriaCurrentState = natives.GetAriaCurrentState;
 
 /**
  * @param {string} axTreeID The id of the accessibility tree.
@@ -439,8 +452,6 @@ var GetNextTextMatch = natives.GetNextTextMatch;
  * @param {string} axTreeID The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
  * @return {?Array<number>} A list of column header ids.
-
- * @return {?number} The id of the column header, if it exists.
  */
 var GetTableCellColumnHeaders = natives.GetTableCellColumnHeaders;
 
@@ -527,6 +538,20 @@ var GetWordEndOffsets = natives.GetWordEndOffsets;
 /**
  * @param {string} axTreeID The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
+ * @return {!Array<number>}
+ */
+var GetSentenceStartOffsets = natives.GetSentenceStartOffsets;
+
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {!Array<number>}
+ */
+var GetSentenceEndOffsets = natives.GetSentenceEndOffsets;
+
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
  */
 var SetAccessibilityFocus = natives.SetAccessibilityFocus;
 
@@ -567,6 +592,13 @@ var CreateAutomationPosition = natives.CreateAutomationPosition;
  */
 var GetSortDirection = natives.GetSortDirection;
 
+/**
+ * @param {string} axTreeId The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {string} .
+ */
+var GetValue = natives.GetValue;
+
 var logging = requireNative('logging');
 var utils = require('utils');
 
@@ -592,14 +624,18 @@ AutomationNodeImpl.prototype = {
   },
 
   get root() {
-    return this.rootImpl && this.rootImpl.wrapper;
+    const info = GetPublicRoot(this.treeID);
+    if (!info) {
+      return null;
+    }
+    return AutomationRootNodeImpl.getNodeFromTree(info.treeId, info.nodeId) ||
+        null;
   },
 
   get parent() {
     var info = GetParentID(this.treeID, this.id);
-    if (!info)
-      return;
-    return AutomationRootNodeImpl.getNodeFromTree(info.treeId, info.nodeId);
+    if (info)
+      return AutomationRootNodeImpl.getNodeFromTree(info.treeId, info.nodeId);
   },
 
   get htmlAttributes() {
@@ -671,6 +707,10 @@ AutomationNodeImpl.prototype = {
 
   get sortDirection() {
     return GetSortDirection(this.treeID, this.id);
+  },
+
+  get value() {
+    return GetValue(this.treeID, this.id);
   },
 
   get unclippedLocation() {
@@ -806,6 +846,10 @@ AutomationNodeImpl.prototype = {
     return GetHasPopup(this.treeID, this.id);
   },
 
+  get ariaCurrentState() {
+    return GetAriaCurrentState(this.treeID, this.id);
+  },
+
   get tableCellColumnHeaders() {
     var ids = GetTableCellColumnHeaders(this.treeID, this.id);
     if (ids && this.rootImpl) {
@@ -817,7 +861,7 @@ AutomationNodeImpl.prototype = {
   },
 
   get tableCellRowHeaders() {
-    var id = GetTableCellRowHeaders(this.treeID, this.id);
+    var ids = GetTableCellRowHeaders(this.treeID, this.id);
     if (ids && this.rootImpl) {
       var result = [];
       for (var i = 0; i < ids.length; i++)
@@ -857,6 +901,14 @@ AutomationNodeImpl.prototype = {
 
   get nonInlineTextWordEnds() {
     return GetWordEndOffsets(this.treeID, this.id);
+  },
+
+  get sentenceStarts() {
+    return GetSentenceStartOffsets(this.treeID, this.id);
+  },
+
+  get sentenceEnds() {
+    return GetSentenceEndOffsets(this.treeID, this.id);
   },
 
   get markers() {
@@ -1085,7 +1137,7 @@ AutomationNodeImpl.prototype = {
   },
 
   dispatchEvent: function(
-      eventType, eventFrom, mouseX, mouseY, intents) {
+      eventType, eventFrom, eventFromAction, mouseX, mouseY, intents) {
     var path = [];
     var parent = this.parent;
     while (parent) {
@@ -1093,8 +1145,9 @@ AutomationNodeImpl.prototype = {
       parent = parent.parent;
     }
 
-    var event = new AutomationEvent(eventType, this.wrapper, eventFrom, mouseX,
-                                    mouseY, intents);
+    var event = new AutomationEvent(
+        eventType, this.wrapper, eventFrom, eventFromAction, mouseX, mouseY,
+        intents);
 
     // Dispatch the event through the propagation path in three phases:
     // - capturing: starting from the root and going down to the target's parent
@@ -1298,32 +1351,33 @@ AutomationNodeImpl.prototype = {
 };
 
 var stringAttributes = [
-    'accessKey',
-    'ariaInvalidValue',
-    'autoComplete',
-    'className',
-    'containerLiveRelevant',
-    'containerLiveStatus',
-    'description',
-    'display',
-    'fontFamily',
-    'htmlTag',
-    'imageDataUrl',
-    'innerHtml',
-    'language',
-    'liveRelevant',
-    'liveStatus',
-    'placeholder',
-    'roleDescription',
-    'textInputType',
-    'tooltip',
-    'url',
-    'value'];
+  'accessKey',
+  'appId',
+  'ariaInvalidValue',
+  'autoComplete',
+  'checkedStateDescription',
+  'className',
+  'containerLiveRelevant',
+  'containerLiveStatus',
+  'description',
+  'display',
+  'fontFamily',
+  'htmlTag',
+  'imageDataUrl',
+  'innerHtml',
+  'language',
+  'liveRelevant',
+  'liveStatus',
+  'placeholder',
+  'roleDescription',
+  'tooltip',
+  'url'
+];
 
 var boolAttributes = [
   'busy', 'clickable', 'containerLiveAtomic', 'containerLiveBusy',
-  'editableRoot', 'liveAtomic', 'modal', 'notUserSelectableStyle', 'scrollable',
-  'selected', 'supportsTextLocation'
+  'contentEditableRoot', 'liveAtomic', 'modal', 'notUserSelectableStyle',
+  'scrollable', 'selected', 'supportsTextLocation'
 ];
 
 var intAttributes = [
@@ -1360,7 +1414,6 @@ var nodeRefAttributes = [
     ['tableRowHeaderId', 'tableRowHeader', null]];
 
 var intListAttributes = [
-    'lineBreaks',
     'wordEnds',
     'wordStarts'];
 
@@ -1751,7 +1804,6 @@ AutomationRootNodeImpl.prototype = {
   },
 
   destroy: function() {
-    this.dispatchEvent('destroyed', 'none');
     for (var id in this.axNodeDataCache_)
       this.remove(id);
     this.detach();
@@ -1762,8 +1814,8 @@ AutomationRootNodeImpl.prototype = {
     if (targetNode) {
       var targetNodeImpl = privates(targetNode).impl;
       targetNodeImpl.dispatchEvent(
-          eventParams.eventType,
-          eventParams.eventFrom, eventParams.mouseX, eventParams.mouseY,
+          eventParams.eventType, eventParams.eventFrom,
+          eventParams.eventFromAction, eventParams.mouseX, eventParams.mouseY,
           eventParams.intents);
 
       if (eventParams.actionRequestID != -1) {
@@ -1878,6 +1930,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
   readonly: $Array.concat(
       publicAttributes,
       [
+        'ariaCurrentState',
         'bold',
         'checked',
         'children',
@@ -1910,6 +1963,8 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
         'sortDirection',
         'standardActions',
         'state',
+        'sentenceStarts',
+        'sentenceEnds',
         'tableCellAriaColumnIndex',
         'tableCellAriaRowIndex',
         'tableCellColumnHeaders',
@@ -1920,6 +1975,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
         'tableRowCount',
         'unclippedLocation',
         'underline',
+        'value',
       ]),
 });
 

@@ -25690,7 +25690,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="GPU.BlacklistFeatureTestResultsWindows"
-    enum="GPUBlacklistFeatureTestResultsWindows" expires_after="2018-02-28">
+    enum="GPUBlocklistFeatureTestResultsWindows" expires_after="2018-02-28">
   <obsolete>
     Replaced by GPU.BlacklistFeatureTestResultsWindows2 in M67.
   </obsolete>
@@ -29315,6 +29315,23 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>thestig@chromium.org</owner>
   <owner>thomasanderson@chromium.org</owner>
   <summary>The Linux distro used. Logged on each start up.</summary>
+</histogram>
+
+<histogram name="Linux.X11.ServerRTT" units="microseconds" expires_after="M77">
+  <obsolete>
+    Removed 11/20 due to lack of usage.
+  </obsolete>
+  <owner>thomasanderson@chromium.org</owner>
+  <summary>
+    RTT between Chrome and the X11 server. Tracked in X11EventSource by
+    measuring the latency to receive a property event after changing a property.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
+  </summary>
 </histogram>
 
 <histogram name="LoadingPredictor.SubresourceConnectDuration" units="ms"
@@ -35955,7 +35972,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Navigation.TimeToCommit" units="ms" expires_after="2018-03-30">
   <obsolete>
-    Removed March 2018 in favor of Navigation.StartToCommit variants.
+    Removed March 2018 in favor of Navigation.StartToCommit variants. Removed
+    from code in November 2020 (M89).
   </obsolete>
   <owner>carlosk@chromium.org</owner>
   <summary>
@@ -81652,11 +81670,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Sync.NonRedundantInvalidationPerModelType"
     enum="SyncModelTypes" expires_after="M77">
   <obsolete>
-    Was used during the launch for the new implementation.
+    Deprecated in 10/2019. Was used during the launch of the new implementation.
   </obsolete>
   <owner>melandory@chromium.org</owner>
   <summary>
-    The sync datatype of the recieved invalidation with fresh version.
+    WARNING: The recordings here are incorrect (crbug.com/1158476).
+
+    The sync datatype of the received invalidation with fresh version.
   </summary>
 </histogram>
 

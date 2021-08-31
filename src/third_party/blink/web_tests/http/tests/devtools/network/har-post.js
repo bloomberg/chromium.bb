@@ -4,7 +4,7 @@
 
 (async function() {
   TestRunner.addResult('Verifies that HAR exports have correct POST data');
-  await TestRunner.loadModule('network_test_runner');
+  await TestRunner.loadTestModule('network_test_runner');
   await TestRunner.showPanel('network');
 
   await TestRunner.NetworkAgent.setCacheDisabled(true);
@@ -33,7 +33,7 @@
     const stream = new TestRunner.StringOutputStream(resolve);
     const progress = new Common.Progress();
     const networkRequests = NetworkTestRunner.networkRequests();
-    await Network.HARWriter.write(stream, networkRequests, progress);
+    await NetworkTestRunner.writeHARLog(stream, networkRequests, progress);
     progress.done();
     stream.close();
   });

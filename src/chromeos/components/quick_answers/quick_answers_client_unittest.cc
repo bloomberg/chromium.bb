@@ -8,13 +8,13 @@
 #include <string>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/components/quick_answers/test/test_helpers.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_utils.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -93,7 +93,6 @@ class QuickAnswersClientTest : public testing::Test {
     mock_delegate_ = std::make_unique<MockQuickAnswersDelegate>();
 
     client_ = std::make_unique<QuickAnswersClient>(&test_url_loader_factory_,
-                                                   assistant_state_.get(),
                                                    mock_delegate_.get());
 
     result_loader_factory_callback_ = base::BindRepeating(
@@ -119,12 +118,10 @@ class QuickAnswersClientTest : public testing::Test {
   void NotifyAssistantStateChange(
       bool setting_enabled,
       bool context_enabled,
-      bool quick_answers_enabled,
       chromeos::assistant::AssistantAllowedState assistant_state,
       const std::string& locale) {
     client_->OnAssistantSettingsEnabled(setting_enabled);
     client_->OnAssistantContextEnabled(context_enabled);
-    client_->OnAssistantQuickAnswersEnabled(quick_answers_enabled);
     client_->OnAssistantFeatureAllowedChanged(assistant_state);
     client_->OnLocaleChanged(locale);
   }
@@ -162,7 +159,6 @@ TEST_F(QuickAnswersClientTest, FeatureEligible) {
   NotifyAssistantStateChange(
       /*setting_enabled=*/true,
       /*context_enabled=*/true,
-      /*quick_answers_enabled=*/true,
       /*assistant_state=*/chromeos::assistant::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-US");
 }
@@ -178,14 +174,12 @@ TEST_F(QuickAnswersClientTest, FeatureIneligibleAfterContextDisabled) {
   NotifyAssistantStateChange(
       /*setting_enabled=*/true,
       /*context_enabled=*/true,
-      /*quick_answers_enabled=*/true,
       /*assistant_state=*/chromeos::assistant::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-US");
 
   NotifyAssistantStateChange(
       /*setting_enabled=*/true,
       /*context_enabled=*/false,
-      /*quick_answers_enabled=*/true,
       /*assistant_state=*/chromeos::assistant::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-US");
 }
@@ -201,7 +195,6 @@ TEST_F(QuickAnswersClientTest, FeatureDisabled) {
   NotifyAssistantStateChange(
       /*setting_enabled=*/true,
       /*context_enabled=*/true,
-      /*quick_answers_enabled=*/true,
       /*assistant_state=*/chromeos::assistant::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-US");
 }
@@ -217,7 +210,6 @@ TEST_F(QuickAnswersClientTest, AssistantSettingDisabled) {
   NotifyAssistantStateChange(
       /*setting_enabled=*/false,
       /*context_enabled=*/true,
-      /*quick_answers_enabled=*/true,
       /*assistant_state=*/chromeos::assistant::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-US");
 }
@@ -233,7 +225,6 @@ TEST_F(QuickAnswersClientTest, AssistantContextDisabled) {
   NotifyAssistantStateChange(
       /*setting_enabled=*/true,
       /*context_enabled=*/false,
-      /*quick_answers_enabled=*/true,
       /*assistant_state=*/chromeos::assistant::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-US");
 }
@@ -249,13 +240,13 @@ TEST_F(QuickAnswersClientTest, AssistantNotAllowed) {
   NotifyAssistantStateChange(
       /*setting_enabled=*/true,
       /*context_enabled=*/true,
-      /*quick_answers_enabled=*/true,
       /*assistant_state=*/
       chromeos::assistant::AssistantAllowedState::DISALLOWED_BY_POLICY,
       /*locale=*/"en-US");
 }
 
-TEST_F(QuickAnswersClientTest, UnsupportedLocale) {
+// TODO(updowndota): Rewrite the unsupported locale test.
+TEST_F(QuickAnswersClientTest, DISABLED_UnsupportedLocale) {
   // Verify that OnEligibilityChanged is called.
   EXPECT_CALL(*mock_delegate_, OnEligibilityChanged(false)).Times(0);
   EXPECT_CALL(*mock_delegate_, OnEligibilityChanged(true)).Times(0);
@@ -263,7 +254,6 @@ TEST_F(QuickAnswersClientTest, UnsupportedLocale) {
   NotifyAssistantStateChange(
       /*setting_enabled=*/true,
       /*context_enabled=*/true,
-      /*quick_answers_enabled=*/true,
       /*assistant_state=*/chromeos::assistant::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-GB");
 }
@@ -300,7 +290,8 @@ TEST_F(QuickAnswersClientTest, SendRequest) {
                                    IntentInfo("sel", IntentType::kDictionary));
 
   std::unique_ptr<QuickAnswer> quick_answer = std::make_unique<QuickAnswer>();
-  quick_answer->primary_answer = "answer";
+  quick_answer->first_answer_row.push_back(
+      std::make_unique<QuickAnswerResultText>("answer"));
   EXPECT_CALL(*mock_delegate_,
               OnQuickAnswerReceived(QuickAnswerEqual(&(*quick_answer))));
   client_->OnQuickAnswerReceived(std::move(quick_answer));
@@ -342,25 +333,6 @@ TEST_F(QuickAnswersClientTest, FetchQuickAnswers) {
   client_->FetchQuickAnswers(*quick_answers_request);
 }
 
-TEST_F(QuickAnswersClientTest, NotSendRequestForUnknownIntent) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      chromeos::features::kQuickAnswersTextAnnotator);
-
-  std::unique_ptr<QuickAnswersRequest> quick_answers_request =
-      std::make_unique<QuickAnswersRequest>();
-  quick_answers_request->selected_text = "sel";
-
-  mock_result_loader_ =
-      std::make_unique<MockResultLoader>(&test_url_loader_factory_, nullptr);
-  EXPECT_CALL(*mock_result_loader_, Fetch(::testing::_)).Times(0);
-  QuickAnswersClient::SetResultLoaderFactoryForTesting(
-      &result_loader_factory_callback_);
-
-  client_->IntentGeneratorCallback(*quick_answers_request, /*skip_fetch=*/false,
-                                   IntentInfo("sel", IntentType::kUnknown));
-}
-
 TEST_F(QuickAnswersClientTest, PreprocessDefinitionIntent) {
   std::unique_ptr<QuickAnswersRequest> quick_answers_request =
       std::make_unique<QuickAnswersRequest>();
@@ -385,6 +357,9 @@ TEST_F(QuickAnswersClientTest, PreprocessDefinitionIntent) {
 }
 
 TEST_F(QuickAnswersClientTest, PreprocessTranslationIntent) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      chromeos::features::kQuickAnswersTranslationCloudAPI);
   std::unique_ptr<QuickAnswersRequest> quick_answers_request =
       std::make_unique<QuickAnswersRequest>();
   quick_answers_request->selected_text = "sel";

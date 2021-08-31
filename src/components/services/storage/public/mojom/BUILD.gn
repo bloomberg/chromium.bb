@@ -7,21 +7,27 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojom") {
   sources = [
     "blob_storage_context.mojom",
+    "cache_storage_control.mojom",
+    "file_system_access_context.mojom",
     "indexed_db_control.mojom",
     "indexed_db_control_test.mojom",
     "local_storage_control.mojom",
-    "native_file_system_context.mojom",
     "origin_context.mojom",
     "partition.mojom",
+    "quota_client.mojom",
     "service_worker_database.mojom",
     "service_worker_storage_control.mojom",
     "session_storage_control.mojom",
+    "storage_policy_update.mojom",
     "storage_service.mojom",
+    "storage_usage_info.mojom",
   ]
 
   public_deps = [
     "//components/services/storage/public/mojom/filesystem",
+    "//components/services/storage/public/mojom/storage_key",
     "//mojo/public/mojom/base",
+    "//services/network/public/mojom",
     "//third_party/blink/public/mojom:mojom_core",
     "//third_party/blink/public/mojom:mojom_modules",
     "//third_party/blink/public/mojom:mojom_platform",
@@ -43,4 +49,16 @@ mojom("mojom") {
 mojom("test_api") {
   testonly = true
   sources = [ "test_api.test-mojom" ]
+}
+
+source_set("tests") {
+  testonly = true
+  sources = [ "storage_key/storage_key_mojom_traits_unittest.cc" ]
+  deps = [
+    "//components/services/storage/public/cpp:storage_key",
+    "//components/services/storage/public/mojom/storage_key",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/test_support:test_utils",
+    "//testing/gtest",
+  ]
 }

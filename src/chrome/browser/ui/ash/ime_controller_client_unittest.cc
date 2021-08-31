@@ -12,7 +12,6 @@
 #include "ash/public/cpp/ime_info.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
@@ -36,8 +35,8 @@ using ui::ime::InputMethodMenuManager;
 namespace {
 
 // Used to look up IME names.
-base::string16 GetLocalizedString(int resource_id) {
-  return base::ASCIIToUTF16("localized string");
+std::u16string GetLocalizedString(int resource_id) {
+  return u"localized string";
 }
 
 // InputMethodManager with available IMEs.
@@ -47,12 +46,12 @@ class TestInputMethodManager : public MockInputMethodManager {
    public:
     TestState() {
       // Set up two input methods.
-      std::vector<std::string> layouts({"us"});
+      std::string layout("us");
       std::vector<std::string> languages({"en-US"});
-      InputMethodDescriptor ime1("id1", "name1", "indicator1", layouts,
+      InputMethodDescriptor ime1("id1", "name1", "indicator1", layout,
                                  languages, true /* is_login_keyboard */,
                                  GURL(), GURL());
-      InputMethodDescriptor ime2("id2", "name2", "indicator2", layouts,
+      InputMethodDescriptor ime2("id2", "name2", "indicator2", layout,
                                  languages, false /* is_login_keyboard */,
                                  GURL(), GURL());
       current_ime_id_ = ime1.id();
@@ -152,7 +151,7 @@ class ImeControllerClientTest : public testing::Test {
  public:
   ImeControllerClientTest() {
     input_method_manager_.delegate_.set_get_localized_string_callback(
-        base::Bind(&GetLocalizedString));
+        base::BindRepeating(&GetLocalizedString));
   }
   ~ImeControllerClientTest() override = default;
 
@@ -260,11 +259,9 @@ TEST_F(ImeControllerClientTest, InputMethodChanged) {
   EXPECT_EQ("id2", ime_controller_.current_ime_id_);
   ASSERT_EQ(2u, ime_controller_.available_imes_.size());
   EXPECT_EQ("id1", ime_controller_.available_imes_[0].id);
-  EXPECT_EQ(base::ASCIIToUTF16("name1"),
-            ime_controller_.available_imes_[0].name);
+  EXPECT_EQ(u"name1", ime_controller_.available_imes_[0].name);
   EXPECT_EQ("id2", ime_controller_.available_imes_[1].id);
-  EXPECT_EQ(base::ASCIIToUTF16("name2"),
-            ime_controller_.available_imes_[1].name);
+  EXPECT_EQ(u"name2", ime_controller_.available_imes_[1].name);
   EXPECT_FALSE(ime_controller_.show_mode_indicator_);
 
   // Simulate a switch and show message.

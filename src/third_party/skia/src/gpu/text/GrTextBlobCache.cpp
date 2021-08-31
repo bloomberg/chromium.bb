@@ -7,7 +7,7 @@
 
 #include "src/gpu/text/GrTextBlobCache.h"
 
-DECLARE_SKMESSAGEBUS_MESSAGE(GrTextBlobCache::PurgeBlobMessage)
+DECLARE_SKMESSAGEBUS_MESSAGE(GrTextBlobCache::PurgeBlobMessage, uint32_t, true)
 
 // This function is captured by the above macro using implementations from SkMessageBus.h
 static inline bool SkShouldPostMessageToBus(
@@ -20,10 +20,12 @@ GrTextBlobCache::GrTextBlobCache(uint32_t messageBusID)
         , fMessageBusID(messageBusID)
         , fPurgeBlobInbox(messageBusID) { }
 
-void GrTextBlobCache::add(const SkGlyphRunList& glyphRunList, sk_sp<GrTextBlob> blob) {
+sk_sp<GrTextBlob> GrTextBlobCache::addOrReturnExisting(
+        const SkGlyphRunList& glyphRunList, sk_sp<GrTextBlob> blob) {
     SkAutoSpinlock lock{fSpinLock};
-    this->internalAdd(std::move(blob));
+    blob = this->internalAdd(std::move(blob));
     glyphRunList.temporaryShuntBlobNotifyAddedToCache(fMessageBusID);
+    return blob;
 }
 
 sk_sp<GrTextBlob> GrTextBlobCache::find(const GrTextBlob::Key& key) {
@@ -48,15 +50,19 @@ void GrTextBlobCache::remove(GrTextBlob* blob) {
 }
 
 void GrTextBlobCache::internalRemove(GrTextBlob* blob) {
-    auto  id      = GrTextBlob::GetKey(*blob).fUniqueID;
+    auto  id      = blob->key().fUniqueID;
     auto* idEntry = fBlobIDCache.find(id);
-    SkASSERT(idEntry);
 
-    fCurrentSize -= blob->size();
-    fBlobList.remove(blob);
-    idEntry->removeBlob(blob);
-    if (idEntry->fBlobs.empty()) {
-        fBlobIDCache.remove(id);
+    if (idEntry != nullptr) {
+        sk_sp<GrTextBlob> stillExists = idEntry->find(blob->key());
+        if (blob == stillExists.get())  {
+            fCurrentSize -= blob->size();
+            fBlobList.remove(blob);
+            idEntry->removeBlob(blob);
+            if (idEntry->fBlobs.empty()) {
+                fBlobIDCache.remove(id);
+            }
+        }
     }
 }
 
@@ -69,7 +75,7 @@ void GrTextBlobCache::freeAll() {
 
 void GrTextBlobCache::PostPurgeBlobMessage(uint32_t blobID, uint32_t cacheID) {
     SkASSERT(blobID != SK_InvalidGenID);
-    SkMessageBus<PurgeBlobMessage>::Post(PurgeBlobMessage(blobID, cacheID));
+    SkMessageBus<PurgeBlobMessage, uint32_t>::Post(PurgeBlobMessage(blobID, cacheID));
 }
 
 void GrTextBlobCache::purgeStaleBlobs() {
@@ -133,20 +139,23 @@ void GrTextBlobCache::internalCheckPurge(GrTextBlob* blob) {
     }
 }
 
-void GrTextBlobCache::internalAdd(sk_sp<GrTextBlob> blob) {
-    auto  id      = GrTextBlob::GetKey(*blob).fUniqueID;
+sk_sp<GrTextBlob> GrTextBlobCache::internalAdd(sk_sp<GrTextBlob> blob) {
+    auto  id      = blob->key().fUniqueID;
     auto* idEntry = fBlobIDCache.find(id);
     if (!idEntry) {
         idEntry = fBlobIDCache.set(id, BlobIDCacheEntry(id));
     }
 
-    // Safe to retain a raw ptr temporarily here, because the cache will hold a ref.
-    GrTextBlob* rawBlobPtr = blob.get();
-    fBlobList.addToHead(rawBlobPtr);
-    fCurrentSize += blob->size();
-    idEntry->addBlob(std::move(blob));
+    if (sk_sp<GrTextBlob> alreadyIn = idEntry->find(blob->key()); alreadyIn) {
+        blob = std::move(alreadyIn);
+    } else {
+        fBlobList.addToHead(blob.get());
+        fCurrentSize += blob->size();
+        idEntry->addBlob(blob);
+    }
 
-    this->internalCheckPurge(rawBlobPtr);
+    this->internalCheckPurge(blob.get());
+    return blob;
 }
 
 GrTextBlobCache::BlobIDCacheEntry::BlobIDCacheEntry() : fID(SK_InvalidGenID) {}
@@ -159,17 +168,17 @@ uint32_t GrTextBlobCache::BlobIDCacheEntry::GetKey(const GrTextBlobCache::BlobID
 
 void GrTextBlobCache::BlobIDCacheEntry::addBlob(sk_sp<GrTextBlob> blob) {
     SkASSERT(blob);
-    SkASSERT(GrTextBlob::GetKey(*blob).fUniqueID == fID);
-    SkASSERT(!this->find(GrTextBlob::GetKey(*blob)));
+    SkASSERT(blob->key().fUniqueID == fID);
+    SkASSERT(!this->find(blob->key()));
 
     fBlobs.emplace_back(std::move(blob));
 }
 
 void GrTextBlobCache::BlobIDCacheEntry::removeBlob(GrTextBlob* blob) {
     SkASSERT(blob);
-    SkASSERT(GrTextBlob::GetKey(*blob).fUniqueID == fID);
+    SkASSERT(blob->key().fUniqueID == fID);
 
-    auto index = this->findBlobIndex(GrTextBlob::GetKey(*blob));
+    auto index = this->findBlobIndex(blob->key());
     SkASSERT(index >= 0);
 
     fBlobs.removeShuffle(index);
@@ -182,7 +191,7 @@ sk_sp<GrTextBlob> GrTextBlobCache::BlobIDCacheEntry::find(const GrTextBlob::Key&
 
 int GrTextBlobCache::BlobIDCacheEntry::findBlobIndex(const GrTextBlob::Key& key) const {
     for (int i = 0; i < fBlobs.count(); ++i) {
-        if (GrTextBlob::GetKey(*fBlobs[i]) == key) {
+        if (fBlobs[i]->key() == key) {
             return i;
         }
     }

@@ -1,21 +1,11 @@
 # heapprofd Custom Allocator API - Early Access
 
-WARNING: The heapprofd Custom Allocator API is currently in **pre-alpha**
-         stage. The API is subject to change, and the implementation might
-         still be unstable. Please file
-         [bugs](https://github.com/google/perfetto/issues/new) for any
-         issues you encounter.
+WARNING: The heapprofd Custom Allocator API is currently in **beta** stage.
+         Please file [bugs](https://github.com/google/perfetto/issues/new)
+         for any issues you encounter.
 
 NOTE: The heapprofd Custom Allocator API requires a device running Android
       10 or newer.
-
-## Give us a head's up
-
-Thanks for trying out the Custom Allocator API! As this is pre-alpha, we
-would ask you to [file a tracking GitHub issue](
-https://github.com/google/perfetto/issues/new) so we can communicate with you
-in case we have updated information. You do not need to wait for any reply on
-the bug before proceeding.
 
 ## Get SDK
 
@@ -34,37 +24,39 @@ to get access.
 
 Alternatively, you can build the binaries yourself from AOSP.
 
-First, [check out AOSP](https://source.android.com/setup/build/downloading):
+First, [check out Perfetto](https://perfetto.dev/docs/contributing/build-instructions):
 
 ```
-$ mkdir aosp && cd aosp
-$ repo init -u  https://android.googlesource.com/platform/manifest -b master --partial-clone
-$ repo sync -c -j8
+$ git clone https://android.googlesource.com/platform/external/perfetto/
 ```
 
-Then, build `heapprofd_standalone_client` for arm64.
+Then, change to the project directory, download and build additional
+dependencies, and then build the standalone library:
 
 ```
-$ source build/envsetup.sh
-$ lunch aosp_arm64-eng
-$ make heapprofd_standalone_client
+$ cd perfetto
+perfetto/ $ tools/install-build-deps --android
+perfetto/ $ tools/build_all_configs.py --android
+perfetto/ $ ninja -C out/android_release_incl_heapprofd_arm64 \
+libheapprofd_standalone_client.so
 ```
 
 You will find the built library in
-`out/target/product/generic_arm64/system/lib64/heapprofd_standalone_client.so`.
+`out/android_release_incl_heapprofd_arm64/libheapprofd_standalone_client.so`.
 The header for the API can be found in
-`external/perfetto/include/perfetto/profiling/memory/heap_profile.h`.
+`src/profiling/memory/include/perfetto/heap_profile.h`. This library is built
+against SDK version 29, so will work on Android 10 or newer.
 
 WARNING: Only use the header from the checkout you used to build the library,
          as the API is not stable yet.
 
-To make debugging in the future easier, make note of the state of your
-checkout at the time you built.
+To make debugging in the future easier, make note of the revision at the time
+you built.
 
 ```
-repo info > repo-info.txt
+git rev-parse HEAD > perfetto-version.txt
 ```
-Please attach this file to any bugs you file.
+Please include this in any bugs you file.
 
 ## Instrument App
 
@@ -117,20 +109,22 @@ and have recent version of the protoc compiler installed.
 [Learn how to install protoc](https://grpc.io/docs/protoc-installation).
 
 On Linux, you can start a profile using the following pipeline (substitue
-`$APP_NAME` for the name of your app):
+`$APP_NAME` for the name of your app and `$HEAP` for the name of the heap
+you registered using `AHeapProfile_registerHeap`):
 
 ```
-heap_profile -n $APP_NAME --all-heaps --print-config | \
+heap_profile -n $APP_NAME --heaps $HEAP --print-config | \
  path/to/protoc --encode=perfetto.protos.TraceConfig perfetto_trace.proto | \
  adb shell perfetto -c - -o /data/misc/perfetto-traces/profile
 ```
 
-On Windows, you will need [python 3.6](
-https://www.python.org/downloads/) or later. You can start a profile using the following pipeline
-from a command prompt (substitue`%APP_NAME%` for the name of your app):
+On Windows, you will need [python 3.6](https://www.python.org/downloads/) or
+later. You can start a profile using the following pipeline from a command
+prompt (substitue`%APP_NAME%` for the name of your app and `%HEAP%` for
+the name of the heap you registered using `AHeapProfile_registerHeap`):
 
 ```
-python /path/to/heap_profile -n %APP_NAME% --all-heaps --print-config | ^
+python /path/to/heap_profile -n %APP_NAME% --heaps %HEAP% --print-config | ^
  path/to/protoc --encode=perfetto.protos.TraceConfig perfetto_trace.proto | ^
  adb shell perfetto -c - -o /data/misc/perfetto-traces/profile
 ```

@@ -26,12 +26,12 @@ class CastDeviceProvider
   CastDeviceProvider();
 
   // DeviceProvider implementation:
-  void QueryDevices(const SerialsCallback& callback) override;
+  void QueryDevices(SerialsCallback callback) override;
   void QueryDeviceInfo(const std::string& serial,
-                       const DeviceInfoCallback& callback) override;
+                       DeviceInfoCallback callback) override;
   void OpenSocket(const std::string& serial,
                   const std::string& socket_name,
-                  const SocketCallback& callback) override;
+                  SocketCallback callback) override;
 
   // ServiceDiscoveryDeviceLister::Delegate implementation:
   void OnDeviceChanged(

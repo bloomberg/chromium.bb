@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "core/fxcrt/fx_stream.h"
+#include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "fxjs/gc/heap.h"
 #include "v8/include/cppgc/garbage-collected.h"
@@ -21,7 +22,6 @@
 #include "xfa/fxfa/parser/cxfa_document.h"
 
 class CFGAS_PDFFontMgr;
-class CFX_ChecksumContext;
 class CFX_DIBBase;
 class CFX_DIBitmap;
 class CFX_XMLDocument;

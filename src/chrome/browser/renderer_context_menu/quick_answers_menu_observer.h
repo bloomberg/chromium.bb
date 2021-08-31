@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/time/time.h"
 #include "chromeos/components/quick_answers/quick_answers_client.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -43,11 +44,16 @@ class QuickAnswersMenuObserver
   void OnEligibilityChanged(bool eligible) override;
   void OnNetworkError() override {}
 
+  void SetQuickAnswerControllerForTesting(
+      ash::QuickAnswersController* controller) {
+    quick_answers_controller_ = controller;
+  }
+
  private:
   std::string GetDeviceLanguage();
   void OnTextSurroundingSelectionAvailable(
       const std::string& selected_text,
-      const base::string16& surrounding_text,
+      const std::u16string& surrounding_text,
       uint32_t start_offset,
       uint32_t end_offset);
 
@@ -67,6 +73,9 @@ class QuickAnswersMenuObserver
 
   // Whether commands other than quick answers is executed.
   bool is_other_command_executed_ = false;
+
+  // Time that the context menu is shown.
+  base::TimeTicks menu_shown_time_;
 
   base::WeakPtrFactory<QuickAnswersMenuObserver> weak_factory_{this};
 };

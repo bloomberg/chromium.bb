@@ -5,18 +5,21 @@
 #ifndef CHROME_BROWSER_UI_STARTUP_GOOGLE_API_KEYS_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_UI_STARTUP_GOOGLE_API_KEYS_INFOBAR_DELEGATE_H_
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "url/gurl.h"
 
-class InfoBarService;
+namespace infobars {
+class ContentInfoBarManager;
+}
 
 // An infobar that is run with a string and a "Learn More" link.
 class GoogleApiKeysInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates a missing Google API Keys infobar and delegate and adds the infobar
-  // to |infobar_service|.
-  static void Create(InfoBarService* infobar_service);
+  // to |infobar_manager|.
+  static void Create(infobars::ContentInfoBarManager* infobar_manager);
 
   GoogleApiKeysInfoBarDelegate(const GoogleApiKeysInfoBarDelegate&) = delete;
   GoogleApiKeysInfoBarDelegate& operator=(const GoogleApiKeysInfoBarDelegate&) =
@@ -27,9 +30,9 @@ class GoogleApiKeysInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~GoogleApiKeysInfoBarDelegate() override = default;
 
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
-  base::string16 GetLinkText() const override;
+  std::u16string GetLinkText() const override;
   GURL GetLinkURL() const override;
-  base::string16 GetMessageText() const override;
+  std::u16string GetMessageText() const override;
   int GetButtons() const override;
 };
 

@@ -10,7 +10,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "services/network/public/mojom/origin_policy_manager.mojom.h"
+#include "services/network/public/cpp/origin_policy.h"
 
 namespace base {
 class Value;
@@ -38,7 +38,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyParser {
   bool ParseIds(const base::Value&);
   void ParseContentSecurity(const base::Value&);
   void ParseFeatures(const base::Value&);
-  void ParseIsolation(const base::Value&);
 
   static bool IsValidOriginPolicyId(const std::string&);
 

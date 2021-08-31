@@ -3,38 +3,12 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE([
-  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_next_e2e_test_base.js'
-]);
+GEN_INCLUDE(['panel_test_base.js']);
 
 /**
  * Test fixture for Panel.
  */
-ChromeVoxPanelTest = class extends ChromeVoxNextE2ETest {
-  /** @override */
-  testGenCppIncludes() {
-    ChromeVoxE2ETest.prototype.testGenCppIncludes.call(this);
-  }
-
-  getPanelWindow() {
-    let panelWindow = null;
-    while (!panelWindow) {
-      panelWindow = chrome.extension.getViews().find(function(view) {
-        return view.location.href.indexOf('chromevox/panel/panel.html') > 0;
-      });
-    }
-    return panelWindow;
-  }
-
-  /**
-   * Gets the Panel object in the panel.html window. Note that the extension
-   * system destroys our reference to this object unpredictably so always ask
-   * chrome.extension.getViews for it.
-   */
-  getPanel() {
-    return this.getPanelWindow().Panel;
-  }
-
+ChromeVoxPanelTest = class extends ChromeVoxPanelTestBase {
   fireMockEvent(key) {
     return function() {
       const obj = {};
@@ -144,28 +118,44 @@ TEST_F('ChromeVoxPanelTest', 'FormControlsMenu', function() {
 });
 
 TEST_F('ChromeVoxPanelTest', 'SearchMenu', function() {
+  const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksDoc, async function(root) {
     new PanelCommand(PanelCommandType.OPEN_MENUS).send();
     await this.waitForMenu('panel_search_menu');
-    this.fireMockQuery('jump')();
-    this.assertActiveSearchMenuItem('Jump To Details');
-    this.fireMockEvent('ArrowDown')();
-    this.assertActiveSearchMenuItem('Jump To The Bottom Of The Page');
-    this.fireMockEvent('ArrowDown')();
-    this.assertActiveSearchMenuItem('Jump To The Top Of The Page');
-    this.fireMockEvent('ArrowDown')();
-    this.assertActiveSearchMenuItem('Jump To Details');
+    await mockFeedback
+        .expectSpeech('Search the menus', /Type to search the menus/)
+        .call(() => {
+          this.fireMockQuery('jump')();
+          this.assertActiveSearchMenuItem('Jump To Details');
+        })
+        .expectSpeech(/Jump/, 'Menu item', /[0-9]+ of [0-9]+/)
+        .call(() => {
+          this.fireMockEvent('ArrowDown')();
+          this.assertActiveSearchMenuItem('Jump To The Bottom Of The Page');
+        })
+        .expectSpeech(/Jump/, 'Menu item', /[0-9]+ of [0-9]+/)
+        .call(() => {
+          this.fireMockEvent('ArrowDown')();
+          this.assertActiveSearchMenuItem('Jump To The Top Of The Page');
+        })
+        .expectSpeech(/Jump/, 'Menu item', /[0-9]+ of [0-9]+/)
+        .call(() => {
+          this.fireMockEvent('ArrowDown')();
+          this.assertActiveSearchMenuItem('Jump To Details');
+        })
+        .expectSpeech(/Jump/, 'Menu item', /[0-9]+ of [0-9]+/)
+        .replay();
   });
 });
 
 // TODO(crbug.com/1088438): flaky crashes.
 TEST_F('ChromeVoxPanelTest', 'DISABLED_Gestures', function() {
-  const doGesture = async (gesture) => {
-    GestureCommandHandler.onAccessibilityGesture_(gesture);
+  const doGestureAsync = async (gesture) => {
+    doGesture(gesture)();
   };
   this.runWithLoadedTree(
       `<button>Cancel</button><button>OK</button>`, async function(root) {
-        doGesture('tap4');
+        doGestureAsync(Gesture.TAP4);
         await this.waitForMenu('panel_search_menu');
         // GestureCommandHandler behaves in special ways only with range over
         // the panel. Fake this out by setting range there.
@@ -175,13 +165,13 @@ TEST_F('ChromeVoxPanelTest', 'DISABLED_Gestures', function() {
         ChromeVoxState.instance.setCurrentRange(
             cursors.Range.fromNode(panelNode));
 
-        doGesture('swipeRight1');
+        doGestureAsync(Gesture.SWIPE_RIGHT1);
         await this.waitForMenu('panel_menu_jump');
 
-        doGesture('swipeRight1');
+        doGestureAsync(Gesture.SWIPE_RIGHT1);
         await this.waitForMenu('panel_menu_speech');
 
-        doGesture('swipeLeft1');
+        doGestureAsync(Gesture.SWIPE_LEFT1);
         await this.waitForMenu('panel_menu_jump');
       });
 });
@@ -199,5 +189,16 @@ TEST_F('ChromeVoxPanelTest', 'InternationalFormControlsMenu', function() {
         'panel_menu_form_controls', 'español: Prueba Button');
     this.fireMockEvent('ArrowUp')();
     this.assertActiveMenuItem('panel_menu_form_controls', 'Test Button');
+  });
+});
+
+TEST_F('ChromeVoxPanelTest', 'ActionsMenu', function() {
+  this.runWithLoadedTree(this.linksDoc, async function(root) {
+    CommandHandler.onCommand('showActionsMenu');
+    await this.waitForMenu('panel_menu_actions');
+    this.fireMockEvent('ArrowDown')();
+    this.assertActiveMenuItem('panel_menu_actions', 'Start Or End Selection');
+    this.fireMockEvent('ArrowUp')();
+    this.assertActiveMenuItem('panel_menu_actions', 'Click On Current Item');
   });
 });

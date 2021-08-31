@@ -62,19 +62,6 @@ class SyncManager {
     // changed.
     virtual void OnConnectionStatusChange(ConnectionStatus status) = 0;
 
-    // Called when initialization is complete to the point that SyncManager can
-    // process changes. This does not necessarily mean authentication succeeded
-    // or that the SyncManager is online.
-    // IMPORTANT: Creating any type of transaction before receiving this
-    // notification is illegal!
-    // WARNING: Calling methods on the SyncManager before receiving this
-    // message, unless otherwise specified, produces undefined behavior.
-
-    virtual void OnInitializationComplete(
-        const WeakHandle<JsBackend>& js_backend,
-        const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-        bool success) = 0;
-
     virtual void OnActionableError(
         const SyncProtocolError& sync_protocol_error) = 0;
 
@@ -109,8 +96,6 @@ class SyncManager {
 
     // Must outlive SyncManager.
     ExtensionsActivity* extensions_activity;
-
-    CoreAccountId authenticated_account_id;
 
     // Unqiuely identifies this client to the invalidation notification server.
     std::string invalidator_client_id;
@@ -208,6 +193,9 @@ class SyncManager {
   // sync engine.
   virtual std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() = 0;
 
+  virtual WeakHandle<JsBackend> GetJsBackend() = 0;
+  virtual WeakHandle<DataTypeDebugInfoListener> GetDebugInfoListener() = 0;
+
   // Returns the cache_guid of the currently open database.
   // Requires that the SyncManager be initialized.
   virtual std::string cache_guid() = 0;
@@ -236,13 +224,17 @@ class SyncManager {
   // Updates Sync's tracking of whether the cookie jar has a mismatch with the
   // chrome account. See ClientConfigParams proto message for more info.
   // Note: this does not trigger a sync cycle. It just updates the sync context.
-  virtual void OnCookieJarChanged(bool account_mismatch, bool empty_jar) = 0;
+  virtual void OnCookieJarChanged(bool account_mismatch) = 0;
 
   // Updates invalidation client id.
   virtual void UpdateInvalidationClientId(const std::string& client_id) = 0;
 
   // Notifies SyncManager that there are no other known active devices.
   virtual void UpdateSingleClientStatus(bool single_client) = 0;
+
+  // Updates the list of known active device FCM registration tokens.
+  virtual void UpdateActiveDeviceFCMRegistrationTokens(
+      std::vector<std::string> fcm_registration_tokens) = 0;
 };
 
 }  // namespace syncer

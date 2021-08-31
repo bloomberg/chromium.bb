@@ -9,11 +9,11 @@
 #include <string>
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/optional.h"
 #include "components/download/public/background_service/client.h"
 #include "components/download/public/background_service/download_params.h"
 #include "components/download/public/background_service/download_service.h"
 #include "components/offline_pages/core/prefetch/test_download_client.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace offline_pages {
 
@@ -29,7 +29,7 @@ class TestDownloadService : public download::DownloadService {
                             download::TaskFinishedCallback callback) override;
   bool OnStopScheduledTask(download::DownloadTaskType task_type) override;
   DownloadService::ServiceStatus GetStatus() override;
-  void StartDownload(const download::DownloadParams& download_params) override;
+  void StartDownload(download::DownloadParams download_params) override;
   void PauseDownload(const std::string& guid) override;
   void ResumeDownload(const std::string& guid) override;
   void CancelDownload(const std::string& guid) override;

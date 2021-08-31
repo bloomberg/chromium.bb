@@ -45,7 +45,7 @@ git-cl simplifies the above in the following ways:
    (Note that this association is tied to a branch, not a commit, which means
    you need a separate branch per review.)
 3. If your branch is _tracking_ (in the `git checkout --track` sense) another
-   one (like origin/master), calls to `git cl upload` will diff against that
+   one (like origin/main), calls to `git cl upload` will diff against that
    branch by default.  (You can still pass arguments to `git diff` on the
    command line, if necessary.)
 

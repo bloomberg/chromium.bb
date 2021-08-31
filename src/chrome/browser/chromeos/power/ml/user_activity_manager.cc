@@ -6,6 +6,8 @@
 
 #include <cmath>
 
+#include "ash/constants/ash_features.h"
+#include "ash/constants/devicetype.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/metrics/field_trial_params.h"
@@ -20,8 +22,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/devicetype.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -105,11 +105,8 @@ UserActivityManager::UserActivityManager(
     chromeos::PowerManagerClient* power_manager_client,
     session_manager::SessionManager* session_manager,
     mojo::PendingReceiver<viz::mojom::VideoDetectorObserver> receiver,
-    const chromeos::ChromeUserManager* user_manager)
+    const ChromeUserManager* user_manager)
     : ukm_logger_(ukm_logger),
-      user_activity_observer_(this),
-      power_manager_client_observer_(this),
-      session_manager_observer_(this),
       session_manager_(session_manager),
       receiver_(this, std::move(receiver)),
       user_manager_(user_manager),
@@ -117,10 +114,10 @@ UserActivityManager::UserActivityManager(
   DCHECK(ukm_logger_);
 
   DCHECK(detector);
-  user_activity_observer_.Add(detector);
+  user_activity_observation_.Observe(detector);
 
   DCHECK(power_manager_client);
-  power_manager_client_observer_.Add(power_manager_client);
+  power_manager_client_observation_.Observe(power_manager_client);
   power_manager_client->RequestStatusUpdate();
   power_manager_client->GetSwitchStates(
       base::BindOnce(&UserActivityManager::OnReceiveSwitchStates,
@@ -130,7 +127,7 @@ UserActivityManager::UserActivityManager(
                      weak_ptr_factory_.GetWeakPtr()));
 
   DCHECK(session_manager);
-  session_manager_observer_.Add(session_manager);
+  session_manager_observation_.Observe(session_manager);
 
   if (chromeos::GetDeviceType() == chromeos::DeviceType::kChromebook) {
     device_type_ = UserActivityEvent::Features::CHROMEBOOK;
@@ -148,7 +145,7 @@ void UserActivityManager::OnUserActivity(const ui::Event* /* event */) {
 
 void UserActivityManager::LidEventReceived(
     chromeos::PowerManagerClient::LidState state,
-    const base::TimeTicks& /* timestamp */) {
+    base::TimeTicks /* timestamp */) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   lid_state_ = state;
 }
@@ -174,7 +171,7 @@ void UserActivityManager::PowerChanged(
 
 void UserActivityManager::TabletModeEventReceived(
     chromeos::PowerManagerClient::TabletMode mode,
-    const base::TimeTicks& /* timestamp */) {
+    base::TimeTicks /* timestamp */) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   tablet_mode_ = mode;
 }
@@ -310,7 +307,7 @@ void UserActivityManager::OnSessionStateChanged() {
 }
 
 void UserActivityManager::OnReceiveSwitchStates(
-    base::Optional<chromeos::PowerManagerClient::SwitchStates> switch_states) {
+    absl::optional<chromeos::PowerManagerClient::SwitchStates> switch_states) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (switch_states.has_value()) {
     lid_state_ = switch_states->lid_state;
@@ -319,7 +316,7 @@ void UserActivityManager::OnReceiveSwitchStates(
 }
 
 void UserActivityManager::OnReceiveInactivityDelays(
-    base::Optional<power_manager::PowerManagementPolicy::Delays> delays) {
+    absl::optional<power_manager::PowerManagementPolicy::Delays> delays) {
   if (delays.has_value()) {
     screen_dim_delay_ =
         base::TimeDelta::FromMilliseconds(delays->screen_dim_ms());
@@ -588,9 +585,9 @@ void UserActivityManager::PopulatePreviousEventData(
 
 void UserActivityManager::ResetAfterLogging() {
   features_.Clear();
-  idle_event_start_since_boot_ = base::nullopt;
+  idle_event_start_since_boot_ = absl::nullopt;
   waiting_for_final_action_ = false;
-  model_prediction_ = base::nullopt;
+  model_prediction_ = absl::nullopt;
 
   previous_idle_event_data_.reset();
 }

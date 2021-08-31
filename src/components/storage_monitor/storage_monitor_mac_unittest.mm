@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
@@ -33,9 +35,9 @@ StorageInfo CreateStorageInfo(const std::string& device_id,
                               const std::string& model_name,
                               const base::FilePath& mount_point,
                               uint64_t size_bytes) {
-  return StorageInfo(
-      device_id, mount_point.value(), base::string16(), base::string16(),
-      base::UTF8ToUTF16(model_name), size_bytes);
+  return StorageInfo(device_id, mount_point.value(), std::u16string(),
+                     std::u16string(), base::UTF8ToUTF16(model_name),
+                     size_bytes);
 }
 
 }  // namespace
@@ -45,9 +47,9 @@ class StorageMonitorMacTest : public testing::Test {
   StorageMonitorMacTest() {}
 
   void SetUp() override {
-    monitor_.reset(new StorageMonitorMac);
+    monitor_ = std::make_unique<StorageMonitorMac>();
 
-    mock_storage_observer_.reset(new MockRemovableStorageObserver);
+    mock_storage_observer_ = std::make_unique<MockRemovableStorageObserver>();
     monitor_->AddObserver(mock_storage_observer_.get());
 
     unique_id_ = "test_id";

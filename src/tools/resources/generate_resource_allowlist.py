@@ -28,29 +28,26 @@ llvm_bindir = os.path.join(os.path.dirname(sys.argv[0]), '..', '..',
                            'bin')
 
 
+def ExtractAllowlistFromFile(path, resource_ids):
+  with open(path, 'rb') as f:
+    data = f.read()
+  prefix = b'AllowlistedResource<'
+  start_idx = 0
+  while start_idx != -1:
+    start_idx = data.find(prefix, start_idx)
+    if start_idx != -1:
+      end_idx = data.find(b'>', start_idx)
+      resource_ids.add(int(data[start_idx + len(prefix):end_idx]))
+      start_idx = end_idx
+
+
 def GetResourceAllowlistELF(path):
   # Produce a resource allowlist by searching for debug info referring to
-  # AllowlistedResource. It's sufficient to look for strings in .debug_str
-  # rather than trying to parse all of the debug info.
-  readelf = subprocess.Popen(['readelf', '-p', '.debug_str', path],
-                             stdout=subprocess.PIPE)
+  # AllowlistedResource.
+  # This used to use "readelf -p .debug_str", but it doesn't seem to work with
+  # use_debug_fission=true. Reading the raw file is faster anyways.
   resource_ids = set()
-  for line in readelf.stdout:
-    # Read a line of the form "  [   123]  AllowlistedResource<456>". We're
-    # only interested in the string, not the offset. We're also not interested
-    # in header lines.
-    split = line.split(']', 1)
-    if len(split) < 2:
-      continue
-    s = split[1][2:]
-    if s.startswith('AllowlistedResource<'):
-      try:
-        resource_ids.add(int(s[len('AllowlistedResource<'):-len('>') - 1]))
-      except ValueError:
-        continue
-  exit_code = readelf.wait()
-  if exit_code != 0:
-    raise Exception('readelf exited with exit code %d' % exit_code)
+  ExtractAllowlistFromFile(path, resource_ids)
   return resource_ids
 
 
@@ -64,6 +61,7 @@ def GetResourceAllowlistPDB(path):
       stdout=subprocess.PIPE)
   names = ''
   for line in pdbutil.stdout:
+    line = line.decode('utf8')
     # Read a line of the form
     # "733352 | S_PUB32 [size = 56] `??$AllowlistedResource@$0BFGM@@ui@@YAXXZ`".
     if '`' not in line:
@@ -83,9 +81,10 @@ def GetResourceAllowlistPDB(path):
   undname = subprocess.Popen([os.path.join(llvm_bindir, 'llvm-undname')],
                              stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE)
-  stdout, _ = undname.communicate(names)
+  stdout, _ = undname.communicate(names.encode('utf8'))
   resource_ids = set()
-  for line in stdout.split('\n'):
+  for line in stdout.split(b'\n'):
+    line = line.decode('utf8')
     # Read a line of the form
     # "void __cdecl ui::AllowlistedResource<5484>(void)".
     prefix = ' ui::AllowlistedResource<'
@@ -111,31 +110,22 @@ def GetResourceAllowlistFileList(file_list_path):
   paths = ar.ExpandThinArchives(paths)
 
   resource_ids = set()
-  prefix = 'AllowlistedResource<'
   for p in paths:
-    with open(p) as f:
-      data = f.read()
-    start_idx = 0
-    while start_idx != -1:
-      start_idx = data.find(prefix, start_idx)
-      if start_idx != -1:
-        end_idx = data.find('>', start_idx)
-        resource_ids.add(int(data[start_idx + len(prefix):end_idx]))
-        start_idx = end_idx
+    ExtractAllowlistFromFile(p, resource_ids)
   return resource_ids
 
 
 def WriteResourceAllowlist(args):
   resource_ids = set()
   for input in args.inputs:
-    with open(input, 'r') as f:
+    with open(input, 'rb') as f:
       magic = f.read(4)
       chunk = f.read(60)
-    if magic == '\x7fELF':
+    if magic == b'\x7fELF':
       func = GetResourceAllowlistELF
-    elif magic == 'Micr':
+    elif magic == b'Micr':
       func = GetResourceAllowlistPDB
-    elif magic == 'obj/' or '/obj/' in chunk:
+    elif magic == b'obj/' or b'/obj/' in chunk:
       # For secondary toolchain, path will look like android_clang_arm/obj/...
       func = GetResourceAllowlistFileList
     else:

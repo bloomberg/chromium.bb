@@ -145,7 +145,7 @@ void XFA_DrawImage(CFGAS_GEGraphics* pGS,
       CFX_Matrix(rtFit.width, 0, 0, rtFit.height, rtFit.left, rtFit.top));
   mtImage.Concat(matrix);
 
-  CXFA_ImageRenderer imageRender(pRenderDevice, pDIBitmap, &mtImage);
+  CXFA_ImageRenderer imageRender(pRenderDevice, pDIBitmap, mtImage);
   if (!imageRender.Start()) {
     return;
   }
@@ -164,12 +164,14 @@ RetainPtr<CFX_DIBitmap> XFA_LoadImageFromBuffer(
   pProgressiveDecoder->LoadImageInfo(pImageFileRead, type, &dibAttr, false);
   switch (dibAttr.m_wDPIUnit) {
     case FXCODEC_RESUNIT_CENTIMETER:
-      dibAttr.m_nXDPI = (int32_t)(dibAttr.m_nXDPI * 2.54f);
-      dibAttr.m_nYDPI = (int32_t)(dibAttr.m_nYDPI * 2.54f);
+      dibAttr.m_nXDPI = static_cast<int32_t>(dibAttr.m_nXDPI * 2.54f);
+      dibAttr.m_nYDPI = static_cast<int32_t>(dibAttr.m_nYDPI * 2.54f);
       break;
     case FXCODEC_RESUNIT_METER:
-      dibAttr.m_nXDPI = (int32_t)(dibAttr.m_nXDPI / (float)100 * 2.54f);
-      dibAttr.m_nYDPI = (int32_t)(dibAttr.m_nYDPI / (float)100 * 2.54f);
+      dibAttr.m_nXDPI =
+          static_cast<int32_t>(dibAttr.m_nXDPI / (float)100 * 2.54f);
+      dibAttr.m_nYDPI =
+          static_cast<int32_t>(dibAttr.m_nYDPI / (float)100 * 2.54f);
       break;
     default:
       break;

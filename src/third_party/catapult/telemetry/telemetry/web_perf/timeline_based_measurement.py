@@ -1,6 +1,9 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from __future__ import absolute_import
+import six
+
 from telemetry.timeline import chrome_trace_category_filter
 from telemetry.timeline import tracing_config
 from telemetry.web_perf import story_test
@@ -79,7 +82,7 @@ class Options(object):
       self.AddTimelineBasedMetric(metric)
 
   def AddTimelineBasedMetric(self, metric):
-    assert isinstance(metric, basestring)
+    assert isinstance(metric, six.string_types)
     if self._timeline_based_metrics is None:
       self._timeline_based_metrics = []
     self._timeline_based_metrics.append(metric)
@@ -100,7 +103,7 @@ class Options(object):
     """
     assert isinstance(metrics, list)
     for metric in metrics:
-      assert isinstance(metric, basestring)
+      assert isinstance(metric, six.string_types)
     self._timeline_based_metrics = metrics
 
   def GetTimelineBasedMetrics(self):
@@ -131,7 +134,7 @@ class TimelineBasedMeasurement(story_test.StoryTest):
   def __init__(self, options):
     self._tbm_options = options
 
-  def WillRunStory(self, platform):
+  def WillRunStory(self, platform, story=None):
     """Configure and start tracing."""
     if self._tbm_options.config.enable_chrome_trace:
       # Always enable 'blink.console' and 'v8.console' categories for:
@@ -141,6 +144,8 @@ class TimelineBasedMeasurement(story_test.StoryTest):
       # Note that these categories are extremely low-overhead, so this doesn't
       # affect the tracing overhead budget much.
       chrome_config = self._tbm_options.config.chrome_trace_config
+      if story:
+        story.WillStartTracing(chrome_config)
       chrome_config.category_filter.AddIncludedCategory('blink.console')
       chrome_config.category_filter.AddIncludedCategory('v8.console')
     platform.tracing_controller.StartTracing(self._tbm_options.config)

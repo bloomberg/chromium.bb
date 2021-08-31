@@ -108,6 +108,20 @@ Polymer({
       value: null,
     },
 
+    /** @private */
+    numUnreachable_: {
+      type: Number,
+      value: 0,
+      observer: 'updateNumUnreachableMessage_',
+    },
+
+    /** @private */
+    numUnreachableMessage_: {
+      type: String,
+      value: '',
+      notify: true,
+    },
+
     isVisibilitySelected: {
       type: Boolean,
       computed: 'isVisibilitySelected_(selectedVisibility)',
@@ -126,29 +140,10 @@ Polymer({
 
   observers: [
     'settingsChanged_(settings.visibility)',
-    'selectedVisibilityChanged_(selectedVisibility)',
   ],
-
-  /** @type {ResizeObserver} used to observer size changes to this element */
-  resizeObserver_: null,
 
   /** @override */
   attached() {
-    // This is a required work around to get the iron-list to display on first
-    // view. Currently iron-list won't generate item elements on attach if the
-    // element is not visible. Because we are hosted in a cr-view-manager for
-    // on-boarding, this component is not visible when the items are bound. To
-    // fix this issue, we listen for resize events (which happen when display is
-    // switched from none to block by the view manager) and manually call
-    // notifyResize on the iron-list
-    this.resizeObserver_ = new ResizeObserver(entries => {
-      const contactList =
-          /** @type {IronListElement} */ (this.$$('#contactList'));
-      if (contactList) {
-        contactList.notifyResize();
-      }
-    });
-    this.resizeObserver_.observe(this);
     this.contactManager_ = nearby_share.getContactManager();
     this.downloadContactsObserverReceiver_ = nearby_share.observeContactManager(
         /** @type {!nearbyShare.mojom.DownloadContactsObserverInterface} */ (
@@ -160,8 +155,6 @@ Polymer({
 
   /** @override */
   detached() {
-    this.resizeObserver_.disconnect();
-
     if (this.downloadContactsObserverReceiver_) {
       this.downloadContactsObserverReceiver_.$.close();
     }
@@ -241,8 +234,12 @@ Polymer({
    *     the user so they can see who can see their device for visibility
    *     kAllContacts and so they can choose which contacts are
    *     |allowedContacts| for kSelectedContacts visibility.
+   * @param {number} numUnreachableExcluded the number of contact records that
+   *     are not reachable for Nearby Share. These are not included in the list
+   *     of contact records.
    */
-  onContactsDownloaded(allowedContacts, contactRecords) {
+  onContactsDownloaded(
+      allowedContacts, contactRecords, numUnreachableExcluded) {
     clearTimeout(this.downloadTimeoutId_);
 
     // TODO(vecore): Do a smart two-way merge that only splices actual changes.
@@ -257,6 +254,7 @@ Polymer({
     this.contacts = items;
     this.contactsState = items.length > 0 ? ContactsState.HAS_CONTACTS :
                                             ContactsState.ZERO_CONTACTS;
+    this.numUnreachable_ = numUnreachableExcluded;
   },
 
   /**
@@ -266,23 +264,6 @@ Polymer({
   onContactsDownloadFailed() {
     this.contactsState = ContactsState.FAILED;
     clearTimeout(this.downloadTimeoutId_);
-  },
-
-  /**
-   * Sync the latest contact toggle states and update allowedContacts through
-   * the contact manager.
-   * @private
-   */
-  syncContactToggleState_() {
-    const allowedContacts = [];
-    if (this.contacts) {
-      for (const contact of this.contacts) {
-        if (contact.checked) {
-          allowedContacts.push(contact.id);
-        }
-      }
-    }
-    this.contactManager_.setAllowedContacts(allowedContacts);
   },
 
   /**
@@ -308,14 +289,27 @@ Polymer({
 
   /**
    * Used to show/hide parts of the UI based on current visibility selection.
-   * @param {?string} selectedVisibility
    * @return {boolean} returns true when checkboxes should be shown for
    *     contacts.
    * @private
    */
-  showContactCheckBoxes_(selectedVisibility) {
+  showContactCheckBoxes_() {
     return this.selectedVisibility === 'some' ||
         this.selectedVisibility === 'none';
+  },
+
+  /**
+   * When the contact check boxes are visible, the contact name and description
+   * can be aria-hidden since they are used as labels for the checkbox.
+   * @return {string|undefined} Whether the contact name and description should
+   *     be aria-hidden. "true" or undefined.
+   * @private
+   */
+  getContactAriaHidden_() {
+    if (this.showContactCheckBoxes_()) {
+      return 'true';
+    }
+    return undefined;
   },
 
   /**
@@ -343,17 +337,6 @@ Polymer({
   },
 
   /**
-   * @param {string} selectedVisibility
-   * @private
-   */
-  selectedVisibilityChanged_(selectedVisibility) {
-    const visibility = visibilityStringToValue(this.selectedVisibility);
-    if (visibility) {
-      this.set('settings.visibility', visibility);
-    }
-  },
-
-  /**
    * @param {string} contactsState
    * @return {boolean} true when the radio group should be disabled
    * @private
@@ -377,13 +360,28 @@ Polymer({
   /**
    * @param {string} selectedVisibility
    * @param {string} contactsState
+   * @return {boolean} true when explanation container should be shown
+   * @private
+   */
+  showContactsContainer_(selectedVisibility, contactsState) {
+    return this.showExplanationState_(selectedVisibility, contactsState) ||
+        this.showContactList_(selectedVisibility, contactsState);
+  },
+
+  /**
+   * @param {string} selectedVisibility
+   * @param {string} contactsState
    * @return {boolean} true when explanation state should be shown
    * @private
    */
   showExplanationState_(selectedVisibility, contactsState) {
-    return !this.showZeroState_(selectedVisibility, contactsState) &&
-        !this.inContactsState_(contactsState, ContactsState.PENDING) &&
-        !this.inContactsState_(contactsState, ContactsState.FAILED);
+    if (!selectedVisibility || contactsState === ContactsState.PENDING ||
+        contactsState === ContactsState.FAILED) {
+      return false;
+    }
+
+    return selectedVisibility === 'none' ||
+        contactsState === ContactsState.HAS_CONTACTS;
   },
 
   /**
@@ -409,22 +407,196 @@ Polymer({
   },
 
   /**
-   * Because the "failed" state contains an i18n string with a link in it, we
-   * need to add an event listener. We do that here because the link doesn't
-   * exist when the dialog loads, only once the template is added to the DOM.
+   * Builds the html for the download retry message, applying the appropriate
+   * aria labels, and adding an event listener to the link. This function is
+   * largely copied from getAriaLabelledHelpText_ in <nearby-discovery-page>,
+   * and should be generalized in the future. We do this here because the div
+   * doesn't exist when the dialog loads, only once the template is added to the
+   * DOM.
+   * TODO(crbug.com/1170849): Extract this logic into a general method.
    *
    * @private
    */
   domChangeDownloadFailed_() {
-    const tryAgainLink = this.$$('#tryAgainLink');
-    if (!tryAgainLink) {
+    const contactsFailedMessage = this.$$('#contactsFailedMessage');
+    if (!contactsFailedMessage) {
+      return;
+    }
+    const localizedString =
+        this.i18nAdvanced('nearbyShareContactVisibilityDownloadFailed');
+    contactsFailedMessage.innerHTML = localizedString;
+
+    const ariaLabelledByIds = [];
+    contactsFailedMessage.childNodes.forEach((node, index) => {
+      // Text nodes should be aria-hidden and associated with an element id
+      // that the anchor element can be aria-labelledby.
+      if (node.nodeType == Node.TEXT_NODE) {
+        const spanNode = document.createElement('span');
+        spanNode.textContent = node.textContent;
+        spanNode.id = `contactsFailedMessage${index}`;
+        ariaLabelledByIds.push(spanNode.id);
+        spanNode.setAttribute('aria-hidden', true);
+        node.replaceWith(spanNode);
+        return;
+      }
+      // The single element node with anchor tags should also be aria-labelledby
+      // itself in-order with respect to the entire string.
+      if (node.nodeType == Node.ELEMENT_NODE && node.nodeName == 'A') {
+        node.id = `tryAgainLink`;
+        ariaLabelledByIds.push(node.id);
+        return;
+      }
+
+      // Only text and <a> nodes are allowed.
+      assertNotReached(
+          'nearbyShareContactVisibilityDownloadFailed has invalid node types');
+    });
+
+    const anchorTags = contactsFailedMessage.getElementsByTagName('a');
+    // In the event the localizedString contains only text nodes, populate the
+    // contents with the localizedString.
+    if (anchorTags.length == 0) {
+      contactsFailedMessage.innerHTML = localizedString;
       return;
     }
 
-    tryAgainLink.addEventListener('click', event => {
+    assert(
+        anchorTags.length == 1, 'string should contain exactly one anchor tag');
+    const anchorTag = anchorTags[0];
+    anchorTag.setAttribute('aria-labelledby', ariaLabelledByIds.join(' '));
+    anchorTag.href = '#';
+
+    anchorTag.addEventListener('click', event => {
       event.preventDefault();
       this.downloadContacts_();
     });
+  },
+
+  /**
+   * Builds the html for the zero state help text, applying the appropriate aria
+   * labels, and setting the href of the link. This function is largely copied
+   * from getAriaLabelledContent_ in <settings-localized-link>, which can't be
+   * used directly because this is Polymer element is used outside settings.
+   * TODO(crbug.com/1170849): Extract this logic into a general method.
+   * @return {string}
+   * @private
+   */
+  getAriaLabelledZeroStateText_() {
+    const tempEl = document.createElement('div');
+    const localizedString =
+        this.i18nAdvanced('nearbyShareContactVisibilityZeroStateText');
+    const linkUrl = this.i18n('nearbyShareLearnMoreLink');
+    tempEl.innerHTML = localizedString;
+
+    const ariaLabelledByIds = [];
+    tempEl.childNodes.forEach((node, index) => {
+      // Text nodes should be aria-hidden and associated with an element id
+      // that the anchor element can be aria-labelledby.
+      if (node.nodeType == Node.TEXT_NODE) {
+        const spanNode = document.createElement('span');
+        spanNode.textContent = node.textContent;
+        spanNode.id = `zeroStateText${index}`;
+        ariaLabelledByIds.push(spanNode.id);
+        spanNode.setAttribute('aria-hidden', true);
+        node.replaceWith(spanNode);
+        return;
+      }
+      // The single element node with anchor tags should also be aria-labelledby
+      // itself in-order with respect to the entire string.
+      if (node.nodeType == Node.ELEMENT_NODE && node.nodeName == 'A') {
+        node.id = `zeroStateHelpLink`;
+        ariaLabelledByIds.push(node.id);
+        return;
+      }
+
+      // Only text and <a> nodes are allowed.
+      assertNotReached(
+          'nearbyShareContactVisibilityZeroStateText has invalid node types');
+    });
+
+    const anchorTags = tempEl.getElementsByTagName('a');
+    // In the event the localizedString contains only text nodes, populate the
+    // contents with the localizedString.
+    if (anchorTags.length == 0) {
+      return localizedString;
+    }
+
+    assert(
+        anchorTags.length == 1,
+        'nearbyShareContactVisibilityZeroStateText should contain exactly' +
+            ' one anchor tag');
+    const anchorTag = anchorTags[0];
+    anchorTag.setAttribute('aria-labelledby', ariaLabelledByIds.join(' '));
+    anchorTag.href = linkUrl;
+    anchorTag.target = '_blank';
+
+    return tempEl.innerHTML;
+  },
+
+  /**
+   * @return {boolean} true if the unreachable contacts message should be shown
+   * @private
+   */
+  showUnreachableContactsMessage_() {
+    return this.numUnreachable_ > 0;
+  },
+
+  /** @private */
+  updateNumUnreachableMessage_() {
+    if (this.numUnreachable_ === 0) {
+      this.numUnreachableMessage_ = '';
+      return;
+    }
+
+    // Template: "# contacts are not available." with correct plural of
+    // "contact".
+    const labelTemplate =
+        cr.sendWithPromise(
+              'getPluralString', 'nearbyShareContactVisibilityNumUnreachable',
+              this.numUnreachable_)
+            .then((labelTemplate) => {
+              this.numUnreachableMessage_ = loadTimeData.substituteString(
+                  labelTemplate, this.numUnreachable_);
+            });
+  },
+
+  /**
+   * @param {string} selectedVisibility
+   * @return {string}
+   * @private
+   */
+  getVisibilityDescription_(selectedVisibility) {
+    switch (visibilityStringToValue(selectedVisibility)) {
+      case nearbyShare.mojom.Visibility.kAllContacts:
+        return this.i18n('nearbyShareContactVisibilityOwnAll');
+      case nearbyShare.mojom.Visibility.kSelectedContacts:
+        return this.i18n('nearbyShareContactVisibilityOwnSome');
+      case nearbyShare.mojom.Visibility.kNoOne:
+        return this.i18nAdvanced('nearbyShareContactVisibilityOwnNone');
+      default:
+        return '';
+    }
+  },
+
+  /**
+   * Save visibility setting and sync allowed contacts with contact manager.
+   * @public
+   */
+  saveVisibilityAndAllowedContacts() {
+    const visibility = visibilityStringToValue(this.selectedVisibility);
+    if (visibility) {
+      this.set('settings.visibility', visibility);
+    }
+
+    const allowedContacts = [];
+    if (this.contacts) {
+      for (const contact of this.contacts) {
+        if (contact.checked) {
+          allowedContacts.push(contact.id);
+        }
+      }
+    }
+    this.contactManager_.setAllowedContacts(allowedContacts);
   },
 });
 })();

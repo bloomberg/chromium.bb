@@ -39,8 +39,9 @@ std::unique_ptr<net::test_server::HttpResponse> HandleEchoTitleRequest(
     const std::string& echotitle_path,
     const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(request.relative_url, echotitle_path,
-                        base::CompareCase::SENSITIVE))
-    return std::unique_ptr<net::test_server::HttpResponse>();
+                        base::CompareCase::SENSITIVE)) {
+    return nullptr;
+  }
 
   std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
@@ -109,7 +110,7 @@ class SessionHistoryTest : public ContentBrowserTest {
 
   void NavigateAndCheckTitle(const char* filename,
                              const std::string& expected_title) {
-    base::string16 expected_title16(base::ASCIIToUTF16(expected_title));
+    std::u16string expected_title16(base::ASCIIToUTF16(expected_title));
     TitleWatcher title_watcher(shell()->web_contents(), expected_title16);
     EXPECT_TRUE(NavigateToURL(shell(), GetURL(filename)));
     ASSERT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
@@ -459,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, JavascriptHistory) {
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, LocationReplace) {
   // Test that using location.replace doesn't leave the title of the old page
   // visible.
-  base::string16 expected_title16(base::ASCIIToUTF16("bot1"));
+  std::u16string expected_title16(u"bot1");
   TitleWatcher title_watcher(shell()->web_contents(), expected_title16);
   EXPECT_TRUE(NavigateToURL(shell(), GetURL("replace.html?bot1.html"),
                             GetURL("bot1.html") /* expected_commit_url */));

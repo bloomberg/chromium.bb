@@ -77,7 +77,7 @@ class RulesRegistryWithCacheTest : public testing::Test {
                       TestRulesRegistry* registry) {
     std::vector<api::events::Rule> add_rules;
     add_rules.emplace_back();
-    add_rules[0].id.reset(new std::string(rule_id));
+    add_rules[0].id = std::make_unique<std::string>(rule_id);
     return registry->AddRules(extension_id, std::move(add_rules));
   }
 
@@ -360,14 +360,15 @@ TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
   std::string error;
   scoped_refptr<Extension> extension(LoadManifestUnchecked(
       "permissions", "web_request_all_host_permissions.json",
-      Manifest::UNPACKED, Extension::NO_FLAGS, extension1_->id(), &error));
+      mojom::ManifestLocation::kUnpacked, Extension::NO_FLAGS,
+      extension1_->id(), &error));
   ASSERT_TRUE(error.empty());
   extension_service->AddExtension(extension.get());
   EXPECT_TRUE(extensions::ExtensionRegistry::Get(env_.profile())
                   ->enabled_extensions()
                   .Contains(extension->id()));
   EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
-      APIPermission::kDeclarativeWebRequest));
+      mojom::APIPermissionID::kDeclarativeWebRequest));
   env_.GetExtensionSystem()->SetReady();
 
   // 2. First run, adding a rule for the extension.

@@ -5,6 +5,7 @@
 #include "ash/system/phonehub/notification_opt_in_view.h"
 
 #include <memory>
+#include <string>
 
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -12,17 +13,17 @@
 #include "ash/system/phonehub/interstitial_view_button.h"
 #include "ash/system/phonehub/phone_hub_metrics.h"
 #include "ash/system/phonehub/phone_hub_view_ids.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/components/phonehub/notification_access_manager.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/devicetype_utils.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "url/gurl.h"
 
 namespace ash {
@@ -58,7 +59,7 @@ NotificationOptInView::NotificationOptInView(
   InitLayout();
 
   DCHECK(notification_access_manager_);
-  access_manager_observer_.Add(notification_access_manager_);
+  access_manager_observation_.Observe(notification_access_manager_);
 
   // Checks and updates its visibility upon creation.
   UpdateVisibility();

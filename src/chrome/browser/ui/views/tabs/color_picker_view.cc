@@ -16,6 +16,8 @@
 #include "components/tab_groups/tab_group_color.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/tween.h"
@@ -57,11 +59,13 @@ class ColorPickerHighlightPathGenerator : public views::HighlightPathGenerator {
 // circle of the given color.
 class ColorPickerElementView : public views::Button {
  public:
+  METADATA_HEADER(ColorPickerElementView);
+
   ColorPickerElementView(
       base::RepeatingCallback<void(ColorPickerElementView*)> selected_callback,
       const views::BubbleDialogDelegateView* bubble_view,
       tab_groups::TabGroupColorId color_id,
-      base::string16 color_name)
+      std::u16string color_name)
       : Button(base::BindRepeating(&ColorPickerElementView::ButtonPressed,
                                    base::Unretained(this))),
         selected_callback_(std::move(selected_callback)),
@@ -87,7 +91,7 @@ class ColorPickerElementView : public views::Button {
                              : gfx::Insets(padding);
     SetBorder(views::CreateEmptyBorder(insets));
 
-    SetInkDropMode(InkDropMode::OFF);
+    ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
     SetAnimateOnStateChange(true);
   }
 
@@ -98,7 +102,7 @@ class ColorPickerElementView : public views::Button {
     SchedulePaint();
   }
 
-  bool selected() const { return selected_; }
+  bool GetSelected() const { return selected_; }
 
   // views::Button:
   bool IsGroupFocusTraversable() const override {
@@ -114,11 +118,11 @@ class ColorPickerElementView : public views::Button {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     views::Button::GetAccessibleNodeData(node_data);
     node_data->role = ax::mojom::Role::kRadioButton;
-    node_data->SetCheckedState(selected() ? ax::mojom::CheckedState::kTrue
-                                          : ax::mojom::CheckedState::kFalse);
+    node_data->SetCheckedState(GetSelected() ? ax::mojom::CheckedState::kTrue
+                                             : ax::mojom::CheckedState::kFalse);
   }
 
-  base::string16 GetTooltipText(const gfx::Point& p) const override {
+  std::u16string GetTooltipText(const gfx::Point& p) const override {
     return color_name_;
   }
 
@@ -192,9 +196,13 @@ class ColorPickerElementView : public views::Button {
       selected_callback_;
   const views::BubbleDialogDelegateView* bubble_view_;
   const tab_groups::TabGroupColorId color_id_;
-  const base::string16 color_name_;
+  const std::u16string color_name_;
   bool selected_ = false;
 };
+
+BEGIN_METADATA(ColorPickerElementView, views::Button)
+ADD_PROPERTY_METADATA(bool, Selected)
+END_METADATA
 
 ColorPickerView::ColorPickerView(
     const views::BubbleDialogDelegateView* bubble_view,
@@ -210,7 +218,8 @@ ColorPickerView::ColorPickerView(
     // references to them. base::Unretained() is safe here since we delete these
     // views in our destructor, ensuring we outlive them.
     elements_.push_back(AddChildView(std::make_unique<ColorPickerElementView>(
-        base::Bind(&ColorPickerView::OnColorSelected, base::Unretained(this)),
+        base::BindRepeating(&ColorPickerView::OnColorSelected,
+                            base::Unretained(this)),
         bubble_view, color.first, color.second)));
     if (initial_color_id == color.first)
       elements_.back()->SetSelected(true);
@@ -246,17 +255,17 @@ ColorPickerView::~ColorPickerView() {
   RemoveAllChildViews(true);
 }
 
-base::Optional<int> ColorPickerView::GetSelectedElement() const {
+absl::optional<int> ColorPickerView::GetSelectedElement() const {
   for (size_t i = 0; i < elements_.size(); ++i) {
-    if (elements_[i]->selected())
+    if (elements_[i]->GetSelected())
       return static_cast<int>(i);
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 views::View* ColorPickerView::GetSelectedViewForGroup(int group) {
   for (ColorPickerElementView* element : elements_) {
-    if (element->selected())
+    if (element->GetSelected())
       return element;
   }
   return nullptr;
@@ -278,3 +287,7 @@ void ColorPickerView::OnColorSelected(ColorPickerElementView* element) {
   if (callback_)
     callback_.Run();
 }
+
+BEGIN_METADATA(ColorPickerView, views::View)
+ADD_READONLY_PROPERTY_METADATA(absl::optional<int>, SelectedElement)
+END_METADATA

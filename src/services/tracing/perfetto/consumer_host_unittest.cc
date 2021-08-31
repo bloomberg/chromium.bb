@@ -19,6 +19,7 @@
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
+#include "base/trace_event/trace_config.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
@@ -154,7 +155,7 @@ class ThreadedPerfettoService : public mojom::TracingSessionClient {
 
     consumer_->EnableTracing(
         tracing_session_host_->BindNewPipeAndPassReceiver(),
-        std::move(tracing_session_client), std::move(config));
+        std::move(tracing_session_client), std::move(config), base::File());
   }
 
   void ReadBuffers(mojo::ScopedDataPipeProducerHandle stream,
@@ -356,10 +357,11 @@ class TracingConsumerTest : public testing::Test,
                                          MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1, 0};
     mojo::ScopedDataPipeProducerHandle producer;
     mojo::ScopedDataPipeConsumerHandle consumer;
-    MojoResult rv = mojo::CreateDataPipe(&options, &producer, &consumer);
+    MojoResult rv = mojo::CreateDataPipe(&options, producer, consumer);
     ASSERT_EQ(MOJO_RESULT_OK, rv);
     threaded_service_->ReadBuffers(std::move(producer), base::OnceClosure());
-    drainer_.reset(new mojo::DataPipeDrainer(this, std::move(consumer)));
+    drainer_ =
+        std::make_unique<mojo::DataPipeDrainer>(this, std::move(consumer));
   }
 
   void DisableTracingAndEmitJson(base::OnceClosure write_callback,
@@ -369,12 +371,13 @@ class TracingConsumerTest : public testing::Test,
                                          MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1, 0};
     mojo::ScopedDataPipeProducerHandle producer;
     mojo::ScopedDataPipeConsumerHandle consumer;
-    MojoResult rv = mojo::CreateDataPipe(&options, &producer, &consumer);
+    MojoResult rv = mojo::CreateDataPipe(&options, producer, consumer);
     ASSERT_EQ(MOJO_RESULT_OK, rv);
     threaded_service_->DisableTracingAndEmitJson(std::move(producer),
                                                  std::move(write_callback),
                                                  enable_privacy_filtering);
-    drainer_.reset(new mojo::DataPipeDrainer(this, std::move(consumer)));
+    drainer_ =
+        std::make_unique<mojo::DataPipeDrainer>(this, std::move(consumer));
   }
 
   perfetto::TraceConfig GetDefaultTraceConfig(
@@ -727,7 +730,7 @@ class MockConsumerHost : public mojom::TracingSessionClient {
 
     consumer_host_->EnableTracing(
         tracing_session_host_.BindNewPipeAndPassReceiver(),
-        std::move(tracing_session_client), config);
+        std::move(tracing_session_client), config, base::File());
     tracing_session_host_.set_disconnect_handler(base::BindOnce(
         &MockConsumerHost::OnConnectionLost, base::Unretained(this)));
   }

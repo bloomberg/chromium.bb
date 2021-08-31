@@ -28,6 +28,8 @@ namespace dawn_native {
         ShaderFloat16,
         PipelineStatisticsQuery,
         TimestampQuery,
+        MultiPlanarFormats,
+        DepthClamping,
 
         EnumCount,
         InvalidEnum = EnumCount,

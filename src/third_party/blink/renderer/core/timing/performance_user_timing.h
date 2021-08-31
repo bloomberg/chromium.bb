@@ -35,6 +35,7 @@ namespace blink {
 
 class ExceptionState;
 class Performance;
+class V8UnionDoubleOrString;
 
 using PerformanceEntryMap =
     HeapHashMap<AtomicString, Member<PerformanceEntryVector>>;
@@ -47,9 +48,9 @@ class UserTiming final : public GarbageCollected<UserTiming> {
 
   PerformanceMeasure* Measure(ScriptState*,
                               const AtomicString& measure_name,
-                              const base::Optional<StringOrDouble>& start,
-                              const base::Optional<double>& duration,
-                              const base::Optional<StringOrDouble>& end,
+                              const V8UnionDoubleOrString* start,
+                              const absl::optional<double>& duration,
+                              const V8UnionDoubleOrString* end,
                               const ScriptValue& detail,
                               ExceptionState&);
   void ClearMeasures(const AtomicString& measure_name);
@@ -64,10 +65,14 @@ class UserTiming final : public GarbageCollected<UserTiming> {
   void Trace(Visitor*) const;
 
  private:
+  const PerformanceMark* FindExistingMark(const AtomicString& mark_name);
+  base::TimeTicks GetPerformanceMarkUnsafeTimeForTraces(
+      double start_time,
+      const V8UnionDoubleOrString* maybe_mark_name);
   double FindExistingMarkStartTime(const AtomicString& mark_name,
                                    ExceptionState&);
   double GetTimeOrFindMarkTime(const AtomicString& measure_name,
-                               const StringOrDouble& mark_or_time,
+                               const V8UnionDoubleOrString* mark_or_time,
                                ExceptionState&);
 
   Member<Performance> performance_;

@@ -11,17 +11,17 @@
 #include <ostream>
 #include <string>
 
-#include "net/third_party/quiche/src/quic/core/congestion_control/bandwidth_sampler.h"
-#include "net/third_party/quiche/src/quic/core/congestion_control/send_algorithm_interface.h"
-#include "net/third_party/quiche/src/quic/core/congestion_control/windowed_filter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
-#include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
-#include "net/third_party/quiche/src/quic/core/quic_packet_number.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/core/quic_unacked_packet_map.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
+#include "quic/core/congestion_control/bandwidth_sampler.h"
+#include "quic/core/congestion_control/send_algorithm_interface.h"
+#include "quic/core/congestion_control/windowed_filter.h"
+#include "quic/core/crypto/quic_random.h"
+#include "quic/core/quic_bandwidth.h"
+#include "quic/core/quic_packet_number.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_time.h"
+#include "quic/core/quic_unacked_packet_map.h"
+#include "quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_flags.h"
 
 namespace quic {
 
@@ -143,7 +143,7 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
 
   // Sets the pacing gain used in STARTUP.  Must be greater than 1.
   void set_high_gain(float high_gain) {
-    DCHECK_LT(1.0f, high_gain);
+    QUICHE_DCHECK_LT(1.0f, high_gain);
     high_gain_ = high_gain;
     if (mode_ == STARTUP) {
       pacing_gain_ = high_gain;
@@ -152,7 +152,7 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
 
   // Sets the CWND gain used in STARTUP.  Must be greater than 1.
   void set_high_cwnd_gain(float high_cwnd_gain) {
-    DCHECK_LT(1.0f, high_cwnd_gain);
+    QUICHE_DCHECK_LT(1.0f, high_cwnd_gain);
     high_cwnd_gain_ = high_cwnd_gain;
     if (mode_ == STARTUP) {
       congestion_window_gain_ = high_cwnd_gain;
@@ -161,7 +161,7 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
 
   // Sets the gain used in DRAIN.  Must be less than 1.
   void set_drain_gain(float drain_gain) {
-    DCHECK_GT(1.0f, drain_gain);
+    QUICHE_DCHECK_GT(1.0f, drain_gain);
     drain_gain_ = drain_gain;
   }
 

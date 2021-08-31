@@ -19,7 +19,7 @@
 #import "ios/web/net/cookies/wk_cookie_util.h"
 #import "ios/web/public/download/download_task_observer.h"
 #include "ios/web/public/test/fakes/fake_cookie_store.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "ios/web/public/test/web_test.h"
 #import "ios/web/test/fakes/crw_fake_nsurl_session_task.h"
 #include "net/base/net_errors.h"
@@ -215,8 +215,8 @@ class DownloadTaskImplTest : public PlatformTest {
   }
 
   web::WebTaskEnvironment task_environment_;
-  TestBrowserState browser_state_;
-  TestWebState web_state_;
+  FakeBrowserState browser_state_;
+  FakeWebState web_state_;
   FakeCookieStore cookie_store_;
   testing::StrictMock<FakeDownloadTaskImplDelegate> task_delegate_;
   std::unique_ptr<DownloadTaskImpl> task_;
@@ -541,15 +541,16 @@ TEST_F(DownloadTaskImplTest, FailureInTheMiddle) {
 TEST_F(DownloadTaskImplTest, Cookie) {
   GURL cookie_url(kUrl);
   base::Time now = base::Time::Now();
-  net::CanonicalCookie expected_cookie(
-      "name", "value", cookie_url.host(), cookie_url.path(),
-      /*creation=*/now,
-      /*expire_date=*/now + base::TimeDelta::FromHours(2),
-      /*last_access=*/now,
-      /*secure=*/false,
-      /*httponly=*/false, net::CookieSameSite::UNSPECIFIED,
-      net::COOKIE_PRIORITY_DEFAULT, /*same_party=*/false);
-  cookie_store_.SetAllCookies({expected_cookie});
+  std::unique_ptr<net::CanonicalCookie> expected_cookie =
+      net::CanonicalCookie::CreateUnsafeCookieForTesting(
+          "name", "value", cookie_url.host(), cookie_url.path(),
+          /*creation=*/now,
+          /*expire_date=*/now + base::TimeDelta::FromHours(2),
+          /*last_access=*/now,
+          /*secure=*/false,
+          /*httponly=*/false, net::CookieSameSite::UNSPECIFIED,
+          net::COOKIE_PRIORITY_DEFAULT, /*same_party=*/false);
+  cookie_store_.SetAllCookies({*expected_cookie});
 
   // Start the download and make sure that all cookie from BrowserState were
   // picked up.

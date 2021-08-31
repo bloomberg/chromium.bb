@@ -11,11 +11,14 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 namespace base {
 
 namespace {
 
+#if defined(OS_APPLE) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_AIX)
 int CalculateEventsPerSecond(uint64_t event_count,
                              uint64_t* last_event_count,
                              base::TimeTicks* last_calculated) {
@@ -33,6 +36,7 @@ int CalculateEventsPerSecond(uint64_t event_count,
   *last_event_count = event_count;
   return events_per_second;
 }
+#endif
 
 }  // namespace
 
@@ -54,7 +58,7 @@ SystemMetrics SystemMetrics::Sample() {
   GetVmStatInfo(&system_metrics.vmstat_info_);
   GetSystemDiskInfo(&system_metrics.disk_info_);
 #endif
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   GetSwapInfo(&system_metrics.swap_info_);
   GetGraphicsMemoryInfo(&system_metrics.gpu_memory_info_);
 #endif
@@ -75,7 +79,7 @@ std::unique_ptr<Value> SystemMetrics::ToValue() const {
   res->Set("meminfo", std::move(meminfo));
   res->Set("diskinfo", disk_info_.ToValue());
 #endif
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   res->Set("swapinfo", swap_info_.ToValue());
   res->Set("gpu_meminfo", gpu_memory_info_.ToValue());
 #endif
@@ -151,12 +155,5 @@ uint64_t ProcessMetrics::GetCumulativeDiskUsageInBytes() {
   return 0;
 }
 #endif
-
-uint64_t ProcessMetrics::GetDiskUsageBytesPerSecond() {
-  uint64_t cumulative_disk_usage = GetCumulativeDiskUsageInBytes();
-  return CalculateEventsPerSecond(cumulative_disk_usage,
-                                  &last_cumulative_disk_usage_,
-                                  &last_disk_usage_time_);
-}
 
 }  // namespace base
