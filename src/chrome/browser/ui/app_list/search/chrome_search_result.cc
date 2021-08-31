@@ -7,9 +7,11 @@
 #include <map>
 
 #include "base/containers/adapters.h"
+#include "base/logging.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chromeos/components/string_matching/tokenized_string.h"
 #include "chromeos/components/string_matching/tokenized_string_match.h"
+#include "ui/base/models/image_model.h"
 
 namespace {
 
@@ -38,7 +40,7 @@ void ChromeSearchResult::SetIsInstalling(bool is_installing) {
   SetSearchResultMetadata();
 }
 
-void ChromeSearchResult::SetTitle(const base::string16& title) {
+void ChromeSearchResult::SetTitle(const std::u16string& title) {
   metadata_->title = title;
   SetSearchResultMetadata();
 }
@@ -48,7 +50,7 @@ void ChromeSearchResult::SetTitleTags(const Tags& tags) {
   SetSearchResultMetadata();
 }
 
-void ChromeSearchResult::SetDetails(const base::string16& details) {
+void ChromeSearchResult::SetDetails(const std::u16string& details) {
   metadata_->details = details;
   SetSearchResultMetadata();
 }
@@ -58,7 +60,7 @@ void ChromeSearchResult::SetDetailsTags(const Tags& tags) {
   SetSearchResultMetadata();
 }
 
-void ChromeSearchResult::SetAccessibleName(const base::string16& name) {
+void ChromeSearchResult::SetAccessibleName(const std::u16string& name) {
   metadata_->accessible_name = name;
   SetSearchResultMetadata();
 }
@@ -69,7 +71,7 @@ void ChromeSearchResult::SetRating(float rating) {
 }
 
 void ChromeSearchResult::SetFormattedPrice(
-    const base::string16& formatted_price) {
+    const std::u16string& formatted_price) {
   metadata_->formatted_price = formatted_price;
   SetSearchResultMetadata();
 }
@@ -94,6 +96,11 @@ void ChromeSearchResult::SetDisplayIndex(DisplayIndex display_index) {
   SetSearchResultMetadata();
 }
 
+void ChromeSearchResult::SetOmniboxType(OmniboxType omnibox_type) {
+  metadata_->omnibox_type = omnibox_type;
+  SetSearchResultMetadata();
+}
+
 void ChromeSearchResult::SetPositionPriority(float position_priority) {
   metadata_->position_priority = position_priority;
   SetSearchResultMetadata();
@@ -106,11 +113,6 @@ void ChromeSearchResult::SetIsOmniboxSearch(bool is_omnibox_search) {
 
 void ChromeSearchResult::SetIsRecommendation(bool is_recommendation) {
   metadata_->is_recommendation = is_recommendation;
-  SetSearchResultMetadata();
-}
-
-void ChromeSearchResult::SetIsAnswer(bool is_answer) {
-  metadata_->is_answer = is_answer;
   SetSearchResultMetadata();
 }
 
@@ -141,9 +143,14 @@ void ChromeSearchResult::SetChipIcon(const gfx::ImageSkia& chip_icon) {
   SetSearchResultMetadata();
 }
 
-void ChromeSearchResult::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
-  badge_icon.EnsureRepsForSupportedScales();
+void ChromeSearchResult::SetBadgeIcon(const ui::ImageModel& badge_icon) {
   metadata_->badge_icon = badge_icon;
+  SetSearchResultMetadata();
+}
+
+void ChromeSearchResult::SetUseBadgeIconBackground(
+    bool use_badge_icon_background) {
+  metadata_->use_badge_icon_background = use_badge_icon_background;
   SetSearchResultMetadata();
 }
 

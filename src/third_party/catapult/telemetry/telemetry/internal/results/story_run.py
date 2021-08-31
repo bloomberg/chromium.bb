@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import contextlib
 import datetime
 import json
@@ -10,6 +11,7 @@ import numbers
 import os
 import posixpath
 import time
+import six
 
 
 PASS = 'PASS'
@@ -110,7 +112,7 @@ class StoryRun(object):
     """Record an add hoc measurement associated with this story run."""
     assert self._measurements is not None, (
         'Measurements have already been collected')
-    if not isinstance(name, basestring):
+    if not isinstance(name, six.string_types):
       raise TypeError('name must be a string, got %s' % name)
     assert name not in self._measurements, (
         'Already have measurement with the name %s' % name)
@@ -331,7 +333,7 @@ class StoryRun(object):
 
     Returns an iterator over artifacts.
     """
-    for name, artifact in self._artifacts.iteritems():
+    for name, artifact in six.iteritems(self._artifacts):
       if subdir is None or name.startswith(posixpath.join(subdir, '')):
         yield artifact
 
@@ -350,7 +352,7 @@ class StoryRun(object):
 
 def _MeasurementToDict(unit, samples, description):
   """Validate a measurement and encode as a JSON serializable dict."""
-  if not isinstance(unit, basestring):
+  if not isinstance(unit, six.string_types):
     # TODO(crbug.com/999484): Also validate that this is a known unit.
     raise TypeError('unit must be a string, got %s' % unit)
   if not isinstance(samples, list):
@@ -360,7 +362,7 @@ def _MeasurementToDict(unit, samples, description):
         'samples must be a list of numeric values, got %s' % samples)
   measurement = {'unit': unit, 'samples': samples}
   if description is not None:
-    if not isinstance(description, basestring):
+    if not isinstance(description, six.string_types):
       raise TypeError('description must be a string, got %s' % description)
     measurement['description'] = description
   return measurement

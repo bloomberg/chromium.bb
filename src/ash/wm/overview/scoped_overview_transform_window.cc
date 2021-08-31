@@ -171,7 +171,7 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
 
     // Add this as |aura::WindowObserver| for observing |kHideInOverviewKey|
     // property changes.
-    window_observer_.Add(transient);
+    window_observations_.AddObservation(transient);
 
     // Hide transient children which have been specified to be hidden in
     // overview mode.
@@ -230,7 +230,7 @@ ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
   UpdateRoundedCorners(/*show=*/false);
   aura::client::GetTransientWindowClient()->RemoveObserver(this);
 
-  window_observer_.RemoveAll();
+  window_observations_.RemoveAllObservations();
 }
 
 // static
@@ -352,7 +352,7 @@ int ScopedOverviewTransformWindow::GetTopInset() const {
     // If there are regular windows in the transient ancestor tree, all those
     // windows are shown in the same overview item and the header is not masked.
     if (window != window_ &&
-        window->type() == aura::client::WINDOW_TYPE_NORMAL) {
+        window->GetType() == aura::client::WINDOW_TYPE_NORMAL) {
       return 0;
     }
   }
@@ -508,8 +508,8 @@ void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show) {
 
   ui::Layer* layer = window_->layer();
   const float scale = layer->transform().Scale2d().x();
-  const int radius =
-      views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_LOW);
+  const int radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::Emphasis::kLow);
   const gfx::RoundedCornersF radii(show ? (radius / scale) : 0.0f);
   layer->SetRoundedCornerRadius(radii);
   layer->SetIsFastRoundedCorner(true);
@@ -535,7 +535,7 @@ void ScopedOverviewTransformWindow::OnTransientChildWindowAdded(
 
   // Add this as |aura::WindowObserver| for observing |kHideInOverviewKey|
   // property changes.
-  window_observer_.Add(transient_child);
+  window_observations_.AddObservation(transient_child);
 }
 
 void ScopedOverviewTransformWindow::OnTransientChildWindowRemoved(
@@ -548,8 +548,8 @@ void ScopedOverviewTransformWindow::OnTransientChildWindowRemoved(
   DCHECK(event_targeting_blocker_map_.contains(transient_child));
   event_targeting_blocker_map_.erase(transient_child);
 
-  if (window_observer_.IsObserving(transient_child))
-    window_observer_.Remove(transient_child);
+  if (window_observations_.IsObservingSource(transient_child))
+    window_observations_.RemoveObservation(transient_child);
 }
 
 void ScopedOverviewTransformWindow::OnWindowPropertyChanged(
@@ -595,7 +595,7 @@ void ScopedOverviewTransformWindow::SetImmediateCloseForTests(bool immediate) {
 }
 
 void ScopedOverviewTransformWindow::CloseWidget() {
-  aura::Window* parent_window = ::wm::GetTransientRoot(window_);
+  aura::Window* parent_window = wm::GetTransientRoot(window_);
   if (parent_window)
     window_util::CloseWidgetForWindow(parent_window);
 }

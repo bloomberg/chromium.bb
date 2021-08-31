@@ -6,18 +6,22 @@
   TestRunner.addResult('Tests that mobile emulation works.\n');
   await TestRunner.navigatePromise('resources/lighthouse-emulate-pass.html');
 
-  await TestRunner.loadModule('lighthouse_test_runner');
+  await TestRunner.loadTestModule('lighthouse_test_runner');
   await TestRunner.showPanel('lighthouse');
 
   LighthouseTestRunner.dumpStartAuditState();
   LighthouseTestRunner.getRunButton().click();
-  const {artifacts, lhr} = await LighthouseTestRunner.waitForResults();
+  const {lhr} = await LighthouseTestRunner.waitForResults();
 
   TestRunner.addResult('\n=============== Lighthouse Results ===============');
   TestRunner.addResult(`URL: ${lhr.finalUrl}`);
   TestRunner.addResult(`Version: ${lhr.lighthouseVersion}`);
-  TestRunner.addResult(`TestedAsMobileDevice: ${artifacts.TestedAsMobileDevice}`);
-  TestRunner.addResult(`ViewportDimensions: ${JSON.stringify(artifacts.ViewportDimensions, null, 2)}`);
+  TestRunner.addResult(`formFactor: ${lhr.configSettings.formFactor}`);
+  TestRunner.addResult(`screenEmulation: ${JSON.stringify(lhr.configSettings.screenEmulation, null, 2)}`);
+  TestRunner.addResult(`Mobile network UA?: ${lhr.environment.networkUserAgent.includes('Mobile')}`);
+  TestRunner.addResult(`Mobile configured UA?: ${lhr.configSettings.emulatedUserAgent.includes('Mobile')}`);
+  TestRunner.addResult(`throttlingMethod: ${lhr.configSettings.throttlingMethod}`);
+  TestRunner.addResult(`throttling.rttMs: ${lhr.configSettings.throttling.rttMs}`);
   TestRunner.addResult('\n');
 
   const auditName = 'content-width';

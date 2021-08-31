@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_utils.h"
 
@@ -48,8 +47,6 @@ bool TranslationResultParser::Parse(const Value* result,
   const std::string& secondary_answer = BuildTranslationTitleText(
       source_text->c_str(), source_text_language_localized_name->c_str());
   quick_answer->result_type = ResultType::kTranslationResult;
-  quick_answer->primary_answer = *translated_text;
-  quick_answer->secondary_answer = secondary_answer;
   quick_answer->title.push_back(
       std::make_unique<QuickAnswerText>(secondary_answer));
   quick_answer->first_answer_row.push_back(

@@ -32,6 +32,7 @@
 #include "base/version.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/encrypted_messages/encrypted_message.pb.h"
 #include "components/encrypted_messages/message_encrypter.h"
 #include "components/metrics/clean_exit_beacon.h"
@@ -103,15 +104,18 @@ std::string GetPlatformString() {
   return "win";
 #elif defined(OS_IOS)
   return "ios";
-#elif defined(OS_APPLE)
+#elif defined(OS_MAC)
   return "mac";
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
   return "chromeos";
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  return "chromeos_lacros";
 #elif defined(OS_ANDROID)
   return "android";
 #elif defined(OS_FUCHSIA)
   return "fuchsia";
-#elif defined(OS_LINUX) || defined(OS_BSD) || defined(OS_SOLARIS)
+#elif (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
+    defined(OS_BSD) || defined(OS_SOLARIS)
   // Default BSD and SOLARIS to Linux to not break those builds, although these
   // platforms are not officially supported by Chrome.
   return "linux";
@@ -262,7 +266,7 @@ std::unique_ptr<SeedResponse> MaybeImportFirstRunSeed(
 
 }  // namespace
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // This is a utility which syncs the policy-managed value of
 // |prefs::kDeviceVariationsRestrictionsByPolicy| into
 // |prefs::kVariationsRestrictionsByPolicy|.
@@ -339,7 +343,7 @@ class DeviceVariationsRestrictionByPolicyApplicator {
   base::WeakPtrFactory<DeviceVariationsRestrictionByPolicyApplicator>
       weak_ptr_factory_{this};
 };
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 VariationsService::VariationsService(
     std::unique_ptr<VariationsServiceClient> client,
@@ -355,8 +359,7 @@ VariationsService::VariationsService(
       disable_deltas_for_next_request_(false),
       resource_request_allowed_notifier_(std::move(notifier)),
       request_count_(0),
-      safe_seed_manager_(state_manager->clean_exit_beacon()->exited_cleanly(),
-                         local_state),
+      safe_seed_manager_(local_state),
       field_trial_creator_(local_state,
                            client_.get(),
                            std::make_unique<VariationsSeedStore>(
@@ -368,7 +371,7 @@ VariationsService::VariationsService(
   DCHECK(client_);
   DCHECK(resource_request_allowed_notifier_);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   device_variations_restrictions_by_policy_applicator_ =
       std::make_unique<DeviceVariationsRestrictionByPolicyApplicator>(
           policy_pref_service_);
@@ -495,7 +498,7 @@ GURL VariationsService::GetVariationsServerURL(HttpOptions http_options) {
 }
 
 void VariationsService::EnsureLocaleEquals(const std::string& locale) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Chrome OS may switch language on the fly.
   DCHECK_EQ(locale, field_trial_creator_.application_locale());
 #else
@@ -625,7 +628,10 @@ bool VariationsService::DoFetchFromURL(const GURL& url, bool is_http_retry) {
           cookies_allowed: NO
           setting: "This feature cannot be disabled by settings."
           policy_exception_justification:
-            "Not implemented, considered not required."
+            "The ChromeVariations policy prevents Variations from applying, "
+            "but Google Chrome still downloads Variations from the server "
+            "periodically. This way, the downloaded Variations apply "
+            "immediately on restart if you unset the ChromeVariations policy."
         })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;
@@ -999,7 +1005,7 @@ bool VariationsService::SetupFieldTrials(
   return field_trial_creator_.SetupFieldTrials(
       kEnableGpuBenchmarking, kEnableFeatures, kDisableFeatures, variation_ids,
       extra_overrides, CreateLowEntropyProvider(), std::move(feature_list),
-      platform_field_trials, &safe_seed_manager_,
+      state_manager_, platform_field_trials, &safe_seed_manager_,
       state_manager_->GetLowEntropySource());
 }
 

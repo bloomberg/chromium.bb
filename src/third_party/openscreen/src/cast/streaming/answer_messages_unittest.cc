@@ -37,7 +37,7 @@ constexpr char kValidAnswerJson[] = R"({
     },
     "video": {
       "maxPixelsPerSecond": 62208000,
-      "minDimensions": {
+      "minResolution": {
         "width": 320,
         "height": 180,
         "frameRate": 0
@@ -63,7 +63,6 @@ constexpr char kValidAnswerJson[] = R"({
   },
   "receiverRtcpEventLog": [0, 1],
   "receiverRtcpDscp": [234, 567],
-  "receiverGetStatus": true,
   "rtpExtensions": ["adaptive_playout_delay"]
 })";
 
@@ -81,34 +80,22 @@ const Answer kValidAnswer{
         },                      // audio
         VideoConstraints{
             40000.0,  // max_pixels_per_second
-            absl::optional<Dimensions>(Dimensions{
-                320,                        // width
-                480,                        // height
-                SimpleFraction{15000, 101}  // frame_rate
-            }),                             // min_dimensions
-            Dimensions{
-                1920,                   // width
-                1080,                   // height
-                SimpleFraction{288, 2}  // frame_rate
-            },
+            absl::optional<Dimensions>(
+                Dimensions{320, 480, SimpleFraction{15000, 101}}),
+            Dimensions{1920, 1080, SimpleFraction{288, 2}},
             300000,             // min_bit_rate
             144000000,          // max_bit_rate
             milliseconds(3000)  // max_delay
         }                       // video
     }),                         // constraints
     absl::optional<DisplayDescription>(DisplayDescription{
-        absl::optional<Dimensions>(Dimensions{
-            640,                   // width
-            480,                   // height
-            SimpleFraction{30, 1}  // frame_rate
-        }),
+        absl::optional<Dimensions>(Dimensions{640, 480, SimpleFraction{30, 1}}),
         absl::optional<AspectRatio>(AspectRatio{16, 9}),  // aspect_ratio
         absl::optional<AspectRatioConstraint>(
             AspectRatioConstraint::kFixed),  // scaling
     }),
     std::vector<int>{7, 8, 9},              // receiver_rtcp_event_log
     std::vector<int>{11, 12, 13},           // receiver_rtcp_dscp
-    true,                                   // receiver_get_status
     std::vector<std::string>{"foo", "bar"}  // rtp_extensions
 };
 
@@ -137,10 +124,10 @@ void ExpectEqualsValidAnswerJson(const Answer& answer) {
 
   const VideoConstraints& video = answer.constraints->video;
   EXPECT_EQ(62208000, video.max_pixels_per_second);
-  ASSERT_TRUE(video.min_dimensions.has_value());
-  EXPECT_EQ(320, video.min_dimensions->width);
-  EXPECT_EQ(180, video.min_dimensions->height);
-  EXPECT_EQ((SimpleFraction{0, 1}), video.min_dimensions->frame_rate);
+  ASSERT_TRUE(video.min_resolution.has_value());
+  EXPECT_EQ(320, video.min_resolution->width);
+  EXPECT_EQ(180, video.min_resolution->height);
+  EXPECT_EQ((SimpleFraction{0, 1}), video.min_resolution->frame_rate);
   EXPECT_EQ(1920, video.max_dimensions.width);
   EXPECT_EQ(1080, video.max_dimensions.height);
   EXPECT_EQ((SimpleFraction{60, 1}), video.max_dimensions.frame_rate);
@@ -160,7 +147,6 @@ void ExpectEqualsValidAnswerJson(const Answer& answer) {
 
   EXPECT_THAT(answer.receiver_rtcp_event_log, ElementsAre(0, 1));
   EXPECT_THAT(answer.receiver_rtcp_dscp, ElementsAre(234, 567));
-  EXPECT_TRUE(answer.supports_wifi_status_reporting);
   EXPECT_THAT(answer.rtp_extensions, ElementsAre("adaptive_playout_delay"));
 }
 
@@ -223,11 +209,11 @@ TEST(AnswerMessagesTest, ProperlyPopulatedAnswerSerializesProperly) {
   EXPECT_EQ(video["maxBitRate"], 144000000);
   EXPECT_EQ(video["maxDelay"], 3000);
 
-  Json::Value min_dimensions = std::move(video["minDimensions"]);
-  EXPECT_EQ(min_dimensions.type(), Json::ValueType::objectValue);
-  EXPECT_EQ(min_dimensions["width"], 320);
-  EXPECT_EQ(min_dimensions["height"], 480);
-  EXPECT_EQ(min_dimensions["frameRate"], "15000/101");
+  Json::Value min_resolution = std::move(video["minResolution"]);
+  EXPECT_EQ(min_resolution.type(), Json::ValueType::objectValue);
+  EXPECT_EQ(min_resolution["width"], 320);
+  EXPECT_EQ(min_resolution["height"], 480);
+  EXPECT_EQ(min_resolution["frameRate"], "15000/101");
 
   Json::Value max_dimensions = std::move(video["maxDimensions"]);
   EXPECT_EQ(max_dimensions.type(), Json::ValueType::objectValue);
@@ -257,8 +243,6 @@ TEST(AnswerMessagesTest, ProperlyPopulatedAnswerSerializesProperly) {
   EXPECT_EQ(receiver_rtcp_dscp[0], 11);
   EXPECT_EQ(receiver_rtcp_dscp[1], 12);
   EXPECT_EQ(receiver_rtcp_dscp[2], 13);
-
-  EXPECT_EQ(root["receiverGetStatus"], true);
 
   Json::Value rtp_extensions = std::move(root["rtpExtensions"]);
   EXPECT_EQ(rtp_extensions.type(), Json::ValueType::arrayValue);
@@ -330,8 +314,7 @@ TEST(AnswerMessagesTest, SucceedsWithMissingRtpFields) {
   ExpectSuccessOnParse(R"({
   "udpPort": 1234,
   "sendIndexes": [1, 3],
-  "ssrcs": [1233324, 2234222],
-  "receiverGetStatus": true
+  "ssrcs": [1233324, 2234222]
   })");
 }
 
@@ -342,37 +325,22 @@ TEST(AnswerMessagesTest, ErrorOnEmptyAnswer) {
 TEST(AnswerMessagesTest, ErrorOnMissingUdpPort) {
   ExpectFailureOnParse(R"({
     "sendIndexes": [1, 3],
-    "ssrcs": [1233324, 2234222],
-    "receiverGetStatus": true
+    "ssrcs": [1233324, 2234222]
   })");
 }
 
 TEST(AnswerMessagesTest, ErrorOnMissingSsrcs) {
   ExpectFailureOnParse(R"({
     "udpPort": 1234,
-    "sendIndexes": [1, 3],
-    "receiverGetStatus": true
+    "sendIndexes": [1, 3]
   })");
 }
 
 TEST(AnswerMessagesTest, ErrorOnMissingSendIndexes) {
   ExpectFailureOnParse(R"({
     "udpPort": 1234,
-    "ssrcs": [1233324, 2234222],
-    "receiverGetStatus": true
-  })");
-}
-
-TEST(AnswerMessagesTest, AssumesNoReportingIfGetStatusFalse) {
-  Answer answer;
-  ExpectSuccessOnParse(R"({
-    "udpPort": 1234,
-    "sendIndexes": [1, 3],
     "ssrcs": [1233324, 2234222]
-  })",
-                       &answer);
-
-  EXPECT_FALSE(answer.supports_wifi_status_reporting);
+  })");
 }
 
 TEST(AnswerMessagesTest, AllowsReceiverSideScaling) {
@@ -420,8 +388,7 @@ TEST(AnswerMessagesTest, AssumesMinBitRateIfOmitted) {
         "maxBitRate": 10000000,
         "maxDelay": 5000
       }
-    },
-    "receiverGetStatus": true
+    }
   })",
                        &answer);
 
@@ -476,8 +443,8 @@ TEST(AnswerMessagesTest, VideoConstraintsIsValid) {
   VideoConstraints invalid_max_pixels_per_second = kValidVideoConstraints;
   invalid_max_pixels_per_second.max_pixels_per_second = 0;
 
-  VideoConstraints invalid_min_dimensions = kValidVideoConstraints;
-  invalid_min_dimensions.min_dimensions->width = 0;
+  VideoConstraints invalid_min_resolution = kValidVideoConstraints;
+  invalid_min_resolution.min_resolution->width = 0;
 
   VideoConstraints invalid_max_dimensions = kValidVideoConstraints;
   invalid_max_dimensions.max_dimensions.height = 0;
@@ -493,7 +460,7 @@ TEST(AnswerMessagesTest, VideoConstraintsIsValid) {
 
   EXPECT_TRUE(kValidVideoConstraints.IsValid());
   EXPECT_FALSE(invalid_max_pixels_per_second.IsValid());
-  EXPECT_FALSE(invalid_min_dimensions.IsValid());
+  EXPECT_FALSE(invalid_min_resolution.IsValid());
   EXPECT_FALSE(invalid_max_dimensions.IsValid());
   EXPECT_FALSE(invalid_min_bit_rate.IsValid());
   EXPECT_FALSE(invalid_max_bit_rate.IsValid());

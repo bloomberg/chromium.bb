@@ -30,11 +30,8 @@ bool AppendArgumentFromJSONValue(const std::string& key,
       command_line->AppendArg(argument_name);
       break;
     case base::Value::Type::INTEGER: {
-      int value;
-      bool result = value_node.GetAsInteger(&value);
-      DCHECK(result);
       command_line->AppendArg(argument_name + "=" +
-                              base::NumberToString(value));
+                              base::NumberToString(value_node.GetInt()));
       break;
     }
     case base::Value::Type::STRING: {
@@ -102,7 +99,7 @@ bool LocalTestServer::StartInBackground() {
     return false;
   }
 
-  base::Optional<std::vector<base::FilePath>> python_path = GetPythonPath();
+  absl::optional<std::vector<base::FilePath>> python_path = GetPythonPath();
   if (!python_path) {
     LOG(ERROR) << "Could not get Python path.";
     return false;
@@ -167,12 +164,12 @@ bool LocalTestServer::Init(const base::FilePath& document_root) {
   return true;
 }
 
-base::Optional<std::vector<base::FilePath>> LocalTestServer::GetPythonPath()
+absl::optional<std::vector<base::FilePath>> LocalTestServer::GetPythonPath()
     const {
   base::FilePath third_party_dir;
   if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &third_party_dir)) {
     LOG(ERROR) << "Failed to get DIR_SOURCE_ROOT";
-    return base::nullopt;
+    return absl::nullopt;
   }
   third_party_dir = third_party_dir.AppendASCII("third_party");
 
@@ -210,8 +207,8 @@ bool LocalTestServer::AddCommandLineArguments(
       const base::ListValue* list = nullptr;
       if (!value.GetAsList(&list) || !list || list->empty())
         return false;
-      for (auto list_it = list->begin(); list_it != list->end(); ++list_it) {
-        if (!AppendArgumentFromJSONValue(key, *list_it, command_line))
+      for (const auto& entry : list->GetList()) {
+        if (!AppendArgumentFromJSONValue(key, entry, command_line))
           return false;
       }
     } else if (!AppendArgumentFromJSONValue(key, value, command_line)) {

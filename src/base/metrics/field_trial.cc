@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/activity_tracker.h"
@@ -17,7 +18,9 @@
 #include "base/process/process_handle.h"
 #include "base/process/process_info.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -230,7 +233,7 @@ bool FieldTrial::FieldTrialEntry::GetParams(
     StringPiece value;
     if (!ReadStringPair(&iter, &key, &value))
       return key.empty();  // Non-empty is bad: got one of a pair.
-    (*params)[key.as_string()] = value.as_string();
+    (*params)[std::string(key)] = std::string(value);
   }
 }
 
@@ -341,17 +344,17 @@ void FieldTrial::EnableBenchmarking() {
 
 // static
 FieldTrial* FieldTrial::CreateSimulatedFieldTrial(
-    const std::string& trial_name,
+    StringPiece trial_name,
     Probability total_probability,
-    const std::string& default_group_name,
+    StringPiece default_group_name,
     double entropy_value) {
   return new FieldTrial(trial_name, total_probability, default_group_name,
                         entropy_value);
 }
 
-FieldTrial::FieldTrial(const std::string& trial_name,
+FieldTrial::FieldTrial(StringPiece trial_name,
                        const Probability total_probability,
-                       const std::string& default_group_name,
+                       StringPiece default_group_name,
                        double entropy_value)
     : trial_name_(trial_name),
       divisor_(total_probability),
@@ -439,9 +442,7 @@ FieldTrialList::Observer::~Observer() = default;
 
 FieldTrialList::FieldTrialList(
     std::unique_ptr<const FieldTrial::EntropyProvider> entropy_provider)
-    : entropy_provider_(std::move(entropy_provider)),
-      observer_list_(new ObserverListThreadSafe<FieldTrialList::Observer>(
-          ObserverListPolicy::EXISTING_ONLY)) {
+    : entropy_provider_(std::move(entropy_provider)) {
   DCHECK(!global_);
   DCHECK(!used_without_global_);
   global_ = this;
@@ -463,9 +464,9 @@ FieldTrialList::~FieldTrialList() {
 
 // static
 FieldTrial* FieldTrialList::FactoryGetFieldTrial(
-    const std::string& trial_name,
+    StringPiece trial_name,
     FieldTrial::Probability total_probability,
-    const std::string& default_group_name,
+    StringPiece default_group_name,
     FieldTrial::RandomizationType randomization_type,
     int* default_group_number) {
   return FactoryGetFieldTrialWithRandomizationSeed(
@@ -475,9 +476,9 @@ FieldTrial* FieldTrialList::FactoryGetFieldTrial(
 
 // static
 FieldTrial* FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
-    const std::string& trial_name,
+    StringPiece trial_name,
     FieldTrial::Probability total_probability,
-    const std::string& default_group_name,
+    StringPiece default_group_name,
     FieldTrial::RandomizationType randomization_type,
     uint32_t randomization_seed,
     int* default_group_number,
@@ -535,7 +536,7 @@ FieldTrial* FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
 }
 
 // static
-FieldTrial* FieldTrialList::Find(const std::string& trial_name) {
+FieldTrial* FieldTrialList::Find(StringPiece trial_name) {
   if (!global_)
     return nullptr;
   AutoLock auto_lock(global_->lock_);
@@ -543,7 +544,7 @@ FieldTrial* FieldTrialList::Find(const std::string& trial_name) {
 }
 
 // static
-int FieldTrialList::FindValue(const std::string& trial_name) {
+int FieldTrialList::FindValue(StringPiece trial_name) {
   FieldTrial* field_trial = Find(trial_name);
   if (field_trial)
     return field_trial->group();
@@ -551,7 +552,7 @@ int FieldTrialList::FindValue(const std::string& trial_name) {
 }
 
 // static
-std::string FieldTrialList::FindFullName(const std::string& trial_name) {
+std::string FieldTrialList::FindFullName(StringPiece trial_name) {
   FieldTrial* field_trial = Find(trial_name);
   if (field_trial)
     return field_trial->group_name();
@@ -559,12 +560,12 @@ std::string FieldTrialList::FindFullName(const std::string& trial_name) {
 }
 
 // static
-bool FieldTrialList::TrialExists(const std::string& trial_name) {
+bool FieldTrialList::TrialExists(StringPiece trial_name) {
   return Find(trial_name) != nullptr;
 }
 
 // static
-bool FieldTrialList::IsTrialActive(const std::string& trial_name) {
+bool FieldTrialList::IsTrialActive(StringPiece trial_name) {
   FieldTrial* field_trial = Find(trial_name);
   FieldTrial::ActiveGroup active_group;
   return field_trial && field_trial->GetActiveGroup(&active_group);
@@ -680,8 +681,8 @@ void FieldTrialList::GetActiveFieldTrialGroupsFromString(
   for (const auto& entry : entries) {
     if (entry.activated) {
       FieldTrial::ActiveGroup group;
-      group.trial_name = entry.trial_name.as_string();
-      group.group_name = entry.group_name.as_string();
+      group.trial_name = std::string(entry.trial_name);
+      group.group_name = std::string(entry.group_name);
       active_groups->push_back(group);
     }
   }
@@ -711,8 +712,8 @@ void FieldTrialList::GetInitiallyActiveFieldTrials(
     if (subtle::NoBarrier_Load(&entry->activated) &&
         entry->GetTrialAndGroupName(&trial_name, &group_name)) {
       FieldTrial::ActiveGroup group;
-      group.trial_name = trial_name.as_string();
-      group.group_name = group_name.as_string();
+      group.trial_name = std::string(trial_name);
+      group.group_name = std::string(group_name);
       active_groups->push_back(group);
     }
   }
@@ -729,10 +730,7 @@ bool FieldTrialList::CreateTrialsFromString(const std::string& trials_string) {
     return false;
 
   for (const auto& entry : entries) {
-    const std::string trial_name = entry.trial_name.as_string();
-    const std::string group_name = entry.group_name.as_string();
-
-    FieldTrial* trial = CreateFieldTrial(trial_name, group_name);
+    FieldTrial* trial = CreateFieldTrial(entry.trial_name, entry.group_name);
     if (!trial)
       return false;
     if (entry.activated) {
@@ -891,9 +889,8 @@ void FieldTrialList::CopyFieldTrialStateToFlags(
 }
 
 // static
-FieldTrial* FieldTrialList::CreateFieldTrial(
-    const std::string& name,
-    const std::string& group_name) {
+FieldTrial* FieldTrialList::CreateFieldTrial(StringPiece name,
+                                             StringPiece group_name) {
   DCHECK(global_);
   DCHECK_GE(name.size(), 0u);
   DCHECK_GE(group_name.size(), 0u);
@@ -920,7 +917,8 @@ FieldTrial* FieldTrialList::CreateFieldTrial(
 bool FieldTrialList::AddObserver(Observer* observer) {
   if (!global_)
     return false;
-  global_->observer_list_->AddObserver(observer);
+  AutoLock auto_lock(global_->lock_);
+  global_->observers_.push_back(observer);
   return true;
 }
 
@@ -928,19 +926,10 @@ bool FieldTrialList::AddObserver(Observer* observer) {
 void FieldTrialList::RemoveObserver(Observer* observer) {
   if (!global_)
     return;
-  global_->observer_list_->RemoveObserver(observer);
-}
-
-// static
-void FieldTrialList::SetSynchronousObserver(Observer* observer) {
-  DCHECK(!global_->synchronous_observer_);
-  global_->synchronous_observer_ = observer;
-}
-
-// static
-void FieldTrialList::RemoveSynchronousObserver(Observer* observer) {
-  DCHECK_EQ(global_->synchronous_observer_, observer);
-  global_->synchronous_observer_ = nullptr;
+  AutoLock auto_lock(global_->lock_);
+  Erase(global_->observers_, observer);
+  DCHECK_EQ(global_->num_ongoing_notify_field_trial_group_selection_calls_, 0)
+      << "Cannot call RemoveObserver while accessing FieldTrial::group().";
 }
 
 // static
@@ -962,6 +951,8 @@ void FieldTrialList::NotifyFieldTrialGroupSelection(FieldTrial* field_trial) {
   if (!global_)
     return;
 
+  std::vector<Observer*> local_observers;
+
   {
     AutoLock auto_lock(global_->lock_);
     if (field_trial->group_reported_)
@@ -971,17 +962,24 @@ void FieldTrialList::NotifyFieldTrialGroupSelection(FieldTrial* field_trial) {
     if (!field_trial->enable_field_trial_)
       return;
 
+    ++global_->num_ongoing_notify_field_trial_group_selection_calls_;
+
     ActivateFieldTrialEntryWhileLocked(field_trial);
+
+    // Copy observers to a local variable to access outside the scope of the
+    // lock. Since removing observers concurrently with this method is
+    // disallowed, pointers should remain valid while observers are notified.
+    local_observers = global_->observers_;
   }
 
-  if (global_->synchronous_observer_) {
-    global_->synchronous_observer_->OnFieldTrialGroupFinalized(
-        field_trial->trial_name(), field_trial->group_name_internal());
+  for (Observer* observer : local_observers) {
+    observer->OnFieldTrialGroupFinalized(field_trial->trial_name(),
+                                         field_trial->group_name_internal());
   }
 
-  global_->observer_list_->NotifySynchronously(
-      FROM_HERE, &FieldTrialList::Observer::OnFieldTrialGroupFinalized,
-      field_trial->trial_name(), field_trial->group_name_internal());
+  int previous_num_ongoing_notify_field_trial_group_selection_calls =
+      global_->num_ongoing_notify_field_trial_group_selection_calls_--;
+  DCHECK_GT(previous_num_ongoing_notify_field_trial_group_selection_calls, 0);
 }
 
 // static
@@ -1079,7 +1077,7 @@ void FieldTrialList::ClearParamsFromSharedMemoryForTesting() {
     // Update the ref on the field trial and add it to the list to be made
     // iterable.
     FieldTrial::FieldTrialRef new_ref = allocator->GetAsReference(new_entry);
-    FieldTrial* trial = global_->PreLockedFind(trial_name.as_string());
+    FieldTrial* trial = global_->PreLockedFind(trial_name);
     trial->ref_ = new_ref;
     new_refs.push_back(new_ref);
 
@@ -1117,6 +1115,17 @@ FieldTrialList::GetAllFieldTrialsFromPersistentAllocator(
     entries.push_back(entry);
   }
   return entries;
+}
+
+// static
+const FieldTrial::EntropyProvider*
+FieldTrialList::GetEntropyProviderForOneTimeRandomization() {
+  if (!global_) {
+    used_without_global_ = true;
+    return nullptr;
+  }
+
+  return global_->entropy_provider_.get();
 }
 
 // static
@@ -1310,11 +1319,7 @@ bool FieldTrialList::CreateTrialsFromSharedMemoryMapping(
     if (!entry->GetTrialAndGroupName(&trial_name, &group_name))
       return false;
 
-    // TODO(lawrencewu): Convert the API for CreateFieldTrial to take
-    // StringPieces.
-    FieldTrial* trial =
-        CreateFieldTrial(trial_name.as_string(), group_name.as_string());
-
+    FieldTrial* trial = CreateFieldTrial(trial_name, group_name);
     trial->ref_ = mem_iter.GetAsReference(entry);
     if (subtle::NoBarrier_Load(&entry->activated)) {
       // Call |group()| to mark the trial as "used" and notify observers, if
@@ -1434,18 +1439,7 @@ void FieldTrialList::ActivateFieldTrialEntryWhileLocked(
   }
 }
 
-// static
-const FieldTrial::EntropyProvider*
-    FieldTrialList::GetEntropyProviderForOneTimeRandomization() {
-  if (!global_) {
-    used_without_global_ = true;
-    return nullptr;
-  }
-
-  return global_->entropy_provider_.get();
-}
-
-FieldTrial* FieldTrialList::PreLockedFind(const std::string& name) {
+FieldTrial* FieldTrialList::PreLockedFind(StringPiece name) {
   auto it = registered_.find(name);
   if (registered_.end() == it)
     return nullptr;

@@ -8,16 +8,21 @@
 #import <UIKit/UIKit.h>
 
 #include <memory>
+#include <string>
 
 #include "base/memory/memory_pressure_listener.h"
 #include "base/metrics/user_metrics.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class TimeTicks;
 }  // namespace base
 
+namespace breadcrumbs {
 class BreadcrumbManager;
 class BreadcrumbPersistentStorageManager;
+}  // namespace breadcrumbs
+
 
 // Name of event logged when device orientation is changed.
 extern const char kBreadcrumbOrientation[];
@@ -26,18 +31,20 @@ extern const char kBreadcrumbOrientation[];
 // BreadcrumbManager passed in the constructor.
 class ApplicationBreadcrumbsLogger {
  public:
-  explicit ApplicationBreadcrumbsLogger(BreadcrumbManager* breadcrumb_manager);
+  explicit ApplicationBreadcrumbsLogger(
+      breadcrumbs::BreadcrumbManager* breadcrumb_manager);
   ~ApplicationBreadcrumbsLogger();
 
   // Sets a BreadcrumbPersistentStorageManager to persist application breadcrumb
   // events logged by this ApplicationBreadcrumbsLogger instance.
   void SetPersistentStorageManager(
-      std::unique_ptr<BreadcrumbPersistentStorageManager>
+      std::unique_ptr<breadcrumbs::BreadcrumbPersistentStorageManager>
           persistent_storage_manager);
 
   // Returns a pointer to the BreadcrumbPersistentStorageManager owned by this
   // instance. May be null.
-  BreadcrumbPersistentStorageManager* GetPersistentStorageManager() const;
+  breadcrumbs::BreadcrumbPersistentStorageManager* GetPersistentStorageManager()
+      const;
 
  private:
   ApplicationBreadcrumbsLogger(const ApplicationBreadcrumbsLogger&) = delete;
@@ -55,7 +62,7 @@ class ApplicationBreadcrumbsLogger {
   static bool IsUserTriggeredAction(const std::string& action);
 
   // The BreadcrumbManager to log events.
-  BreadcrumbManager* breadcrumb_manager_;
+  breadcrumbs::BreadcrumbManager* breadcrumb_manager_;
   // The callback invoked whenever a user action is registered.
   base::ActionCallback user_action_callback_;
   // A memory pressure listener which observes memory pressure events.
@@ -65,11 +72,11 @@ class ApplicationBreadcrumbsLogger {
 
   // A strong pointer to the persistent breadcrumb manager listening for events
   // from |breadcrumb_manager_| to store to disk.
-  std::unique_ptr<BreadcrumbPersistentStorageManager>
+  std::unique_ptr<breadcrumbs::BreadcrumbPersistentStorageManager>
       persistent_storage_manager_;
 
   // Used to avoid logging the same orientation twice.
-  base::Optional<UIDeviceOrientation> last_orientation_;
+  absl::optional<UIDeviceOrientation> last_orientation_;
 };
 
 #endif  // IOS_CHROME_BROWSER_CRASH_REPORT_BREADCRUMBS_APPLICATION_BREADCRUMBS_LOGGER_H_

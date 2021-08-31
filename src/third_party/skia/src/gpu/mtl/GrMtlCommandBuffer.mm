@@ -15,6 +15,8 @@
 #error This file must be compiled with Arc. Use -fobjc-arc flag
 #endif
 
+GR_NORETAIN_BEGIN
+
 sk_sp<GrMtlCommandBuffer> GrMtlCommandBuffer::Make(id<MTLCommandQueue> queue) {
     id<MTLCommandBuffer> mtlCommandBuffer;
     mtlCommandBuffer = [queue commandBuffer];
@@ -36,15 +38,12 @@ GrMtlCommandBuffer::~GrMtlCommandBuffer() {
 }
 
 id<MTLBlitCommandEncoder> GrMtlCommandBuffer::getBlitCommandEncoder() {
-    if (nil != fActiveRenderCommandEncoder) {
-        [fActiveRenderCommandEncoder endEncoding];
-        fActiveRenderCommandEncoder = nil;
+    if (fActiveBlitCommandEncoder) {
+        return fActiveBlitCommandEncoder;
     }
 
-    if (nil == fActiveBlitCommandEncoder) {
-        fActiveBlitCommandEncoder = [fCmdBuffer blitCommandEncoder];
-    }
-    fPreviousRenderPassDescriptor = nil;
+    this->endAllEncoding();
+    fActiveBlitCommandEncoder = [fCmdBuffer blitCommandEncoder];
     fHasWork = true;
 
     return fActiveBlitCommandEncoder;
@@ -143,3 +142,4 @@ void GrMtlCommandBuffer::encodeWaitForEvent(id<MTLEvent> event, uint64_t eventVa
     fHasWork = true;
 }
 
+GR_NORETAIN_END

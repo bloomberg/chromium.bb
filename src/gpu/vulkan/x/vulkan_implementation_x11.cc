@@ -8,7 +8,6 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_image.h"
@@ -16,6 +15,7 @@
 #include "gpu/vulkan/vulkan_surface.h"
 #include "gpu/vulkan/vulkan_util.h"
 #include "gpu/vulkan/x/vulkan_surface_x11.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -49,7 +49,7 @@ bool VulkanImplementationX11::InitializeVulkanInstance(bool using_surface) {
   using_surface_ = using_surface;
   // Unset DISPLAY env, so the vulkan can be initialized successfully, if the X
   // server doesn't support Vulkan surface.
-  base::Optional<ui::ScopedUnsetDisplay> unset_display;
+  absl::optional<ui::ScopedUnsetDisplay> unset_display;
   if (!using_surface_)
     unset_display.emplace();
 
@@ -104,7 +104,8 @@ bool VulkanImplementationX11::GetPhysicalDevicePresentationSupport(
     return true;
   auto* connection = x11::Connection::Get();
   return vkGetPhysicalDeviceXcbPresentationSupportKHR(
-      device, queue_family_index, connection->XcbConnection(),
+      device, queue_family_index,
+      connection->GetXlibDisplay().GetXcbConnection(),
       static_cast<xcb_visualid_t>(connection->default_root_visual().visual_id));
 }
 
@@ -118,11 +119,14 @@ VulkanImplementationX11::GetRequiredDeviceExtensions() {
 
 std::vector<const char*>
 VulkanImplementationX11::GetOptionalDeviceExtensions() {
-  return {VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
-          VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
-          VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
-          VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME,
-          VK_KHR_INCREMENTAL_PRESENT_EXTENSION_NAME};
+  return {
+      VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
+      VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
+      VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
+      VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME,
+      VK_KHR_INCREMENTAL_PRESENT_EXTENSION_NAME,
+      VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME,
+  };
 }
 
 VkFence VulkanImplementationX11::CreateVkFenceForGpuFence(VkDevice vk_device) {
@@ -163,6 +167,8 @@ VulkanImplementationX11::GetExternalImageHandleType() {
 
 bool VulkanImplementationX11::CanImportGpuMemoryBuffer(
     gfx::GpuMemoryBufferType memory_buffer_type) {
+  if (memory_buffer_type == gfx::GpuMemoryBufferType::NATIVE_PIXMAP)
+    return true;
   return false;
 }
 
@@ -171,9 +177,17 @@ VulkanImplementationX11::CreateImageFromGpuMemoryHandle(
     VulkanDeviceQueue* device_queue,
     gfx::GpuMemoryBufferHandle gmb_handle,
     gfx::Size size,
-    VkFormat vk_formae) {
-  NOTIMPLEMENTED();
-  return nullptr;
+    VkFormat vk_format) {
+  constexpr auto kUsage =
+      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
+      VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+  auto tiling = gmb_handle.native_pixmap_handle.modifier ==
+                        gfx::NativePixmapHandle::kNoModifier
+                    ? VK_IMAGE_TILING_OPTIMAL
+                    : VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT;
+  return VulkanImage::CreateFromGpuMemoryBufferHandle(
+      device_queue, std::move(gmb_handle), size, vk_format, kUsage, /*flags=*/0,
+      tiling);
 }
 
 }  // namespace gpu

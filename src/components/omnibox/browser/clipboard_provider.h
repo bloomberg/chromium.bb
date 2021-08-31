@@ -32,15 +32,20 @@ class ClipboardProvider : public AutocompleteProvider {
   // Returns a new AutocompleteMatch clipboard match that will search for the
   // given copied text. Used to construct a match later when the text is not
   // available at match creation time (e.g. iOS 14).
-  base::Optional<AutocompleteMatch> NewClipboardTextMatch(base::string16 text);
+  absl::optional<AutocompleteMatch> NewClipboardTextMatch(std::u16string text);
 
   using ClipboardImageMatchCallback =
-      base::OnceCallback<void(base::Optional<AutocompleteMatch>)>;
+      base::OnceCallback<void(absl::optional<AutocompleteMatch>)>;
   // Returns a new AutocompleteMatch clipboard match that will search for the
   // given copied image. Used to construct a match later when the image is not
   // available at match creation time (e.g. iOS 14).
-  void NewClipboardImageMatch(gfx::Image image,
+  void NewClipboardImageMatch(absl::optional<gfx::Image> optional_image,
                               ClipboardImageMatchCallback callback);
+
+  using ClipboardMatchCallback = base::OnceCallback<void()>;
+  // Update clipboard match |match| with the current clipboard content.
+  void UpdateClipboardMatchWithContent(AutocompleteMatch* match,
+                                       ClipboardMatchCallback callback);
 
   // AutocompleteProvider implementation.
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
@@ -51,6 +56,9 @@ class ClipboardProvider : public AutocompleteProvider {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ClipboardProviderTest, MatchesImage);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardProviderTest, CreateURLMatchWithContent);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardProviderTest, CreateTextMatchWithContent);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardProviderTest, CreateImageMatchWithContent);
 
   ~ClipboardProvider() override;
 
@@ -94,7 +102,7 @@ class ClipboardProvider : public AutocompleteProvider {
   // have any content (either because there was none or because accessing it
   // would have shown a clipboard access notification, and true if there was
   // content.
-  base::Optional<AutocompleteMatch> CreateURLMatch(
+  absl::optional<AutocompleteMatch> CreateURLMatch(
       const AutocompleteInput& input,
       bool* read_clipboard_content);
   // If there is text copied to the clipboard and accessing it will not show a
@@ -103,7 +111,7 @@ class ClipboardProvider : public AutocompleteProvider {
   // have any content (either because there was none or because accessing it
   // would have shown a clipboard access notification, and true if there was
   // content.
-  base::Optional<AutocompleteMatch> CreateTextMatch(
+  absl::optional<AutocompleteMatch> CreateTextMatch(
       const AutocompleteInput& input,
       bool* read_clipboard_content);
   // If there is an image copied to the clipboard and accessing it will not show
@@ -118,16 +126,12 @@ class ClipboardProvider : public AutocompleteProvider {
   // into an AutocompleteMatch.
   void CreateImageMatchCallback(const AutocompleteInput& input,
                                 const base::TimeDelta clipboard_contents_age,
-                                base::Optional<gfx::Image>);
+                                absl::optional<gfx::Image>);
   // Handles the callback response from |CreateImageMatchCallback| and adds the
   // created AutocompleteMatch to the matches list.
   void AddImageMatchCallback(const AutocompleteInput& input,
                              const base::TimeDelta clipboard_contents_age,
-                             base::Optional<AutocompleteMatch> match);
-
-  // Called when image data is received from clipboard.
-  void OnReceiveImage(ClipboardImageMatchCallback callback,
-                      base::Optional<gfx::Image> optional_image);
+                             absl::optional<AutocompleteMatch> match);
 
   // Resize and encode the image data into bytes. This can take some time if the
   // image is large, so this should happen on a background thread.
@@ -138,6 +142,42 @@ class ClipboardProvider : public AutocompleteProvider {
   void ConstructImageMatchCallback(
       ClipboardImageMatchCallback callback,
       scoped_refptr<base::RefCountedMemory> image_bytes);
+
+  // TODO(crbug.com/1195673): OmniboxViewIOS should use following functions
+  // instead their own implementations.
+  // Called when url data is received from clipboard for creating match with
+  // content.
+  void OnReceiveURLForMatchWithContent(ClipboardMatchCallback callback,
+                                       AutocompleteMatch* match,
+                                       absl::optional<GURL> optional_gurl);
+
+  // Called when text data is received from clipboard for creating match with
+  // content.
+  void OnReceiveTextForMatchWithContent(
+      ClipboardMatchCallback callback,
+      AutocompleteMatch* match,
+      absl::optional<std::u16string> optional_text);
+
+  // Called when image data is received from clipboard for creating match with
+  // content.
+  void OnReceiveImageForMatchWithContent(
+      ClipboardMatchCallback callback,
+      AutocompleteMatch* match,
+      absl::optional<gfx::Image> optional_image);
+
+  // Called when image match is received from clipboard for creating match with
+  // content.
+  void OnReceiveImageMatchForMatchWithContent(
+      ClipboardMatchCallback callback,
+      AutocompleteMatch* match,
+      absl::optional<AutocompleteMatch> optional_match);
+
+  // Updated clipboard |match| with |url|.
+  void UpdateClipboardURLContent(const GURL& url, AutocompleteMatch* match);
+
+  // Updated clipboard |match| with |text|.
+  bool UpdateClipboardTextContent(const std::u16string& text,
+                                  AutocompleteMatch* match);
 
   AutocompleteProviderClient* client_;
   AutocompleteProviderListener* listener_;

@@ -192,9 +192,9 @@ def get_position(footers):
   Returns:
     A tuple of the branch and the position on that branch. For example,
 
-    Cr-Commit-Position: refs/heads/master@{#292272}
+    Cr-Commit-Position: refs/heads/main@{#292272}
 
-    would give the return value ('refs/heads/master', 292272).
+    would give the return value ('refs/heads/main', 292272).
   """
 
   position = get_unique(footers, 'Cr-Commit-Position')

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/router/providers/cast/mirroring_activity.h"
 
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
@@ -15,6 +17,7 @@
 #include "components/mirroring/mojom/session_parameters.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
 using base::test::IsJson;
 using testing::_;
@@ -327,6 +330,64 @@ TEST_F(MirroringActivityTest, OnInternalMessage) {
   activity_->OnInternalMessage(cast_channel::InternalMessage(
       cast_channel::CastMessageType::kPing, kNamespace,
       base::test::ParseJson(kPayload)));
+}
+
+TEST_F(MirroringActivityTest, GetScrubbedLogMessage) {
+  static constexpr char message[] = R"(
+    {
+      "offer": {
+        "supportedStreams": [
+          {
+            "aesIvMask": "Mask_A",
+            "aesKey": "Key_A"
+          },
+          {
+            "aesIvMask": "Mask_B",
+            "aesKey": "Key_B"
+          }
+        ]
+      },
+      "type": "OFFER"
+    })";
+  static constexpr char scrubbed_message[] = R"(
+    {
+      "offer": {
+        "supportedStreams": [
+          {
+            "aesIvMask": "AES_IV_MASK",
+            "aesKey": "AES_KEY"
+          },
+          {
+            "aesIvMask": "AES_IV_MASK",
+            "aesKey": "AES_KEY"
+          }
+        ]
+      },
+      "type": "OFFER"
+    })";
+
+  absl::optional<base::Value> message_json = base::JSONReader::Read(message);
+  EXPECT_TRUE(message_json);
+  EXPECT_THAT(scrubbed_message,
+              base::test::IsJson(MirroringActivity::GetScrubbedLogMessage(
+                  message_json.value())));
+}
+
+// Site-initiated mirroring activities must be able to send messages to the
+// client, which may be expecting to receive Cast protocol messages.
+// See crbug.com/1078481 for context.
+TEST_F(MirroringActivityTest, SendMessageToClient) {
+  MakeActivity();
+
+  static constexpr char kClientId[] = "theClientId";
+  blink::mojom::PresentationConnectionMessagePtr message =
+      blink::mojom::PresentationConnectionMessage::NewMessage("\"theMessage\"");
+  auto* message_ptr = message.get();
+  auto* client = AddMockClient(activity_.get(), kClientId, 1);
+  EXPECT_CALL(*client, SendMessageToClient).WillOnce([=](auto arg) {
+    EXPECT_EQ(message_ptr, arg.get());
+  });
+  activity_->SendMessageToClient(kClientId, std::move(message));
 }
 
 }  // namespace media_router

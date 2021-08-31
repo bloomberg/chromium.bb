@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRM_GPU_SCANOUT_BUFFER_H_
-#define UI_OZONE_PLATFORM_DRM_GPU_SCANOUT_BUFFER_H_
+#ifndef UI_OZONE_PLATFORM_DRM_GPU_DRM_FRAMEBUFFER_H_
+#define UI_OZONE_PLATFORM_DRM_GPU_DRM_FRAMEBUFFER_H_
 
 #include <drm_fourcc.h>
 #include <stdint.h>
@@ -92,6 +92,10 @@ class DrmFramebuffer : public base::RefCountedThreadSafe<DrmFramebuffer> {
   // Device on which the buffer was created.
   const scoped_refptr<DrmDevice>& drm_device() const { return drm_device_; }
 
+  int modeset_sequence_id_at_allocation() const {
+    return modeset_sequence_id_at_allocation_;
+  }
+
  private:
   ~DrmFramebuffer();
 
@@ -110,9 +114,13 @@ class DrmFramebuffer : public base::RefCountedThreadSafe<DrmFramebuffer> {
   const std::vector<uint64_t> preferred_modifiers_;
   const gfx::Size size_;
 
+  // The latest modeset sequence ID that was retrieved from DrmDevice when the
+  // buffer is initialized.
+  const int modeset_sequence_id_at_allocation_ = 0;
+
   friend class base::RefCountedThreadSafe<DrmFramebuffer>;
 };
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRM_GPU_SCANOUT_BUFFER_H_
+#endif  // UI_OZONE_PLATFORM_DRM_GPU_DRM_FRAMEBUFFER_H_

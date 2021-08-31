@@ -12,7 +12,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chromecast.base.Controller;
-import org.chromium.chromecast.base.Unit;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -33,7 +32,7 @@ public class CastContentWindowAndroid implements CastWebContentsComponent.OnComp
     private Context mContext;
     private CastWebContentsComponent mComponent;
 
-    private final Controller<Unit> mScreenAccess = new Controller<>();
+    private final Controller<Boolean> mScreenAccess = new Controller<>();
     private final Controller<CastWebContentsComponent.StartParams> mStartParams =
             new Controller<>();
 
@@ -42,38 +41,37 @@ public class CastContentWindowAndroid implements CastWebContentsComponent.OnComp
     @SuppressWarnings("unused")
     @CalledByNative
     private static CastContentWindowAndroid create(long nativeCastContentWindowAndroid,
-            boolean isHeadless, boolean enableTouchInput, boolean isRemoteControlMode,
-            boolean turnOnScreen, String sessionId) {
+            boolean enableTouchInput, boolean isRemoteControlMode, boolean turnOnScreen,
+            String sessionId) {
         return new CastContentWindowAndroid(nativeCastContentWindowAndroid,
-                ContextUtils.getApplicationContext(), isHeadless, enableTouchInput,
-                isRemoteControlMode, turnOnScreen, sessionId);
+                ContextUtils.getApplicationContext(), enableTouchInput, isRemoteControlMode,
+                turnOnScreen, sessionId);
     }
 
     private CastContentWindowAndroid(long nativeCastContentWindowAndroid, final Context context,
-            boolean isHeadless, boolean enableTouchInput, boolean isRemoteControlMode,
-            boolean turnOnScreen, String sessionId) {
+            boolean enableTouchInput, boolean isRemoteControlMode, boolean turnOnScreen,
+            String sessionId) {
         mNativeCastContentWindowAndroid = nativeCastContentWindowAndroid;
         mContext = context;
         Log.i(TAG,
                 "Creating new CastContentWindowAndroid(No. " + sInstanceId++
                         + ") Seesion ID: " + sessionId);
-        // TODO call CastContentWindowAndroidJni.get().getId() to set ID to
-        // CastWebContentsComponent.
-        mComponent = new CastWebContentsComponent(sessionId, this, this, isHeadless,
-                enableTouchInput, isRemoteControlMode, turnOnScreen);
-
-        mScreenAccess.subscribe(x -> mStartParams.subscribe(startParams -> {
-            mComponent.start(startParams);
+        mComponent = new CastWebContentsComponent(
+                sessionId, this, this, enableTouchInput, isRemoteControlMode, turnOnScreen);
+        mScreenAccess.subscribe(screenAccess -> mStartParams.subscribe(startParams -> {
+            // If the app doesn't have screen access, start in headless mode, so that the web
+            // content can still have a window attached. Since we have video overlay always
+            // enabled, this can unblock video decoder.
+            mComponent.start(startParams, !screenAccess);
             return () -> mComponent.stop(mContext);
         }));
     }
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void createWindowForWebContents(WebContents webContents, int visisbilityPriority) {
+    private void createWindowForWebContents(
+            WebContents webContents, String appId, int visisbilityPriority) {
         if (DEBUG) Log.d(TAG, "createWindowForWebContents");
-        String appId = CastContentWindowAndroidJni.get().getId(
-                mNativeCastContentWindowAndroid, CastContentWindowAndroid.this);
         mStartParams.set(new CastWebContentsComponent.StartParams(
                 mContext, webContents, appId, visisbilityPriority));
     }
@@ -82,14 +80,14 @@ public class CastContentWindowAndroid implements CastWebContentsComponent.OnComp
     @CalledByNative
     private void grantScreenAccess() {
         if (DEBUG) Log.d(TAG, "grantScreenAccess");
-        mScreenAccess.set(Unit.unit());
+        mScreenAccess.set(true);
     }
 
     @SuppressWarnings("unused")
     @CalledByNative
     private void revokeScreenAccess() {
         if (DEBUG) Log.d(TAG, "revokeScreenAccess");
-        mScreenAccess.reset();
+        mScreenAccess.set(false);
     }
 
     @SuppressWarnings("unused")
@@ -178,6 +176,5 @@ public class CastContentWindowAndroid implements CastWebContentsComponent.OnComp
                 CastWebContentsComponent.GestureHandledCallback handledGestureCallback);
         void onVisibilityChange(long nativeCastContentWindowAndroid,
                 CastContentWindowAndroid caller, int visibilityType);
-        String getId(long nativeCastContentWindowAndroid, CastContentWindowAndroid caller);
     }
 }

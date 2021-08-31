@@ -13,6 +13,8 @@ component("android") {
   output_name = "ui_android"
   sources = [
     "animation_utils.h",
+    "color_helpers.cc",
+    "color_helpers.h",
     "delegated_frame_host_android.cc",
     "delegated_frame_host_android.h",
     "display_android_manager.cc",
@@ -145,6 +147,7 @@ android_resources("ui_java_resources") {
     "java/res/color/chip_stroke_color.xml",
     "java/res/color/chip_text_color.xml",
     "java/res/color/chip_text_color_secondary.xml",
+    "java/res/color/default_text_color_hint_list.xml",
     "java/res/color/default_text_color_inverse_list.xml",
     "java/res/color/default_text_color_light_list.xml",
     "java/res/color/default_text_color_list.xml",
@@ -179,6 +182,7 @@ android_resources("ui_java_resources") {
     "java/res/drawable-xxxhdpi/popup_bg.9.png",
     "java/res/drawable/custom_toast_background.xml",
     "java/res/drawable/drag_handlebar.xml",
+    "java/res/drawable/ic_apps_blue_24dp.xml",
     "java/res/drawable/ic_expand_more_horizontal_black_24dp.xml",
     "java/res/drawable/popup_bg_tinted.xml",
     "java/res/font/accent_font.xml",
@@ -225,10 +229,10 @@ android_library("ui_utils_java") {
   ]
   deps = [
     "//base:base_java",
-    "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/android_deps:androidx_appcompat_appcompat_java",
-    "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
-    "//third_party/android_deps:androidx_core_core_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
+    "//third_party/androidx:androidx_appcompat_appcompat_java",
+    "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
+    "//third_party/androidx:androidx_core_core_java",
   ]
 }
 
@@ -276,6 +280,7 @@ android_library("ui_no_recycler_view_java") {
     "java/src/org/chromium/ui/base/ViewAndroidDelegate.java",
     "java/src/org/chromium/ui/base/ViewUtils.java",
     "java/src/org/chromium/ui/base/WindowAndroid.java",
+    "java/src/org/chromium/ui/base/WindowDelegate.java",
     "java/src/org/chromium/ui/display/DisplayAndroid.java",
     "java/src/org/chromium/ui/display/DisplayAndroidManager.java",
     "java/src/org/chromium/ui/display/DisplaySwitches.java",
@@ -285,6 +290,7 @@ android_library("ui_no_recycler_view_java") {
     "java/src/org/chromium/ui/drawable/AnimationLooper.java",
     "java/src/org/chromium/ui/drawable/StateListDrawableBuilder.java",
     "java/src/org/chromium/ui/events/devices/InputDeviceObserver.java",
+    "java/src/org/chromium/ui/gfx/AdpfRenderingStageScheduler.java",
     "java/src/org/chromium/ui/gfx/Animation.java",
     "java/src/org/chromium/ui/gfx/BitmapHelper.java",
     "java/src/org/chromium/ui/gfx/ViewConfigurationHelper.java",
@@ -316,7 +322,6 @@ android_library("ui_no_recycler_view_java") {
     "java/src/org/chromium/ui/resources/HandleViewResources.java",
     "java/src/org/chromium/ui/resources/LayoutResource.java",
     "java/src/org/chromium/ui/resources/Resource.java",
-    "java/src/org/chromium/ui/resources/ResourceExtractor.java",
     "java/src/org/chromium/ui/resources/ResourceFactory.java",
     "java/src/org/chromium/ui/resources/ResourceLoader.java",
     "java/src/org/chromium/ui/resources/ResourceManager.java",
@@ -344,6 +349,7 @@ android_library("ui_no_recycler_view_java") {
     "java/src/org/chromium/ui/widget/ChromeBulletSpan.java",
     "java/src/org/chromium/ui/widget/ChromeImageButton.java",
     "java/src/org/chromium/ui/widget/ChromeImageView.java",
+    "java/src/org/chromium/ui/widget/LoadingView.java",
     "java/src/org/chromium/ui/widget/OptimizedFrameLayout.java",
     "java/src/org/chromium/ui/widget/RectProvider.java",
     "java/src/org/chromium/ui/widget/RippleBackgroundHelper.java",
@@ -358,14 +364,15 @@ android_library("ui_no_recycler_view_java") {
     ":ui_java_resources",
     ":ui_utils_java",
     "//base:base_java",
-    "//base:jni_java",
-    "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/android_deps:androidx_appcompat_appcompat_java",
-    "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
-    "//third_party/android_deps:androidx_asynclayoutinflater_asynclayoutinflater_java",
-    "//third_party/android_deps:androidx_core_core_java",
-    "//third_party/android_deps:androidx_vectordrawable_vectordrawable_animated_java",
+    "//components/url_formatter/android:url_formatter_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
+    "//third_party/androidx:androidx_appcompat_appcompat_java",
+    "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
+    "//third_party/androidx:androidx_asynclayoutinflater_asynclayoutinflater_java",
+    "//third_party/androidx:androidx_core_core_java",
+    "//third_party/androidx:androidx_vectordrawable_vectordrawable_animated_java",
     "//ui/base/cursor/mojom:cursor_type_java",
+    "//url:gurl_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   srcjar_deps = [ ":java_enums_srcjar" ]
@@ -382,8 +389,8 @@ android_library("ui_recycler_view_java") {
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   deps = [
     ":ui_no_recycler_view_java",
-    "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
+    "//third_party/androidx:androidx_recyclerview_recyclerview_java",
   ]
 }
 
@@ -414,8 +421,9 @@ android_library("ui_java_test_support") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//third_party/android_deps:android_support_v7_appcompat_java",
-    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_support_test_runner:rules_java",
+    "//third_party/android_support_test_runner:runner_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/junit",
   ]
 }
@@ -459,6 +467,7 @@ junit_binary("ui_junit_tests") {
     "junit/src/org/chromium/ui/text/SpanApplierTest.java",
     "junit/src/org/chromium/ui/util/TokenHolderTest.java",
     "junit/src/org/chromium/ui/widget/AnchoredPopupWindowTest.java",
+    "junit/src/org/chromium/ui/widget/LoadingViewTest.java",
     "junit/src/org/chromium/ui/widget/ViewLookupCachingFrameLayoutTest.java",
   ]
   deps = [
@@ -469,15 +478,18 @@ junit_binary("ui_junit_tests") {
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//base/test:test_support_java",
-    "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/android_deps:androidx_appcompat_appcompat_java",
-    "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
-    "//third_party/android_deps:androidx_asynclayoutinflater_asynclayoutinflater_java",
-    "//third_party/android_deps:androidx_test_core_java",
-    "//third_party/android_deps:androidx_test_ext_junit_java",
-    "//third_party/android_deps:androidx_test_runner_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
+    "//third_party/androidx:androidx_appcompat_appcompat_java",
+    "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
+    "//third_party/androidx:androidx_asynclayoutinflater_asynclayoutinflater_java",
+    "//third_party/androidx:androidx_core_core_java",
+    "//third_party/androidx:androidx_test_core_java",
+    "//third_party/androidx:androidx_test_ext_junit_java",
+    "//third_party/androidx:androidx_test_runner_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/mockito:mockito_java",
+    "//url:gurl_java",
+    "//url:gurl_junit_test_support",
   ]
   android_manifest = "junit/AndroidManifest.xml"
 }
@@ -487,6 +499,7 @@ test("ui_android_unittests") {
     # Clipboard unittests are run here for Android as gtests on Android are not
     # sharded. On other OSs these are run as part of interactive_ui_tests.
     "//ui/base/clipboard/clipboard_unittest.cc",
+    "color_helpers_unittest.cc",
     "overscroll_refresh_unittest.cc",
     "resources/resource_manager_impl_unittest.cc",
     "run_all_unittests.cc",
@@ -525,7 +538,6 @@ android_library("clipboard_java_test_support") {
   deps = [
     "//base:base_java",
     "//base:base_java_test_support",
-    "//base:jni_java",
   ]
 }
 
@@ -540,9 +552,9 @@ android_library("ui_javatests") {
     ":ui_java_test_support",
     "//base:base_java",
     "//base:base_java_test_support",
-    "//base:jni_java",
     "//content/public/test/android:content_java_test_support",
-    "//third_party/android_deps:androidx_test_runner_java",
+    "//third_party/androidx:androidx_test_runner_java",
+    "//third_party/hamcrest:hamcrest_library_java",
     "//third_party/junit",
   ]
 }

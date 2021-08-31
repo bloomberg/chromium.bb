@@ -22,13 +22,13 @@ TEST(MessageFieldsTest, CanParseEnumToString) {
 }
 
 TEST(MessageFieldsTest, CanStringToEnum) {
-  EXPECT_EQ(AudioCodec::kOpus, StringToAudioCodec("opus"));
-  EXPECT_EQ(VideoCodec::kHevc, StringToVideoCodec("hevc"));
+  EXPECT_EQ(AudioCodec::kOpus, StringToAudioCodec("opus").value());
+  EXPECT_EQ(VideoCodec::kHevc, StringToVideoCodec("hevc").value());
 }
 
 TEST(MessageFieldsTest, Identity) {
-  EXPECT_STREQ("opus", CodecToString(StringToAudioCodec("opus")));
-  EXPECT_STREQ("vp8", CodecToString(StringToVideoCodec("vp8")));
+  EXPECT_STREQ("opus", CodecToString(StringToAudioCodec("opus").value()));
+  EXPECT_STREQ("vp8", CodecToString(StringToVideoCodec("vp8").value()));
 }
 
 }  // namespace

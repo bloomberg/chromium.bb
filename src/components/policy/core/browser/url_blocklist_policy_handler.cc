@@ -8,8 +8,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/policy/core/browser/policy_error_map.h"
+#include "components/policy/core/browser/url_util.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/policy_constants.h"
@@ -34,11 +37,38 @@ bool URLBlocklistPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
   }
 
   const base::Value* url_blocklist = policies.GetValue(policy_name());
-  if (url_blocklist) {
-    if (!url_blocklist->is_list()) {
-      errors->AddError(policy_name(), IDS_POLICY_TYPE_ERROR,
-                       base::Value::GetTypeName(base::Value::Type::LIST));
+  if (!url_blocklist)
+    return true;
+
+  if (!url_blocklist->is_list()) {
+    errors->AddError(policy_name(), IDS_POLICY_TYPE_ERROR,
+                     base::Value::GetTypeName(base::Value::Type::LIST));
+
+    return true;
+  }
+
+  bool type_error = false;
+  std::string policy;
+  std::vector<std::string> invalid_policies;
+  for (const auto& policy_iter : url_blocklist->GetList()) {
+    if (!policy_iter.is_string()) {
+      type_error = true;
+      continue;
     }
+
+    policy = policy_iter.GetString();
+    if (!ValidatePolicy(policy))
+      invalid_policies.push_back(policy);
+  }
+
+  if (type_error) {
+    errors->AddError(policy_name(), IDS_POLICY_TYPE_ERROR,
+                     base::Value::GetTypeName(base::Value::Type::STRING));
+  }
+
+  if (invalid_policies.size()) {
+    errors->AddError(policy_name(), IDS_POLICY_PROTO_PARSING_ERROR,
+                     base::JoinString(invalid_policies, ","));
   }
 
   return true;
@@ -63,7 +93,7 @@ void URLBlocklistPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   // We start with the DisabledSchemes because we have size limit when
   // handling URLBlocklists.
   if (disabled_schemes) {
-    for (const auto& entry : *disabled_schemes) {
+    for (const auto& entry : disabled_schemes->GetList()) {
       std::string entry_value;
       if (entry.GetAsString(&entry_value)) {
         entry_value.append("://*");
@@ -73,16 +103,24 @@ void URLBlocklistPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   }
 
   if (url_blocklist) {
-    for (const auto& entry : *url_blocklist) {
+    for (const auto& entry : url_blocklist->GetList()) {
       if (entry.is_string())
         merged_url_blocklist.push_back(entry.Clone());
     }
   }
 
   if (disabled_schemes || url_blocklist) {
-    prefs->SetValue(policy_prefs::kUrlBlacklist,
+    prefs->SetValue(policy_prefs::kUrlBlocklist,
                     base::Value(std::move(merged_url_blocklist)));
   }
+}
+
+bool URLBlocklistPolicyHandler::ValidatePolicy(const std::string& policy) {
+  url_util::FilterComponents components;
+  return url_util::FilterToComponents(
+      policy, &components.scheme, &components.host,
+      &components.match_subdomains, &components.port, &components.path,
+      &components.query);
 }
 
 }  // namespace policy

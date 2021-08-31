@@ -74,6 +74,18 @@ class UserTypeFilterTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
 };
 
+class GuestUserTypeFilterTest : public UserTypeFilterTest,
+                                public ::testing::WithParamInterface<bool> {
+ public:
+  GuestUserTypeFilterTest() {
+    TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
+        scoped_feature_list_, GetParam());
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 TEST_F(UserTypeFilterTest, ChildUser) {
   const auto profile = CreateProfile();
@@ -85,7 +97,7 @@ TEST_F(UserTypeFilterTest, ChildUser) {
 }
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
-TEST_F(UserTypeFilterTest, GuestUser) {
+TEST_P(GuestUserTypeFilterTest, GuestUser) {
   auto profile = CreateGuestProfile();
   EXPECT_FALSE(Match(profile, CreateJsonWithFilter({kUserTypeUnmanaged})));
   EXPECT_TRUE(Match(profile, CreateJsonWithFilter({kUserTypeGuest})));
@@ -102,15 +114,6 @@ TEST_F(UserTypeFilterTest, ManagedUser) {
       profile, CreateJsonWithFilter({kUserTypeUnmanaged, kUserTypeManaged})));
 }
 
-TEST_F(UserTypeFilterTest, SupervisedUser) {
-  const auto profile = CreateProfile();
-  profile->SetSupervisedUserId("asdf");
-  EXPECT_FALSE(Match(profile, CreateJsonWithFilter({kUserTypeUnmanaged})));
-  EXPECT_TRUE(Match(profile, CreateJsonWithFilter({kUserTypeSupervised})));
-  EXPECT_TRUE(Match(profile, CreateJsonWithFilter(
-                                 {kUserTypeUnmanaged, kUserTypeSupervised})));
-}
-
 TEST_F(UserTypeFilterTest, UnmanagedUser) {
   EXPECT_TRUE(
       Match(CreateProfile(), CreateJsonWithFilter({kUserTypeUnmanaged})));
@@ -120,7 +123,7 @@ TEST_F(UserTypeFilterTest, EmptyFilter) {
   EXPECT_FALSE(Match(CreateProfile(), CreateJsonWithFilter({})));
 }
 
-TEST_F(UserTypeFilterTest, DefaultFilter) {
+TEST_P(GuestUserTypeFilterTest, DefaultFilter) {
   auto profile = CreateProfile();
   base::ListValue default_filter;
   default_filter.Append(base::Value(kUserTypeUnmanaged));
@@ -134,16 +137,15 @@ TEST_F(UserTypeFilterTest, DefaultFilter) {
   // Child user.
   profile->SetSupervisedUserId(supervised_users::kChildAccountSUID);
   EXPECT_FALSE(MatchDefault(profile, default_filter));
-  // Supervised user.
-  // TODO(crbug.com/971311): Remove the next assert test once legacy supervised
-  // user code has been fully removed.
-  profile->SetSupervisedUserId("asdf");
-  EXPECT_FALSE(MatchDefault(profile, default_filter));
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
   // Managed user.
   profile = CreateProfile();
   profile->GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);
   EXPECT_FALSE(MatchDefault(profile, default_filter));
 }
+
+INSTANTIATE_TEST_SUITE_P(AllGuestTypes,
+                         GuestUserTypeFilterTest,
+                         /*is_ephemeral=*/testing::Bool());
 
 }  // namespace apps

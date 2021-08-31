@@ -6,6 +6,8 @@
 
 #include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/media/webrtc/current_tab_desktop_media_list.h"
 #include "chrome/browser/media/webrtc/desktop_media_list_ash.h"
 #include "chrome/browser/media/webrtc/native_desktop_media_list.h"
 #include "chrome/browser/media/webrtc/tab_desktop_media_list.h"
@@ -21,12 +23,12 @@ DesktopMediaPickerFactoryImpl* DesktopMediaPickerFactoryImpl::GetInstance() {
   return impl.get();
 }
 
-std::unique_ptr<DesktopMediaPicker>
-DesktopMediaPickerFactoryImpl::CreatePicker() {
+std::unique_ptr<DesktopMediaPicker> DesktopMediaPickerFactoryImpl::CreatePicker(
+    const content::MediaStreamRequest* request) {
 // DesktopMediaPicker is implemented only for Windows, OSX and Aura Linux
 // builds.
-#if defined(TOOLKIT_VIEWS) || defined(OS_MAC)
-  return DesktopMediaPicker::Create();
+#if defined(TOOLKIT_VIEWS)
+  return DesktopMediaPicker::Create(request);
 #else
   return nullptr;
 #endif
@@ -34,24 +36,26 @@ DesktopMediaPickerFactoryImpl::CreatePicker() {
 
 std::vector<std::unique_ptr<DesktopMediaList>>
 DesktopMediaPickerFactoryImpl::CreateMediaList(
-    const std::vector<content::DesktopMediaID::Type>& types) {
+    const std::vector<DesktopMediaList::Type>& types,
+    content::WebContents* web_contents) {
   // Keep same order as the input |sources| and avoid duplicates.
   std::vector<std::unique_ptr<DesktopMediaList>> source_lists;
   bool have_screen_list = false;
   bool have_window_list = false;
   bool have_tab_list = false;
+  bool have_current_tab = false;
   for (auto source_type : types) {
     switch (source_type) {
-      case content::DesktopMediaID::TYPE_NONE:
+      case DesktopMediaList::Type::kNone:
         break;
-      case content::DesktopMediaID::TYPE_SCREEN: {
+      case DesktopMediaList::Type::kScreen: {
         if (have_screen_list)
           continue;
         std::unique_ptr<DesktopMediaList> screen_list;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
         screen_list = std::make_unique<DesktopMediaListAsh>(
-            content::DesktopMediaID::TYPE_SCREEN);
-#else   // !defined(OS_CHROMEOS)
+            DesktopMediaList::Type::kScreen);
+#else   // !BUILDFLAG(IS_CHROMEOS_ASH)
         // If screen capture is not supported on the platform, then we should
         // not attempt to create an instance of NativeDesktopMediaList. Doing so
         // will hit a DCHECK.
@@ -61,20 +65,20 @@ DesktopMediaPickerFactoryImpl::CreateMediaList(
           continue;
 
         screen_list = std::make_unique<NativeDesktopMediaList>(
-            content::DesktopMediaID::TYPE_SCREEN, std::move(capturer));
-#endif  // !defined(OS_CHROMEOS)
+            DesktopMediaList::Type::kScreen, std::move(capturer));
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
         have_screen_list = true;
         source_lists.push_back(std::move(screen_list));
         break;
       }
-      case content::DesktopMediaID::TYPE_WINDOW: {
+      case DesktopMediaList::Type::kWindow: {
         if (have_window_list)
           continue;
         std::unique_ptr<DesktopMediaList> window_list;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
         window_list = std::make_unique<DesktopMediaListAsh>(
-            content::DesktopMediaID::TYPE_WINDOW);
-#else   // !defined(OS_CHROMEOS)
+            DesktopMediaList::Type::kWindow);
+#else   // !BUILDFLAG(IS_CHROMEOS_ASH)
         // If window capture is not supported on the platform, then we should
         // not attempt to create an instance of NativeDesktopMediaList. Doing so
         // will hit a DCHECK.
@@ -83,19 +87,27 @@ DesktopMediaPickerFactoryImpl::CreateMediaList(
         if (!capturer)
           continue;
         window_list = std::make_unique<NativeDesktopMediaList>(
-            content::DesktopMediaID::TYPE_WINDOW, std::move(capturer));
-#endif  // !defined(OS_CHROMEOS)
+            DesktopMediaList::Type::kWindow, std::move(capturer));
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
         have_window_list = true;
         source_lists.push_back(std::move(window_list));
         break;
       }
-      case content::DesktopMediaID::TYPE_WEB_CONTENTS: {
+      case DesktopMediaList::Type::kWebContents: {
         if (have_tab_list)
           continue;
         std::unique_ptr<DesktopMediaList> tab_list =
             std::make_unique<TabDesktopMediaList>();
         have_tab_list = true;
         source_lists.push_back(std::move(tab_list));
+        break;
+      }
+      case DesktopMediaList::Type::kCurrentTab: {
+        if (have_current_tab)
+          continue;
+        have_current_tab = true;
+        source_lists.push_back(
+            std::make_unique<CurrentTabDesktopMediaList>(web_contents));
         break;
       }
     }

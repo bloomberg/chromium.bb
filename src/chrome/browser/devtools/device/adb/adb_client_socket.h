@@ -14,19 +14,18 @@
 
 class AdbClientSocket {
  public:
-  typedef base::Callback<void(int, const std::string&)> CommandCallback;
-  typedef base::Callback<void(int result, std::unique_ptr<net::StreamSocket>)>
-      SocketCallback;
+  using CommandCallback = base::OnceCallback<void(int, const std::string&)>;
+  using SocketCallback =
+      base::OnceCallback<void(int result, std::unique_ptr<net::StreamSocket>)>;
 
   static void AdbQuery(int port,
                        const std::string& query,
-                       const CommandCallback& callback);
-
+                       CommandCallback callback);
 
   static void TransportQuery(int port,
                              const std::string& serial,
                              const std::string& socket_name,
-                             const SocketCallback& callback);
+                             SocketCallback callback);
 
  protected:
   explicit AdbClientSocket(int port);
@@ -36,19 +35,19 @@ class AdbClientSocket {
 
   void SendCommand(const std::string& command,
                    bool is_void,
-                   const CommandCallback& callback);
+                   CommandCallback callback);
 
   std::unique_ptr<net::StreamSocket> socket_;
 
  private:
-  void ReadResponse(const CommandCallback& callback, bool is_void, int result);
+  void ReadResponse(CommandCallback callback, bool is_void, int result);
 
-  void OnResponseHeader(const CommandCallback& callback,
+  void OnResponseHeader(CommandCallback callback,
                         bool is_void,
                         scoped_refptr<net::IOBuffer> response_buffer,
                         int result);
 
-  void OnResponseData(const CommandCallback& callback,
+  void OnResponseData(CommandCallback callback,
                       const std::string& response,
                       scoped_refptr<net::IOBuffer> response_buffer,
                       int bytes_left,

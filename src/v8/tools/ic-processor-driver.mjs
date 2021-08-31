@@ -22,7 +22,7 @@ export function readFile(fileName) {
   try {
     return read(fileName);
   } catch (e) {
-    print(fileName + ': ' + (e.message || e));
+    console.log(fileName + ': ' + (e.message || e));
     throw e;
   }
 }
@@ -78,17 +78,13 @@ const accumulator = {
   StoreInArrayLiteralIC: 0, 
 }
 for (const ic of processor.icTimeline.all) {
-  print(
-      ic.type + ' (' + ic.oldState + '->' + ic.newState + ic.modifier + ') at ' +
-      ic.filePosition + ' ' + ic.key +
-      ' (map 0x' + ic.map.toString(16) + ')' +
-      (ic.reason ? ` ${ic.reason}` : '') + ' time: ' + ic.time);
+  console.log(Object.values(ic));
   accumulator[ic.type]++;
 }
 
-print("========================================");
+console.log("========================================");
 for (const key of Object.keys(accumulator)) {
-  print(key + ": " + accumulator[key]);
+  console.log(key + ": " + accumulator[key]);
 }
 
 

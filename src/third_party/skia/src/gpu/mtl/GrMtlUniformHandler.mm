@@ -5,13 +5,17 @@
 * found in the LICENSE file.
 */
 
+#include "src/gpu/mtl/GrMtlUniformHandler.h"
+
+#include "include/private/GrMtlTypesPriv.h"
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
-#include "src/gpu/mtl/GrMtlUniformHandler.h"
 
 #if !__has_feature(objc_arc)
 #error This file must be compiled with Arc. Use -fobjc-arc flag
 #endif
+
+GR_NORETAIN_BEGIN
 
 // TODO: this class is basically copy and pasted from GrVklUniformHandler so that we can have
 // some shaders working. The SkSL Metal code generator was written to work with GLSL generated for
@@ -48,6 +52,14 @@ static uint32_t grsltype_to_alignment_mask(GrSLType type) {
         case kInt_GrSLType:
         case kUint_GrSLType:
             return 0x3;
+        case kInt2_GrSLType:
+        case kUint2_GrSLType:
+            return 0x7;
+        case kInt3_GrSLType:
+        case kUint3_GrSLType:
+        case kInt4_GrSLType:
+        case kUint4_GrSLType:
+            return 0xF;
         case kHalf_GrSLType: // fall through
         case kFloat_GrSLType:
             return 0x3;
@@ -59,14 +71,6 @@ static uint32_t grsltype_to_alignment_mask(GrSLType type) {
             return 0xF;
         case kHalf4_GrSLType: // fall through
         case kFloat4_GrSLType:
-            return 0xF;
-        case kUint2_GrSLType:
-            return 0x7;
-        case kInt2_GrSLType:
-            return 0x7;
-        case kInt3_GrSLType:
-            return 0xF;
-        case kInt4_GrSLType:
             return 0xF;
         case kHalf2x2_GrSLType: // fall through
         case kFloat2x2_GrSLType:
@@ -81,6 +85,9 @@ static uint32_t grsltype_to_alignment_mask(GrSLType type) {
         // This query is only valid for certain types.
         case kVoid_GrSLType:
         case kBool_GrSLType:
+        case kBool2_GrSLType:
+        case kBool3_GrSLType:
+        case kBool4_GrSLType:
         case kTexture2DSampler_GrSLType:
         case kTextureExternalSampler_GrSLType:
         case kTexture2DRectSampler_GrSLType:
@@ -127,10 +134,6 @@ static inline uint32_t grsltype_to_mtl_size(GrSLType type) {
             return 4 * sizeof(uint16_t);
         case kUShort4_GrSLType:
             return 4 * sizeof(uint16_t);
-        case kInt_GrSLType:
-            return sizeof(int32_t);
-        case kUint_GrSLType:
-            return sizeof(int32_t);
         case kHalf_GrSLType: // fall through
         case kFloat_GrSLType:
             return sizeof(float);
@@ -139,17 +142,19 @@ static inline uint32_t grsltype_to_mtl_size(GrSLType type) {
             return 2 * sizeof(float);
         case kHalf3_GrSLType: // fall through
         case kFloat3_GrSLType:
-            return 4 * sizeof(float);
-        case kHalf4_GrSLType: // fall through
+        case kHalf4_GrSLType:
         case kFloat4_GrSLType:
             return 4 * sizeof(float);
+        case kInt_GrSLType: // fall through
+        case kUint_GrSLType:
+            return sizeof(int32_t);
+        case kInt2_GrSLType: // fall through
         case kUint2_GrSLType:
-            return 2 * sizeof(uint32_t);
-        case kInt2_GrSLType:
             return 2 * sizeof(int32_t);
-        case kInt3_GrSLType:
-            return 4 * sizeof(int32_t);
+        case kInt3_GrSLType: // fall through
+        case kUint3_GrSLType:
         case kInt4_GrSLType:
+        case kUint4_GrSLType:
             return 4 * sizeof(int32_t);
         case kHalf2x2_GrSLType: // fall through
         case kFloat2x2_GrSLType:
@@ -164,6 +169,9 @@ static inline uint32_t grsltype_to_mtl_size(GrSLType type) {
         // This query is only valid for certain types.
         case kVoid_GrSLType:
         case kBool_GrSLType:
+        case kBool2_GrSLType:
+        case kBool3_GrSLType:
+        case kBool4_GrSLType:
         case kTexture2DSampler_GrSLType:
         case kTextureExternalSampler_GrSLType:
         case kTexture2DRectSampler_GrSLType:
@@ -209,7 +217,7 @@ GrGLSLUniformHandler::UniformHandle GrMtlUniformHandler::internalAddUniformArray
                                                                    int arrayCount,
                                                                    const char** outName) {
     SkASSERT(name && strlen(name));
-    GrSLTypeIsFloatType(type);
+    SkASSERT(GrSLTypeCanBeUniformValue(type));
 
     // TODO this is a bit hacky, lets think of a better way.  Basically we need to be able to use
     // the uniform view matrix name in the GP, and the GP is immutable so it has to tell the PB
@@ -300,7 +308,7 @@ void GrMtlUniformHandler::appendUniformDecls(GrShaderFlags visibility, SkString*
     SkString uniformsString;
     for (const UniformInfo& localUniform : fUniforms.items()) {
         if (visibility & localUniform.fVisibility) {
-            if (GrSLTypeIsFloatType(localUniform.fVariable.getType())) {
+            if (GrSLTypeCanBeUniformValue(localUniform.fVariable.getType())) {
                 localUniform.fVariable.appendDecl(fProgramBuilder->shaderCaps(), &uniformsString);
                 uniformsString.append(";\n");
             }
@@ -312,3 +320,5 @@ void GrMtlUniformHandler::appendUniformDecls(GrShaderFlags visibility, SkString*
         out->appendf("%s\n};\n", uniformsString.c_str());
     }
 }
+
+GR_NORETAIN_END

@@ -300,8 +300,7 @@ static constexpr size_t DefaultOptQWakeupSize = GlobalContext::MaxOptQSize >> 1;
 GlobalContext::GlobalContext(Ostream *OsDump, Ostream *OsEmit, Ostream *OsError,
                              ELFStreamer *ELFStr)
     : Strings(new StringPool()), ConstPool(new ConstantPool()), ErrorStatus(),
-      StrDump(OsDump), StrEmit(OsEmit), StrError(OsError), IntrinsicsInfo(this),
-      ObjectWriter(),
+      StrDump(OsDump), StrEmit(OsEmit), StrError(OsError), ObjectWriter(),
       OptQWakeupSize(std::max(DefaultOptQWakeupSize,
                               size_t(getFlags().getNumTranslationThreads()))),
       OptQ(/*Sequential=*/getFlags().isSequential(),
@@ -483,14 +482,6 @@ void GlobalContext::emitTargetRODataSections() {
   DataLowering->emitTargetRODataSections();
 }
 
-void GlobalContext::saveBlockInfoPtrs() {
-  for (VariableDeclaration *Global : Globals) {
-    if (Cfg::isProfileGlobal(*Global)) {
-      ProfileBlockInfos.push_back(Global);
-    }
-  }
-}
-
 void GlobalContext::lowerGlobals(const std::string &SectionSuffix) {
   TimerMarker T(TimerStack::TT_emitGlobalInitializers, this);
   const bool DumpGlobalVariables =
@@ -506,62 +497,15 @@ void GlobalContext::lowerGlobals(const std::string &SectionSuffix) {
   if (getFlags().getDisableTranslation())
     return;
 
-  saveBlockInfoPtrs();
-  // If we need to shuffle the layout of global variables, shuffle them now.
-  if (getFlags().getReorderGlobalVariables()) {
-    // Create a random number generator for global variable reordering.
-    RandomNumberGenerator RNG(getFlags().getRandomSeed(),
-                              RPE_GlobalVariableReordering);
-    RandomShuffle(Globals.begin(), Globals.end(),
-                  [&RNG](int N) { return (uint32_t)RNG.next(N); });
-  }
-
   if (!BuildDefs::minimal() && Instrumentor)
     Instrumentor->instrumentGlobals(Globals);
 
   DataLowering->lowerGlobals(Globals, SectionSuffix);
-  if (ProfileBlockInfos.empty() && DisposeGlobalVariablesAfterLowering) {
+  if (DisposeGlobalVariablesAfterLowering) {
     Globals.clearAndPurge();
   } else {
     Globals.clear();
   }
-}
-
-void GlobalContext::lowerProfileData() {
-  // ProfileBlockInfoVarDecl is initialized in the constructor, and will only
-  // ever be nullptr after this method completes. This assertion is a convoluted
-  // way of ensuring lowerProfileData is invoked a single time.
-  assert(ProfileBlockInfoVarDecl == nullptr);
-
-  auto GlobalVariablePool = getInitializerAllocator();
-  ProfileBlockInfoVarDecl =
-      VariableDeclaration::createExternal(GlobalVariablePool.get());
-  ProfileBlockInfoVarDecl->setAlignment(typeWidthInBytes(IceType_i64));
-  ProfileBlockInfoVarDecl->setIsConstant(true);
-
-  // Note: if you change this symbol, make sure to update
-  // runtime/szrt_profiler.c as well.
-  ProfileBlockInfoVarDecl->setName(this, "__Sz_block_profile_info");
-
-  for (const VariableDeclaration *PBI : ProfileBlockInfos) {
-    if (Cfg::isProfileGlobal(*PBI)) {
-      constexpr RelocOffsetT BlockExecutionCounterOffset = 0;
-      ProfileBlockInfoVarDecl->addInitializer(
-          VariableDeclaration::RelocInitializer::create(
-              GlobalVariablePool.get(), PBI,
-              {RelocOffset::create(this, BlockExecutionCounterOffset)}));
-    }
-  }
-
-  // This adds a 64-bit sentinel entry to the end of our array. For 32-bit
-  // architectures this will waste 4 bytes.
-  const SizeT Sizeof64BitNullPtr = typeWidthInBytes(IceType_i64);
-  ProfileBlockInfoVarDecl->addInitializer(
-      VariableDeclaration::ZeroInitializer::create(GlobalVariablePool.get(),
-                                                   Sizeof64BitNullPtr));
-  Globals.push_back(ProfileBlockInfoVarDecl);
-  constexpr char ProfileDataSection[] = "$sz_profiler$";
-  lowerGlobals(ProfileDataSection);
 }
 
 void GlobalContext::emitterWrapper(ThreadContext *MyTLS) {
@@ -582,11 +526,6 @@ void GlobalContext::emitItems() {
   uint32_t ShuffleStartIndex = DesiredSequenceNumber;
   uint32_t ShuffleEndIndex = DesiredSequenceNumber;
   bool EmitQueueEmpty = false;
-  const uint32_t ShuffleWindowSize =
-      std::max(1u, getFlags().getReorderFunctionsWindowSize());
-  bool Shuffle = Threaded && getFlags().getReorderFunctions();
-  // Create a random number generator for function reordering.
-  RandomNumberGenerator RNG(getFlags().getRandomSeed(), RPE_FunctionReordering);
 
   while (!EmitQueueEmpty) {
     resizePending(&Pending, DesiredSequenceNumber);
@@ -613,7 +552,6 @@ void GlobalContext::emitItems() {
         Pending[DesiredSequenceNumber] = std::move(RawItem);
       }
     }
-    const auto *CurrentWorkItem = Pending[DesiredSequenceNumber].get();
 
     // We have the desired EmitterWorkItem or nullptr as the end notifier.
     // If the emitter queue is not empty, increase DesiredSequenceNumber and
@@ -621,26 +559,6 @@ void GlobalContext::emitItems() {
     if (!EmitQueueEmpty) {
       DesiredSequenceNumber++;
       ShuffleEndIndex++;
-    }
-
-    if (Shuffle) {
-      // Continue fetching EmitterWorkItem if function reordering is turned on,
-      // and emit queue is not empty, and the number of consecutive pending
-      // items is smaller than the window size, and RawItem is not a
-      // WI_GlobalInits kind. Emit WI_GlobalInits kind block first to avoid
-      // holding an arbitrarily large GlobalDeclarationList.
-      if (!EmitQueueEmpty &&
-          ShuffleEndIndex - ShuffleStartIndex < ShuffleWindowSize &&
-          CurrentWorkItem->getKind() != EmitterWorkItem::WI_GlobalInits)
-        continue;
-
-      // Emit the EmitterWorkItem between Pending[ShuffleStartIndex] to
-      // Pending[ShuffleEndIndex]. If function reordering turned on, shuffle the
-      // pending items from Pending[ShuffleStartIndex] to
-      // Pending[ShuffleEndIndex].
-      RandomShuffle(Pending.begin() + ShuffleStartIndex,
-                    Pending.begin() + ShuffleEndIndex,
-                    [&RNG](uint64_t N) { return (uint32_t)RNG.next(N); });
     }
 
     // Emit the item from ShuffleStartIndex to ShuffleEndIndex.
@@ -900,17 +818,6 @@ JumpTableDataList GlobalContext::getJumpTables() {
               return A.getId() < B.getId();
             });
 
-  if (getFlags().getReorderPooledConstants()) {
-    // If reorder-pooled-constants option is set to true, we also shuffle the
-    // jump tables before emitting them.
-
-    // Create a random number generator for jump tables reordering, considering
-    // jump tables as pooled constants.
-    RandomNumberGenerator RNG(getFlags().getRandomSeed(),
-                              RPE_PooledConstantReordering);
-    RandomShuffle(JumpTables.begin(), JumpTables.end(),
-                  [&RNG](uint64_t N) { return (uint32_t)RNG.next(N); });
-  }
   return JumpTables;
 }
 

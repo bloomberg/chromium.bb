@@ -62,7 +62,7 @@ void BoxModelObjectPainter::PaintTextClipMask(
     const IntRect& mask_rect,
     const PhysicalOffset& paint_offset,
     bool object_has_multiple_boxes) {
-  PaintInfo paint_info(context, mask_rect, PaintPhase::kTextClip,
+  PaintInfo paint_info(context, CullRect(mask_rect), PaintPhase::kTextClip,
                        kGlobalPaintNormalPhase, 0);
   if (flow_box_) {
     LayoutSize local_offset = ToLayoutSize(flow_box_->Location());
@@ -132,11 +132,16 @@ BoxPainterBase::FillLayerInfo BoxModelObjectPainter::GetFillLayerInfo(
   PhysicalBoxSides sides_to_include;
   if (flow_box_)
     sides_to_include = flow_box_->SidesToInclude();
+  RespectImageOrientationEnum respect_orientation =
+      LayoutObject::ShouldRespectImageOrientation(&box_model_);
+  if (auto* style_image = bg_layer.GetImage()) {
+    respect_orientation =
+        style_image->ForceOrientationIfNecessary(respect_orientation);
+  }
   return BoxPainterBase::FillLayerInfo(
       box_model_.GetDocument(), box_model_.StyleRef(),
       box_model_.IsScrollContainer(), color, bg_layer, bleed_avoidance,
-      LayoutObject::ShouldRespectImageOrientation(&box_model_),
-      sides_to_include, box_model_.IsLayoutInline(),
+      respect_orientation, sides_to_include, box_model_.IsLayoutInline(),
       is_painting_scrolling_background);
 }
 

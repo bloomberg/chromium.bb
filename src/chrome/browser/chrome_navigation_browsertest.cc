@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/protocol/devtools_protocol_test_support.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
+#include "chrome/browser/login_detection/login_detection_util.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 #include "chrome/browser/ui/browser.h"
@@ -39,6 +41,8 @@
 #include "components/url_formatter/url_formatter.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/hashing.h"
+#include "content/common/content_navigation_policy.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/navigation_entry.h"
@@ -53,7 +57,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/navigation_policy.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -367,7 +370,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   // This corresponds to "Open link in new tab".
   content::ContextMenuParams params;
   params.is_editable = false;
-  params.media_type = blink::ContextMenuDataMediaType::kNone;
+  params.media_type = blink::mojom::ContextMenuDataMediaType::kNone;
   params.page_url = initial_url;
   params.link_url = new_tab_url;
 
@@ -749,7 +752,9 @@ IN_PROC_BROWSER_TEST_F(
       extension_loader.LoadExtension(ext_dir.UnpackedPath());
   ASSERT_TRUE(extension);
   ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
-  content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+  browser()
+      ->profile()
+      ->GetDefaultStoragePartition()
       ->FlushNetworkInterfaceForTesting();
 
   // 2. Open a popup containing a cross-site subframe.
@@ -793,48 +798,45 @@ IN_PROC_BROWSER_TEST_F(
   //    this navigation to an about:blank URL.
   //
   // This step would have hit the CHECK from https://crbug.com/1026738.
+  url::Origin cross_site_origin = cross_site_subframe->GetLastCommittedOrigin();
   content::TestNavigationObserver nav_observer(popup, 1);
   ASSERT_TRUE(ExecJs(cross_site_subframe,
                      content::JsReplace("top.location = $1", kRedirectedUrl)));
   nav_observer.Wait();
   EXPECT_EQ(url::kAboutBlankURL, popup->GetLastCommittedURL());
+  EXPECT_EQ(cross_site_origin, popup->GetMainFrame()->GetLastCommittedOrigin());
 
-  // 5. Verify that the about:blank URL is hosted in the same process
+  // 5. Verify that the about:blank URL is hosted in the same SiteInstance
   //    as the navigation initiator (and separate from the opener and the old
-  //    popup process).
-  if (content::AreAllSitesIsolatedForTesting()) {
-    EXPECT_NE(opener->GetSiteInstance(), popup->GetSiteInstance());
-    EXPECT_NE(old_popup_site_instance.get(), popup->GetSiteInstance());
-    EXPECT_EQ(old_subframe_site_instance.get(), popup->GetSiteInstance());
-    EXPECT_NE(url::kAboutBlankURL,
-              popup->GetSiteInstance()->GetSiteURL().scheme());
-    EXPECT_NE(url::kDataScheme,
-              popup->GetSiteInstance()->GetSiteURL().scheme());
-  } else {
+  //    popup SiteInstance).
+  EXPECT_EQ(old_subframe_site_instance.get(), popup->GetSiteInstance());
+  EXPECT_NE(url::kAboutBlankURL,
+            popup->GetSiteInstance()->GetSiteURL().scheme());
+  EXPECT_NE(url::kDataScheme, popup->GetSiteInstance()->GetSiteURL().scheme());
+  if (content::AreDefaultSiteInstancesEnabled()) {
     EXPECT_EQ(opener->GetSiteInstance(), popup->GetSiteInstance());
     EXPECT_EQ(old_popup_site_instance.get(), popup->GetSiteInstance());
-    EXPECT_EQ(old_subframe_site_instance.get(), popup->GetSiteInstance());
-    EXPECT_NE(url::kAboutBlankURL,
-              popup->GetSiteInstance()->GetSiteURL().scheme());
-    EXPECT_NE(url::kDataScheme,
-              popup->GetSiteInstance()->GetSiteURL().scheme());
-  }
-
-  // 6. Verify the origin of the about:blank URL in the popup.
-  //
-  // Blink calculates the origin of an about:blank frame based on the
-  // opener-or-parent (rather than based on the navigation initiator's origin
-  // as required by the spec).
-  // TODO(lukasza): https://crbug.com/585649: Once Blink is fixed, adjust test
-  // expectations below to make sure the initiator's origin has been committed.
-  // Consider also adding verification that the about:blank page can be scripted
-  // by other frames with the initiator's origin.
-  if (content::AreAllSitesIsolatedForTesting()) {
-    // If the opener is a blink::RemoteFrame, then Blink uses an opaque origin.
-    EXPECT_TRUE(popup->GetMainFrame()->GetLastCommittedOrigin().opaque());
   } else {
-    EXPECT_EQ(url::Origin::Create(kOpenerUrl),
-              popup->GetMainFrame()->GetLastCommittedOrigin());
+    EXPECT_NE(opener->GetSiteInstance(), popup->GetSiteInstance());
+    EXPECT_NE(old_popup_site_instance.get(), popup->GetSiteInstance());
+
+    // Verify that full isolation results in a separate process for each
+    // SiteInstance. Otherwise they share a process because none of the sites
+    // require a dedicated process.
+    if (content::AreAllSitesIsolatedForTesting()) {
+      EXPECT_NE(opener->GetSiteInstance()->GetProcess(),
+                popup->GetSiteInstance()->GetProcess());
+      EXPECT_NE(old_popup_site_instance->GetProcess(),
+                popup->GetSiteInstance()->GetProcess());
+    } else {
+      EXPECT_FALSE(opener->GetSiteInstance()->RequiresDedicatedProcess());
+      EXPECT_FALSE(popup->GetSiteInstance()->RequiresDedicatedProcess());
+      EXPECT_FALSE(old_popup_site_instance->RequiresDedicatedProcess());
+      EXPECT_EQ(opener->GetSiteInstance()->GetProcess(),
+                popup->GetSiteInstance()->GetProcess());
+      EXPECT_EQ(old_popup_site_instance->GetProcess(),
+                popup->GetSiteInstance()->GetProcess());
+    }
   }
 }
 
@@ -888,7 +890,9 @@ IN_PROC_BROWSER_TEST_F(
       extension_loader.LoadExtension(ext_dir.UnpackedPath());
   ASSERT_TRUE(extension);
   ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
-  content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+  browser()
+      ->profile()
+      ->GetDefaultStoragePartition()
       ->FlushNetworkInterfaceForTesting();
 
   // 2. Open a popup containing a cross-site subframe.
@@ -937,19 +941,37 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(kRedirectTargetUrl, popup->GetLastCommittedURL());
   EXPECT_TRUE(popup->GetMainFrame()->GetLastCommittedOrigin().opaque());
 
-  // 5. Verify that with site-per-process the data: URL is hosted in a brand
-  //    new, separate process (separate from the opener and the previous popup
-  //    process).
-  if (content::AreAllSitesIsolatedForTesting()) {
-    EXPECT_NE(opener->GetSiteInstance(), popup->GetSiteInstance());
-    EXPECT_NE(old_popup_site_instance.get(), popup->GetSiteInstance());
-    EXPECT_EQ(url::kDataScheme,
-              popup->GetSiteInstance()->GetSiteURL().scheme());
-  } else {
+  // 5. Verify that with strict SiteInstances the data: URL is hosted in a brand
+  //    new, separate SiteInstance (separate from the opener and the previous
+  //    popup SiteInstance).
+  if (content::AreDefaultSiteInstancesEnabled()) {
     EXPECT_EQ(opener->GetSiteInstance(), popup->GetSiteInstance());
     EXPECT_EQ(old_popup_site_instance.get(), popup->GetSiteInstance());
     EXPECT_NE(url::kDataScheme,
               popup->GetSiteInstance()->GetSiteURL().scheme());
+  } else {
+    EXPECT_NE(opener->GetSiteInstance(), popup->GetSiteInstance());
+    EXPECT_NE(old_popup_site_instance.get(), popup->GetSiteInstance());
+    EXPECT_EQ(url::kDataScheme,
+              popup->GetSiteInstance()->GetSiteURL().scheme());
+
+    // Verify that full isolation results in a separate process for each
+    // SiteInstance. Otherwise they share a process because none of the sites
+    // require a dedicated process.
+    if (content::AreAllSitesIsolatedForTesting()) {
+      EXPECT_NE(opener->GetSiteInstance()->GetProcess(),
+                popup->GetSiteInstance()->GetProcess());
+      EXPECT_NE(old_popup_site_instance->GetProcess(),
+                popup->GetSiteInstance()->GetProcess());
+    } else {
+      EXPECT_FALSE(opener->GetSiteInstance()->RequiresDedicatedProcess());
+      EXPECT_FALSE(popup->GetSiteInstance()->RequiresDedicatedProcess());
+      EXPECT_FALSE(old_popup_site_instance->RequiresDedicatedProcess());
+      EXPECT_EQ(opener->GetSiteInstance()->GetProcess(),
+                popup->GetSiteInstance()->GetProcess());
+      EXPECT_EQ(old_popup_site_instance->GetProcess(),
+                popup->GetSiteInstance()->GetProcess());
+    }
   }
 }
 
@@ -1354,7 +1376,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   // Ensure that no download happened.
   std::vector<download::DownloadItem*> download_items;
   content::DownloadManager* manager =
-      content::BrowserContext::GetDownloadManager(browser()->profile());
+      browser()->profile()->GetDownloadManager();
   manager->GetAllDownloads(&download_items);
   EXPECT_TRUE(download_items.empty());
 }
@@ -1391,8 +1413,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(popup));
 
   content::DownloadTestObserverInProgress observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()),
-      1 /* wait_count */);
+      browser()->profile()->GetDownloadManager(), 1 /* wait_count */);
   EXPECT_TRUE(content::ExecuteScript(
       popup,
       "window.opener.location ='data:html/text;base64,'+btoa('payload');"));
@@ -1405,7 +1426,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   // Delete any pending download.
   std::vector<download::DownloadItem*> download_items;
   content::DownloadManager* manager =
-      content::BrowserContext::GetDownloadManager(browser()->profile());
+      browser()->profile()->GetDownloadManager();
   manager->GetAllDownloads(&download_items);
   for (auto* item : download_items) {
     if (!item->IsDone())
@@ -1880,6 +1901,13 @@ class SiteIsolationForPasswordSitesBrowserTest
         {features::kSitePerProcess});
   }
 
+  void StartIsolatingSite(Profile* profile, const GURL& url) {
+    content::SiteInstance::StartIsolatingSite(
+        profile, url,
+        content::ChildProcessSecurityPolicy::IsolatedOriginSource::
+            USER_TRIGGERED);
+  }
+
   std::vector<std::string> GetSavedIsolatedSites() {
     return GetSavedIsolatedSites(browser()->profile());
   }
@@ -2073,9 +2101,9 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
 
   // Isolate saved.com and saved2.com persistently.
   GURL saved_url(embedded_test_server()->GetURL("saved.com", "/title1.html"));
-  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved_url);
+  StartIsolatingSite(browser()->profile(), saved_url);
   GURL saved2_url(embedded_test_server()->GetURL("saved2.com", "/title1.html"));
-  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved2_url);
+  StartIsolatingSite(browser()->profile(), saved2_url);
 
   // Check that saved.com utilizes a dedicated process in future navigations.
   // Open a new tab to force creation of a new BrowsingInstance.
@@ -2124,9 +2152,9 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
 IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
                        IsolatedSiteIsSavedOnlyOnce) {
   GURL saved_url(embedded_test_server()->GetURL("saved.com", "/title1.html"));
-  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved_url);
-  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved_url);
-  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved_url);
+  StartIsolatingSite(browser()->profile(), saved_url);
+  StartIsolatingSite(browser()->profile(), saved_url);
+  StartIsolatingSite(browser()->profile(), saved_url);
   EXPECT_THAT(GetSavedIsolatedSites(),
               UnorderedElementsAre("http://saved.com"));
 }
@@ -2138,7 +2166,7 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
                        IncognitoWithIsolatedSites) {
   // Isolate saved.com and verify it's been saved to disk.
   GURL saved_url(embedded_test_server()->GetURL("saved.com", "/title1.html"));
-  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved_url);
+  StartIsolatingSite(browser()->profile(), saved_url);
   EXPECT_THAT(GetSavedIsolatedSites(),
               UnorderedElementsAre("http://saved.com"));
 
@@ -2161,7 +2189,7 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
   // process, and the site is not persisted for either the main or incognito
   // profiles.
   GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
-  content::SiteInstance::StartIsolatingSite(incognito->profile(), foo_url);
+  StartIsolatingSite(incognito->profile(), foo_url);
 
   AddBlankTabAndShow(incognito);
   ui_test_utils::NavigateToURL(incognito, foo_url);
@@ -2193,7 +2221,7 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
 
   // Isolate saved.com and verify it's been saved to disk.
   GURL saved_url(https_server.GetURL("saved.com", "/clear_site_data.html"));
-  content::SiteInstance::StartIsolatingSite(browser()->profile(), saved_url);
+  StartIsolatingSite(browser()->profile(), saved_url);
   EXPECT_THAT(GetSavedIsolatedSites(),
               UnorderedElementsAre("https://saved.com"));
 
@@ -2203,4 +2231,409 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationForPasswordSitesBrowserTest,
   ui_test_utils::NavigateToURL(browser(), saved_url);
   EXPECT_THAT(GetSavedIsolatedSites(),
               UnorderedElementsAre("https://saved.com"));
+}
+
+// This test class turns on the feature to dynamically isolate sites where the
+// user logs in via OAuth. This also requires enabling OAuth login detection
+// (which is used by other features as well) and disabling strict site
+// isolation (so that OAuth isolation can be observed on desktop platforms).
+class SiteIsolationForOAuthSitesBrowserTest
+    : public ChromeNavigationBrowserTest {
+ public:
+  SiteIsolationForOAuthSitesBrowserTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    feature_list_.InitWithFeatures(
+        {login_detection::kLoginDetection,
+         site_isolation::features::kSiteIsolationForOAuthSites},
+        {features::kSitePerProcess});
+  }
+
+  using IsolatedOriginSource =
+      content::ChildProcessSecurityPolicy::IsolatedOriginSource;
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ChromeNavigationBrowserTest::SetUpCommandLine(command_line);
+
+    // Allow HTTPS server to be used on sites other than localhost.
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  }
+
+  void SetUp() override {
+    https_server_.ServeFilesFromSourceDirectory("chrome/test/data");
+    ASSERT_TRUE(https_server_.InitializeAndListen());
+    ChromeNavigationBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    https_server_.StartAcceptingConnections();
+    ChromeNavigationBrowserTest::SetUpOnMainThread();
+  }
+
+  // Login detection only works for HTTPS sites.
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
+
+  base::HistogramTester histograms_;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  net::EmbeddedTestServer https_server_;
+};
+
+// Simulate a popup-based OAuth login flow, where a client opens a popup to log
+// in via OAuth.  Ensure that the client's site becomes isolated when the OAuth
+// login completes.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForOAuthSitesBrowserTest, PopupFlow) {
+  // Navigate to the OAuth requestor.  It shouldn't be isolated yet.
+  ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("www.oauthclient.com", "/title1.html"));
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(contents->GetMainFrame()
+                   ->GetProcess()
+                   ->IsProcessLockedToSiteForTesting());
+
+  using IsolatedOriginSource =
+      content::ChildProcessSecurityPolicy::IsolatedOriginSource;
+  auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
+  EXPECT_FALSE(policy->IsIsolatedSiteFromSource(
+      url::Origin::Create(GURL("https://oauthclient.com")),
+      IsolatedOriginSource::USER_TRIGGERED));
+
+  // Create a popup that emulates an OAuth sign-in flow.
+  content::WebContentsAddedObserver web_contents_added_observer;
+  content::TestNavigationObserver navigation_observer(nullptr, 1);
+  navigation_observer.StartWatchingNewWebContents();
+  ASSERT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      content::JsReplace(
+          "window.open($1, 'oauth_window', 'width=10,height=10');",
+          https_server()->GetURL("www.oauthprovider.com",
+                                 "/title2.html?client_id=123"))));
+  auto* popup_contents = web_contents_added_observer.GetWebContents();
+  navigation_observer.WaitForNavigationFinished();
+
+  // When the popup is closed, it will be detected as an OAuth login.
+  content::WebContentsDestroyedWatcher destroyed_watcher(popup_contents);
+  EXPECT_TRUE(ExecJs(popup_contents, "window.close()"));
+  destroyed_watcher.Wait();
+
+  // oauthclient.com should now be isolated. Check that it's now registered
+  // with ChildProcessSecurityPolicy (with its eTLD+1).
+  EXPECT_TRUE(policy->IsIsolatedSiteFromSource(
+      url::Origin::Create(GURL("https://oauthclient.com")),
+      IsolatedOriginSource::USER_TRIGGERED));
+
+  // Check that oauthclient.com navigations are site-isolated in future
+  // BrowsingInstances. Note that because there are no other window references
+  // at this point, a new navigation in the main window should force a
+  // BrowsingInstance swap to apply the new isolation.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      https_server()->GetURL("www2.oauthclient.com", "/title1.html"));
+  EXPECT_TRUE(contents->GetMainFrame()
+                  ->GetProcess()
+                  ->IsProcessLockedToSiteForTesting());
+}
+
+// Similar to previous test, but simulate a same-window OAuth login flow, where
+// a client navigates directly to the OAuth provider, which will
+// navigate/redirect back to the client when the login flow completes.
+//
+// Part 2 of this test also verifies that OAuth site isolation persists across
+// restarts.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForOAuthSitesBrowserTest,
+                       PRE_RedirectFlow) {
+  // Navigate to the OAuth requestor.
+  ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("oauthclient.com", "/title1.html"));
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(contents->GetMainFrame()
+                   ->GetProcess()
+                   ->IsProcessLockedToSiteForTesting());
+
+  auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
+  EXPECT_FALSE(policy->IsIsolatedSiteFromSource(
+      url::Origin::Create(GURL("https://oauthclient.com")),
+      IsolatedOriginSource::USER_TRIGGERED));
+
+  // Use an interceptor to allow referencing arbitrary paths on
+  // oauthprovider.com without worrying that corresponding test files exist.
+  content::URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](content::URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url.host() == "oauthprovider.com") {
+          content::URLLoaderInterceptor::WriteResponse(
+              "chrome/test/data/title2.html", params->client.get());
+          return true;
+        }
+        // Not handled by us.
+        return false;
+      }));
+
+  // Simulate start of OAuth login.
+  ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("oauthprovider.com",
+                                        "/authenticate?client_id=123"));
+
+  // Simulate another OAuth login step.
+  ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("oauthprovider.com",
+                                        "/another_stage?client_id=123"));
+
+  // Simulate completion of OAuth login.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      https_server()->GetURL("oauthclient.com", "/title2.html?code=secret"));
+
+  // oauthclient.com should now be isolated. Check that it's now registered
+  // with ChildProcessSecurityPolicy.
+  EXPECT_TRUE(policy->IsIsolatedSiteFromSource(
+      url::Origin::Create(GURL("https://oauthclient.com")),
+      IsolatedOriginSource::USER_TRIGGERED));
+
+  // Check that oauthclient.com navigations are site-isolated in future
+  // BrowsingInstances. Open a new unrelated window, which forces a new
+  // BrowsingInstance.
+  AddBlankTabAndShow(browser());
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  content::WebContents* new_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_NE(new_contents, contents);
+
+  ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("oauthclient.com", "/title1.html"));
+  EXPECT_TRUE(new_contents->GetMainFrame()
+                  ->GetProcess()
+                  ->IsProcessLockedToSiteForTesting());
+}
+
+// See part 1 of the test above.  This is part 2, which verifies that OAuth
+// site isolation persists across restarts.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForOAuthSitesBrowserTest, RedirectFlow) {
+  auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
+  EXPECT_TRUE(policy->IsIsolatedSiteFromSource(
+      url::Origin::Create(GURL("https://oauthclient.com")),
+      IsolatedOriginSource::USER_TRIGGERED));
+
+  // By the time this test starts running, there should be one sample recorded
+  // for one saved OAuth site.
+  histograms_.ExpectBucketCount("SiteIsolation.SavedOAuthSites.Size", 1, 1);
+
+  ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("oauthclient.com", "/title1.html"));
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(contents->GetMainFrame()
+                  ->GetProcess()
+                  ->IsProcessLockedToSiteForTesting());
+}
+
+// This test class turns on the mode where sites served with
+// Cross-Origin-Opener-Policy headers are site-isolated.  This complements
+// COOPIsolationTest in content_browsertests and focuses on persistence of COOP
+// sites in user prefs, which requires the //chrome layer.
+class SiteIsolationForCOOPBrowserTest : public ChromeNavigationBrowserTest {
+ public:
+  // Use an HTTP server, since the COOP header is only populated for HTTPS.
+  SiteIsolationForCOOPBrowserTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    // Enable COOP isolation with a max of 3 stored sites.
+    const std::vector<base::test::ScopedFeatureList::FeatureAndParams>
+        kEnabledFeatures = {
+            {::features::kSiteIsolationForCrossOriginOpenerPolicy,
+             {{"stored_sites_max_size", base::NumberToString(3)},
+              {"should_persist_across_restarts", "true"}}}};
+    // Disable full site isolation so we can observe effects of COOP isolation.
+    const std::vector<base::Feature> kDisabledFeatures = {
+        features::kSitePerProcess};
+    feature_list_.InitWithFeaturesAndParameters(kEnabledFeatures,
+                                                kDisabledFeatures);
+  }
+
+  // Returns the list of COOP sites currently stored in user prefs.
+  std::vector<std::string> GetSavedIsolatedSites(Profile* profile) {
+    PrefService* prefs = profile->GetPrefs();
+    auto* dict = prefs->GetDictionary(
+        site_isolation::prefs::kWebTriggeredIsolatedOrigins);
+    std::vector<std::string> sites;
+    for (const auto& site_time_pair : dict->DictItems())
+      sites.push_back(site_time_pair.first);
+    return sites;
+  }
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ChromeNavigationBrowserTest::SetUpCommandLine(command_line);
+
+    // Allow HTTPS server to be used on sites other than localhost.
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  }
+
+  void SetUp() override {
+    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
+    ASSERT_TRUE(https_server_.InitializeAndListen());
+    ChromeNavigationBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    https_server_.StartAcceptingConnections();
+    ChromeNavigationBrowserTest::SetUpOnMainThread();
+  }
+
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  net::EmbeddedTestServer https_server_;
+};
+
+// Verifies that sites isolated due to COOP headers are persisted across
+// restarts.  Note that persistence requires both visiting the COOP site and
+// interacting with it via a user activation.  Part 1/2.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForCOOPBrowserTest,
+                       PRE_PersistAcrossRestarts) {
+  EXPECT_THAT(GetSavedIsolatedSites(browser()->profile()), IsEmpty());
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate to a couple of URLs with COOP and trigger user activation on each
+  // one to add them to the saved list in user prefs.
+  GURL coop_url = https_server()->GetURL(
+      "saved.com", "/set-header?Cross-Origin-Opener-Policy: same-origin");
+  GURL coop_url2 = https_server()->GetURL(
+      "saved2.com", "/set-header?Cross-Origin-Opener-Policy: same-origin");
+  ui_test_utils::NavigateToURL(browser(), coop_url);
+  // Simulate user activation.
+  EXPECT_TRUE(ExecJs(contents, "// no-op"));
+  EXPECT_TRUE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+
+  ui_test_utils::NavigateToURL(browser(), coop_url2);
+  // Simulate user activation.
+  EXPECT_TRUE(ExecJs(contents, "// no-op"));
+  EXPECT_TRUE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+
+  // Check that saved.com and saved2.com were saved to disk.
+  EXPECT_THAT(GetSavedIsolatedSites(browser()->profile()),
+              UnorderedElementsAre("https://saved.com", "https://saved2.com"));
+}
+
+// Verifies that sites isolated due to COOP headers with a user activation are
+// persisted across restarts.  Part 2/2.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForCOOPBrowserTest, PersistAcrossRestarts) {
+  // Check that saved.com and saved2.com are still saved after a restart.
+  EXPECT_THAT(GetSavedIsolatedSites(browser()->profile()),
+              UnorderedElementsAre("https://saved.com", "https://saved2.com"));
+
+  // Check that these sites have been loaded as isolated on startup and utilize
+  // a dedicated process after restarting even without serving COOP headers.
+  GURL saved_url(https_server()->GetURL("saved.com", "/title1.html"));
+  GURL saved2_url(https_server()->GetURL("saved2.com", "/title2.html"));
+  ui_test_utils::NavigateToURL(browser(), saved_url);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+  ui_test_utils::NavigateToURL(browser(), saved2_url);
+  EXPECT_TRUE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+
+  // Sanity check that an unrelated non-isolated foo.com URL does not require a
+  // dedicated process.
+  GURL foo_url(https_server()->GetURL("foo.com", "/title3.html"));
+  ui_test_utils::NavigateToURL(browser(), foo_url);
+  EXPECT_FALSE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+}
+
+// Check that COOP sites are not persisted in Incognito; the isolation should
+// only persist for the duration of the Incognito session.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForCOOPBrowserTest, Incognito) {
+  Browser* incognito = CreateIncognitoBrowser();
+
+  GURL coop_url = https_server()->GetURL(
+      "foo.com", "/set-header?Cross-Origin-Opener-Policy: same-origin");
+
+  ui_test_utils::NavigateToURL(incognito, coop_url);
+  content::WebContents* contents =
+      incognito->tab_strip_model()->GetActiveWebContents();
+  // Simulate user activation to isolate foo.com for the rest of the incognito
+  // session.
+  EXPECT_TRUE(ExecJs(contents, "// no-op"));
+  EXPECT_TRUE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+
+  // Check that navigations to foo.com (even without COOP) are isolated in
+  // future BrowsingInstances in Incognito.
+  AddBlankTabAndShow(incognito);
+  GURL foo_url = https_server()->GetURL("foo.com", "/title1.html");
+  ui_test_utils::NavigateToURL(incognito, foo_url);
+  contents = incognito->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+
+  // foo.com should not be isolated in the regular profile.
+  AddBlankTabAndShow(browser());
+  ui_test_utils::NavigateToURL(browser(), foo_url);
+  contents = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(
+      contents->GetMainFrame()->GetSiteInstance()->RequiresDedicatedProcess());
+
+  // Neither profile should've saved foo.com to COOP isolated sites prefs.
+  EXPECT_THAT(GetSavedIsolatedSites(browser()->profile()), IsEmpty());
+  EXPECT_THAT(GetSavedIsolatedSites(incognito->profile()), IsEmpty());
+}
+
+// Verify that when a COOP-isolated site is visited again, the timestamp in its
+// stored pref entry is updated correctly and taken into consideration when
+// trimming the list of stored COOP sites to its maximum size.
+IN_PROC_BROWSER_TEST_F(SiteIsolationForCOOPBrowserTest,
+                       TimestampUpdateOnSecondVisit) {
+  EXPECT_THAT(GetSavedIsolatedSites(browser()->profile()), IsEmpty());
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  const std::string kCoopPath =
+      "/set-header?Cross-Origin-Opener-Policy: same-origin";
+  GURL coop1 = https_server()->GetURL("coop1.com", kCoopPath);
+  GURL coop2 = https_server()->GetURL("coop2.com", kCoopPath);
+  GURL coop3 = https_server()->GetURL("coop3.com", kCoopPath);
+  GURL coop4 = https_server()->GetURL("coop4.com", kCoopPath);
+
+  // Navigate to three COOP sites and trigger user actuvation on each one to
+  // add them all to the list of persistently isolated COOP sites.
+  ui_test_utils::NavigateToURL(browser(), coop1);
+  EXPECT_TRUE(ExecJs(contents, "// no-op"));  // Simulate user activation.
+  ui_test_utils::NavigateToURL(browser(), coop2);
+  EXPECT_TRUE(ExecJs(contents, "// no-op"));  // Simulate user activation.
+  ui_test_utils::NavigateToURL(browser(), coop3);
+  EXPECT_TRUE(ExecJs(contents, "// no-op"));  // Simulate user activation.
+
+  // At this point, the first three sites should be saved to prefs.
+  EXPECT_THAT(GetSavedIsolatedSites(browser()->profile()),
+              UnorderedElementsAre("https://coop1.com", "https://coop2.com",
+                                   "https://coop3.com"));
+
+  // Visit coop1.com again.  This should update its timestamp to be more recent
+  // than coop2.com and coop3.com.  The set of saved sites shouldn't change.
+  AddBlankTabAndShow(browser());
+  contents = browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(), coop1);
+  EXPECT_TRUE(ExecJs(contents, "// no-op"));  // Simulate user activation.
+  EXPECT_THAT(GetSavedIsolatedSites(browser()->profile()),
+              UnorderedElementsAre("https://coop1.com", "https://coop2.com",
+                                   "https://coop3.com"));
+
+  // Now, visit coop4.com.  Since the maximum number of saved COOP sites is 3
+  // in this test, the oldest site should be evicted.  That evicted site should
+  // be coop2.com, since coop1.com's timestamp was just updated.
+  ui_test_utils::NavigateToURL(browser(), coop4);
+  EXPECT_TRUE(ExecJs(contents, "// no-op"));  // Simulate user activation.
+  EXPECT_THAT(GetSavedIsolatedSites(browser()->profile()),
+              UnorderedElementsAre("https://coop1.com", "https://coop3.com",
+                                   "https://coop4.com"));
 }

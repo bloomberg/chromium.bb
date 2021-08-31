@@ -1479,7 +1479,7 @@ v8::StartupData CreateCustomSnapshotWithKeep() {
       v8::Local<v8::String> source_str = v8_str(
           "function f() { return Math.abs(1); }\n"
           "function g() { return String.raw(1); }");
-      v8::ScriptOrigin origin(v8_str("test"));
+      v8::ScriptOrigin origin(isolate, v8_str("test"));
       v8::ScriptCompiler::Source source(source_str, origin);
       CompileRun(isolate->GetCurrentContext(), &source,
                  v8::ScriptCompiler::kEagerCompile);
@@ -1557,7 +1557,7 @@ TEST(TestThatAlwaysFails) {
 int CountBuiltins() {
   // Check that we have not deserialized any additional builtin.
   HeapObjectIterator iterator(CcTest::heap());
-  DisallowGarbageCollection no_allocation;
+  DisallowGarbageCollection no_gc;
   int counter = 0;
   for (HeapObject obj = iterator.Next(); !obj.is_null();
        obj = iterator.Next()) {
@@ -1622,7 +1622,7 @@ TEST(CodeSerializerWithProfiler) {
       isolate, orig_source, Handle<String>(), &cache,
       v8::ScriptCompiler::kNoCompileOptions);
 
-  CHECK(!orig->GetBytecodeArray().HasSourcePositionTable());
+  CHECK(!orig->GetBytecodeArray(isolate).HasSourcePositionTable());
 
   isolate->set_is_profiling(true);
 
@@ -1634,7 +1634,7 @@ TEST(CodeSerializerWithProfiler) {
 
   // Since the profiler is now enabled, source positions should be collected
   // after deserialization.
-  CHECK(copy->GetBytecodeArray().HasSourcePositionTable());
+  CHECK(copy->GetBytecodeArray(isolate).HasSourcePositionTable());
 
   delete cache;
 }
@@ -1677,8 +1677,8 @@ void TestCodeSerializerOnePlusOneImpl(bool verify_builtins_count = true) {
   CHECK(Script::cast(copy->script()).source() == *copy_source);
 
   Handle<JSFunction> copy_fun =
-      isolate->factory()->NewFunctionFromSharedFunctionInfo(
-          copy, isolate->native_context());
+      Factory::JSFunctionBuilder{isolate, copy, isolate->native_context()}
+          .Build();
   Handle<JSObject> global(isolate->context().global_object(), isolate);
   Handle<Object> copy_result =
       Execution::Call(isolate, copy_fun, global, 0, nullptr).ToHandleChecked();
@@ -1730,8 +1730,7 @@ TEST(CodeSerializerPromotedToCompilationCache) {
 
   MaybeHandle<SharedFunctionInfo> shared =
       isolate->compilation_cache()->LookupScript(
-          src, src, 0, 0, v8::ScriptOriginOptions(), isolate->native_context(),
-          LanguageMode::kSloppy);
+          src, src, 0, 0, v8::ScriptOriginOptions(), LanguageMode::kSloppy);
 
   CHECK(*shared.ToHandleChecked() == *copy);
 
@@ -1764,8 +1763,8 @@ TEST(CodeSerializerInternalizedString) {
       isolate, orig_source, Handle<String>(), &script_data,
       v8::ScriptCompiler::kNoCompileOptions);
   Handle<JSFunction> orig_fun =
-      isolate->factory()->NewFunctionFromSharedFunctionInfo(
-          orig, isolate->native_context());
+      Factory::JSFunctionBuilder{isolate, orig, isolate->native_context()}
+          .Build();
   Handle<Object> orig_result =
       Execution::Call(isolate, orig_fun, global, 0, nullptr).ToHandleChecked();
   CHECK(orig_result->IsInternalizedString());
@@ -1782,8 +1781,8 @@ TEST(CodeSerializerInternalizedString) {
   CHECK(Script::cast(copy->script()).source() == *copy_source);
 
   Handle<JSFunction> copy_fun =
-      isolate->factory()->NewFunctionFromSharedFunctionInfo(
-          copy, isolate->native_context());
+      Factory::JSFunctionBuilder{isolate, copy, isolate->native_context()}
+          .Build();
   CHECK_NE(*orig_fun, *copy_fun);
   Handle<Object> copy_result =
       Execution::Call(isolate, copy_fun, global, 0, nullptr).ToHandleChecked();
@@ -1824,7 +1823,7 @@ TEST(CodeSerializerLargeCodeObject) {
       isolate, source_str, Handle<String>(), &cache,
       v8::ScriptCompiler::kNoCompileOptions);
 
-  CHECK(isolate->heap()->InSpace(orig->abstract_code(), LO_SPACE));
+  CHECK(isolate->heap()->InSpace(orig->abstract_code(isolate), LO_SPACE));
 
   Handle<SharedFunctionInfo> copy;
   {
@@ -1835,8 +1834,8 @@ TEST(CodeSerializerLargeCodeObject) {
   CHECK_NE(*orig, *copy);
 
   Handle<JSFunction> copy_fun =
-      isolate->factory()->NewFunctionFromSharedFunctionInfo(
-          copy, isolate->native_context());
+      Factory::JSFunctionBuilder{isolate, copy, isolate->native_context()}
+          .Build();
 
   Handle<Object> copy_result =
       Execution::Call(isolate, copy_fun, global, 0, nullptr).ToHandleChecked();
@@ -1850,6 +1849,7 @@ TEST(CodeSerializerLargeCodeObject) {
 }
 
 TEST(CodeSerializerLargeCodeObjectWithIncrementalMarking) {
+  if (!FLAG_incremental_marking) return;
   if (FLAG_never_compact) return;
   ManualGCScope manual_gc_scope;
   FLAG_always_opt = false;
@@ -1890,7 +1890,7 @@ TEST(CodeSerializerLargeCodeObjectWithIncrementalMarking) {
       isolate, source_str, Handle<String>(), &cache,
       v8::ScriptCompiler::kNoCompileOptions);
 
-  CHECK(heap->InSpace(orig->abstract_code(), LO_SPACE));
+  CHECK(heap->InSpace(orig->abstract_code(isolate), LO_SPACE));
 
   // Pretend that incremental marking is on when deserialization begins.
   heap::ForceEvacuationCandidate(ec_page);
@@ -1914,8 +1914,8 @@ TEST(CodeSerializerLargeCodeObjectWithIncrementalMarking) {
   CcTest::CollectAllGarbage();
 
   Handle<JSFunction> copy_fun =
-      isolate->factory()->NewFunctionFromSharedFunctionInfo(
-          copy, isolate->native_context());
+      Factory::JSFunctionBuilder{isolate, copy, isolate->native_context()}
+          .Build();
 
   Handle<Object> copy_result =
       Execution::Call(isolate, copy_fun, global, 0, nullptr).ToHandleChecked();
@@ -1964,8 +1964,8 @@ TEST(CodeSerializerLargeStrings) {
   CHECK_NE(*orig, *copy);
 
   Handle<JSFunction> copy_fun =
-      isolate->factory()->NewFunctionFromSharedFunctionInfo(
-          copy, isolate->native_context());
+      Factory::JSFunctionBuilder{isolate, copy, isolate->native_context()}
+          .Build();
 
   Handle<Object> copy_result =
       Execution::Call(isolate, copy_fun, global, 0, nullptr).ToHandleChecked();
@@ -2038,8 +2038,8 @@ TEST(CodeSerializerThreeBigStrings) {
   CHECK_NE(*orig, *copy);
 
   Handle<JSFunction> copy_fun =
-      isolate->factory()->NewFunctionFromSharedFunctionInfo(
-          copy, isolate->native_context());
+      Factory::JSFunctionBuilder{isolate, copy, isolate->native_context()}
+          .Build();
 
   USE(Execution::Call(isolate, copy_fun, global, 0, nullptr));
 
@@ -2156,8 +2156,8 @@ TEST(CodeSerializerExternalString) {
   CHECK_NE(*orig, *copy);
 
   Handle<JSFunction> copy_fun =
-      isolate->factory()->NewFunctionFromSharedFunctionInfo(
-          copy, isolate->native_context());
+      Factory::JSFunctionBuilder{isolate, copy, isolate->native_context()}
+          .Build();
 
   Handle<Object> copy_result =
       Execution::Call(isolate, copy_fun, global, 0, nullptr).ToHandleChecked();
@@ -2220,7 +2220,8 @@ TEST(CodeSerializerLargeExternalString) {
   CHECK_NE(*orig, *copy);
 
   Handle<JSFunction> copy_fun =
-      f->NewFunctionFromSharedFunctionInfo(copy, isolate->native_context());
+      Factory::JSFunctionBuilder{isolate, copy, isolate->native_context()}
+          .Build();
 
   Handle<Object> copy_result =
       Execution::Call(isolate, copy_fun, global, 0, nullptr).ToHandleChecked();
@@ -2273,7 +2274,8 @@ TEST(CodeSerializerExternalScriptName) {
   CHECK_NE(*orig, *copy);
 
   Handle<JSFunction> copy_fun =
-      f->NewFunctionFromSharedFunctionInfo(copy, isolate->native_context());
+      Factory::JSFunctionBuilder{isolate, copy, isolate->native_context()}
+          .Build();
 
   Handle<Object> copy_result =
       Execution::Call(isolate, copy_fun, global, 0, nullptr).ToHandleChecked();
@@ -2309,7 +2311,7 @@ v8::ScriptCompiler::CachedData* CompileRunAndProduceCache(
     v8::Context::Scope context_scope(context);
 
     v8::Local<v8::String> source_str = v8_str(source);
-    v8::ScriptOrigin origin(v8_str("test"));
+    v8::ScriptOrigin origin(isolate1, v8_str("test"));
     v8::ScriptCompiler::Source source(source_str, origin);
     v8::ScriptCompiler::CompileOptions options;
     switch (cacheType) {
@@ -2365,7 +2367,7 @@ TEST(CodeSerializerIsolates) {
     v8::Context::Scope context_scope(context);
 
     v8::Local<v8::String> source_str = v8_str(source);
-    v8::ScriptOrigin origin(v8_str("test"));
+    v8::ScriptOrigin origin(isolate2, v8_str("test"));
     v8::ScriptCompiler::Source source(source_str, origin, cache);
     v8::Local<v8::UnboundScript> script;
     {
@@ -2411,7 +2413,7 @@ TEST(CodeSerializerIsolatesEager) {
     v8::Context::Scope context_scope(context);
 
     v8::Local<v8::String> source_str = v8_str(source);
-    v8::ScriptOrigin origin(v8_str("test"));
+    v8::ScriptOrigin origin(isolate2, v8_str("test"));
     v8::ScriptCompiler::Source source(source_str, origin, cache);
     v8::Local<v8::UnboundScript> script;
     {
@@ -2445,6 +2447,7 @@ TEST(CodeSerializerAfterExecute) {
   v8::Isolate::CreateParams create_params;
   create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
   v8::Isolate* isolate2 = v8::Isolate::New(create_params);
+  Isolate* i_isolate2 = reinterpret_cast<Isolate*>(isolate2);
 
   {
     v8::Isolate::Scope iscope(isolate2);
@@ -2453,12 +2456,11 @@ TEST(CodeSerializerAfterExecute) {
     v8::Context::Scope context_scope(context);
 
     v8::Local<v8::String> source_str = v8_str(source);
-    v8::ScriptOrigin origin(v8_str("test"));
+    v8::ScriptOrigin origin(isolate2, v8_str("test"));
     v8::ScriptCompiler::Source source(source_str, origin, cache);
     v8::Local<v8::UnboundScript> script;
     {
-      DisallowCompilation no_compile_expected(
-          reinterpret_cast<Isolate*>(isolate2));
+      DisallowCompilation no_compile_expected(i_isolate2);
       script = v8::ScriptCompiler::CompileUnboundScript(
                    isolate2, &source, v8::ScriptCompiler::kConsumeCodeCache)
                    .ToLocalChecked();
@@ -2467,12 +2469,11 @@ TEST(CodeSerializerAfterExecute) {
 
     Handle<SharedFunctionInfo> sfi = v8::Utils::OpenHandle(*script);
     CHECK(sfi->HasBytecodeArray());
-    BytecodeArray bytecode = sfi->GetBytecodeArray();
+    BytecodeArray bytecode = sfi->GetBytecodeArray(i_isolate2);
     CHECK_EQ(bytecode.osr_loop_nesting_level(), 0);
 
     {
-      DisallowCompilation no_compile_expected(
-          reinterpret_cast<Isolate*>(isolate2));
+      DisallowCompilation no_compile_expected(i_isolate2);
       v8::Local<v8::Value> result = script->BindToCurrentContext()
                                         ->Run(isolate2->GetCurrentContext())
                                         .ToLocalChecked();
@@ -2506,7 +2507,7 @@ TEST(CodeSerializerFlagChange) {
     v8::Context::Scope context_scope(context);
 
     v8::Local<v8::String> source_str = v8_str(source);
-    v8::ScriptOrigin origin(v8_str("test"));
+    v8::ScriptOrigin origin(isolate2, v8_str("test"));
     v8::ScriptCompiler::Source source(source_str, origin, cache);
     v8::ScriptCompiler::CompileUnboundScript(
         isolate2, &source, v8::ScriptCompiler::kConsumeCodeCache)
@@ -2535,7 +2536,7 @@ TEST(CodeSerializerBitFlip) {
     v8::Context::Scope context_scope(context);
 
     v8::Local<v8::String> source_str = v8_str(source);
-    v8::ScriptOrigin origin(v8_str("test"));
+    v8::ScriptOrigin origin(isolate2, v8_str("test"));
     v8::ScriptCompiler::Source source(source_str, origin, cache);
     v8::ScriptCompiler::CompileUnboundScript(
         isolate2, &source, v8::ScriptCompiler::kConsumeCodeCache)
@@ -2565,7 +2566,7 @@ TEST(CodeSerializerWithHarmonyScoping) {
     CompileRun(source2);
 
     v8::Local<v8::String> source_str = v8_str(source3);
-    v8::ScriptOrigin origin(v8_str("test"));
+    v8::ScriptOrigin origin(isolate1, v8_str("test"));
     v8::ScriptCompiler::Source source(source_str, origin);
     v8::Local<v8::UnboundScript> script =
         v8::ScriptCompiler::CompileUnboundScript(
@@ -2596,7 +2597,7 @@ TEST(CodeSerializerWithHarmonyScoping) {
     CompileRun(source1);
 
     v8::Local<v8::String> source_str = v8_str(source3);
-    v8::ScriptOrigin origin(v8_str("test"));
+    v8::ScriptOrigin origin(isolate2, v8_str("test"));
     v8::ScriptCompiler::Source source(source_str, origin, cache);
     v8::Local<v8::UnboundScript> script;
     {
@@ -3347,6 +3348,13 @@ UNINITIALIZED_TEST(SnapshotCreatorTemplates) {
   FreeCurrentEmbeddedBlob();
 }
 
+MaybeLocal<v8::Module> ResolveCallback(Local<v8::Context> context,
+                                       Local<v8::String> specifier,
+                                       Local<v8::FixedArray> import_assertions,
+                                       Local<v8::Module> referrer) {
+  return {};
+}
+
 UNINITIALIZED_TEST(SnapshotCreatorAddData) {
   DisableAlwaysOpt();
   DisableEmbeddedBlobRefcounting();
@@ -3396,11 +3404,23 @@ UNINITIALIZED_TEST(SnapshotCreatorAddData) {
           v8::AccessorSignature::New(isolate,
                                      v8::FunctionTemplate::New(isolate));
 
+      v8::ScriptOrigin origin(isolate, v8_str(""), {}, {}, {}, {}, {}, {}, {},
+                              true);
+      v8::ScriptCompiler::Source source(
+          v8::String::NewFromUtf8Literal(
+              isolate, "export let a = 42; globalThis.a = {};"),
+          origin);
+      v8::Local<v8::Module> module =
+          v8::ScriptCompiler::CompileModule(isolate, &source).ToLocalChecked();
+      module->InstantiateModule(context, ResolveCallback).ToChecked();
+      module->Evaluate(context).ToLocalChecked();
+
       CHECK_EQ(0u, creator.AddData(context, object));
       CHECK_EQ(1u, creator.AddData(context, v8_str("context-dependent")));
       CHECK_EQ(2u, creator.AddData(context, persistent_number_1.Get(isolate)));
       CHECK_EQ(3u, creator.AddData(context, object_template));
       CHECK_EQ(4u, creator.AddData(context, persistent_context.Get(isolate)));
+      CHECK_EQ(5u, creator.AddData(context, module));
       creator.AddContext(context);
 
       CHECK_EQ(0u, creator.AddData(v8_str("context-independent")));
@@ -3459,7 +3479,19 @@ UNINITIALIZED_TEST(SnapshotCreatorAddData) {
       CHECK_EQ(*v8::Utils::OpenHandle(*serialized_context),
                *v8::Utils::OpenHandle(*context));
 
-      CHECK(context->GetDataFromSnapshotOnce<v8::Value>(5).IsEmpty());
+      v8::Local<v8::Module> serialized_module =
+          context->GetDataFromSnapshotOnce<v8::Module>(5).ToLocalChecked();
+      CHECK(context->GetDataFromSnapshotOnce<v8::Context>(5).IsEmpty());
+      {
+        v8::Context::Scope context_scope(context);
+        v8::Local<v8::Object> mod_ns =
+            serialized_module->GetModuleNamespace().As<v8::Object>();
+        CHECK(mod_ns->Get(context, v8_str("a"))
+                  .ToLocalChecked()
+                  ->StrictEquals(v8_num(42.0)));
+      }
+
+      CHECK(context->GetDataFromSnapshotOnce<v8::Value>(6).IsEmpty());
 
       // Check serialized data on the isolate.
       string = isolate->GetDataFromSnapshotOnce<v8::String>(0).ToLocalChecked();
@@ -4060,7 +4092,7 @@ UNINITIALIZED_TEST(SnapshotCreatorAnonClassWithKeep) {
   delete[] blob.data;
 }
 
-class DisableLazySourcePositionScope {
+class V8_NODISCARD DisableLazySourcePositionScope {
  public:
   DisableLazySourcePositionScope()
       : backup_value_(FLAG_enable_lazy_source_positions) {

@@ -2,50 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BrowserProxy} from '../browser_proxy.js';
+import {recordDuration, recordLoadDuration} from '../metrics_utils.js';
+import {WindowProxy} from '../window_proxy.js';
 
 /**
  * @fileoverview Provides the module descriptor. Each module must create a
  * module descriptor and register it at the NTP.
  */
 
-/**
- * @typedef {{
- *   info: (function()|undefined),
- *   dismiss: (function():string|undefined),
- *   restore: (function()|undefined),
- * }}
- */
-let Actions;
-
-/**
- * @typedef {function(): !Promise<?{
- *    element: !HTMLElement,
- *    title: string,
- *    actions: (undefined|Actions),
- *  }>}
- */
+/** @typedef {function(): !Promise<?HTMLElement>} */
 let InitializeModuleCallback;
+
+/** @typedef {{element: !HTMLElement, descriptor: !ModuleDescriptor}} */
+export let Module;
 
 export class ModuleDescriptor {
   /**
    * @param {string} id
-   * @param {number} heightPx
+   * @param {string} name
    * @param {!InitializeModuleCallback} initializeCallback
    */
-  constructor(id, heightPx, initializeCallback) {
+  constructor(id, name, initializeCallback) {
     /** @private {string} */
     this.id_ = id;
-    /** @private {number} */
-    this.heightPx_ = heightPx;
-    /** @private {?string} */
-    this.title_ = null;
-    /** @private {HTMLElement} */
-    this.element_ = null;
+    /** @private {string} */
+    this.name_ = name;
     /** @private {!InitializeModuleCallback} */
     this.initializeCallback_ = initializeCallback;
-    /** @private {?Actions} */
-    this.actions_ = null;
   }
 
   /** @return {string} */
@@ -53,35 +36,35 @@ export class ModuleDescriptor {
     return this.id_;
   }
 
-  /** @return {number} */
-  get heightPx() {
-    return this.heightPx_;
+  /** @return {string} */
+  get name() {
+    return this.name_;
   }
 
-  /** @return {?string} */
-  get title() {
-    return this.title_;
-  }
-
-  /** @return {?HTMLElement} */
-  get element() {
-    return this.element_;
-  }
-
-  /** @return {?Actions} */
-  get actions() {
-    return this.actions_;
-  }
-
-  async initialize() {
-    const info = await this.initializeCallback_();
-    if (!info) {
-      return;
+  /**
+   * Initializes the module and returns the module element on success.
+   * @param {number} timeout Timeout in milliseconds after which initialization
+   *     aborts.
+   * @return {!Promise<?HTMLElement>}
+   */
+  async initialize(timeout) {
+    const loadStartTime = WindowProxy.getInstance().now();
+    const element = await Promise.race([
+      this.initializeCallback_(), new Promise(resolve => {
+        WindowProxy.getInstance().setTimeout(() => {
+          resolve(null);
+        }, timeout);
+      })
+    ]);
+    if (!element) {
+      return null;
     }
-    this.title_ = info.title;
-    this.element_ = info.element;
-    this.actions_ = info.actions || null;
-    BrowserProxy.getInstance().handler.onModuleLoaded(
-        this.id_, BrowserProxy.getInstance().now());
+    const loadEndTime = WindowProxy.getInstance().now();
+    const duration = loadEndTime - loadStartTime;
+    recordLoadDuration('NewTabPage.Modules.Loaded', loadEndTime);
+    recordLoadDuration(`NewTabPage.Modules.Loaded.${this.id_}`, loadEndTime);
+    recordDuration('NewTabPage.Modules.LoadDuration', duration);
+    recordDuration(`NewTabPage.Modules.LoadDuration.${this.id_}`, duration);
+    return element;
   }
 }

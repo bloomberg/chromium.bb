@@ -7,10 +7,10 @@
 
 #include <list>
 
-#include "net/third_party/quiche/src/quic/core/frames/quic_frame.h"
-#include "net/third_party/quiche/src/quic/core/quic_ack_listener_interface.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/frames/quic_frame.h"
+#include "quic/core/quic_ack_listener_interface.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -31,6 +31,8 @@ struct QUIC_EXPORT_PRIVATE QuicTransmissionInfo {
   QuicTransmissionInfo(const QuicTransmissionInfo& other);
 
   ~QuicTransmissionInfo();
+
+  std::string DebugString() const;
 
   QuicFrames retransmittable_frames;
   QuicTime sent_time;

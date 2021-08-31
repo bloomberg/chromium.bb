@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download.settings;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
@@ -19,7 +20,9 @@ import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileKey;
+import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
+import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
@@ -29,16 +32,16 @@ import org.chromium.components.user_prefs.UserPrefs;
  */
 public class DownloadSettings
         extends PreferenceFragmentCompat implements Preference.OnPreferenceChangeListener {
-    public static final String PREF_LOCATION_CHANGE = "location_change";
-    private static final String PREF_DOWNLOAD_LATER_PROMPT_ENABLED =
-            "download_later_prompt_enabled";
-    private static final String PREF_LOCATION_PROMPT_ENABLED = "location_prompt_enabled";
-    private static final String PREF_PREFETCHING_ENABLED = "prefetching_enabled";
+    static final String PREF_LOCATION_CHANGE = "location_change";
+    static final String PREF_DOWNLOAD_LATER_PROMPT_ENABLED = "download_later_prompt_enabled";
+    static final String PREF_LOCATION_PROMPT_ENABLED = "location_prompt_enabled";
+    static final String PREF_PREFETCHING_ENABLED = "prefetching_enabled";
 
     private PrefService mPrefService;
     private DownloadLocationPreference mLocationChangePref;
     private ChromeSwitchPreference mDownloadLaterPromptEnabledPref;
     private ChromeSwitchPreference mLocationPromptEnabledPref;
+    private ManagedPreferenceDelegate mLocationPromptEnabledPrefDelegate;
     private ChromeSwitchPreference mPrefetchingEnabled;
 
     @Override
@@ -51,7 +54,8 @@ public class DownloadSettings
                 (ChromeSwitchPreference) findPreference(PREF_DOWNLOAD_LATER_PROMPT_ENABLED);
         mDownloadLaterPromptEnabledPref.setOnPreferenceChangeListener(this);
 
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_LATER)) {
+        boolean locationManaged = DownloadDialogBridge.isLocationDialogManaged();
+        if (locationManaged || !ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_LATER)) {
             getPreferenceScreen().removePreference(
                     findPreference(PREF_DOWNLOAD_LATER_PROMPT_ENABLED));
         }
@@ -59,6 +63,13 @@ public class DownloadSettings
         mLocationPromptEnabledPref =
                 (ChromeSwitchPreference) findPreference(PREF_LOCATION_PROMPT_ENABLED);
         mLocationPromptEnabledPref.setOnPreferenceChangeListener(this);
+        mLocationPromptEnabledPrefDelegate = new ChromeManagedPreferenceDelegate() {
+            @Override
+            public boolean isPreferenceControlledByPolicy(Preference preference) {
+                return DownloadDialogBridge.isLocationDialogManaged();
+            }
+        };
+        mLocationPromptEnabledPref.setManagedPreferenceDelegate(mLocationPromptEnabledPrefDelegate);
         mLocationChangePref = (DownloadLocationPreference) findPreference(PREF_LOCATION_CHANGE);
 
         if (PrefetchConfiguration.isPrefetchingFlagEnabled()) {
@@ -101,10 +112,17 @@ public class DownloadSettings
                     !(downloadLaterPromptStatus == DownloadLaterPromptStatus.DONT_SHOW));
         }
 
-        // Location prompt is marked enabled if the prompt status is not DONT_SHOW.
-        boolean isLocationPromptEnabled = DownloadDialogBridge.getPromptForDownloadAndroid()
-                != DownloadPromptStatus.DONT_SHOW;
-        mLocationPromptEnabledPref.setChecked(isLocationPromptEnabled);
+        if (DownloadDialogBridge.isLocationDialogManaged()) {
+            // Location prompt can be controlled by the enterprise policy.
+            mLocationPromptEnabledPref.setChecked(
+                    DownloadDialogBridge.getPromptForDownloadPolicy());
+        } else {
+            // Location prompt is marked enabled if the prompt status is not DONT_SHOW.
+            boolean isLocationPromptEnabled = DownloadDialogBridge.getPromptForDownloadAndroid()
+                    != DownloadPromptStatus.DONT_SHOW;
+            mLocationPromptEnabledPref.setChecked(isLocationPromptEnabled);
+            mLocationPromptEnabledPref.setEnabled(true);
+        }
 
         if (mPrefetchingEnabled != null) {
             mPrefetchingEnabled.setChecked(PrefetchConfiguration.isPrefetchingEnabledInSettings(
@@ -168,5 +186,10 @@ public class DownloadSettings
             updatePrefetchSummary();
         }
         return true;
+    }
+
+    @VisibleForTesting
+    ManagedPreferenceDelegate getLocationPromptEnabledPrefDelegateForTesting() {
+        return mLocationPromptEnabledPrefDelegate;
     }
 }

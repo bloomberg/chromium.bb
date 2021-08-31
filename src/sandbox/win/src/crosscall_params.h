@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_SRC_CROSSCALL_PARAMS_H__
-#define SANDBOX_SRC_CROSSCALL_PARAMS_H__
+#ifndef SANDBOX_WIN_SRC_CROSSCALL_PARAMS_H_
+#define SANDBOX_WIN_SRC_CROSSCALL_PARAMS_H_
 
 #if !defined(SANDBOX_FUZZ_TARGET)
 #include <windows.h>
@@ -15,8 +15,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
-#include <memory>
 
 #include "base/macros.h"
 #include "sandbox/win/src/internal_types.h"
@@ -179,7 +177,7 @@ class CrossCallParams {
 // that NUMBER_PARAMS = 2 and a 32-bit build:
 //
 // [ tag                4 bytes]
-// [ IsOnOut            4 bytes]
+// [ IsInOut            4 bytes]
 // [ call return       52 bytes]
 // [ params count       4 bytes]
 // [ parameter 0 type   4 bytes]
@@ -300,4 +298,4 @@ static_assert(sizeof(ActualCallParams<3, 1024>) == 1024, "bad size buffer");
 
 }  // namespace sandbox
 
-#endif  // SANDBOX_SRC_CROSSCALL_PARAMS_H__
+#endif  // SANDBOX_WIN_SRC_CROSSCALL_PARAMS_H_

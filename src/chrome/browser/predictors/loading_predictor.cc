@@ -8,14 +8,29 @@
 #include <vector>
 
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/predictors/loading_data_collector.h"
 #include "chrome/browser/predictors/loading_stats_collector.h"
-#include "chrome/browser/predictors/navigation_id.h"
 #include "chrome/browser/predictors/predictors_features.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/network_isolation_key.h"
 #include "url/origin.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/radio_utils.h"
+#include "base/power_monitor/power_monitor.h"
+#endif  // defined(OS_ANDROID)
+
+namespace features {
+
+// Don't preconnect on weak signal to save power.
+const base::Feature kNoPreconnectToSearchOnWeakSignal{
+    "NoPreconnectToSearchOnWeakSignal", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNoNavigationPreconnectOnWeakSignal{
+    "NoNavigationPreconnectOnWeakSignal", base::FEATURE_DISABLED_BY_DEFAULT};
+
+}  // namespace features
 
 namespace predictors {
 
@@ -51,6 +66,26 @@ bool AddInitialUrlToPreconnectPrediction(const GURL& initial_url,
   return !prediction->requests.empty();
 }
 
+bool IsPreconnectExpensive() {
+#if defined(OS_ANDROID)
+  // Preconnecting is expensive while on battery power and cellular data and
+  // the radio signal is weak.
+  if ((base::PowerMonitor::IsInitialized() &&
+       !base::PowerMonitor::IsOnBatteryPower()) ||
+      (base::android::RadioUtils::GetConnectionType() !=
+       base::android::RadioConnectionType::kCell)) {
+    return false;
+  }
+
+  absl::optional<base::android::RadioSignalLevel> maybe_level =
+      base::android::RadioUtils::GetCellSignalLevel();
+  return maybe_level.has_value() &&
+         *maybe_level <= base::android::RadioSignalLevel::kModerate;
+#else
+  return false;
+#endif
+}
+
 }  // namespace
 
 LoadingPredictor::LoadingPredictor(const LoadingPredictorConfig& config,
@@ -75,7 +110,7 @@ bool LoadingPredictor::PrepareForPageLoad(
     const GURL& url,
     HintOrigin origin,
     bool preconnectable,
-    base::Optional<PreconnectPrediction> preconnect_prediction) {
+    absl::optional<PreconnectPrediction> preconnect_prediction) {
   if (shutdown_)
     return true;
 
@@ -174,38 +209,40 @@ void LoadingPredictor::Shutdown() {
   shutdown_ = true;
 }
 
-bool LoadingPredictor::OnNavigationStarted(const NavigationID& navigation_id) {
+bool LoadingPredictor::OnNavigationStarted(NavigationId navigation_id,
+                                           ukm::SourceId ukm_source_id,
+                                           const GURL& main_frame_url,
+                                           base::TimeTicks creation_time) {
   if (shutdown_)
     return true;
 
-  loading_data_collector()->RecordStartNavigation(navigation_id);
+  loading_data_collector()->RecordStartNavigation(
+      navigation_id, ukm_source_id, main_frame_url, creation_time);
   CleanupAbandonedHintsAndNavigations(navigation_id);
-  active_navigations_.emplace(navigation_id);
-  active_urls_to_navigations_[navigation_id.main_frame_url].insert(
-      navigation_id);
-  return PrepareForPageLoad(navigation_id.main_frame_url,
-                            HintOrigin::NAVIGATION);
+  active_navigations_.emplace(navigation_id,
+                              NavigationInfo{main_frame_url, creation_time});
+  active_urls_to_navigations_[main_frame_url].insert(navigation_id);
+  return PrepareForPageLoad(main_frame_url, HintOrigin::NAVIGATION);
 }
 
-void LoadingPredictor::OnNavigationFinished(
-    const NavigationID& old_navigation_id,
-    const NavigationID& new_navigation_id,
-    bool is_error_page) {
+void LoadingPredictor::OnNavigationFinished(NavigationId navigation_id,
+                                            const GURL& old_main_frame_url,
+                                            const GURL& new_main_frame_url,
+                                            bool is_error_page) {
   if (shutdown_)
     return;
 
   loading_data_collector()->RecordFinishNavigation(
-      old_navigation_id, new_navigation_id, is_error_page);
-  if (active_urls_to_navigations_.find(old_navigation_id.main_frame_url) !=
+      navigation_id, old_main_frame_url, new_main_frame_url, is_error_page);
+  if (active_urls_to_navigations_.find(old_main_frame_url) !=
       active_urls_to_navigations_.end()) {
-    active_urls_to_navigations_[old_navigation_id.main_frame_url].erase(
-        old_navigation_id);
-    if (active_urls_to_navigations_[old_navigation_id.main_frame_url].empty()) {
-      active_urls_to_navigations_.erase(old_navigation_id.main_frame_url);
+    active_urls_to_navigations_[old_main_frame_url].erase(navigation_id);
+    if (active_urls_to_navigations_[old_main_frame_url].empty()) {
+      active_urls_to_navigations_.erase(old_main_frame_url);
     }
   }
-  active_navigations_.erase(old_navigation_id);
-  CancelPageLoadHint(old_navigation_id.main_frame_url);
+  active_navigations_.erase(navigation_id);
+  CancelPageLoadHint(old_main_frame_url);
 }
 
 std::map<GURL, base::TimeTicks>::iterator LoadingPredictor::CancelActiveHint(
@@ -219,7 +256,7 @@ std::map<GURL, base::TimeTicks>::iterator LoadingPredictor::CancelActiveHint(
 }
 
 void LoadingPredictor::CleanupAbandonedHintsAndNavigations(
-    const NavigationID& navigation_id) {
+    NavigationId navigation_id) {
   base::TimeTicks time_now = base::TimeTicks::Now();
   const base::TimeDelta max_navigation_age =
       base::TimeDelta::FromSeconds(config_.max_navigation_lifetime_seconds);
@@ -239,9 +276,9 @@ void LoadingPredictor::CleanupAbandonedHintsAndNavigations(
   // Navigations.
   for (auto it = active_navigations_.begin();
        it != active_navigations_.end();) {
-    if ((it->tab_id == navigation_id.tab_id) ||
-        (time_now - it->creation_time > max_navigation_age)) {
-      CancelActiveHint(active_hints_.find(it->main_frame_url));
+    if ((it->first == navigation_id) ||
+        (time_now - it->second.creation_time > max_navigation_age)) {
+      CancelActiveHint(active_hints_.find(it->second.main_frame_url));
       it = active_navigations_.erase(it);
     } else {
       ++it;
@@ -257,6 +294,13 @@ void LoadingPredictor::MaybeAddPreconnect(const GURL& url,
     DCHECK(base::FeatureList::IsEnabled(features::kLoadingPredictorPrefetch));
     prefetch_manager()->Start(url, std::move(prediction.prefetch_requests));
   }
+
+  if (base::FeatureList::IsEnabled(
+          features::kNoNavigationPreconnectOnWeakSignal) &&
+      IsPreconnectExpensive()) {
+    return;
+  }
+
   if (!prediction.requests.empty())
     preconnect_manager()->Start(url, std::move(prediction.requests));
 }
@@ -348,6 +392,13 @@ void LoadingPredictor::PreconnectURLIfAllowed(
     const net::NetworkIsolationKey& network_isolation_key) {
   if (!url.is_valid() || !url.has_host() || !IsPreconnectAllowed(profile_))
     return;
+
+  if (base::FeatureList::IsEnabled(
+          features::kNoPreconnectToSearchOnWeakSignal) &&
+      IsPreconnectExpensive()) {
+    return;
+  }
+
   preconnect_manager()->StartPreconnectUrl(url, allow_credentials,
                                            network_isolation_key);
 }

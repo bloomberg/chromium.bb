@@ -15,12 +15,12 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "components/browser_ui/site_settings/android/site_settings_jni_headers/WebsitePreferenceBridge_jni.h"
 #include "components/browser_ui/site_settings/android/storage_info_fetcher.h"
 #include "components/browsing_data/content/local_storage_helper.h"
@@ -31,7 +31,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/embedder_support/android/browser_context/browser_context_handle.h"
-#include "components/permissions/chooser_context_base.h"
+#include "components/permissions/object_permission_context_base.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_uma_util.h"
@@ -255,7 +255,7 @@ void SetSettingForOrigin(JNIEnv* env,
   content_settings::LogWebSiteSettingsPermissionChange(content_type, setting);
 }
 
-permissions::ChooserContextBase* GetChooserContext(
+permissions::ObjectPermissionContextBase* GetChooserContext(
     const JavaParamRef<jobject>& jbrowser_context_handle,
     ContentSettingsType type) {
   BrowserContext* browser_context = unwrap(jbrowser_context_handle);
@@ -471,26 +471,19 @@ static void JNI_WebsitePreferenceBridge_GetChosenObjects(
     const JavaParamRef<jobject>& list) {
   ContentSettingsType type =
       static_cast<ContentSettingsType>(content_settings_type);
-  permissions::ChooserContextBase* context =
+  permissions::ObjectPermissionContextBase* context =
       GetChooserContext(jbrowser_context_handle, type);
-  // The ChooserContextBase can be null if the embedder doesn't support the
-  // given ContentSettingsType.
+  // The ObjectPermissionContextBase can be null if the embedder doesn't support
+  // the given ContentSettingsType.
   if (!context)
     return;
   for (const auto& object : context->GetAllGrantedObjects()) {
     // Remove the trailing slash so that origins are matched correctly in
     // SingleWebsitePreferences.mergePermissionInfoForTopLevelOrigin.
-    std::string origin = object->requesting_origin.spec();
+    std::string origin = object->origin.spec();
     DCHECK_EQ('/', origin.back());
     origin.pop_back();
     ScopedJavaLocalRef<jstring> jorigin = ConvertUTF8ToJavaString(env, origin);
-
-    std::string embedder = object->embedding_origin.spec();
-    DCHECK_EQ('/', embedder.back());
-    embedder.pop_back();
-    ScopedJavaLocalRef<jstring> jembedder;
-    if (embedder != origin)
-      jembedder = ConvertUTF8ToJavaString(env, embedder);
 
     ScopedJavaLocalRef<jstring> jname = ConvertUTF16ToJavaString(
         env, context->GetObjectDisplayName(object->value));
@@ -505,8 +498,8 @@ static void JNI_WebsitePreferenceBridge_GetChosenObjects(
         object->source == content_settings::SETTING_SOURCE_POLICY;
 
     Java_WebsitePreferenceBridge_insertChosenObjectInfoIntoList(
-        env, list, content_settings_type, jorigin, jembedder, jname,
-        jserialized, jis_managed);
+        env, list, content_settings_type, jorigin, jname, jserialized,
+        jis_managed);
   }
 }
 
@@ -515,23 +508,16 @@ static void JNI_WebsitePreferenceBridge_RevokeObjectPermission(
     const JavaParamRef<jobject>& jbrowser_context_handle,
     jint content_settings_type,
     const JavaParamRef<jstring>& jorigin,
-    const JavaParamRef<jstring>& jembedder,
     const JavaParamRef<jstring>& jobject) {
   GURL origin(ConvertJavaStringToUTF8(env, jorigin));
   DCHECK(origin.is_valid());
-  // If embedder == origin above then a null embedder was sent to Java instead
-  // of a duplicated string.
-  GURL embedder(
-      ConvertJavaStringToUTF8(env, jembedder.is_null() ? jorigin : jembedder));
-  DCHECK(embedder.is_valid());
   std::unique_ptr<base::DictionaryValue> object = base::DictionaryValue::From(
       base::JSONReader::ReadDeprecated(ConvertJavaStringToUTF8(env, jobject)));
   DCHECK(object);
-  permissions::ChooserContextBase* context = GetChooserContext(
+  permissions::ObjectPermissionContextBase* context = GetChooserContext(
       jbrowser_context_handle,
       static_cast<ContentSettingsType>(content_settings_type));
-  context->RevokeObjectPermission(url::Origin::Create(origin),
-                                  url::Origin::Create(embedder), *object);
+  context->RevokeObjectPermission(url::Origin::Create(origin), *object);
 }
 
 namespace {
@@ -689,8 +675,7 @@ static void JNI_WebsitePreferenceBridge_ClearCookieData(
   BrowserContext* browser_context = unwrap(jbrowser_context_handle);
   GURL url(ConvertJavaStringToUTF8(env, jorigin));
 
-  auto* storage_partition =
-      content::BrowserContext::GetDefaultStoragePartition(browser_context);
+  auto* storage_partition = browser_context->GetDefaultStoragePartition();
   auto* cookie_manager = storage_partition->GetCookieManagerForBrowserProcess();
   cookie_manager->GetAllCookies(
       base::BindOnce(&OnCookiesReceived, cookie_manager, url));

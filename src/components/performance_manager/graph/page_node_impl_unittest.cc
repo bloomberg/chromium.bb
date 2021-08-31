@@ -4,15 +4,17 @@
 
 #include "components/performance_manager/graph/page_node_impl.h"
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/graph_impl_operations.h"
 #include "components/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/public/freezing/freezing.h"
 #include "components/performance_manager/public/graph/page_node.h"
 #include "components/performance_manager/test_support/graph_test_harness.h"
 #include "components/performance_manager/test_support/mock_graphs.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace performance_manager {
 
@@ -22,6 +24,10 @@ using PageNodeImplTest = GraphTestHarness;
 
 const std::string kHtmlMimeType = "text/html";
 const std::string kPdfMimeType = "application/pdf";
+
+static const freezing::FreezingVote kFreezingVote(
+    freezing::FreezingVoteValue::kCannotFreeze,
+    "cannot freeze");
 
 const PageNode* ToPublic(PageNodeImpl* page_node) {
   return page_node;
@@ -158,24 +164,26 @@ TEST_F(PageNodeImplTest, BrowserContextID) {
   EXPECT_EQ(public_page_node->GetBrowserContextID(), kTestBrowserContextId);
 }
 
-TEST_F(PageNodeImplTest, IsLoading) {
+TEST_F(PageNodeImplTest, LoadingState) {
   MockSinglePageInSingleProcessGraph mock_graph(graph());
   auto* page_node = mock_graph.page.get();
 
-  // This should be initialized to false.
-  EXPECT_FALSE(page_node->is_loading());
+  // This should start at kLoadingNotStarted.
+  EXPECT_EQ(PageNode::LoadingState::kLoadingNotStarted,
+            page_node->loading_state());
 
-  // Set to false and the property should stay false.
-  page_node->SetIsLoading(false);
-  EXPECT_FALSE(page_node->is_loading());
+  // Set to kLoadingNotStarted and the property should stay kLoadingNotStarted.
+  page_node->SetLoadingState(PageNode::LoadingState::kLoadingNotStarted);
+  EXPECT_EQ(PageNode::LoadingState::kLoadingNotStarted,
+            page_node->loading_state());
 
-  // Set to true and the property should read true.
-  page_node->SetIsLoading(true);
-  EXPECT_TRUE(page_node->is_loading());
+  // Set to kLoading and the property should switch to kLoading.
+  page_node->SetLoadingState(PageNode::LoadingState::kLoading);
+  EXPECT_EQ(PageNode::LoadingState::kLoading, page_node->loading_state());
 
-  // Set to false and the property should read false again.
-  page_node->SetIsLoading(false);
-  EXPECT_FALSE(page_node->is_loading());
+  // Set to kLoading again and the property should stay kLoading.
+  page_node->SetLoadingState(PageNode::LoadingState::kLoading);
+  EXPECT_EQ(PageNode::LoadingState::kLoading, page_node->loading_state());
 }
 
 TEST_F(PageNodeImplTest, HadFormInteractions) {
@@ -192,6 +200,21 @@ TEST_F(PageNodeImplTest, HadFormInteractions) {
   EXPECT_FALSE(page_node->had_form_interaction());
 }
 
+TEST_F(PageNodeImplTest, GetFreezingVote) {
+  MockSinglePageInSingleProcessGraph mock_graph(graph());
+  auto* page_node = mock_graph.page.get();
+
+  // This should be initialized to absl::nullopt.
+  EXPECT_FALSE(page_node->freezing_vote());
+
+  page_node->set_freezing_vote(kFreezingVote);
+  ASSERT_TRUE(page_node->freezing_vote().has_value());
+  EXPECT_EQ(kFreezingVote, page_node->freezing_vote().value());
+
+  page_node->set_freezing_vote(absl::nullopt);
+  EXPECT_FALSE(page_node->freezing_vote());
+}
+
 namespace {
 
 class LenientMockObserver : public PageNodeImpl::Observer {
@@ -201,16 +224,17 @@ class LenientMockObserver : public PageNodeImpl::Observer {
 
   MOCK_METHOD1(OnPageNodeAdded, void(const PageNode*));
   MOCK_METHOD1(OnBeforePageNodeRemoved, void(const PageNode*));
-  // Note that opener functionality is actually tested in the FrameNodeImpl
-  // and GraphImpl unittests.
-  MOCK_METHOD3(OnOpenerFrameNodeChanged,
-               void(const PageNode*, const FrameNode*, OpenedType));
+  // Note that opener/embedder functionality is actually tested in the
+  // FrameNodeImpl and GraphImpl unittests.
+  MOCK_METHOD2(OnOpenerFrameNodeChanged,
+               void(const PageNode*, const FrameNode*));
+  MOCK_METHOD3(OnEmbedderFrameNodeChanged,
+               void(const PageNode*, const FrameNode*, EmbeddingType));
   MOCK_METHOD1(OnIsVisibleChanged, void(const PageNode*));
   MOCK_METHOD1(OnIsAudibleChanged, void(const PageNode*));
-  MOCK_METHOD1(OnIsLoadingChanged, void(const PageNode*));
+  MOCK_METHOD1(OnLoadingStateChanged, void(const PageNode*));
   MOCK_METHOD1(OnUkmSourceIdChanged, void(const PageNode*));
   MOCK_METHOD1(OnPageLifecycleStateChanged, void(const PageNode*));
-  MOCK_METHOD1(OnPageOriginTrialFreezePolicyChanged, void(const PageNode*));
   MOCK_METHOD1(OnPageIsHoldingWebLockChanged, void(const PageNode*));
   MOCK_METHOD1(OnPageIsHoldingIndexedDBLockChanged, void(const PageNode*));
   MOCK_METHOD1(OnMainFrameUrlChanged, void(const PageNode*));
@@ -218,6 +242,8 @@ class LenientMockObserver : public PageNodeImpl::Observer {
   MOCK_METHOD1(OnTitleUpdated, void(const PageNode*));
   MOCK_METHOD1(OnFaviconUpdated, void(const PageNode*));
   MOCK_METHOD1(OnHadFormInteractionChanged, void(const PageNode*));
+  MOCK_METHOD2(OnFreezingVoteChanged,
+               void(const PageNode*, absl::optional<freezing::FreezingVote>));
 
   void SetNotifiedPageNode(const PageNode* page_node) {
     notified_page_node_ = page_node;
@@ -263,9 +289,9 @@ TEST_F(PageNodeImplTest, ObserverWorks) {
   page_node->SetIsAudible(true);
   EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
 
-  EXPECT_CALL(obs, OnIsLoadingChanged(_))
+  EXPECT_CALL(obs, OnLoadingStateChanged(_))
       .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
-  page_node->SetIsLoading(true);
+  page_node->SetLoadingState(PageNode::LoadingState::kLoading);
   EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
 
   EXPECT_CALL(obs, OnUkmSourceIdChanged(_))
@@ -303,6 +329,12 @@ TEST_F(PageNodeImplTest, ObserverWorks) {
   page_node->OnFaviconUpdated();
   EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
 
+  EXPECT_CALL(obs, OnFreezingVoteChanged(_, testing::Eq(absl::nullopt)))
+      .WillOnce(testing::WithArg<0>(
+          Invoke(&obs, &MockObserver::SetNotifiedPageNode)));
+  page_node->set_freezing_vote(kFreezingVote);
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
   // Release the page node and expect a call to "OnBeforePageNodeRemoved".
   EXPECT_CALL(obs, OnBeforePageNodeRemoved(_))
       .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
@@ -323,7 +355,7 @@ TEST_F(PageNodeImplTest, PublicInterface) {
             public_page_node->GetBrowserContextID());
   EXPECT_EQ(page_node->is_visible(), public_page_node->IsVisible());
   EXPECT_EQ(page_node->is_audible(), public_page_node->IsAudible());
-  EXPECT_EQ(page_node->is_loading(), public_page_node->IsLoading());
+  EXPECT_EQ(page_node->loading_state(), public_page_node->GetLoadingState());
   EXPECT_EQ(page_node->ukm_source_id(), public_page_node->GetUkmSourceID());
   EXPECT_EQ(page_node->lifecycle_state(),
             public_page_node->GetLifecycleState());
@@ -335,6 +367,7 @@ TEST_F(PageNodeImplTest, PublicInterface) {
   EXPECT_EQ(page_node->main_frame_url(), public_page_node->GetMainFrameUrl());
   EXPECT_EQ(page_node->contents_mime_type(),
             public_page_node->GetContentsMimeType());
+  EXPECT_EQ(page_node->freezing_vote(), public_page_node->GetFreezingVote());
 }
 
 TEST_F(PageNodeImplTest, GetMainFrameNodes) {

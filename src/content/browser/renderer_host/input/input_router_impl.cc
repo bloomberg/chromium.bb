@@ -19,7 +19,6 @@
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/input/web_touch_event_traits.h"
-#include "content/common/input_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
@@ -249,11 +248,11 @@ void InputRouterImpl::SetForceEnableZoom(bool enabled) {
   touch_action_filter_.SetForceEnableZoom(enabled);
 }
 
-base::Optional<cc::TouchAction> InputRouterImpl::AllowedTouchAction() {
+absl::optional<cc::TouchAction> InputRouterImpl::AllowedTouchAction() {
   return touch_action_filter_.allowed_touch_action();
 }
 
-base::Optional<cc::TouchAction> InputRouterImpl::ActiveTouchAction() {
+absl::optional<cc::TouchAction> InputRouterImpl::ActiveTouchAction() {
   return touch_action_filter_.active_touch_action();
 }
 
@@ -588,7 +587,7 @@ void InputRouterImpl::KeyboardEventHandled(
     blink::mojom::InputEventResultState state,
     blink::mojom::DidOverscrollParamsPtr overscroll,
     blink::mojom::TouchActionOptionalPtr touch_action) {
-  TRACE_EVENT2("input", "InputRouterImpl::KeboardEventHandled", "type",
+  TRACE_EVENT2("input", "InputRouterImpl::KeyboardEventHandled", "type",
                WebInputEvent::GetName(event.event.GetType()), "ack",
                InputEventResultStateToString(state));
 
@@ -741,7 +740,7 @@ void InputRouterImpl::UpdateTouchAckTimeoutEnabled() {
   // TouchAction::kNone will prevent scrolling, in which case the timeout serves
   // little purpose. It's also a strong signal that touch handling is critical
   // to page functionality, so the timeout could do more harm than good.
-  base::Optional<cc::TouchAction> allowed_touch_action =
+  absl::optional<cc::TouchAction> allowed_touch_action =
       touch_action_filter_.allowed_touch_action();
   cc::TouchAction compositor_allowed_touch_action =
       touch_action_filter_.compositor_allowed_touch_action();

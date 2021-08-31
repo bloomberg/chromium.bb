@@ -17,7 +17,6 @@
 #include "include/core/SkTypeface.h"
 #include "include/effects/SkGradientShader.h"
 #include "include/utils/SkCamera.h"
-#include "include/utils/SkInterpolator.h"
 #include "samplecode/Sample.h"
 #include "src/core/SkClipOpPriv.h"
 #include "src/utils/SkUTF.h"
@@ -190,7 +189,7 @@ protected:
     SkString name() override { return SkString("Backdrop"); }
 
     void onDrawContent(SkCanvas* canvas) override {
-        canvas->drawImage(fImage.get(), 0, 0, nullptr);
+        canvas->drawImage(fImage.get(), 0, 0);
 
         const SkScalar w = 250;
         const SkScalar h = 150;

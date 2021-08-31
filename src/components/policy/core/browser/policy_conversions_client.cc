@@ -8,7 +8,6 @@
 #include "base/containers/flat_map.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
@@ -22,6 +21,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/strings/grit/components_strings.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::Value;
@@ -76,7 +76,6 @@ base::Value PolicyConversionsClient::GetChromePolicies() {
   DCHECK(HasUserPolicies());
 
   PolicyService* policy_service = GetPolicyService();
-  PolicyMap map;
 
   auto* schema_registry = GetPolicySchemaRegistry();
   if (!schema_registry) {
@@ -90,7 +89,7 @@ base::Value PolicyConversionsClient::GetChromePolicies() {
 
   // Make a copy that can be modified, since some policy values are modified
   // before being displayed.
-  map.CopyFrom(policy_service->GetPolicies(policy_namespace));
+  PolicyMap map = policy_service->GetPolicies(policy_namespace).Clone();
 
   // Get a list of all the errors in the policy values.
   const ConfigurationPolicyHandlerList* handler_list = GetHandlerList();
@@ -109,7 +108,7 @@ base::Value PolicyConversionsClient::GetChromePolicies() {
 
 Value PolicyConversionsClient::CopyAndMaybeConvert(
     const Value& value,
-    const base::Optional<Schema>& schema) const {
+    const absl::optional<Schema>& schema) const {
   Value value_copy = value.Clone();
   if (schema.has_value())
     schema->MaskSensitiveValues(&value_copy);
@@ -139,9 +138,9 @@ Value PolicyConversionsClient::GetPolicyValue(
     const PoliciesSet& deprecated_policies,
     const PoliciesSet& future_policies,
     PolicyErrorMap* errors,
-    const base::Optional<PolicyConversions::PolicyToSchemaMap>&
+    const absl::optional<PolicyConversions::PolicyToSchemaMap>&
         known_policy_schemas) const {
-  base::Optional<Schema> known_policy_schema =
+  absl::optional<Schema> known_policy_schema =
       GetKnownPolicySchema(known_policy_schemas, policy_name);
   Value value(Value::Type::DICTIONARY);
   value.SetKey("value",
@@ -172,7 +171,9 @@ Value PolicyConversionsClient::GetPolicyValue(
   if (policy.source == POLICY_SOURCE_MERGED) {
     bool policy_has_unmerged_source = false;
     for (const auto& conflict : policy.conflicts) {
-      if (PolicyMerger::ConflictCanBeMerged(conflict, policy))
+      if (PolicyMerger::ConflictCanBeMerged(
+              conflict.entry(), policy,
+              /*is_user_cloud_merging_enabled=*/false))
         continue;
       policy_has_unmerged_source = true;
       break;
@@ -181,7 +182,7 @@ Value PolicyConversionsClient::GetPolicyValue(
                                            !policy_has_unmerged_source));
   }
 
-  base::string16 error;
+  std::u16string error;
   if (!known_policy_schema.has_value()) {
     // We don't know what this policy is. This is an important error to
     // show.
@@ -189,26 +190,33 @@ Value PolicyConversionsClient::GetPolicyValue(
   } else {
     // The PolicyMap contains errors about retrieving the policy, while the
     // PolicyErrorMap contains validation errors. Concat the errors.
-    auto policy_map_errors = policy.GetLocalizedErrors(
+    auto policy_map_errors = policy.GetLocalizedMessages(
+        PolicyMap::MessageType::kError,
         base::BindRepeating(&l10n_util::GetStringUTF16));
     auto error_map_errors =
-        errors ? errors->GetErrors(policy_name) : base::string16();
+        errors ? errors->GetErrors(policy_name) : std::u16string();
     if (policy_map_errors.empty())
       error = error_map_errors;
     else if (error_map_errors.empty())
       error = policy_map_errors;
     else
-      error =
-          base::JoinString({policy_map_errors, errors->GetErrors(policy_name)},
-                           base::ASCIIToUTF16("\n"));
+      error = base::JoinString(
+          {policy_map_errors, errors->GetErrors(policy_name)}, u"\n");
   }
   if (!error.empty())
     value.SetKey("error", Value(error));
 
-  base::string16 warning = policy.GetLocalizedWarnings(
+  std::u16string warning = policy.GetLocalizedMessages(
+      PolicyMap::MessageType::kWarning,
       base::BindRepeating(&l10n_util::GetStringUTF16));
   if (!warning.empty())
     value.SetKey("warning", Value(warning));
+
+  std::u16string info = policy.GetLocalizedMessages(
+      PolicyMap::MessageType::kInfo,
+      base::BindRepeating(&l10n_util::GetStringUTF16));
+  if (!info.empty())
+    value.SetKey("info", Value(info));
 
   if (policy.ignored())
     value.SetBoolKey("ignored", true);
@@ -220,15 +228,34 @@ Value PolicyConversionsClient::GetPolicyValue(
     value.SetBoolKey("future", true);
 
   if (!policy.conflicts.empty()) {
-    Value conflict_values(Value::Type::LIST);
+    Value override_values(Value::Type::LIST);
+    Value supersede_values(Value::Type::LIST);
+
+    bool has_override_values = false;
+    bool has_supersede_values = false;
     for (const auto& conflict : policy.conflicts) {
       base::Value conflicted_policy_value =
-          GetPolicyValue(policy_name, conflict, deprecated_policies,
+          GetPolicyValue(policy_name, conflict.entry(), deprecated_policies,
                          future_policies, errors, known_policy_schemas);
-      conflict_values.Append(std::move(conflicted_policy_value));
+      switch (conflict.conflict_type()) {
+        case PolicyMap::ConflictType::Supersede:
+          supersede_values.Append(std::move(conflicted_policy_value));
+          has_supersede_values = true;
+          break;
+        case PolicyMap::ConflictType::Override:
+          override_values.Append(std::move(conflicted_policy_value));
+          has_override_values = true;
+          break;
+        default:
+          break;
+      }
     }
-
-    value.SetKey("conflicts", std::move(conflict_values));
+    if (has_override_values) {
+      value.SetKey("conflicts", std::move(override_values));
+    }
+    if (has_supersede_values) {
+      value.SetKey("superseded", std::move(supersede_values));
+    }
   }
 
   return value;
@@ -239,7 +266,7 @@ Value PolicyConversionsClient::GetPolicyValues(
     PolicyErrorMap* errors,
     const PoliciesSet& deprecated_policies,
     const PoliciesSet& future_policies,
-    const base::Optional<PolicyConversions::PolicyToSchemaMap>&
+    const absl::optional<PolicyConversions::PolicyToSchemaMap>&
         known_policy_schemas) const {
   base::Value values(base::Value::Type::DICTIONARY);
   for (const auto& entry : map) {
@@ -255,26 +282,26 @@ Value PolicyConversionsClient::GetPolicyValues(
   return values;
 }
 
-base::Optional<Schema> PolicyConversionsClient::GetKnownPolicySchema(
-    const base::Optional<PolicyConversions::PolicyToSchemaMap>&
+absl::optional<Schema> PolicyConversionsClient::GetKnownPolicySchema(
+    const absl::optional<PolicyConversions::PolicyToSchemaMap>&
         known_policy_schemas,
     const std::string& policy_name) const {
   if (!known_policy_schemas.has_value())
-    return base::nullopt;
+    return absl::nullopt;
   auto known_policy_iterator = known_policy_schemas->find(policy_name);
   if (known_policy_iterator == known_policy_schemas->end())
-    return base::nullopt;
+    return absl::nullopt;
   return known_policy_iterator->second;
 }
 
-base::Optional<PolicyConversions::PolicyToSchemaMap>
+absl::optional<PolicyConversions::PolicyToSchemaMap>
 PolicyConversionsClient::GetKnownPolicies(
     const scoped_refptr<SchemaMap> schema_map,
     const PolicyNamespace& policy_namespace) const {
   const Schema* schema = schema_map->GetSchema(policy_namespace);
   // There is no policy name verification without valid schema.
   if (!schema || !schema->valid())
-    return base::nullopt;
+    return absl::nullopt;
 
   // Build a vector first and construct the PolicyToSchemaMap (which is a
   // |flat_map|) from that. The reason is that insertion into a |flat_map| is

@@ -8,6 +8,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {Base} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+import {waitAfterNextRender} from '../test_util.m.js';
 
 import {getGoogleDriveDestination, selectOption} from './print_preview_test_utils.js';
 
@@ -30,10 +31,6 @@ suite(destination_select_test.suiteName, function() {
   /** @type {!DestinationOrigin} */
   const cookieOrigin = DestinationOrigin.COOKIES;
 
-  /** @type {string} */
-  const driveKey =
-      `${Destination.GooglePromotedId.DOCS}/${cookieOrigin}/${account}`;
-
   /** @type {!Array<!Destination>} */
   let recentDestinationList = [];
 
@@ -55,6 +52,7 @@ suite(destination_select_test.suiteName, function() {
     destinationSelect.recentDestinationList = recentDestinationList;
 
     document.body.appendChild(destinationSelect);
+    return waitAfterNextRender(destinationSelect);
   });
 
   // Create three different destinations and use them to populate
@@ -64,6 +62,7 @@ suite(destination_select_test.suiteName, function() {
       new Destination(
           'ID1', DestinationType.LOCAL, DestinationOrigin.LOCAL, 'One',
           DestinationConnectionStatus.ONLINE),
+      getGoogleDriveDestination(account),
       new Destination(
           'ID2', DestinationType.GOOGLE, cookieOrigin, 'Two',
           DestinationConnectionStatus.OFFLINE, {account: account}),
@@ -71,6 +70,12 @@ suite(destination_select_test.suiteName, function() {
           'ID3', DestinationType.GOOGLE, cookieOrigin, 'Three',
           DestinationConnectionStatus.ONLINE,
           {account: account, isOwned: true}),
+      new Destination(
+          'ID4', DestinationType.LOCAL, DestinationOrigin.LOCAL, 'Four',
+          DestinationConnectionStatus.ONLINE, {isEnterprisePrinter: true}),
+      new Destination(
+          'ID5', DestinationType.MOBILE, cookieOrigin, 'Five',
+          DestinationConnectionStatus.ONLINE),
     ];
   }
 
@@ -94,15 +99,14 @@ suite(destination_select_test.suiteName, function() {
     destinationSelect.loaded = true;
     const selectEl = destinationSelect.$$('.md-select');
     compareIcon(selectEl, 'print');
-    destinationSelect.driveDestinationKey = driveKey;
 
-    return selectOption(destinationSelect, driveKey)
+    return selectOption(destinationSelect, recentDestinationList[1].key)
         .then(() => {
           // Icon updates early based on the ID.
           compareIcon(selectEl, 'save-to-drive');
 
           // Update the destination.
-          destinationSelect.destination = getGoogleDriveDestination(account);
+          destinationSelect.destination = recentDestinationList[1];
 
           // Still Save to Drive icon.
           compareIcon(selectEl, 'save-to-drive');
@@ -116,7 +120,7 @@ suite(destination_select_test.suiteName, function() {
           compareIcon(selectEl, 'printer-shared');
 
           // Update destination.
-          destinationSelect.destination = recentDestinationList[1];
+          destinationSelect.destination = recentDestinationList[2];
           compareIcon(selectEl, 'printer-shared');
 
           // Select a destination with a standard printer icon.
@@ -127,8 +131,32 @@ suite(destination_select_test.suiteName, function() {
           compareIcon(selectEl, 'print');
 
           // Update destination.
-          destinationSelect.destination = recentDestinationList[2];
+          destinationSelect.destination = recentDestinationList[3];
           compareIcon(selectEl, 'print');
+
+          // Select a destination with the enterprise printer icon.
+          return selectOption(destinationSelect, `ID4/local/`);
+        })
+        .then(() => {
+          const enterpriseIcon = 'business';
+
+          compareIcon(selectEl, enterpriseIcon);
+
+          // Update destination.
+          destinationSelect.destination = recentDestinationList[4];
+          compareIcon(selectEl, enterpriseIcon);
+
+          // Select a destination with the mobile printer icon.
+          return selectOption(destinationSelect, `ID5/${cookieOrigin}/`);
+        })
+        .then(() => {
+          const mobileIcon = 'smartphone';
+
+          compareIcon(selectEl, mobileIcon);
+
+          // Update destination.
+          destinationSelect.destination = recentDestinationList[5];
+          compareIcon(selectEl, mobileIcon);
         });
   }
 
@@ -152,8 +180,7 @@ suite(destination_select_test.suiteName, function() {
         destinationSelect.$$('.destination-additional-info');
     const statusEl = destinationSelect.$$('.destination-status');
 
-    destinationSelect.driveDestinationKey = driveKey;
-    destinationSelect.destination = getGoogleDriveDestination(account);
+    destinationSelect.destination = recentDestinationList[1];
     destinationSelect.updateDestination();
     assertTrue(additionalInfoEl.hidden);
     assertEquals('', statusEl.innerHTML);
@@ -163,35 +190,23 @@ suite(destination_select_test.suiteName, function() {
     assertTrue(additionalInfoEl.hidden);
     assertEquals('', statusEl.innerHTML);
 
-    destinationSelect.destination = recentDestinationList[1];
+    destinationSelect.destination = recentDestinationList[2];
     destinationSelect.updateDestination();
     assertFalse(additionalInfoEl.hidden);
     assertEquals('offline', statusEl.innerHTML);
 
-    destinationSelect.destination = recentDestinationList[2];
+    destinationSelect.destination = recentDestinationList[3];
     destinationSelect.updateDestination();
     assertTrue(additionalInfoEl.hidden);
     assertEquals('', statusEl.innerHTML);
   }
 
   test(assert(destination_select_test.TestNames.UpdateStatus), function() {
-    loadTimeData.overrideValues(
-        {cloudPrintDeprecationWarningsSuppressed: true});
-
-    // Repopulate |recentDestinationList| to have
-    // |cloudPrintDeprecationWarningsSuppressed| take effect during creation of
-    // new Destinations.
     populateRecentDestinationList();
     return testUpdateStatus();
   });
 
   test(assert(destination_select_test.TestNames.ChangeIcon), function() {
-    loadTimeData.overrideValues(
-        {cloudPrintDeprecationWarningsSuppressed: true});
-
-    // Repopulate |recentDestinationList| to have
-    // |cloudPrintDeprecationWarningsSuppressed| take effect during creation of
-    // new Destinations.
     populateRecentDestinationList();
     destinationSelect.recentDestinationList = recentDestinationList;
 

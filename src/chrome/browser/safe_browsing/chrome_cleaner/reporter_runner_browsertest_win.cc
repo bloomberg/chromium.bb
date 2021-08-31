@@ -14,13 +14,13 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/notreached.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -126,8 +126,10 @@ class ReporterRunnerPolicyTest
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
-        .WillRepeatedly(Return(true));
+    ON_CALL(policy_provider_, IsInitializationComplete(_))
+        .WillByDefault(Return(true));
+    ON_CALL(policy_provider_, IsFirstPolicyLoadComplete(_))
+        .WillByDefault(Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
 
@@ -145,7 +147,7 @@ class ReporterRunnerPolicyTest
 
   void ComponentRegistered() { waiter_.Signal(); }
 
-  policy::MockConfigurationPolicyProvider policy_provider_;
+  testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
   Waiter waiter_;
 
   DISALLOW_COPY_AND_ASSIGN(ReporterRunnerPolicyTest);

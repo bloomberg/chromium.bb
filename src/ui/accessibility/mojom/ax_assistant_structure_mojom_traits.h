@@ -42,7 +42,7 @@ struct StructTraits<ax::mojom::AssistantNodeDataView,
   static gfx::Rect rect(const std::unique_ptr<ui::AssistantNode>& node) {
     return node->rect;
   }
-  static base::string16 text(const std::unique_ptr<ui::AssistantNode>& node) {
+  static std::u16string text(const std::unique_ptr<ui::AssistantNode>& node) {
     return node->text;
   }
   static float text_size(const std::unique_ptr<ui::AssistantNode>& node) {
@@ -66,7 +66,7 @@ struct StructTraits<ax::mojom::AssistantNodeDataView,
   static bool line_through(const std::unique_ptr<ui::AssistantNode>& node) {
     return node->line_through;
   }
-  static base::Optional<gfx::Range> selection(
+  static absl::optional<gfx::Range> selection(
       const std::unique_ptr<ui::AssistantNode>& node) {
     return node->selection;
   }
@@ -74,7 +74,7 @@ struct StructTraits<ax::mojom::AssistantNodeDataView,
       const std::unique_ptr<ui::AssistantNode>& node) {
     return node->class_name;
   }
-  static base::Optional<std::string> role(
+  static absl::optional<std::string> role(
       const std::unique_ptr<ui::AssistantNode>& node) {
     return node->role;
   }

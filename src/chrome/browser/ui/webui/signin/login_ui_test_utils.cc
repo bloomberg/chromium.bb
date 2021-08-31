@@ -7,13 +7,14 @@
 #include "base/bind.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -81,9 +83,14 @@ class SignInObserver : public signin::IdentityManager::Observer {
     FAIL() << "Sign in observer timed out!";
   }
 
-  void OnPrimaryAccountSet(
-      const CoreAccountInfo& primary_account_info) override {
-    DVLOG(1) << "Google signin succeeded.";
+  void OnPrimaryAccountChanged(
+      const signin::PrimaryAccountChangeEvent& event) override {
+    if (event.GetEventTypeFor(signin::ConsentLevel::kSync) !=
+        signin::PrimaryAccountChangeEvent::Type::kSet) {
+      return;
+    }
+
+    DVLOG(1) << "Sign in finished: Sync primary account was set.";
     signed_in_ = true;
     QuitLoopRunner();
   }
@@ -195,7 +202,7 @@ enum class SyncConfirmationDialogAction { kConfirm, kCancel };
 
 enum class ReauthDialogAction { kConfirm, kCancel };
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 std::string GetButtonIdForSyncConfirmationDialogAction(
     SyncConfirmationDialogAction action) {
   switch (action) {
@@ -264,7 +271,7 @@ bool IsElementReady(content::WebContents* web_contents,
       web_contents, find_element_js, &message));
   return message == "Ok";
 }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 
@@ -274,7 +281,7 @@ class SigninViewControllerTestUtil {
   static bool TryDismissSyncConfirmationDialog(
       Browser* browser,
       SyncConfirmationDialogAction action) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     NOTREACHED();
     return false;
 #else
@@ -303,7 +310,7 @@ class SigninViewControllerTestUtil {
   static bool TryCompleteSigninEmailConfirmationDialog(
       Browser* browser,
       SigninEmailConfirmationDialog::Action action) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     NOTREACHED();
     return false;
 #else
@@ -336,7 +343,7 @@ class SigninViewControllerTestUtil {
 
   static bool TryCompleteReauthConfirmationDialog(Browser* browser,
                                                   ReauthDialogAction action) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     NOTREACHED();
     return false;
 #else
@@ -435,19 +442,20 @@ void ExecuteJsToSigninInSigninFrame(Browser* browser,
 bool SignInWithUI(Browser* browser,
                   const std::string& username,
                   const std::string& password) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   NOTREACHED();
   return false;
 #else
   SignInObserver signin_observer;
-  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
-      scoped_signin_observer(&signin_observer);
-  scoped_signin_observer.Add(
+  base::ScopedObservation<signin::IdentityManager,
+                          signin::IdentityManager::Observer>
+      scoped_signin_observation(&signin_observer);
+  scoped_signin_observation.Observe(
       IdentityManagerFactory::GetForProfile(browser->profile()));
 
   signin_metrics::AccessPoint access_point =
       signin_metrics::AccessPoint::ACCESS_POINT_MENU;
-  chrome::ShowBrowserSignin(browser, access_point);
+  chrome::ShowBrowserSignin(browser, access_point, signin::ConsentLevel::kSync);
   content::WebContents* active_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   DCHECK(active_contents);
@@ -465,9 +473,9 @@ bool DismissSyncConfirmationDialog(Browser* browser,
                                    base::TimeDelta timeout,
                                    SyncConfirmationDialogAction action) {
   SyncConfirmationClosedObserver confirmation_closed_observer;
-  ScopedObserver<LoginUIService, LoginUIService::Observer>
-      scoped_confirmation_closed_observer(&confirmation_closed_observer);
-  scoped_confirmation_closed_observer.Add(
+  base::ScopedObservation<LoginUIService, LoginUIService::Observer>
+      scoped_confirmation_closed_observation(&confirmation_closed_observer);
+  scoped_confirmation_closed_observation.Observe(
       LoginUIServiceFactory::GetForProfile(browser->profile()));
 
   const base::Time expire_time = base::Time::Now() + timeout;

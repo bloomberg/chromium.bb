@@ -24,13 +24,11 @@ IOSCaptivePortalBlockingPage::IOSCaptivePortalBlockingPage(
     web::WebState* web_state,
     const GURL& request_url,
     const GURL& landing_url,
-    base::OnceCallback<void(bool)> callback,
     security_interstitials::IOSBlockingPageControllerClient* client)
     : security_interstitials::IOSSecurityInterstitialPage(web_state,
                                                           request_url,
                                                           client),
-      landing_url_(landing_url),
-      callback_(std::move(callback)) {
+      landing_url_(landing_url) {
   captive_portal::CaptivePortalMetrics::LogCaptivePortalBlockingPageEvent(
       captive_portal::CaptivePortalMetrics::SHOW_ALL);
 }
@@ -50,12 +48,12 @@ void IOSCaptivePortalBlockingPage::PopulateInterstitialStrings(
       "primaryButtonText",
       l10n_util::GetStringUTF16(IDS_CAPTIVE_PORTAL_BUTTON_OPEN_LOGIN_PAGE));
 
-  base::string16 tab_title =
+  std::u16string tab_title =
       l10n_util::GetStringUTF16(IDS_CAPTIVE_PORTAL_HEADING_WIFI);
   load_time_data->SetString("tabTitle", tab_title);
   load_time_data->SetString("heading", tab_title);
 
-  base::string16 paragraph;
+  std::u16string paragraph;
   if (landing_url_.spec() ==
       captive_portal::CaptivePortalDetector::kDefaultURL) {
     // Captive portal may intercept requests without HTTP redirects, in which
@@ -66,7 +64,7 @@ void IOSCaptivePortalBlockingPage::PopulateInterstitialStrings(
   } else {
     // Portal redirection was done with HTTP redirects, so show the login URL.
     // If |languages| is empty, punycode in |login_host| will always be decoded.
-    base::string16 login_host =
+    std::u16string login_host =
         url_formatter::IDNToUnicode(landing_url_.host());
     if (base::i18n::IsRTL())
       base::i18n::WrapStringWithLTRFormatting(&login_host);
@@ -76,40 +74,14 @@ void IOSCaptivePortalBlockingPage::PopulateInterstitialStrings(
   }
   load_time_data->SetString("primaryParagraph", paragraph);
   // Explicitly specify other expected fields to empty.
-  load_time_data->SetString("openDetails", base::string16());
-  load_time_data->SetString("closeDetails", base::string16());
-  load_time_data->SetString("explanationParagraph", base::string16());
-  load_time_data->SetString("finalParagraph", base::string16());
-  load_time_data->SetString("recurrentErrorParagraph", base::string16());
-  load_time_data->SetString("optInLink", base::string16());
-  load_time_data->SetString("enhancedProtectionMessage", base::string16());
+  load_time_data->SetString("openDetails", std::u16string());
+  load_time_data->SetString("closeDetails", std::u16string());
+  load_time_data->SetString("explanationParagraph", std::u16string());
+  load_time_data->SetString("finalParagraph", std::u16string());
+  load_time_data->SetString("recurrentErrorParagraph", std::u16string());
+  load_time_data->SetString("optInLink", std::u16string());
+  load_time_data->SetString("enhancedProtectionMessage", std::u16string());
   load_time_data->SetBoolean("show_recurrent_error_paragraph", false);
-}
-
-void IOSCaptivePortalBlockingPage::AfterShow() {}
-
-void IOSCaptivePortalBlockingPage::OnDontProceed() {
-  // It's possible that callback_ may not exist if the user clicks "Proceed"
-  // followed by pressing the back button before the interstitial is hidden.
-  // In that case the certificate will still be treated as allowed.
-  if (callback_.is_null())
-    return;
-
-  std::move(callback_).Run(false);
-}
-
-void IOSCaptivePortalBlockingPage::CommandReceived(const std::string& command) {
-  int command_num = 0;
-  bool command_is_num = base::StringToInt(command, &command_num);
-  DCHECK(command_is_num) << command;
-  // Any command other than "open the login page" is ignored.
-  if (command_num == security_interstitials::CMD_OPEN_LOGIN) {
-    captive_portal::CaptivePortalMetrics::LogCaptivePortalBlockingPageEvent(
-        captive_portal::CaptivePortalMetrics::OPEN_LOGIN_PAGE);
-
-    CaptivePortalDetectorTabHelper::FromWebState(web_state())
-        ->DisplayCaptivePortalLoginPage(landing_url_);
-  }
 }
 
 void IOSCaptivePortalBlockingPage::HandleScriptCommand(
@@ -122,13 +94,23 @@ void IOSCaptivePortalBlockingPage::HandleScriptCommand(
     LOG(ERROR) << "JS message parameter not found: command";
     return;
   }
-  // Non-proceed commands are handled the same between committed and
-  // non-committed interstitials, so the CommandReceived method can be used.
+
   // Remove the command prefix since it is ignored when converting the value
   // to a SecurityInterstitialCommand.
   std::size_t delimiter = command.find(".");
-  if (delimiter != std::string::npos) {
-    IOSCaptivePortalBlockingPage::CommandReceived(
-        command.substr(delimiter + 1));
+  if (delimiter == std::string::npos)
+    return;
+
+  std::string command_suffix = command.substr(delimiter + 1);
+  int command_num = 0;
+  bool command_is_num = base::StringToInt(command_suffix, &command_num);
+  DCHECK(command_is_num) << command_suffix;
+  // Any command other than "open the login page" is ignored.
+  if (command_num == security_interstitials::CMD_OPEN_LOGIN) {
+    captive_portal::CaptivePortalMetrics::LogCaptivePortalBlockingPageEvent(
+        captive_portal::CaptivePortalMetrics::OPEN_LOGIN_PAGE);
+
+    CaptivePortalDetectorTabHelper::FromWebState(web_state())
+        ->DisplayCaptivePortalLoginPage(landing_url_);
   }
 }

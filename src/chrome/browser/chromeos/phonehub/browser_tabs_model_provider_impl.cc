@@ -7,6 +7,8 @@
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/phonehub/browser_tabs_metadata_fetcher.h"
 #include "chromeos/components/phonehub/browser_tabs_model.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 
@@ -15,9 +17,11 @@ namespace phonehub {
 
 BrowserTabsModelProviderImpl::BrowserTabsModelProviderImpl(
     multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+    syncer::SyncService* sync_service,
     sync_sessions::SessionSyncService* session_sync_service,
     std::unique_ptr<BrowserTabsMetadataFetcher> browser_tabs_metadata_fetcher)
     : multidevice_setup_client_(multidevice_setup_client),
+      sync_service_(sync_service),
       session_sync_service_(session_sync_service),
       browser_tabs_metadata_fetcher_(std::move(browser_tabs_metadata_fetcher)) {
   multidevice_setup_client_->AddObserver(this);
@@ -33,12 +37,12 @@ BrowserTabsModelProviderImpl::~BrowserTabsModelProviderImpl() {
   multidevice_setup_client_->RemoveObserver(this);
 }
 
-base::Optional<std::string> BrowserTabsModelProviderImpl::GetSessionName()
+absl::optional<std::string> BrowserTabsModelProviderImpl::GetSessionName()
     const {
   const multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice&
       host_device_with_status = multidevice_setup_client_->GetHostStatus();
   if (!host_device_with_status.second)
-    return base::nullopt;
+    return absl::nullopt;
   // The pii_free_name field of the device matches the session name for
   // sync.
   return host_device_with_status.second->pii_free_name();
@@ -50,8 +54,18 @@ void BrowserTabsModelProviderImpl::OnHostStatusChanged(
   AttemptBrowserTabsModelUpdate();
 }
 
+void BrowserTabsModelProviderImpl::TriggerRefresh() {
+  // crbug/1158480: Currently (January 2021), updates to synced sessions
+  // sometimes take a long time to arrive. As a workaround,
+  // SyncService::TriggerRefresh() is used, which bypasses some of the potential
+  // sources of latency (e.g. for delivering an invalidation), but not others
+  // (e.g. backend replication delay). I.e SyncService::TriggerRefresh() will
+  // not guarantee an immediate update.
+  sync_service_->TriggerRefresh({syncer::SESSIONS});
+}
+
 void BrowserTabsModelProviderImpl::AttemptBrowserTabsModelUpdate() {
-  base::Optional<std::string> session_name = GetSessionName();
+  absl::optional<std::string> session_name = GetSessionName();
   sync_sessions::OpenTabsUIDelegate* open_tabs =
       session_sync_service_->GetOpenTabsUIDelegate();
   // Tab sync is disabled or no valid |pii_free_name_|.
@@ -100,17 +114,17 @@ void BrowserTabsModelProviderImpl::AttemptBrowserTabsModelUpdate() {
 void BrowserTabsModelProviderImpl::InvalidateWeakPtrsAndClearTabMetadata(
     bool is_tab_sync_enabled) {
   weak_ptr_factory_.InvalidateWeakPtrs();
-  BrowserTabsModelProvider::NotifyBrowserTabsUpdated(
+  NotifyBrowserTabsUpdated(
       /*is_tab_sync_enabled=*/is_tab_sync_enabled, {});
 }
 
 void BrowserTabsModelProviderImpl::OnMetadataFetched(
-    base::Optional<std::vector<BrowserTabsModel::BrowserTabMetadata>>
+    absl::optional<std::vector<BrowserTabsModel::BrowserTabMetadata>>
         metadata) {
   // The operation to fetch metadata was cancelled.
   if (!metadata)
     return;
-  BrowserTabsModelProvider::NotifyBrowserTabsUpdated(
+  NotifyBrowserTabsUpdated(
       /*is_tab_sync_enabled=*/true, *metadata);
 }
 

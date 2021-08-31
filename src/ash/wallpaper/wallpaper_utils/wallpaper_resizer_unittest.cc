@@ -70,11 +70,10 @@ class WallpaperResizerTest : public testing::Test,
   gfx::ImageSkia Resize(const gfx::ImageSkia& image,
                         const gfx::Size& target_size,
                         WallpaperLayout layout) {
-    std::unique_ptr<WallpaperResizer> resizer;
-    resizer.reset(new WallpaperResizer(
+    auto resizer = std::make_unique<WallpaperResizer>(
         image, target_size,
         WallpaperInfo("", layout, DEFAULT, base::Time::Now().LocalMidnight()),
-        task_runner()));
+        task_runner());
     resizer->AddObserver(this);
     resizer->StartResize();
     WaitForResize();
