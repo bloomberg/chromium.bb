@@ -19,15 +19,13 @@ import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiControl
 import org.chromium.chrome.browser.autofill_assistant.LayoutUtils;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipAdapter;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderViewBinder.ViewHolder;
-import org.chromium.chrome.browser.signin.DisplayableProfileData;
-import org.chromium.chrome.browser.signin.IdentityServicesProvider;
-import org.chromium.chrome.browser.signin.ProfileDataCache;
+import org.chromium.chrome.browser.signin.services.DisplayableProfileData;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.ProfileDataCache;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
-
-import java.util.Collections;
 
 /**
  * Coordinator for the header of the Autofill Assistant.
@@ -36,7 +34,7 @@ public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
     private final ProfileDataCache mProfileCache;
     private final ViewGroup mView;
     private final ImageView mProfileView;
-    private final String mSignedInAccountName;
+    private final String mSignedInAccountEmail;
     private final ViewHolder mViewHolder;
     private final RecyclerView mChipsContainer;
 
@@ -53,13 +51,12 @@ public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
                         R.dimen.autofill_assistant_poodle_size));
         addPoodle(mView, poodle.getView());
 
-        int imageSize = context.getResources().getDimensionPixelSize(
-                R.dimen.autofill_assistant_profile_size);
-        mProfileCache = new ProfileDataCache(context, imageSize);
+        mProfileCache = ProfileDataCache.createWithoutBadge(
+                context, R.dimen.autofill_assistant_profile_size);
         mProfileView = mView.findViewById(R.id.profile_image);
         IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
                 AutofillAssistantUiController.getProfile());
-        mSignedInAccountName = CoreAccountInfo.getEmailFrom(
+        mSignedInAccountEmail = CoreAccountInfo.getEmailFrom(
                 identityManager.getPrimaryAccountInfo(ConsentLevel.SYNC));
         setupProfileImage();
 
@@ -114,11 +111,11 @@ public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
     }
 
     @Override
-    public void onProfileDataUpdated(String account) {
-        if (!mSignedInAccountName.equals(account)) {
+    public void onProfileDataUpdated(String accountEmail) {
+        if (!mSignedInAccountEmail.equals(accountEmail)) {
             return;
         }
-        setProfileImageFor(mSignedInAccountName);
+        setProfileImageFor(mSignedInAccountEmail);
     }
 
     /** Return the view associated to this coordinator. */
@@ -135,7 +132,7 @@ public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
      * Cleanup resources when this goes out of scope.
      */
     public void destroy() {
-        if (mSignedInAccountName != null) {
+        if (mSignedInAccountEmail != null) {
             mProfileCache.removeObserver(this);
         }
     }
@@ -148,9 +145,8 @@ public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
     // TODO(b/130415092): Use image from AGSA if chrome is not signed in.
 
     private void setupProfileImage() {
-        if (mSignedInAccountName != null) {
+        if (mSignedInAccountEmail != null) {
             mProfileCache.addObserver(this);
-            mProfileCache.update(Collections.singletonList(mSignedInAccountName));
         }
     }
     private void setProfileImageFor(String signedInAccountName) {

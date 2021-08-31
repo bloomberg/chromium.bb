@@ -133,7 +133,8 @@ bool SVGFESpecularLightingElement::SetFilterEffectAttribute(
 }
 
 void SVGFESpecularLightingElement::SvgAttributeChanged(
-    const QualifiedName& attr_name) {
+    const SvgAttributeChangedParams& params) {
+  const QualifiedName& attr_name = params.name;
   if (attr_name == svg_names::kSurfaceScaleAttr ||
       attr_name == svg_names::kSpecularConstantAttr ||
       attr_name == svg_names::kSpecularExponentAttr) {
@@ -148,7 +149,7 @@ void SVGFESpecularLightingElement::SvgAttributeChanged(
     return;
   }
 
-  SVGFilterPrimitiveStandardAttributes::SvgAttributeChanged(attr_name);
+  SVGFilterPrimitiveStandardAttributes::SvgAttributeChanged(params);
 }
 
 void SVGFESpecularLightingElement::LightElementAttributeChanged(
@@ -193,7 +194,7 @@ bool SVGFESpecularLightingElement::TaintsOrigin() const {
   // TaintsOrigin() is only called after a successful call to Build()
   // (see above), so we should have a ComputedStyle here.
   DCHECK(style);
-  return style->SvgStyle().LightingColor().IsCurrentColor();
+  return style->LightingColor().IsCurrentColor();
 }
 
 }  // namespace blink

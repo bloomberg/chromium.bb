@@ -22,10 +22,12 @@
 
 #include <memory>
 
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
 #include "media/media_buildflags.h"
+#include "third_party/blink/public/common/buildflags.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/image-decoders/bmp/bmp_image_decoder.h"
@@ -43,6 +45,9 @@
 #include "third_party/blink/renderer/platform/image-decoders/avif/avif_image_decoder.h"
 #endif
 
+#if BUILDFLAG(ENABLE_JXL_DECODER)
+#include "third_party/blink/renderer/platform/image-decoders/jxl/jxl_image_decoder.h"
+#endif
 namespace blink {
 
 namespace {
@@ -63,6 +68,10 @@ cc::ImageType FileExtensionToImageType(String image_extension) {
 #if BUILDFLAG(ENABLE_AV1_DECODER)
   if (image_extension == "avif")
     return cc::ImageType::kAVIF;
+#endif
+#if BUILDFLAG(ENABLE_JXL_DECODER)
+  if (image_extension == "jxl")
+    return cc::ImageType::kJXL;
 #endif
   return cc::ImageType::kInvalid;
 }
@@ -140,9 +149,13 @@ String SniffMimeTypeInternal(scoped_refptr<SegmentReader> reader) {
   if (MatchesBMPSignature(contents))
     return "image/bmp";
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-  if (base::FeatureList::IsEnabled(features::kAVIF) &&
-      AVIFImageDecoder::MatchesAVIFSignature(fast_reader)) {
+  if (AVIFImageDecoder::MatchesAVIFSignature(fast_reader))
     return "image/avif";
+#endif
+#if BUILDFLAG(ENABLE_JXL_DECODER)
+  if (base::FeatureList::IsEnabled(features::kJXL) &&
+      JXLImageDecoder::MatchesJXLSignature(fast_reader)) {
+    return "image/jxl";
   }
 #endif
 
@@ -184,8 +197,9 @@ std::unique_ptr<ImageDecoder> ImageDecoder::CreateByMimeType(
       CalculateMaxDecodedBytes(high_bit_depth_decoding_option, desired_size);
 
   // Note: The mime types below should match those supported by
-  // MimeUtil::IsSupportedImageMimeType().
+  // MimeUtil::IsSupportedImageMimeType() (which forces lowercase).
   std::unique_ptr<ImageDecoder> decoder;
+  mime_type = mime_type.LowerASCII();
   if (mime_type == "image/jpeg" || mime_type == "image/pjpeg" ||
       mime_type == "image/jpg") {
     decoder = std::make_unique<JPEGImageDecoder>(alpha_option, color_behavior,
@@ -209,11 +223,17 @@ std::unique_ptr<ImageDecoder> ImageDecoder::CreateByMimeType(
     decoder = std::make_unique<BMPImageDecoder>(alpha_option, color_behavior,
                                                 max_decoded_bytes);
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-  } else if (base::FeatureList::IsEnabled(features::kAVIF) &&
-             mime_type == "image/avif") {
+  } else if (mime_type == "image/avif") {
     decoder = std::make_unique<AVIFImageDecoder>(
         alpha_option, high_bit_depth_decoding_option, color_behavior,
         max_decoded_bytes, animation_option);
+#endif
+#if BUILDFLAG(ENABLE_JXL_DECODER)
+  } else if (base::FeatureList::IsEnabled(features::kJXL) &&
+             mime_type == "image/jxl") {
+    decoder = std::make_unique<JXLImageDecoder>(
+        alpha_option, high_bit_depth_decoding_option, color_behavior,
+        max_decoded_bytes);
 #endif
   }
 
@@ -229,7 +249,7 @@ bool ImageDecoder::HasSufficientDataToSniffMimeType(const SharedBuffer& data) {
     return false;
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-  if (base::FeatureList::IsEnabled(features::kAVIF)) {
+  {
     // Check for an ISO BMFF File Type Box. Assume that 'largesize' is not used.
     // The first eight bytes would be a big-endian 32-bit unsigned integer
     // 'size' and a four-byte 'type'.
@@ -248,6 +268,7 @@ bool ImageDecoder::HasSufficientDataToSniffMimeType(const SharedBuffer& data) {
     }
   }
 #endif
+
   return true;
 }
 
@@ -323,10 +344,8 @@ ImageDecoder::CompressionFormat ImageDecoder::GetCompressionFormat(
   // compression algorithm.
   // TODO(wtc): Implement this. Figure out whether to return kUndefinedFormat or
   // a new kAVIFAnimationFormat in the case of an animated AVIF image.
-  if (base::FeatureList::IsEnabled(features::kAVIF) &&
-      EqualIgnoringASCIICase(mime_type, "image/avif")) {
+  if (EqualIgnoringASCIICase(mime_type, "image/avif"))
     return kLossyFormat;
-  }
 #endif
 
   if (MIMETypeRegistry::IsLossyImageMIMEType(mime_type))

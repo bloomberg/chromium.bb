@@ -2,17 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/safe_browsing/core/common/visual_utils.h"
+
 #include <unordered_map>
 #include <vector>
 
-#include "components/safe_browsing/core/common/visual_utils.h"
-
 #include "base/check_op.h"
+#include "base/feature_list.h"
 #include "base/numerics/checked_math.h"
+#include "base/optional.h"
+#include "base/trace_event/trace_event.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/proto/client_model.pb.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "third_party/opencv/src/emd_wrapper.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "ui/gfx/color_utils.h"
 
@@ -67,6 +72,7 @@ opencv::PointDistribution HistogramBinsToPointDistribution(
         bins) {
   opencv::PointDistribution distribution;
   distribution.dimensions = 5;
+  distribution.positions.reserve(bins.size());
   for (const VisualFeatures::ColorHistogramBin& bin : bins) {
     distribution.weights.push_back(bin.weight());
     std::vector<float> position(5);
@@ -81,6 +87,8 @@ opencv::PointDistribution HistogramBinsToPointDistribution(
   return distribution;
 }
 
+// TODO(https://crbug.com/1196450): Remove this function once we are no longer
+// using regular ColorRanges.
 bool ImageHasColorInRange(const SkBitmap& image,
                           const MatchRule::ColorRange& color_range) {
   for (int i = 0; i < image.width(); i++) {
@@ -89,6 +97,22 @@ bool ImageHasColorInRange(const SkBitmap& image,
       SkColorToHSV(image.getColor(i, j), hsv);
       if (color_range.low() <= hsv[0] && hsv[0] <= color_range.high())
         return true;
+    }
+  }
+
+  return false;
+}
+
+bool ImageHasColorInRange(const SkBitmap& image,
+                          const MatchRule::FloatColorRange& color_range) {
+  TRACE_EVENT0("safe_browsing", "ImageHasColorInRange");
+  for (int i = 0; i < image.width(); i++) {
+    for (int j = 0; j < image.height(); j++) {
+      SkScalar hsv[3];
+      SkColorToHSV(image.getColor(i, j), hsv);
+      if (color_range.low() <= hsv[0] && hsv[0] <= color_range.high()) {
+        return true;
+      }
     }
   }
 
@@ -106,6 +130,24 @@ uint8_t GetMedian(const std::vector<uint8_t>& data) {
     // For even-sized sets, return the average of the two middle elements.
     return (*middle + *std::max_element(buffer.begin(), middle)) / 2;
   }
+}
+
+int GetPHashDownsampleWidth() {
+  if (base::FeatureList::IsEnabled(kVisualFeaturesSizes)) {
+    return base::GetFieldTrialParamByFeatureAsInt(
+        kVisualFeaturesSizes, "phash_width", kPHashDownsampleWidth);
+  }
+
+  return kPHashDownsampleWidth;
+}
+
+int GetPHashDownsampleHeight() {
+  if (base::FeatureList::IsEnabled(kVisualFeaturesSizes)) {
+    return base::GetFieldTrialParamByFeatureAsInt(
+        kVisualFeaturesSizes, "phash_height", kPHashDownsampleHeight);
+  }
+
+  return kPHashDownsampleHeight;
 }
 
 }  // namespace
@@ -129,36 +171,72 @@ int GetQuantizedB(QuantizedColor color) {
   return color & 7;
 }
 
+struct ColorStats {
+  int color_to_count = 0;
+  double color_to_total_x = 0.0;
+  double color_to_total_y = 0.0;
+
+  absl::optional<QuantizedColor> quantized_color;
+};
+
 bool GetHistogramForImage(const SkBitmap& image,
                           VisualFeatures::ColorHistogram* histogram) {
+  TRACE_EVENT0("safe_browsing", "GetHistogramForImage");
   if (image.drawsNothing())
     return false;
-
-  std::unordered_map<QuantizedColor, int> color_to_count;
-  std::unordered_map<QuantizedColor, double> color_to_total_x;
-  std::unordered_map<QuantizedColor, double> color_to_total_y;
-  for (int x = 0; x < image.width(); x++) {
-    for (int y = 0; y < image.height(); y++) {
-      QuantizedColor color = SkColorToQuantizedColor(image.getColor(x, y));
-      color_to_count[color]++;
-      color_to_total_x[color] += static_cast<float>(x) / image.width();
-      color_to_total_y[color] += static_cast<float>(y) / image.height();
-    }
-  }
 
   int normalization_factor;
   if (!base::CheckMul(image.width(), image.height())
            .AssignIfValid(&normalization_factor))
     return false;
 
-  for (const auto& entry : color_to_count) {
-    const QuantizedColor& color = entry.first;
-    int count = entry.second;
+  // Indexed with colors in rgba order.
+  std::unordered_map<uint32_t, ColorStats> stats_map;
+  auto it = stats_map.end();
+
+  // This code uses the unsafe getAddr32 function which assumes 32bpp depth.
+  // Make sure the color type reflects that.
+  CHECK_EQ(image.colorType(), SkColorType::kN32_SkColorType);
+  for (int x = 0; x < image.width(); x++) {
+    for (int y = 0; y < image.height(); y++) {
+      // The conversions to QuantizedColor are avoided when possible to save
+      // cycles but colors still need to be grouped in the same way they would
+      // with the conversion. To achieve this mask out the bits that would be
+      // ignored in the conversion.
+      constexpr uint32_t kMask = 0xe0e0e000;
+      uint32_t rgba = *image.getAddr32(x, y) & kMask;
+
+      // If we're updating the same color as the last don't fetch uselessly
+      // in the map and reuse the iterator we have.
+      if (it == stats_map.end() || it->first != rgba) {
+        it = stats_map.insert({rgba, ColorStats{}}).first;
+      }
+
+      // Update the color stats with the information from the current pixel.
+      ColorStats& stats = it->second;
+      stats.color_to_count++;
+      stats.color_to_total_x += static_cast<float>(x);
+      stats.color_to_total_y += static_cast<float>(y);
+
+      // If we've never encountered this color before do the conversion. Avoid
+      // it otherwise to save the overhead.
+      if (!stats.quantized_color.has_value()) {
+        stats.quantized_color.emplace(
+            SkColorToQuantizedColor(image.getColor(x, y)));
+      }
+    }
+  }
+
+  for (const auto& entry : stats_map) {
+    QuantizedColor color = entry.second.quantized_color.value();
+
+    const ColorStats& stats = entry.second;
+    int count = entry.second.color_to_count;
 
     VisualFeatures::ColorHistogramBin* bin = histogram->add_bins();
     bin->set_weight(static_cast<float>(count) / normalization_factor);
-    bin->set_centroid_x(color_to_total_x[color] / count);
-    bin->set_centroid_y(color_to_total_y[color] / count);
+    bin->set_centroid_x(stats.color_to_total_x / count / image.width());
+    bin->set_centroid_y(stats.color_to_total_y / count / image.height());
     bin->set_quantized_r(GetQuantizedR(color));
     bin->set_quantized_g(GetQuantizedG(color));
     bin->set_quantized_b(GetQuantizedB(color));
@@ -169,6 +247,7 @@ bool GetHistogramForImage(const SkBitmap& image,
 
 bool GetBlurredImage(const SkBitmap& image,
                      VisualFeatures::BlurredImage* blurred_image) {
+  TRACE_EVENT0("safe_browsing", "GetBlurredImage");
   if (image.drawsNothing())
     return false;
 
@@ -181,29 +260,32 @@ bool GetBlurredImage(const SkBitmap& image,
   // average to be consistent with the backend.
   // TODO(drubery): Investigate whether this is necessary for performance or
   // not.
-  SkImageInfo downsampled_info =
-      SkImageInfo::Make(kPHashDownsampleWidth, kPHashDownsampleHeight,
-                        SkColorType::kRGBA_8888_SkColorType,
-                        SkAlphaType::kUnpremul_SkAlphaType, rec2020);
+  SkImageInfo downsampled_info = SkImageInfo::MakeN32(
+      GetPHashDownsampleWidth(), GetPHashDownsampleHeight(),
+      SkAlphaType::kUnpremul_SkAlphaType, rec2020);
   SkBitmap downsampled;
   if (!downsampled.tryAllocPixels(downsampled_info))
     return false;
-  image.pixmap().scalePixels(downsampled.pixmap(),
-                             SkFilterQuality::kMedium_SkFilterQuality);
+  image.pixmap().scalePixels(
+      downsampled.pixmap(),
+      SkSamplingOptions(SkFilterMode::kLinear, SkMipmapMode::kNearest));
 
   std::unique_ptr<SkBitmap> blurred =
       BlockMeanAverage(downsampled, kPHashBlockSize);
 
   blurred_image->set_width(blurred->width());
   blurred_image->set_height(blurred->height());
-  blurred_image->clear_data();
 
-  const uint32_t* rgba = blurred->getAddr32(0, 0);
-  for (int i = 0; i < blurred->width() * blurred->height(); i++) {
-    // Data is stored in BGR order.
-    *blurred_image->mutable_data() += static_cast<char>((rgba[i] >> 0) & 0xff);
-    *blurred_image->mutable_data() += static_cast<char>((rgba[i] >> 8) & 0xff);
-    *blurred_image->mutable_data() += static_cast<char>((rgba[i] >> 16) & 0xff);
+  const int data_size = blurred->width() * blurred->height();
+  blurred_image->mutable_data()->reserve(data_size);
+
+  for (int x = 0; x < blurred->width(); ++x) {
+    for (int y = 0; y < blurred->height(); ++y) {
+      SkColor color = blurred->getColor(y, x);
+      *blurred_image->mutable_data() += static_cast<char>(SkColorGetR(color));
+      *blurred_image->mutable_data() += static_cast<char>(SkColorGetG(color));
+      *blurred_image->mutable_data() += static_cast<char>(SkColorGetB(color));
+    }
   }
 
   return true;
@@ -218,9 +300,9 @@ std::unique_ptr<SkBitmap> BlockMeanAverage(const SkBitmap& image,
   int num_blocks_wide =
       std::ceil(static_cast<float>(image.width()) / block_size);
 
-  SkImageInfo target_info = SkImageInfo::Make(
-      num_blocks_wide, num_blocks_high, SkColorType::kRGBA_8888_SkColorType,
-      SkAlphaType::kUnpremul_SkAlphaType, image.refColorSpace());
+  SkImageInfo target_info = SkImageInfo::MakeN32(
+      num_blocks_wide, num_blocks_high, SkAlphaType::kUnpremul_SkAlphaType,
+      image.refColorSpace());
   auto target = std::make_unique<SkBitmap>();
   if (!target->tryAllocPixels(target_info))
     return target;
@@ -238,9 +320,10 @@ std::unique_ptr<SkBitmap> BlockMeanAverage(const SkBitmap& image,
       int y_end = std::min(y_start + block_size, image.height());
       for (int i = x_start; i < x_end; i++) {
         for (int j = y_start; j < y_end; j++) {
-          r_total += SkColorGetR(image.getColor(i, j));
-          g_total += SkColorGetG(image.getColor(i, j));
-          b_total += SkColorGetB(image.getColor(i, j));
+          const QuantizedColor color = image.getColor(i, j);
+          r_total += SkColorGetR(color);
+          g_total += SkColorGetG(color);
+          b_total += SkColorGetB(color);
           sample_count++;
         }
       }
@@ -250,7 +333,7 @@ std::unique_ptr<SkBitmap> BlockMeanAverage(const SkBitmap& image,
       int b_mean = b_total / sample_count;
 
       *target->getAddr32(block_x, block_y) =
-          (255 << 24) | (b_mean << 16) | (g_mean << 8) | (r_mean << 0);
+          SkPackARGB32(255, r_mean, g_mean, b_mean);
     }
   }
 
@@ -259,6 +342,7 @@ std::unique_ptr<SkBitmap> BlockMeanAverage(const SkBitmap& image,
 
 std::string GetHashFromBlurredImage(
     VisualFeatures::BlurredImage blurred_image) {
+  TRACE_EVENT0("safe_browsing", "GetHashFromBlurredImage");
   DCHECK_EQ(blurred_image.data().size(),
             3u * blurred_image.width() * blurred_image.height());
   // Convert the blurred image to grayscale.
@@ -305,23 +389,25 @@ std::string GetHashFromBlurredImage(
   return output;
 }
 
-base::Optional<VisionMatchResult> IsVisualMatch(const SkBitmap& image,
-                                                const VisualTarget& target) {
-  VisualFeatures::BlurredImage blurred_image;
-  if (!GetBlurredImage(image, &blurred_image))
-    return base::nullopt;
-  std::string hash = GetHashFromBlurredImage(blurred_image);
+absl::optional<VisionMatchResult> IsVisualMatch(
+    const SkBitmap& image,
+    const std::string& blurred_image_hash,
+    const VisualFeatures::ColorHistogram& histogram,
+    const VisualTarget& target) {
+  TRACE_EVENT0("safe_browsing", "IsVisualMatch");
+
+  TRACE_EVENT_BEGIN0("safe_browsing", "IsVisualMatch_ComputeHashDistance");
   size_t hash_distance;
-  bool has_hash_distance = GetHashDistance(hash, target.hash(), &hash_distance);
+  bool has_hash_distance =
+      GetHashDistance(blurred_image_hash, target.hash(), &hash_distance);
+  TRACE_EVENT_END0("safe_browsing", "IsVisualMatch_ComputeHashDistance");
 
-  VisualFeatures::ColorHistogram histogram;
-  if (!GetHistogramForImage(image, &histogram))
-    return base::nullopt;
-
+  TRACE_EVENT_BEGIN0("safe_browsing", "IsVisualMatch_ComputeEMD");
   opencv::PointDistribution point_distribution =
       HistogramBinsToPointDistribution(histogram.bins());
-  base::Optional<double> color_distance = opencv::EMD(
+  absl::optional<double> color_distance = opencv::EMD(
       point_distribution, HistogramBinsToPointDistribution(target.bins()));
+  TRACE_EVENT_END0("safe_browsing", "IsVisualMatch_ComputeEMD");
 
   for (const MatchRule& match_rule : target.match_config().match_rule()) {
     bool is_match = true;
@@ -339,6 +425,11 @@ base::Optional<VisionMatchResult> IsVisualMatch(const SkBitmap& image,
       is_match &= ImageHasColorInRange(image, color_range);
     }
 
+    for (const MatchRule::FloatColorRange& color_range :
+         match_rule.float_color_range()) {
+      is_match &= ImageHasColorInRange(image, color_range);
+    }
+
     if (is_match) {
       VisionMatchResult result;
       result.set_matched_target_digest(target.digest());
@@ -350,7 +441,7 @@ base::Optional<VisionMatchResult> IsVisualMatch(const SkBitmap& image,
     }
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 }  // namespace visual_utils

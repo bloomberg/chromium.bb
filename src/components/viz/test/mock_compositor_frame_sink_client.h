@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_VIZ_TEST_MOCK_COMPOSITOR_FRAME_SINK_CLIENT_H_
 #define COMPONENTS_VIZ_TEST_MOCK_COMPOSITOR_FRAME_SINK_CLIENT_H_
 
+#include <utility>
+#include <vector>
+
 #include "base/callback.h"
 #include "components/viz/common/frame_timing_details_map.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -29,12 +32,14 @@ class MockCompositorFrameSinkClient : public mojom::CompositorFrameSinkClient {
 
   // mojom::CompositorFrameSinkClient implementation.
   MOCK_METHOD1(DidReceiveCompositorFrameAck,
-               void(const std::vector<ReturnedResource>&));
+               void(std::vector<ReturnedResource>));
   MOCK_METHOD2(OnBeginFrame,
                void(const BeginFrameArgs&, const FrameTimingDetailsMap&));
-  MOCK_METHOD1(ReclaimResources, void(const std::vector<ReturnedResource>&));
+  MOCK_METHOD1(ReclaimResources, void(std::vector<ReturnedResource>));
   MOCK_METHOD2(WillDrawSurface, void(const LocalSurfaceId&, const gfx::Rect&));
   MOCK_METHOD1(OnBeginFramePausedChanged, void(bool paused));
+  MOCK_METHOD1(OnCompositorFrameTransitionDirectiveProcessed,
+               void(uint32_t sequence_id));
 
  private:
   mojo::Receiver<mojom::CompositorFrameSinkClient> receiver_{this};

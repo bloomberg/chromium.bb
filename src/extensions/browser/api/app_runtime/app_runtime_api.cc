@@ -6,11 +6,14 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "extensions/browser/entry_info.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
@@ -37,7 +40,7 @@ void DispatchOnEmbedRequestedEventImpl(
   args->Append(std::move(app_embedding_request_data));
   auto event = std::make_unique<Event>(
       events::APP_RUNTIME_ON_EMBED_REQUESTED,
-      app_runtime::OnEmbedRequested::kEventName, std::move(args), context);
+      app_runtime::OnEmbedRequested::kEventName, args->TakeList(), context);
   EventRouter::Get(context)
       ->DispatchEventWithLazyListener(extension_id, std::move(event));
 
@@ -69,7 +72,7 @@ void DispatchOnLaunchedEventImpl(
   args->Append(std::move(launch_data));
   auto event = std::make_unique<Event>(events::APP_RUNTIME_ON_LAUNCHED,
                                        app_runtime::OnLaunched::kEventName,
-                                       std::move(args), context);
+                                       args->TakeList(), context);
   EventRouter::Get(context)
       ->DispatchEventWithLazyListener(extension_id, std::move(event));
   ExtensionPrefs::Get(context)
@@ -109,8 +112,16 @@ app_runtime::LaunchSource GetLaunchSourceEnum(
   ASSERT_ENUM_EQUAL(kSourceContextMenu, SOURCE_CONTEXT_MENU);
   ASSERT_ENUM_EQUAL(kSourceArc, SOURCE_ARC);
   ASSERT_ENUM_EQUAL(kSourceIntentUrl, SOURCE_INTENT_URL);
+
+  // We don't allow extensions to launch an app specifying RunOnOSLogin
+  // as the source. In this case we map it to SOURCE_CHROME_INTERNAL.
+  if (source == extensions::AppLaunchSource::kSourceRunOnOsLogin)
+    source = extensions::AppLaunchSource::kSourceChromeInternal;
+
+  // The +1 accounts for kSourceRunOnOsLogin not having a corresponding entry
+  // in app_runtime::LaunchSource.
   static_assert(static_cast<int>(extensions::AppLaunchSource::kMaxValue) ==
-                    app_runtime::LaunchSource::LAUNCH_SOURCE_LAST,
+                    app_runtime::LaunchSource::LAUNCH_SOURCE_LAST + 1,
                 "");
 
   return static_cast<app_runtime::LaunchSource>(source);
@@ -148,10 +159,9 @@ void AppRuntimeEventRouter::DispatchOnLaunchedEvent(
 void AppRuntimeEventRouter::DispatchOnRestartedEvent(
     BrowserContext* context,
     const Extension* extension) {
-  std::unique_ptr<base::ListValue> arguments(new base::ListValue());
   auto event = std::make_unique<Event>(events::APP_RUNTIME_ON_RESTARTED,
                                        app_runtime::OnRestarted::kEventName,
-                                       std::move(arguments), context);
+                                       std::vector<base::Value>(), context);
   EventRouter::Get(context)
       ->DispatchEventToExtension(extension->id(), std::move(event));
 }
@@ -210,9 +220,9 @@ void AppRuntimeEventRouter::DispatchOnLaunchedEventWithUrl(
   app_runtime::LaunchData launch_data;
   app_runtime::LaunchSource source_enum =
       app_runtime::LAUNCH_SOURCE_URL_HANDLER;
-  launch_data.id.reset(new std::string(handler_id));
-  launch_data.url.reset(new std::string(url.spec()));
-  launch_data.referrer_url.reset(new std::string(referrer_url.spec()));
+  launch_data.id = std::make_unique<std::string>(handler_id);
+  launch_data.url = std::make_unique<std::string>(url.spec());
+  launch_data.referrer_url = std::make_unique<std::string>(referrer_url.spec());
   if (extensions::FeatureSwitch::trace_app_source()->IsEnabled()) {
     launch_data.source = source_enum;
   }

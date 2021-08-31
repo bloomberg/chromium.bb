@@ -2,7 +2,9 @@
 altgraph.GraphAlgo - Graph algorithms
 =====================================
 '''
+from __future__ import absolute_import
 from altgraph import GraphError
+import six
 
 def dijkstra(graph, start, end=None):
     """
@@ -32,7 +34,7 @@ def dijkstra(graph, start, end=None):
         if v == end: break
 
         for w in graph.out_nbrs(v):
-            edge_id  = graph.edge_by_node(v,w)
+            edge_id  = graph.edge_by_node(v, w)
             vwLength = D[v] + graph.edge_data(edge_id)
             if w in D:
                 if vwLength < D[w]:
@@ -41,7 +43,7 @@ def dijkstra(graph, start, end=None):
                 Q[w] = vwLength
                 P[w] = v
 
-    return (D,P)
+    return (D, P)
 
 def shortest_path(graph, start, end):
     """
@@ -52,9 +54,9 @@ def shortest_path(graph, start, end):
     **Note that the distances must be stored in the edge data as numeric data**
     """
 
-    D,P = dijkstra(graph, start, end)
+    D, P = dijkstra(graph, start, end)
     Path = []
-    while 1:
+    while True:
         Path.append(end)
         if end == start: break
         end = P[end]
@@ -97,7 +99,7 @@ class _priorityDictionary(dict):
         while heap[0][1] not in self or self[heap[0][1]] != heap[0][0]:
             lastItem = heap.pop()
             insertionPoint = 0
-            while 1:
+            while True:
                 smallChild = 2*insertionPoint+1
                 if smallChild+1 < len(heap) and heap[smallChild] > heap[smallChild+1] :
                     smallChild += 1
@@ -119,18 +121,18 @@ class _priorityDictionary(dict):
                 del self[x]
         return iterfn()
 
-    def __setitem__(self,key,val):
+    def __setitem__(self, key, val):
         '''
         Change value stored in dictionary and add corresponding pair to heap.
         Rebuilds the heap if the number of deleted items gets large, to avoid memory leakage.
         '''
-        dict.__setitem__(self,key,val)
+        dict.__setitem__(self, key, val)
         heap = self.__heap
         if len(heap) > 2 * len(self):
-            self.__heap = [(v,k) for k,v in self.iteritems()]
+            self.__heap = [(v, k) for k, v in six.iteritems(self)]
             self.__heap.sort()  # builtin sort probably faster than O(n)-time heapify
         else:
-            newPair = (val,key)
+            newPair = (val, key)
             insertionPoint = len(heap)
             heap.append(None)
             while insertionPoint > 0 and newPair < heap[(insertionPoint-1)//2]:
@@ -138,7 +140,7 @@ class _priorityDictionary(dict):
                 insertionPoint = (insertionPoint-1)//2
             heap[insertionPoint] = newPair
 
-    def setdefault(self,key,val):
+    def setdefault(self, key, val):
         '''
         Reimplement setdefault to pass through our customized __setitem__.
         '''

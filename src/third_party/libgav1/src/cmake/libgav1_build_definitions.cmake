@@ -89,9 +89,7 @@ macro(libgav1_set_build_definitions)
   endif()
 
   if(build_type_lowercase MATCHES "rel")
-    # TODO(tomfinegan): this value is only a concern for the core library and
-    # can be made smaller if the test targets are avoided.
-    list(APPEND libgav1_base_cxx_flags "-Wstack-usage=196608")
+    list(APPEND libgav1_base_cxx_flags "-Wframe-larger-than=196608")
   endif()
 
   list(APPEND libgav1_msvc_cxx_flags
@@ -144,6 +142,7 @@ macro(libgav1_set_build_definitions)
 
   # Source file names ending in these suffixes will have the appropriate
   # compiler flags added to their compile commands to enable intrinsics.
+  set(libgav1_avx2_source_file_suffix "avx2.cc")
   set(libgav1_neon_source_file_suffix "neon.cc")
   set(libgav1_sse4_source_file_suffix "sse4.cc")
 endmacro()

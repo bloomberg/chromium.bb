@@ -30,12 +30,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_REQUEST_H_
 
 #include <memory>
+#include <utility>
 
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink-forward.h"
-#include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/idb_object_store_or_idb_index.h"
@@ -54,7 +55,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -63,6 +63,7 @@ class ExceptionState;
 class IDBCursor;
 struct IDBDatabaseMetadata;
 class IDBValue;
+class V8UnionIDBCursorOrIDBIndexOrIDBObjectStore;
 
 class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
                                   public ActiveScriptWrappable<IDBRequest>,
@@ -70,7 +71,11 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  using Source = V8UnionIDBCursorOrIDBIndexOrIDBObjectStore;
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   using Source = IDBObjectStoreOrIDBIndexOrIDBCursor;
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   // Container for async tracing state.
   //
   // The documentation for TRACE_EVENT_NESTABLE_ASYNC_{BEGIN,END} suggests
@@ -99,7 +104,11 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
     // This is used for internal requests that should not show up in an
     // application's trace. Examples of internal requests are the requests
     // issued by DevTools, and the requests used to populate indexes.
-    explicit AsyncTraceState() = default;
+    AsyncTraceState() = default;
+
+    // Disallow copy and assign.
+    AsyncTraceState(const AsyncTraceState&) = delete;
+    AsyncTraceState& operator=(const AsyncTraceState&) = delete;
 
     // Creates an instance that produces begin/end events with the given name.
     //
@@ -112,14 +121,14 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
     // Used to transfer the trace end event state to an IDBRequest.
     AsyncTraceState(AsyncTraceState&& other) {
       DCHECK(IsEmpty());
-      this->trace_event_name_ = other.trace_event_name_;
-      this->id_ = other.id_;
+      trace_event_name_ = other.trace_event_name_;
+      id_ = other.id_;
       other.trace_event_name_ = nullptr;
     }
     AsyncTraceState& operator=(AsyncTraceState&& rhs) {
       DCHECK(IsEmpty());
-      this->trace_event_name_ = rhs.trace_event_name_;
-      this->id_ = rhs.id_;
+      trace_event_name_ = rhs.trace_event_name_;
+      id_ = rhs.id_;
       rhs.trace_event_name_ = nullptr;
       return *this;
     }
@@ -157,8 +166,6 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
     const char* trace_event_name_ = nullptr;
     // Uniquely generated ID that ties an async trace's begin and end events.
     size_t id_ = 0;
-
-    DISALLOW_COPY_AND_ASSIGN(AsyncTraceState);
   };
 
   static IDBRequest* Create(ScriptState*,
@@ -174,11 +181,22 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
                             IDBTransaction* source,
                             AsyncTraceState);
   static IDBRequest* Create(ScriptState*,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                            const Source*,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                             const Source&,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                             IDBTransaction*,
                             AsyncTraceState);
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  IDBRequest(ScriptState* script_state,
+             const Source* source,
+             IDBTransaction* transaction,
+             AsyncTraceState metrics);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   IDBRequest(ScriptState*, const Source&, IDBTransaction*, AsyncTraceState);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   ~IDBRequest() override;
 
   void Trace(Visitor*) const override;
@@ -186,7 +204,11 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   v8::Isolate* GetIsolate() const { return isolate_; }
   ScriptValue result(ScriptState*, ExceptionState&);
   DOMException* error(ExceptionState&) const;
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  const Source* source(ScriptState* script_state) const;
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void source(ScriptState*, Source&) const;
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   IDBTransaction* transaction() const { return transaction_.Get(); }
 
   bool isResultDirty() const { return result_dirty_; }
@@ -275,10 +297,6 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
       bool key_only,
       mojo::PendingReceiver<mojom::blink::IDBDatabaseGetAllResultSink>
           receiver);
-
-  // Only used in webkitGetDatabaseNames(), which is deprecated and hopefully
-  // going away soon.
-  void EnqueueResponse(const Vector<String>&);
 
   // Only IDBOpenDBRequest instances should receive these:
   virtual void EnqueueBlocked(int64_t old_version) { NOTREACHED(); }
@@ -390,7 +408,11 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
 
   void ClearPutOperationBlobs() { transit_blob_handles_.clear(); }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  Member<const Source> source_;
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   Source source_;
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   Member<IDBAny> result_;
   Member<DOMException> error_;
 

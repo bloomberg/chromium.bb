@@ -26,6 +26,11 @@ namespace dawn_native { namespace metal {
 
     // OldSwapChain
 
+    // static
+    Ref<OldSwapChain> OldSwapChain::Create(Device* device, const SwapChainDescriptor* descriptor) {
+        return AcquireRef(new OldSwapChain(device, descriptor));
+    }
+
     OldSwapChain::OldSwapChain(Device* device, const SwapChainDescriptor* descriptor)
         : OldSwapChainBase(device, descriptor) {
         const auto& im = GetImplementation();
@@ -58,14 +63,13 @@ namespace dawn_native { namespace metal {
     // SwapChain
 
     // static
-    ResultOrError<SwapChain*> SwapChain::Create(Device* device,
-                                                Surface* surface,
-                                                NewSwapChainBase* previousSwapChain,
-                                                const SwapChainDescriptor* descriptor) {
-        std::unique_ptr<SwapChain> swapchain =
-            std::make_unique<SwapChain>(device, surface, descriptor);
+    ResultOrError<Ref<SwapChain>> SwapChain::Create(Device* device,
+                                                    Surface* surface,
+                                                    NewSwapChainBase* previousSwapChain,
+                                                    const SwapChainDescriptor* descriptor) {
+        Ref<SwapChain> swapchain = AcquireRef(new SwapChain(device, surface, descriptor));
         DAWN_TRY(swapchain->Initialize(previousSwapChain));
-        return swapchain.release();
+        return swapchain;
     }
 
     SwapChain::~SwapChain() {
@@ -92,15 +96,15 @@ namespace dawn_native { namespace metal {
         CGSize size = {};
         size.width = GetWidth();
         size.height = GetHeight();
-        [mLayer setDrawableSize:size];
+        [*mLayer setDrawableSize:size];
 
-        [mLayer setFramebufferOnly:(GetUsage() == wgpu::TextureUsage::RenderAttachment)];
-        [mLayer setDevice:ToBackend(GetDevice())->GetMTLDevice()];
-        [mLayer setPixelFormat:MetalPixelFormat(GetFormat())];
+        [*mLayer setFramebufferOnly:(GetUsage() == wgpu::TextureUsage::RenderAttachment)];
+        [*mLayer setDevice:ToBackend(GetDevice())->GetMTLDevice()];
+        [*mLayer setPixelFormat:MetalPixelFormat(GetFormat())];
 
 #if defined(DAWN_PLATFORM_MACOS)
         if (@available(macos 10.13, *)) {
-            [mLayer setDisplaySyncEnabled:(GetPresentMode() != wgpu::PresentMode::Immediate)];
+            [*mLayer setDisplaySyncEnabled:(GetPresentMode() != wgpu::PresentMode::Immediate)];
         }
 #endif  // defined(DAWN_PLATFORM_MACOS)
 
@@ -110,40 +114,38 @@ namespace dawn_native { namespace metal {
     }
 
     MaybeError SwapChain::PresentImpl() {
-        ASSERT(mCurrentDrawable != nil);
-        [mCurrentDrawable present];
+        ASSERT(mCurrentDrawable != nullptr);
+        [*mCurrentDrawable present];
 
-        mTexture->Destroy();
+        mTexture->APIDestroy();
         mTexture = nullptr;
 
-        [mCurrentDrawable release];
-        mCurrentDrawable = nil;
+        mCurrentDrawable = nullptr;
 
         return {};
     }
 
     ResultOrError<TextureViewBase*> SwapChain::GetCurrentTextureViewImpl() {
-        ASSERT(mCurrentDrawable == nil);
-        mCurrentDrawable = [mLayer nextDrawable];
-        [mCurrentDrawable retain];
+        ASSERT(mCurrentDrawable == nullptr);
+        mCurrentDrawable = [*mLayer nextDrawable];
 
         TextureDescriptor textureDesc = GetSwapChainBaseTextureDescriptor(this);
 
-        // mTexture will add a reference to mCurrentDrawable.texture to keep it alive.
-        mTexture =
-            AcquireRef(new Texture(ToBackend(GetDevice()), &textureDesc, mCurrentDrawable.texture));
-        return mTexture->CreateView(nullptr);
+        // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
+        mTexture = AcquireRef(
+            new Texture(ToBackend(GetDevice()), &textureDesc, [*mCurrentDrawable texture]));
+        // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
+        return mTexture->APICreateView();
     }
 
     void SwapChain::DetachFromSurfaceImpl() {
-        ASSERT((mTexture.Get() == nullptr) == (mCurrentDrawable == nil));
+        ASSERT((mTexture == nullptr) == (mCurrentDrawable == nullptr));
 
-        if (mTexture.Get() != nullptr) {
-            mTexture->Destroy();
+        if (mTexture != nullptr) {
+            mTexture->APIDestroy();
             mTexture = nullptr;
 
-            [mCurrentDrawable release];
-            mCurrentDrawable = nil;
+            mCurrentDrawable = nullptr;
         }
     }
 

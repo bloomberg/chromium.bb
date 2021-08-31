@@ -17,16 +17,16 @@ namespace openscreen {
 namespace cast {
 
 // Constants to identify a CastV2 instance with DNS-SD.
-static constexpr char kCastV2ServiceId[] = "_googlecast._tcp";
-static constexpr char kCastV2DomainId[] = "local";
+constexpr char kCastV2ServiceId[] = "_googlecast._tcp";
+constexpr char kCastV2DomainId[] = "local";
 
 // Constants to be used as keys when storing data inside of a DNS-SD TXT record.
-static constexpr char kUniqueIdKey[] = "id";
-static constexpr char kVersionId[] = "ve";
-static constexpr char kCapabilitiesId[] = "ca";
-static constexpr char kStatusId[] = "st";
-static constexpr char kFriendlyNameId[] = "fn";
-static constexpr char kModelNameId[] = "mn";
+constexpr char kUniqueIdKey[] = "id";
+constexpr char kVersionKey[] = "ve";
+constexpr char kCapabilitiesKey[] = "ca";
+constexpr char kStatusKey[] = "st";
+constexpr char kFriendlyNameKey[] = "fn";
+constexpr char kModelNameKey[] = "md";
 
 // This represents the ‘st’ flag in the CastV2 TXT record.
 enum ReceiverStatus {
@@ -42,19 +42,16 @@ enum ReceiverStatus {
   kJoin = kBusy
 };
 
-// This represents the ‘ca’ field in the CastV2 spec.
-enum ReceiverCapabilities : uint64_t {
-  kNone = 0x00,
-  kHasVideoOutput = 0x01 << 0,
-  kHasVideoInput = 0x01 << 1,
-  kHasAudioOutput = 0x01 << 2,
-  kHasAudioInput = 0x01 << 3,
-  kIsDevModeEnabled = 0x01 << 4,
-};
+constexpr uint8_t kCurrentCastVersion = 2;
 
-static constexpr uint8_t kCurrentCastVersion = 2;
-static constexpr ReceiverCapabilities kDefaultCapabilities =
-    ReceiverCapabilities::kNone;
+// Bits in the ‘ca’ bitfield, per the CastV2 spec.
+constexpr uint64_t kHasVideoOutput = 1 << 0;
+constexpr uint64_t kHasVideoInput = 1 << 1;
+constexpr uint64_t kHasAudioOutput = 1 << 2;
+constexpr uint64_t kHasAudioIntput = 1 << 3;
+constexpr uint64_t kIsDevModeEnabled = 1 << 4;
+
+constexpr uint64_t kNoCapabilities = 0;
 
 // This is the top-level service info class for CastV2. It describes a specific
 // service instance.
@@ -85,8 +82,8 @@ struct ServiceInfo {
   // each version.
   uint8_t protocol_version = kCurrentCastVersion;
 
-  // Capabilities supported by this service instance.
-  ReceiverCapabilities capabilities = kDefaultCapabilities;
+  // Bitfield of ReceiverCapabilities supported by this service instance.
+  uint64_t capabilities = kNoCapabilities;
 
   // Status of the service instance.
   ReceiverStatus status = ReceiverStatus::kIdle;

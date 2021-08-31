@@ -20,7 +20,6 @@
 
 #include <cstring>
 #include <memory>
-#include <mutex>
 
 #include <grpc/grpc.h>
 #include <grpc/slice.h>
@@ -39,17 +38,15 @@
 #include <grpcpp/support/channel_arguments.h>
 #include <grpcpp/support/config.h>
 #include <grpcpp/support/status.h>
+
 #include "src/core/lib/gpr/string.h"
+#include "src/core/lib/iomgr/iomgr.h"
 #include "src/core/lib/surface/completion_queue.h"
 
-void ::grpc::experimental::ChannelResetConnectionBackoff(Channel* channel) {
-  grpc_impl::experimental::ChannelResetConnectionBackoff(channel);
-}
-
-namespace grpc_impl {
+namespace grpc {
 
 static ::grpc::internal::GrpcLibraryInitializer g_gli_initializer;
-Channel::Channel(const grpc::string& host, grpc_channel* channel,
+Channel::Channel(const std::string& host, grpc_channel* channel,
                  std::vector<std::unique_ptr<
                      ::grpc::experimental::ClientInterceptorFactoryInterface>>
                      interceptor_creators)
@@ -61,39 +58,43 @@ Channel::Channel(const grpc::string& host, grpc_channel* channel,
 Channel::~Channel() {
   grpc_channel_destroy(c_channel_);
   if (callback_cq_ != nullptr) {
-    callback_cq_->Shutdown();
+    if (grpc_iomgr_run_in_background()) {
+      // gRPC-core provides the backing needed for the preferred CQ type
+      callback_cq_->Shutdown();
+    } else {
+      CompletionQueue::ReleaseCallbackAlternativeCQ(callback_cq_);
+    }
   }
 }
 
 namespace {
 
 inline grpc_slice SliceFromArray(const char* arr, size_t len) {
-  return ::grpc::g_core_codegen_interface->grpc_slice_from_copied_buffer(arr,
-                                                                         len);
+  return g_core_codegen_interface->grpc_slice_from_copied_buffer(arr, len);
 }
 
-grpc::string GetChannelInfoField(grpc_channel* channel,
-                                 grpc_channel_info* channel_info,
-                                 char*** channel_info_field) {
+std::string GetChannelInfoField(grpc_channel* channel,
+                                grpc_channel_info* channel_info,
+                                char*** channel_info_field) {
   char* value = nullptr;
   memset(channel_info, 0, sizeof(*channel_info));
   *channel_info_field = &value;
   grpc_channel_get_info(channel, channel_info);
   if (value == nullptr) return "";
-  grpc::string result = value;
+  std::string result = value;
   gpr_free(value);
   return result;
 }
 
 }  // namespace
 
-grpc::string Channel::GetLoadBalancingPolicyName() const {
+std::string Channel::GetLoadBalancingPolicyName() const {
   grpc_channel_info channel_info;
   return GetChannelInfoField(c_channel_, &channel_info,
                              &channel_info.lb_policy_name);
 }
 
-grpc::string Channel::GetServiceConfigJSON() const {
+std::string Channel::GetServiceConfigJSON() const {
   grpc_channel_info channel_info;
   return GetChannelInfoField(c_channel_, &channel_info,
                              &channel_info.service_config_json);
@@ -118,7 +119,7 @@ void ChannelResetConnectionBackoff(Channel* channel) {
         context->propagation_options_.c_bitmask(), cq->cq(),
         method.channel_tag(), context->raw_deadline(), nullptr);
   } else {
-    const ::grpc::string* host_str = nullptr;
+    const ::std::string* host_str = nullptr;
     if (!context->authority_.empty()) {
       host_str = &context->authority_;
     } else if (!host_.empty()) {
@@ -180,7 +181,7 @@ class TagSaver final : public ::grpc::internal::CompletionQueueTag {
  public:
   explicit TagSaver(void* tag) : tag_(tag) {}
   ~TagSaver() override {}
-  bool FinalizeResult(void** tag, bool* status) override {
+  bool FinalizeResult(void** tag, bool* /*status*/) override {
     *tag = tag_;
     delete this;
     return true;
@@ -214,7 +215,14 @@ bool Channel::WaitForStateChangeImpl(grpc_connectivity_state last_observed,
 namespace {
 class ShutdownCallback : public grpc_experimental_completion_queue_functor {
  public:
-  ShutdownCallback() { functor_run = &ShutdownCallback::Run; }
+  ShutdownCallback() {
+    functor_run = &ShutdownCallback::Run;
+    // Set inlineable to true since this callback is trivial and thus does not
+    // need to be run from the executor (triggering a thread hop). This should
+    // only be used by internal callbacks like this and not by user application
+    // code.
+    inlineable = true;
+  }
   // TakeCQ takes ownership of the cq into the shutdown callback
   // so that the shutdown callback will be responsible for destroying it
   void TakeCQ(::grpc::CompletionQueue* cq) { cq_ = cq; }
@@ -237,15 +245,23 @@ class ShutdownCallback : public grpc_experimental_completion_queue_functor {
   // if there is no explicit per-channel CQ registered
   grpc::internal::MutexLock l(&mu_);
   if (callback_cq_ == nullptr) {
-    auto* shutdown_callback = new ShutdownCallback;
-    callback_cq_ = new ::grpc::CompletionQueue(grpc_completion_queue_attributes{
-        GRPC_CQ_CURRENT_VERSION, GRPC_CQ_CALLBACK, GRPC_CQ_DEFAULT_POLLING,
-        shutdown_callback});
+    if (grpc_iomgr_run_in_background()) {
+      // gRPC-core provides the backing needed for the preferred CQ type
 
-    // Transfer ownership of the new cq to its own shutdown callback
-    shutdown_callback->TakeCQ(callback_cq_);
+      auto* shutdown_callback = new ShutdownCallback;
+      callback_cq_ =
+          new ::grpc::CompletionQueue(grpc_completion_queue_attributes{
+              GRPC_CQ_CURRENT_VERSION, GRPC_CQ_CALLBACK,
+              GRPC_CQ_DEFAULT_POLLING, shutdown_callback});
+
+      // Transfer ownership of the new cq to its own shutdown callback
+      shutdown_callback->TakeCQ(callback_cq_);
+    } else {
+      // Otherwise we need to use the alternative CQ variant
+      callback_cq_ = CompletionQueue::CallbackAlternativeCQ();
+    }
   }
   return callback_cq_;
 }
 
-}  // namespace grpc_impl
+}  // namespace grpc

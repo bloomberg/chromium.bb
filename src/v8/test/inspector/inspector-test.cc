@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #if !defined(_WIN32) && !defined(_WIN64)
-#include <unistd.h>  // NOLINT
-#endif               // !defined(_WIN32) && !defined(_WIN64)
+#include <unistd.h>
+#endif  // !defined(_WIN32) && !defined(_WIN64)
 
 #include <locale.h>
 
@@ -100,6 +100,9 @@ class UtilsExtension : public IsolateData::SetupGlobalTask {
     utils->Set(isolate, "sendMessageToBackend",
                v8::FunctionTemplate::New(
                    isolate, &UtilsExtension::SendMessageToBackend));
+    utils->Set(isolate, "interruptForMessages",
+               v8::FunctionTemplate::New(
+                   isolate, &UtilsExtension::InterruptForMessages));
     global->Set(isolate, "utils", utils);
   }
 
@@ -125,7 +128,7 @@ class UtilsExtension : public IsolateData::SetupGlobalTask {
       v8::Local<v8::String> str_obj;
 
       if (arg->IsSymbol()) {
-        arg = v8::Local<v8::Symbol>::Cast(arg)->Description();
+        arg = v8::Local<v8::Symbol>::Cast(arg)->Description(args.GetIsolate());
       }
       if (!arg->ToString(args.GetIsolate()->GetCurrentContext())
                .ToLocal(&str_obj)) {
@@ -168,7 +171,7 @@ class UtilsExtension : public IsolateData::SetupGlobalTask {
     std::string filename(*str, str.length());
     *chars = v8::internal::ReadFile(filename.c_str(), &exists);
     if (!exists) {
-      isolate->ThrowException(ToV8String(isolate, "Error reading file"));
+      isolate->ThrowError("Error reading file");
       return false;
     }
     return true;
@@ -319,8 +322,9 @@ class UtilsExtension : public IsolateData::SetupGlobalTask {
         ToVector(args.GetIsolate(), args[1].As<v8::String>());
 
     RunSyncTask(backend_runner_, [&context_group_id, name](IsolateData* data) {
-      data->CreateContext(context_group_id,
-                          v8_inspector::StringView(name.data(), name.size()));
+      CHECK(data->CreateContext(
+          context_group_id,
+          v8_inspector::StringView(name.data(), name.size())));
     });
   }
 
@@ -386,6 +390,11 @@ class UtilsExtension : public IsolateData::SetupGlobalTask {
     backend_runner_->Append(std::make_unique<SendMessageToBackendTask>(
         args[0].As<v8::Int32>()->Value(),
         ToVector(args.GetIsolate(), args[1].As<v8::String>())));
+  }
+
+  static void InterruptForMessages(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
+    backend_runner_->InterruptForMessages();
   }
 
   static std::map<int, std::unique_ptr<FrontendChannelImpl>> channels_;
@@ -623,14 +632,14 @@ class InspectorExtension : public IsolateData::SetupGlobalTask {
   static void AccessorGetter(v8::Local<v8::String> property,
                              const v8::PropertyCallbackInfo<v8::Value>& info) {
     v8::Isolate* isolate = info.GetIsolate();
-    isolate->ThrowException(ToV8String(isolate, "Getter is called"));
+    isolate->ThrowError("Getter is called");
   }
 
   static void AccessorSetter(v8::Local<v8::String> property,
                              v8::Local<v8::Value> value,
                              const v8::PropertyCallbackInfo<void>& info) {
     v8::Isolate* isolate = info.GetIsolate();
-    isolate->ThrowException(ToV8String(isolate, "Setter is called"));
+    isolate->ThrowError("Setter is called");
   }
 
   static void StoreCurrentStackTrace(
@@ -753,9 +762,10 @@ int InspectorTestMain(int argc, char* argv[]) {
   {
     IsolateData::SetupGlobalTasks frontend_extensions;
     frontend_extensions.emplace_back(new UtilsExtension());
-    TaskRunner frontend_runner(
-        std::move(frontend_extensions), kDoCatchExceptions, &ready_semaphore,
-        startup_data.data ? &startup_data : nullptr, kNoInspector);
+    TaskRunner frontend_runner(std::move(frontend_extensions),
+                               kFailOnUncaughtExceptions, &ready_semaphore,
+                               startup_data.data ? &startup_data : nullptr,
+                               kNoInspector);
     ready_semaphore.Wait();
 
     int frontend_context_group_id = 0;
@@ -768,8 +778,9 @@ int InspectorTestMain(int argc, char* argv[]) {
     backend_extensions.emplace_back(new SetTimeoutExtension());
     backend_extensions.emplace_back(new InspectorExtension());
     TaskRunner backend_runner(
-        std::move(backend_extensions), kDontCatchExceptions, &ready_semaphore,
-        startup_data.data ? &startup_data : nullptr, kWithInspector);
+        std::move(backend_extensions), kStandardPropagateUncaughtExceptions,
+        &ready_semaphore, startup_data.data ? &startup_data : nullptr,
+        kWithInspector);
     ready_semaphore.Wait();
     UtilsExtension::set_backend_task_runner(&backend_runner);
 

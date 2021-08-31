@@ -37,11 +37,11 @@
 namespace blink {
 
 template <>
-const SVGEnumerationMap& GetEnumerationMap<EdgeModeType>() {
+const SVGEnumerationMap& GetEnumerationMap<FEConvolveMatrix::EdgeModeType>() {
   static const SVGEnumerationMap::Entry enum_items[] = {
-      {EDGEMODE_DUPLICATE, "duplicate"},
-      {EDGEMODE_WRAP, "wrap"},
-      {EDGEMODE_NONE, "none"},
+      {FEConvolveMatrix::EDGEMODE_DUPLICATE, "duplicate"},
+      {FEConvolveMatrix::EDGEMODE_WRAP, "wrap"},
+      {FEConvolveMatrix::EDGEMODE_NONE, "none"},
   };
   static const SVGEnumerationMap entries(enum_items);
   return entries;
@@ -88,10 +88,11 @@ SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(Document& document)
                                                        svg_names::kDivisorAttr,
                                                        1)),
       in1_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kInAttr)),
-      edge_mode_(MakeGarbageCollected<SVGAnimatedEnumeration<EdgeModeType>>(
+      edge_mode_(MakeGarbageCollected<
+                 SVGAnimatedEnumeration<FEConvolveMatrix::EdgeModeType>>(
           this,
           svg_names::kEdgeModeAttr,
-          EDGEMODE_DUPLICATE)),
+          FEConvolveMatrix::EDGEMODE_DUPLICATE)),
       kernel_matrix_(MakeGarbageCollected<SVGAnimatedNumberList>(
           this,
           svg_names::kKernelMatrixAttr)),
@@ -205,7 +206,8 @@ bool SVGFEConvolveMatrixElement::SetFilterEffectAttribute(
 }
 
 void SVGFEConvolveMatrixElement::SvgAttributeChanged(
-    const QualifiedName& attr_name) {
+    const SvgAttributeChangedParams& params) {
+  const QualifiedName& attr_name = params.name;
   if (attr_name == svg_names::kEdgeModeAttr ||
       attr_name == svg_names::kDivisorAttr ||
       attr_name == svg_names::kBiasAttr ||
@@ -224,7 +226,7 @@ void SVGFEConvolveMatrixElement::SvgAttributeChanged(
     return;
   }
 
-  SVGFilterPrimitiveStandardAttributes::SvgAttributeChanged(attr_name);
+  SVGFilterPrimitiveStandardAttributes::SvgAttributeChanged(params);
 }
 
 FilterEffect* SVGFEConvolveMatrixElement::Build(

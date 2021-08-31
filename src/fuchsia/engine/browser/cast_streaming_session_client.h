@@ -7,13 +7,15 @@
 
 #include <fuchsia/web/cpp/fidl.h>
 
-#include "fuchsia/cast_streaming/public/cast_streaming_session.h"
-#include "fuchsia/engine/cast_streaming_session.mojom.h"
+#include "components/cast_streaming/browser/public/cast_streaming_session.h"
+#include "components/cast_streaming/mojo/cast_streaming_session.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 // Owns the CastStreamingSession and sends buffers to the renderer process via
 // a Mojo service.
+//
+// TODO(crbug.com/1208194): Move this class to //components/cast_streaming,
 class CastStreamingSessionClient
     : public cast_streaming::CastStreamingSession::Client {
  public:
@@ -37,16 +39,16 @@ class CastStreamingSessionClient
 
   // cast_streaming::CastStreamingSession::Client implementation.
   void OnSessionInitialization(
-      base::Optional<cast_streaming::CastStreamingSession::AudioStreamInfo>
+      absl::optional<cast_streaming::CastStreamingSession::AudioStreamInfo>
           audio_stream_info,
-      base::Optional<cast_streaming::CastStreamingSession::VideoStreamInfo>
+      absl::optional<cast_streaming::CastStreamingSession::VideoStreamInfo>
           video_stream_info) final;
   void OnAudioBufferReceived(media::mojom::DecoderBufferPtr buffer) final;
   void OnVideoBufferReceived(media::mojom::DecoderBufferPtr buffer) final;
   void OnSessionReinitialization(
-      base::Optional<cast_streaming::CastStreamingSession::AudioStreamInfo>
+      absl::optional<cast_streaming::CastStreamingSession::AudioStreamInfo>
           audio_stream_info,
-      base::Optional<cast_streaming::CastStreamingSession::VideoStreamInfo>
+      absl::optional<cast_streaming::CastStreamingSession::VideoStreamInfo>
           video_stream_info) final;
   void OnSessionEnded() final;
 

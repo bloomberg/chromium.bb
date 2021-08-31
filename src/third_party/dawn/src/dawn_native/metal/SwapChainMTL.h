@@ -17,6 +17,8 @@
 
 #include "dawn_native/SwapChain.h"
 
+#include "common/NSRef.h"
+
 @class CAMetalLayer;
 @protocol CAMetalDrawable;
 
@@ -27,9 +29,10 @@ namespace dawn_native { namespace metal {
 
     class OldSwapChain final : public OldSwapChainBase {
       public:
-        OldSwapChain(Device* device, const SwapChainDescriptor* descriptor);
+        static Ref<OldSwapChain> Create(Device* deivce, const SwapChainDescriptor* descriptor);
 
       protected:
+        OldSwapChain(Device* device, const SwapChainDescriptor* descriptor);
         ~OldSwapChain() override;
         TextureBase* GetNextTextureImpl(const TextureDescriptor* descriptor) override;
         MaybeError OnBeforePresent(TextureViewBase* view) override;
@@ -37,19 +40,19 @@ namespace dawn_native { namespace metal {
 
     class SwapChain final : public NewSwapChainBase {
       public:
-        static ResultOrError<SwapChain*> Create(Device* device,
-                                                Surface* surface,
-                                                NewSwapChainBase* previousSwapChain,
-                                                const SwapChainDescriptor* descriptor);
+        static ResultOrError<Ref<SwapChain>> Create(Device* device,
+                                                    Surface* surface,
+                                                    NewSwapChainBase* previousSwapChain,
+                                                    const SwapChainDescriptor* descriptor);
         ~SwapChain() override;
 
       private:
         using NewSwapChainBase::NewSwapChainBase;
         MaybeError Initialize(NewSwapChainBase* previousSwapChain);
 
-        CAMetalLayer* mLayer = nullptr;
+        NSRef<CAMetalLayer> mLayer;
 
-        id<CAMetalDrawable> mCurrentDrawable = nil;
+        NSPRef<id<CAMetalDrawable>> mCurrentDrawable;
         Ref<Texture> mTexture;
 
         MaybeError PresentImpl() override;

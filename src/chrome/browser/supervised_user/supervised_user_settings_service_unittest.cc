@@ -4,6 +4,7 @@
 
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -64,7 +65,7 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
   ~SupervisedUserSettingsServiceTest() override {}
 
   std::unique_ptr<syncer::SyncChangeProcessor> CreateSyncProcessor() {
-    sync_processor_.reset(new syncer::FakeSyncChangeProcessor);
+    sync_processor_ = std::make_unique<syncer::FakeSyncChangeProcessor>();
     return std::unique_ptr<syncer::SyncChangeProcessor>(
         new syncer::SyncChangeProcessorWrapperForTest(sync_processor_.get()));
   }
@@ -72,7 +73,7 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
   void StartSyncing(const syncer::SyncDataList& initial_sync_data) {
     std::unique_ptr<syncer::SyncErrorFactory> error_handler(
         new MockSyncErrorFactory(syncer::SUPERVISED_USER_SETTINGS));
-    base::Optional<syncer::ModelError> error =
+    absl::optional<syncer::ModelError> error =
         settings_service_.MergeDataAndStartSyncing(
             syncer::SUPERVISED_USER_SETTINGS, initial_sync_data,
             CreateSyncProcessor(), std::move(error_handler));
@@ -83,13 +84,13 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
     split_items_.SetKey(key, base::Value(value));
     settings_service_.UploadItem(
         SupervisedUserSettingsService::MakeSplitSettingKey(kSplitItemName, key),
-        std::unique_ptr<base::Value>(new base::Value(value)));
+        std::make_unique<base::Value>(value));
   }
 
   void UploadAtomicItem(const std::string& value) {
-    atomic_setting_value_.reset(new base::Value(value));
-    settings_service_.UploadItem(
-        kAtomicItemName, std::unique_ptr<base::Value>(new base::Value(value)));
+    atomic_setting_value_ = std::make_unique<base::Value>(value);
+    settings_service_.UploadItem(kAtomicItemName,
+                                 std::make_unique<base::Value>(value));
   }
 
   void VerifySyncDataItem(syncer::SyncData sync_data) {
@@ -123,9 +124,10 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
   void SetUp() override {
     TestingPrefStore* pref_store = new TestingPrefStore;
     settings_service_.Init(pref_store);
-    user_settings_subscription_ = settings_service_.SubscribeForSettingsChange(
-        base::Bind(&SupervisedUserSettingsServiceTest::OnNewSettingsAvailable,
-                   base::Unretained(this)));
+    user_settings_subscription_ =
+        settings_service_.SubscribeForSettingsChange(base::BindRepeating(
+            &SupervisedUserSettingsServiceTest::OnNewSettingsAvailable,
+            base::Unretained(this)));
     pref_store->SetInitializationCompleted();
     ASSERT_FALSE(settings_);
     settings_service_.SetActive(true);
@@ -139,9 +141,7 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
   std::unique_ptr<base::Value> atomic_setting_value_;
   SupervisedUserSettingsService settings_service_;
   std::unique_ptr<base::DictionaryValue> settings_;
-  std::unique_ptr<
-      base::CallbackList<void(const base::DictionaryValue*)>::Subscription>
-      user_settings_subscription_;
+  base::CallbackListSubscription user_settings_subscription_;
 
   std::unique_ptr<syncer::FakeSyncChangeProcessor> sync_processor_;
 };
@@ -159,7 +159,7 @@ TEST_F(SupervisedUserSettingsServiceTest, ProcessAtomicSetting) {
   syncer::SyncChangeList change_list;
   change_list.push_back(
       syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_ADD, data));
-  base::Optional<syncer::ModelError> error =
+  absl::optional<syncer::ModelError> error =
       settings_service_.ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_FALSE(error.has_value()) << error.value().ToString();
   ASSERT_TRUE(settings_);
@@ -191,7 +191,7 @@ TEST_F(SupervisedUserSettingsServiceTest, ProcessSplitSetting) {
     change_list.push_back(
         syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_ADD, data));
   }
-  base::Optional<syncer::ModelError> error =
+  absl::optional<syncer::ModelError> error =
       settings_service_.ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_FALSE(error.has_value()) << error.value().ToString();
   ASSERT_TRUE(settings_);
@@ -273,8 +273,7 @@ TEST_F(SupervisedUserSettingsServiceTest, SetLocalSetting) {
 
   settings_.reset();
   settings_service_.SetLocalSetting(
-      kSettingsName,
-      std::unique_ptr<base::Value>(new base::Value(kSettingsValue)));
+      kSettingsName, std::make_unique<base::Value>(kSettingsValue));
   ASSERT_TRUE(settings_);
   ASSERT_TRUE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
   std::string string_value;

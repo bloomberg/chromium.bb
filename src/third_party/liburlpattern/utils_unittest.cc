@@ -7,64 +7,110 @@
 
 namespace liburlpattern {
 
-TEST(UtilsTest, EscapeStringDot) {
-  EXPECT_EQ(EscapeString("index.html"), "index\\.html");
+void RunEscapeRegexpStringTest(absl::string_view input,
+                               absl::string_view expected) {
+  std::string result = EscapeRegexpString(input);
+  EXPECT_EQ(result, expected);
+  EXPECT_EQ(EscapedRegexpStringLength(input), result.size());
 }
 
-TEST(UtilsTest, EscapeStringPlus) {
-  EXPECT_EQ(EscapeString("foo+"), "foo\\+");
+TEST(UtilsTest, EscapeRegexpStringDot) {
+  RunEscapeRegexpStringTest("index.html", "index\\.html");
 }
 
-TEST(UtilsTest, EscapeStringStar) {
-  EXPECT_EQ(EscapeString("foo*"), "foo\\*");
+TEST(UtilsTest, EscapeRegexpStringPlus) {
+  RunEscapeRegexpStringTest("foo+", "foo\\+");
 }
 
-TEST(UtilsTest, EscapeStringQuestion) {
-  EXPECT_EQ(EscapeString("foo?"), "foo\\?");
+TEST(UtilsTest, EscapeRegexpStringStar) {
+  RunEscapeRegexpStringTest("foo*", "foo\\*");
 }
 
-TEST(UtilsTest, EscapeStringEquals) {
-  EXPECT_EQ(EscapeString("foo=bar"), "foo\\=bar");
+TEST(UtilsTest, EscapeRegexpStringQuestion) {
+  RunEscapeRegexpStringTest("foo?", "foo\\?");
 }
 
-TEST(UtilsTest, EscapeStringCaret) {
-  EXPECT_EQ(EscapeString("^foo"), "\\^foo");
+TEST(UtilsTest, EscapeRegexpStringEquals) {
+  RunEscapeRegexpStringTest("foo=bar", "foo=bar");
 }
 
-TEST(UtilsTest, EscapeStringBang) {
-  EXPECT_EQ(EscapeString("!foo"), "\\!foo");
+TEST(UtilsTest, EscapeRegexpStringCaret) {
+  RunEscapeRegexpStringTest("^foo", "\\^foo");
 }
 
-TEST(UtilsTest, EscapeStringColon) {
-  EXPECT_EQ(EscapeString(":foo"), "\\:foo");
+TEST(UtilsTest, EscapeRegexpStringBang) {
+  RunEscapeRegexpStringTest("!foo", "!foo");
 }
 
-TEST(UtilsTest, EscapeStringDollar) {
-  EXPECT_EQ(EscapeString("foo$"), "foo\\$");
+TEST(UtilsTest, EscapeRegexpStringColon) {
+  RunEscapeRegexpStringTest(":foo", ":foo");
 }
 
-TEST(UtilsTest, EscapeStringCurlyBraces) {
-  EXPECT_EQ(EscapeString("{foo}"), "\\{foo\\}");
+TEST(UtilsTest, EscapeRegexpStringDollar) {
+  RunEscapeRegexpStringTest("foo$", "foo\\$");
 }
 
-TEST(UtilsTest, EscapeStringParens) {
-  EXPECT_EQ(EscapeString("(foo)"), "\\(foo\\)");
+TEST(UtilsTest, EscapeRegexpStringCurlyBraces) {
+  RunEscapeRegexpStringTest("{foo}", "\\{foo\\}");
 }
 
-TEST(UtilsTest, EscapeStringSquareBrackets) {
-  EXPECT_EQ(EscapeString("[foo]"), "\\[foo\\]");
+TEST(UtilsTest, EscapeRegexpStringParens) {
+  RunEscapeRegexpStringTest("(foo)", "\\(foo\\)");
 }
 
-TEST(UtilsTest, EscapeStringPipe) {
-  EXPECT_EQ(EscapeString("foo|bar"), "foo\\|bar");
+TEST(UtilsTest, EscapeRegexpStringSquareBrackets) {
+  RunEscapeRegexpStringTest("[foo]", "\\[foo\\]");
 }
 
-TEST(UtilsTest, EscapeStringSlash) {
-  EXPECT_EQ(EscapeString("/foo/bar"), "\\/foo\\/bar");
+TEST(UtilsTest, EscapeRegexpStringPipe) {
+  RunEscapeRegexpStringTest("foo|bar", "foo\\|bar");
 }
 
-TEST(UtilsTest, EscapeStringBackslash) {
-  EXPECT_EQ(EscapeString("\\d"), "\\\\d");
+TEST(UtilsTest, EscapeRegexpStringSlash) {
+  RunEscapeRegexpStringTest("/foo/bar", "\\/foo\\/bar");
+}
+
+TEST(UtilsTest, EscapeRegexpStringBackslash) {
+  RunEscapeRegexpStringTest("\\d", "\\\\d");
+}
+
+void RunEscapePatternStringTest(absl::string_view input,
+                                absl::string_view expected) {
+  std::string result;
+  EscapePatternStringAndAppend(input, result);
+  EXPECT_EQ(result, expected);
+}
+
+TEST(UtilsTest, EscapePatternStringPlus) {
+  RunEscapePatternStringTest("foo+", "foo\\+");
+}
+
+TEST(UtilsTest, EscapePatternStringStar) {
+  RunEscapePatternStringTest("foo*", "foo\\*");
+}
+
+TEST(UtilsTest, EscapePatternStringQuestion) {
+  RunEscapePatternStringTest("foo?", "foo\\?");
+}
+
+TEST(UtilsTest, EscapePatternStringColon) {
+  RunEscapePatternStringTest("foo:", "foo\\:");
+}
+
+TEST(UtilsTest, EscapePatternStringBraces) {
+  RunEscapePatternStringTest("foo{}", "foo\\{\\}");
+}
+
+TEST(UtilsTest, EscapePatternStringParens) {
+  RunEscapePatternStringTest("foo()", "foo\\(\\)");
+}
+
+TEST(UtilsTest, EscapePatternStringBackslash) {
+  RunEscapePatternStringTest("foo\\", "foo\\\\");
+}
+
+TEST(UtilsTest, EscapePatternStringSlash) {
+  RunEscapePatternStringTest("foo/", "foo/");
 }
 
 }  // namespace liburlpattern

@@ -30,12 +30,11 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
-#include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/modules/storage/cached_storage_area.h"
 #include "third_party/blink/renderer/modules/storage/inspector_dom_storage_agent.h"
 #include "third_party/blink/renderer/modules/storage/storage_area.h"
@@ -47,25 +46,25 @@ namespace blink {
 const char StorageNamespace::kSupplementName[] = "SessionStorageNamespace";
 
 StorageNamespace::StorageNamespace(StorageController* controller)
-    : controller_(controller) {}
+    : Supplement(nullptr), controller_(controller) {}
 StorageNamespace::StorageNamespace(StorageController* controller,
                                    const String& namespace_id)
-    : controller_(controller), namespace_id_(namespace_id) {}
+    : Supplement(nullptr),
+      controller_(controller),
+      namespace_id_(namespace_id) {}
 
 // static
-void StorageNamespace::ProvideSessionStorageNamespaceTo(Page& page,
-                                                        WebViewClient* client) {
-  if (client) {
-    if (client->GetSessionStorageNamespaceId().empty())
-      return;
-    auto* ss_namespace =
-        StorageController::GetInstance()->CreateSessionStorageNamespace(
-            String(client->GetSessionStorageNamespaceId().data(),
-                   client->GetSessionStorageNamespaceId().size()));
-    if (!ss_namespace)
-      return;
-    ProvideTo(page, ss_namespace);
-  }
+void StorageNamespace::ProvideSessionStorageNamespaceTo(
+    Page& page,
+    const SessionStorageNamespaceId& namespace_id) {
+  if (namespace_id.empty())
+    return;
+  auto* ss_namespace =
+      StorageController::GetInstance()->CreateSessionStorageNamespace(
+          String(namespace_id.data(), namespace_id.length()));
+  if (!ss_namespace)
+    return;
+  ProvideTo(page, ss_namespace);
 }
 
 scoped_refptr<CachedStorageArea> StorageNamespace::GetCachedArea(
@@ -87,10 +86,12 @@ scoped_refptr<CachedStorageArea> StorageNamespace::GetCachedArea(
                                           : CacheMetrics::kUnused;
     result = cache_it->value;
   }
-  if (IsSessionStorage())
-    LOCAL_HISTOGRAM_ENUMERATION("SessionStorage.RendererAreaCacheHit", metric);
-  else
-    UMA_HISTOGRAM_ENUMERATION("LocalStorage.RendererAreaCacheHit", metric);
+  if (IsSessionStorage()) {
+    base::UmaHistogramEnumeration("Storage.SessionStorage.RendererAreaCacheHit",
+                                  metric);
+  } else {
+    base::UmaHistogramEnumeration("LocalStorage.RendererAreaCacheHit", metric);
+  }
 
   if (result)
     return result;
@@ -101,9 +102,21 @@ scoped_refptr<CachedStorageArea> StorageNamespace::GetCachedArea(
   result = base::MakeRefCounted<CachedStorageArea>(
       IsSessionStorage() ? CachedStorageArea::AreaType::kSessionStorage
                          : CachedStorageArea::AreaType::kLocalStorage,
-      origin, controller_->TaskRunner(), this);
+      origin, controller_->TaskRunner(), this,
+      /*is_session_storage_for_prerendering=*/false);
   cached_areas_.insert(std::move(origin), result);
   return result;
+}
+
+scoped_refptr<CachedStorageArea> StorageNamespace::CreateCachedAreaForPrerender(
+    const SecurityOrigin* origin_ptr) {
+  DCHECK((IsSessionStorage()));
+  scoped_refptr<const SecurityOrigin> origin(origin_ptr);
+  return base::MakeRefCounted<CachedStorageArea>(
+      IsSessionStorage() ? CachedStorageArea::AreaType::kSessionStorage
+                         : CachedStorageArea::AreaType::kLocalStorage,
+      origin, controller_->TaskRunner(), this,
+      /*is_session_storage_for_prerendering=*/true);
 }
 
 void StorageNamespace::CloneTo(const String& target) {

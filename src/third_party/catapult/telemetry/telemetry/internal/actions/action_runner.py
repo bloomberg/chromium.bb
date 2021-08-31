@@ -2,9 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import division
+from __future__ import absolute_import
 import logging
 import time
-import urlparse
+import six
+import six.moves.urllib.parse # pylint: disable=import-error
+from six.moves import input # pylint: disable=redefined-builtin
 
 from telemetry.core import exceptions
 from telemetry.internal.actions import page_action
@@ -45,9 +49,15 @@ _MEMORY_DUMP_WAIT_TIME = 3
 _GARBAGE_COLLECTION_PROPAGATION_TIME = 6
 
 
-class ActionRunner(object):
+if six.PY2:
+  ActionRunnerBase = object
+else:
+  ActionRunnerBase = six.with_metaclass(trace_event.TracedMetaClass, object)
 
-  __metaclass__ = trace_event.TracedMetaClass
+class ActionRunner(ActionRunnerBase):
+
+  if six.PY2:
+    __metaclass__ = trace_event.TracedMetaClass
 
   def __init__(self, tab, skip_waits=False):
     self._tab = tab
@@ -177,7 +187,7 @@ class ActionRunner(object):
     evaluated when the navigation is committed. This is after the context of
     the page exists, but before any script on the page itself has executed.
     """
-    if urlparse.urlparse(url).scheme == 'file':
+    if six.moves.urllib.parse.urlparse(url).scheme == 'file':
       url = self._tab.browser.platform.http_server.UrlOf(url[7:])
 
     self._RunAction(NavigateAction(
@@ -672,8 +682,9 @@ class ActionRunner(object):
       repeat_delay_ms: Delay after each keypress (including the last one) in
           milliseconds.
     """
-    for _ in xrange(repeat_count):
+    for _ in range(repeat_count):
       self._RunAction(KeyPressAction(key, timeout=timeout))
+      #2To3-division: this line is unchanged as result is expected floats.
       self.Wait(repeat_delay_ms / 1000.0)
 
   def EnterText(self, text, character_delay_ms=100,
@@ -809,7 +820,7 @@ class ActionRunner(object):
     the page execution and inspect the browser state before
     continuing.
     """
-    raw_input("Interacting... Press Enter to continue.")
+    input("Interacting... Press Enter to continue.")
 
   def RepaintContinuously(self, seconds):
     """Continuously repaints the visible content.
@@ -820,6 +831,28 @@ class ActionRunner(object):
     RAFs were fired."""
     self._RunAction(RepaintContinuouslyAction(
         seconds=0 if self._skip_waits else seconds))
+
+  def StartMobileDeviceEmulation(
+      self, width=360, height=640, dsr=2, timeout=60):
+    """Emulates a mobile device.
+
+    This method is intended for benchmarks used to gather non-performance
+    metrics only. Mobile emulation is not guaranteed to have the same
+    performance characteristics as real devices.
+
+    Example device parameters:
+    https://gist.github.com/devinmancuso/0c94410cb14c83ddad6f
+
+    Args:
+      width: Screen width.
+      height: Screen height.
+      dsr: Screen device scale factor.
+    """
+    self._tab.StartMobileDeviceEmulation(width, height, dsr, timeout)
+
+  def StopMobileDeviceEmulation(self, timeout=60):
+    """Stops emulation of a mobile device."""
+    self._tab.StopMobileDeviceEmulation(timeout)
 
 
 class Interaction(object):

@@ -27,7 +27,7 @@ const char kCommandPrefix[] = "blockingPage";
 #pragma mark - IOSBlockingPageTabHelper
 
 IOSBlockingPageTabHelper::IOSBlockingPageTabHelper(web::WebState* web_state)
-    : subscription_(nullptr), navigation_id_listener_(web_state, this) {
+    : navigation_id_listener_(web_state, this) {
   auto command_callback =
       base::BindRepeating(&IOSBlockingPageTabHelper::OnBlockingPageCommand,
                           weak_factory_.GetWeakPtr());
@@ -91,7 +91,7 @@ IOSBlockingPageTabHelper::CommittedNavigationIDListener::
                                   IOSBlockingPageTabHelper* tab_helper)
     : tab_helper_(tab_helper) {
   DCHECK(tab_helper_);
-  scoped_observer_.Add(web_state);
+  scoped_observation_.Observe(web_state);
 }
 
 IOSBlockingPageTabHelper::CommittedNavigationIDListener::
@@ -113,7 +113,8 @@ void IOSBlockingPageTabHelper::CommittedNavigationIDListener::
 
 void IOSBlockingPageTabHelper::CommittedNavigationIDListener::WebStateDestroyed(
     web::WebState* web_state) {
-  scoped_observer_.Remove(web_state);
+  DCHECK(scoped_observation_.IsObservingSource(web_state));
+  scoped_observation_.Reset();
 }
 
 }  // namespace security_interstitials

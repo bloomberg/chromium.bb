@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 
@@ -51,6 +52,12 @@ namespace blink {
 
 class CoreProbeSink;
 class ThreadDebugger;
+
+namespace protocol {
+namespace Audits {
+class InspectorIssue;
+}  // namespace Audits
+}  // namespace protocol
 
 namespace probe {
 
@@ -156,4 +163,4 @@ CORE_EXPORT void AllAsyncTasksCanceled(ExecutionContext*);
 
 #include "third_party/blink/renderer/core/core_probes_inl.h"
 
-#endif  // !defined(CoreProbes_h)
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PROBE_CORE_PROBES_H_

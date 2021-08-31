@@ -9,6 +9,7 @@
 
 #include "base/stl_util.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_message_start.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/message_filter.h"
 
@@ -51,7 +52,6 @@ void MessageFilterRouter::AddFilter(MessageFilter* filter) {
   // messages of a certain class.
   std::vector<uint32_t> supported_message_classes;
   if (filter->GetSupportedMessageClasses(&supported_message_classes)) {
-    DCHECK(!supported_message_classes.empty());
     for (size_t i = 0; i < supported_message_classes.size(); ++i) {
       const int message_class = supported_message_classes[i];
       DCHECK(ValidMessageClass(message_class));

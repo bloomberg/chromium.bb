@@ -22,7 +22,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
@@ -69,8 +69,6 @@ class AssistantInteractionControllerImpl
   void StartTextInteraction(const std::string& text,
                             bool allow_tts,
                             AssistantQuerySource query_source) override;
-  void StartBloomInteraction() override;
-  void ShowBloomResult(const std::string& html) override;
 
   // AssistantControllerObserver:
   void OnAssistantControllerConstructed() override;
@@ -89,8 +87,8 @@ class AssistantInteractionControllerImpl
   void OnUiVisibilityChanged(
       AssistantVisibility new_visibility,
       AssistantVisibility old_visibility,
-      base::Optional<AssistantEntryPoint> entry_point,
-      base::Optional<AssistantExitPoint> exit_point) override;
+      absl::optional<AssistantEntryPoint> entry_point,
+      absl::optional<AssistantExitPoint> exit_point) override;
 
   // HighlighterController::Observer:
   void OnHighlighterSelectionRecognized(const gfx::Rect& rect) override;
@@ -106,7 +104,7 @@ class AssistantInteractionControllerImpl
       const std::vector<AssistantSuggestion>& response) override;
   void OnTextResponse(const std::string& response) override;
   void OnOpenUrlResponse(const GURL& url, bool in_background) override;
-  bool OnOpenAppResponse(
+  void OnOpenAppResponse(
       const chromeos::assistant::AndroidAppInfo& app_info) override;
   void OnSpeechRecognitionStarted() override;
   void OnSpeechRecognitionIntermediateResult(
@@ -130,15 +128,8 @@ class AssistantInteractionControllerImpl
 
  private:
   void OnTabletModeChanged();
-
-  bool HasUnprocessedPendingResponse();
   bool HasActiveInteraction() const;
-
-  void OnProcessPendingResponse();
-  void OnPendingResponseProcessed(bool is_completed);
-
   void OnUiVisible(AssistantEntryPoint entry_point);
-
   void StartScreenContextInteraction(bool include_assistant_structure,
                                      const gfx::Rect& region,
                                      AssistantQuerySource query_source);
@@ -157,14 +148,15 @@ class AssistantInteractionControllerImpl
   // Owned by AssistantService.
   chromeos::assistant::Assistant* assistant_ = nullptr;
 
-  ScopedObserver<AssistantController, AssistantControllerObserver>
-      assistant_controller_observer_{this};
+  base::ScopedObservation<AssistantController, AssistantControllerObserver>
+      assistant_controller_observation_{this};
 
-  ScopedObserver<HighlighterController, HighlighterController::Observer>
-      highlighter_controller_observer_{this};
+  base::ScopedObservation<HighlighterController,
+                          HighlighterController::Observer>
+      highlighter_controller_observation_{this};
 
-  ScopedObserver<TabletModeController, TabletModeObserver>
-      tablet_mode_controller_observer_{this};
+  base::ScopedObservation<TabletModeController, TabletModeObserver>
+      tablet_mode_controller_observation_{this};
 
   base::WeakPtrFactory<AssistantInteractionControllerImpl>
       screen_context_request_factory_{this};

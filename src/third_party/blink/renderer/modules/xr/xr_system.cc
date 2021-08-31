@@ -6,11 +6,14 @@
 
 #include <utility>
 
+#include "base/containers/contains.h"
+#include "build/build_config.h"
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_fullscreen_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_xr_depth_state_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_tracked_image_init.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -18,9 +21,9 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
-#include "third_party/blink/renderer/core/fullscreen/scoped_allow_fullscreen.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -28,8 +31,11 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/xr/xr_enter_fullscreen_observer.h"
+#include "third_party/blink/renderer/modules/xr/xr_exit_fullscreen_observer.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/modules/xr/xr_session_viewport_scaler.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -47,7 +53,7 @@ const char kNavigatorDetachedError[] =
 const char kPageNotVisible[] = "The page is not visible";
 
 const char kFeaturePolicyBlocked[] =
-    "Access to the feature \"xr\" is disallowed by feature policy.";
+    "Access to the feature \"xr\" is disallowed by permissions policy.";
 
 const char kActiveImmersiveSession[] =
     "There is already an active, immersive XRSession.";
@@ -66,6 +72,10 @@ const char kImmersiveArModeNotValid[] =
 
 const char kTrackedImageWidthInvalid[] =
     "trackedImages[%d].widthInMeters invalid, must be a positive number.";
+
+const char kDepthSensingConfigurationNotSupported[] =
+    "The provided preferences depth sensing usage and format are not "
+    "supported, unable to create the session.";
 
 constexpr device::mojom::XRSessionFeature kDefaultImmersiveVrFeatures[] = {
     device::mojom::XRSessionFeature::REF_SPACE_VIEWER,
@@ -111,10 +121,98 @@ const char* SessionModeToString(device::mojom::blink::XRSessionMode mode) {
   return "";
 }
 
+// TODO(crbug.com/1070871): Drop this #if-else
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY)
+
+device::mojom::XRDepthUsage ParseDepthUsage(const V8XRDepthUsage& usage) {
+  switch (usage.AsEnum()) {
+    case V8XRDepthUsage::Enum::kCpuOptimized:
+      return device::mojom::XRDepthUsage::kCPUOptimized;
+    case V8XRDepthUsage::Enum::kGpuOptimized:
+      return device::mojom::XRDepthUsage::kGPUOptimized;
+  }
+}
+
+Vector<device::mojom::XRDepthUsage> ParseDepthUsages(
+    const Vector<V8XRDepthUsage>& usages) {
+  Vector<device::mojom::XRDepthUsage> result;
+
+  std::transform(usages.begin(), usages.end(), std::back_inserter(result),
+                 ParseDepthUsage);
+
+  return result;
+}
+
+device::mojom::XRDepthDataFormat ParseDepthFormat(
+    const V8XRDepthDataFormat& format) {
+  switch (format.AsEnum()) {
+    case V8XRDepthDataFormat::Enum::kLuminanceAlpha:
+      return device::mojom::XRDepthDataFormat::kLuminanceAlpha;
+    case V8XRDepthDataFormat::Enum::kFloat32:
+      return device::mojom::XRDepthDataFormat::kFloat32;
+  }
+}
+
+Vector<device::mojom::XRDepthDataFormat> ParseDepthFormats(
+    const Vector<V8XRDepthDataFormat>& formats) {
+  Vector<device::mojom::XRDepthDataFormat> result;
+
+  std::transform(formats.begin(), formats.end(), std::back_inserter(result),
+                 ParseDepthFormat);
+
+  return result;
+}
+
+#else
+
+device::mojom::XRDepthUsage ParseDepthUsage(const String& usage) {
+  if (usage == "cpu-optimized") {
+    return device::mojom::XRDepthUsage::kCPUOptimized;
+  } else if (usage == "gpu-optimized") {
+    return device::mojom::XRDepthUsage::kGPUOptimized;
+  }
+
+  NOTREACHED() << "Only strings in the enum are allowed by IDL";
+  return device::mojom::XRDepthUsage::kCPUOptimized;
+}
+
+Vector<device::mojom::XRDepthUsage> ParseDepthUsages(
+    const Vector<String>& usages) {
+  Vector<device::mojom::XRDepthUsage> result;
+
+  std::transform(usages.begin(), usages.end(), std::back_inserter(result),
+                 ParseDepthUsage);
+
+  return result;
+}
+
+device::mojom::XRDepthDataFormat ParseDepthFormat(const String& format) {
+  if (format == "luminance-alpha") {
+    return device::mojom::XRDepthDataFormat::kLuminanceAlpha;
+  } else if (format == "float32") {
+    return device::mojom::XRDepthDataFormat::kFloat32;
+  }
+
+  NOTREACHED() << "Only strings in the enum are allowed by IDL";
+  return device::mojom::XRDepthDataFormat::kLuminanceAlpha;
+}
+
+Vector<device::mojom::XRDepthDataFormat> ParseDepthFormats(
+    const Vector<String>& formats) {
+  Vector<device::mojom::XRDepthDataFormat> result;
+
+  std::transform(formats.begin(), formats.end(), std::back_inserter(result),
+                 ParseDepthFormat);
+
+  return result;
+}
+
+#endif  // USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY
+
 // Converts the given string to an XRSessionFeature. If the string is
 // unrecognized, returns nullopt. Based on the spec:
 // https://immersive-web.github.io/webxr/#feature-name
-base::Optional<device::mojom::XRSessionFeature> StringToXRSessionFeature(
+absl::optional<device::mojom::XRSessionFeature> StringToXRSessionFeature(
     const ExecutionContext* context,
     const String& feature_string) {
   if (feature_string == "viewer") {
@@ -150,9 +248,12 @@ base::Optional<device::mojom::XRSessionFeature> StringToXRSessionFeature(
   } else if (RuntimeEnabledFeatures::WebXRImageTrackingEnabled(context) &&
              feature_string == "image-tracking") {
     return device::mojom::XRSessionFeature::IMAGE_TRACKING;
+  } else if (RuntimeEnabledFeatures::WebXRHandInputEnabled(context) &&
+             feature_string == "hand-tracking") {
+    return device::mojom::XRSessionFeature::HAND_INPUT;
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool IsFeatureValidForMode(device::mojom::XRSessionFeature feature,
@@ -169,6 +270,7 @@ bool IsFeatureValidForMode(device::mojom::XRSessionFeature feature,
     case device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED:
     case device::mojom::XRSessionFeature::HIT_TEST:
     case device::mojom::XRSessionFeature::ANCHORS:
+    case device::mojom::XRSessionFeature::HAND_INPUT:
       return mode == device::mojom::blink::XRSessionMode::kImmersiveVr ||
              mode == device::mojom::blink::XRSessionMode::kImmersiveAr;
     case device::mojom::XRSessionFeature::DOM_OVERLAY:
@@ -196,15 +298,23 @@ bool IsFeatureValidForMode(device::mojom::XRSessionFeature feature,
     case device::mojom::XRSessionFeature::LIGHT_ESTIMATION:
     case device::mojom::XRSessionFeature::CAMERA_ACCESS:
     case device::mojom::XRSessionFeature::PLANE_DETECTION:
+      // Fallthrough - light estimation, camera access, and plane detection are
+      // all valid only for immersive AR mode for now.
+      return mode == device::mojom::blink::XRSessionMode::kImmersiveAr;
     case device::mojom::XRSessionFeature::DEPTH:
-      // Fallthrough - light estimation, camera access, plane detection and
-      // depth APIs are all valid only for immersive AR mode for now.
+      if (!session_init->hasDepthSensing()) {
+        execution_context->AddConsoleMessage(
+            MakeGarbageCollected<ConsoleMessage>(
+                mojom::blink::ConsoleMessageSource::kJavaScript, error_level,
+                "Must provide a depthSensing dictionary in XRSessionInit"));
+        return false;
+      }
       return mode == device::mojom::blink::XRSessionMode::kImmersiveAr;
   }
 }
 
-bool HasRequiredFeaturePolicy(const ExecutionContext* context,
-                              device::mojom::XRSessionFeature feature) {
+bool HasRequiredPermissionsPolicy(const ExecutionContext* context,
+                                  device::mojom::XRSessionFeature feature) {
   if (!context)
     return false;
 
@@ -223,8 +333,9 @@ bool HasRequiredFeaturePolicy(const ExecutionContext* context,
     case device::mojom::XRSessionFeature::PLANE_DETECTION:
     case device::mojom::XRSessionFeature::DEPTH:
     case device::mojom::XRSessionFeature::IMAGE_TRACKING:
+    case device::mojom::XRSessionFeature::HAND_INPUT:
       return context->IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kWebXr,
+          mojom::blink::PermissionsPolicyFeature::kWebXr,
           ReportOptions::kReportOnFailure);
   }
 }
@@ -285,6 +396,16 @@ bool IsFeatureRequested(
     case device::mojom::XRSessionFeatureRequestStatus::kOptionalRejected:
       return false;
   }
+}
+
+bool IsImmersiveArAllowedBySettings(LocalDOMWindow* window) {
+  // If we're unable to get the settings for any reason, we'll treat the AR as
+  // enabled.
+  if (!window->GetFrame()) {
+    return true;
+  }
+
+  return window->GetFrame()->GetSettings()->GetWebXRImmersiveArAllowed();
 }
 
 }  // namespace
@@ -517,6 +638,10 @@ void XRSystem::PendingRequestSessionQuery::ReportRequestSessionResult(
       GetFeatureRequestStatus(XRSessionFeature::DOM_OVERLAY, session);
   auto feature_request_depth_sensing =
       GetFeatureRequestStatus(XRSessionFeature::DEPTH, session);
+  auto feature_request_plane_detection =
+      GetFeatureRequestStatus(XRSessionFeature::PLANE_DETECTION, session);
+  auto feature_request_image_tracking =
+      GetFeatureRequestStatus(XRSessionFeature::IMAGE_TRACKING, session);
 
   ukm::builders::XR_WebXR_SessionRequest(ukm_source_id_)
       .SetMode(static_cast<int64_t>(mode_))
@@ -546,6 +671,22 @@ void XRSystem::PendingRequestSessionQuery::ReportRequestSessionResult(
              << ": depth sensing was requested, logging a UseCounter";
     UseCounter::Count(session->GetExecutionContext(),
                       WebFeature::kXRDepthSensing);
+  }
+
+  if (session && status == SessionRequestStatus::kSuccess &&
+      IsFeatureRequested(feature_request_plane_detection)) {
+    DVLOG(2) << __func__
+             << ": plane detection was requested, logging a UseCounter";
+    UseCounter::Count(session->GetExecutionContext(),
+                      WebFeature::kXRPlaneDetection);
+  }
+
+  if (session && status == SessionRequestStatus::kSuccess &&
+      IsFeatureRequested(feature_request_image_tracking)) {
+    DVLOG(2) << __func__
+             << ": image tracking was requested, logging a UseCounter";
+    UseCounter::Count(session->GetExecutionContext(),
+                      WebFeature::kXRImageTracking);
   }
 
   if (session && metrics_recorder) {
@@ -621,153 +762,6 @@ void XRSystem::PendingRequestSessionQuery::Trace(Visitor* visitor) const {
   visitor->Trace(dom_overlay_element_);
 }
 
-XRSystem::OverlayFullscreenEventManager::OverlayFullscreenEventManager(
-    XRSystem* xr,
-    XRSystem::PendingRequestSessionQuery* query,
-    device::mojom::blink::RequestSessionResultPtr result)
-    : xr_(xr), query_(query), result_(std::move(result)) {
-  DVLOG(2) << __func__;
-}
-
-XRSystem::OverlayFullscreenEventManager::~OverlayFullscreenEventManager() =
-    default;
-
-void XRSystem::OverlayFullscreenEventManager::Invoke(
-    ExecutionContext* execution_context,
-    Event* event) {
-  DVLOG(2) << __func__ << ": event type=" << event->type();
-
-  // This handler should only be called once, it's unregistered after use.
-  DCHECK(query_);
-  DCHECK(result_);
-
-  Element* element = query_->DOMOverlayElement();
-  element->GetDocument().removeEventListener(
-      event_type_names::kFullscreenchange, this, true);
-  element->GetDocument().removeEventListener(event_type_names::kFullscreenerror,
-                                             this, true);
-
-  if (event->type() == event_type_names::kFullscreenchange) {
-    // Succeeded, proceed with session creation.
-    element->GetDocument().GetViewportData().SetExpandIntoDisplayCutout(true);
-    xr_->OnRequestSessionReturned(query_, std::move(result_));
-  }
-
-  if (event->type() == event_type_names::kFullscreenerror) {
-    // Failed, reject the session
-    xr_->OnRequestSessionReturned(
-        query_, device::mojom::blink::RequestSessionResult::NewFailureReason(
-                    device::mojom::RequestSessionError::FULLSCREEN_ERROR));
-  }
-}
-
-void XRSystem::OverlayFullscreenEventManager::RequestFullscreen() {
-  Element* element = query_->DOMOverlayElement();
-  DCHECK(element);
-
-  bool wait_for_fullscreen_change = true;
-
-  if (element == Fullscreen::FullscreenElementFrom(element->GetDocument())) {
-    // It's possible that the requested element is already fullscreen, in which
-    // case we must not wait for a fullscreenchange event since it won't arrive.
-    // This can happen if the site used Fullscreen API to place the element into
-    // fullscreen mode before requesting the session, and if the session can
-    // proceed without needing a permission prompt. (Showing a dialog exits
-    // fullscreen mode.)
-    //
-    // We still need to do the RequestFullscreen call to apply the kForXrOverlay
-    // property which sets the background transparent.
-    DVLOG(2) << __func__ << ": requested element already fullscreen";
-    wait_for_fullscreen_change = false;
-  }
-
-  if (wait_for_fullscreen_change) {
-    // Set up event listeners for success and failure.
-    element->GetDocument().addEventListener(event_type_names::kFullscreenchange,
-                                            this, true);
-    element->GetDocument().addEventListener(event_type_names::kFullscreenerror,
-                                            this, true);
-  }
-
-  // Use the event-generating unprefixed version of RequestFullscreen to ensure
-  // that the fullscreen event listener is informed once this completes.
-  FullscreenOptions* options = FullscreenOptions::Create();
-  options->setNavigationUI("hide");
-
-  // Grant fullscreen API permission for the following call. Requesting the
-  // immersive session had required a user activation state, but that may have
-  // expired by now due to the user taking time to respond to the consent
-  // prompt.
-  ScopedAllowFullscreen scope(ScopedAllowFullscreen::kXrOverlay);
-
-  Fullscreen::RequestFullscreen(*element, options,
-                                FullscreenRequestType::kUnprefixed |
-                                    FullscreenRequestType::kForXrOverlay);
-
-  if (!wait_for_fullscreen_change) {
-    // Element was already fullscreen, proceed with session creation.
-    xr_->OnRequestSessionReturned(query_, std::move(result_));
-  }
-}
-
-void XRSystem::OverlayFullscreenEventManager::Trace(Visitor* visitor) const {
-  visitor->Trace(xr_);
-  visitor->Trace(query_);
-  EventListener::Trace(visitor);
-}
-
-XRSystem::OverlayFullscreenExitObserver::OverlayFullscreenExitObserver(
-    XRSystem* xr)
-    : xr_(xr) {
-  DVLOG(2) << __func__;
-}
-
-XRSystem::OverlayFullscreenExitObserver::~OverlayFullscreenExitObserver() =
-    default;
-
-void XRSystem::OverlayFullscreenExitObserver::Invoke(
-    ExecutionContext* execution_context,
-    Event* event) {
-  DVLOG(2) << __func__ << ": event type=" << event->type();
-
-  document_->removeEventListener(event_type_names::kFullscreenchange, this,
-                                 true);
-
-  if (event->type() == event_type_names::kFullscreenchange) {
-    // Succeeded, proceed with session shutdown. Expanding into the fullscreen
-    // cutout is only valid for fullscreen mode which we just exited (cf.
-    // MediaControlsDisplayCutoutDelegate::DidExitFullscreen), so we can
-    // unconditionally turn this off here.
-    document_->GetViewportData().SetExpandIntoDisplayCutout(false);
-    xr_->ExitPresent(std::move(on_exited_));
-  }
-}
-
-void XRSystem::OverlayFullscreenExitObserver::ExitFullscreen(
-    Document* document,
-    base::OnceClosure on_exited) {
-  DVLOG(2) << __func__;
-  document_ = document;
-  on_exited_ = std::move(on_exited);
-
-  document->addEventListener(event_type_names::kFullscreenchange, this, true);
-  // "ua_originated" means that the browser process already exited
-  // fullscreen. Set it to false because we need the browser process
-  // to get notified that it needs to exit fullscreen. Use
-  // FullyExitFullscreen to ensure that we return to non-fullscreen mode.
-  // ExitFullscreen only unfullscreens a single element, potentially
-  // leaving others in fullscreen mode.
-  constexpr bool kUaOriginated = false;
-
-  Fullscreen::FullyExitFullscreen(*document, kUaOriginated);
-}
-
-void XRSystem::OverlayFullscreenExitObserver::Trace(Visitor* visitor) const {
-  visitor->Trace(xr_);
-  visitor->Trace(document_);
-  EventListener::Trace(visitor);
-}
-
 device::mojom::blink::XRSessionOptionsPtr XRSystem::XRSessionOptionsFromQuery(
     const PendingRequestSessionQuery& query) {
   device::mojom::blink::XRSessionOptionsPtr session_options =
@@ -783,6 +777,15 @@ device::mojom::blink::XRSessionOptionsPtr XRSystem::XRSessionOptionsFromQuery(
         device::mojom::blink::XRTrackedImage::New();
     *session_options->tracked_images[i] = query.TrackedImages()[i];
   }
+
+  if (query.HasFeature(device::mojom::XRSessionFeature::DEPTH)) {
+    session_options->depth_options =
+        device::mojom::blink::XRDepthOptions::New();
+    session_options->depth_options->usage_preferences = query.PreferredUsage();
+    session_options->depth_options->data_format_preferences =
+        query.PreferredFormat();
+  }
+
   return session_options;
 }
 
@@ -796,11 +799,15 @@ XRSystem* XRSystem::FromIfExists(Document& document) {
 }
 
 XRSystem* XRSystem::From(Document& document) {
+  DVLOG(2) << __func__;
+
   return document.domWindow() ? xr(*document.domWindow()->navigator())
                               : nullptr;
 }
 
 XRSystem* XRSystem::xr(Navigator& navigator) {
+  DVLOG(2) << __func__;
+
   LocalDOMWindow* window = navigator.DomWindow();
   if (!window)
     return nullptr;
@@ -835,7 +842,7 @@ XRSystem::XRSystem(Navigator& navigator)
               ->GetFrameScheduler()
               ->RegisterFeature(
                   SchedulingPolicy::Feature::kWebXR,
-                  {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {}
+                  {SchedulingPolicy::DisableBackForwardCache()})) {}
 
 void XRSystem::FocusedFrameChanged() {
   // Tell all sessions that focus changed.
@@ -906,8 +913,12 @@ void XRSystem::ExitPresent(base::OnceClosure on_exited) {
       DVLOG(3) << __func__ << ": fullscreen_element=" << fullscreen_element;
       if (fullscreen_element) {
         fullscreen_exit_observer_ =
-            MakeGarbageCollected<OverlayFullscreenExitObserver>(this);
-        fullscreen_exit_observer_->ExitFullscreen(doc, std::move(on_exited));
+            MakeGarbageCollected<XrExitFullscreenObserver>();
+        // Once we exit fullscreen, we'll need to come back here to finish
+        // shutting down the session.
+        fullscreen_exit_observer_->ExitFullscreen(
+            doc, WTF::Bind(&XRSystem::ExitPresent, WrapWeakPersistent(this),
+                           std::move(on_exited)));
         return;
       }
     }
@@ -972,10 +983,10 @@ ScriptPromise XRSystem::InternalIsSessionSupported(
                                                         throw_on_unsupported);
 
   if (session_mode == device::mojom::blink::XRSessionMode::kImmersiveAr &&
-      !RuntimeEnabledFeatures::WebXRARModuleEnabled(GetExecutionContext())) {
+      !IsImmersiveArAllowed()) {
     DVLOG(2) << __func__
              << ": Immersive AR session is only supported if WebXRARModule "
-                "feature is enabled";
+                "feature is enabled by a runtime feature and web settings";
     query->Resolve(false);
     return promise;
   }
@@ -987,10 +998,10 @@ ScriptPromise XRSystem::InternalIsSessionSupported(
   }
 
   if (!GetExecutionContext()->IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kWebXr,
+          mojom::blink::PermissionsPolicyFeature::kWebXr,
           ReportOptions::kReportOnFailure)) {
-    // Only allow the call to be made if the appropriate feature policy is in
-    // place.
+    // Only allow the call to be made if the appropriate permissions policy is
+    // in place.
     query->RejectWithSecurityError(kFeaturePolicyBlocked, &exception_state);
     return promise;
   }
@@ -1092,7 +1103,7 @@ void XRSystem::RequestImmersiveSession(PendingRequestSessionQuery* query,
     DVLOG(2) << __func__ << ": has_remote_ancestor=" << has_remote_ancestor;
     if (has_remote_ancestor) {
       fullscreen_exit_observer_ =
-          MakeGarbageCollected<OverlayFullscreenExitObserver>(this);
+          MakeGarbageCollected<XrExitFullscreenObserver>();
 
       base::OnceClosure callback =
           WTF::Bind(&XRSystem::DoRequestSession, WrapWeakPersistent(this),
@@ -1107,17 +1118,10 @@ void XRSystem::RequestImmersiveSession(PendingRequestSessionQuery* query,
 void XRSystem::DoRequestSession(
     PendingRequestSessionQuery* query,
     device::mojom::blink::XRSessionOptionsPtr session_options) {
-  // In DOM overlay mode, there's an additional step before an immersive-ar
-  // session can start, we need to enter fullscreen mode by setting the
-  // appropriate element as fullscreen from the Renderer, then waiting for the
-  // browser side to send an event indicating success or failure.
-  auto callback =
-      query->DOMOverlayElement()
-          ? WTF::Bind(&XRSystem::OnRequestSessionSetupForDomOverlay,
-                      WrapWeakPersistent(this), WrapPersistent(query))
-          : WTF::Bind(&XRSystem::OnRequestSessionReturned,
-                      WrapWeakPersistent(this), WrapPersistent(query));
-  service_->RequestSession(std::move(session_options), std::move(callback));
+  service_->RequestSession(
+      std::move(session_options),
+      WTF::Bind(&XRSystem::OnRequestSessionReturned, WrapWeakPersistent(this),
+                WrapPersistent(query)));
 }
 
 void XRSystem::RequestInlineSession(PendingRequestSessionQuery* query,
@@ -1203,11 +1207,11 @@ XRSystem::RequestedXRSessionFeatureSet XRSystem::ParseRequestedFeatures(
                                            "' is not supported for mode: " +
                                            SessionModeToString(session_mode));
         result.invalid_features = true;
-      } else if (!HasRequiredFeaturePolicy(GetExecutionContext(),
-                                           feature_enum.value())) {
+      } else if (!HasRequiredPermissionsPolicy(GetExecutionContext(),
+                                               feature_enum.value())) {
         AddConsoleMessage(error_level,
                           "Feature '" + feature_string +
-                              "' is not permitted by feature policy");
+                              "' is not permitted by permissions policy");
         result.invalid_features = true;
       } else {
         DVLOG(3) << __func__ << ": Adding feature " << feature_string
@@ -1247,7 +1251,7 @@ ScriptPromise XRSystem::requestSession(ScriptState* script_state,
 
   // If the request is for immersive-ar, ensure that feature is enabled.
   if (session_mode == device::mojom::blink::XRSessionMode::kImmersiveAr &&
-      !RuntimeEnabledFeatures::WebXRARModuleEnabled(GetExecutionContext())) {
+      !IsImmersiveArAllowed()) {
     exception_state.ThrowTypeError(
         String::Format(kImmersiveArModeNotValid, "requestSession"));
 
@@ -1293,11 +1297,11 @@ ScriptPromise XRSystem::requestSession(ScriptState* script_state,
   }
 
   for (const auto& feature : default_features) {
-    if (HasRequiredFeaturePolicy(GetExecutionContext(), feature)) {
+    if (HasRequiredPermissionsPolicy(GetExecutionContext(), feature)) {
       required_features.valid_features.insert(feature);
     } else {
       DVLOG(2) << __func__
-               << ": feature policy not satisfied for a default feature: "
+               << ": permissions policy not satisfied for a default feature: "
                << feature;
       required_features.invalid_features = true;
     }
@@ -1348,6 +1352,36 @@ ScriptPromise XRSystem::requestSession(ScriptState* script_state,
     query->SetTrackedImages(images);
   }
 
+  if (query->HasFeature(device::mojom::XRSessionFeature::DEPTH)) {
+    // Prerequisites were checked by IsFeatureValidForMode and IDL.
+    DCHECK(session_init);
+    DCHECK(session_init->hasDepthSensing());
+    DCHECK(session_init->depthSensing()->hasUsagePreference())
+        << "required in IDL";
+    DCHECK(session_init->depthSensing()->hasDataFormatPreference())
+        << "required in IDL";
+
+    Vector<device::mojom::XRDepthUsage> preferred_usage =
+        ParseDepthUsages(session_init->depthSensing()->usagePreference());
+    Vector<device::mojom::XRDepthDataFormat> preferred_format =
+        ParseDepthFormats(session_init->depthSensing()->dataFormatPreference());
+
+    // If the depth API is required and either preferred usages or preferred
+    // formats are empty, we already know that the session creation will fail
+    // (as we won't be able to pick a supported usage & format combination), so
+    // let's fail it already:
+    if (query->RequiredFeatures().Contains(
+            device::mojom::XRSessionFeature::DEPTH) &&
+        (preferred_usage.IsEmpty() || preferred_format.IsEmpty())) {
+      query->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
+                                    kDepthSensingConfigurationNotSupported,
+                                    &exception_state);
+      return promise;
+    }
+
+    query->SetDepthSensingConfiguration(preferred_usage, preferred_format);
+  }
+
   // The various session request methods may have other checks that would reject
   // before needing to create the vr service, so we don't try to create it here.
   switch (session_mode) {
@@ -1366,7 +1400,7 @@ ScriptPromise XRSystem::requestSession(ScriptState* script_state,
 void XRSystem::MakeXrCompatibleAsync(
     device::mojom::blink::VRService::MakeXrCompatibleCallback callback) {
   if (!GetExecutionContext()->IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kWebXr)) {
+          mojom::blink::PermissionsPolicyFeature::kWebXr)) {
     std::move(callback).Run(
         device::mojom::XrCompatibleResult::kWebXrFeaturePolicyBlocked);
     return;
@@ -1384,7 +1418,7 @@ void XRSystem::MakeXrCompatibleAsync(
 void XRSystem::MakeXrCompatibleSync(
     device::mojom::XrCompatibleResult* xr_compatible_result) {
   if (!GetExecutionContext()->IsFeatureEnabled(
-          mojom::blink::FeaturePolicyFeature::kWebXr)) {
+          mojom::blink::PermissionsPolicyFeature::kWebXr)) {
     *xr_compatible_result =
         device::mojom::XrCompatibleResult::kWebXrFeaturePolicyBlocked;
     return;
@@ -1401,8 +1435,8 @@ void XRSystem::MakeXrCompatibleSync(
 // it might be able to support immersive sessions, where it couldn't before.
 void XRSystem::OnDeviceChanged() {
   ExecutionContext* context = GetExecutionContext();
-  if (context &&
-      context->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kWebXr)) {
+  if (context && context->IsFeatureEnabled(
+                     mojom::blink::PermissionsPolicyFeature::kWebXr)) {
     DispatchEvent(*blink::Event::Create(event_type_names::kDevicechange));
   }
 }
@@ -1416,26 +1450,75 @@ void XRSystem::OnSupportsSessionReturned(PendingSupportsSessionQuery* query,
   query->Resolve(supports_session);
 }
 
-void XRSystem::OnRequestSessionSetupForDomOverlay(
-    PendingRequestSessionQuery* query,
-    device::mojom::blink::RequestSessionResultPtr result) {
-  DCHECK(query->DOMOverlayElement());
-  if (result->is_success()) {
-    // Success. Now request fullscreen mode and continue with
-    // OnRequestSessionReturned once that completes.
-    fullscreen_event_manager_ =
-        MakeGarbageCollected<OverlayFullscreenEventManager>(this, query,
-                                                            std::move(result));
-    fullscreen_event_manager_->RequestFullscreen();
-  } else {
-    // Session request failed, continue processing that normally.
-    OnRequestSessionReturned(query, std::move(result));
-  }
-}
-
 void XRSystem::OnRequestSessionReturned(
     PendingRequestSessionQuery* query,
     device::mojom::blink::RequestSessionResultPtr result) {
+  // If session creation failed, move straight on to processing that.
+  if (!result->is_success()) {
+    FinishSessionCreation(query, std::move(result));
+    return;
+  }
+
+  Element* fullscreen_element = nullptr;
+  const auto& enabled_features =
+      result->get_success()->session->enabled_features;
+  if (base::Contains(enabled_features,
+                     device::mojom::XRSessionFeature::DOM_OVERLAY)) {
+    fullscreen_element = query->DOMOverlayElement();
+  }
+
+  // Only setup for dom_overlay if the query actually had a DOMOverlayElement
+  // and the session enabled dom_overlay. (Note that fullscreen_element will be
+  // null if the feature was not enabled).
+  bool setup_for_dom_overlay = !!fullscreen_element;
+
+// On Android, due to the way the device renderer is configured, we always need
+// to enter fullscreen if we're starting an AR session, so if we aren't supposed
+// to enter DOMOverlay, we simply fullscreen the document body.
+#if defined(OS_ANDROID)
+  if (!fullscreen_element &&
+      query->mode() == device::mojom::blink::XRSessionMode::kImmersiveAr) {
+    fullscreen_element = DomWindow()->document()->body();
+  }
+#endif
+
+  // If we don't need to enter fullscreen continue with session setup.
+  if (!fullscreen_element) {
+    FinishSessionCreation(query, std::move(result));
+    return;
+  }
+
+  // At this point, we know that we have an element that we need to make
+  // fullscreen, so we do that before we continue setting up the session.
+  fullscreen_enter_observer_ =
+      MakeGarbageCollected<XrEnterFullscreenObserver>();
+  fullscreen_enter_observer_->RequestFullscreen(
+      fullscreen_element, setup_for_dom_overlay,
+      WTF::Bind(&XRSystem::OnFullscreenConfigured, WrapPersistent(this),
+                WrapPersistent(query), std::move(result)));
+}
+
+void XRSystem::OnFullscreenConfigured(
+    PendingRequestSessionQuery* query,
+    device::mojom::blink::RequestSessionResultPtr result,
+    bool fullscreen_succeeded) {
+  // At this point we no longer need the enter observer, so go ahead and destroy
+  // it.
+  fullscreen_enter_observer_ = nullptr;
+
+  if (fullscreen_succeeded) {
+    FinishSessionCreation(query, std::move(result));
+  } else {
+    FinishSessionCreation(
+        query, device::mojom::blink::RequestSessionResult::NewFailureReason(
+                   device::mojom::RequestSessionError::FULLSCREEN_ERROR));
+  }
+}
+
+void XRSystem::FinishSessionCreation(
+    PendingRequestSessionQuery* query,
+    device::mojom::blink::RequestSessionResultPtr result) {
+  DVLOG(2) << __func__;
   // The session query has returned and we're about to resolve or reject the
   // promise, so remove it from our outstanding list.
   DCHECK(outstanding_request_queries_.Contains(query));
@@ -1445,11 +1528,6 @@ void XRSystem::OnRequestSessionReturned(
     DCHECK(has_outstanding_immersive_request_);
     has_outstanding_immersive_request_ = false;
   }
-
-  // Clean up the fullscreen event manager which may have been added for
-  // DOM overlay setup. We're done with it, and it contains a reference
-  // to the query and the DOM overlay element.
-  fullscreen_event_manager_ = nullptr;
 
   if (!result->is_success()) {
     // |service_| does not support the requested mode. Attempt to create a
@@ -1473,13 +1551,8 @@ void XRSystem::OnRequestSessionReturned(
   auto session_ptr = std::move(result->get_success()->session);
   auto metrics_recorder = std::move(result->get_success()->metrics_recorder);
 
-  bool environment_integration =
-      query->mode() == device::mojom::blink::XRSessionMode::kImmersiveAr;
-
   // immersive sessions must supply display info.
   DCHECK(session_ptr->display_info);
-  DVLOG(2) << __func__
-           << ": environment_integration=" << environment_integration;
 
   XRSessionFeatureSet enabled_features;
   for (const auto& feature : session_ptr->enabled_features) {
@@ -1497,6 +1570,11 @@ void XRSystem::OnRequestSessionReturned(
 
   if (query->mode() == device::mojom::blink::XRSessionMode::kImmersiveVr ||
       query->mode() == device::mojom::blink::XRSessionMode::kImmersiveAr) {
+    const bool anchors_enabled = base::Contains(
+        enabled_features, device::mojom::XRSessionFeature::ANCHORS);
+    const bool hit_test_enabled = base::Contains(
+        enabled_features, device::mojom::XRSessionFeature::HIT_TEST);
+    const bool environment_integration = hit_test_enabled || anchors_enabled;
     if (environment_integration) {
       // See Task Sources spreadsheet for more information:
       // https://docs.google.com/spreadsheets/d/1b-dus1Ug3A8y0lX0blkmOjJILisUASdj8x9YN_XMwYc/view
@@ -1511,15 +1589,16 @@ void XRSystem::OnRequestSessionReturned(
                     WrapWeakPersistent(this)));
 
       session->OnEnvironmentProviderCreated();
+    }
 
-      DCHECK(DomWindow());
-      if (query->HasFeature(device::mojom::XRSessionFeature::DOM_OVERLAY)) {
-        DCHECK(query->DOMOverlayElement());
-        // The session is using DOM overlay mode. At this point the overlay
-        // element is already in fullscreen mode, and the session can
-        // proceed.
-        session->SetDOMOverlayElement(query->DOMOverlayElement());
-      }
+    auto dom_overlay_feature = device::mojom::XRSessionFeature::DOM_OVERLAY;
+    if (query->mode() == device::mojom::blink::XRSessionMode::kImmersiveAr &&
+        query->HasFeature(dom_overlay_feature) &&
+        base::Contains(enabled_features, dom_overlay_feature)) {
+      DCHECK(query->DOMOverlayElement());
+      // The session is using DOM overlay mode. At this point the overlay
+      // element is already in fullscreen mode, and the session can proceed.
+      session->SetDOMOverlayElement(query->DOMOverlayElement());
     }
 
     if (query->mode() == device::mojom::blink::XRSessionMode::kImmersiveVr &&
@@ -1679,6 +1758,19 @@ void XRSystem::TryEnsureService() {
                                             DisposeType::kDisconnected));
 }
 
+bool XRSystem::IsImmersiveArAllowed() {
+  const bool ar_allowed_in_settings =
+      IsImmersiveArAllowedBySettings(DomWindow());
+  const bool ar_enabled =
+      ar_allowed_in_settings &&
+      RuntimeEnabledFeatures::WebXRARModuleEnabled(GetExecutionContext());
+
+  DVLOG(2) << __func__ << ": ar_allowed_in_settings=" << ar_allowed_in_settings
+           << ", ar_enabled=" << ar_enabled;
+
+  return ar_enabled;
+}
+
 void XRSystem::Trace(Visitor* visitor) const {
   visitor->Trace(frame_provider_);
   visitor->Trace(sessions_);
@@ -1687,7 +1779,7 @@ void XRSystem::Trace(Visitor* visitor) const {
   visitor->Trace(receiver_);
   visitor->Trace(outstanding_support_queries_);
   visitor->Trace(outstanding_request_queries_);
-  visitor->Trace(fullscreen_event_manager_);
+  visitor->Trace(fullscreen_enter_observer_);
   visitor->Trace(fullscreen_exit_observer_);
   Supplement<Navigator>::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);

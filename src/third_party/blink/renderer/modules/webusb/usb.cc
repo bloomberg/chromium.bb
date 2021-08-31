@@ -10,14 +10,16 @@
 #include "services/device/public/mojom/usb_device.mojom-blink.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom-blink.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_usb_device_filter.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_usb_device_request_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/navigator_base.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/webusb/usb_connection_event.h"
 #include "third_party/blink/renderer/modules/webusb/usb_device.h"
@@ -34,7 +36,7 @@ namespace blink {
 namespace {
 
 const char kFeaturePolicyBlocked[] =
-    "Access to the feature \"usb\" is disallowed by feature policy.";
+    "Access to the feature \"usb\" is disallowed by permissions policy.";
 const char kNoDeviceSelected[] = "No device selected.";
 
 void RejectWithTypeError(const String& error_details,
@@ -91,10 +93,22 @@ UsbDeviceFilterPtr ConvertDeviceFilter(const USBDeviceFilter* filter,
 
 }  // namespace
 
-USB::USB(ExecutionContext& context)
-    : ExecutionContextLifecycleObserver(&context),
-      service_(&context),
-      client_receiver_(this, &context) {}
+const char USB::kSupplementName[] = "USB";
+
+USB* USB::usb(NavigatorBase& navigator) {
+  USB* usb = Supplement<NavigatorBase>::From<USB>(navigator);
+  if (!usb) {
+    usb = MakeGarbageCollected<USB>(navigator);
+    ProvideTo(navigator, usb);
+  }
+  return usb;
+}
+
+USB::USB(NavigatorBase& navigator)
+    : Supplement<NavigatorBase>(navigator),
+      ExecutionContextLifecycleObserver(navigator.GetExecutionContext()),
+      service_(navigator.GetExecutionContext()),
+      client_receiver_(this, navigator.GetExecutionContext()) {}
 
 USB::~USB() {
   // |service_| may still be valid but there should be no more outstanding
@@ -317,7 +331,7 @@ bool USB::IsContextSupported() const {
 
 bool USB::IsFeatureEnabled(ReportOptions report_options) const {
   return GetExecutionContext()->IsFeatureEnabled(
-      mojom::blink::FeaturePolicyFeature::kUsb, report_options);
+      mojom::blink::PermissionsPolicyFeature::kUsb, report_options);
 }
 
 void USB::Trace(Visitor* visitor) const {
@@ -327,6 +341,7 @@ void USB::Trace(Visitor* visitor) const {
   visitor->Trace(client_receiver_);
   visitor->Trace(device_cache_);
   EventTargetWithInlineData::Trace(visitor);
+  Supplement<NavigatorBase>::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }
 

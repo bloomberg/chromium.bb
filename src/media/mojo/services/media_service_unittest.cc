@@ -71,7 +71,7 @@ class MockRendererClient : public mojom::RendererClient {
   MOCK_METHOD2(OnBufferingStateChange,
                void(BufferingState state, BufferingStateChangeReason reason));
   MOCK_METHOD0(OnEnded, void());
-  MOCK_METHOD0(OnError, void());
+  MOCK_METHOD1(OnError, void(const Status& status));
   MOCK_METHOD1(OnVideoOpacityChange, void(bool opaque));
   MOCK_METHOD1(OnAudioConfigChange, void(const AudioDecoderConfig&));
   MOCK_METHOD1(OnVideoConfigChange, void(const VideoDecoderConfig&));
@@ -138,8 +138,8 @@ class MediaServiceTest : public testing::Test {
     video_stream_.set_video_decoder_config(video_config);
 
     mojo::PendingRemote<mojom::DemuxerStream> video_stream_proxy;
-    mojo_video_stream_.reset(new MojoDemuxerStreamImpl(
-        &video_stream_, video_stream_proxy.InitWithNewPipeAndPassReceiver()));
+    mojo_video_stream_ = std::make_unique<MojoDemuxerStreamImpl>(
+        &video_stream_, video_stream_proxy.InitWithNewPipeAndPassReceiver());
 
     mojo::PendingAssociatedRemote<mojom::RendererClient> client_remote;
     renderer_client_receiver_.Bind(
@@ -162,14 +162,12 @@ class MediaServiceTest : public testing::Test {
  protected:
   void OnCdmCreated(bool expected_result,
                     mojo::PendingRemote<mojom::ContentDecryptionModule> remote,
-                    const base::Optional<base::UnguessableToken>& cdm_id,
-                    mojo::PendingRemote<mojom::Decryptor> decryptor,
+                    media::mojom::CdmContextPtr cdm_context,
                     const std::string& error_message) {
     if (!expected_result) {
       EXPECT_FALSE(remote);
-      EXPECT_FALSE(decryptor);
+      EXPECT_FALSE(cdm_context);
       EXPECT_TRUE(!error_message.empty());
-      EXPECT_FALSE(cdm_id);
       return;
     }
     EXPECT_TRUE(remote);

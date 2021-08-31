@@ -4,9 +4,11 @@
 
 #include "base/threading/platform_thread.h"
 
+#include <atomic>
 #include <memory>
 
 #include "base/feature_list.h"
+#include "base/time/time.h"
 
 namespace base {
 

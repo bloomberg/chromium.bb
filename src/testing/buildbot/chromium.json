@@ -48,6 +48,17 @@
     ],
     "scripts": []
   },
+  "mac-arm64-archive-dbg": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
+  "mac-arm64-archive-rel": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "scripts": []
+  },
   "mac-official": {
     "additional_compile_targets": [
       "all"

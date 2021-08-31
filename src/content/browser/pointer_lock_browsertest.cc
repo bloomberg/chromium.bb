@@ -8,6 +8,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
@@ -295,20 +296,27 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockEventRouting) {
 
   WaitForHitTestData(child->current_frame_host());
 
-  std::string set_mouse_move_event_listener =
-      R"code(mouseMoveExecuted = new Promise(function (resolve, reject){
-              mousemoveHandler = function(e){
-                x = e.x; y = e.y; mX = e.movementX; mY = e.movementY;
-                document.removeEventListener('mousemove', mousemoveHandler);
-                resolve();
-              };
-              document.addEventListener('mousemove', mousemoveHandler);
-             });)code";
-  std::string define_variables = R"code(var x; var y;
-       var mX; var mY;
-       var mouseMoveExecuted;
-       var mousemoveHandler;
-       )code";
+  std::string set_mouse_move_event_listener = R"(
+    mouseMoveExecuted = new Promise(function (resolve, reject) {
+      mousemoveHandler = function(e) {
+        x = e.x;
+        y = e.y;
+        mX = e.movementX;
+        mY = e.movementY;
+        resolve();
+      };
+      document.addEventListener('mousemove', mousemoveHandler, {once: true});
+    });
+    true; // A promise is defined above, but do not wait.
+  )";
+  std::string define_variables = R"(
+    var x;
+    var y;
+    var mX;
+    var mY;
+    var mouseMoveExecuted;
+    var mousemoveHandler;
+  )";
   // Add a mouse move event listener to the root frame.
   EXPECT_TRUE(ExecJs(root, define_variables));
   EXPECT_TRUE(ExecJs(root, set_mouse_move_event_listener));
@@ -522,7 +530,13 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockOopifCrashes) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWheelEventRouting) {
+#if defined(OS_LINUX)
+#define MAYBE_PointerLockWheelEventRouting DISABLED_PointerLockWheelEventRouting
+#else
+#define MAYBE_PointerLockWheelEventRouting PointerLockWheelEventRouting
+#endif
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
+                       MAYBE_PointerLockWheelEventRouting) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -748,7 +762,9 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions,
 }
 
 #if defined(USE_AURA)
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions, UnadjustedMovement) {
+// Flaky on all platforms http://crbug.com/1198612.
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions,
+                       DISABLED_UnadjustedMovement) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -820,7 +836,7 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions, UnadjustedMovement) {
 
 #if defined(USE_AURA)
 // TODO(https://crbug.com/982379): Remove failure test when fully implemented
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_ChangeUnadjustedMovementFailure \
   DISABLED_ChangeUnadjustedMovementFailure
 #else

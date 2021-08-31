@@ -91,7 +91,7 @@ BluetoothEventRouter* BluetoothAPI::event_router() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!event_router_) {
     BLUETOOTH_LOG(EVENT) << "BluetoothAPI: Creating BluetoothEventRouter";
-    event_router_.reset(new BluetoothEventRouter(browser_context_));
+    event_router_ = std::make_unique<BluetoothEventRouter>(browser_context_);
   }
   return event_router_.get();
 }
@@ -210,8 +210,10 @@ void BluetoothStartDiscoveryFunction::DoWork(
   GetEventRouter(browser_context())
       ->StartDiscoverySession(
           adapter.get(), GetExtensionId(),
-          base::Bind(&BluetoothStartDiscoveryFunction::OnSuccessCallback, this),
-          base::Bind(&BluetoothStartDiscoveryFunction::OnErrorCallback, this));
+          base::BindOnce(&BluetoothStartDiscoveryFunction::OnSuccessCallback,
+                         this),
+          base::BindOnce(&BluetoothStartDiscoveryFunction::OnErrorCallback,
+                         this));
 }
 
 void BluetoothStopDiscoveryFunction::OnSuccessCallback() {
@@ -227,8 +229,10 @@ void BluetoothStopDiscoveryFunction::DoWork(
   GetEventRouter(browser_context())
       ->StopDiscoverySession(
           adapter.get(), GetExtensionId(),
-          base::Bind(&BluetoothStopDiscoveryFunction::OnSuccessCallback, this),
-          base::Bind(&BluetoothStopDiscoveryFunction::OnErrorCallback, this));
+          base::BindOnce(&BluetoothStopDiscoveryFunction::OnSuccessCallback,
+                         this),
+          base::BindOnce(&BluetoothStopDiscoveryFunction::OnErrorCallback,
+                         this));
 }
 
 }  // namespace api

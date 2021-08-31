@@ -43,7 +43,7 @@ class AndroidFlavor(default.DefaultFlavor):
     # on the list, we fail the task to avoid perf inconsistencies.
     self.cant_root = ['GalaxyS6', 'GalaxyS7_G930FD', 'GalaxyS9',
                       'GalaxyS20', 'MotoG4', 'NVIDIA_Shield',
-                      'P30', 'Pixel4','Pixel4XL', 'TecnoSpark3Pro']
+                      'P30', 'Pixel4','Pixel4XL', 'Pixel5', 'TecnoSpark3Pro']
 
     # Maps device type -> CPU ids that should be scaled for nanobench.
     # Many devices have two (or more) different CPUs (e.g. big.LITTLE
@@ -518,21 +518,6 @@ time.sleep(60)
     self._adb('push %s' % sh,
               'push', self.m.vars.tmp_dir.join(sh), self.device_dirs.bin_dir)
 
-    self.m.python.inline('debugging', """
-    import subprocess
-    def run(*cmd):
-      print('====================================')
-      print(' '.join(cmd))
-      print('====================================')
-      subprocess.call(cmd)
-    adb = '%s'
-    run('uptime')
-    run(adb, 'shell', 'uptime')
-    run(adb, 'shell', 'ps')
-    run(adb, 'logcat', '-d')
-    """ % self.ADB_BINARY,
-      args=[self.device_dirs.bin_dir, sh])
-
     self._adb('clear log', 'logcat', '-c')
     self.m.python.inline('%s' % cmd[0], """
     import subprocess
@@ -553,30 +538,11 @@ time.sleep(60)
     self._adb('push %s %s' % (host, device), 'push', host, device)
 
   def copy_directory_contents_to_device(self, host, device):
-    # Copy the tree, avoiding hidden directories and resolving symlinks.
-    sep = self.m.path.sep
-    host_str = str(host).rstrip(sep) + sep
-    device = device.rstrip('/')
-    with self.m.step.nest('push %s* %s' % (host_str, device)):
-      contents = self.m.file.listdir('list %s' % host, host, recursive=True,
-                                     test_data=['file1',
-                                                'subdir' + sep + 'file2',
-                                                '.file3',
-                                                '.ignore' + sep + 'file4'])
-      for path in contents:
-        path_str = str(path)
-        assert path_str.startswith(host_str), (
-            'expected %s to have %s as a prefix' % (path_str, host_str))
-        relpath = path_str[len(host_str):]
-        # NOTE(dogben): Previous logic used os.walk and skipped directories
-        # starting with '.', but not files starting with '.'. It's not clear
-        # what the reason was (maybe skipping .git?), but I'm keeping that
-        # behavior here.
-        if self.m.path.dirname(relpath).startswith('.'):
-          continue
-        device_path = device + '/' + relpath  # Android paths use /
-        self._adb('push %s' % path, 'push',
-                  self.m.path.realpath(path), device_path)
+    contents = self.m.file.glob_paths('ls %s/*' % host,
+                                      host, '*',
+                                      test_data=['foo.png', 'bar.jpg'])
+    args = contents + [device]
+    self._adb('push %s/* %s' % (host, device), 'push', *args)
 
   def copy_directory_contents_to_host(self, device, host):
     # TODO(borenet): When all of our devices are on Android 6.0 and up, we can

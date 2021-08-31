@@ -13,7 +13,8 @@ namespace ui {
 class WaylandAuxiliaryWindow : public WaylandWindow {
  public:
   WaylandAuxiliaryWindow(PlatformWindowDelegate* delegate,
-                         WaylandConnection* connection);
+                         WaylandConnection* connection,
+                         WaylandWindow* parent);
   WaylandAuxiliaryWindow(const WaylandAuxiliaryWindow&) = delete;
   WaylandAuxiliaryWindow& operator=(const WaylandAuxiliaryWindow&) = delete;
   ~WaylandAuxiliaryWindow() override;

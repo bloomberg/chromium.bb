@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/congestion_control/send_algorithm_interface.h"
+#include "quic/core/congestion_control/send_algorithm_interface.h"
 
 #include "absl/base/attributes.h"
-#include "net/third_party/quiche/src/quic/core/congestion_control/bbr2_sender.h"
-#include "net/third_party/quiche/src/quic/core/congestion_control/bbr_sender.h"
-#include "net/third_party/quiche/src/quic/core/congestion_control/tcp_cubic_sender_bytes.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_pcc_sender.h"
+#include "quic/core/congestion_control/bbr2_sender.h"
+#include "quic/core/congestion_control/bbr_sender.h"
+#include "quic/core/congestion_control/tcp_cubic_sender_bytes.h"
+#include "quic/core/quic_packets.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
 
 namespace quic {
 
@@ -45,7 +44,7 @@ SendAlgorithmInterface* SendAlgorithmInterface::Create(
               ? static_cast<BbrSender*>(old_send_algorithm)
               : nullptr);
     case kPCC:
-      // PCC is work has stalled, fall back to CUBIC instead.
+      // PCC is currently not supported, fall back to CUBIC instead.
       ABSL_FALLTHROUGH_INTENDED;
     case kCubicBytes:
       return new TcpCubicSenderBytes(

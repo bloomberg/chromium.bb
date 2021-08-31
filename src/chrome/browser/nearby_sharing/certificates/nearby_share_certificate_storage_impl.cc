@@ -11,7 +11,6 @@
 #include "base/base64url.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -27,6 +26,7 @@
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -123,12 +123,12 @@ std::string EncodeString(const std::string& unencoded_string) {
   return encoded_string;
 }
 
-base::Optional<std::string> DecodeString(const std::string& encoded_string) {
+absl::optional<std::string> DecodeString(const std::string& encoded_string) {
   std::string decoded_string;
   if (!base::Base64UrlDecode(encoded_string,
                              base::Base64UrlDecodePolicy::REQUIRE_PADDING,
                              &decoded_string))
-    return base::nullopt;
+    return absl::nullopt;
 
   return decoded_string;
 }
@@ -225,7 +225,7 @@ void NearbyShareCertificateStorageImpl::Initialize() {
                       << num_initialize_attempts_;
       db_->Init(base::BindOnce(
           &NearbyShareCertificateStorageImpl::OnDatabaseInitialized,
-          base::Unretained(this)));
+          weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()));
       break;
     case InitStatus::kInitialized:
       NOTREACHED();
@@ -240,13 +240,17 @@ void NearbyShareCertificateStorageImpl::DestroyAndReinitialize() {
   init_status_ = InitStatus::kUninitialized;
   db_->Destroy(base::BindOnce(
       &NearbyShareCertificateStorageImpl::OnDatabaseDestroyedReinitialize,
-      base::Unretained(this)));
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void NearbyShareCertificateStorageImpl::OnDatabaseInitialized(
+    base::TimeTicks initialize_start_time,
     leveldb_proto::Enums::InitStatus status) {
   switch (status) {
     case leveldb_proto::Enums::InitStatus::kOK:
+      base::UmaHistogramLongTimes(
+          "Nearby.Share.Certificates.Storage.InitializeSuccessDuration",
+          base::TimeTicks::Now() - initialize_start_time);
       FinishInitialization(true);
       break;
     case leveldb_proto::Enums::InitStatus::kError:
@@ -330,13 +334,13 @@ void NearbyShareCertificateStorageImpl::
   }
 
   NS_LOG(VERBOSE) << __func__ << ": Inserting " << new_entries->size()
-                  << " new public certificates.";
+                  << " public certificates.";
   db_->UpdateEntries(
       std::move(new_entries),
       /*keys_to_remove=*/std::make_unique<std::vector<std::string>>(),
       base::BindOnce(&NearbyShareCertificateStorageImpl::
                          ReplacePublicCertificatesUpdateEntriesCallback,
-                     base::Unretained(this), std::move(expirations),
+                     weak_ptr_factory_.GetWeakPtr(), std::move(expirations),
                      std::move(callback)));
 }
 
@@ -431,26 +435,26 @@ void NearbyShareCertificateStorageImpl::GetPublicCertificates(
   db_->LoadEntries(std::move(callback));
 }
 
-base::Optional<std::vector<NearbySharePrivateCertificate>>
+absl::optional<std::vector<NearbySharePrivateCertificate>>
 NearbyShareCertificateStorageImpl::GetPrivateCertificates() const {
   const base::Value* list =
       pref_service_->Get(prefs::kNearbySharingPrivateCertificateListPrefName);
   std::vector<NearbySharePrivateCertificate> certs;
   for (const base::Value& cert_dict : list->GetList()) {
-    base::Optional<NearbySharePrivateCertificate> cert(
+    absl::optional<NearbySharePrivateCertificate> cert(
         NearbySharePrivateCertificate::FromDictionary(cert_dict));
     if (!cert)
-      return base::nullopt;
+      return absl::nullopt;
 
     certs.push_back(*std::move(cert));
   }
   return certs;
 }
 
-base::Optional<base::Time>
+absl::optional<base::Time>
 NearbyShareCertificateStorageImpl::NextPublicCertificateExpirationTime() const {
   if (public_certificate_expirations_.empty())
-    return base::nullopt;
+    return absl::nullopt;
 
   // |public_certificate_expirations_| is sorted by expiration date.
   return public_certificate_expirations_.front().second;
@@ -462,8 +466,6 @@ void NearbyShareCertificateStorageImpl::ReplacePrivateCertificates(
   for (const NearbySharePrivateCertificate& cert : private_certificates) {
     list.Append(cert.ToDictionary());
   }
-  NS_LOG(VERBOSE) << __func__ << ": Overwriting private certificates pref with "
-                  << private_certificates.size() << " certificates.";
   pref_service_->Set(prefs::kNearbySharingPrivateCertificateListPrefName, list);
 }
 
@@ -497,7 +499,8 @@ void NearbyShareCertificateStorageImpl::ReplacePublicCertificates(
   NS_LOG(VERBOSE) << __func__ << ": Clearing public certificate database.";
   db_->Destroy(base::BindOnce(&NearbyShareCertificateStorageImpl::
                                   ReplacePublicCertificatesDestroyCallback,
-                              base::Unretained(this), std::move(new_entries),
+                              weak_ptr_factory_.GetWeakPtr(),
+                              std::move(new_entries),
                               std::move(new_expirations), std::move(callback)));
 }
 
@@ -531,12 +534,12 @@ void NearbyShareCertificateStorageImpl::AddPublicCertificates(
   NS_LOG(VERBOSE)
       << __func__
       << ": Calling UpdateEntries on public certificate database with "
-      << public_certificates.size() << " new certificates.";
+      << public_certificates.size() << " certificates.";
   db_->UpdateEntries(
       std::move(new_entries), std::make_unique<std::vector<std::string>>(),
       base::BindOnce(
           &NearbyShareCertificateStorageImpl::AddPublicCertificatesCallback,
-          base::Unretained(this), std::move(new_expirations),
+          weak_ptr_factory_.GetWeakPtr(), std::move(new_expirations),
           std::move(callback)));
 }
 
@@ -589,8 +592,8 @@ void NearbyShareCertificateStorageImpl::RemoveExpiredPublicCertificates(
       std::move(ids_to_add), std::move(ids_to_remove),
       base::BindOnce(&NearbyShareCertificateStorageImpl::
                          RemoveExpiredPublicCertificatesCallback,
-                     base::Unretained(this), std::move(ids_to_remove_set),
-                     std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(ids_to_remove_set), std::move(callback)));
 }
 
 void NearbyShareCertificateStorageImpl::ClearPublicCertificates(
@@ -611,7 +614,7 @@ void NearbyShareCertificateStorageImpl::ClearPublicCertificates(
                   << ": Calling Destroy on public certificate database.";
   db_->Destroy(
       base::BindOnce(&NearbyShareCertificateStorageImpl::OnDatabaseDestroyed,
-                     base::Unretained(this), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 bool NearbyShareCertificateStorageImpl::FetchPublicCertificateExpirations() {
@@ -625,8 +628,8 @@ bool NearbyShareCertificateStorageImpl::FetchPublicCertificateExpirations() {
   public_certificate_expirations_.reserve(dict->DictSize());
   for (const std::pair<const std::string&, const base::Value&>& pair :
        dict->DictItems()) {
-    base::Optional<std::string> id = DecodeString(pair.first);
-    base::Optional<base::Time> expiration = util::ValueToTime(pair.second);
+    absl::optional<std::string> id = DecodeString(pair.first);
+    absl::optional<base::Time> expiration = util::ValueToTime(pair.second);
     if (!id || !expiration)
       return false;
 

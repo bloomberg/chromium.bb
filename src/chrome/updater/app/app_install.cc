@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
@@ -19,15 +20,15 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/updater/constants.h"
-#include "chrome/updater/control_service.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/prefs.h"
-#include "chrome/updater/registration_data.h"
 #include "chrome/updater/setup.h"
 #include "chrome/updater/tag.h"
 #include "chrome/updater/update_service.h"
+#include "chrome/updater/update_service_internal.h"
 #include "chrome/updater/updater_version.h"
 #include "components/prefs/pref_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
 
@@ -101,13 +102,13 @@ void AppInstall::GetVersionDone(scoped_refptr<UpdateService>,
                                 const base::Version& version) {
   VLOG_IF(1, (version.IsValid()))
       << "Found active version: " << version.GetString();
-  if (version.IsValid() && version >= base::Version(UPDATER_VERSION_STRING)) {
+  if (version.IsValid() && version >= base::Version(kUpdaterVersion)) {
     splash_screen_->Dismiss(base::BindOnce(&AppInstall::MaybeInstallApp, this));
     return;
   }
 
   InstallCandidate(
-      false,
+      updater_scope(),
       base::BindOnce(
           [](SplashScreen* splash_screen, base::OnceCallback<void(int)> done,
              int result) {
@@ -128,54 +129,33 @@ void AppInstall::InstallCandidateDone(int result) {
 }
 
 void AppInstall::WakeCandidate() {
-  // Invoke ControlService::InitializeUpdateService to wake this version of the
-  // updater, qualify, and possibly promote this version as a result. The
-  // |ControlService| instance has sequence affinity. Bind it in the closure to
-  // ensure it is released in this sequence.
-  scoped_refptr<ControlService> control_service = CreateControlService();
-  control_service->InitializeUpdateService(base::BindOnce(
-      [](scoped_refptr<ControlService> /*control_service*/,
+  // Invoke UpdateServiceInternal::InitializeUpdateService to wake this version
+  // of the updater, qualify, and possibly promote this version as a result. The
+  // |UpdateServiceInternal| instance has sequence affinity. Bind it in the
+  // closure to ensure it is released in this sequence.
+  scoped_refptr<UpdateServiceInternal> update_service_internal =
+      CreateUpdateServiceInternal();
+  update_service_internal->InitializeUpdateService(base::BindOnce(
+      [](scoped_refptr<UpdateServiceInternal> /*update_service_internal*/,
          scoped_refptr<AppInstall> app_install) {
         app_install->WakeCandidateDone();
       },
-      control_service, base::WrapRefCounted(this)));
-}
-
-void AppInstall::RegisterUpdater() {
-  // TODO(crbug.com/1128060): We should update the updater's registration with
-  // the new version, brand code, etc. For now, fake it.
-  RegistrationResponse result;
-  result.status_code = 0;
-  RegisterUpdaterDone(result);
-}
-
-void AppInstall::RegisterUpdaterDone(const RegistrationResponse& response) {
-  VLOG(1) << "Updater registration complete, code = " << response.status_code;
-  MaybeInstallApp();
+      update_service_internal, base::WrapRefCounted(this)));
 }
 
 void AppInstall::MaybeInstallApp() {
-  const std::string app_id = []() {
-    // Returns the app id parsed from the tag, if the --tag is specified, or
-    // the switch value of the --app-id command line argument.
-    // Otherwise, returns an empty string.
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    const std::string tag = command_line->GetSwitchValueASCII(kTagSwitch);
-    if (!tag.empty()) {
-      tagging::TagArgs tag_args;
-      tagging::ErrorCode error = tagging::Parse(tag, base::nullopt, &tag_args);
-      if (error == tagging::ErrorCode::kSuccess) {
-        // TODO(crbug.com/1128631): support bundles. For now, assume one app.
-        DCHECK_EQ(tag_args.apps.size(), size_t{1});
-        const std::string& app_id = tag_args.apps.front().app_id;
-        if (!app_id.empty()) {
-          return app_id;
-        }
-      } else {
-        VLOG(1) << "Tag parsing returned " << error << ".";
+  const std::string app_id = [this]() {
+    absl::optional<tagging::TagArgs> tag_args = this->tag_args();
+    if (tag_args && !tag_args->apps.empty()) {
+      // TODO(crbug.com/1128631): support bundles. For now, assume one app.
+      DCHECK_EQ(tag_args->apps.size(), size_t{1});
+      const std::string& app_id = tag_args->apps.front().app_id;
+      if (!app_id.empty()) {
+        return app_id;
       }
     }
-    return command_line->GetSwitchValueASCII(kAppIdSwitch);
+    return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        kAppIdSwitch);
   }();
 
   if (app_id.empty()) {

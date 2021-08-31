@@ -7,7 +7,6 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/util/type_safety/id_type.h"
 #include "device/vr/android/arcore/arcore.h"
@@ -16,6 +15,7 @@
 #include "device/vr/android/arcore/arcore_sdk.h"
 #include "device/vr/android/arcore/scoped_arcore_objects.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
 
@@ -106,13 +106,14 @@ class ArCoreImpl : public ArCore {
   ArCoreImpl();
   ~ArCoreImpl() override;
 
-  base::Optional<ArCore::InitializeResult> Initialize(
+  absl::optional<ArCore::InitializeResult> Initialize(
       base::android::ScopedJavaLocalRef<jobject> application_context,
       const std::unordered_set<device::mojom::XRSessionFeature>&
           required_features,
       const std::unordered_set<device::mojom::XRSessionFeature>&
           optional_features,
-      const std::vector<device::mojom::XRTrackedImagePtr>& tracked_images)
+      const std::vector<device::mojom::XRTrackedImagePtr>& tracked_images,
+      absl::optional<ArCore::DepthSensingConfiguration> depth_sensing_config)
       override;
   MinMaxRange GetTargetFramerateRange() override;
   void SetDisplayGeometry(const gfx::Size& frame_size,
@@ -143,11 +144,11 @@ class ArCoreImpl : public ArCore {
       const std::vector<mojom::EntityTypeForHitTest>& entity_types,
       std::vector<mojom::XRHitResultPtr>* hit_results);
 
-  base::Optional<uint64_t> SubscribeToHitTest(
+  absl::optional<uint64_t> SubscribeToHitTest(
       mojom::XRNativeOriginInformationPtr nativeOriginInformation,
       const std::vector<mojom::EntityTypeForHitTest>& entity_types,
       mojom::XRRayPtr ray) override;
-  base::Optional<uint64_t> SubscribeToHitTestForTransientInput(
+  absl::optional<uint64_t> SubscribeToHitTestForTransientInput(
       const std::string& profile_name,
       const std::vector<mojom::EntityTypeForHitTest>& entity_types,
       mojom::XRRayPtr ray) override;
@@ -179,6 +180,8 @@ class ArCoreImpl : public ArCore {
 
   mojom::XRTrackedImagesDataPtr GetTrackedImages() override;
 
+  gfx::Size GetUncroppedCameraImageSize() const override;
+
  protected:
   std::vector<float> TransformDisplayUvCoords(
       const base::span<const float> uvs) const override;
@@ -201,6 +204,8 @@ class ArCoreImpl : public ArCore {
   internal::ScopedArCoreObject<ArSession*> arcore_session_;
   internal::ScopedArCoreObject<ArFrame*> arcore_frame_;
 
+  gfx::Size uncropped_camera_image_size_;
+
   // Target framerate reflecting the current camera configuration.
   MinMaxRange target_framerate_range_ = {30.f, 30.f};
 
@@ -221,6 +226,8 @@ class ArCoreImpl : public ArCore {
   // Map from ARCore's internal image IDs to the index position in the input
   // list of images. The index values are needed for blink communication.
   std::unordered_map<int32_t, uint64_t> tracked_image_arcore_id_to_index_;
+
+  absl::optional<device::mojom::XRDepthConfig> depth_configuration_;
 
   uint64_t next_id_ = 1;
 
@@ -270,8 +277,8 @@ class ArCoreImpl : public ArCore {
 
   // Returns mojo_from_native_origin transform given native origin
   // information. If the transform cannot be found or is unknown, it will return
-  // base::nullopt.
-  base::Optional<gfx::Transform> GetMojoFromNativeOrigin(
+  // absl::nullopt.
+  absl::optional<gfx::Transform> GetMojoFromNativeOrigin(
       const mojom::XRNativeOriginInformation& native_origin_information,
       const gfx::Transform& mojo_from_viewer,
       const std::vector<mojom::XRInputSourceStatePtr>& input_state);
@@ -279,8 +286,8 @@ class ArCoreImpl : public ArCore {
   // Returns mojo_from_reference_space transform given reference space type.
   // Mojo_from_reference_space is equivalent to mojo_from_native_origin for
   // native origins that are reference spaces. If the transform cannot be found,
-  // it will return base::nullopt.
-  base::Optional<gfx::Transform> GetMojoFromReferenceSpace(
+  // it will return absl::nullopt.
+  absl::optional<gfx::Transform> GetMojoFromReferenceSpace(
       device::mojom::XRReferenceSpaceType type,
       const gfx::Transform& mojo_from_viewer);
 
@@ -303,7 +310,7 @@ class ArCoreImpl : public ArCore {
   // contain the requests that have not been processed.
   // |create_anchor_function| - function to call to actually create the anchor;
   // it will receive the specific anchor creation request, along with position
-  // and orientation for the anchor, and must return base::Optional<AnchorId>.
+  // and orientation for the anchor, and must return absl::optional<AnchorId>.
   template <typename T, typename FunctionType>
   void ProcessAnchorCreationRequestsHelper(
       const gfx::Transform& mojo_from_viewer,
@@ -321,14 +328,24 @@ class ArCoreImpl : public ArCore {
   // optional features. Note that this is happening during initialization,
   // before arcore_session_ is set. Returns a collection of features that were
   // successfully enabled on a session or a nullopt on failure.
-  base::Optional<std::unordered_set<device::mojom::XRSessionFeature>>
+  absl::optional<std::unordered_set<device::mojom::XRSessionFeature>>
   ConfigureFeatures(
       ArSession* ar_session,
       const std::unordered_set<device::mojom::XRSessionFeature>&
           required_features,
       const std::unordered_set<device::mojom::XRSessionFeature>&
           optional_features,
-      const std::vector<device::mojom::XRTrackedImagePtr>& tracked_images);
+      const std::vector<device::mojom::XRTrackedImagePtr>& tracked_images,
+      const absl::optional<ArCore::DepthSensingConfiguration>&
+          depth_sensing_config);
+
+  // Configures depth sensing API - selects depth sensing usage and mode that is
+  // compatible with the device. Returns false if it was unable to pick a
+  // supported combination of mode and data format. Affects
+  // |depth_sensing_usage_| and |depth_sensing_data_format_| members.
+  bool ConfigureDepthSensing(
+      const absl::optional<ArCore::DepthSensingConfiguration>&
+          depth_sensing_config);
 
   // Must be last.
   base::WeakPtrFactory<ArCoreImpl> weak_ptr_factory_{this};

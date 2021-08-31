@@ -45,11 +45,13 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationImpl
             const FileSystemURL& dest_url,
             CopyOrMoveOption option,
             ErrorBehavior error_behavior,
-            const CopyProgressCallback& progress_callback,
+            const CopyOrMoveProgressCallback& progress_callback,
             StatusCallback callback) override;
   void Move(const FileSystemURL& src_url,
             const FileSystemURL& dest_url,
             CopyOrMoveOption option,
+            ErrorBehavior error_behavior,
+            const CopyOrMoveProgressCallback& progress_callback,
             StatusCallback callback) override;
   void DirectoryExists(const FileSystemURL& url,
                        StatusCallback callback) override;
@@ -105,13 +107,14 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationImpl
     return file_system_context_.get();
   }
 
- private:
-  friend class FileSystemOperation;
-
+ protected:
   FileSystemOperationImpl(
       const FileSystemURL& url,
       FileSystemContext* file_system_context,
       std::unique_ptr<FileSystemOperationContext> operation_context);
+
+ private:
+  friend class FileSystemOperation;
 
   // Queries the quota and usage and then runs the given |task|.
   // If an error occurs during the quota query it runs |error_callback| instead.

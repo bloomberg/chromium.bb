@@ -20,6 +20,7 @@
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
@@ -1017,7 +1018,7 @@ TEST_P(SurfaceTest, SetAlpha) {
     ASSERT_EQ(1u, frame.render_pass_list.size());
     ASSERT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
     ASSERT_EQ(1u, frame.resource_list.size());
-    ASSERT_EQ(1u, frame.resource_list.back().id);
+    ASSERT_EQ(viz::ResourceId(1u), frame.resource_list.back().id);
     EXPECT_EQ(gfx::Rect(buffer_size),
               ToTargetSpaceDamage(frame.render_pass_list.back()->damage_rect));
   }
@@ -1048,7 +1049,7 @@ TEST_P(SurfaceTest, SetAlpha) {
     ASSERT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
     ASSERT_EQ(1u, frame.resource_list.size());
     // The resource should be updated again, the id should be changed.
-    ASSERT_EQ(2u, frame.resource_list.back().id);
+    ASSERT_EQ(viz::ResourceId(2u), frame.resource_list.back().id);
     EXPECT_EQ(gfx::Rect(buffer_size),
               ToTargetSpaceDamage(frame.render_pass_list.back()->damage_rect));
   }
@@ -1081,7 +1082,7 @@ TEST_P(SurfaceTest, SurfaceQuad) {
     EXPECT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
     EXPECT_EQ(1u, frame.resource_list.size());
     // Ensure that the quad is correct and the resource is included.
-    EXPECT_EQ(1u, frame.resource_list.back().id);
+    EXPECT_EQ(viz::ResourceId(1u), frame.resource_list.back().id);
     EXPECT_EQ(viz::DrawQuad::Material::kSurfaceContent,
               frame.render_pass_list.back()->quad_list.back()->material);
   }
@@ -1115,7 +1116,7 @@ TEST_P(SurfaceTest, EmptySurfaceQuad) {
     EXPECT_EQ(0u, frame.render_pass_list.back()->quad_list.size());
     // No quad but still has a resource though.
     EXPECT_EQ(1u, frame.resource_list.size());
-    EXPECT_EQ(1u, frame.resource_list.back().id);
+    EXPECT_EQ(viz::ResourceId(1u), frame.resource_list.back().id);
   }
 }
 
@@ -1153,7 +1154,7 @@ TEST_P(SurfaceTest, ScaledSurfaceQuad) {
     EXPECT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
     EXPECT_EQ(1u, frame.resource_list.size());
     // Ensure that the quad is correct and the resource is included.
-    EXPECT_EQ(1u, frame.resource_list.back().id);
+    EXPECT_EQ(viz::ResourceId(1u), frame.resource_list.back().id);
     EXPECT_EQ(viz::DrawQuad::Material::kSurfaceContent,
               frame.render_pass_list.back()->quad_list.back()->material);
     // We are outputting to 0,0 -> 128,64.
@@ -1306,7 +1307,7 @@ TEST_P(SurfaceTest, UpdatesOcclusionOnDestroyingSubsurface) {
   sub_surface.reset();
   EXPECT_EQ(1, observer.num_occlusion_changes());
   EXPECT_EQ(aura::Window::OcclusionState::HIDDEN,
-            child_surface->window()->occlusion_state());
+            child_surface->window()->GetOcclusionState());
 }
 
 }  // namespace

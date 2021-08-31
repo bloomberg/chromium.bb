@@ -6,16 +6,18 @@
 
 #include "base/callback.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/content_settings/generated_cookie_prefs.h"
 #include "chrome/browser/content_settings/generated_notification_pref.h"
 #include "chrome/browser/extensions/api/settings_private/generated_pref.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util_enums.h"
 #include "chrome/browser/password_manager/generated_password_leak_detection_pref.h"
+#include "chrome/browser/privacy_sandbox/generated_floc_pref.h"
 #include "chrome/browser/safe_browsing/generated_safe_browsing_pref.h"
 #include "chrome/common/extensions/api/settings_private.h"
 #include "components/content_settings/core/common/pref_names.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
 #endif
@@ -84,7 +86,7 @@ GeneratedPref* GeneratedPrefs::FindPrefImpl(const std::string& pref_name) {
 }
 
 void GeneratedPrefs::CreatePrefs() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   prefs_[kResolveTimezoneByGeolocationOnOff] =
       CreateGeneratedResolveTimezoneByGeolocationOnOff(profile_);
   prefs_[kResolveTimezoneByGeolocationMethodShort] =
@@ -102,6 +104,7 @@ void GeneratedPrefs::CreatePrefs() {
       std::make_unique<safe_browsing::GeneratedSafeBrowsingPref>(profile_);
   prefs_[content_settings::kGeneratedNotificationPref] =
       std::make_unique<content_settings::GeneratedNotificationPref>(profile_);
+  prefs_[kGeneratedFlocPref] = std::make_unique<GeneratedFlocPref>(profile_);
 }
 
 }  // namespace settings_private

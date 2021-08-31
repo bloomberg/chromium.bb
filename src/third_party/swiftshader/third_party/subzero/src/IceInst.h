@@ -54,7 +54,7 @@ public:
     ExtractElement,
     Fcmp,
     Icmp,
-    IntrinsicCall,
+    Intrinsic,
     InsertElement,
     Load,
     Phi,
@@ -113,6 +113,11 @@ public:
     assert(!isDeleted());
     Srcs[Index] = Replacement;
   }
+  // Instructions which load data take their address in Src[0], while
+  // store instructions use Src[1] for the address and Src[0] for the data.
+  Operand *getLoadAddress() const { return getSrc(0); }
+  Operand *getStoreAddress() const { return getSrc(1); }
+  Operand *getData() const { return getSrc(0); }
 
   bool isLastUse(const Operand *Src) const;
   void spliceLivenessInfo(Inst *OrigInst, Inst *SpliceAssn);
@@ -429,8 +434,7 @@ public:
                           bool IsTargetHelperCall = false,
                           bool IsVariadic = false) {
     /// Set HasSideEffects to true so that the call instruction can't be
-    /// dead-code eliminated. IntrinsicCalls can override this if the particular
-    /// intrinsic is deletable and has no side-effects.
+    /// dead-code eliminated.
     constexpr bool HasSideEffects = true;
     constexpr InstKind Kind = Inst::Call;
     return new (Func->allocate<InstCall>())
@@ -610,35 +614,36 @@ private:
                     Operand *Source2, Operand *Source3);
 };
 
-/// Call to an intrinsic function. The call target is captured as getSrc(0), and
-/// arg I is captured as getSrc(I+1).
-class InstIntrinsicCall : public InstCall {
-  InstIntrinsicCall() = delete;
-  InstIntrinsicCall(const InstIntrinsicCall &) = delete;
-  InstIntrinsicCall &operator=(const InstIntrinsicCall &) = delete;
+/// An intrinsic operation, representing either a sequence of instructions,
+/// or a single instruction. Availability of intrinsics is target-specific.
+class InstIntrinsic : public InstHighLevel {
+  InstIntrinsic() = delete;
+  InstIntrinsic(const InstIntrinsic &) = delete;
+  InstIntrinsic &operator=(const InstIntrinsic &) = delete;
 
 public:
-  static InstIntrinsicCall *create(Cfg *Func, SizeT NumArgs, Variable *Dest,
-                                   Operand *CallTarget,
-                                   const Intrinsics::IntrinsicInfo &Info) {
-    return new (Func->allocate<InstIntrinsicCall>())
-        InstIntrinsicCall(Func, NumArgs, Dest, CallTarget, Info);
+  static InstIntrinsic *create(Cfg *Func, SizeT NumArgs, Variable *Dest,
+                               const Intrinsics::IntrinsicInfo &Info) {
+    return new (Func->allocate<InstIntrinsic>())
+        InstIntrinsic(Func, NumArgs, Dest, Info);
   }
+  void addArg(Operand *Arg) { addSource(Arg); }
+  Operand *getArg(SizeT I) const { return getSrc(I); }
+  SizeT getNumArgs() const { return getSrcSize(); }
   static bool classof(const Inst *Instr) {
-    return Instr->getKind() == IntrinsicCall;
+    return Instr->getKind() == Intrinsic;
   }
 
   Intrinsics::IntrinsicInfo getIntrinsicInfo() const { return Info; }
+  Intrinsics::IntrinsicID getIntrinsicID() const { return Info.ID; }
   bool isMemoryWrite() const override {
     return getIntrinsicInfo().IsMemoryWrite;
   }
 
 private:
-  InstIntrinsicCall(Cfg *Func, SizeT NumArgs, Variable *Dest,
-                    Operand *CallTarget, const Intrinsics::IntrinsicInfo &Info)
-      : InstCall(Func, NumArgs, Dest, CallTarget, false, false, false,
-                 Info.HasSideEffects, Inst::IntrinsicCall),
-        Info(Info) {}
+  InstIntrinsic(Cfg *Func, SizeT NumArgs, Variable *Dest,
+                const Intrinsics::IntrinsicInfo &Info)
+      : InstHighLevel(Func, Inst::Intrinsic, NumArgs, Dest), Info(Info) {}
 
   const Intrinsics::IntrinsicInfo Info;
 };
@@ -656,7 +661,6 @@ public:
     (void)Align;
     return new (Func->allocate<InstLoad>()) InstLoad(Func, Dest, SourceAddr);
   }
-  Operand *getSourceAddress() const { return getSrc(0); }
   bool isMemoryWrite() const override { return false; }
   void dump(const Cfg *Func) const override;
   static bool classof(const Inst *Instr) { return Instr->getKind() == Load; }
@@ -762,8 +766,6 @@ public:
     (void)Align;
     return new (Func->allocate<InstStore>()) InstStore(Func, Data, Addr);
   }
-  Operand *getAddr() const { return getSrc(1); }
-  Operand *getData() const { return getSrc(0); }
   Variable *getRmwBeacon() const;
   void setRmwBeacon(Variable *Beacon);
   bool isMemoryWrite() const override { return true; }

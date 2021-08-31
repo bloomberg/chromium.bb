@@ -4,6 +4,8 @@
 
 #include "components/arc/mojom/ime.mojom.h"
 
+#include <linux/input.h>
+
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
@@ -36,10 +38,21 @@ TEST(KeyEventStructTraitsTest, Convert) {
   for (size_t idx = 0; idx < base::size(kTestData); ++idx) {
     auto copy = std::make_unique<ui::KeyEvent>(kTestData[idx]);
     std::unique_ptr<ui::KeyEvent> output;
-    mojo::test::SerializeAndDeserialize<arc::mojom::KeyEventData>(&copy,
-                                                                  &output);
+    mojo::test::SerializeAndDeserialize<arc::mojom::KeyEventData>(copy, output);
     ExpectKeyEventsEqual(*copy, *output);
   }
+}
+
+TEST(KeyEventStructTraitsTest, UseScancodeIfAvailable) {
+  auto original = std::make_unique<ui::KeyEvent>(
+      ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, ui::DomCode::NONE, ui::EF_NONE);
+  original->set_scan_code(KEY_A);
+  std::unique_ptr<ui::KeyEvent> output;
+  mojo::test::SerializeAndDeserialize<arc::mojom::KeyEventData>(original,
+                                                                output);
+  EXPECT_EQ(original->type(), output->type());
+  EXPECT_EQ(ui::DomCode::US_A, output->code());
+  EXPECT_EQ(ui::VKEY_A, output->key_code());
 }
 
 }  // namespace mojo

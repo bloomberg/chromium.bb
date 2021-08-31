@@ -14,6 +14,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/page_info/page_info_ui.h"
 #include "components/sessions/content/session_tab_helper.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -55,6 +56,8 @@ NavigationEvent::NavigationEvent(NavigationEvent&& nav_event)
       has_committed(nav_event.has_committed),
       maybe_launched_by_external_application(
           nav_event.maybe_launched_by_external_application) {}
+
+NavigationEvent::NavigationEvent(const NavigationEvent& nav_event) = default;
 
 NavigationEvent& NavigationEvent::operator=(NavigationEvent&& nav_event) {
   source_url = std::move(nav_event.source_url);
@@ -103,8 +106,9 @@ SafeBrowsingNavigationObserver::SafeBrowsingNavigationObserver(
     content::WebContents* contents,
     const scoped_refptr<SafeBrowsingNavigationObserverManager>& manager)
     : content::WebContentsObserver(contents), manager_(manager) {
-  content_settings_observer_.Add(HostContentSettingsMapFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext())));
+  content_settings_observation_.Observe(
+      HostContentSettingsMapFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents()->GetBrowserContext())));
 }
 
 SafeBrowsingNavigationObserver::~SafeBrowsingNavigationObserver() {}
@@ -140,15 +144,21 @@ void SafeBrowsingNavigationObserver::DidStartNavigation(
   if (web_contents()->IsPortal() &&
       !web_contents()->GetController().GetLastCommittedEntry()) {
     content::RenderFrameHost* initiator_frame_host =
-        content::RenderFrameHost::FromID(
-            navigation_handle->GetInitiatorRoutingId());
-    content::WebContents* initiator_contents =
-        content::WebContents::FromRenderFrameHost(initiator_frame_host);
-    manager_->RecordNewWebContents(
-        initiator_contents, initiator_frame_host->GetProcess()->GetID(),
-        initiator_frame_host->GetRoutingID(), navigation_handle->GetURL(),
-        navigation_handle->GetPageTransition(), web_contents(),
-        navigation_handle->IsRendererInitiated());
+        navigation_handle->GetInitiatorFrameToken().has_value()
+            ? content::RenderFrameHost::FromFrameToken(
+                  navigation_handle->GetInitiatorProcessID(),
+                  navigation_handle->GetInitiatorFrameToken().value())
+            : nullptr;
+    // TODO(https://crbug.com/1074422): Handle the case where the initiator
+    // RenderFrameHost is gone.
+    if (initiator_frame_host) {
+      content::WebContents* initiator_contents =
+          content::WebContents::FromRenderFrameHost(initiator_frame_host);
+      manager_->RecordNewWebContents(
+          initiator_contents, initiator_frame_host, navigation_handle->GetURL(),
+          navigation_handle->GetPageTransition(), web_contents(),
+          navigation_handle->IsRendererInitiated());
+    }
   }
 
   std::unique_ptr<NavigationEvent> nav_event =
@@ -182,11 +192,9 @@ void SafeBrowsingNavigationObserver::DidStartNavigation(
   // If there was a URL previously committed in the current RenderFrameHost,
   // set it as the source url of this navigation. Otherwise, this is the
   // first url going to commit in this frame.
-  int current_process_id =
-      navigation_handle->GetStartingSiteInstance()->GetProcess()->GetID();
   content::RenderFrameHost* current_frame_host =
-      navigation_handle->GetWebContents()->FindFrameByFrameTreeNodeId(
-          nav_event->frame_id, current_process_id);
+      content::RenderFrameHost::FromID(
+          navigation_handle->GetPreviousRenderFrameHostId());
   // For browser initiated navigation (e.g. from address bar or bookmark), we
   // don't fill the source_url to prevent attributing navigation to the last
   // committed navigation.
@@ -207,9 +215,16 @@ void SafeBrowsingNavigationObserver::DidStartNavigation(
   } else {
     nav_event->source_main_frame_url =
         SafeBrowsingNavigationObserverManager::ClearURLRef(
-            navigation_handle->GetWebContents()->GetLastCommittedURL());
+            navigation_handle->GetParentFrame()
+                ->GetMainFrame()
+                ->GetLastCommittedURL());
   }
+
+  std::unique_ptr<NavigationEvent> pending_nav_event =
+      std::make_unique<NavigationEvent>(*nav_event);
   navigation_handle_map_[navigation_handle] = std::move(nav_event);
+  manager_->RecordPendingNavigationEvent(navigation_handle,
+                                         std::move(pending_nav_event));
 }
 
 void SafeBrowsingNavigationObserver::DidRedirectNavigation(
@@ -224,6 +239,9 @@ void SafeBrowsingNavigationObserver::DidRedirectNavigation(
       SafeBrowsingNavigationObserverManager::ClearURLRef(
           navigation_handle->GetURL()));
   nav_event->last_updated = base::Time::Now();
+
+  manager_->AddRedirectUrlToPendingNavigationEvent(navigation_handle,
+                                                   navigation_handle->GetURL());
 }
 
 void SafeBrowsingNavigationObserver::DidFinishNavigation(
@@ -256,7 +274,7 @@ void SafeBrowsingNavigationObserver::DidFinishNavigation(
   nav_event->last_updated = base::Time::Now();
 
   manager_->RecordNavigationEvent(
-      std::move(navigation_handle_map_[navigation_handle]));
+      navigation_handle, std::move(navigation_handle_map_[navigation_handle]));
   navigation_handle_map_.erase(navigation_handle);
 }
 
@@ -280,10 +298,8 @@ void SafeBrowsingNavigationObserver::DidOpenRequestedURL(
     ui::PageTransition transition,
     bool started_from_context_menu,
     bool renderer_initiated) {
-  manager_->RecordNewWebContents(
-      web_contents(), source_render_frame_host->GetProcess()->GetID(),
-      source_render_frame_host->GetRoutingID(), url, transition, new_contents,
-      renderer_initiated);
+  manager_->RecordNewWebContents(web_contents(), source_render_frame_host, url,
+                                 transition, new_contents, renderer_initiated);
 }
 
 void SafeBrowsingNavigationObserver::OnContentSettingChanged(
