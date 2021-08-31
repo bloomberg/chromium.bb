@@ -17,8 +17,10 @@
 #include "src/interpreter/bytecodes.h"
 #include "src/objects/contexts.h"
 #include "src/snapshot/snapshot.h"
-#include "src/wasm/wasm-debug.h"
-#include "src/wasm/wasm-js.h"
+
+#if V8_ENABLE_WEBASSEMBLY
+#include "src/debug/debug-wasm-objects.h"
+#endif  // V8_ENABLE_WEBASSEMBLY
 
 namespace v8 {
 namespace internal {
@@ -41,6 +43,22 @@ MaybeHandle<Object> DebugEvaluate::Global(Isolate* isolate,
                                           Handle<String> source,
                                           debug::EvaluateGlobalMode mode,
                                           REPLMode repl_mode) {
+  Handle<SharedFunctionInfo> shared_info;
+  if (!GetFunctionInfo(isolate, source, repl_mode).ToHandle(&shared_info)) {
+    return MaybeHandle<Object>();
+  }
+
+  Handle<NativeContext> context = isolate->native_context();
+  Handle<JSFunction> fun =
+      Factory::JSFunctionBuilder{isolate, shared_info, context}.Build();
+
+  return Global(isolate, fun, mode, repl_mode);
+}
+
+MaybeHandle<Object> DebugEvaluate::Global(Isolate* isolate,
+                                          Handle<JSFunction> function,
+                                          debug::EvaluateGlobalMode mode,
+                                          REPLMode repl_mode) {
   // Disable breaks in side-effect free mode.
   DisableBreak disable_break_scope(
       isolate->debug(),
@@ -48,20 +66,14 @@ MaybeHandle<Object> DebugEvaluate::Global(Isolate* isolate,
           mode ==
               debug::EvaluateGlobalMode::kDisableBreaksAndThrowOnSideEffect);
 
-  Handle<SharedFunctionInfo> shared_info;
-  if (!GetFunctionInfo(isolate, source, repl_mode).ToHandle(&shared_info)) {
-    return MaybeHandle<Object>();
-  }
+  Handle<NativeContext> context = isolate->native_context();
+  CHECK_EQ(function->native_context(), *context);
 
-  Handle<Context> context = isolate->native_context();
-  Handle<JSFunction> fun =
-      isolate->factory()->NewFunctionFromSharedFunctionInfo(shared_info,
-                                                            context);
   if (mode == debug::EvaluateGlobalMode::kDisableBreaksAndThrowOnSideEffect) {
     isolate->debug()->StartSideEffectCheckMode();
   }
   MaybeHandle<Object> result = Execution::Call(
-      isolate, fun, Handle<JSObject>(context->global_proxy(), isolate), 0,
+      isolate, function, Handle<JSObject>(context->global_proxy(), isolate), 0,
       nullptr);
   if (mode == debug::EvaluateGlobalMode::kDisableBreaksAndThrowOnSideEffect) {
     isolate->debug()->StopSideEffectCheckMode();
@@ -79,9 +91,23 @@ MaybeHandle<Object> DebugEvaluate::Local(Isolate* isolate,
 
   // Get the frame where the debugging is performed.
   StackTraceFrameIterator it(isolate, frame_id);
-  if (!it.is_javascript()) return isolate->factory()->undefined_value();
-  JavaScriptFrame* frame = it.javascript_frame();
+#if V8_ENABLE_WEBASSEMBLY
+  if (it.is_wasm()) {
+    WasmFrame* frame = WasmFrame::cast(it.frame());
+    Handle<SharedFunctionInfo> outer_info(
+        isolate->native_context()->empty_function().shared(), isolate);
+    Handle<JSObject> context_extension = GetWasmDebugProxy(frame);
+    Handle<ScopeInfo> scope_info =
+        ScopeInfo::CreateForWithScope(isolate, Handle<ScopeInfo>::null());
+    Handle<Context> context = isolate->factory()->NewWithContext(
+        isolate->native_context(), scope_info, context_extension);
+    return Evaluate(isolate, outer_info, context, context_extension, source,
+                    throw_on_side_effect);
+  }
+#endif  // V8_ENABLE_WEBASSEMBLY
 
+  CHECK(it.is_javascript());
+  JavaScriptFrame* frame = it.javascript_frame();
   // This is not a lot different than DebugEvaluate::Global, except that
   // variables accessible by the function we are evaluating from are
   // materialized and included on top of the native context. Changes to
@@ -89,7 +115,7 @@ MaybeHandle<Object> DebugEvaluate::Local(Isolate* isolate,
   // Note that the native context is taken from the original context chain,
   // which may not be the current native context of the isolate.
   ContextBuilder context_builder(isolate, frame, inlined_jsframe_index);
-  if (isolate->has_pending_exception()) return MaybeHandle<Object>();
+  if (isolate->has_pending_exception()) return {};
 
   Handle<Context> context = context_builder.evaluation_context();
   Handle<JSObject> receiver(context->global_proxy(), isolate);
@@ -98,39 +124,6 @@ MaybeHandle<Object> DebugEvaluate::Local(Isolate* isolate,
                throw_on_side_effect);
   if (!maybe_result.is_null()) context_builder.UpdateValues();
   return maybe_result;
-}
-
-V8_EXPORT MaybeHandle<Object> DebugEvaluate::WebAssembly(
-    Handle<WasmInstanceObject> instance, StackFrameId frame_id,
-    Handle<String> source, bool throw_on_side_effect) {
-  Isolate* isolate = instance->GetIsolate();
-
-  StackTraceFrameIterator it(isolate, frame_id);
-  if (!it.is_wasm()) return isolate->factory()->undefined_value();
-  WasmFrame* frame = WasmFrame::cast(it.frame());
-
-  Handle<JSProxy> context_extension = WasmJs::GetJSDebugProxy(frame);
-
-  DisableBreak disable_break_scope(isolate->debug(), /*disable=*/true);
-
-  Handle<SharedFunctionInfo> shared_info;
-  if (!GetFunctionInfo(isolate, source, REPLMode::kNo).ToHandle(&shared_info)) {
-    return {};
-  }
-
-  Handle<ScopeInfo> scope_info =
-      ScopeInfo::CreateForWithScope(isolate, Handle<ScopeInfo>::null());
-  Handle<Context> context = isolate->factory()->NewWithContext(
-      isolate->native_context(), scope_info, context_extension);
-
-  Handle<Object> result;
-  if (!DebugEvaluate::Evaluate(isolate, shared_info, context, context_extension,
-                               source, throw_on_side_effect)
-           .ToHandle(&result)) {
-    return {};
-  }
-
-  return result;
 }
 
 MaybeHandle<Object> DebugEvaluate::WithTopmostArguments(Isolate* isolate,
@@ -331,12 +324,9 @@ bool IntrinsicHasNoSideEffect(Runtime::FunctionId id) {
   V(ThrowReferenceError)                      \
   V(ThrowSymbolIteratorInvalid)               \
   /* Strings */                               \
-  V(StringIncludes)                           \
-  V(StringIndexOf)                            \
   V(StringReplaceOneCharWithString)           \
   V(StringSubstring)                          \
   V(StringToNumber)                           \
-  V(StringTrim)                               \
   /* BigInts */                               \
   V(BigIntEqualToBigInt)                      \
   V(BigIntToBoolean)                          \
@@ -347,6 +337,7 @@ bool IntrinsicHasNoSideEffect(Runtime::FunctionId id) {
   V(CreateObjectLiteral)                      \
   V(CreateObjectLiteralWithoutAllocationSite) \
   V(CreateRegExpLiteral)                      \
+  V(DefineClass)                              \
   /* Called from builtins */                  \
   V(AllocateInYoungGeneration)                \
   V(AllocateInOldGeneration)                  \
@@ -374,7 +365,6 @@ bool IntrinsicHasNoSideEffect(Runtime::FunctionId id) {
   V(StringAdd)                                \
   V(StringCharCodeAt)                         \
   V(StringEqual)                              \
-  V(StringIndexOfUnchecked)                   \
   V(StringParseFloat)                         \
   V(StringParseInt)                           \
   V(SymbolDescriptiveString)                  \
@@ -568,6 +558,7 @@ DebugInfo::SideEffectState BuiltinGetSideEffectState(Builtins::Name id) {
     case Builtins::kArrayIndexOf:
     case Builtins::kArrayPrototypeValues:
     case Builtins::kArrayIncludes:
+    case Builtins::kArrayPrototypeAt:
     case Builtins::kArrayPrototypeEntries:
     case Builtins::kArrayPrototypeFill:
     case Builtins::kArrayPrototypeFind:
@@ -593,6 +584,8 @@ DebugInfo::SideEffectState BuiltinGetSideEffectState(Builtins::Name id) {
     case Builtins::kTrace:
     // TypedArray builtins.
     case Builtins::kTypedArrayConstructor:
+    case Builtins::kTypedArrayOf:
+    case Builtins::kTypedArrayPrototypeAt:
     case Builtins::kTypedArrayPrototypeBuffer:
     case Builtins::kTypedArrayPrototypeByteLength:
     case Builtins::kTypedArrayPrototypeByteOffset:
@@ -760,6 +753,7 @@ DebugInfo::SideEffectState BuiltinGetSideEffectState(Builtins::Name id) {
     case Builtins::kStringFromCodePoint:
     case Builtins::kStringConstructor:
     case Builtins::kStringPrototypeAnchor:
+    case Builtins::kStringPrototypeAt:
     case Builtins::kStringPrototypeBig:
     case Builtins::kStringPrototypeBlink:
     case Builtins::kStringPrototypeBold:
@@ -783,6 +777,7 @@ DebugInfo::SideEffectState BuiltinGetSideEffectState(Builtins::Name id) {
     case Builtins::kStringPrototypeSlice:
     case Builtins::kStringPrototypeSmall:
     case Builtins::kStringPrototypeStartsWith:
+    case Builtins::kStringSlowFlatten:
     case Builtins::kStringPrototypeStrike:
     case Builtins::kStringPrototypeSub:
     case Builtins::kStringPrototypeSubstr:
@@ -855,12 +850,30 @@ DebugInfo::SideEffectState BuiltinGetSideEffectState(Builtins::Name id) {
     case Builtins::kMapPrototypeClear:
     case Builtins::kMapPrototypeDelete:
     case Builtins::kMapPrototypeSet:
+    // Date builtins.
+    case Builtins::kDatePrototypeSetDate:
+    case Builtins::kDatePrototypeSetFullYear:
+    case Builtins::kDatePrototypeSetHours:
+    case Builtins::kDatePrototypeSetMilliseconds:
+    case Builtins::kDatePrototypeSetMinutes:
+    case Builtins::kDatePrototypeSetMonth:
+    case Builtins::kDatePrototypeSetSeconds:
+    case Builtins::kDatePrototypeSetTime:
+    case Builtins::kDatePrototypeSetUTCDate:
+    case Builtins::kDatePrototypeSetUTCFullYear:
+    case Builtins::kDatePrototypeSetUTCHours:
+    case Builtins::kDatePrototypeSetUTCMilliseconds:
+    case Builtins::kDatePrototypeSetUTCMinutes:
+    case Builtins::kDatePrototypeSetUTCMonth:
+    case Builtins::kDatePrototypeSetUTCSeconds:
+    case Builtins::kDatePrototypeSetYear:
     // RegExp builtins.
     case Builtins::kRegExpPrototypeTest:
     case Builtins::kRegExpPrototypeExec:
     case Builtins::kRegExpPrototypeSplit:
     case Builtins::kRegExpPrototypeFlagsGetter:
     case Builtins::kRegExpPrototypeGlobalGetter:
+    case Builtins::kRegExpPrototypeHasIndicesGetter:
     case Builtins::kRegExpPrototypeIgnoreCaseGetter:
     case Builtins::kRegExpPrototypeMatchAll:
     case Builtins::kRegExpPrototypeMultilineGetter:
@@ -900,14 +913,15 @@ DebugInfo::SideEffectState DebugEvaluate::FunctionGetSideEffectState(
     Isolate* isolate, Handle<SharedFunctionInfo> info) {
   if (FLAG_trace_side_effect_free_debug_evaluate) {
     PrintF("[debug-evaluate] Checking function %s for side effect.\n",
-           info->DebugName().ToCString().get());
+           info->DebugNameCStr().get());
   }
 
   DCHECK(info->is_compiled());
   DCHECK(!info->needs_script_context());
   if (info->HasBytecodeArray()) {
     // Check bytecodes against allowlist.
-    Handle<BytecodeArray> bytecode_array(info->GetBytecodeArray(), isolate);
+    Handle<BytecodeArray> bytecode_array(info->GetBytecodeArray(isolate),
+                                         isolate);
     if (FLAG_trace_side_effect_free_debug_evaluate) {
       bytecode_array->Print();
     }

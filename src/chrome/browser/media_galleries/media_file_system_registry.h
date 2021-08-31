@@ -40,7 +40,7 @@ class Extension;
 // client, including metadata like the name and ID, and API handles like the
 // fsid (filesystem ID) used to hook up the API objects.
 struct MediaFileSystemInfo {
-  MediaFileSystemInfo(const base::string16& fs_name,
+  MediaFileSystemInfo(const std::u16string& fs_name,
                       const base::FilePath& fs_path,
                       const std::string& filesystem_id,
                       MediaGalleryPrefId pref_id,
@@ -51,7 +51,7 @@ struct MediaFileSystemInfo {
   MediaFileSystemInfo(const MediaFileSystemInfo& other);
   ~MediaFileSystemInfo();
 
-  base::string16 name;
+  std::u16string name;
   base::FilePath path;
   std::string fsid;
   MediaGalleryPrefId pref_id;
@@ -110,8 +110,7 @@ class MediaFileSystemRegistry
   // Map a profile and extension to the ExtensionGalleriesHost.
   typedef std::map<Profile*, ExtensionHostMap> ExtensionGalleriesHostMap;
   // Map a profile to a shutdown notification subscription.
-  typedef std::map<Profile*,
-                   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>>
+  typedef std::map<Profile*, base::CallbackListSubscription>
       ProfileSubscriptionMap;
 
   void OnPermissionRemoved(MediaGalleriesPreferences* pref,

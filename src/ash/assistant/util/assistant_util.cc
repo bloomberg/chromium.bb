@@ -7,8 +7,8 @@
 #include <string>
 
 #include "ash/assistant/model/assistant_ui_model.h"
+#include "ash/constants/devicetype.h"
 #include "base/strings/string_util.h"
-#include "chromeos/constants/devicetype.h"
 
 namespace {
 
@@ -44,10 +44,8 @@ bool IsVoiceEntryPoint(AssistantEntryPoint entry_point, bool prefer_voice) {
     case AssistantEntryPoint::kDeepLink:
     case AssistantEntryPoint::kLauncherChip:
     case AssistantEntryPoint::kLauncherSearchResult:
-    case AssistantEntryPoint::kProactiveSuggestions:
     case AssistantEntryPoint::kSetup:
     case AssistantEntryPoint::kStylus:
-    case AssistantEntryPoint::kBloom:
       return false;
   }
 }

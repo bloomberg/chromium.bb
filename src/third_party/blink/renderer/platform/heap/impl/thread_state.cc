@@ -37,6 +37,7 @@
 
 #include "base/atomicops.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/task_runner.h"
@@ -45,9 +46,12 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/active_script_wrappable_base.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -100,8 +104,6 @@ uint8_t ThreadState::main_thread_state_storage_[sizeof(ThreadState)];
 namespace {
 
 constexpr double kMarkingScheduleRatioBeforeConcurrentPriorityIncrease = 0.5;
-
-constexpr size_t kMaxTerminationGCLoops = 20;
 
 // Helper function to convert a byte count to a KB count, capping at
 // INT_MAX if the number is larger than that.
@@ -202,6 +204,10 @@ ThreadState::~ThreadState() {
   **thread_specific_ = nullptr;
 }
 
+ThreadState* ThreadState::AttachMainThreadForTesting(v8::Platform*) {
+  return AttachMainThread();
+}
+
 ThreadState* ThreadState::AttachMainThread() {
   thread_specific_ = new WTF::ThreadSpecific<ThreadState*>();
   return new (main_thread_state_storage_) ThreadState();
@@ -211,6 +217,10 @@ ThreadState* ThreadState::AttachCurrentThread() {
   return new ThreadState();
 }
 
+ThreadState* ThreadState::AttachCurrentThreadForTesting(v8::Platform*) {
+  return AttachCurrentThread();
+}
+
 void ThreadState::DetachCurrentThread() {
   ThreadState* state = Current();
   DCHECK(!state->IsMainThread());
@@ -218,27 +228,96 @@ void ThreadState::DetachCurrentThread() {
   delete state;
 }
 
+namespace {
+
+// See platform/heap/v8_wrapper/thread_state.cc version for details.
+class BlinkRootsHandler final : public v8::EmbedderRootsHandler {
+ public:
+  explicit BlinkRootsHandler(ThreadState& thread_state)
+      : thread_state_(thread_state) {}
+  ~BlinkRootsHandler() final = default;
+
+  bool IsRoot(const v8::TracedReference<v8::Value>& handle) final {
+    const uint16_t class_id = handle.WrapperClassId();
+    // Stand-alone reference or kCustomWrappableId. Keep as root as
+    // we don't know better.
+    if (class_id != WrapperTypeInfo::kNodeClassId &&
+        class_id != WrapperTypeInfo::kObjectClassId)
+      return true;
+
+    const v8::TracedReference<v8::Object>& traced =
+        handle.template As<v8::Object>();
+    if (ToWrapperTypeInfo(traced)->IsActiveScriptWrappable() &&
+        ToScriptWrappable(traced)->HasPendingActivity()) {
+      return true;
+    }
+
+    if (ToScriptWrappable(traced)->HasEventListeners()) {
+      return true;
+    }
+
+    return false;
+  }
+
+  bool IsRoot(const v8::TracedGlobal<v8::Value>& handle) final {
+    CHECK(false) << "Blink does not use v8::TracedGlobal.";
+    return false;
+  }
+
+  void ResetRoot(const v8::TracedReference<v8::Value>& handle) final {
+    const uint16_t class_id = handle.WrapperClassId();
+    // Only consider handles that have not been treated as roots, see
+    // IsRootForNonTracingGCInternal.
+    if (class_id != WrapperTypeInfo::kNodeClassId &&
+        class_id != WrapperTypeInfo::kObjectClassId)
+      return;
+
+    // Clearing the wrapper below adjusts the DOM wrapper store which may
+    // re-allocate its backing. We have to avoid report memory to V8 as that may
+    // trigger GC during GC.
+    ThreadState::GCForbiddenScope no_gc(&thread_state_);
+    const v8::TracedReference<v8::Object>& traced = handle.As<v8::Object>();
+    bool success = DOMWrapperWorld::UnsetSpecificWrapperIfSet(
+        ToScriptWrappable(traced), traced);
+    // Since V8 found a handle, Blink needs to find it as well when trying to
+    // remove it.
+    CHECK(success);
+  }
+
+ private:
+  ThreadState& thread_state_;
+};
+
+}  // namespace
+
 void ThreadState::AttachToIsolate(
     v8::Isolate* isolate,
     V8BuildEmbedderGraphCallback v8_build_embedder_graph) {
   DCHECK(isolate);
   isolate_ = isolate;
   v8_build_embedder_graph_ = v8_build_embedder_graph;
-  unified_heap_controller_.reset(new UnifiedHeapController(this));
+  unified_heap_controller_ = std::make_unique<UnifiedHeapController>(this);
   isolate_->SetEmbedderHeapTracer(unified_heap_controller_.get());
   unified_heap_controller_.get()->SetStackStart(WTF::GetStackStart());
   if (v8::HeapProfiler* profiler = isolate->GetHeapProfiler()) {
     profiler->AddBuildEmbedderGraphCallback(v8_build_embedder_graph, nullptr);
   }
+  embedder_roots_handler_ = std::make_unique<BlinkRootsHandler>(*this);
+  isolate_->SetEmbedderRootsHandler(embedder_roots_handler_.get());
 }
 
 void ThreadState::DetachFromIsolate() {
+  FinishIncrementalMarkingIfRunning(
+      BlinkGC::CollectionType::kMajor, BlinkGC::kHeapPointersOnStack,
+      BlinkGC::kAtomicMarking, BlinkGC::kEagerSweeping,
+      BlinkGC::GCReason::kThreadTerminationGC);
   if (isolate_) {
     isolate_->SetEmbedderHeapTracer(nullptr);
     if (v8::HeapProfiler* profiler = isolate_->GetHeapProfiler()) {
       profiler->RemoveBuildEmbedderGraphCallback(v8_build_embedder_graph_,
                                                  nullptr);
     }
+    isolate_->SetEmbedderRootsHandler(nullptr);
   }
   isolate_ = nullptr;
   v8_build_embedder_graph_ = nullptr;
@@ -254,54 +333,30 @@ void ThreadState::RunTerminationGC() {
                                     BlinkGC::kIncrementalAndConcurrentMarking,
                                     BlinkGC::kConcurrentAndLazySweeping,
                                     BlinkGC::GCReason::kThreadTerminationGC);
-
   // Finish sweeping.
   CompleteSweep();
 
-  ReleaseStaticPersistentNodes();
-
-  // PrepareForThreadStateTermination removes strong references so no need to
-  // call it on CrossThreadWeakPersistentRegion.
-  ProcessHeap::GetCrossThreadPersistentRegion()
-      .PrepareForThreadStateTermination(this);
-
-  // Do thread local GC's as long as the count of thread local Persistents
-  // changes and is above zero.
-  int old_count = -1;
-  int current_count = GetPersistentRegion()->NodesInUse();
-  DCHECK_GE(current_count, 0);
-  while (current_count != old_count) {
+  // The constant specifies how many rounds of GCs should at most be needed to
+  // clean up the heap. If we crash below this means that there's finalizers
+  // adding more objects and roots than the GC is able to clean up.
+  constexpr size_t kMaxTerminationGCsForHeapCleanup = 20;
+  size_t i = 0;
+  do {
+    CHECK_LT(i++, kMaxTerminationGCsForHeapCleanup);
+    // Remove strong cross-thread roots.
+    ProcessHeap::GetCrossThreadPersistentRegion()
+        .PrepareForThreadStateTermination(this);
+    // Remove regular roots.
+    GetPersistentRegion()->PrepareForThreadStateTermination(this);
+    CHECK_EQ(0, GetPersistentRegion()->NodesInUse());
     CollectGarbage(BlinkGC::CollectionType::kMajor,
                    BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
                    BlinkGC::kEagerSweeping,
                    BlinkGC::GCReason::kThreadTerminationGC);
-    // Release the thread-local static persistents that were
-    // instantiated while running the termination GC.
-    ReleaseStaticPersistentNodes();
-    old_count = current_count;
-    current_count = GetPersistentRegion()->NodesInUse();
-  }
-
-  // We should not have any persistents left when getting to this point,
-  // if we have it is a bug, and we have a reference cycle or a missing
-  // RegisterAsStaticReference. Clearing out all the Persistents will avoid
-  // stale pointers and gets them reported as nullptr dereferences.
-  if (current_count) {
-    for (size_t i = 0;
-         i < kMaxTerminationGCLoops && GetPersistentRegion()->NodesInUse();
-         i++) {
-      GetPersistentRegion()->PrepareForThreadStateTermination(this);
-      CollectGarbage(BlinkGC::CollectionType::kMajor,
-                     BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-                     BlinkGC::kEagerSweeping,
-                     BlinkGC::GCReason::kThreadTerminationGC);
-    }
-  }
-
-  CHECK(!GetPersistentRegion()->NodesInUse());
+  } while (GetPersistentRegion()->NodesInUse() != 0);
 
   // All of pre-finalizers should be consumed.
-  DCHECK(ordered_pre_finalizers_.empty());
+  CHECK(ordered_pre_finalizers_.empty());
   CHECK_EQ(GetGCState(), kNoGCScheduled);
 
   Heap().RemoveAllPages();
@@ -461,6 +516,16 @@ void ThreadState::PerformIdleLazySweep(base::TimeTicks deadline) {
   if (SweepForbidden())
     return;
 
+  if (!AdvanceLazySweep(deadline)) {
+    ScheduleIdleLazySweep();
+  }
+}
+
+bool ThreadState::AdvanceLazySweep(base::TimeTicks deadline) {
+  DCHECK(CheckThread());
+  DCHECK(IsSweepingInProgress());
+  DCHECK(!SweepForbidden());
+
   RUNTIME_CALL_TIMER_SCOPE_IF_ISOLATE_EXISTS(
       GetIsolate(), RuntimeCallStats::CounterId::kPerformIdleLazySweep);
 
@@ -477,14 +542,13 @@ void ThreadState::PerformIdleLazySweep(base::TimeTicks deadline) {
     // We request another idle task for the remaining sweeping.
     if (sweep_completed) {
       SynchronizeAndFinishConcurrentSweeping();
-    } else {
-      ScheduleIdleLazySweep();
     }
   }
 
   if (sweep_completed) {
     NotifySweepDone();
   }
+  return sweep_completed;
 }
 
 void ThreadState::PerformConcurrentSweep(base::JobDelegate* job) {
@@ -780,15 +844,6 @@ void ThreadState::SynchronizeAndFinishConcurrentSweeping() {
   Heap().InvokeFinalizersOnSweptPages();
 }
 
-BlinkGCObserver::BlinkGCObserver(ThreadState* thread_state)
-    : thread_state_(thread_state) {
-  thread_state_->AddObserver(this);
-}
-
-BlinkGCObserver::~BlinkGCObserver() {
-  thread_state_->RemoveObserver(this);
-}
-
 namespace {
 
 // Update trace counters with statistics from the current and previous garbage
@@ -940,16 +995,13 @@ void ThreadState::NotifySweepDone() {
   if (!in_atomic_pause()) {
     PostSweep();
   }
+
+  ThreadState::StatisticsCollector(this).Verify();
 }
 
 void ThreadState::PostSweep() {
   DCHECK(!in_atomic_pause());
   DCHECK(!IsSweepingInProgress());
-
-  gc_age_++;
-
-  for (auto* const observer : observers_)
-    observer->OnCompleteSweepDone();
 
   Heap().stats_collector()->NotifySweepingCompleted();
 
@@ -983,56 +1035,6 @@ void ThreadState::PushRegistersAndVisitStack() {
   PushAllRegisters(this, ThreadState::VisitStackAfterPushingRegisters);
   // For builds that use safe stack, also visit the unsafe stack.
   VisitUnsafeStack(static_cast<MarkingVisitor*>(CurrentVisitor()));
-}
-
-void ThreadState::AddObserver(BlinkGCObserver* observer) {
-  DCHECK(observer);
-  DCHECK(!observers_.Contains(observer));
-  observers_.insert(observer);
-}
-
-void ThreadState::RemoveObserver(BlinkGCObserver* observer) {
-  DCHECK(observer);
-  DCHECK(observers_.Contains(observer));
-  observers_.erase(observer);
-}
-
-void ThreadState::EnterStaticReferenceRegistrationDisabledScope() {
-  static_persistent_registration_disabled_count_++;
-}
-
-void ThreadState::LeaveStaticReferenceRegistrationDisabledScope() {
-  DCHECK(static_persistent_registration_disabled_count_);
-  static_persistent_registration_disabled_count_--;
-}
-
-void ThreadState::RegisterStaticPersistentNode(PersistentNode* node) {
-  if (static_persistent_registration_disabled_count_)
-    return;
-
-  DCHECK(!static_persistents_.Contains(node));
-  static_persistents_.insert(node);
-}
-
-void ThreadState::ReleaseStaticPersistentNodes() {
-  HashSet<PersistentNode*> static_persistents;
-  static_persistents.swap(static_persistents_);
-
-  PersistentRegion* persistent_region = GetPersistentRegion();
-  for (PersistentNode* it : static_persistents)
-    persistent_region->ReleaseNode(it);
-}
-
-void ThreadState::FreePersistentNode(PersistentRegion* persistent_region,
-                                     PersistentNode* persistent_node) {
-  persistent_region->FreeNode(persistent_node);
-  // Do not allow static persistents to be freed before
-  // they're all released in releaseStaticPersistentNodes().
-  //
-  // There's no fundamental reason why this couldn't be supported,
-  // but no known use for it.
-  if (persistent_region == GetPersistentRegion())
-    DCHECK(!static_persistents_.Contains(persistent_node));
 }
 
 void ThreadState::InvokePreFinalizers() {
@@ -1214,7 +1216,7 @@ bool ThreadState::ConcurrentMarkingStep() {
     }
     return false;
   }
-  return marker_handle_.IsCompleted();
+  return !marker_handle_.IsActive();
 }
 
 void ThreadState::IncrementalMarkingFinalize() {
@@ -1288,9 +1290,11 @@ void ThreadState::CollectGarbage(BlinkGC::CollectionType collection_type,
   // mentioned below. In this case we will follow up with a regular full
   // garbage collection.
   const bool should_do_full_gc =
-      !was_incremental_marking ||
-      reason == BlinkGC::GCReason::kForcedGCForTesting ||
-      reason == BlinkGC::GCReason::kThreadTerminationGC;
+      !no_followup_full_gc_for_testing_ &&
+      (!was_incremental_marking ||
+       reason == BlinkGC::GCReason::kForcedGCForTesting ||
+       reason == BlinkGC::GCReason::kThreadTerminationGC);
+  no_followup_full_gc_for_testing_ = false;
   if (should_do_full_gc) {
     CompleteSweep();
     SetGCState(kNoGCScheduled);
@@ -1531,6 +1535,8 @@ void ThreadState::MarkPhasePrologue(BlinkGC::CollectionType collection_type,
                                     BlinkGC::GCReason reason) {
   SetGCPhase(GCPhase::kMarking);
 
+  ThreadState::StatisticsCollector(this).Verify();
+
   const bool compaction_enabled =
       Heap().Compaction()->ShouldCompact(stack_state, marking_type, reason);
 
@@ -1704,7 +1710,7 @@ void ThreadState::ScheduleConcurrentMarking() {
       blink::features::kBlinkHeapConcurrentMarking));
 
   marker_handle_ = base::PostJob(
-      FROM_HERE, {base::ThreadPool(), base::TaskPriority::USER_VISIBLE},
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE},
       ConvertToBaseRepeatingCallback(
           WTF::CrossThreadBindRepeating(&ThreadState::PerformConcurrentMark,
                                         WTF::CrossThreadUnretained(this))),
@@ -1749,6 +1755,44 @@ void ThreadState::PerformConcurrentMark(base::JobDelegate* job) {
       concurrent_visitor->RecentlyMarkedBytes());
 
   concurrent_visitor->FlushWorklists();
+}
+
+void ThreadState::NotifyGarbageCollection(v8::GCType type,
+                                          v8::GCCallbackFlags flags) {
+  if (!IsGCForbidden() && (flags & v8::kGCCallbackFlagForced)) {
+    // Forces a precise GC at the end of the current event loop. This is
+    // required for testing code that cannot use GC internals but rather has
+    // to rely on window.gc(). Only schedule additional GCs if the last GC was
+    // using conservative stack scanning.
+    if (type == v8::kGCTypeScavenge || RequiresForcedGCForTesting()) {
+      ScheduleForcedGCForTesting();
+    }
+  }
+}
+
+void ThreadState::CollectNodeAndCssStatistics(
+    base::OnceCallback<void(size_t allocated_node_bytes,
+                            size_t allocated_css_bytes)> callback) {
+  if (IsSweepingInProgress()) {
+    // Help the sweeper to make progress using short-running delayed tasks.
+    // We use delayed tasks to give background threads a chance to sweep
+    // most of the heap.
+    const base::TimeDelta kStepSizeMs = base::TimeDelta::FromMilliseconds(5);
+    const base::TimeDelta kTaskDelayMs = base::TimeDelta::FromMilliseconds(10);
+    if (!AdvanceLazySweep(base::TimeTicks::Now() + kStepSizeMs)) {
+      ThreadScheduler::Current()->V8TaskRunner()->PostDelayedTask(
+          FROM_HERE,
+          WTF::Bind(&ThreadState::CollectNodeAndCssStatistics,
+                    WTF::Unretained(this), std::move(callback)),
+          kTaskDelayMs);
+      return;
+    }
+  }
+  size_t allocated_node_bytes =
+      Heap().Arena(BlinkGC::kNodeArenaIndex)->AllocatedBytes();
+  size_t allocated_css_bytes =
+      Heap().Arena(BlinkGC::kCSSValueArenaIndex)->AllocatedBytes();
+  std::move(callback).Run(allocated_node_bytes, allocated_css_bytes);
 }
 
 }  // namespace blink

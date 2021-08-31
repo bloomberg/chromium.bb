@@ -27,10 +27,36 @@ base::Value ParseTextFragments(const GURL& url);
 // Extracts the text fragments, if any, from a ref string.
 std::vector<std::string> ExtractTextFragments(std::string ref_string);
 
+// Remove the text fragment selectors, if any, from url.
+GURL RemoveTextFragments(const GURL& url);
+
 // Appends a set of text |fragments| with the correct format to the given
 // |base_url|. Returns an empty GURL if |base_url| is invalid.
+//
+// Example input:
+// TextFragment test_fragment("only,- start #2");
+// AppendFragmentDirectives(url, {test_fragment});
 GURL AppendFragmentDirectives(const GURL& base_url,
                               std::vector<TextFragment> fragments);
+
+// Appends a set of text fragment |directives|, that have already been
+// converted to an escaped string, to the given |base_url|. Returns an
+// empty GURL if |base_url| is invalid.
+//
+// Example input:
+// TextFragment test_fragment("only,- start #2");
+// AppendFragmentDirectives(url, {test_fragment.ToEscapedString()});
+GURL AppendFragmentDirectives(const GURL& base_url,
+                              std::vector<std::string> directives);
+
+// Appends a set of text |selectors|, the escaped strings used to identify
+// a text fragment, to the given |base_url|. Returns an empty GURL
+// if |base_url| is invalid.
+//
+// Example input:
+// std::string test_selector("only%2C%2D%20start%20%232");
+// AppendFragmentDirectives(url, {test_selector});
+GURL AppendSelectors(const GURL& base_url, std::vector<std::string> selectors);
 
 }  // namespace shared_highlighting
 

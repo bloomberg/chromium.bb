@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 
 #include "base/barrier_closure.h"
+#include "base/callback_helpers.h"
 #include "cc/input/snap_selection_strategy.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -48,7 +49,9 @@ FloatRect GetUserScrollableRect(const ScrollableArea& area) {
 }  // namespace
 RootFrameViewport::RootFrameViewport(ScrollableArea& visual_viewport,
                                      ScrollableArea& layout_viewport)
-    : visual_viewport_(visual_viewport), should_restore_scroll_(false) {
+    : ScrollableArea(visual_viewport.GetCompositorTaskRunner()),
+      visual_viewport_(visual_viewport),
+      should_restore_scroll_(false) {
   SetLayoutViewport(layout_viewport);
 }
 
@@ -107,18 +110,18 @@ void RootFrameViewport::RestoreToAnchor(const ScrollOffset& target_offset) {
 
   delta = target_offset - GetScrollOffset();
 
-  // Since the main thread LocalFrameView has integer scroll offsets, scroll it
-  // to the next pixel and then we'll scroll the visual viewport again to
-  // compensate for the sub-pixel offset. We need this "overscroll" to ensure
-  // the pixel of which we want to be partially in appears fully inside the
-  // LocalFrameView since the VisualViewport is bounded by the LocalFrameView.
-  IntSize layout_delta = IntSize(
-      delta.Width() < 0 ? floor(delta.Width()) : ceil(delta.Width()),
-      delta.Height() < 0 ? floor(delta.Height()) : ceil(delta.Height()));
+  if (RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled()) {
+    LayoutViewport().SetScrollOffset(LayoutViewport().GetScrollOffset() + delta,
+                                     mojom::blink::ScrollType::kProgrammatic);
+  } else {
+    IntSize layout_delta = IntSize(
+        delta.Width() < 0 ? floor(delta.Width()) : ceil(delta.Width()),
+        delta.Height() < 0 ? floor(delta.Height()) : ceil(delta.Height()));
 
-  LayoutViewport().SetScrollOffset(
-      ScrollOffset(LayoutViewport().ScrollOffsetInt() + layout_delta),
-      mojom::blink::ScrollType::kProgrammatic);
+    LayoutViewport().SetScrollOffset(
+        ScrollOffset(LayoutViewport().ScrollOffsetInt() + layout_delta),
+        mojom::blink::ScrollType::kProgrammatic);
+  }
 
   delta = target_offset - GetScrollOffset();
   GetVisualViewport().SetScrollOffset(
@@ -647,7 +650,7 @@ const cc::SnapContainerData* RootFrameViewport::GetSnapContainerData() const {
 }
 
 void RootFrameViewport::SetSnapContainerData(
-    base::Optional<cc::SnapContainerData> data) {
+    absl::optional<cc::SnapContainerData> data) {
   LayoutViewport().SetSnapContainerData(data);
 }
 
@@ -672,7 +675,7 @@ void RootFrameViewport::SetNeedsResnap(bool needs_resnap) {
   LayoutViewport().SetNeedsResnap(needs_resnap);
 }
 
-base::Optional<FloatPoint> RootFrameViewport::GetSnapPositionAndSetTarget(
+absl::optional<FloatPoint> RootFrameViewport::GetSnapPositionAndSetTarget(
     const cc::SnapSelectionStrategy& strategy) {
   return LayoutViewport().GetSnapPositionAndSetTarget(strategy);
 }

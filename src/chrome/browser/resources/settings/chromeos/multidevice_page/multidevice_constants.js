@@ -44,6 +44,7 @@ cr.define('settings', function() {
     PHONE_HUB_NOTIFICATIONS: 5,
     PHONE_HUB_TASK_CONTINUATION: 6,
     WIFI_SYNC: 7,
+    ECHE: 8,
   };
 
   /**
@@ -101,7 +102,8 @@ cr.define('settings', function() {
    *   phoneHubTaskContinuationState: !settings.MultiDeviceFeatureState,
    *   wifiSyncState: !settings.MultiDeviceFeatureState,
    *   isAndroidSmsPairingComplete: boolean,
-   *   notificationAccessStatus: !settings.PhoneHubNotificationAccessStatus
+   *   notificationAccessStatus: !settings.PhoneHubNotificationAccessStatus,
+   *   isNearbyShareDisallowedByPolicy: boolean
    * }}
    */
   /* #export */ let MultiDevicePageContentData;

@@ -35,8 +35,7 @@ class MediaRouterBase : public MediaRouter {
   void Initialize();
 
   // MediaRouter implementation.
-  std::unique_ptr<PresentationConnectionStateSubscription>
-  AddPresentationConnectionStateChangedCallback(
+  base::CallbackListSubscription AddPresentationConnectionStateChangedCallback(
       const MediaRoute::Id& route_id,
       const content::PresentationConnectionStateChangedCallback& callback)
       override;
@@ -64,6 +63,9 @@ class MediaRouterBase : public MediaRouter {
                            PresentationConnectionStateChangedCallbackRemoved);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterBaseTest, CreatePresentationIds);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterBaseTest, NotifyCallbacks);
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
+                           ListenForConnnectionStateChange);
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest, GetMediaRoutes);
 
   MediaRouterBase();
 
@@ -86,8 +88,9 @@ class MediaRouterBase : public MediaRouter {
   // if not found.
   const MediaRoute* GetRoute(const MediaRoute::Id& route_id) const;
 
-  using PresentationConnectionStateChangedCallbacks = base::CallbackList<void(
-      const content::PresentationConnectionStateChangeInfo&)>;
+  using PresentationConnectionStateChangedCallbacks =
+      base::RepeatingCallbackList<void(
+          const content::PresentationConnectionStateChangeInfo&)>;
 
   std::unordered_map<
       MediaRoute::Id,

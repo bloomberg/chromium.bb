@@ -1,7 +1,7 @@
 # Overview of performance test suite, with steps for manual runs:
 
 For design of the tests, see
-https://grpc.io/docs/guides/benchmarking.html.
+https://grpc.io/docs/guides/benchmarking.
 
 ## Pre-reqs for running these manually:
 In general the benchmark workers and driver build scripts expect
@@ -24,7 +24,7 @@ GCE "worker" machines that are in the same zone.
   * For example, to start the grpc-go benchmark worker:
   [grpc-go worker main.go](https://github.com/grpc/grpc-go/blob/master/benchmark/worker/main.go) --driver_port <driver_port>
 
-#### Comands to start workers in different languages:
+#### Commands to start workers in different languages:
  * Note that these commands are what the top-level
    [run_performance_test.py](../run_performance_tests.py) script uses to
    build and run different workers through the
@@ -48,7 +48,7 @@ $ tools/run_tests/performance/run_worker_<language>.sh
 
 ```
 $ cd <grpc-java-repo>
-$ ./gradlew -PskipCodegen=true :grpc-benchmarks:installDist
+$ ./gradlew -PskipCodegen=true -PskipAndroid=true :grpc-benchmarks:installDist
 $ benchmarks/build/install/grpc-benchmarks/bin/benchmark_worker --driver_port <driver_port>
 ```
 

@@ -10,6 +10,7 @@
 #include "src/builtins/builtins-utils-gen.h"
 #include "src/builtins/builtins.h"
 #include "src/codegen/code-stub-assembler.h"
+#include "src/codegen/interface-descriptors-inl.h"
 #include "src/execution/frame-constants.h"
 #include "src/heap/factory-inl.h"
 #include "src/objects/allocation-site-inl.h"
@@ -18,9 +19,6 @@
 
 namespace v8 {
 namespace internal {
-
-using Node = compiler::Node;
-using IteratorRecord = TorqueStructIteratorRecord;
 
 ArrayBuiltinsAssembler::ArrayBuiltinsAssembler(
     compiler::CodeAssemblerState* state)
@@ -99,9 +97,8 @@ void ArrayBuiltinsAssembler::ReturnFromBuiltin(TNode<Object> value) {
   if (argc_ == nullptr) {
     Return(value);
   } else {
-    // argc_ doesn't include the receiver, so it has to be added back in
-    // manually.
-    PopAndReturn(IntPtrAdd(argc_, IntPtrConstant(1)), value);
+    CodeStubArguments args(this, argc());
+    PopAndReturn(args.GetLengthWithReceiver(), value);
   }
 }
 
@@ -179,7 +176,7 @@ void ArrayBuiltinsAssembler::GenerateIteratingTypedArrayBuiltinBody(
     BIND(&*it);
     Label done(this);
     source_elements_kind_ = static_cast<ElementsKind>(elements_kinds[i]);
-    // TODO(tebbi): Silently cancelling the loop on buffer detachment is a
+    // TODO(turbofan): Silently cancelling the loop on buffer detachment is a
     // spec violation. Should go to &throw_detached and throw a TypeError
     // instead.
     VisitAllTypedArrayElements(array_buffer, processor, &done, direction,
@@ -243,7 +240,9 @@ TF_BUILTIN(ArrayPrototypePop, CodeStubAssembler) {
   BIND(&fast);
   {
     TNode<JSArray> array_receiver = CAST(receiver);
-    TNode<IntPtrT> length = SmiUntag(LoadFastJSArrayLength(array_receiver));
+    CSA_ASSERT(this, TaggedIsPositiveSmi(LoadJSArrayLength(array_receiver)));
+    TNode<IntPtrT> length =
+        LoadAndUntagObjectField(array_receiver, JSArray::kLengthOffset);
     Label return_undefined(this), fast_elements(this);
 
     // 2) Ensure that the length is writable.
@@ -621,7 +620,9 @@ void ArrayIncludesIndexofAssembler::Generate(SearchVariant variant,
     Label is_smi(this), is_nonsmi(this), done(this);
 
     // If no fromIndex was passed, default to 0.
-    GotoIf(IntPtrLessThanOrEqual(argc, IntPtrConstant(kFromIndexArg)), &done);
+    GotoIf(
+        IntPtrLessThanOrEqual(args.GetLength(), IntPtrConstant(kFromIndexArg)),
+        &done);
 
     TNode<Object> start_from = args.AtIndex(kFromIndexArg);
     // Handle Smis and undefined here and everything else in runtime.
@@ -1629,9 +1630,9 @@ TF_BUILTIN(ArrayConstructor, ArrayBuiltinsAssembler) {
       SelectConstant<Object>(IsUndefined(new_target), function, new_target);
 
   // Run the native code for the Array function called as a normal function.
-  TNode<Oddball> no_allocation_site = UndefinedConstant();
+  TNode<Oddball> no_gc_site = UndefinedConstant();
   TailCallBuiltin(Builtins::kArrayConstructorImpl, context, function,
-                  new_target, argc, no_allocation_site);
+                  new_target, argc, no_gc_site);
 }
 
 void ArrayBuiltinsAssembler::TailCallArrayConstructorStub(
@@ -1769,12 +1770,13 @@ void ArrayBuiltinsAssembler::GenerateDispatchToArrayStub(
     TNode<Context> context, TNode<JSFunction> target, TNode<Int32T> argc,
     AllocationSiteOverrideMode mode,
     base::Optional<TNode<AllocationSite>> allocation_site) {
+  CodeStubArguments args(this, argc);
   Label check_one_case(this), fallthrough(this);
-  GotoIfNot(Word32Equal(argc, Int32Constant(0)), &check_one_case);
+  GotoIfNot(IntPtrEqual(args.GetLength(), IntPtrConstant(0)), &check_one_case);
   CreateArrayDispatchNoArgument(context, target, argc, mode, allocation_site);
 
   BIND(&check_one_case);
-  GotoIfNot(Word32Equal(argc, Int32Constant(1)), &fallthrough);
+  GotoIfNot(IntPtrEqual(args.GetLength(), IntPtrConstant(1)), &fallthrough);
   CreateArrayDispatchSingleArgument(context, target, argc, mode,
                                     allocation_site);
 
@@ -1920,9 +1922,10 @@ void ArrayBuiltinsAssembler::GenerateArrayNArgumentsConstructor(
   CodeStubArguments args(this, argc);
   args.SetReceiver(target);
 
-  // Adjust arguments count for the runtime call: +1 for implicit receiver
-  // and +2 for new_target and maybe_allocation_site.
-  argc = Int32Add(argc, Int32Constant(3));
+  // Adjust arguments count for the runtime call:
+  // +2 for new_target and maybe_allocation_site.
+  argc = Int32Add(TruncateIntPtrToInt32(args.GetLengthWithReceiver()),
+                  Int32Constant(2));
   TailCallRuntime(Runtime::kNewArray, argc, context, new_target,
                   maybe_allocation_site);
 }

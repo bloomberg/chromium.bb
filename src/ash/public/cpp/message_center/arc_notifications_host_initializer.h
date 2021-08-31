@@ -7,7 +7,6 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/observer_list_types.h"
-#include "components/arc/mojom/notifications.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace ash {
@@ -25,7 +24,7 @@ class ASH_PUBLIC_EXPORT ArcNotificationsHostInitializer {
     // Invoked when the ArcNotificationsHostInitializer object (the thing that
     // this observer observes) will be destroyed. In response, the observer,
     // |this|, should call "RemoveObserver(this)", whether directly or
-    // indirectly (e.g. via ScopedObserver::Remove).
+    // indirectly (e.g. via ScopedObservation::Reset).
     virtual void OnArcNotificationInitializerDestroyed(
         ArcNotificationsHostInitializer* initializer) = 0;
   };

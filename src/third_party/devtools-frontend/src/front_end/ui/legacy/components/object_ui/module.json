@@ -1,0 +1,12 @@
+{
+  "dependencies": [
+    "ui/legacy",
+    "ui/legacy/components/utils"
+  ],
+    "resources": [
+    "customPreviewComponent.css",
+    "objectPopover.css",
+    "objectPropertiesSection.css",
+    "objectValue.css"
+  ]
+}

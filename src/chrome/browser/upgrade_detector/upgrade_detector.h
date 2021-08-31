@@ -11,6 +11,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -48,6 +49,23 @@ class UpgradeDetector {
     UPGRADE_ANNOYANCE_MAX_VALUE = UPGRADE_ANNOYANCE_VERY_LOW
   };
 
+  struct RelaunchWindow {
+    constexpr RelaunchWindow(int start_hour,
+                             int start_minute,
+                             base::TimeDelta duration)
+        : hour(start_hour), minute(start_minute), duration(duration) {}
+
+    bool IsValid() const {
+      return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59 &&
+             duration >= base::TimeDelta::FromMinutes(1) &&
+             duration != base::TimeDelta::Max();
+    }
+
+    int hour;
+    int minute;
+    base::TimeDelta duration;
+  };
+
   // Returns the singleton implementation instance.
   static UpgradeDetector* GetInstance();
 
@@ -56,6 +74,10 @@ class UpgradeDetector {
   // Returns the default delta from upgrade detection until high annoyance is
   // reached.
   static base::TimeDelta GetDefaultHighAnnoyanceThreshold();
+
+  // Returns the default delta from upgrade detection until elevated annoyance
+  // is reached.
+  static base::TimeDelta GetDefaultElevatedAnnoyanceThreshold();
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -108,7 +130,7 @@ class UpgradeDetector {
     return critical_update_acknowledged_;
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   bool is_factory_reset_required() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return is_factory_reset_required_;
@@ -118,7 +140,7 @@ class UpgradeDetector {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return is_rollback_;
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   UpgradeNotificationAnnoyanceLevel upgrade_notification_stage() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -182,6 +204,21 @@ class UpgradeDetector {
   // of range.
   static base::TimeDelta GetRelaunchNotificationPeriod();
   static bool IsRelaunchNotificationPolicyEnabled();
+
+  // Returns the adjusted deadline as per the relaunch window from
+  // `UpgradeDetector::GetRelaunchWindow()`. If the deadline has already passed
+  // the window for the day, it is prolonged for the next day within the window.
+  // If the `deadline` already falls within the window, no change is made.
+  static base::Time AdjustDeadline(base::Time deadline);
+
+  // Returns the relaunch window specified via the RelaunchWindow policy
+  // setting, or the default one via
+  // 'UpgradeDetector::GetDefaultRelaunchWindow()` if unset or set incorrectly.
+  static RelaunchWindow GetRelaunchWindow();
+
+  // Returns the default relaunch window within which the relaunch should take
+  // place. It is 2am to 4am from Chrome OS and the whole day for others.
+  static RelaunchWindow GetDefaultRelaunchWindow();
 
   const base::Clock* clock() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -259,7 +296,7 @@ class UpgradeDetector {
     upgrade_notification_stage_ = stage;
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void set_is_factory_reset_required(bool is_factory_reset_required) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     is_factory_reset_required_ = is_factory_reset_required;
@@ -269,7 +306,7 @@ class UpgradeDetector {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     is_rollback_ = is_rollback;
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AppMenuModelTest, Basics);
@@ -311,7 +348,7 @@ class UpgradeDetector {
   // Whether the user has acknowledged the critical update.
   bool critical_update_acknowledged_;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Whether a factory reset is needed to complete an update.
   bool is_factory_reset_required_ = false;
 
@@ -319,7 +356,7 @@ class UpgradeDetector {
   // to an earlier version of Chrome OS, which results in the device being
   // wiped when it's rebooted.
   bool is_rollback_ = false;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // A timer to check to see if we've been idle for long enough to show the
   // critical warning. Should only be set if |upgrade_available_| is

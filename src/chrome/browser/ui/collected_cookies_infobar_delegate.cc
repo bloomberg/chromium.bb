@@ -6,17 +6,19 @@
 
 #include "base/check_op.h"
 #include "build/build_config.h"
-#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/infobars/confirm_infobar_creator.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // static
-void CollectedCookiesInfoBarDelegate::Create(InfoBarService* infobar_service) {
-  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      std::unique_ptr<ConfirmInfoBarDelegate>(
+void CollectedCookiesInfoBarDelegate::Create(
+    infobars::ContentInfoBarManager* infobar_manager) {
+  infobar_manager->AddInfoBar(
+      CreateConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate>(
           new CollectedCookiesInfoBarDelegate())));
 }
 
@@ -34,7 +36,7 @@ const gfx::VectorIcon& CollectedCookiesInfoBarDelegate::GetVectorIcon() const {
   return vector_icons::kCookieIcon;
 }
 
-base::string16 CollectedCookiesInfoBarDelegate::GetMessageText() const {
+std::u16string CollectedCookiesInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_INFOBAR_MESSAGE);
 }
 
@@ -42,7 +44,7 @@ int CollectedCookiesInfoBarDelegate::GetButtons() const {
   return BUTTON_OK;
 }
 
-base::string16 CollectedCookiesInfoBarDelegate::GetButtonLabel(
+std::u16string CollectedCookiesInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   DCHECK_EQ(BUTTON_OK, button);
   return l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_INFOBAR_BUTTON);
@@ -50,7 +52,7 @@ base::string16 CollectedCookiesInfoBarDelegate::GetButtonLabel(
 
 bool CollectedCookiesInfoBarDelegate::Accept() {
   content::WebContents* web_contents =
-      InfoBarService::WebContentsFromInfoBar(infobar());
+      infobars::ContentInfoBarManager::WebContentsFromInfoBar(infobar());
   web_contents->GetController().Reload(content::ReloadType::NORMAL, true);
   return true;
 }

@@ -1,29 +1,60 @@
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import("//build/config/chromeos/ui_mode.gni")
 import("//chrome/services/speech/buildflags.gni")
+import("//third_party/protobuf/proto_library.gni")
+
+proto_library("soda_api_proto") {
+  sources = [ "proto/soda_api.proto" ]
+}
 
 source_set("soda") {
   sources = [
     "soda_async_impl.h",
     "soda_client.cc",
     "soda_client.h",
+    "soda_test_paths.h",
   ]
 
-  deps = [ "//base" ]
+  deps = [
+    ":soda_api_proto",
+    "//base",
+  ]
+
+  if (is_chromeos_ash) {
+    sources += [
+      "cros_soda_client.cc",
+      "cros_soda_client.h",
+    ]
+    deps += [
+      "//chromeos/services/machine_learning/public/cpp",
+      "//chromeos/services/machine_learning/public/mojom",
+    ]
+  }
 }
 
+# TODO(robsc): add unit test for cros_soda_client.
 source_set("unit_tests") {
   testonly = true
 
   if (enable_soda) {
     sources = [ "soda_client_unittest.cc" ]
 
-    data_deps = [ "//third_party/soda:soda_resources" ]
+    if (is_mac) {
+      data_deps = [ "//third_party/soda-mac:soda_resources" ]
+    } else if (is_win && target_cpu == "x86") {
+      data_deps = [ "//third_party/soda-win32:soda_resources" ]
+    } else if (is_win && target_cpu == "x64") {
+      data_deps = [ "//third_party/soda-win64:soda_resources" ]
+    } else {
+      data_deps = [ "//third_party/soda:soda_resources" ]
+    }
 
     deps = [
       ":soda",
       "//base",
+      "//chrome/services/speech/soda:soda_api_proto",
       "//media",
       "//testing/gtest",
     ]

@@ -6,10 +6,10 @@
 
 #include <memory>
 #include "base/bind.h"
-#include "base/optional.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_op_buffer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
 #include "third_party/blink/renderer/platform/graphics/logging_canvas.h"
@@ -65,17 +65,16 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   if (paint_chunks.begin()->is_cacheable)
     id_.emplace(paint_chunks.begin()->id);
   else
-    id_ = base::nullopt;
+    id_ = absl::nullopt;
 
 #if DCHECK_IS_ON()
   paint_chunk_debug_data_ = std::make_unique<JSONArray>();
   for (auto it = paint_chunks.begin(); it != paint_chunks.end(); ++it) {
     auto json = std::make_unique<JSONObject>();
     json->SetString("data", it->ToString());
-    json->SetArray("displayItems",
-                   DisplayItemList::DisplayItemsAsJSON(
-                       it->begin_index, it.DisplayItems(),
-                       DisplayItemList::kShowOnlyDisplayItemTypes));
+    json->SetArray("displayItems", DisplayItemList::DisplayItemsAsJSON(
+                                       it->begin_index, it.DisplayItems(),
+                                       DisplayItemList::kCompact));
     paint_chunk_debug_data_->PushObject(std::move(json));
   }
 #endif
@@ -91,7 +90,7 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
                                layer_bounds, layer_state);
   layer_state_ = layer_state;
 
-  base::Optional<RasterUnderInvalidationCheckingParams>
+  absl::optional<RasterUnderInvalidationCheckingParams>
       raster_under_invalidation_params;
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
     raster_under_invalidation_params.emplace(

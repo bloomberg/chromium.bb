@@ -4,7 +4,7 @@
     --icon-button-color: var(--google-grey-600);
     --icon-size: 48px;
     --tile-hover-color: rgba(var(--google-grey-900-rgb), .1);
-    --tile-size: 112px;  /* top padding + icon + title margin + title */
+    --tile-size: 112px;
     --title-height: 32px;
   }
 
@@ -15,10 +15,12 @@
       + 1px);
     display: flex;
     flex-wrap: wrap;
-    height: calc(var(--row-count) * 128px);
+    height: calc(var(--row-count) * var(--tile-size));
     justify-content: center;
+    margin-bottom: 8px;
     opacity: 0;
     overflow: hidden;
+    padding: 2px;  /* Padding added so focus rings are not clipped. */
     transition: opacity 300ms ease-in-out;
     width: calc(var(--content-width) + 12px);
   }
@@ -60,12 +62,8 @@
     display: flex;
     flex-direction: column;
     height: var(--tile-size);
-    margin-bottom: 13px;
-    margin-top: 3px;
     opacity: 1;
     outline: none;
-    padding-bottom: 4px;
-    padding-top: 12px;
     position: relative;
     text-decoration: none;
     transition-duration: 300ms;
@@ -73,6 +71,10 @@
     transition-timing-function: ease-in-out;
     user-select: none;
     width: var(--tile-size);
+  }
+
+  .tile {
+    touch-action: none;
   }
 
   :host-context(.focus-outline-visible) .tile:focus,
@@ -84,6 +86,8 @@
     background-color: transparent;
     border: none;
     box-shadow: none;
+    justify-content: unset;
+    padding: 0;
   }
 
   :host(:not([reordering_])) .tile:hover,
@@ -97,8 +101,10 @@
     background-color: var(--ntp-theme-shortcut-background-color);
     border-radius: 50%;
     display: flex;
+    flex-shrink: 0;
     height: var(--icon-size);
     justify-content: center;
+    margin-top: 16px;
     width: var(--icon-size);
   }
 
@@ -109,12 +115,12 @@
 
   .tile-title {
     align-items: center;
-    border-radius: 12px;
+    border-radius: calc(var(--title-height) / 2 + 2px);
     color: var(--ntp-theme-text-color);
     display: flex;
     height: var(--title-height);
     line-height: calc(var(--title-height) / 2);
-    margin-top: 12px;
+    margin-top: 6px;
     padding: 2px 8px;
     width: 88px;
   }
@@ -156,7 +162,7 @@
   .tile.dragging {
     background-color: var(--tile-hover-color);
     transition-property: none;
-    z-index: 1;
+    z-index: 2;
   }
 
   cr-icon-button {
@@ -195,21 +201,20 @@
     style="--column-count: [[columnCount_]]; --row-count: [[rowCount_]];">
   <dom-repeat id="tiles" items="[[tiles_]]" on-dom-change="onTilesRendered_">
     <template>
-      <a class="tile" draggable$="[[booleanToString_(customLinksEnabled_)]]"
-          href$="[[item.url.url]]" title$="[[item.title]]"
+      <a class="tile" href$="[[item.url.url]]" title$="[[item.title]]"
           on-dragstart="onDragStart_" on-touchstart="onTouchStart_"
           hidden$="[[isHidden_(index, maxVisibleTiles_)]]"
           on-click="onTileClick_" on-keydown="onTileKeyDown_"
           query-tile$="[[item.isQueryTile]]">
         <cr-icon-button id="actionMenuButton" class="icon-more-vert"
-            title="$i18n{moreActions}" on-click="onTileActionButtonClick_"
+            title="[[i18n('moreActions')]]" on-click="onTileActionButtonClick_"
             tabindex="0" hidden$="[[!customLinksEnabled_]]"></cr-icon-button>
         <cr-icon-button id="removeButton" class="icon-clear"
-            title="$i18n{linkRemove}" on-click="onTileRemoveButtonClick_"
+            title="[[i18n('linkRemove')]]" on-click="onTileRemoveButtonClick_"
             tabindex="0" hidden$="[[customLinksEnabled_]]"></cr-icon-button>
         <div class="tile-icon">
           <img src$="[[getFaviconUrl_(item.url)]]" draggable="false"
-              hidden$="[[item.isQueryTile]]"></img>
+              hidden$="[[item.isQueryTile]]" alt=""></img>
           <div class="query-tile-icon" draggable="false"
               hidden$="[[!item.isQueryTile]]"></div>
         </div>
@@ -225,35 +230,36 @@
       <div id="addShortcutIcon" draggable="false"></div>
     </div>
     <div class="tile-title">
-      <span>$i18n{addLinkTitle}</span>
+      <span>[[i18n('addLinkTitle')]]</span>
     </div>
   </cr-button>
   <cr-dialog id="dialog" on-close="onDialogClose_">
     <div slot="title">[[dialogTitle_]]</div>
     <div slot="body">
-      <cr-input id="dialogInputName" label="$i18n{nameField}"
+      <cr-input id="dialogInputName" label="[[i18n('nameField')]]"
           value="{{dialogTileTitle_}}" spellcheck="false" autofocus></cr-input>
-      <cr-input id="dialogInputUrl" label="$i18n{urlField}"
+      <cr-input id="dialogInputUrl" label="[[i18n('urlField')]]"
           value="{{dialogTileUrl_}}" invalid="[[dialogTileUrlInvalid_]]"
-          error-message="$i18n{invalidUrl}" spellcheck="false" type="url">
+          error-message="[[dialogTileUrlError_]]" spellcheck="false" type="url"
+          on-blur="onDialogTileUrlBlur_">
       </cr-input>
     </div>
     <div slot="button-container">
       <cr-button class="cancel-button" on-click="onDialogCancel_">
-        $i18n{linkCancel}
+        [[i18n('linkCancel')]]
       </cr-button>
       <cr-button class="action-button" on-click="onSave_"
-          disabled$="[[!dialogTileUrl_]]">
-        $i18n{linkDone}
+          disabled$="[[dialogSaveDisabled_]]">
+        [[i18n('linkDone')]]
       </cr-button>
     </div>
   </cr-dialog>
   <cr-action-menu id="actionMenu">
     <button id="actionMenuEdit" class="dropdown-item" on-click="onEdit_">
-      $i18n{editLinkTitle}
+      [[i18n('editLinkTitle')]]
     </button>
     <button id="actionMenuRemove" class="dropdown-item" on-click="onRemove_">
-      $i18n{linkRemove}
+      [[i18n('linkRemove')]]
     </button>
   </cr-action-menu>
 </div>
@@ -261,9 +267,9 @@
   <div>[[toastContent_]]</div>
   <dom-if if="[[showToastButtons_]]">
     <template>
-      <cr-button id="undo" aria-label="$i18n{undoDescription}"
+      <cr-button id="undo" aria-label="[[i18n('undoDescription')]]"
           on-click="onUndoClick_">
-        $i18n{undo}
+        [[i18n('undo')]]
       </cr-button>
       <cr-button id="restore"
           aria-label$="[[getRestoreButtonText_(customLinksEnabled_)]]"

@@ -5,6 +5,7 @@
 #include "media/base/pipeline_impl.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -18,8 +19,10 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
+#include "media/base/decoder.h"
 #include "media/base/demuxer.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
@@ -68,8 +71,9 @@ class PipelineImpl::RendererWrapper final : public DemuxerHost,
   void Resume(std::unique_ptr<Renderer> default_renderer, base::TimeDelta time);
   void SetPlaybackRate(double playback_rate);
   void SetVolume(float volume);
-  void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint);
+  void SetLatencyHint(absl::optional<base::TimeDelta> latency_hint);
   void SetPreservesPitch(bool preserves_pitch);
+  void SetAutoplayInitiated(bool autoplay_initiated);
   base::TimeDelta GetMediaTime() const;
   Ranges<base::TimeDelta> GetBufferedTimeRanges() const;
   bool DidLoadingProgress();
@@ -84,7 +88,7 @@ class PipelineImpl::RendererWrapper final : public DemuxerHost,
   // |selected_track_id| is either empty, which means no video track is
   // selected, or contains the selected video track id.
   void OnSelectedVideoTrackChanged(
-      base::Optional<MediaTrack::Id> selected_track_id,
+      absl::optional<MediaTrack::Id> selected_track_id,
       base::OnceClosure change_completed_cb);
 
  private:
@@ -146,7 +150,7 @@ class PipelineImpl::RendererWrapper final : public DemuxerHost,
   void OnVideoConfigChange(const VideoDecoderConfig& config) final;
   void OnVideoNaturalSizeChange(const gfx::Size& size) final;
   void OnVideoOpacityChange(bool opaque) final;
-  void OnVideoFrameRateChange(base::Optional<int> fps) final;
+  void OnVideoFrameRateChange(absl::optional<int> fps) final;
 
   // Common handlers for notifications from renderers and demuxer.
   void OnPipelineError(PipelineStatus error);
@@ -190,11 +194,13 @@ class PipelineImpl::RendererWrapper final : public DemuxerHost,
 
   double playback_rate_;
   float volume_;
-  base::Optional<base::TimeDelta> latency_hint_;
+  absl::optional<base::TimeDelta> latency_hint_;
   CdmContext* cdm_context_;
 
   // By default, apply pitch adjustments.
   bool preserves_pitch_ = true;
+
+  bool autoplay_initiated_ = false;
 
   // Lock used to serialize |shared_state_|.
   // TODO(crbug.com/893739): Add GUARDED_BY annotations.
@@ -474,7 +480,7 @@ void PipelineImpl::RendererWrapper::SetVolume(float volume) {
 }
 
 void PipelineImpl::RendererWrapper::SetLatencyHint(
-    base::Optional<base::TimeDelta> latency_hint) {
+    absl::optional<base::TimeDelta> latency_hint) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   if (latency_hint_ == latency_hint)
@@ -494,6 +500,18 @@ void PipelineImpl::RendererWrapper::SetPreservesPitch(bool preserves_pitch) {
   preserves_pitch_ = preserves_pitch;
   if (shared_state_.renderer)
     shared_state_.renderer->SetPreservesPitch(preserves_pitch_);
+}
+
+void PipelineImpl::RendererWrapper::SetAutoplayInitiated(
+    bool autoplay_initiated) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  if (autoplay_initiated_ == autoplay_initiated)
+    return;
+
+  autoplay_initiated_ = autoplay_initiated;
+  if (shared_state_.renderer)
+    shared_state_.renderer->SetAutoplayInitiated(autoplay_initiated_);
 }
 
 base::TimeDelta PipelineImpl::RendererWrapper::GetMediaTime() const {
@@ -562,13 +580,16 @@ void PipelineImpl::RendererWrapper::CreateRendererInternal(
   DCHECK(cdm_context_ || !HasEncryptedStream())
       << "CDM should be available now if has encrypted stream";
 
-  base::Optional<RendererFactoryType> factory_type;
+  absl::optional<RendererType> renderer_type;
+
+#if defined(OS_WIN)
   if (cdm_context_ && cdm_context_->RequiresMediaFoundationRenderer())
-    factory_type = RendererFactoryType::kMediaFoundation;
+    renderer_type = RendererType::kMediaFoundation;
+#endif  // defined(OS_WIN)
 
   // TODO(xhwang): During Resume(), the |default_renderer_| might already match
-  // the |factory_type|, in which case we shouldn't need to create a new one.
-  if (!default_renderer_ || factory_type) {
+  // the |renderer_type|, in which case we shouldn't need to create a new one.
+  if (!default_renderer_ || renderer_type) {
     // Create the Renderer asynchronously on the main task runner. Use
     // BindToCurrentLoop to call OnRendererCreated() on the media task runner.
     auto renderer_created_cb = BindToCurrentLoop(
@@ -577,7 +598,7 @@ void PipelineImpl::RendererWrapper::CreateRendererInternal(
     main_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&PipelineImpl::AsyncCreateRenderer, weak_pipeline_,
-                       factory_type, std::move(renderer_created_cb)));
+                       renderer_type, std::move(renderer_created_cb)));
     return;
   }
 
@@ -680,7 +701,7 @@ void PipelineImpl::RendererWrapper::OnEnabledAudioTracksChanged(
 }
 
 void PipelineImpl::OnSelectedVideoTrackChanged(
-    base::Optional<MediaTrack::Id> selected_track_id,
+    absl::optional<MediaTrack::Id> selected_track_id,
     base::OnceClosure change_completed_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   media_task_runner_->PostTask(
@@ -692,7 +713,7 @@ void PipelineImpl::OnSelectedVideoTrackChanged(
 }
 
 void PipelineImpl::RendererWrapper::OnSelectedVideoTrackChanged(
-    base::Optional<MediaTrack::Id> selected_track_id,
+    absl::optional<MediaTrack::Id> selected_track_id,
     base::OnceClosure change_completed_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
@@ -761,7 +782,7 @@ void PipelineImpl::RendererWrapper::OnStatisticsUpdate(
   shared_state_.statistics.audio_memory_usage += stats.audio_memory_usage;
   shared_state_.statistics.video_memory_usage += stats.video_memory_usage;
 
-  if (!stats.audio_decoder_info.decoder_name.empty() &&
+  if (stats.audio_decoder_info.decoder_type != AudioDecoderType::kUnknown &&
       stats.audio_decoder_info != shared_state_.statistics.audio_decoder_info) {
     shared_state_.statistics.audio_decoder_info = stats.audio_decoder_info;
     main_task_runner_->PostTask(
@@ -769,7 +790,7 @@ void PipelineImpl::RendererWrapper::OnStatisticsUpdate(
                                   weak_pipeline_, stats.audio_decoder_info));
   }
 
-  if (!stats.video_decoder_info.decoder_name.empty() &&
+  if (stats.video_decoder_info.decoder_type != VideoDecoderType::kUnknown &&
       stats.video_decoder_info != shared_state_.statistics.video_decoder_info) {
     shared_state_.statistics.video_decoder_info = stats.video_decoder_info;
     main_task_runner_->PostTask(
@@ -835,7 +856,7 @@ void PipelineImpl::RendererWrapper::OnVideoOpacityChange(bool opaque) {
 }
 
 void PipelineImpl::RendererWrapper::OnVideoFrameRateChange(
-    base::Optional<int> fps) {
+    absl::optional<int> fps) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   main_task_runner_->PostTask(
@@ -924,6 +945,7 @@ void PipelineImpl::RendererWrapper::SetState(State next_state) {
 
 void PipelineImpl::RendererWrapper::CompleteSeek(base::TimeDelta seek_time,
                                                  PipelineStatus status) {
+  DVLOG(1) << __func__ << ": seek_time=" << seek_time << ", status=" << status;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == kStarting || state_ == kSeeking || state_ == kResuming);
 
@@ -1027,6 +1049,7 @@ void PipelineImpl::RendererWrapper::OnRendererCreated(
 
 void PipelineImpl::RendererWrapper::InitializeRenderer(
     PipelineStatusCallback done_cb) {
+  DVLOG(1) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   switch (demuxer_->GetType()) {
@@ -1166,8 +1189,8 @@ PipelineImpl::PipelineImpl(
   DVLOG(2) << __func__;
   DCHECK(create_renderer_cb_);
 
-  renderer_wrapper_.reset(new RendererWrapper(
-      media_task_runner_, std::move(main_task_runner), media_log_));
+  renderer_wrapper_ = std::make_unique<RendererWrapper>(
+      media_task_runner_, std::move(main_task_runner), media_log_);
 }
 
 PipelineImpl::~PipelineImpl() {
@@ -1206,7 +1229,7 @@ void PipelineImpl::Start(StartType start_type,
   // play. In this case, not creating a default renderer to reduce memory usage.
   std::unique_ptr<Renderer> default_renderer;
   if (start_type != StartType::kSuspendAfterMetadata)
-    default_renderer = create_renderer_cb_.Run(base::nullopt);
+    default_renderer = create_renderer_cb_.Run(absl::nullopt);
 
   media_task_runner_->PostTask(
       FROM_HERE,
@@ -1294,7 +1317,7 @@ void PipelineImpl::Resume(base::TimeDelta time,
   last_media_time_ = base::TimeDelta();
 
   // Always create a default renderer for Resume().
-  auto default_renderer = create_renderer_cb_.Run(base::nullopt);
+  auto default_renderer = create_renderer_cb_.Run(absl::nullopt);
 
   media_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&RendererWrapper::Resume,
@@ -1360,7 +1383,7 @@ void PipelineImpl::SetVolume(float volume) {
 }
 
 void PipelineImpl::SetLatencyHint(
-    base::Optional<base::TimeDelta> latency_hint) {
+    absl::optional<base::TimeDelta> latency_hint) {
   DVLOG(1) << __func__ << "("
            << (latency_hint
                    ? base::NumberToString(latency_hint->InMilliseconds()) + "ms"
@@ -1383,6 +1406,15 @@ void PipelineImpl::SetPreservesPitch(bool preserves_pitch) {
       FROM_HERE, base::BindOnce(&RendererWrapper::SetPreservesPitch,
                                 base::Unretained(renderer_wrapper_.get()),
                                 preserves_pitch));
+}
+
+void PipelineImpl::SetAutoplayInitiated(bool autoplay_initiated) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  media_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&RendererWrapper::SetAutoplayInitiated,
+                                base::Unretained(renderer_wrapper_.get()),
+                                autoplay_initiated));
 }
 
 base::TimeDelta PipelineImpl::GetMediaTime() const {
@@ -1475,12 +1507,12 @@ const char* PipelineImpl::GetStateString(State state) {
 #undef RETURN_STRING
 
 void PipelineImpl::AsyncCreateRenderer(
-    base::Optional<RendererFactoryType> factory_type,
+    absl::optional<RendererType> renderer_type,
     RendererCreatedCB renderer_created_cb) {
   DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::move(renderer_created_cb).Run(create_renderer_cb_.Run(factory_type));
+  std::move(renderer_created_cb).Run(create_renderer_cb_.Run(renderer_type));
 }
 
 void PipelineImpl::OnError(PipelineStatus error) {
@@ -1571,7 +1603,7 @@ void PipelineImpl::OnVideoOpacityChange(bool opaque) {
   client_->OnVideoOpacityChange(opaque);
 }
 
-void PipelineImpl::OnVideoFrameRateChange(base::Optional<int> fps) {
+void PipelineImpl::OnVideoFrameRateChange(absl::optional<int> fps) {
   DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsRunning());
@@ -1607,7 +1639,7 @@ void PipelineImpl::OnVideoAverageKeyframeDistanceUpdate() {
   client_->OnVideoAverageKeyframeDistanceUpdate();
 }
 
-void PipelineImpl::OnAudioDecoderChange(const PipelineDecoderInfo& info) {
+void PipelineImpl::OnAudioDecoderChange(const AudioDecoderInfo& info) {
   DVLOG(2) << __func__ << ": info=" << info;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsRunning());
@@ -1616,7 +1648,7 @@ void PipelineImpl::OnAudioDecoderChange(const PipelineDecoderInfo& info) {
   client_->OnAudioDecoderChange(info);
 }
 
-void PipelineImpl::OnVideoDecoderChange(const PipelineDecoderInfo& info) {
+void PipelineImpl::OnVideoDecoderChange(const VideoDecoderInfo& info) {
   DVLOG(2) << __func__ << ": info=" << info;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsRunning());
@@ -1626,7 +1658,7 @@ void PipelineImpl::OnVideoDecoderChange(const PipelineDecoderInfo& info) {
 }
 
 void PipelineImpl::OnSeekDone(bool is_suspended) {
-  DVLOG(3) << __func__;
+  DVLOG(3) << __func__ << ": is_suspended=" << is_suspended;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsRunning());
 

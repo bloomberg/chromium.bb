@@ -36,6 +36,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "common/path_helper.h"
 #include "common/scoped_ptr.h"
 #include "google_breakpad/processor/minidump.h"
 #include "processor/logging.h"
@@ -233,7 +234,7 @@ Usage(int argc, char *argv[], bool error) {
           "  <minidump> should be a minidump.\n"
           "  -x:\t Display memory in a hexdump like format\n"
           "  -h:\t Usage\n",
-          argv[0]);
+          google_breakpad::BaseName(argv[0]).c_str());
 }
 
 //=============================================================================

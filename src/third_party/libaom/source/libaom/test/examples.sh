@@ -17,6 +17,10 @@ example_tests=$(ls -r $(dirname $0)/*.sh)
 # List of script names to exclude.
 exclude_list="best_encode examples run_encodes tools_common"
 
+if [ "$(realtime_only_build)" = "yes" ]; then
+  exclude_list="${exclude_list} twopass_encoder simple_decoder lightfield_test"
+fi
+
 # Filter out the scripts in $exclude_list.
 for word in ${exclude_list}; do
   example_tests=$(filter_strings "${example_tests}" "${word}" exclude)

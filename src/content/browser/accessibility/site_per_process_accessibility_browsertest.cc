@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility.h"
@@ -200,7 +199,8 @@ IN_PROC_BROWSER_TEST_P(MAYBE_SitePerProcessAccessibilityBrowserTest,
                                                 "Title Of Awesomeness");
 }
 
-INSTANTIATE_TEST_SUITE_P(MAYBE_All,
-                         MAYBE_SitePerProcessAccessibilityBrowserTest,
-                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(
+    MAYBE_All,
+    MAYBE_SitePerProcessAccessibilityBrowserTest,
+    ::testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 }  // namespace content

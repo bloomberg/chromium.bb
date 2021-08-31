@@ -22,6 +22,7 @@ source_set("chromeos") {
 
   public_deps = [
     "//ash",
+    "//build:chromeos_buildflags",
     "//cc",
     "//gpu/command_buffer/common",
     "//ppapi/host",
@@ -36,6 +37,8 @@ source_set("chromeos") {
   ]
 
   deps = [
+    "//remoting/base:base",
+    "//remoting/host:clipboard",
     "//ui/base/cursor",
     "//ui/base/cursor/mojom:cursor_type",
   ]
@@ -53,6 +56,8 @@ source_set("unit_tests") {
   configs += [ "//remoting/build/config:version" ]
 
   deps = [
+    ":chromeos",
+    "//base/test:test_support",
     "//remoting/host:common",
     "//remoting/host:test_support",
     "//remoting/proto",

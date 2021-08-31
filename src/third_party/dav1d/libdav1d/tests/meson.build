@@ -76,8 +76,6 @@ if is_asm_enabled
         checkasm_sources += checkasm_asm_sources
     endif
 
-    m_lib = cc.find_library('m', required: false)
-
     checkasm = executable('checkasm',
         checkasm_sources,
         checkasm_asm_objs,
@@ -94,11 +92,12 @@ if is_asm_enabled
             thread_dependency,
             rt_dependency,
             libdl_dependency,
-            m_lib,
+            libm_dependency,
             ],
         )
 
-    test('checkasm', checkasm, is_parallel: false)
+    test('checkasm', checkasm, suite: 'checkasm', timeout: 180, is_parallel: false)
+    benchmark('checkasm', checkasm, suite: 'checkasm', timeout: 3600, args: '--bench')
 endif
 
 c99_extension_flag = cc.first_supported_argument(
@@ -119,12 +118,32 @@ foreach header : dav1d_api_headers
         build_by_default: true
     )
 
-    test(target, header_test_exe)
+    test(target, header_test_exe, suite: 'headers')
 endforeach
 
 
 # fuzzing binaries
 subdir('libfuzzer')
+
+# seek stress test binary, depends on dav1d cli tool
+if get_option('enable_tools')
+    seek_stress_sources = files('seek_stress.c')
+    seek_stress = executable('seek_stress',
+        seek_stress_sources, rev_target,
+        objects: [
+            dav1d.extract_objects('dav1d_cli_parse.c'),
+            dav1d_input_objs.extract_objects('input/input.c', 'input/ivf.c'),
+        ],
+        include_directories: [dav1d_inc_dirs, include_directories('../tools')],
+        link_with: libdav1d,
+        dependencies: [
+            thread_dependency,
+            rt_dependency,
+            getopt_dependency,
+            libm_dependency,
+        ],
+    )
+endif
 
 # Include dav1d test data repository with additional tests
 if get_option('testdata_tests')

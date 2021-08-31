@@ -10,6 +10,7 @@
 #include <set>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
@@ -57,7 +58,7 @@ class ScopedGetBeforeRequestActionTimer {
 
 }  // namespace
 
-ActionInfo::ActionInfo(base::Optional<RequestAction> action,
+ActionInfo::ActionInfo(absl::optional<RequestAction> action,
                        bool notify_request_withheld)
     : action(std::move(action)),
       notify_request_withheld(notify_request_withheld) {}
@@ -73,6 +74,14 @@ CompositeMatcher::CompositeMatcher(MatcherList matchers)
 }
 
 CompositeMatcher::~CompositeMatcher() = default;
+
+const RulesetMatcher* CompositeMatcher::GetMatcherWithID(RulesetID id) const {
+  auto it = std::find_if(matchers_.begin(), matchers_.end(),
+                         [&id](const std::unique_ptr<RulesetMatcher>& matcher) {
+                           return matcher->id() == id;
+                         });
+  return it == matchers_.end() ? nullptr : it->get();
+}
 
 void CompositeMatcher::AddOrUpdateRuleset(
     std::unique_ptr<RulesetMatcher> matcher) {
@@ -120,14 +129,14 @@ ActionInfo CompositeMatcher::GetBeforeRequestAction(
   ScopedGetBeforeRequestActionTimer timer;
 
   bool notify_request_withheld = false;
-  base::Optional<RequestAction> final_action;
+  absl::optional<RequestAction> final_action;
 
   // The priority of the highest priority matching allow or allowAllRequests
-  // rule within this matcher, or base::nullopt otherwise.
-  base::Optional<uint64_t> max_allow_rule_priority;
+  // rule within this matcher, or absl::nullopt otherwise.
+  absl::optional<uint64_t> max_allow_rule_priority;
 
   for (const auto& matcher : matchers_) {
-    base::Optional<RequestAction> action =
+    absl::optional<RequestAction> action =
         matcher->GetBeforeRequestAction(params);
 
     if (action && action->IsAllowOrAllowAllRequests()) {
@@ -139,12 +148,12 @@ ActionInfo CompositeMatcher::GetBeforeRequestAction(
 
     if (action && action->type == RequestAction::Type::REDIRECT) {
       // Redirecting requires host permissions.
-      // TODO(crbug.com/1033780): returning base::nullopt here results in
+      // TODO(crbug.com/1033780): returning absl::nullopt here results in
       // counterintuitive behavior.
       if (page_access == PageAccess::kDenied) {
-        action = base::nullopt;
+        action = absl::nullopt;
       } else if (page_access == PageAccess::kWithheld) {
-        action = base::nullopt;
+        action = absl::nullopt;
         notify_request_withheld = true;
       }
     }
@@ -157,7 +166,7 @@ ActionInfo CompositeMatcher::GetBeforeRequestAction(
 
   if (final_action)
     return ActionInfo(std::move(final_action), false);
-  return ActionInfo(base::nullopt, notify_request_withheld);
+  return ActionInfo(absl::nullopt, notify_request_withheld);
 }
 
 std::vector<RequestAction> CompositeMatcher::GetModifyHeadersActions(
@@ -166,8 +175,8 @@ std::vector<RequestAction> CompositeMatcher::GetModifyHeadersActions(
   DCHECK(params.allow_rule_max_priority.contains(this));
 
   // The priority of the highest priority matching allow or allowAllRequests
-  // rule within this matcher, or base::nullopt if no such rule exists.
-  base::Optional<uint64_t> max_allow_rule_priority =
+  // rule within this matcher, or absl::nullopt if no such rule exists.
+  absl::optional<uint64_t> max_allow_rule_priority =
       params.allow_rule_max_priority[this];
 
   for (const auto& matcher : matchers_) {
@@ -205,9 +214,10 @@ void CompositeMatcher::OnRenderFrameDeleted(content::RenderFrameHost* host) {
     matcher->OnRenderFrameDeleted(host);
 }
 
-void CompositeMatcher::OnDidFinishNavigation(content::RenderFrameHost* host) {
+void CompositeMatcher::OnDidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
   for (auto& matcher : matchers_)
-    matcher->OnDidFinishNavigation(host);
+    matcher->OnDidFinishNavigation(navigation_handle);
 }
 
 void CompositeMatcher::OnMatchersModified() {

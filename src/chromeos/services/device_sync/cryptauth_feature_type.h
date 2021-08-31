@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/containers/flat_set.h"
-#include "base/optional.h"
 #include "chromeos/components/multidevice/software_feature.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 
@@ -81,8 +81,14 @@ enum class CryptAuthFeatureType {
   kWifiSyncClientSupported = 22,
   kWifiSyncClientEnabled = 23,
 
+  // Eche
+  kEcheHostSupported = 24,
+  kEcheHostEnabled = 25,
+  kEcheClientSupported = 26,
+  kEcheClientEnabled = 27,
+
   // Used for UMA logs.
-  kMaxValue = kWifiSyncClientEnabled
+  kMaxValue = kEcheClientEnabled
 };
 
 const base::flat_set<CryptAuthFeatureType>& GetAllCryptAuthFeatureTypes();
@@ -95,7 +101,7 @@ const base::flat_set<std::string>& GetAllCryptAuthFeatureTypeStrings();
 // CryptAuthFeatureTypeFromString returns null if |feature_type_string| does not
 // map to a known CryptAuthFeatureType.
 const char* CryptAuthFeatureTypeToString(CryptAuthFeatureType feature_type);
-base::Optional<CryptAuthFeatureType> CryptAuthFeatureTypeFromString(
+absl::optional<CryptAuthFeatureType> CryptAuthFeatureTypeFromString(
     const std::string& feature_type_string);
 
 // Provides a unique mapping between a CryptAuthFeatureType and its
@@ -106,7 +112,7 @@ base::Optional<CryptAuthFeatureType> CryptAuthFeatureTypeFromString(
 // CryptAuthFeatureTypeFromGcmHash returns null if |feature_type_hash| cannot be
 // mapped to a CryptAuthFeatureType.
 std::string CryptAuthFeatureTypeToGcmHash(CryptAuthFeatureType feature_type);
-base::Optional<CryptAuthFeatureType> CryptAuthFeatureTypeFromGcmHash(
+absl::optional<CryptAuthFeatureType> CryptAuthFeatureTypeFromGcmHash(
     const std::string& feature_type_hash);
 
 // Provides a mapping between CryptAuthFeatureTypes and SoftwareFeatures.

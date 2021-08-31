@@ -6,10 +6,10 @@
 
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/device_sync/cryptauth_scheduler.h"
 #include "chromeos/services/device_sync/pref_names.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
@@ -155,7 +155,7 @@ void SyncedBluetoothAddressTrackerImpl::ScheduleSyncIfAddressChanged() {
   cryptauth_scheduler_->RequestDeviceSync(
       cryptauthv2::ClientMetadata::InvocationReason::
           ClientMetadata_InvocationReason_ADDRESS_CHANGE,
-      /*session_id=*/base::nullopt);
+      /*session_id=*/absl::nullopt);
 }
 
 std::string SyncedBluetoothAddressTrackerImpl::GetAddress() {

@@ -6,7 +6,7 @@
 """Print dependency tree of branches in local repo.
 
 Example:
-origin/master
+origin/main
   cool_feature
     dependent_feature
     other_dependent_feature

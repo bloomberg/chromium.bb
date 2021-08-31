@@ -27,23 +27,36 @@ namespace webrtc {
 namespace {
 
 struct GetWindowListParams {
-  GetWindowListParams(int flags, DesktopCapturer::SourceList* result)
-      : ignoreUntitled(flags & GetWindowListFlags::kIgnoreUntitled),
-        ignoreUnresponsive(flags & GetWindowListFlags::kIgnoreUnresponsive),
+  GetWindowListParams(int flags,
+                      LONG ex_style_filters,
+                      DesktopCapturer::SourceList* result)
+      : ignore_untitled(flags & GetWindowListFlags::kIgnoreUntitled),
+        ignore_unresponsive(flags & GetWindowListFlags::kIgnoreUnresponsive),
+        ex_style_filters(ex_style_filters),
         result(result) {}
-  const bool ignoreUntitled;
-  const bool ignoreUnresponsive;
+  const bool ignore_untitled;
+  const bool ignore_unresponsive;
+  const LONG ex_style_filters;
   DesktopCapturer::SourceList* const result;
 };
+
+// If a window is owned by the current process and unresponsive, then making a
+// blocking call such as GetWindowText may lead to a deadlock.
+//
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowtexta#remarks
+bool CanSafelyMakeBlockingCalls(HWND hwnd) {
+  DWORD process_id;
+  GetWindowThreadProcessId(hwnd, &process_id);
+  if (process_id != GetCurrentProcessId() || IsWindowResponding(hwnd)) {
+    return true;
+  }
+
+  return false;
+}
 
 BOOL CALLBACK GetWindowListHandler(HWND hwnd, LPARAM param) {
   GetWindowListParams* params = reinterpret_cast<GetWindowListParams*>(param);
   DesktopCapturer::SourceList* list = params->result;
-
-  // Skip untitled window if ignoreUntitled specified
-  if (params->ignoreUntitled && GetWindowTextLength(hwnd) == 0) {
-    return TRUE;
-  }
 
   // Skip invisible and minimized windows
   if (!IsWindowVisible(hwnd) || IsIconic(hwnd)) {
@@ -58,15 +71,36 @@ BOOL CALLBACK GetWindowListHandler(HWND hwnd, LPARAM param) {
     return TRUE;
   }
 
-  // If ignoreUnresponsive is true then skip unresponsive windows. Set timout
-  // with 50ms, in case system is under heavy load, the check can wait longer
-  // but wont' be too long to delay the the enumeration.
-  const UINT uTimeout = 50;  // ms
-  if (params->ignoreUnresponsive &&
-      !SendMessageTimeout(hwnd, WM_NULL, 0, 0, SMTO_ABORTIFHUNG, uTimeout,
-                          nullptr)) {
+  // Filter out windows that match the extended styles the caller has specified,
+  // e.g. WS_EX_TOOLWINDOW for capturers that don't support overlay windows.
+  if (exstyle & params->ex_style_filters) {
     return TRUE;
   }
+
+  if (params->ignore_unresponsive && !IsWindowResponding(hwnd)) {
+    return TRUE;
+  }
+
+  DesktopCapturer::Source window;
+  window.id = reinterpret_cast<WindowId>(hwnd);
+
+  // GetWindowText* are potentially blocking operations if |hwnd| is
+  // owned by the current process, and can lead to a deadlock if the message
+  // pump is waiting on this thread. If we've filtered out unresponsive
+  // windows, this is not a concern, but otherwise we need to check if we can
+  // safely make blocking calls.
+  if (params->ignore_unresponsive || CanSafelyMakeBlockingCalls(hwnd)) {
+    const size_t kTitleLength = 500;
+    WCHAR window_title[kTitleLength] = L"";
+    if (GetWindowTextLength(hwnd) != 0 &&
+        GetWindowTextW(hwnd, window_title, kTitleLength) > 0) {
+      window.title = rtc::ToUtf8(window_title);
+    }
+  }
+
+  // Skip windows when we failed to convert the title or it is empty.
+  if (params->ignore_untitled && window.title.empty())
+    return TRUE;
 
   // Capture the window class name, to allow specific window classes to be
   // skipped.
@@ -89,19 +123,6 @@ BOOL CALLBACK GetWindowListHandler(HWND hwnd, LPARAM param) {
   // On Windows 8, Windows 8.1, Windows 10 Start button is not a top level
   // window, so it will not be examined here.
   if (wcscmp(class_name, L"Button") == 0)
-    return TRUE;
-
-  DesktopCapturer::Source window;
-  window.id = reinterpret_cast<WindowId>(hwnd);
-
-  const size_t kTitleLength = 500;
-  WCHAR window_title[kTitleLength] = L"";
-  if (GetWindowTextW(hwnd, window_title, kTitleLength) > 0) {
-    window.title = rtc::ToUtf8(window_title);
-  }
-
-  // Skip windows when we failed to convert the title or it is empty.
-  if (params->ignoreUntitled && window.title.empty())
     return TRUE;
 
   list->push_back(window);
@@ -252,8 +273,18 @@ bool IsWindowValidAndVisible(HWND window) {
   return IsWindow(window) && IsWindowVisible(window) && !IsIconic(window);
 }
 
-bool GetWindowList(int flags, DesktopCapturer::SourceList* windows) {
-  GetWindowListParams params(flags, windows);
+bool IsWindowResponding(HWND window) {
+  // 50ms is chosen in case the system is under heavy load, but it's also not
+  // too long to delay window enumeration considerably.
+  const UINT uTimeoutMs = 50;
+  return SendMessageTimeout(window, WM_NULL, 0, 0, SMTO_ABORTIFHUNG, uTimeoutMs,
+                            nullptr);
+}
+
+bool GetWindowList(int flags,
+                   DesktopCapturer::SourceList* windows,
+                   LONG ex_style_filters) {
+  GetWindowListParams params(flags, ex_style_filters, windows);
   return ::EnumWindows(&GetWindowListHandler,
                        reinterpret_cast<LPARAM>(&params)) != 0;
 }
@@ -413,10 +444,11 @@ bool WindowCaptureHelperWin::IsWindowCloaked(HWND hwnd) {
 }
 
 bool WindowCaptureHelperWin::EnumerateCapturableWindows(
-    DesktopCapturer::SourceList* results) {
+    DesktopCapturer::SourceList* results,
+    LONG ex_style_filters) {
   if (!webrtc::GetWindowList((GetWindowListFlags::kIgnoreUntitled |
                               GetWindowListFlags::kIgnoreUnresponsive),
-                             results)) {
+                             results, ex_style_filters)) {
     return false;
   }
 

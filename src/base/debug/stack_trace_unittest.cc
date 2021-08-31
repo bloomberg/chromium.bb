@@ -63,25 +63,8 @@ TEST_F(StackTraceTest, OutputToStream) {
   ASSERT_TRUE(addresses);
   ASSERT_GT(frames_found, 5u) << "Too few frames found.";
 
-#if defined(OFFICIAL_BUILD) && defined(OS_APPLE)
-  // Official Mac OS X builds contain enough information to unwind the stack,
-  // but not enough to symbolize the output.
-  return;
-#endif  // defined(OFFICIAL_BUILD) && defined(OS_APPLE)
-
-#if defined(OS_FUCHSIA) || defined(OS_ANDROID)
-  // Under Fuchsia and Android, StackTrace emits executable build-Ids and
-  // address offsets which are symbolized on the test host system, rather than
-  // being symbolized in-process.
-  return;
-#endif  // defined(OS_FUCHSIA) || defined(OS_ANDROID)
-
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
-    defined(MEMORY_SANITIZER)
-  // Sanitizer configurations (ASan, TSan, MSan) emit unsymbolized stacks.
-  return;
-#endif  // defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) ||
-        // defined(MEMORY_SANITIZER)
+  if (!StackTrace::WillSymbolizeToStreamForTesting())
+    return;
 
   // Check if the output has symbol initialization warning.  If it does, fail.
   ASSERT_EQ(backtrace_message.find("Dumping unresolved backtrace"),
@@ -385,6 +368,54 @@ TEST_F(StackTraceTest, MAYBE_StackEnd) {
 }
 
 #endif  // BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
+
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+
+#if !defined(ADDRESS_SANITIZER) && !defined(UNDEFINED_SANITIZER)
+
+#if !defined(ARCH_CPU_ARM_FAMILY)
+// On Arm architecture invalid math operations such as division by zero are not
+// trapped and do not trigger a SIGFPE.
+// Hence disable the test for Arm platforms.
+TEST(CheckExitCodeAfterSignalHandlerDeathTest, CheckSIGFPE) {
+  // Values are volatile to prevent reordering of instructions, i.e. for
+  // optimization. Reordering may lead to tests erroneously failing due to
+  // SIGFPE being raised outside of EXPECT_EXIT.
+  volatile int const nominator = 23;
+  volatile int const denominator = 0;
+  volatile int result;
+
+  EXPECT_EXIT(result = nominator / denominator,
+              ::testing::KilledBySignal(SIGFPE), "");
+}
+#endif  // !defined(ARCH_CPU_ARM_FAMILY)
+
+TEST(CheckExitCodeAfterSignalHandlerDeathTest, CheckSIGSEGV) {
+  // Pointee and pointer are volatile to prevent reordering of instructions,
+  // i.e. for optimization. Reordering may lead to tests erroneously failing due
+  // to SIGSEGV being raised outside of EXPECT_EXIT.
+  volatile int* const volatile p_int = nullptr;
+
+  EXPECT_EXIT(*p_int = 1234, ::testing::KilledBySignal(SIGSEGV), "");
+}
+
+#endif  // #if !defined(ADDRESS_SANITIZER) && !defined(UNDEFINED_SANITIZER)
+
+TEST(CheckExitCodeAfterSignalHandlerDeathTest, CheckSIGILL) {
+  auto const raise_sigill = []() {
+#if defined(ARCH_CPU_X86_FAMILY)
+    asm("ud2");
+#elif defined(ARCH_CPU_ARM_FAMILY)
+    asm("udf 0");
+#else
+#error Unsupported platform!
+#endif
+  };
+
+  EXPECT_EXIT(raise_sigill(), ::testing::KilledBySignal(SIGILL), "");
+}
+
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 }  // namespace debug
 }  // namespace base

@@ -67,14 +67,42 @@ tr.b.unittest.testSuite(function() {
     assert.strictEqual(wallValue.running.max, 30);
   });
 
+  test('testSyncCompileMetric', function() {
+    const slices = [
+      {
+        title: 'wasm.SyncCompile', args: {}, start: 10, end: 20,
+        cpuStart: 100, cpuEnd: 200
+      },
+      {
+        title: 'wasm.SyncCompile', args: {}, start: 30, end: 60,
+        cpuStart: 300, cpuEnd: 600
+      }
+    ];
+    const histograms = runMetrics(slices);
+
+    const cpuValue =
+      histograms.getHistogramNamed('v8:wasm:sync_compile:cpu_time');
+    assert.strictEqual(cpuValue.running.sum, 400);
+    assert.strictEqual(cpuValue.numValues, 2);
+    assert.strictEqual(cpuValue.average, 200);
+    assert.strictEqual(cpuValue.running.max, 300);
+
+    const wallValue =
+      histograms.getHistogramNamed('v8:wasm:sync_compile:wall_time');
+    assert.strictEqual(wallValue.running.sum, 40);
+    assert.strictEqual(wallValue.numValues, 2);
+    assert.strictEqual(wallValue.average, 20);
+    assert.strictEqual(wallValue.running.max, 30);
+  });
+
   test('testStreamingBaselineCompileTime', function() {
     const slices = [
       {
-        title: 'wasm.StartStreamingCompilation', args: {}, start: 10, end: 20,
-        cpuStart: 10, cpuEnd: 20
+        title: 'wasm.StartStreamingCompilation', args: {id: 0}, start: 10,
+        end: 20, cpuStart: 10, cpuEnd: 20
       },
       {
-        title: 'wasm.BaselineFinished', args: {}, start: 100, end: 110,
+        title: 'wasm.BaselineFinished', args: {id: 0}, start: 100, end: 110,
         cpuStart: 100, cpuEnd: 110
       },
     ];
@@ -87,10 +115,38 @@ tr.b.unittest.testSuite(function() {
     assert.strictEqual(compileTime.running.max, 100);
   });
 
+  test('testStreamingBaselineCompileTimeTwoCompilations', function() {
+    const slices = [
+      {
+        title: 'wasm.StartStreamingCompilation', args: {id: 0}, start: 10,
+        end: 20, cpuStart: 10, cpuEnd: 20
+      },
+      {
+        title: 'wasm.StartStreamingCompilation', args: {id: 1}, start: 110,
+        end: 120, cpuStart: 110, cpuEnd: 120
+      },
+      {
+        title: 'wasm.BaselineFinished', args: {id: 1}, start: 200, end: 210,
+        cpuStart: 200, cpuEnd: 210
+      },
+      {
+        title: 'wasm.BaselineFinished', args: {id: 0}, start: 100, end: 110,
+        cpuStart: 100, cpuEnd: 110
+      },
+    ];
+    const histograms = runMetrics(slices);
+
+    const compileTime = histograms.getHistogramNamed(
+        'v8:wasm:streaming_baseline_compilation:wall_time');
+    assert.strictEqual(compileTime.numValues, 2);
+    assert.strictEqual(compileTime.average, 100);
+    assert.strictEqual(compileTime.running.max, 100);
+  });
+
   test('testStreamingBaselineCompileTimeNoStartEvent', function() {
     const slices = [
       {
-        title: 'wasm.BaselineFinished', args: {}, start: 100, end: 110,
+        title: 'wasm.BaselineFinished', args: {id: 0}, start: 100, end: 110,
         cpuStart: 100, cpuEnd: 110
       },
     ];
@@ -104,8 +160,8 @@ tr.b.unittest.testSuite(function() {
   test('testStreamingBaselineCompileTimeNoEndEvent', function() {
     const slices = [
       {
-        title: 'wasm.StartStreamingCompilation', args: {}, start: 100, end: 110,
-        cpuStart: 100, cpuEnd: 110
+        title: 'wasm.StartStreamingCompilation', args: {id: 0}, start: 100,
+        end: 110, cpuStart: 100, cpuEnd: 110
       },
     ];
     const histograms = runMetrics(slices);
@@ -118,11 +174,11 @@ tr.b.unittest.testSuite(function() {
   test('testTierupWallTime', function() {
     const slices = [
       {
-        title: 'wasm.BaselineFinished', args: {}, start: 100, end: 110,
+        title: 'wasm.BaselineFinished', args: {id: 0}, start: 100, end: 110,
         cpuStart: 100, cpuEnd: 110
       },
       {
-        title: 'wasm.TopTierFinished', args: {}, start: 200, end: 210,
+        title: 'wasm.TopTierFinished', args: {id: 0}, start: 200, end: 210,
         cpuStart: 200, cpuEnd: 210
       },
     ];
@@ -136,10 +192,39 @@ tr.b.unittest.testSuite(function() {
     assert.strictEqual(tierupTime.running.max, 110);
   });
 
+  test('testTierupWallTimeTwoTierups', function() {
+    const slices = [
+      {
+        title: 'wasm.BaselineFinished', args: {id: 0}, start: 100, end: 110,
+        cpuStart: 100, cpuEnd: 110
+      },
+      {
+        title: 'wasm.BaselineFinished', args: {id: 1}, start: 200, end: 210,
+        cpuStart: 200, cpuEnd: 210
+      },
+      {
+        title: 'wasm.TopTierFinished', args: {id: 1}, start: 300, end: 310,
+        cpuStart: 200, cpuEnd: 210
+      },
+      {
+        title: 'wasm.TopTierFinished', args: {id: 0}, start: 200, end: 210,
+        cpuStart: 200, cpuEnd: 210
+      },
+    ];
+
+    const histograms = runMetrics(slices);
+
+    const tierupTime = histograms.getHistogramNamed(
+        'v8:wasm:compilation_tierup:wall_time');
+    assert.strictEqual(tierupTime.numValues, 2);
+    assert.strictEqual(tierupTime.average, 110);
+    assert.strictEqual(tierupTime.running.max, 110);
+  });
+
   test('testTierupNoStartEvent', function() {
     const slices = [
       {
-        title: 'wasm.TopTierFinished', args: {}, start: 200, end: 210,
+        title: 'wasm.TopTierFinished', args: {id: 0}, start: 200, end: 210,
         cpuStart: 200, cpuEnd: 210
       },
     ];
@@ -154,7 +239,7 @@ tr.b.unittest.testSuite(function() {
   test('testTierupNoEndEvent', function() {
     const slices = [
       {
-        title: 'wasm.BaselineFinished', args: {}, start: 100, end: 110,
+        title: 'wasm.BaselineFinished', args: {id: 0}, start: 100, end: 110,
         cpuStart: 100, cpuEnd: 110
       },
     ];

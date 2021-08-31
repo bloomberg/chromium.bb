@@ -5,7 +5,7 @@
 #include "components/permissions/permissions_client.h"
 
 #include "base/callback.h"
-#include "components/permissions/notification_permission_ui_selector.h"
+#include "build/chromeos_buildflags.h"
 
 #if !defined(OS_ANDROID)
 #include "ui/gfx/paint_vector_icon.h"
@@ -44,7 +44,7 @@ void PermissionsClient::AreSitesImportant(
     entry.second = false;
 }
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
 bool PermissionsClient::IsCookieDeletionDisabled(
     content::BrowserContext* browser_context,
     const GURL& origin) {
@@ -56,11 +56,10 @@ void PermissionsClient::GetUkmSourceId(content::BrowserContext* browser_context,
                                        const content::WebContents* web_contents,
                                        const GURL& requesting_origin,
                                        GetUkmSourceIdCallback callback) {
-  std::move(callback).Run(base::nullopt);
+  std::move(callback).Run(absl::nullopt);
 }
 
-PermissionRequest::IconId PermissionsClient::GetOverrideIconId(
-    ContentSettingsType type) {
+IconId PermissionsClient::GetOverrideIconId(RequestType request_type) {
 #if defined(OS_ANDROID)
   return 0;
 #else
@@ -68,34 +67,34 @@ PermissionRequest::IconId PermissionsClient::GetOverrideIconId(
 #endif
 }
 
-std::vector<std::unique_ptr<NotificationPermissionUiSelector>>
-PermissionsClient::CreateNotificationPermissionUiSelectors(
+std::vector<std::unique_ptr<PermissionUiSelector>>
+PermissionsClient::CreatePermissionUiSelectors(
     content::BrowserContext* browser_context) {
-  return std::vector<std::unique_ptr<NotificationPermissionUiSelector>>();
+  return std::vector<std::unique_ptr<PermissionUiSelector>>();
 }
 
 void PermissionsClient::OnPromptResolved(
     content::BrowserContext* browser_context,
-    PermissionRequestType request_type,
+    RequestType request_type,
     PermissionAction action,
     const GURL& origin,
-    base::Optional<QuietUiReason> quiet_ui_reason) {}
+    absl::optional<QuietUiReason> quiet_ui_reason) {}
 
-base::Optional<bool>
+absl::optional<bool>
 PermissionsClient::HadThreeConsecutiveNotificationPermissionDenies(
     content::BrowserContext* browser_context) {
-  return base::nullopt;
+  return absl::nullopt;
 }
 
-base::Optional<url::Origin> PermissionsClient::GetAutoApprovalOrigin() {
-  return base::nullopt;
+absl::optional<url::Origin> PermissionsClient::GetAutoApprovalOrigin() {
+  return absl::nullopt;
 }
 
-base::Optional<bool> PermissionsClient::HasPreviouslyAutoRevokedPermission(
+absl::optional<bool> PermissionsClient::HasPreviouslyAutoRevokedPermission(
     content::BrowserContext* browser_context,
     const GURL& origin,
     ContentSettingsType permission) {
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool PermissionsClient::CanBypassEmbeddingOriginCheck(
@@ -104,10 +103,10 @@ bool PermissionsClient::CanBypassEmbeddingOriginCheck(
   return false;
 }
 
-base::Optional<GURL> PermissionsClient::OverrideCanonicalOrigin(
+absl::optional<GURL> PermissionsClient::OverrideCanonicalOrigin(
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 #if defined(OS_ANDROID)

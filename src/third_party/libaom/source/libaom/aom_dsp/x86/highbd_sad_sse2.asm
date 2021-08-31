@@ -20,20 +20,21 @@ SECTION .text
 ; Arg 2: Height
 ; Arg 3: Number of general purpose registers: 5 for 32-bit build, 6 for 64-bit
 ; Arg 4: Type of function: if 0, normal sad; if 1, avg; if 2, skip rows
-%macro HIGH_SAD_FN 4
+; Arg 5: Number of xmm registers. 8xh needs 8, others only need 7
+%macro HIGH_SAD_FN 4-5 7
 %if %4 == 0
 %if %3 == 5
-cglobal highbd_sad%1x%2, 4, %3, 7, src, src_stride, ref, ref_stride, n_rows
+cglobal highbd_sad%1x%2, 4, %3, %5, src, src_stride, ref, ref_stride, n_rows
 %else ; %3 == 7
-cglobal highbd_sad%1x%2, 4, %3, 7, src, src_stride, ref, ref_stride, \
+cglobal highbd_sad%1x%2, 4, %3, %5, src, src_stride, ref, ref_stride, \
                             src_stride3, ref_stride3, n_rows
 %endif ; %3 == 5/7
 %elif %4 == 1 ; avg
 %if %3 == 5
-cglobal highbd_sad%1x%2_avg, 5, 1 + %3, 7, src, src_stride, ref, ref_stride, \
+cglobal highbd_sad%1x%2_avg, 5, 1 + %3, %5, src, src_stride, ref, ref_stride, \
                                     second_pred, n_rows
 %else ; %3 == 7
-cglobal highbd_sad%1x%2_avg, 5, ARCH_X86_64 + %3, 7, src, src_stride, \
+cglobal highbd_sad%1x%2_avg, 5, ARCH_X86_64 + %3, %5, src, src_stride, \
                                               ref, ref_stride, \
                                               second_pred, \
                                               src_stride3, ref_stride3
@@ -356,7 +357,7 @@ HIGH_SAD16XN  8, 2 ; highbd_sad_skip_16x8_sse2
 ; unsigned int aom_highbd_sad8x{4,8,16}_sse2(uint8_t *src, int src_stride,
 ;                                    uint8_t *ref, int ref_stride);
 %macro HIGH_SAD8XN 1-2 0
-  HIGH_SAD_FN 8, %1, 7, %2
+  HIGH_SAD_FN 8, %1, 7, %2, 8
 %if %2 == 2  ; skip rows, so divide number of rows by 2
   mov              n_rowsd, %1/8
 %else
@@ -377,22 +378,30 @@ HIGH_SAD16XN  8, 2 ; highbd_sad_skip_16x8_sse2
   pavgw                 m4, [second_predq+mmsize*3]
   lea         second_predq, [second_predq+mmsize*4]
 %endif
-  mova                  m5, [srcq]
-  psubusw               m5, m1
-  psubusw               m1, [srcq]
+  mova                  m7, m1
+  movu                  m5, [srcq]
+  psubusw               m1, m5
+  psubusw               m5, m7
   por                   m1, m5
-  mova                  m5, [srcq+src_strideq*2]
-  psubusw               m5, m2
-  psubusw               m2, [srcq+src_strideq*2]
+
+  mova                  m7, m2
+  movu                  m5, [srcq+src_strideq*2]
+  psubusw               m2, m5
+  psubusw               m5, m7
   por                   m2, m5
-  mova                  m5, [srcq+src_strideq*4]
-  psubusw               m5, m3
-  psubusw               m3, [srcq+src_strideq*4]
+
+  mova                  m7, m3
+  movu                  m5, [srcq+src_strideq*4]
+  psubusw               m3, m5
+  psubusw               m5, m7
   por                   m3, m5
-  mova                  m5, [srcq+src_stride3q*2]
-  psubusw               m5, m4
-  psubusw               m4, [srcq+src_stride3q*2]
+
+  mova                  m7, m4
+  movu                  m5, [srcq+src_stride3q*2]
+  psubusw               m4, m5
+  psubusw               m5, m7
   por                   m4, m5
+
   paddw                 m1, m2
   paddw                 m3, m4
   movhlps               m2, m1

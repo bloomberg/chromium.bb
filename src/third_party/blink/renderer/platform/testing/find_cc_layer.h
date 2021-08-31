@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FIND_CC_LAYER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FIND_CC_LAYER_H_
 
-#include <string>
 #include "cc/input/scrollbar.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -34,7 +33,7 @@ const cc::Layer* ScrollingContentsCcLayerByScrollElementId(
     const cc::Layer* root,
     const CompositorElementId& scroll_element_id);
 
-const cc::ScrollbarLayerBase* ScrollbarLayerForScrollNode(
+cc::ScrollbarLayerBase* ScrollbarLayerForScrollNode(
     const cc::Layer* root,
     const cc::ScrollNode* scroll_node,
     cc::ScrollbarOrientation orientation);

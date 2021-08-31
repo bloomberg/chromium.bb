@@ -3,6 +3,10 @@ Tests property access on a cached DOMWindow after the associated frame is naviga
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
+PASS oldChildWindow.appHistory.current is newChildWindow.appHistory.current
+PASS oldChildWindow.appHistory.onnavigate is newChildWindow.appHistory.onnavigate
+PASS oldChildWindow.appHistory.onnavigateerror is newChildWindow.appHistory.onnavigateerror
+PASS oldChildWindow.appHistory.onnavigatesuccess is newChildWindow.appHistory.onnavigatesuccess
 PASS oldChildWindow.closed is newChildWindow.closed
 PASS oldChildWindow.cookieStore.onchange is newChildWindow.cookieStore.onchange
 PASS oldChildWindow.crossOriginIsolated is newChildWindow.crossOriginIsolated
@@ -40,6 +44,7 @@ PASS oldChildWindow.navigator.hardwareConcurrency is newChildWindow.navigator.ha
 PASS oldChildWindow.navigator.hid.onconnect is newChildWindow.navigator.hid.onconnect
 PASS oldChildWindow.navigator.hid.ondisconnect is newChildWindow.navigator.hid.ondisconnect
 PASS oldChildWindow.navigator.language is newChildWindow.navigator.language
+PASS oldChildWindow.navigator.managed.onmanagedconfigurationchange is newChildWindow.navigator.managed.onmanagedconfigurationchange
 PASS oldChildWindow.navigator.maxTouchPoints is newChildWindow.navigator.maxTouchPoints
 PASS oldChildWindow.navigator.mediaDevices.ondevicechange is newChildWindow.navigator.mediaDevices.ondevicechange
 PASS oldChildWindow.navigator.mediaSession.metadata is newChildWindow.navigator.mediaSession.metadata
@@ -77,6 +82,7 @@ PASS oldChildWindow.navigator.virtualKeyboard.boundingRect.x is newChildWindow.n
 PASS oldChildWindow.navigator.virtualKeyboard.boundingRect.y is newChildWindow.navigator.virtualKeyboard.boundingRect.y
 PASS oldChildWindow.navigator.virtualKeyboard.ongeometrychange is newChildWindow.navigator.virtualKeyboard.ongeometrychange
 PASS oldChildWindow.navigator.virtualKeyboard.overlaysContent is newChildWindow.navigator.virtualKeyboard.overlaysContent
+PASS oldChildWindow.navigator.webdriver is newChildWindow.navigator.webdriver
 PASS oldChildWindow.navigator.xr.ondevicechange is newChildWindow.navigator.xr.ondevicechange
 PASS oldChildWindow.onabort is newChildWindow.onabort
 PASS oldChildWindow.onafterprint is newChildWindow.onafterprint
@@ -88,6 +94,7 @@ PASS oldChildWindow.onauxclick is newChildWindow.onauxclick
 PASS oldChildWindow.onbeforeinstallprompt is newChildWindow.onbeforeinstallprompt
 PASS oldChildWindow.onbeforeprint is newChildWindow.onbeforeprint
 PASS oldChildWindow.onbeforeunload is newChildWindow.onbeforeunload
+PASS oldChildWindow.onbeforexrselect is newChildWindow.onbeforexrselect
 PASS oldChildWindow.onblur is newChildWindow.onblur
 PASS oldChildWindow.oncancel is newChildWindow.oncancel
 PASS oldChildWindow.oncanplay is newChildWindow.oncanplay
@@ -236,6 +243,8 @@ PASS oldChildWindow.screen.availTop is newChildWindow.screen.availTop
 PASS oldChildWindow.screen.availWidth is newChildWindow.screen.availWidth
 PASS oldChildWindow.screen.colorDepth is newChildWindow.screen.colorDepth
 PASS oldChildWindow.screen.height is newChildWindow.screen.height
+PASS oldChildWindow.screen.isExtended is newChildWindow.screen.isExtended
+PASS oldChildWindow.screen.onchange is newChildWindow.screen.onchange
 PASS oldChildWindow.screen.orientation.angle is newChildWindow.screen.orientation.angle
 PASS oldChildWindow.screen.orientation.onchange is newChildWindow.screen.orientation.onchange
 PASS oldChildWindow.screen.orientation.type is newChildWindow.screen.orientation.type

@@ -45,9 +45,8 @@ class SVGPolyElement : public SVGGeometryElement {
   Path AsPathFromPoints() const;
 
  private:
-  void SvgAttributeChanged(const QualifiedName&) final;
+  void SvgAttributeChanged(const SvgAttributeChangedParams&) final;
 
- private:
   Member<SVGAnimatedPointList> points_;
 };
 
@@ -69,4 +68,4 @@ struct DowncastTraits<SVGPolyElement> {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_POLY_ELEMENT_H_

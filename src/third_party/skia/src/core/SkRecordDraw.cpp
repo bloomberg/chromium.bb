@@ -59,7 +59,7 @@ void SkRecordDraw(const SkRecord& record,
 void SkRecordPartialDraw(const SkRecord& record, SkCanvas* canvas,
                          SkPicture const* const drawablePicts[], int drawableCount,
                          int start, int stop,
-                         const SkMatrix& initialCTM) {
+                         const SkM44& initialCTM) {
     SkAutoCanvasRestore saveRestore(canvas, true /*save now, restore at exit*/);
 
     stop = std::min(stop, record.count());
@@ -92,7 +92,8 @@ template <> void Draw::draw(const DrawBehind& r) {
 }
 
 DRAW(MarkCTM, markCTM(r.name.c_str()));
-DRAW(SetMatrix, setMatrix(SkMatrix::Concat(fInitialCTM, r.matrix)));
+DRAW(SetMatrix, setMatrix(fInitialCTM.asM33() * r.matrix));
+DRAW(SetM44, setMatrix(fInitialCTM * r.matrix));
 DRAW(Concat44, concat(r.matrix));
 DRAW(Concat, concat(r.matrix));
 DRAW(Translate, translate(r.dx, r.dy));
@@ -106,7 +107,7 @@ DRAW(ClipShader, clipShader(r.shader, r.op));
 
 DRAW(DrawArc, drawArc(r.oval, r.startAngle, r.sweepAngle, r.useCenter, r.paint));
 DRAW(DrawDRRect, drawDRRect(r.outer, r.inner, r.paint));
-DRAW(DrawImage, drawImage(r.image.get(), r.left, r.top, r.paint));
+DRAW(DrawImage, drawImage(r.image.get(), r.left, r.top, r.sampling, r.paint));
 
 template <> void Draw::draw(const DrawImageLattice& r) {
     SkCanvas::Lattice lattice;
@@ -117,11 +118,10 @@ template <> void Draw::draw(const DrawImageLattice& r) {
     lattice.fRectTypes = (0 == r.flagCount) ? nullptr : r.flags;
     lattice.fColors = (0 == r.flagCount) ? nullptr : r.colors;
     lattice.fBounds = &r.src;
-    fCanvas->drawImageLattice(r.image.get(), lattice, r.dst, r.paint);
+    fCanvas->drawImageLattice(r.image.get(), lattice, r.dst, r.filter, r.paint);
 }
 
-DRAW(DrawImageRect, legacy_drawImageRect(r.image.get(), r.src, r.dst, r.paint, r.constraint));
-DRAW(DrawImageNine, drawImageNine(r.image.get(), r.center, r.dst, r.paint));
+DRAW(DrawImageRect, drawImageRect(r.image.get(), r.src, r.dst, r.sampling, r.paint, r.constraint));
 DRAW(DrawOval, drawOval(r.oval, r.paint));
 DRAW(DrawPaint, drawPaint(r.paint));
 DRAW(DrawPath, drawPath(r.path, r.paint));
@@ -132,8 +132,8 @@ DRAW(DrawRRect, drawRRect(r.rrect, r.paint));
 DRAW(DrawRect, drawRect(r.rect, r.paint));
 DRAW(DrawRegion, drawRegion(r.region, r.paint));
 DRAW(DrawTextBlob, drawTextBlob(r.blob.get(), r.x, r.y, r.paint));
-DRAW(DrawAtlas, drawAtlas(r.atlas.get(),
-                          r.xforms, r.texs, r.colors, r.count, r.mode, r.cull, r.paint));
+DRAW(DrawAtlas, drawAtlas(r.atlas.get(), r.xforms, r.texs, r.colors, r.count, r.mode, r.sampling,
+                          r.cull, r.paint));
 DRAW(DrawVertices, drawVertices(r.vertices, r.bmode, r.paint));
 DRAW(DrawShadowRec, private_draw_shadow_rec(r.path, r.rec));
 DRAW(DrawAnnotation, drawAnnotation(r.rect, r.key.c_str(), r.value.get()));
@@ -141,7 +141,7 @@ DRAW(DrawAnnotation, drawAnnotation(r.rect, r.key.c_str(), r.value.get()));
 DRAW(DrawEdgeAAQuad, experimental_DrawEdgeAAQuad(
         r.rect, r.clip, r.aa, r.color, r.mode));
 DRAW(DrawEdgeAAImageSet, experimental_DrawEdgeAAImageSet(
-        r.set.get(), r.count, r.dstClips, r.preViewMatrices, r.paint, r.constraint));
+        r.set.get(), r.count, r.dstClips, r.preViewMatrices, r.sampling, r.paint, r.constraint));
 
 #undef DRAW
 
@@ -251,6 +251,7 @@ private:
     template <typename T> void updateCTM(const T&) {}
     void updateCTM(const Restore& op)   { fCTM = op.matrix; }
     void updateCTM(const SetMatrix& op) { fCTM = op.matrix; }
+    void updateCTM(const SetM44& op)    { fCTM = op.matrix.asM33(); }
     void updateCTM(const Concat44& op)  { fCTM.preConcat(op.matrix.asM33()); }
     void updateCTM(const Concat& op)    { fCTM.preConcat(op.matrix); }
     void updateCTM(const Scale& op)     { fCTM.preScale(op.sx, op.sy); }
@@ -269,6 +270,7 @@ private:
 
     void trackBounds(const MarkCTM&)           { this->pushControl(); }
     void trackBounds(const SetMatrix&)         { this->pushControl(); }
+    void trackBounds(const SetM44&)         { this->pushControl(); }
     void trackBounds(const Concat&)            { this->pushControl(); }
     void trackBounds(const Concat44&)          { this->pushControl(); }
     void trackBounds(const Scale&)             { this->pushControl(); }
@@ -401,9 +403,6 @@ private:
         return this->adjustAndMap(op.dst, op.paint);
     }
     Bounds bounds(const DrawImageRect& op) const {
-        return this->adjustAndMap(op.dst, op.paint);
-    }
-    Bounds bounds(const DrawImageNine& op) const {
         return this->adjustAndMap(op.dst, op.paint);
     }
     Bounds bounds(const DrawPath& op) const {

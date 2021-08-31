@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
@@ -55,7 +57,7 @@ class ComboboxModelAdapter : public ui::ComboboxModel {
 
   // ui::ComboboxModel:
   int GetItemCount() const override;
-  base::string16 GetItemAt(int index) const override;
+  std::u16string GetItemAt(int index) const override;
 
  private:
   PermissionMenuModel* model_;
@@ -87,7 +89,7 @@ int ComboboxModelAdapter::GetItemCount() const {
   return model_->GetItemCount();
 }
 
-base::string16 ComboboxModelAdapter::GetItemAt(int index) const {
+std::u16string ComboboxModelAdapter::GetItemAt(int index) const {
   return model_->GetLabelAt(index);
 }
 
@@ -155,11 +157,9 @@ void PermissionCombobox::PermissionChanged() {
 ///////////////////////////////////////////////////////////////////////////////
 
 PermissionSelectorRow::PermissionSelectorRow(
-    Profile* profile,
-    const GURL& url,
+    ChromePageInfoUiDelegate* delegate,
     const PageInfo::PermissionInfo& permission,
-    views::GridLayout* layout)
-    : profile_(profile) {
+    views::GridLayout* layout) {
   const int list_item_padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
                                     DISTANCE_CONTROL_LIST_VERTICAL) /
                                 2;
@@ -175,51 +175,27 @@ PermissionSelectorRow::PermissionSelectorRow(
   label_ = layout->AddView(std::move(label));
   // Create the menu model.
   menu_model_ = std::make_unique<PermissionMenuModel>(
-      profile, url, permission,
-      base::Bind(&PermissionSelectorRow::PermissionChanged,
-                 base::Unretained(this)));
+      delegate, permission,
+      base::BindRepeating(&PermissionSelectorRow::PermissionChanged,
+                          base::Unretained(this)));
 
   // Create the permission combobox.
   InitializeComboboxView(layout, permission);
 
+  // Add extra details as sublabel.
+  std::u16string detail = delegate->GetPermissionDetail(permission.type);
+  if (!detail.empty())
+    AddSecondaryLabelRow(layout, detail);
+
   // Show the permission decision reason, if it was not the user.
-  auto delegate = ChromePageInfoUiDelegate(profile);
-  base::string16 reason = PageInfoUI::PermissionDecisionReasonToUIString(
-      &delegate, permission, url);
-  if (!reason.empty()) {
-    layout->StartRow(1.0, PageInfoBubbleView::kPermissionColumnSetId);
-    layout->SkipColumns(1);
-    auto secondary_label = std::make_unique<views::Label>(reason);
-    secondary_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    secondary_label->SetEnabledColor(PageInfoUI::GetSecondaryTextColor());
-    // The |secondary_label| should wrap when it's too long instead of
-    // stretching its parent view horizontally, but also ensure long strings
-    // aren't wrapped too early.
-    int preferred_width = secondary_label->GetPreferredSize().width();
-    secondary_label->SetMultiLine(true);
+  std::u16string reason =
+      PageInfoUI::PermissionDecisionReasonToUIString(delegate, permission);
+  if (!reason.empty())
+    AddSecondaryLabelRow(layout, reason);
 
-    views::ColumnSet* column_set =
-        layout->GetColumnSet(PageInfoBubbleView::kPermissionColumnSetId);
-    DCHECK(column_set);
-    // Secondary labels in Harmony may not overlap into space shared with the
-    // combobox column.
-    const int column_span = 1;
-
-    // Long labels that cannot fit in the existing space under the permission
-    // label should be allowed to use up to |kMaxSecondaryLabelWidth| for
-    // display.
-    constexpr int kMaxSecondaryLabelWidth = 140;
-    if (preferred_width > kMaxSecondaryLabelWidth) {
-      layout->AddView(std::move(secondary_label), column_span, 1.0,
-                      views::GridLayout::LEADING, views::GridLayout::CENTER,
-                      kMaxSecondaryLabelWidth, 0);
-    } else {
-      layout->AddView(std::move(secondary_label), column_span, 1.0,
-                      views::GridLayout::FILL, views::GridLayout::CENTER);
-    }
-  }
-  layout->AddPaddingRow(views::GridLayout::kFixedSize,
-                        CalculatePaddingBeneathPermissionRow(!reason.empty()));
+  layout->AddPaddingRow(
+      views::GridLayout::kFixedSize,
+      CalculatePaddingBeneathPermissionRow(!detail.empty() || !reason.empty()));
 }
 
 PermissionSelectorRow::~PermissionSelectorRow() {
@@ -231,6 +207,40 @@ PermissionSelectorRow::~PermissionSelectorRow() {
   // ComboboxModel. This hack ensures the Combobox is deleted before its
   // ComboboxModel.
   delete combobox_;
+}
+
+void PermissionSelectorRow::AddSecondaryLabelRow(views::GridLayout* layout,
+                                                 const std::u16string& text) {
+  layout->StartRow(1.0, PageInfoBubbleView::kPermissionColumnSetId);
+  layout->SkipColumns(1);
+  auto sublabel = std::make_unique<views::Label>(text);
+  sublabel->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  sublabel->SetEnabledColor(PageInfoUI::GetSecondaryTextColor());
+  // The |sublabel| should wrap when it's too long instead of
+  // stretching its parent view horizontally, but also ensure long strings
+  // aren't wrapped too early.
+  int preferred_width = sublabel->GetPreferredSize().width();
+  sublabel->SetMultiLine(true);
+
+  views::ColumnSet* column_set =
+      layout->GetColumnSet(PageInfoBubbleView::kPermissionColumnSetId);
+  DCHECK(column_set);
+  // Secondary labels in Harmony may not overlap into space shared with the
+  // combobox column.
+  const int column_span = 1;
+
+  // Long labels that cannot fit in the existing space under the permission
+  // label should be allowed to use up to |kMaxSecondaryLabelWidth| for
+  // display.
+  constexpr int kMaxSecondaryLabelWidth = 140;
+  if (preferred_width > kMaxSecondaryLabelWidth) {
+    layout->AddView(std::move(sublabel), column_span, 1.0,
+                    views::GridLayout::LEADING, views::GridLayout::CENTER,
+                    kMaxSecondaryLabelWidth, 0);
+  } else {
+    layout->AddView(std::move(sublabel), column_span, 1.0,
+                    views::GridLayout::FILL, views::GridLayout::CENTER);
+  }
 }
 
 int PermissionSelectorRow::CalculatePaddingBeneathPermissionRow(
@@ -268,8 +278,8 @@ void PermissionSelectorRow::InitializeComboboxView(
     const PageInfo::PermissionInfo& permission) {
   bool button_enabled =
       permission.source == content_settings::SETTING_SOURCE_USER;
-  combobox_model_adapter_.reset(
-      new internal::ComboboxModelAdapter(menu_model_.get()));
+  combobox_model_adapter_ =
+      std::make_unique<internal::ComboboxModelAdapter>(menu_model_.get());
   auto combobox = std::make_unique<internal::PermissionCombobox>(
       combobox_model_adapter_.get(), button_enabled, true);
   combobox->SetEnabled(button_enabled);

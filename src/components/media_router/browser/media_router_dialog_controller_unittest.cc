@@ -13,6 +13,7 @@
 #include "components/media_router/browser/presentation/start_presentation_context.h"
 #include "components/media_router/common/media_route.h"
 #include "components/media_router/common/media_source.h"
+#include "components/media_router/common/mojom/media_router.mojom.h"
 #include "components/media_router/common/route_request_result.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -72,10 +73,10 @@ class MediaRouterDialogControllerTest
   void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
 
-    web_contents_delegate_.reset(new MockWebContentsDelegate());
+    web_contents_delegate_ = std::make_unique<MockWebContentsDelegate>();
     web_contents()->SetDelegate(web_contents_delegate_.get());
-    dialog_controller_.reset(
-        new TestMediaRouterDialogController(web_contents()));
+    dialog_controller_ =
+        std::make_unique<TestMediaRouterDialogController>(web_contents());
   }
 
   void TearDown() override {

@@ -16,6 +16,7 @@
 #include "core/fpdfapi/parser/cpdf_object.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "third_party/base/check.h"
 #include "third_party/base/notreached.h"
 
 namespace {
@@ -33,7 +34,7 @@ CPDF_ShadingPattern::CPDF_ShadingPattern(CPDF_Document* pDoc,
                                          bool bShading,
                                          const CFX_Matrix& parentMatrix)
     : CPDF_Pattern(pDoc, pPatternObj, parentMatrix), m_bShading(bShading) {
-  ASSERT(document());
+  DCHECK(document());
   if (!bShading)
     SetPatternToFormMatrix();
 }
@@ -74,7 +75,7 @@ bool CPDF_ShadingPattern::Load() {
 
   // The color space is required and cannot be a Pattern space, according to the
   // PDF 1.7 spec, page 305.
-  if (!m_pCS || m_pCS->GetFamily() == PDFCS_PATTERN)
+  if (!m_pCS || m_pCS->GetFamily() == CPDF_ColorSpace::Family::kPattern)
     return false;
 
   m_ShadingType = ToShadingType(pShadingDict->GetIntegerFor("ShadingType"));
@@ -99,7 +100,7 @@ bool CPDF_ShadingPattern::Validate() const {
     case kFunctionBasedShading:
     case kAxialShading:
     case kRadialShading: {
-      if (m_pCS->GetFamily() == PDFCS_INDEXED)
+      if (m_pCS->GetFamily() == CPDF_ColorSpace::Family::kIndexed)
         return false;
       break;
     }
@@ -107,8 +108,10 @@ bool CPDF_ShadingPattern::Validate() const {
     case kLatticeFormGouraudTriangleMeshShading:
     case kCoonsPatchMeshShading:
     case kTensorProductPatchMeshShading: {
-      if (!m_pFunctions.empty() && m_pCS->GetFamily() == PDFCS_INDEXED)
+      if (!m_pFunctions.empty() &&
+          m_pCS->GetFamily() == CPDF_ColorSpace::Family::kIndexed) {
         return false;
+      }
       break;
     }
     default: {

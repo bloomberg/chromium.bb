@@ -56,7 +56,11 @@ __pragma(warning(push))
 
 	std::pair<llvm::StringRef, llvm::StringRef> splitPath(const char *path)
 	{
-		auto dirAndFile = llvm::StringRef(path).rsplit('/');
+#	ifdef _WIN32
+		auto dirAndFile = llvm::StringRef(path).rsplit('\\');
+#	else
+	auto dirAndFile = llvm::StringRef(path).rsplit('/');
+#	endif
 		if(dirAndFile.second == "")
 		{
 			dirAndFile.second = "<unknown>";
@@ -190,7 +194,7 @@ void DebugInfo::syncScope(Backtrace const &backtrace)
 			LOG("  STACK(%d): Jumped backwards %d -> %d. di: %p -> %p", int(i),
 			    oldLocation.line, newLocation.line, scope.di, di);
 			emitPending(scope, builder);
-			scope = { newLocation, di };
+			scope = { newLocation, di, {}, {} };
 			shrink(i + 1);
 			break;
 		}
@@ -222,7 +226,7 @@ void DebugInfo::syncScope(Backtrace const &backtrace)
 		    DINode::FlagPrototyped,         // flags
 		    DISubprogram::SPFlagDefinition  // subprogram flags
 		);
-		diScope.push_back({ location, func });
+		diScope.push_back({ location, func, {}, {} });
 		LOG("+ STACK(%d): di: %p, location: %s:%d", int(i), di,
 		    location.function.file.c_str(), int(location.line));
 	}
@@ -509,7 +513,7 @@ DebugInfo::LineTokens const *DebugInfo::getOrParseFileTokens(const char *path)
 			{
 				if(match.str(1) == "return")
 				{
-					(*tokens)[lineCount] = Token{ Token::Return };
+					(*tokens)[lineCount] = Token{ Token::Return, "" };
 				}
 				else
 				{

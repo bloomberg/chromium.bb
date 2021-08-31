@@ -10,13 +10,16 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "build/build_config.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/permissions/permission_request.h"
+#include "components/permissions/permission_request_impl.h"
 #include "components/permissions/permission_result.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-forward.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-forward.h"
 
 class GURL;
 
@@ -31,6 +34,14 @@ class WebContents;
 }  // namespace content
 
 namespace permissions {
+
+class Observer : public base::CheckedObserver {
+ public:
+  virtual void OnPermissionChanged(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type) = 0;
+};
 
 using BrowserPermissionCallback = base::OnceCallback<void(ContentSetting)>;
 
@@ -56,12 +67,13 @@ using BrowserPermissionCallback = base::OnceCallback<void(ContentSetting)>;
 // See midi_permission_context.h/cc or push_permission_context.cc/h for some
 // examples.
 
-class PermissionContextBase : public KeyedService {
+class PermissionContextBase : public KeyedService,
+                              public content_settings::Observer {
  public:
   PermissionContextBase(
       content::BrowserContext* browser_context,
       ContentSettingsType content_settings_type,
-      blink::mojom::FeaturePolicyFeature feature_policy_feature);
+      blink::mojom::PermissionsPolicyFeature permissions_policy_feature);
   ~PermissionContextBase() override;
 
   // A field trial used to enable the global permissions kill switch.
@@ -110,6 +122,9 @@ class PermissionContextBase : public KeyedService {
   // public for permissions that do not use RequestPermission, like
   // camera and microphone, and for testing.
   bool IsPermissionKillSwitchOn() const;
+
+  void AddObserver(permissions::Observer* permission_observer);
+  void RemoveObserver(permissions::Observer* permission_observer);
 
  protected:
   virtual ContentSetting GetPermissionStatusInternal(
@@ -164,14 +179,37 @@ class PermissionContextBase : public KeyedService {
                                           const GURL& embedding_origin,
                                           ContentSetting content_setting);
 
+  // content_settings::Observer:
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type) override;
+
+  // Implementors can override this method to use a different PermissionRequest
+  // implementation.
+  virtual std::unique_ptr<PermissionRequest> CreatePermissionRequest(
+      const GURL& request_origin,
+      ContentSettingsType content_settings_type,
+      bool has_gesture,
+      content::WebContents* web_contents,
+      PermissionRequestImpl::PermissionDecidedCallback
+          permission_decided_callback,
+      base::OnceClosure delete_callback) const;
+
   ContentSettingsType content_settings_type() const {
     return content_settings_type_;
   }
 
+  base::ObserverList<permissions::Observer> permission_observers_;
+
+  // Set by subclasses to inform the base class that they will handle adding
+  // and removing themselves as observers to the HostContentSettingsMap.
+  bool content_setting_observer_registered_by_subclass_ = false;
+
  private:
   friend class PermissionContextBaseTests;
 
-  bool PermissionAllowedByFeaturePolicy(content::RenderFrameHost* rfh) const;
+  bool PermissionAllowedByPermissionsPolicy(
+      content::RenderFrameHost* rfh) const;
 
   // Called when a request is no longer used so it can be cleaned up.
   void CleanUpRequest(const PermissionRequestID& id);
@@ -187,7 +225,7 @@ class PermissionContextBase : public KeyedService {
 
   content::BrowserContext* browser_context_;
   const ContentSettingsType content_settings_type_;
-  const blink::mojom::FeaturePolicyFeature feature_policy_feature_;
+  const blink::mojom::PermissionsPolicyFeature permissions_policy_feature_;
   std::unordered_map<std::string, std::unique_ptr<PermissionRequest>>
       pending_requests_;
 

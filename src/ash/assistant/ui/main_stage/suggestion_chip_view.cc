@@ -14,13 +14,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 
@@ -72,7 +72,7 @@ void SuggestionChipView::ChildVisibilityChanged(views::View* child) {
 }
 
 void SuggestionChipView::InitLayout(const AssistantSuggestion& suggestion) {
-  const base::string16 text = base::UTF8ToUTF16(suggestion.text);
+  const std::u16string text = base::UTF8ToUTF16(suggestion.text);
 
   // Accessibility.
   SetAccessibleName(text);
@@ -170,15 +170,15 @@ void SuggestionChipView::SetIcon(const gfx::ImageSkia& icon) {
   icon_view_->SetVisible(!icon.isNull());
 }
 
-const gfx::ImageSkia& SuggestionChipView::GetIcon() const {
+gfx::ImageSkia SuggestionChipView::GetIcon() const {
   return icon_view_->GetImage();
 }
 
-void SuggestionChipView::SetText(const base::string16& text) {
+void SuggestionChipView::SetText(const std::u16string& text) {
   text_view_->SetText(text);
 }
 
-const base::string16& SuggestionChipView::GetText() const {
+const std::u16string& SuggestionChipView::GetText() const {
   return text_view_->GetText();
 }
 

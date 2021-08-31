@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_SUPERVISED_USER_CHILD_ACCOUNTS_CHILD_ACCOUNT_SERVICE_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -63,8 +62,8 @@ class ChildAccountService : public KeyedService,
   // Subscribes to changes to the Google authentication state
   // (see IsGoogleAuthenticated()). Can send a notification even if the
   // authentication state has not changed.
-  std::unique_ptr<base::CallbackList<void()>::Subscription>
-  ObserveGoogleAuthState(const base::Callback<void()>& callback);
+  base::CallbackListSubscription ObserveGoogleAuthState(
+      const base::RepeatingCallback<void()>& callback);
 
  private:
   friend class ChildAccountServiceFactory;
@@ -79,6 +78,8 @@ class ChildAccountService : public KeyedService,
   void SetIsChildAccount(bool is_child_account);
 
   // signin::IdentityManager::Observer implementation.
+  void OnPrimaryAccountChanged(
+      const signin::PrimaryAccountChangeEvent& event_details) override;
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
   void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
 
@@ -116,7 +117,7 @@ class ChildAccountService : public KeyedService,
 
   signin::IdentityManager* identity_manager_;
 
-  base::CallbackList<void()> google_auth_state_observers_;
+  base::RepeatingClosureList google_auth_state_observers_;
 
   // Callbacks to run when the user status becomes known.
   std::vector<base::OnceClosure> status_received_callback_list_;

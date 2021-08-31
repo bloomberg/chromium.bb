@@ -32,15 +32,16 @@
 //
 // This file tests the universal value printer.
 
-#include <ctype.h>
-#include <string.h>
 #include <algorithm>
+#include <cctype>
 #include <cstdint>
+#include <cstring>
 #include <deque>
 #include <forward_list>
 #include <limits>
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <string>
@@ -89,6 +90,18 @@ class BiggestIntConvertible {
  public:
   operator ::testing::internal::BiggestInt() const { return 42; }
 };
+
+// A parent class with two child classes. The parent and one of the kids have
+// stream operators.
+class ParentClass {};
+class ChildClassWithStreamOperator : public ParentClass {};
+class ChildClassWithoutStreamOperator : public ParentClass {};
+static void operator<<(std::ostream& os, const ParentClass&) {
+  os << "ParentClass";
+}
+static void operator<<(std::ostream& os, const ChildClassWithStreamOperator&) {
+  os << "ChildClassWithStreamOperator";
+}
 
 // A user-defined unprintable class template in the global namespace.
 template <typename T>
@@ -177,7 +190,18 @@ inline ::std::ostream& operator<<(::std::ostream& os,
   return os << "StreamableTemplateInFoo: " << x.value();
 }
 
-// A user-defined streamable but recursivly-defined container type in
+// A user-defined streamable type in a user namespace whose operator<< is
+// templated on the type of the output stream.
+struct TemplatedStreamableInFoo {};
+
+template <typename OutputStream>
+OutputStream& operator<<(OutputStream& os,
+                         const TemplatedStreamableInFoo& /*ts*/) {
+  os << "TemplatedStreamableInFoo";
+  return os;
+}
+
+// A user-defined streamable but recursively-defined container type in
 // a user namespace, it mimics therefore std::filesystem::path or
 // boost::filesystem::path.
 class PathLike {
@@ -205,6 +229,33 @@ class PathLike {
 }  // namespace foo
 
 namespace testing {
+namespace {
+template <typename T>
+class Wrapper {
+ public:
+  explicit Wrapper(T&& value) : value_(std::forward<T>(value)) {}
+
+  const T& value() const { return value_; }
+
+ private:
+  T value_;
+};
+
+}  // namespace
+
+namespace internal {
+template <typename T>
+class UniversalPrinter<Wrapper<T>> {
+ public:
+  static void Print(const Wrapper<T>& w, ::std::ostream* os) {
+    *os << "Wrapper(";
+    UniversalPrint(w.value(), os);
+    *os << ')';
+  }
+};
+}  // namespace internal
+
+
 namespace gtest_printers_test {
 
 using ::std::deque;
@@ -442,6 +493,92 @@ TEST(PrintCStringTest, EscapesProperly) {
             Print(p));
 }
 
+#ifdef __cpp_char8_t
+// const char8_t*.
+TEST(PrintU8StringTest, Const) {
+  const char8_t* p = u8"界";
+  EXPECT_EQ(PrintPointer(p) + " pointing to u8\"\\xE7\\x95\\x8C\"", Print(p));
+}
+
+// char8_t*.
+TEST(PrintU8StringTest, NonConst) {
+  char8_t p[] = u8"世";
+  EXPECT_EQ(PrintPointer(p) + " pointing to u8\"\\xE4\\xB8\\x96\"",
+            Print(static_cast<char8_t*>(p)));
+}
+
+// NULL u8 string.
+TEST(PrintU8StringTest, Null) {
+  const char8_t* p = nullptr;
+  EXPECT_EQ("NULL", Print(p));
+}
+
+// Tests that u8 strings are escaped properly.
+TEST(PrintU8StringTest, EscapesProperly) {
+  const char8_t* p = u8"'\"?\\\a\b\f\n\r\t\v\x7F\xFF hello 世界";
+  EXPECT_EQ(PrintPointer(p) +
+                " pointing to u8\"'\\\"?\\\\\\a\\b\\f\\n\\r\\t\\v\\x7F\\xFF "
+                "hello \\xE4\\xB8\\x96\\xE7\\x95\\x8C\"",
+            Print(p));
+}
+#endif
+
+// const char16_t*.
+TEST(PrintU16StringTest, Const) {
+  const char16_t* p = u"界";
+  EXPECT_EQ(PrintPointer(p) + " pointing to u\"\\x754C\"", Print(p));
+}
+
+// char16_t*.
+TEST(PrintU16StringTest, NonConst) {
+  char16_t p[] = u"世";
+  EXPECT_EQ(PrintPointer(p) + " pointing to u\"\\x4E16\"",
+            Print(static_cast<char16_t*>(p)));
+}
+
+// NULL u16 string.
+TEST(PrintU16StringTest, Null) {
+  const char16_t* p = nullptr;
+  EXPECT_EQ("NULL", Print(p));
+}
+
+// Tests that u16 strings are escaped properly.
+TEST(PrintU16StringTest, EscapesProperly) {
+  const char16_t* p = u"'\"?\\\a\b\f\n\r\t\v\x7F\xFF hello 世界";
+  EXPECT_EQ(PrintPointer(p) +
+                " pointing to u\"'\\\"?\\\\\\a\\b\\f\\n\\r\\t\\v\\x7F\\xFF "
+                "hello \\x4E16\\x754C\"",
+            Print(p));
+}
+
+// const char32_t*.
+TEST(PrintU32StringTest, Const) {
+  const char32_t* p = U"🗺️";
+  EXPECT_EQ(PrintPointer(p) + " pointing to U\"\\x1F5FA\\xFE0F\"", Print(p));
+}
+
+// char32_t*.
+TEST(PrintU32StringTest, NonConst) {
+  char32_t p[] = U"🌌";
+  EXPECT_EQ(PrintPointer(p) + " pointing to U\"\\x1F30C\"",
+            Print(static_cast<char32_t*>(p)));
+}
+
+// NULL u32 string.
+TEST(PrintU32StringTest, Null) {
+  const char32_t* p = nullptr;
+  EXPECT_EQ("NULL", Print(p));
+}
+
+// Tests that u32 strings are escaped properly.
+TEST(PrintU32StringTest, EscapesProperly) {
+  const char32_t* p = U"'\"?\\\a\b\f\n\r\t\v\x7F\xFF hello 🗺️";
+  EXPECT_EQ(PrintPointer(p) +
+                " pointing to U\"'\\\"?\\\\\\a\\b\\f\\n\\r\\t\\v\\x7F\\xFF "
+                "hello \\x1F5FA\\xFE0F\"",
+            Print(p));
+}
+
 // MSVC compiler can be configured to define whar_t as a typedef
 // of unsigned short. Defining an overload for const wchar_t* in that case
 // would cause pointers to unsigned shorts be printed as wide strings,
@@ -652,52 +789,68 @@ TEST(PrintArrayTest, CharArrayWithNoTerminatingNul) {
   EXPECT_EQ("\"H\\0i\" (no terminating NUL)", PrintArrayHelper(a));
 }
 
-// const char array with terminating NUL.
-TEST(PrintArrayTest, ConstCharArrayWithTerminatingNul) {
+// char array with terminating NUL.
+TEST(PrintArrayTest, CharArrayWithTerminatingNul) {
   const char a[] = "\0Hi";
   EXPECT_EQ("\"\\0Hi\"", PrintArrayHelper(a));
 }
 
-// const wchar_t array without terminating NUL.
-TEST(PrintArrayTest, WCharArrayWithNoTerminatingNul) {
-  // Array a contains '\0' in the middle and doesn't end with '\0'.
-  const wchar_t a[] = { L'H', L'\0', L'i' };
-  EXPECT_EQ("L\"H\\0i\" (no terminating NUL)", PrintArrayHelper(a));
-}
-
-// wchar_t array with terminating NUL.
-TEST(PrintArrayTest, WConstCharArrayWithTerminatingNul) {
-  const wchar_t a[] = L"\0Hi";
-  EXPECT_EQ("L\"\\0Hi\"", PrintArrayHelper(a));
-}
-
 #ifdef __cpp_char8_t
-// char8_t array.
-TEST(PrintArrayTest, Char8Array) {
-  const char8_t a[] = u8"Hello, world!";
+// char_t array without terminating NUL.
+TEST(PrintArrayTest, Char8ArrayWithNoTerminatingNul) {
+  // Array a contains '\0' in the middle and doesn't end with '\0'.
+  const char8_t a[] = {u8'H', u8'\0', u8'i'};
+  EXPECT_EQ("u8\"H\\0i\" (no terminating NUL)", PrintArrayHelper(a));
+}
+
+// char8_t array with terminating NUL.
+TEST(PrintArrayTest, Char8ArrayWithTerminatingNul) {
+  const char8_t a[] = u8"\0世界";
   EXPECT_EQ(
-      "{ U+0048, U+0065, U+006C, U+006C, U+006F, U+002C, U+0020, U+0077, "
-      "U+006F, U+0072, U+006C, U+0064, U+0021, U+0000 }",
+      "u8\"\\0\\xE4\\xB8\\x96\\xE7\\x95\\x8C\"",
       PrintArrayHelper(a));
 }
 #endif
 
-// char16_t array.
-TEST(PrintArrayTest, Char16Array) {
-  const char16_t a[] = u"Hello, 世界";
-  EXPECT_EQ(
-      "{ U+0048, U+0065, U+006C, U+006C, U+006F, U+002C, U+0020, U+4E16, "
-      "U+754C, U+0000 }",
-      PrintArrayHelper(a));
+// const char16_t array without terminating NUL.
+TEST(PrintArrayTest, Char16ArrayWithNoTerminatingNul) {
+  // Array a contains '\0' in the middle and doesn't end with '\0'.
+  const char16_t a[] = {u'こ', u'\0', u'ん', u'に', u'ち', u'は'};
+  EXPECT_EQ("u\"\\x3053\\0\\x3093\\x306B\\x3061\\x306F\" (no terminating NUL)",
+            PrintArrayHelper(a));
 }
 
-// char32_t array.
-TEST(PrintArrayTest, Char32Array) {
-  const char32_t a[] = U"Hello, 世界";
-  EXPECT_EQ(
-      "{ U+0048, U+0065, U+006C, U+006C, U+006F, U+002C, U+0020, U+4E16, "
-      "U+754C, U+0000 }",
-      PrintArrayHelper(a));
+// char16_t array with terminating NUL.
+TEST(PrintArrayTest, Char16ArrayWithTerminatingNul) {
+  const char16_t a[] = u"\0こんにちは";
+  EXPECT_EQ("u\"\\0\\x3053\\x3093\\x306B\\x3061\\x306F\"", PrintArrayHelper(a));
+}
+
+// char32_t array without terminating NUL.
+TEST(PrintArrayTest, Char32ArrayWithNoTerminatingNul) {
+  // Array a contains '\0' in the middle and doesn't end with '\0'.
+  const char32_t a[] = {U'👋', U'\0', U'🌌'};
+  EXPECT_EQ("U\"\\x1F44B\\0\\x1F30C\" (no terminating NUL)",
+            PrintArrayHelper(a));
+}
+
+// char32_t array with terminating NUL.
+TEST(PrintArrayTest, Char32ArrayWithTerminatingNul) {
+  const char32_t a[] = U"\0👋🌌";
+  EXPECT_EQ("U\"\\0\\x1F44B\\x1F30C\"", PrintArrayHelper(a));
+}
+
+// wchar_t array without terminating NUL.
+TEST(PrintArrayTest, WCharArrayWithNoTerminatingNul) {
+  // Array a contains '\0' in the middle and doesn't end with '\0'.
+  const wchar_t a[] = {L'H', L'\0', L'i'};
+  EXPECT_EQ("L\"H\\0i\" (no terminating NUL)", PrintArrayHelper(a));
+}
+
+// wchar_t array with terminating NUL.
+TEST(PrintArrayTest, WCharArrayWithTerminatingNul) {
+  const wchar_t a[] = L"\0Hi";
+  EXPECT_EQ("L\"\\0Hi\"", PrintArrayHelper(a));
 }
 
 // Array of objects.
@@ -761,31 +914,22 @@ TEST(PrintWideStringTest, StringAmbiguousHex) {
 
 #ifdef __cpp_char8_t
 TEST(PrintStringTest, U8String) {
-  std::u8string str = u8"Hello, world!";
+  std::u8string str = u8"Hello, 世界";
   EXPECT_EQ(str, str);  // Verify EXPECT_EQ compiles with this type.
-  EXPECT_EQ(
-      "{ U+0048, U+0065, U+006C, U+006C, U+006F, U+002C, U+0020, U+0077, "
-      "U+006F, U+0072, U+006C, U+0064, U+0021 }",
-      Print(str));
+  EXPECT_EQ("u8\"Hello, \\xE4\\xB8\\x96\\xE7\\x95\\x8C\"", Print(str));
 }
 #endif
 
 TEST(PrintStringTest, U16String) {
   std::u16string str = u"Hello, 世界";
   EXPECT_EQ(str, str);  // Verify EXPECT_EQ compiles with this type.
-  EXPECT_EQ(
-      "{ U+0048, U+0065, U+006C, U+006C, U+006F, U+002C, U+0020, U+4E16, "
-      "U+754C }",
-      Print(str));
+  EXPECT_EQ("u\"Hello, \\x4E16\\x754C\"", Print(str));
 }
 
 TEST(PrintStringTest, U32String) {
-  std::u32string str = U"Hello, 世界";
-  EXPECT_EQ(str, str);  // Verify EXPECT_EQ compiles with this type.
-  EXPECT_EQ(
-      "{ U+0048, U+0065, U+006C, U+006C, U+006F, U+002C, U+0020, U+4E16, "
-      "U+754C }",
-      Print(str));
+  std::u32string str = U"Hello, 🗺️";
+  EXPECT_EQ(str, str);  // Verify EXPECT_EQ compiles with this type
+  EXPECT_EQ("U\"Hello, \\x1F5FA\\xFE0F\"", Print(str));
 }
 
 // Tests printing types that support generic streaming (i.e. streaming
@@ -1151,6 +1295,20 @@ TEST(PrintStreamableTypeTest, TemplateTypeInUserNamespace) {
             Print(::foo::StreamableTemplateInFoo<int>()));
 }
 
+TEST(PrintStreamableTypeTest, TypeInUserNamespaceWithTemplatedStreamOperator) {
+  EXPECT_EQ("TemplatedStreamableInFoo",
+            Print(::foo::TemplatedStreamableInFoo()));
+}
+
+TEST(PrintStreamableTypeTest, SubclassUsesSuperclassStreamOperator) {
+  ParentClass parent;
+  ChildClassWithStreamOperator child_stream;
+  ChildClassWithoutStreamOperator child_no_stream;
+  EXPECT_EQ("ParentClass", Print(parent));
+  EXPECT_EQ("ChildClassWithStreamOperator", Print(child_stream));
+  EXPECT_EQ("ParentClass", Print(child_no_stream));
+}
+
 // Tests printing a user-defined recursive container type that has a <<
 // operator.
 TEST(PrintStreamableTypeTest, PathLikeInUserNamespace) {
@@ -1454,6 +1612,61 @@ TEST(PrintToStringTest, WorksForCharArrayWithEmbeddedNul) {
                           "\n    As Text: \"From ä — ẑ\"");
 }
 
+#if GTEST_HAS_RTTI
+template <typename T>
+class PrintToStringTest : public testing::Test {
+ public:
+  using TestType = T;
+};
+
+struct PrintBase {
+  virtual ~PrintBase() = default;
+};
+struct PrintDerived : PrintBase {};
+
+using PrintToStringTestTypes =
+    testing::Types<void, int, const volatile int*, PrintBase, PrintDerived>;
+TYPED_TEST_SUITE(PrintToStringTest, PrintToStringTestTypes);
+
+// Returns `true` if `haystack` contains `needle`.
+//
+// FIXME: Replace with `EXPECT_THAT(haystack, HasSubstr(needle))` once
+// GoogleTest starts depending on GoogleMock.
+bool ContainsSubstr(const std::string& haystack, const std::string& needle) {
+  return haystack.find(needle) != std::string::npos;
+}
+
+TYPED_TEST(PrintToStringTest, IncludesNameWithTypeInfoAndTypeIndex) {
+  const ::std::type_info& info = typeid(typename TestFixture::TestType);
+  SCOPED_TRACE(info.name());
+  EXPECT_TRUE(ContainsSubstr(PrintToString(info), info.name()));
+  EXPECT_TRUE(
+      ContainsSubstr(PrintToString(::std::type_index{info}), info.name()));
+}
+
+TEST(PrintToStringTest, IncludesNameWithTypeInfoAndTypeIndexViaBaseRef) {
+  PrintDerived derived;
+  PrintBase& base = derived;
+
+  {
+    const ::std::type_info& derived_info = typeid(derived);
+    SCOPED_TRACE(derived_info.name());
+    EXPECT_TRUE(
+        ContainsSubstr(PrintToString(derived_info), derived_info.name()));
+    EXPECT_TRUE(ContainsSubstr(PrintToString(::std::type_index{derived_info}),
+                               derived_info.name()));
+  }
+  {
+    const ::std::type_info& base_ref_info = typeid(base);
+    SCOPED_TRACE(base_ref_info.name());
+    EXPECT_TRUE(
+        ContainsSubstr(PrintToString(base_ref_info), base_ref_info.name()));
+    EXPECT_TRUE(ContainsSubstr(PrintToString(::std::type_index{base_ref_info}),
+                               base_ref_info.name()));
+  }
+}
+#endif  // GTEST_HAS_RTTI
+
 TEST(IsValidUTF8Test, IllFormedUTF8) {
   // The following test strings are ill-formed UTF-8 and are printed
   // as hex only (or ASCII, in case of ASCII bytes) because IsValidUTF8() is
@@ -1559,6 +1772,13 @@ TEST(UniversalPrintTest, WorksForReference) {
   EXPECT_EQ("123", ss.str());
 }
 
+TEST(UniversalPrintTest, WorksForPairWithConst) {
+  std::pair<const Wrapper<std::string>, int> p(Wrapper<std::string>("abc"), 1);
+  ::std::stringstream ss;
+  UniversalPrint(p, &ss);
+  EXPECT_EQ("(Wrapper(\"abc\"), 1)", ss.str());
+}
+
 TEST(UniversalPrintTest, WorksForCString) {
   const char* s1 = "abc";
   ::std::stringstream ss1;
@@ -1586,6 +1806,63 @@ TEST(UniversalPrintTest, WorksForCharArray) {
   ::std::stringstream ss2;
   UniversalPrint(mutable_str, &ss2);
   EXPECT_EQ("\"\\\"Line\\0 1\\\"\\nLine 2\"", ss2.str());
+}
+
+TEST(UniversalPrintTest, IncompleteType) {
+  struct Incomplete;
+  char some_object = 0;
+  EXPECT_EQ("(incomplete type)",
+            PrintToString(reinterpret_cast<Incomplete&>(some_object)));
+}
+
+TEST(UniversalPrintTest, SmartPointers) {
+  EXPECT_EQ("(nullptr)", PrintToString(std::unique_ptr<int>()));
+  std::unique_ptr<int> p(new int(17));
+  EXPECT_EQ("(ptr = " + PrintPointer(p.get()) + ", value = 17)",
+            PrintToString(p));
+  std::unique_ptr<int[]> p2(new int[2]);
+  EXPECT_EQ("(" + PrintPointer(p2.get()) + ")", PrintToString(p2));
+
+  EXPECT_EQ("(nullptr)", PrintToString(std::shared_ptr<int>()));
+  std::shared_ptr<int> p3(new int(1979));
+  EXPECT_EQ("(ptr = " + PrintPointer(p3.get()) + ", value = 1979)",
+            PrintToString(p3));
+#if __cpp_lib_shared_ptr_arrays >= 201611L
+  std::shared_ptr<int[]> p4(new int[2]);
+  EXPECT_EQ("(" + PrintPointer(p4.get()) + ")", PrintToString(p4));
+#endif
+
+  // modifiers
+  EXPECT_EQ("(nullptr)", PrintToString(std::unique_ptr<int>()));
+  EXPECT_EQ("(nullptr)", PrintToString(std::unique_ptr<const int>()));
+  EXPECT_EQ("(nullptr)", PrintToString(std::unique_ptr<volatile int>()));
+  EXPECT_EQ("(nullptr)", PrintToString(std::unique_ptr<volatile const int>()));
+  EXPECT_EQ("(nullptr)", PrintToString(std::unique_ptr<int[]>()));
+  EXPECT_EQ("(nullptr)", PrintToString(std::unique_ptr<const int[]>()));
+  EXPECT_EQ("(nullptr)", PrintToString(std::unique_ptr<volatile int[]>()));
+  EXPECT_EQ("(nullptr)",
+            PrintToString(std::unique_ptr<volatile const int[]>()));
+  EXPECT_EQ("(nullptr)", PrintToString(std::shared_ptr<int>()));
+  EXPECT_EQ("(nullptr)", PrintToString(std::shared_ptr<const int>()));
+  EXPECT_EQ("(nullptr)", PrintToString(std::shared_ptr<volatile int>()));
+  EXPECT_EQ("(nullptr)", PrintToString(std::shared_ptr<volatile const int>()));
+#if __cpp_lib_shared_ptr_arrays >= 201611L
+  EXPECT_EQ("(nullptr)", PrintToString(std::shared_ptr<int[]>()));
+  EXPECT_EQ("(nullptr)", PrintToString(std::shared_ptr<const int[]>()));
+  EXPECT_EQ("(nullptr)", PrintToString(std::shared_ptr<volatile int[]>()));
+  EXPECT_EQ("(nullptr)",
+            PrintToString(std::shared_ptr<volatile const int[]>()));
+#endif
+
+  // void
+  EXPECT_EQ("(nullptr)", PrintToString(std::unique_ptr<void, void (*)(void*)>(
+                             nullptr, nullptr)));
+  EXPECT_EQ("(" + PrintPointer(p.get()) + ")",
+            PrintToString(
+                std::unique_ptr<void, void (*)(void*)>(p.get(), [](void*) {})));
+  EXPECT_EQ("(nullptr)", PrintToString(std::shared_ptr<void>()));
+  EXPECT_EQ("(" + PrintPointer(p.get()) + ")",
+            PrintToString(std::shared_ptr<void>(p.get(), [](void*) {})));
 }
 
 TEST(UniversalTersePrintTupleFieldsToStringsTestWithStd, PrintsEmptyTuple) {

@@ -16,7 +16,6 @@
 // <include src="../../../webui/resources/js/cr.js">
 // <include src="../../../webui/resources/js/assert.js">
 // <include src="../../../webui/resources/js/util.js">
-// <include src="../../../webui/resources/js/load_time_data.js">
 
 // <include src="../../../webui/resources/js/event_tracker.js">
 
@@ -27,17 +26,16 @@
 (function() {
 'use strict';
 
-// <include src="../../../webui/resources/js/load_time_data.js">
 
 // <include src="../../file_manager/common/js/async_util.js">
 // <include src="../../file_manager/common/js/file_type.js">
-// <include src="../../base/js/app_util.js">
+// <include src="../../file_manager/common/js/app_util.js">
 
 /* TODO(tapted): Remove the util.js dependency */
 // <include src="../../file_manager/common/js/util.js">
 
-// <include src="../../base/js/volume_manager_types.js">
-// <include src="../../base/js/filtered_volume_manager.js">
+// <include src="../../file_manager/common/js/volume_manager_types.js">
+// <include src="../../file_manager/common/js/filtered_volume_manager.js">
 
 // <include src="video_player_native_controls.js">
 // <include src="video_player.js">

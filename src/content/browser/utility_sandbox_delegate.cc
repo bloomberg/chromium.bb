@@ -6,12 +6,18 @@
 
 #include "base/check.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/zygote/zygote_buildflags.h"
+#include "printing/buildflags/buildflags.h"
 #include "sandbox/policy/sandbox_type.h"
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 #include "content/common/zygote/zygote_handle_impl_linux.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/assistant/buildflags.h"
 #endif
 
 namespace content {
@@ -39,19 +45,28 @@ UtilitySandboxedProcessLauncherDelegate::
       sandbox_type_ == sandbox::policy::SandboxType::kIconReader ||
       sandbox_type_ == sandbox::policy::SandboxType::kMediaFoundationCdm ||
 #endif
+#if defined(OS_MAC)
+      sandbox_type_ == sandbox::policy::SandboxType::kMirroring ||
+#endif
       sandbox_type_ == sandbox::policy::SandboxType::kUtility ||
       sandbox_type_ == sandbox::policy::SandboxType::kNetwork ||
       sandbox_type_ == sandbox::policy::SandboxType::kCdm ||
+#if BUILDFLAG(ENABLE_PRINTING)
+      sandbox_type_ == sandbox::policy::SandboxType::kPrintBackend ||
+#endif
       sandbox_type_ == sandbox::policy::SandboxType::kPrintCompositor ||
       sandbox_type_ == sandbox::policy::SandboxType::kPpapi ||
       sandbox_type_ == sandbox::policy::SandboxType::kVideoCapture ||
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       sandbox_type_ == sandbox::policy::SandboxType::kIme ||
       sandbox_type_ == sandbox::policy::SandboxType::kTts ||
-#endif  // OS_CHROMEOS
+#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+      sandbox_type_ == sandbox::policy::SandboxType::kLibassistant ||
+#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
       sandbox_type_ == sandbox::policy::SandboxType::kAudio ||
 #if !defined(OS_MAC)
-      sandbox_type_ == sandbox::policy::SandboxType::kSharingService ||
+      sandbox_type_ == sandbox::policy::SandboxType::kService ||
 #endif
       sandbox_type_ == sandbox::policy::SandboxType::kSpeechRecognition;
   DCHECK(supported_sandbox_type);
@@ -72,12 +87,6 @@ base::EnvironmentMap UtilitySandboxedProcessLauncherDelegate::GetEnvironment() {
 }
 #endif  // OS_POSIX
 
-#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
-bool UtilitySandboxedProcessLauncherDelegate::LaunchX86_64() {
-  return launch_x86_64_;
-}
-#endif  // OS_MAC && ARCH_CPU_ARM64
-
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 ZygoteHandle UtilitySandboxedProcessLauncherDelegate::GetZygote() {
   // If the sandbox has been disabled for a given type, don't use a zygote.
@@ -88,11 +97,17 @@ ZygoteHandle UtilitySandboxedProcessLauncherDelegate::GetZygote() {
   // unsandboxed zygote and then apply their actual sandboxes in the forked
   // process upon startup.
   if (sandbox_type_ == sandbox::policy::SandboxType::kNetwork ||
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       sandbox_type_ == sandbox::policy::SandboxType::kIme ||
       sandbox_type_ == sandbox::policy::SandboxType::kTts ||
-#endif  // OS_CHROMEOS
+#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+      sandbox_type_ == sandbox::policy::SandboxType::kLibassistant ||
+#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
       sandbox_type_ == sandbox::policy::SandboxType::kAudio ||
+#if BUILDFLAG(ENABLE_PRINTING)
+      sandbox_type_ == sandbox::policy::SandboxType::kPrintBackend ||
+#endif
       sandbox_type_ == sandbox::policy::SandboxType::kSpeechRecognition) {
     return GetUnsandboxedZygote();
   }

@@ -43,6 +43,8 @@
 
 namespace blink {
 
+class ScriptState;
+
 // ScriptWrappable provides a way to map from/to C++ DOM implementation to/from
 // JavaScript object (platform object).  ToV8() converts a ScriptWrappable to
 // a v8::Object and toScriptWrappable() converts a v8::Object back to
@@ -95,8 +97,7 @@ class PLATFORM_EXPORT ScriptWrappable
   virtual const WrapperTypeInfo* GetWrapperTypeInfo() const = 0;
 
   // Creates and returns a new wrapper object.
-  virtual v8::Local<v8::Value> Wrap(v8::Isolate*,
-                                    v8::Local<v8::Object> creation_context);
+  virtual v8::MaybeLocal<v8::Value> Wrap(ScriptState*);
 
   // Associates the instance with the given |wrapper| if this instance is not
   // yet associated with any wrapper.  Returns the wrapper already associated

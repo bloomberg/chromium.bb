@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/quic_sent_packet_manager_peer.h"
+#include "quic/test_tools/quic_sent_packet_manager_peer.h"
 
-#include "net/third_party/quiche/src/quic/core/congestion_control/loss_detection_interface.h"
-#include "net/third_party/quiche/src/quic/core/congestion_control/send_algorithm_interface.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_sent_packet_manager.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_unacked_packet_map_peer.h"
+#include "quic/core/congestion_control/loss_detection_interface.h"
+#include "quic/core/congestion_control/send_algorithm_interface.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_sent_packet_manager.h"
+#include "quic/test_tools/quic_unacked_packet_map_peer.h"
 
 namespace quic {
 namespace test {
@@ -82,7 +82,7 @@ RttStats* QuicSentPacketManagerPeer::GetRttStats(
 bool QuicSentPacketManagerPeer::IsRetransmission(
     QuicSentPacketManager* sent_packet_manager,
     uint64_t packet_number) {
-  DCHECK(HasRetransmittableFrames(sent_packet_manager, packet_number));
+  QUICHE_DCHECK(HasRetransmittableFrames(sent_packet_manager, packet_number));
   if (!HasRetransmittableFrames(sent_packet_manager, packet_number)) {
     return false;
   }

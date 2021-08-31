@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_REMOTING_END2END_RENDERER_H_
-#define MEDIA_REMOTING_END2END_RENDERER_H_
+#ifndef MEDIA_REMOTING_END2END_TEST_RENDERER_H_
+#define MEDIA_REMOTING_END2END_TEST_RENDERER_H_
 
 #include <memory>
 #include <vector>
@@ -32,7 +32,7 @@ class End2EndTestRenderer final : public Renderer {
   void Initialize(MediaResource* media_resource,
                   RendererClient* client,
                   PipelineStatusCallback init_cb) override;
-  void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) override;
+  void SetLatencyHint(absl::optional<base::TimeDelta> latency_hint) override;
   void SetPreservesPitch(bool preserves_pitch) override;
   void Flush(base::OnceClosure flush_cb) override;
   void StartPlayingFrom(base::TimeDelta time) override;
@@ -70,9 +70,8 @@ class End2EndTestRenderer final : public Renderer {
   void CompleteInitialize();
 
   // Callback function when RPC message is received.
-  void OnReceivedRpc(std::unique_ptr<media::remoting::pb::RpcMessage> message);
-  void OnAcquireRenderer(
-      std::unique_ptr<media::remoting::pb::RpcMessage> message);
+  void OnReceivedRpc(std::unique_ptr<openscreen::cast::RpcMessage> message);
+  void OnAcquireRenderer(std::unique_ptr<openscreen::cast::RpcMessage> message);
   void OnAcquireRendererDone(int receiver_renderer_handle);
 
   PipelineStatusCallback init_cb_;
@@ -103,4 +102,4 @@ class End2EndTestRenderer final : public Renderer {
 }  // namespace remoting
 }  // namespace media
 
-#endif  // MEDIA_REMOTING_END2END_RENDERER_H_
+#endif  // MEDIA_REMOTING_END2END_TEST_RENDERER_H_

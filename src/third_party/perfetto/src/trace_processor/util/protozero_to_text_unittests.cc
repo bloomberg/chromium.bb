@@ -19,7 +19,7 @@
 #include "perfetto/protozero/scattered_heap_buffer.h"
 #include "protos/perfetto/trace/track_event/chrome_compositor_scheduler_state.pbzero.h"
 #include "protos/perfetto/trace/track_event/track_event.pbzero.h"
-#include "src/trace_processor/importers/proto/track_event.descriptor.h"
+#include "src/trace_processor/importers/track_event.descriptor.h"
 #include "src/trace_processor/util/descriptors.h"
 #include "test/gtest_and_gmock.h"
 
@@ -191,6 +191,22 @@ TEST(ProtozeroToTextTest, UnknownField) {
   ASSERT_TRUE(status.ok());
   ASSERT_EQ(ProtozeroToText(pool, type, bytes, kIncludeNewLines),
             "# Ignoring unknown field with id: 24");
+}
+
+TEST(ProtozeroToTextTest, StringField) {
+  using perfetto::protos::pbzero::TrackEvent;
+  // Wrong type to force unknown field:
+  const auto type = ".perfetto.protos.TrackEvent";
+  protozero::HeapBuffered<TrackEvent> msg{kChunkSize, kChunkSize};
+  msg->add_categories(R"(Hello, "World")");
+  auto bytes = msg.SerializeAsArray();
+
+  DescriptorPool pool;
+  auto status = pool.AddFromFileDescriptorSet(kTrackEventDescriptor.data(),
+                                              kTrackEventDescriptor.size());
+  ASSERT_TRUE(status.ok());
+  ASSERT_EQ(ProtozeroToText(pool, type, bytes, kIncludeNewLines),
+            "categories: \"Hello, \\\"World\\\"\"");
 }
 
 TEST(ProtozeroToTextTest, BytesField) {

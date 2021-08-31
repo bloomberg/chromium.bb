@@ -4,11 +4,11 @@
 
 #include "cc/tiles/image_controller.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -19,6 +19,7 @@
 #include "cc/test/test_paint_worklet_input.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace cc {
 namespace {
@@ -241,14 +242,14 @@ int kDefaultTimeoutSeconds = 10;
 DrawImage CreateDiscardableDrawImage(gfx::Size size) {
   return DrawImage(CreateDiscardablePaintImage(size), false,
                    SkIRect::MakeWH(size.width(), size.height()),
-                   kNone_SkFilterQuality, SkMatrix::I(),
+                   kNone_SkFilterQuality, SkM44(),
                    PaintImage::kDefaultFrameIndex, gfx::ColorSpace());
 }
 
 DrawImage CreateBitmapDrawImage(gfx::Size size) {
   return DrawImage(CreateBitmapImage(size), false,
                    SkIRect::MakeWH(size.width(), size.height()),
-                   kNone_SkFilterQuality, SkMatrix::I(),
+                   kNone_SkFilterQuality, SkM44(),
                    PaintImage::kDefaultFrameIndex);
 }
 
@@ -261,8 +262,8 @@ class ImageControllerTest : public testing::Test {
 
   void SetUp() override {
     worker_task_runner_ = base::MakeRefCounted<WorkerTaskRunner>();
-    controller_.reset(
-        new ImageController(task_runner_.get(), worker_task_runner_));
+    controller_ = std::make_unique<ImageController>(task_runner_.get(),
+                                                    worker_task_runner_);
     cache_ = TestableCache();
     controller_->SetImageDecodeCache(&cache_);
   }
