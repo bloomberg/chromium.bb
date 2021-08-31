@@ -6,8 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
+#include "ash/constants/ash_paths.h"
+#include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -18,12 +21,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/attestation/attestation_policy_observer.h"
+#include "chrome/browser/ash/attestation/enrollment_certificate_uploader_impl.h"
+#include "chrome/browser/ash/attestation/enrollment_policy_observer.h"
+#include "chrome/browser/ash/attestation/machine_certificate_uploader_impl.h"
+#include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/attestation/attestation_policy_observer.h"
-#include "chrome/browser/chromeos/attestation/enrollment_certificate_uploader_impl.h"
-#include "chrome/browser/chromeos/attestation/enrollment_policy_observer.h"
-#include "chrome/browser/chromeos/attestation/machine_certificate_uploader_impl.h"
-#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/heartbeat_scheduler.h"
 #include "chrome/browser/chromeos/policy/policy_pref_names.h"
@@ -34,9 +37,6 @@
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/policy/system_log_uploader.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_constants.h"
-#include "chromeos/constants/chromeos_paths.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
@@ -68,12 +68,14 @@ const char kZeroTouchEnrollmentHandsOff[] = "hands-off";
 
 // Default frequency for uploading enterprise status reports. Can be overriden
 // by Device Policy.
+// Keep the default value in sync with device_status_frequency in
+// DeviceReportingProto in components/policy/proto/chrome_device_policy.proto.
 constexpr base::TimeDelta kDeviceStatusUploadFrequency =
     base::TimeDelta::FromHours(3);
 
 // Checks whether forced re-enrollment is enabled.
-bool ForcedReEnrollmentEnabled() {
-  return chromeos::AutoEnrollmentController::IsFREEnabled();
+bool IsForcedReEnrollmentEnabled() {
+  return ash::AutoEnrollmentController::IsFREEnabled();
 }
 
 }  // namespace
@@ -103,8 +105,8 @@ void DeviceCloudPolicyManagerChromeOS::Initialize(PrefService* local_state) {
   local_state_ = local_state;
 
   state_keys_update_subscription_ = state_keys_broker_->RegisterUpdateCallback(
-      base::Bind(&DeviceCloudPolicyManagerChromeOS::OnStateKeysUpdated,
-                 base::Unretained(this)));
+      base::BindRepeating(&DeviceCloudPolicyManagerChromeOS::OnStateKeysUpdated,
+                          base::Unretained(this)));
 }
 
 void DeviceCloudPolicyManagerChromeOS::AddDeviceCloudPolicyManagerObserver(
@@ -123,7 +125,7 @@ void DeviceCloudPolicyManagerChromeOS::Shutdown() {
   syslog_uploader_.reset();
   status_uploader_.reset();
   external_data_manager_->Disconnect();
-  state_keys_update_subscription_.reset();
+  state_keys_update_subscription_ = {};
   CloudPolicyManager::Shutdown();
   signin_profile_forwarding_schema_registry_.reset();
 }
@@ -169,7 +171,7 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
   CHECK(!service());
 
   // Set state keys here so the first policy fetch submits them to the server.
-  if (ForcedReEnrollmentEnabled())
+  if (IsForcedReEnrollmentEnabled())
     client_to_connect->SetStateKeysToUpload(state_keys_broker_->state_keys());
 
   // Create the component cloud policy service for fetching, caching and
@@ -195,23 +197,26 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
   external_data_manager_->Connect(
       g_browser_process->shared_url_loader_factory());
 
-  enrollment_certificate_uploader_.reset(
-      new chromeos::attestation::EnrollmentCertificateUploaderImpl(client()));
-  enrollment_policy_observer_.reset(
-      new chromeos::attestation::EnrollmentPolicyObserver(client()));
-  lookup_key_uploader_.reset(
-      new LookupKeyUploader(device_store(), g_browser_process->local_state(),
-                            enrollment_certificate_uploader_.get()));
+  enrollment_certificate_uploader_ =
+      std::make_unique<ash::attestation::EnrollmentCertificateUploaderImpl>(
+          client());
+  enrollment_policy_observer_ =
+      std::make_unique<ash::attestation::EnrollmentPolicyObserver>(
+          client(), enrollment_certificate_uploader_.get());
+  lookup_key_uploader_ = std::make_unique<LookupKeyUploader>(
+      device_store(), g_browser_process->local_state(),
+      enrollment_certificate_uploader_.get());
 
   // Don't create a MachineCertificateUploader or start the
   // AttestationPolicyObserver if machine cert requests are disabled.
   if (!(base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDisableMachineCertRequest))) {
-    machine_certificate_uploader_.reset(
-        new chromeos::attestation::MachineCertificateUploaderImpl(client()));
-    attestation_policy_observer_.reset(
-        new chromeos::attestation::AttestationPolicyObserver(
-            machine_certificate_uploader_.get()));
+    machine_certificate_uploader_ =
+        std::make_unique<ash::attestation::MachineCertificateUploaderImpl>(
+            client());
+    attestation_policy_observer_ =
+        std::make_unique<ash::attestation::AttestationPolicyObserver>(
+            machine_certificate_uploader_.get());
   }
 
   // Start remote commands services now that we have setup everything they need.
@@ -226,25 +231,25 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
   // perform monitoring if it is active.
   if (install_attributes->IsCloudManaged()) {
     CreateStatusUploader();
-    syslog_uploader_.reset(new SystemLogUploader(nullptr, task_runner_));
-    heartbeat_scheduler_.reset(new HeartbeatScheduler(
+    syslog_uploader_ =
+        std::make_unique<SystemLogUploader>(nullptr, task_runner_);
+    heartbeat_scheduler_ = std::make_unique<HeartbeatScheduler>(
         g_browser_process->gcm_driver(), client(), device_store_.get(),
-        install_attributes->GetDeviceId(), task_runner_));
+        install_attributes->GetDeviceId(), task_runner_);
   }
 
   NotifyConnected();
 }
 
-void DeviceCloudPolicyManagerChromeOS::Unregister(
-    const UnregisterCallback& callback) {
+void DeviceCloudPolicyManagerChromeOS::Unregister(UnregisterCallback callback) {
   if (!service()) {
     LOG(ERROR) << "Tried to unregister but DeviceCloudPolicyManagerChromeOS is "
                << "not connected.";
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
-  service()->Unregister(callback);
+  service()->Unregister(std::move(callback));
 }
 
 void DeviceCloudPolicyManagerChromeOS::Disconnect() {
@@ -259,12 +264,12 @@ void DeviceCloudPolicyManagerChromeOS::Disconnect() {
 void DeviceCloudPolicyManagerChromeOS::SetSigninProfileSchemaRegistry(
     SchemaRegistry* schema_registry) {
   DCHECK(!signin_profile_forwarding_schema_registry_);
-  signin_profile_forwarding_schema_registry_.reset(
-      new ForwardingSchemaRegistry(schema_registry));
+  signin_profile_forwarding_schema_registry_ =
+      std::make_unique<ForwardingSchemaRegistry>(schema_registry);
 }
 
 void DeviceCloudPolicyManagerChromeOS::OnStateKeysUpdated() {
-  if (client() && ForcedReEnrollmentEnabled())
+  if (client() && IsForcedReEnrollmentEnabled())
     client()->SetStateKeysToUpload(state_keys_broker_->state_keys());
 }
 
@@ -279,11 +284,11 @@ void DeviceCloudPolicyManagerChromeOS::NotifyDisconnected() {
 }
 
 void DeviceCloudPolicyManagerChromeOS::CreateStatusUploader() {
-  status_uploader_.reset(new StatusUploader(
+  status_uploader_ = std::make_unique<StatusUploader>(
       client(),
       std::make_unique<DeviceStatusCollector>(
           local_state_, chromeos::system::StatisticsProvider::GetInstance()),
-      task_runner_, kDeviceStatusUploadFrequency));
+      task_runner_, kDeviceStatusUploadFrequency);
 }
 
 }  // namespace policy

@@ -5,15 +5,10 @@
 #ifndef SERVICES_NETWORK_FIRST_PARTY_SETS_FIRST_PARTY_SET_PARSER_H_
 #define SERVICES_NETWORK_FIRST_PARTY_SETS_FIRST_PARTY_SET_PARSER_H_
 
-#include <map>
-#include <memory>
-#include <string>
-
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
-#include "base/optional.h"
 #include "base/strings/string_piece_forward.h"
-#include "base/values.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 class SchemefulSite;
@@ -33,16 +28,16 @@ class FirstPartySetParser {
   // representation of a list of set declarations according to the format
   // specified in this document: https://github.com/privacycg/first-party-sets.
   // This function does not check versions or assertions, since it is intended
-  // only for *preloaded* sets.
+  // only for sets received by Component Updater.
   //
-  // Returns nullptr if parsing or validation of any set failed.
-  static std::unique_ptr<base::flat_map<net::SchemefulSite, net::SchemefulSite>>
-  ParsePreloadedSets(base::StringPiece raw_sets);
+  // Returns an empty map if parsing or validation of any set failed.
+  static base::flat_map<net::SchemefulSite, net::SchemefulSite>
+  ParseSetsFromComponentUpdater(base::StringPiece raw_sets);
 
   // Canonicalizes the passed in origin to a registered domain. In particular,
   // this ensures that the origin is non-opaque, is HTTPS, and has a registered
-  // domain. Returns base::nullopt in case of any error.
-  static base::Optional<net::SchemefulSite> CanonicalizeRegisteredDomain(
+  // domain. Returns absl::nullopt in case of any error.
+  static absl::optional<net::SchemefulSite> CanonicalizeRegisteredDomain(
       const base::StringPiece origin_string,
       bool emit_errors);
 };

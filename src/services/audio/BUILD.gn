@@ -71,6 +71,7 @@ source_set("audio") {
   public_deps = [
     "//base",
     "//media",
+    "//media/mojo/mojom",
     "//media/webrtc",
     "//services/audio/public/mojom",
   ]
@@ -162,7 +163,7 @@ source_set("tests") {
     "//testing/gtest",
   ]
 
-  if (is_ash || is_chromecast) {
+  if (is_chromeos_ash || is_chromecast) {
     sources += [
       "public/cpp/sounds/audio_stream_handler_unittest.cc",
       "public/cpp/sounds/sounds_manager_unittest.cc",

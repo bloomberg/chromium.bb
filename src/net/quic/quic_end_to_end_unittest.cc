@@ -36,7 +36,6 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_task_environment.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quiche/src/quic/tools/quic_memory_cache_backend.h"
@@ -69,7 +68,7 @@ class TestTransactionFactory : public HttpTransactionFactory {
   // HttpTransactionFactory methods
   int CreateTransaction(RequestPriority priority,
                         std::unique_ptr<HttpTransaction>* trans) override {
-    trans->reset(new HttpNetworkTransaction(priority, session_.get()));
+    *trans = std::make_unique<HttpNetworkTransaction>(priority, session_.get());
     return OK;
   }
 
@@ -88,7 +87,6 @@ class QuicEndToEndTest : public ::testing::Test, public WithTaskEnvironment {
   QuicEndToEndTest()
       : host_resolver_impl_(CreateResolverImpl()),
         host_resolver_(std::move(host_resolver_impl_)),
-        cert_transparency_verifier_(new MultiLogCTVerifier()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         proxy_resolution_service_(
             ConfiguredProxyResolutionService::CreateDirect()),
@@ -106,8 +104,6 @@ class QuicEndToEndTest : public ::testing::Test, public WithTaskEnvironment {
     session_context_.host_resolver = &host_resolver_;
     session_context_.cert_verifier = &cert_verifier_;
     session_context_.transport_security_state = &transport_security_state_;
-    session_context_.cert_transparency_verifier =
-        cert_transparency_verifier_.get();
     session_context_.ct_policy_enforcer = &ct_policy_enforcer_;
     session_context_.proxy_resolution_service = proxy_resolution_service_.get();
     session_context_.ssl_config_service = ssl_config_service_.get();
@@ -145,8 +141,8 @@ class QuicEndToEndTest : public ::testing::Test, public WithTaskEnvironment {
     quic_context_.params()->origins_to_force_quic_on.insert(
         HostPortPair::FromString("test.example.com:443"));
 
-    transaction_factory_.reset(
-        new TestTransactionFactory(session_params_, session_context_));
+    transaction_factory_ = std::make_unique<TestTransactionFactory>(
+        session_params_, session_context_);
   }
 
   void TearDown() override {}
@@ -158,10 +154,10 @@ class QuicEndToEndTest : public ::testing::Test, public WithTaskEnvironment {
         quic::test::kInitialStreamFlowControlWindowForTest);
     server_config_.SetInitialSessionFlowControlWindowToSend(
         quic::test::kInitialSessionFlowControlWindowForTest);
-    server_.reset(new QuicSimpleServer(
+    server_ = std::make_unique<QuicSimpleServer>(
         quic::test::crypto_test_utils::ProofSourceForTesting(), server_config_,
         server_config_options_, quic::AllSupportedVersions(),
-        &memory_cache_backend_));
+        &memory_cache_backend_);
     server_->Listen(server_address_);
     server_address_ = server_->server_address();
     server_->StartReading();
@@ -193,8 +189,8 @@ class QuicEndToEndTest : public ::testing::Test, public WithTaskEnvironment {
     std::vector<std::unique_ptr<UploadElementReader>> element_readers;
     element_readers.push_back(std::make_unique<UploadBytesElementReader>(
         request_body_.data(), request_body_.length()));
-    upload_data_stream_.reset(
-        new ElementsUploadDataStream(std::move(element_readers), 0));
+    upload_data_stream_ = std::make_unique<ElementsUploadDataStream>(
+        std::move(element_readers), 0);
     request_.method = "POST";
     request_.url = GURL("https://test.example.com/");
     request_.upload_data_stream = upload_data_stream_.get();
@@ -218,7 +214,6 @@ class QuicEndToEndTest : public ::testing::Test, public WithTaskEnvironment {
   MappedHostResolver host_resolver_;
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
-  std::unique_ptr<CTVerifier> cert_transparency_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
   std::unique_ptr<SSLConfigServiceDefaults> ssl_config_service_;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;

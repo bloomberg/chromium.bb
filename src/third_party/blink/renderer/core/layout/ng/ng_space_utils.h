@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_SPACE_UTILS_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
@@ -19,17 +19,6 @@ struct NGBfcOffset;
 // Adjusts {@code offset} to the clearance line.
 CORE_EXPORT bool AdjustToClearance(LayoutUnit clearance_offset,
                                    NGBfcOffset* offset);
-
-// Create a child constraint space with no sizing data, except for fallback
-// inline sizing for orthogonal flow roots and a percentage resolution block
-// size based on |input| (for calculating aspect-ratio based sizes). This will
-// not and can not be used for final layout, but is needed in an intermediate
-// measure pass that calculates the min/max size contribution from a child that
-// establishes an orthogonal flow root.
-NGConstraintSpace CreateIndefiniteConstraintSpaceForChild(
-    const ComputedStyle& container_style,
-    const MinMaxSizesInput& input,
-    NGLayoutInputNode child);
 
 // Calculate and set the available inline fallback size for orthogonal flow
 // children. This size will be used if it's not resolvable via other means [1].

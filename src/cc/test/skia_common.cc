@@ -109,22 +109,32 @@ SkYUVAPixmapInfo GetYUVAPixmapInfo(const gfx::Size& image_size,
     NOTREACHED();
     return SkYUVAPixmapInfo();
   }
-  SkYUVAInfo::PlanarConfig planar_config;
+  SkYUVAInfo::Subsampling subsampling;
   switch (format) {
+    case YUVSubsampling::k410:
+      subsampling = SkYUVAInfo::Subsampling::k410;
+      break;
+    case YUVSubsampling::k411:
+      subsampling = SkYUVAInfo::Subsampling::k411;
+      break;
     case YUVSubsampling::k420:
-      planar_config = SkYUVAInfo::PlanarConfig::kY_U_V_420;
+      subsampling = SkYUVAInfo::Subsampling::k420;
       break;
     case YUVSubsampling::k422:
-      planar_config = SkYUVAInfo::PlanarConfig::kY_U_V_422;
+      subsampling = SkYUVAInfo::Subsampling::k422;
+      break;
+    case YUVSubsampling::k440:
+      subsampling = SkYUVAInfo::Subsampling::k440;
       break;
     case YUVSubsampling::k444:
-      planar_config = SkYUVAInfo::PlanarConfig::kY_U_V_444;
+      subsampling = SkYUVAInfo::Subsampling::k444;
       break;
     default:
       NOTREACHED();
       return SkYUVAPixmapInfo();
   }
-  SkYUVAInfo yuva_info({image_size.width(), image_size.height()}, planar_config,
+  SkYUVAInfo yuva_info({image_size.width(), image_size.height()},
+                       SkYUVAInfo::PlaneConfig::kY_U_V, subsampling,
                        kJPEG_Full_SkYUVColorSpace);
   return SkYUVAPixmapInfo(yuva_info, yuv_data_type, /*row bytes*/ nullptr);
 }
@@ -135,7 +145,7 @@ PaintImage CreateDiscardablePaintImage(
     bool allocate_encoded_data,
     PaintImage::Id id,
     SkColorType color_type,
-    base::Optional<YUVSubsampling> yuv_format,
+    absl::optional<YUVSubsampling> yuv_format,
     SkYUVAPixmapInfo::DataType yuv_data_type) {
   if (!color_space)
     color_space = SkColorSpace::MakeSRGB();
@@ -172,7 +182,7 @@ DrawImage CreateDiscardableDrawImage(const gfx::Size& size,
                                      sk_sp<SkColorSpace> color_space,
                                      SkRect rect,
                                      SkFilterQuality filter_quality,
-                                     const SkMatrix& matrix) {
+                                     const SkM44& matrix) {
   SkIRect irect;
   rect.roundOut(&irect);
 

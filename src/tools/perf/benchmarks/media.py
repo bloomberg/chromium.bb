@@ -48,7 +48,7 @@ class _MediaBenchmark(perf_benchmark.PerfBenchmark):
 
 @benchmark.Info(emails=['dalecurtis@chromium.org'],
                 component='Internals>Media',
-                documentation_url='https://chromium.googlesource.com/chromium/src/+/master/docs/speed/benchmark/harnesses/media.md')  # pylint: disable=line-too-long
+                documentation_url='https://chromium.googlesource.com/chromium/src/+/main/docs/speed/benchmark/harnesses/media.md')  # pylint: disable=line-too-long
 class MediaDesktop(_MediaBenchmark):
   """Obtains media performance for key user scenarios on desktop."""
   # TODO(rmhasan): Remove the SUPPORTED_PLATFORMS lists.
@@ -68,15 +68,20 @@ class MediaDesktop(_MediaBenchmark):
 # If any story is failing on svelte, please only disable on svelte.
 @benchmark.Info(emails=['dalecurtis@chromium.org'],
                 component='Internals>Media',
-                documentation_url='https://chromium.googlesource.com/chromium/src/+/master/docs/speed/benchmark/harnesses/media.md')  # pylint: disable=line-too-long
+                documentation_url='https://chromium.googlesource.com/chromium/src/+/main/docs/speed/benchmark/harnesses/media.md')  # pylint: disable=line-too-long
 class MediaMobile(_MediaBenchmark):
   """Obtains media performance for key user scenarios on mobile devices."""
 
   # TODO(rmhasan): Remove the SUPPORTED_PLATFORMS lists.
   # SUPPORTED_PLATFORMS is deprecated, please put system specifier tags
   # from expectations.config in SUPPORTED_PLATFORM_TAGS.
-  SUPPORTED_PLATFORM_TAGS = [platforms.ANDROID_NOT_WEBVIEW]
-  SUPPORTED_PLATFORMS = [story.expectations.ANDROID_NOT_WEBVIEW]
+  SUPPORTED_PLATFORM_TAGS = [
+      platforms.ANDROID_NOT_WEBVIEW, platforms.FUCHSIA_ASTRO
+  ]
+  SUPPORTED_PLATFORMS = [
+      story.expectations.ANDROID_NOT_WEBVIEW,
+      story.expectations.FUCHSIA_WEB_ENGINE_SHELL
+  ]
 
   def CreateStorySet(self, options):
     return page_sets.MediaCasesMobileStorySet()

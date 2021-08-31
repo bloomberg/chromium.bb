@@ -29,6 +29,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
+#include "net/base/schemeful_site.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_verifier.h"
@@ -49,6 +50,7 @@
 #include "net/tools/huffman_trie/trie/trie_bit_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 namespace net {
 
@@ -262,7 +264,7 @@ void CheckHPKPReport(
     const scoped_refptr<X509Certificate>& served_certificate_chain,
     const scoped_refptr<X509Certificate>& validated_certificate_chain,
     const HashValueVector& known_pins) {
-  base::Optional<base::Value> value = base::JSONReader::Read(report);
+  absl::optional<base::Value> value = base::JSONReader::Read(report);
   ASSERT_TRUE(value.has_value());
   const base::Value& report_dict = value.value();
   ASSERT_TRUE(report_dict.is_dict());
@@ -271,11 +273,11 @@ void CheckHPKPReport(
   ASSERT_TRUE(report_hostname);
   EXPECT_EQ(host_port_pair.host(), *report_hostname);
 
-  base::Optional<int> report_port = report_dict.FindIntKey("port");
+  absl::optional<int> report_port = report_dict.FindIntKey("port");
   ASSERT_TRUE(report_port.has_value());
   EXPECT_EQ(host_port_pair.port(), report_port.value());
 
-  base::Optional<bool> report_include_subdomains =
+  absl::optional<bool> report_include_subdomains =
       report_dict.FindBoolKey("include-subdomains");
   ASSERT_TRUE(report_include_subdomains.has_value());
   EXPECT_EQ(include_subdomains, report_include_subdomains.value());
@@ -340,10 +342,9 @@ std::string CreateUniqueHostName() {
 NetworkIsolationKey CreateUniqueNetworkIsolationKey(bool is_transient) {
   if (is_transient)
     return NetworkIsolationKey::CreateTransient();
-  url::Origin origin = url::Origin::CreateFromNormalizedTuple(
-      "https", CreateUniqueHostName(), 443);
-  return NetworkIsolationKey(origin /* top_frame_origin */,
-                             origin /* frame_origin */);
+  SchemefulSite site = SchemefulSite(url::Origin::CreateFromNormalizedTuple(
+      "https", CreateUniqueHostName(), 443));
+  return NetworkIsolationKey(site /* top_frame_site */, site /* frame_site */);
 }
 
 }  // namespace
@@ -1851,82 +1852,6 @@ TEST_F(TransportSecurityStateTest, RequireCTForSymantec) {
                 NetworkIsolationKey()));
 }
 
-// Tests that CAs can enable CT for testing their issuance practices, prior
-// to CT becoming mandatory.
-TEST_F(TransportSecurityStateTest, RequireCTViaFieldTrial) {
-  // Test certificates before and after the 1 June 2016 deadline.
-  scoped_refptr<X509Certificate> cert =
-      ImportCertFromFile(GetTestCertsDirectory(), "dec_2017.pem");
-  ASSERT_TRUE(cert);
-
-  // The hashes here do not matter, but add some dummy values to simulate
-  // a 'real' chain.
-  HashValueVector hashes;
-  const SHA256HashValue hash_a = {{0xAA, 0xAA}};
-  hashes.push_back(HashValue(hash_a));
-  const SHA256HashValue hash_b = {{0xBB, 0xBB}};
-  hashes.push_back(HashValue(hash_b));
-
-  TransportSecurityState state;
-
-  // CT should not be required for this pre-existing certificate.
-  EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
-            state.CheckCTRequirements(
-                HostPortPair("www.example.com", 443), true, hashes, cert.get(),
-                cert.get(), SignedCertificateTimestampAndStatusList(),
-                TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
-                ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS,
-                NetworkIsolationKey()));
-
-  // However, simulating a Field Trial in which CT is required for certificates
-  // after 2017-12-01 should cause CT to be required for this certificate, as
-  // it was issued 2017-12-20.
-
-  base::FieldTrialParams params;
-  // Set the enforcement date to 2017-12-01 00:00:00;
-  params["date"] = "1512086400";
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(kEnforceCTForNewCerts,
-                                                         params);
-
-  // It should fail if it doesn't comply with policy.
-  EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_NOT_MET,
-            state.CheckCTRequirements(
-                HostPortPair("www.example.com", 443), true, hashes, cert.get(),
-                cert.get(), SignedCertificateTimestampAndStatusList(),
-                TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
-                ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS,
-                NetworkIsolationKey()));
-
-  // It should succeed if it does comply with policy.
-  EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_MET,
-            state.CheckCTRequirements(
-                HostPortPair("www.example.com", 443), true, hashes, cert.get(),
-                cert.get(), SignedCertificateTimestampAndStatusList(),
-                TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
-                ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS,
-                NetworkIsolationKey()));
-
-  // It should succeed if the build is outdated.
-  EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_MET,
-            state.CheckCTRequirements(
-                HostPortPair("www.example.com", 443), true, hashes, cert.get(),
-                cert.get(), SignedCertificateTimestampAndStatusList(),
-                TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
-                ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY,
-                NetworkIsolationKey()));
-
-  // It should succeed if it was a locally-trusted CA.
-  EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
-            state.CheckCTRequirements(
-                HostPortPair("www.example.com", 443), false, hashes, cert.get(),
-                cert.get(), SignedCertificateTimestampAndStatusList(),
-                TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
-                ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY,
-                NetworkIsolationKey()));
-}
-
 // Tests that Certificate Transparency is required for all of the Symantec
 // Managed CAs, regardless of when the certificate was issued.
 TEST_F(TransportSecurityStateTest, RequireCTForSymantecManagedCAs) {
@@ -3351,51 +3276,6 @@ TEST_F(TransportSecurityStateStaticTest, HPKPReporting) {
                                           good_hashes));
   EXPECT_EQ(network_isolation_key,
             mock_report_sender.latest_network_isolation_key());
-}
-
-// Tests that a histogram entry is recorded when TransportSecurityState
-// fails to send an HPKP violation report.
-TEST_F(TransportSecurityStateStaticTest, UMAOnHPKPReportingFailure) {
-  base::HistogramTester histograms;
-  const std::string histogram_name = "Net.PublicKeyPinReportSendingFailure2";
-  HostPortPair host_port_pair(kHost, kPort);
-  GURL report_uri(kReportUri);
-  // Two dummy certs to use as the server-sent and validated chains. The
-  // contents don't matter.
-  scoped_refptr<X509Certificate> cert1 =
-      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
-  ASSERT_TRUE(cert1);
-  scoped_refptr<X509Certificate> cert2 =
-      ImportCertFromFile(GetTestCertsDirectory(), "expired_cert.pem");
-  ASSERT_TRUE(cert2);
-
-  HashValueVector good_hashes, bad_hashes;
-
-  for (size_t i = 0; kGoodPath[i]; i++)
-    EXPECT_TRUE(AddHash(kGoodPath[i], &good_hashes));
-  for (size_t i = 0; kBadPath[i]; i++)
-    EXPECT_TRUE(AddHash(kBadPath[i], &bad_hashes));
-
-  // The histogram should start off empty.
-  histograms.ExpectTotalCount(histogram_name, 0);
-
-  TransportSecurityState state;
-  EnableStaticPins(&state);
-  MockFailingCertificateReportSender mock_report_sender;
-  state.SetReportSender(&mock_report_sender);
-
-  std::string failure_log;
-  EXPECT_EQ(TransportSecurityState::PKPStatus::VIOLATED,
-            state.CheckPublicKeyPins(
-                host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
-                TransportSecurityState::ENABLE_PIN_REPORTS,
-                NetworkIsolationKey::CreateTransient(), &failure_log));
-
-  // Check that the UMA histogram was updated when the report failed to
-  // send.
-  histograms.ExpectTotalCount(histogram_name, 1);
-  histograms.ExpectBucketCount(histogram_name, -mock_report_sender.net_error(),
-                               1);
 }
 
 TEST_F(TransportSecurityStateTest, WriteSizeDecodeSize) {

@@ -101,6 +101,20 @@ TEST(FilmGrainTableTest, AddAndLookupSingleSegment) {
   aom_film_grain_table_free(&table);
 }
 
+TEST(FilmGrainTableTest, AddSingleSegmentRemoveBiggerSegment) {
+  aom_film_grain_table_t table;
+  aom_film_grain_t grain;
+
+  memset(&table, 0, sizeof(table));
+
+  aom_film_grain_table_append(&table, 0, 1000, film_grain_test_vectors + 0);
+  EXPECT_TRUE(aom_film_grain_table_lookup(&table, 0, 1100, true, &grain));
+
+  EXPECT_EQ(0, table.head);
+  EXPECT_EQ(0, table.tail);
+  aom_film_grain_table_free(&table);
+}
+
 TEST(FilmGrainTableTest, SplitSingleSegment) {
   aom_film_grain_table_t table;
   aom_film_grain_t grain;

@@ -30,12 +30,12 @@ def _Key1(s):
   path = s.source_path or s.object_path
   # Use section rather than section_name since clang & gcc use
   # .data.rel.ro vs. .data.rel.ro.local.
-  return s.section, name, path, s.size_without_padding
+  return s.container_name, s.section, name, path, s.size_without_padding
 
 
 # Same as _Key1, but size can change.
 def _Key2(s):
-  return _Key1(s)[:3]
+  return _Key1(s)[:4]
 
 
 # Same as _Key2, but allow signature changes (uses name rather than full_name).
@@ -48,14 +48,14 @@ def _Key3(s):
   if name.startswith('*'):
     # "* symbol gap 3 (bar)" -> "* symbol gaps"
     name = _NORMALIZE_STAR_SYMBOLS_PATTERN.sub('s', name)
-  return s.section, name, path
+  return s.container_name, s.section, name, path
 
 
 # Match on full name, but without path (to account for file moves).
 def _Key4(s):
   if not s.IsNameUnique():
     return None
-  return s.section, s.full_name
+  return s.container_name, s.section, s.full_name
 
 
 def _MatchSymbols(before, after, key_func, padding_by_segment):
@@ -129,33 +129,6 @@ def _DiffSymbolGroups(containers, before, after):
   return models.DeltaSymbolGroup(all_deltas)
 
 
-def _DiffObj(before_obj, after_obj):
-  """Computes recursive diff of nested plain Python objects.
-
-  Assumes no cyclical links exist.
-  """
-  if before_obj is None:
-    if after_obj is None:
-      return None
-    before_obj = type(after_obj)()
-  elif after_obj is None:
-    after_obj = type(before_obj)()
-  if not isinstance(before_obj, type(after_obj)):
-    return '(type mismatch)'
-  if isinstance(before_obj, dict):
-    keys = set(before_obj.keys()) | set(after_obj.keys())
-    return {k: _DiffObj(before_obj.get(k), after_obj.get(k)) for k in keys}
-  elif isinstance(before_obj, list):
-    return [
-        _DiffObj(b, a) for b, a in itertools.zip_longest(before_obj, after_obj)
-    ]
-  elif isinstance(before_obj, (bool, str)):
-    return '%r -> %r' % (before_obj, after_obj)
-  elif isinstance(before_obj, (int, float, complex)):
-    return after_obj - before_obj
-  return '(unknown type)'
-
-
 def _DiffContainerLists(before_containers, after_containers):
   """Computes diff of Containers lists, matching names."""
   # Find ordered unique names, preferring order of |container_after|.
@@ -168,14 +141,10 @@ def _DiffContainerLists(before_containers, after_containers):
     else:
       pairs[c.name] = [c, models.Container.Empty()]
   ret = []
-  for name, [before_c, after_c] in pairs.items():
-    ret.append(
-        models.Container(name=name,
-                         metadata=_DiffObj(before_c.metadata, after_c.metadata),
-                         section_sizes=_DiffObj(before_c.section_sizes,
-                                                after_c.section_sizes)))
+  for name, (before, after) in pairs.items():
+    ret.append(models.DeltaContainer(name=name, before=before, after=after))
   # This update newly created diff Containers, not existing ones or EMPTY.
-  models.Container.AssignShortNames(ret)
+  models.BaseContainer.AssignShortNames(ret)
   return ret
 
 

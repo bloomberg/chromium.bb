@@ -12,9 +12,9 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/url_request/url_request_context.h"
 #include "storage/browser/blob/shareable_file_reference.h"
@@ -28,12 +28,12 @@ namespace storage {
 using OperationID = FileSystemOperationRunner::OperationID;
 
 FileSystemOperationRunner::FileSystemOperationRunner(
-    util::PassKey<FileSystemContext>,
+    base::PassKey<FileSystemContext>,
     const scoped_refptr<FileSystemContext>& file_system_context)
     : FileSystemOperationRunner(file_system_context.get()) {}
 
 FileSystemOperationRunner::FileSystemOperationRunner(
-    util::PassKey<FileSystemContext>,
+    base::PassKey<FileSystemContext>,
     FileSystemContext* file_system_context)
     : FileSystemOperationRunner(file_system_context) {}
 
@@ -94,7 +94,7 @@ OperationID FileSystemOperationRunner::Copy(
     const FileSystemURL& dest_url,
     CopyOrMoveOption option,
     ErrorBehavior error_behavior,
-    const CopyProgressCallback& progress_callback,
+    const CopyOrMoveProgressCallback& progress_callback,
     StatusCallback callback) {
   base::File::Error error = base::File::FILE_OK;
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
@@ -111,7 +111,7 @@ OperationID FileSystemOperationRunner::Copy(
   operation_raw->Copy(
       src_url, dest_url, option, error_behavior,
       progress_callback.is_null()
-          ? CopyProgressCallback()
+          ? CopyOrMoveProgressCallback()
           : base::BindRepeating(&FileSystemOperationRunner::OnCopyProgress,
                                 weak_ptr_, id, progress_callback),
       base::BindOnce(&FileSystemOperationRunner::DidFinish, weak_ptr_, id,
@@ -119,10 +119,13 @@ OperationID FileSystemOperationRunner::Copy(
   return id;
 }
 
-OperationID FileSystemOperationRunner::Move(const FileSystemURL& src_url,
-                                            const FileSystemURL& dest_url,
-                                            CopyOrMoveOption option,
-                                            StatusCallback callback) {
+OperationID FileSystemOperationRunner::Move(
+    const FileSystemURL& src_url,
+    const FileSystemURL& dest_url,
+    CopyOrMoveOption option,
+    ErrorBehavior error_behavior,
+    const CopyOrMoveProgressCallback& progress_callback,
+    StatusCallback callback) {
   base::File::Error error = base::File::FILE_OK;
   std::unique_ptr<FileSystemOperation> operation = base::WrapUnique(
       file_system_context_->CreateFileSystemOperation(dest_url, &error));
@@ -135,9 +138,14 @@ OperationID FileSystemOperationRunner::Move(const FileSystemURL& src_url,
   }
   PrepareForWrite(id, dest_url);
   PrepareForWrite(id, src_url);
-  operation_raw->Move(src_url, dest_url, option,
-                      base::BindOnce(&FileSystemOperationRunner::DidFinish,
-                                     weak_ptr_, id, std::move(callback)));
+  operation_raw->Move(
+      src_url, dest_url, option, error_behavior,
+      progress_callback.is_null()
+          ? CopyOrMoveProgressCallback()
+          : base::BindRepeating(&FileSystemOperationRunner::OnCopyProgress,
+                                weak_ptr_, id, progress_callback),
+      base::BindOnce(&FileSystemOperationRunner::DidFinish, weak_ptr_, id,
+                     std::move(callback)));
   return id;
 }
 
@@ -267,8 +275,8 @@ OperationID FileSystemOperationRunner::Write(
     return id;
   }
 
-  std::unique_ptr<FileWriterDelegate> writer_delegate(new FileWriterDelegate(
-      std::move(writer), url.mount_option().flush_policy()));
+  auto writer_delegate = std::make_unique<FileWriterDelegate>(
+      std::move(writer), url.mount_option().flush_policy());
 
   std::unique_ptr<BlobReader> blob_reader;
   if (blob)
@@ -306,8 +314,8 @@ OperationID FileSystemOperationRunner::WriteStream(
     return id;
   }
 
-  std::unique_ptr<FileWriterDelegate> writer_delegate(new FileWriterDelegate(
-      std::move(writer), url.mount_option().flush_policy()));
+  auto writer_delegate = std::make_unique<FileWriterDelegate>(
+      std::move(writer), url.mount_option().flush_policy());
 
   PrepareForWrite(id, url);
   operation_raw->Write(url, std::move(writer_delegate), std::move(data_pipe),
@@ -691,8 +699,8 @@ void FileSystemOperationRunner::DidCreateSnapshot(
 
 void FileSystemOperationRunner::OnCopyProgress(
     const OperationID id,
-    const CopyProgressCallback& callback,
-    FileSystemOperation::CopyProgressType type,
+    const CopyOrMoveProgressCallback& callback,
+    FileSystemOperation::CopyOrMoveProgressType type,
     const FileSystemURL& source_url,
     const FileSystemURL& dest_url,
     int64_t size) {

@@ -5,10 +5,12 @@
 #include "chromeos/network/network_connect.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/device_state.h"
@@ -28,9 +30,6 @@ namespace chromeos {
 
 namespace {
 
-// TODO(b/162987250): Use shill constant once cros_system_api roll occurs.
-const char kErrorDisconnect[] = "disconnect-failure";
-
 void IgnoreDisconnectError(const std::string& error_name,
                            std::unique_ptr<base::DictionaryValue> error_data) {}
 
@@ -44,7 +43,7 @@ const NetworkState* GetNetworkStateFromId(const std::string& network_id) {
 bool PreviousConnectAttemptHadError(const NetworkState* network) {
   const std::string& network_error = network->GetError();
   if (network_error.empty() || !network->IsSecure() ||
-      network_error == kErrorDisconnect) {
+      network_error == shill::kErrorDisconnect) {
     return false;
   }
   NET_LOG(USER) << "Previous connect attempt for: " << NetworkId(network)
@@ -63,6 +62,7 @@ class NetworkConnectImpl : public NetworkConnect {
   void SetTechnologyEnabled(const NetworkTypePattern& technology,
                             bool enabled_state) override;
   void ShowMobileSetup(const std::string& network_id) override;
+  void ShowCarrierAccountDetail(const std::string& network_id) override;
   void ConfigureNetworkIdAndConnect(
       const std::string& network_id,
       const base::DictionaryValue& shill_properties,
@@ -132,10 +132,15 @@ void NetworkConnectImpl::HandleUnconfiguredNetwork(
   }
 
   if (network->type() == shill::kTypeVPN) {
-    // Show the configure dialog for non third-party VPNs (which provide their
-    // own configuration UI).
-    if (network->GetVpnProviderType() != shill::kProviderThirdPartyVpn)
-      delegate_->ShowNetworkConfigure(network_id);
+    // Third-party VPNs provide their own configuration UI.
+    if (network->GetVpnProviderType() == shill::kProviderThirdPartyVpn)
+      return;
+    // Only fully configured policy VPNs are supported in the login screen.
+    // See crbug.com/1167070#c53 for more info.
+    if (!LoginState::Get()->IsUserLoggedIn())
+      return;
+    // Show the configure dialog for partially configured first-party VPNs.
+    delegate_->ShowNetworkConfigure(network_id);
     return;
   }
 
@@ -145,9 +150,15 @@ void NetworkConnectImpl::HandleUnconfiguredNetwork(
       return;
     }
     if (network->cellular_out_of_credits()) {
-      ShowMobileSetup(network_id);
+      ShowCarrierAccountDetail(network_id);
       return;
     }
+
+    // If network is unconfigured because it's SIM locked, do nothing, as this
+    // is handled by NetworkStateNotifier.
+    if (network->GetError() == shill::kErrorSimLocked)
+      return;
+
     // No special configure or setup for |network|, show the settings UI.
     if (LoginState::Get()->IsUserLoggedIn())
       delegate_->ShowNetworkSettings(network_id);
@@ -192,7 +203,8 @@ void NetworkConnectImpl::OnConnectFailed(
       error_name == NetworkConnectionHandler::kErrorBadPassphrase ||
       error_name == NetworkConnectionHandler::kErrorPassphraseRequired ||
       error_name == NetworkConnectionHandler::kErrorConfigurationRequired ||
-      error_name == NetworkConnectionHandler::kErrorAuthenticationRequired) {
+      error_name == NetworkConnectionHandler::kErrorAuthenticationRequired ||
+      error_name == NetworkConnectionHandler::kErrorCellularOutOfCredits) {
     HandleUnconfiguredNetwork(network_id);
   } else if (error_name ==
              NetworkConnectionHandler::kErrorCertificateRequired) {
@@ -381,8 +393,9 @@ void NetworkConnectImpl::DisconnectFromNetworkId(
 void NetworkConnectImpl::SetTechnologyEnabled(
     const NetworkTypePattern& technology,
     bool enabled_state) {
+  const std::string technology_string = technology.ToDebugString();
   std::string log_string = base::StringPrintf(
-      "technology %s, target state: %s", technology.ToDebugString().c_str(),
+      "technology %s, target state: %s", technology_string.c_str(),
       (enabled_state ? "ENABLED" : "DISABLED"));
   NET_LOG(USER) << "SetTechnologyEnabled: " << log_string;
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
@@ -393,6 +406,7 @@ void NetworkConnectImpl::SetTechnologyEnabled(
   }
   if (enabled) {
     // User requested to disable the technology.
+    NET_LOG(USER) << __func__ << " " << technology_string << ":" << false;
     handler->SetTechnologyEnabled(technology, false,
                                   network_handler::ErrorCallback());
     return;
@@ -422,6 +436,7 @@ void NetworkConnectImpl::SetTechnologyEnabled(
       return;
     }
   }
+  NET_LOG(USER) << __func__ << " " << technology_string << ":" << true;
   handler->SetTechnologyEnabled(technology, true,
                                 network_handler::ErrorCallback());
 }
@@ -455,6 +470,17 @@ void NetworkConnectImpl::ShowMobileSetup(const std::string& network_id) {
   delegate_->ShowMobileSetupDialog(network_id);
 }
 
+void NetworkConnectImpl::ShowCarrierAccountDetail(
+    const std::string& network_id) {
+  const NetworkState* cellular = GetNetworkStateFromId(network_id);
+  if (!cellular || cellular->type() != shill::kTypeCellular) {
+    NET_LOG(ERROR) << "ShowCarrierAccountDetail without Cellular network: "
+                   << NetworkGuidId(network_id);
+    return;
+  }
+  delegate_->ShowCarrierAccountDetail(network_id);
+}
+
 void NetworkConnectImpl::ConfigureNetworkIdAndConnect(
     const std::string& network_id,
     const base::DictionaryValue& properties,
@@ -481,7 +507,7 @@ void NetworkConnectImpl::ConfigureNetworkIdAndConnect(
       network->path(), profile_path,
       base::BindOnce(&NetworkConnectImpl::ConfigureSetProfileSucceeded,
                      weak_factory_.GetWeakPtr(), network_id,
-                     base::Passed(&properties_to_set)),
+                     std::move(properties_to_set)),
       base::BindOnce(&NetworkConnectImpl::SetPropertiesFailed,
                      weak_factory_.GetWeakPtr(), "SetProfile: " + profile_path,
                      network_id));

@@ -48,32 +48,32 @@ void ReadCallbackNotCalled(const std::string& message,
   ADD_FAILURE() << "Unexpected callback " << message;
 }
 
-void WriteCallback(const base::Closure& callback,
+void WriteCallback(base::OnceClosure callback,
                    OperationResult* result_out,
                    OperationResult result) {
   *result_out = result;
-  callback.Run();
+  std::move(callback).Run();
 }
 
-void ReadCallback(const base::Closure& callback,
+void ReadCallback(base::OnceClosure callback,
                   OperationResult* result_out,
                   std::unique_ptr<std::vector<char>>* content_out,
                   OperationResult result,
                   std::unique_ptr<std::vector<char>> content) {
   *result_out = result;
   *content_out = std::move(content);
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void GetRegisteredItemsCallback(
-    const base::Closure& callback,
+    base::OnceClosure callback,
     OperationResult* result_out,
     std::unique_ptr<base::DictionaryValue>* value_out,
     OperationResult result,
     std::unique_ptr<base::DictionaryValue> value) {
   *result_out = result;
   *value_out = std::move(value);
-  callback.Run();
+  std::move(callback).Run();
 }
 
 }  // namespace
@@ -141,7 +141,8 @@ class DataItemTest : public testing::Test {
 
     OperationResult result = OperationResult::kFailed;
     base::RunLoop run_loop;
-    item->Register(base::Bind(&WriteCallback, run_loop.QuitClosure(), &result));
+    item->Register(
+        base::BindOnce(&WriteCallback, run_loop.QuitClosure(), &result));
     run_loop.Run();
 
     EXPECT_EQ(OperationResult::kSuccess, result);
@@ -195,8 +196,8 @@ class DataItemTest : public testing::Test {
                                             const std::vector<char>& data) {
     OperationResult result = OperationResult::kFailed;
     base::RunLoop run_loop;
-    item->Write(data,
-                base::Bind(&WriteCallback, run_loop.QuitClosure(), &result));
+    item->Write(
+        data, base::BindOnce(&WriteCallback, run_loop.QuitClosure(), &result));
     run_loop.Run();
     return result;
   }
@@ -207,8 +208,8 @@ class DataItemTest : public testing::Test {
     OperationResult result = OperationResult::kFailed;
     std::unique_ptr<std::vector<char>> read_content;
     base::RunLoop run_loop;
-    item->Read(base::Bind(&ReadCallback, run_loop.QuitClosure(), &result,
-                          &read_content));
+    item->Read(base::BindOnce(&ReadCallback, run_loop.QuitClosure(), &result,
+                              &read_content));
     run_loop.Run();
     if (data)
       *data = std::move(read_content);
@@ -218,7 +219,8 @@ class DataItemTest : public testing::Test {
   OperationResult DeleteItemAndWaitForResult(DataItem* item) {
     OperationResult result = OperationResult::kFailed;
     base::RunLoop run_loop;
-    item->Delete(base::Bind(&WriteCallback, run_loop.QuitClosure(), &result));
+    item->Delete(
+        base::BindOnce(&WriteCallback, run_loop.QuitClosure(), &result));
     run_loop.Run();
     return result;
   }
@@ -226,7 +228,8 @@ class DataItemTest : public testing::Test {
   OperationResult RegisterItemAndWaitForResult(DataItem* item) {
     OperationResult result = OperationResult::kFailed;
     base::RunLoop run_loop;
-    item->Register(base::Bind(&WriteCallback, run_loop.QuitClosure(), &result));
+    item->Register(
+        base::BindOnce(&WriteCallback, run_loop.QuitClosure(), &result));
     run_loop.Run();
     return result;
   }
@@ -248,8 +251,8 @@ class DataItemTest : public testing::Test {
     DataItem::GetRegisteredValuesForExtension(
         context_.get(), value_store_cache_.get(), task_runner_.get(),
         extension_id,
-        base::Bind(&GetRegisteredItemsCallback, run_loop.QuitClosure(), &result,
-                   &items_value));
+        base::BindOnce(&GetRegisteredItemsCallback, run_loop.QuitClosure(),
+                       &result, &items_value));
     run_loop.Run();
 
     if (result != OperationResult::kSuccess)
@@ -555,8 +558,9 @@ TEST_F(DataItemTest, RepeatedWrite) {
   std::vector<char> first_write = {'f', 'i', 'l', 'e', '_', '1'};
   std::vector<char> second_write = {'f', 'i', 'l', 'e', '_', '2'};
 
-  writer->Write(first_write,
-                base::Bind(&WriteCallback, base::DoNothing(), &write_result));
+  writer->Write(
+      first_write,
+      base::BindOnce(&WriteCallback, base::DoNothing::Once(), &write_result));
   EXPECT_EQ(OperationResult::kSuccess,
             WriteItemAndWaitForResult(writer.get(), second_write));
 
@@ -675,7 +679,8 @@ TEST_F(DataItemTest, ResetBeforeCallback) {
       "data_id", extension()->id(), GenerateKey("key_1"));
 
   std::vector<char> content = {'f', 'i', 'l', 'e', '_', '1'};
-  writer->Write(content, base::Bind(&WriteCallbackNotCalled, "Reset writer"));
+  writer->Write(content,
+                base::BindOnce(&WriteCallbackNotCalled, "Reset writer"));
   writer.reset();
 
   std::unique_ptr<DataItem> reader =
@@ -686,12 +691,12 @@ TEST_F(DataItemTest, ResetBeforeCallback) {
   ASSERT_TRUE(read_content);
   EXPECT_EQ(content, *read_content);
 
-  reader->Read(base::Bind(&ReadCallbackNotCalled, "Reset read"));
+  reader->Read(base::BindOnce(&ReadCallbackNotCalled, "Reset read"));
   reader.reset();
 
   std::unique_ptr<DataItem> deleter =
       CreateDataItem("data_id", extension()->id(), GenerateKey("key_1"));
-  deleter->Delete(base::Bind(&WriteCallbackNotCalled, "Reset deleter"));
+  deleter->Delete(base::BindOnce(&WriteCallbackNotCalled, "Reset deleter"));
   deleter.reset();
 
   DrainTaskRunner();

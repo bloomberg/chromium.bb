@@ -4,6 +4,8 @@
 
 #include "net/socket/websocket_transport_connect_job.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -14,8 +16,10 @@
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/base/trace_constants.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
+#include "net/socket/socket_tag.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/socket/websocket_transport_connect_sub_job.h"
@@ -113,7 +117,7 @@ int WebSocketTransportConnectJob::DoResolveHost() {
 
   HostResolver::ResolveHostParameters parameters;
   parameters.initial_priority = priority();
-  DCHECK(!params_->disable_secure_dns());
+  DCHECK_EQ(SecureDnsPolicy::kAllow, params_->secure_dns_policy());
   request_ = host_resolver()->CreateRequest(params_->destination(),
                                             params_->network_isolation_key(),
                                             net_log(), parameters);
@@ -182,18 +186,19 @@ int WebSocketTransportConnectJob::DoTransportConnect() {
 
   if (!ipv4_addresses.empty()) {
     had_ipv4_ = true;
-    ipv4_job_.reset(new WebSocketTransportConnectSubJob(
-        ipv4_addresses, this, SUB_JOB_IPV4, websocket_endpoint_lock_manager()));
+    ipv4_job_ = std::make_unique<WebSocketTransportConnectSubJob>(
+        ipv4_addresses, this, SUB_JOB_IPV4, websocket_endpoint_lock_manager());
   }
 
   if (!ipv6_addresses.empty()) {
     had_ipv6_ = true;
-    ipv6_job_.reset(new WebSocketTransportConnectSubJob(
-        ipv6_addresses, this, SUB_JOB_IPV6, websocket_endpoint_lock_manager()));
+    ipv6_job_ = std::make_unique<WebSocketTransportConnectSubJob>(
+        ipv6_addresses, this, SUB_JOB_IPV6, websocket_endpoint_lock_manager());
     result = ipv6_job_->Start();
     switch (result) {
       case OK:
-        SetSocket(ipv6_job_->PassSocket());
+        DCHECK(request_);
+        SetSocket(ipv6_job_->PassSocket(), request_->GetDnsAliasResults());
         race_result_ = had_ipv4_ ? TransportConnectJob::RACE_IPV6_WINS
                                  : TransportConnectJob::RACE_IPV6_SOLO;
         return result;
@@ -220,7 +225,8 @@ int WebSocketTransportConnectJob::DoTransportConnect() {
   if (ipv4_job_) {
     result = ipv4_job_->Start();
     if (result == OK) {
-      SetSocket(ipv4_job_->PassSocket());
+      DCHECK(request_);
+      SetSocket(ipv4_job_->PassSocket(), request_->GetDnsAliasResults());
       race_result_ = had_ipv6_ ? TransportConnectJob::RACE_IPV4_WINS
                                : TransportConnectJob::RACE_IPV4_SOLO;
     }
@@ -250,7 +256,8 @@ void WebSocketTransportConnectJob::OnSubJobComplete(
                                  : TransportConnectJob::RACE_IPV6_SOLO;
         break;
     }
-    SetSocket(job->PassSocket());
+    DCHECK(request_);
+    SetSocket(job->PassSocket(), request_->GetDnsAliasResults());
 
     // Make sure all connections are cancelled even if this object fails to be
     // deleted.

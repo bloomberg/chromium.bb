@@ -14,13 +14,13 @@
 #include <vector>
 
 #include "base/containers/span.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "gpu/config/dx_diag_node.h"
 #include "gpu/gpu_export.h"
 #include "gpu/vulkan/buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/size.h"
 
 #if defined(OS_WIN)
@@ -236,13 +236,15 @@ struct GPU_EXPORT GPUInfo {
     // Device ids are unique to vendor, not to one another.
     uint32_t device_id = 0u;
 
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+    // The graphics card revision number.
+    uint32_t revision = 0u;
+#endif
+
 #if defined(OS_WIN)
     // The graphics card subsystem id.
     // The lower 16 bits represents the subsystem vendor id.
     uint32_t sub_sys_id = 0u;
-
-    // The graphics card revision number.
-    uint32_t revision = 0u;
 
     // The graphics card LUID. This is a unique identifier for the graphics card
     // that is guaranteed to be unique until the computer is restarted. The LUID
@@ -282,6 +284,10 @@ struct GPU_EXPORT GPUInfo {
   const GPUDevice& active_gpu() const;
 
   bool IsInitialized() const;
+
+  bool UsesSwiftShader() const;
+
+  unsigned int GpuCount() const;
 
   // The amount of time taken to get from the process starting to the message
   // loop being pumped.
@@ -402,7 +408,7 @@ struct GPU_EXPORT GPUInfo {
   bool subpixel_font_rendering;
 
 #if BUILDFLAG(ENABLE_VULKAN)
-  base::Optional<VulkanInfo> vulkan_info;
+  absl::optional<VulkanInfo> vulkan_info;
 #endif
 
   // Note: when adding new members, please remember to update EnumerateFields

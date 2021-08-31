@@ -152,7 +152,7 @@ namespace freetype {
                  PS_Dict_Keys            key,
                  T&                      value )
     {
-      for ( auto  index = 0;
+      for ( size_t  index = 0;
             index < max_value_computed &&
               index < max_value_static;
             index++ )

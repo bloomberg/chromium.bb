@@ -47,8 +47,14 @@ ClipboardFormatType ClipboardFormatType::GetType(
 }
 
 // static
-const ClipboardFormatType& ClipboardFormatType::GetUrlType() {
+const ClipboardFormatType& ClipboardFormatType::GetFilenamesType() {
   static base::NoDestructor<ClipboardFormatType> type(kMimeTypeURIList);
+  return *type;
+}
+
+// static
+const ClipboardFormatType& ClipboardFormatType::GetUrlType() {
+  static base::NoDestructor<ClipboardFormatType> type(kMimeTypeMozillaURL);
   return *type;
 }
 
@@ -84,9 +90,14 @@ const ClipboardFormatType& ClipboardFormatType::GetRtfType() {
 }
 
 // static
-const ClipboardFormatType& ClipboardFormatType::GetBitmapType() {
+const ClipboardFormatType& ClipboardFormatType::GetPngType() {
   static base::NoDestructor<ClipboardFormatType> type(kMimeTypePNG);
   return *type;
+}
+
+// static
+const ClipboardFormatType& ClipboardFormatType::GetBitmapType() {
+  return ClipboardFormatType::GetPngType();
 }
 
 // static

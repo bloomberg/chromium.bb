@@ -23,9 +23,10 @@
 #include <assert.h>
 #include <string.h>
 
+#include "absl/strings/str_format.h"
+
 #include <grpc/support/alloc.h>
 #include <grpc/support/log.h>
-#include <grpc/support/string_util.h>
 
 #include "src/core/lib/debug/trace.h"
 #include "src/core/lib/gpr/murmur_hash.h"
@@ -44,17 +45,32 @@ void grpc_chttp2_hptbl_destroy(grpc_chttp2_hptbl* tbl) {
   tbl->ents = nullptr;
 }
 
-grpc_mdelem grpc_chttp2_hptbl_lookup_dynamic_index(const grpc_chttp2_hptbl* tbl,
-                                                   uint32_t tbl_index) {
+template <bool take_ref>
+static grpc_mdelem lookup_dynamic_index(const grpc_chttp2_hptbl* tbl,
+                                        uint32_t tbl_index) {
   /* Not static - find the value in the list of valid entries */
   tbl_index -= (GRPC_CHTTP2_LAST_STATIC_ENTRY + 1);
   if (tbl_index < tbl->num_ents) {
     uint32_t offset =
         (tbl->num_ents - 1u - tbl_index + tbl->first_ent) % tbl->cap_entries;
-    return tbl->ents[offset];
+    grpc_mdelem md = tbl->ents[offset];
+    if (take_ref) {
+      GRPC_MDELEM_REF(md);
+    }
+    return md;
   }
   /* Invalid entry: return error */
   return GRPC_MDNULL;
+}
+
+grpc_mdelem grpc_chttp2_hptbl_lookup_dynamic_index(const grpc_chttp2_hptbl* tbl,
+                                                   uint32_t tbl_index) {
+  return lookup_dynamic_index<false>(tbl, tbl_index);
+}
+
+grpc_mdelem grpc_chttp2_hptbl_lookup_ref_dynamic_index(
+    const grpc_chttp2_hptbl* tbl, uint32_t tbl_index) {
+  return lookup_dynamic_index<true>(tbl, tbl_index);
 }
 
 /* Evict one element from the table */
@@ -104,13 +120,11 @@ grpc_error* grpc_chttp2_hptbl_set_current_table_size(grpc_chttp2_hptbl* tbl,
     return GRPC_ERROR_NONE;
   }
   if (bytes > tbl->max_bytes) {
-    char* msg;
-    gpr_asprintf(&msg,
-                 "Attempt to make hpack table %d bytes when max is %d bytes",
-                 bytes, tbl->max_bytes);
-    grpc_error* err = GRPC_ERROR_CREATE_FROM_COPIED_STRING(msg);
-    gpr_free(msg);
-    return err;
+    return GRPC_ERROR_CREATE_FROM_COPIED_STRING(
+        absl::StrFormat(
+            "Attempt to make hpack table %d bytes when max is %d bytes", bytes,
+            tbl->max_bytes)
+            .c_str());
   }
   if (GRPC_TRACE_FLAG_ENABLED(grpc_http_trace)) {
     gpr_log(GPR_INFO, "Update hpack parser table size to %d", bytes);
@@ -138,15 +152,12 @@ grpc_error* grpc_chttp2_hptbl_add(grpc_chttp2_hptbl* tbl, grpc_mdelem md) {
                       GRPC_CHTTP2_HPACK_ENTRY_OVERHEAD;
 
   if (tbl->current_table_bytes > tbl->max_bytes) {
-    char* msg;
-    gpr_asprintf(
-        &msg,
-        "HPACK max table size reduced to %d but not reflected by hpack "
-        "stream (still at %d)",
-        tbl->max_bytes, tbl->current_table_bytes);
-    grpc_error* err = GRPC_ERROR_CREATE_FROM_COPIED_STRING(msg);
-    gpr_free(msg);
-    return err;
+    return GRPC_ERROR_CREATE_FROM_COPIED_STRING(
+        absl::StrFormat(
+            "HPACK max table size reduced to %d but not reflected by hpack "
+            "stream (still at %d)",
+            tbl->max_bytes, tbl->current_table_bytes)
+            .c_str());
   }
 
   /* we can't add elements bigger than the max table size */
@@ -189,7 +200,7 @@ grpc_chttp2_hptbl_find_result grpc_chttp2_hptbl_find(
 
   /* See if the string is in the static table */
   for (i = 0; i < GRPC_CHTTP2_LAST_STATIC_ENTRY; i++) {
-    grpc_mdelem ent = grpc_static_mdelem_manifested[i];
+    grpc_mdelem ent = grpc_static_mdelem_manifested()[i];
     if (!grpc_slice_eq(GRPC_MDKEY(md), GRPC_MDKEY(ent))) continue;
     r.index = i + 1u;
     r.has_value = grpc_slice_eq(GRPC_MDVALUE(md), GRPC_MDVALUE(ent));

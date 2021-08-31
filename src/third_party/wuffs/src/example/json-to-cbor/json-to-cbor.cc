@@ -47,8 +47,8 @@ for a C++ compiler $CXX, such as clang++ or g++.
 #define WUFFS_IMPLEMENTATION
 
 // Defining the WUFFS_CONFIG__MODULE* macros are optional, but it lets users of
-// release/c/etc.c whitelist which parts of Wuffs to build. That file contains
-// the entire Wuffs standard library, implementing a variety of codecs and file
+// release/c/etc.c choose which parts of Wuffs to build. That file contains the
+// entire Wuffs standard library, implementing a variety of codecs and file
 // formats. Without this macro definition, an optimizing compiler or linker may
 // very well discard Wuffs code for unused codecs, but listing the Wuffs
 // modules we use makes that process explicit. Preprocessing means that such
@@ -79,6 +79,8 @@ static const char* g_usage =
     "            -input-allow-comments\n"
     "            -input-allow-extra-comma\n"
     "            -input-allow-inf-nan-numbers\n"
+    "            -input-jwcc\n"
+    "            -jwcc\n"
     "\n"
     "The input.json filename is optional. If absent, it reads from stdin.\n"
     "\n"
@@ -107,6 +109,16 @@ static const char* g_usage =
     "The -input-allow-inf-nan-numbers flag allows non-finite floating point\n"
     "numbers (infinities and not-a-numbers) within JSON input.\n"
     "\n"
+    "Combining some of those flags results in speaking JWCC (JSON With Commas\n"
+    "and Comments), not plain JSON. For convenience, the -input-jwcc or -jwcc\n"
+    "flags enables all of:\n"
+    "            -input-allow-comments\n"
+    "            -input-allow-extra-comma\n"
+    "\n"
+#if defined(WUFFS_EXAMPLE_SPEAK_JWCC_NOT_JSON)
+    "This program was configured at compile time to always use -jwcc.\n"
+    "\n"
+#endif
     "----\n"
     "\n"
     "The JSON specification permits implementations to set their own maximum\n"
@@ -130,6 +142,12 @@ struct {
 
 std::string  //
 parse_flags(int argc, char** argv) {
+#if defined(WUFFS_EXAMPLE_SPEAK_JWCC_NOT_JSON)
+  g_quirks.push_back(WUFFS_JSON__QUIRK_ALLOW_COMMENT_BLOCK);
+  g_quirks.push_back(WUFFS_JSON__QUIRK_ALLOW_COMMENT_LINE);
+  g_quirks.push_back(WUFFS_JSON__QUIRK_ALLOW_EXTRA_COMMA);
+#endif
+
   int c = (argc > 0) ? 1 : 0;  // Skip argv[0], the program name.
   for (; c < argc; c++) {
     char* arg = argv[c];
@@ -161,6 +179,12 @@ parse_flags(int argc, char** argv) {
     }
     if (!strcmp(arg, "input-allow-inf-nan-numbers")) {
       g_quirks.push_back(WUFFS_JSON__QUIRK_ALLOW_INF_NAN_NUMBERS);
+      continue;
+    }
+    if (!strcmp(arg, "input-jwcc") || !strcmp(arg, "jwcc")) {
+      g_quirks.push_back(WUFFS_JSON__QUIRK_ALLOW_COMMENT_BLOCK);
+      g_quirks.push_back(WUFFS_JSON__QUIRK_ALLOW_COMMENT_LINE);
+      g_quirks.push_back(WUFFS_JSON__QUIRK_ALLOW_EXTRA_COMMA);
       continue;
     }
 
@@ -244,15 +268,15 @@ class Callbacks : public wuffs_aux::DecodeJsonCallbacks {
       return write_dst(&c[0], 2);
     } else if (n <= 0xFFFF) {
       c[0] = base | 0x19;
-      wuffs_base__store_u16be__no_bounds_check(&c[1], static_cast<uint16_t>(n));
+      wuffs_base__poke_u16be__no_bounds_check(&c[1], static_cast<uint16_t>(n));
       return write_dst(&c[0], 3);
     } else if (n <= 0xFFFFFFFF) {
       c[0] = base | 0x1A;
-      wuffs_base__store_u32be__no_bounds_check(&c[1], static_cast<uint32_t>(n));
+      wuffs_base__poke_u32be__no_bounds_check(&c[1], static_cast<uint32_t>(n));
       return write_dst(&c[0], 5);
     }
     c[0] = base | 0x1B;
-    wuffs_base__store_u64be__no_bounds_check(&c[1], n);
+    wuffs_base__poke_u64be__no_bounds_check(&c[1], n);
     return write_dst(&c[0], 9);
   }
 
@@ -268,18 +292,18 @@ class Callbacks : public wuffs_aux::DecodeJsonCallbacks {
         wuffs_base__ieee_754_bit_representation__from_f64_to_u16_truncate(val);
     if (!lv16.lossy) {
       c[0] = 0xF9;
-      wuffs_base__store_u16be__no_bounds_check(&c[1], lv16.value);
+      wuffs_base__poke_u16be__no_bounds_check(&c[1], lv16.value);
       return write_dst(&c[0], 3);
     }
     wuffs_base__lossy_value_u32 lv32 =
         wuffs_base__ieee_754_bit_representation__from_f64_to_u32_truncate(val);
     if (!lv32.lossy) {
       c[0] = 0xFA;
-      wuffs_base__store_u32be__no_bounds_check(&c[1], lv32.value);
+      wuffs_base__poke_u32be__no_bounds_check(&c[1], lv32.value);
       return write_dst(&c[0], 5);
     }
     c[0] = 0xFB;
-    wuffs_base__store_u64be__no_bounds_check(
+    wuffs_base__poke_u64be__no_bounds_check(
         &c[1], wuffs_base__ieee_754_bit_representation__from_f64_to_u64(val));
     return write_dst(&c[0], 9);
   }

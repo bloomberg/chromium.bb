@@ -12,6 +12,7 @@
 #undef GetGlyphIndices
 
 #include "include/codec/SkCodec.h"
+#include "include/core/SkBitmap.h"
 #include "include/core/SkFontMetrics.h"
 #include "include/core/SkPath.h"
 #include "include/private/SkMutex.h"
@@ -380,10 +381,6 @@ SkScalerContext_DW::SkScalerContext_DW(sk_sp<DWriteFontTypeface> typefaceRef,
 }
 
 SkScalerContext_DW::~SkScalerContext_DW() {
-}
-
-unsigned SkScalerContext_DW::generateGlyphCount() {
-    return fGlyphCount;
 }
 
 bool SkScalerContext_DW::generateAdvance(SkGlyph* glyph) {
@@ -1116,7 +1113,7 @@ void SkScalerContext_DW::generatePngGlyphImage(const SkGlyph& glyph) {
     SkScalar ratio = fTextSizeRender / glyphData.pixelsPerEm;
     canvas.scale(ratio, ratio);
     canvas.translate(-glyphData.horizontalLeftOrigin.x, -glyphData.horizontalLeftOrigin.y);
-    canvas.drawImage(image, 0, 0, nullptr);
+    canvas.drawImage(image, 0, 0);
 }
 
 void SkScalerContext_DW::generateImage(const SkGlyph& glyph) {

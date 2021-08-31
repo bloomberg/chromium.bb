@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/spdy/core/hpack/hpack_static_table.h"
+#include "spdy/core/hpack/hpack_static_table.h"
 
 #include <set>
 #include <vector>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
-#include "net/third_party/quiche/src/spdy/core/hpack/hpack_constants.h"
+#include "common/platform/api/quiche_test.h"
+#include "spdy/core/hpack/hpack_constants.h"
 
 namespace spdy {
 
@@ -31,17 +31,20 @@ TEST_F(HpackStaticTableTest, Initialize) {
                     HpackStaticTableVector().size());
   EXPECT_TRUE(table_.IsInitialized());
 
-  HpackHeaderTable::EntryTable static_entries = table_.GetStaticEntries();
-  EXPECT_EQ(HpackStaticTableVector().size(), static_entries.size());
+  const HpackHeaderTable::StaticEntryTable& static_entries =
+      table_.GetStaticEntries();
+  EXPECT_EQ(kStaticTableSize, static_entries.size());
 
-  HpackHeaderTable::UnorderedEntrySet static_index = table_.GetStaticIndex();
-  EXPECT_EQ(HpackStaticTableVector().size(), static_index.size());
+  const HpackHeaderTable::NameValueToEntryMap& static_index =
+      table_.GetStaticIndex();
+  EXPECT_EQ(kStaticTableSize, static_index.size());
 
-  HpackHeaderTable::NameToEntryMap static_name_index =
+  const HpackHeaderTable::NameToEntryMap& static_name_index =
       table_.GetStaticNameIndex();
+  // Count distinct names in static table.
   std::set<absl::string_view> names;
-  for (auto* entry : static_index) {
-    names.insert(entry->name());
+  for (const auto& entry : static_entries) {
+    names.insert(entry.name());
   }
   EXPECT_EQ(names.size(), static_name_index.size());
 }

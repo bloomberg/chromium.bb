@@ -20,6 +20,10 @@
 #include <time.h>
 #include <unistd.h>
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#include <sys/sendfile.h>
+#endif
+
 #include "base/base_switches.h"
 #include "base/bits.h"
 #include "base/command_line.h"
@@ -38,7 +42,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
@@ -124,32 +127,6 @@ bool AdvanceEnumeratorWithStat(FileEnumerator* traversal,
 
   *out_next_stat = traversal->GetInfo().stat();
   return true;
-}
-
-bool CopyFileContents(File* infile, File* outfile) {
-  static constexpr size_t kBufferSize = 32768;
-  std::vector<char> buffer(kBufferSize);
-
-  for (;;) {
-    ssize_t bytes_read = infile->ReadAtCurrentPos(buffer.data(), buffer.size());
-    if (bytes_read < 0)
-      return false;
-    if (bytes_read == 0)
-      return true;
-    // Allow for partial writes
-    ssize_t bytes_written_per_read = 0;
-    do {
-      ssize_t bytes_written_partial = outfile->WriteAtCurrentPos(
-          &buffer[bytes_written_per_read], bytes_read - bytes_written_per_read);
-      if (bytes_written_partial < 0)
-        return false;
-
-      bytes_written_per_read += bytes_written_partial;
-    } while (bytes_written_per_read < bytes_read);
-  }
-
-  NOTREACHED();
-  return false;
 }
 
 bool DoCopyDirectory(const FilePath& from_path,
@@ -271,7 +248,7 @@ bool DoCopyDirectory(const FilePath& from_path,
     // set of permissions than it does on other POSIX platforms.
 #if defined(OS_APPLE)
     int mode = 0600 | (stat_at_use.st_mode & 0177);
-#elif defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
     int mode = 0644;
 #else
     int mode = 0600;
@@ -283,7 +260,7 @@ bool DoCopyDirectory(const FilePath& from_path,
       return false;
     }
 
-    if (!CopyFileContents(&infile, &outfile)) {
+    if (!CopyFileContents(infile, outfile)) {
       DLOG(ERROR) << "CopyDirectory() couldn't copy file: " << current.value();
       return false;
     }
@@ -308,12 +285,12 @@ bool DoDeleteFile(const FilePath& path, bool recursive) {
   stat_wrapper_t file_info;
   if (File::Lstat(path_str, &file_info) != 0) {
     // The Windows version defines this condition as success.
-    return (errno == ENOENT || errno == ENOTDIR);
+    return (errno == ENOENT);
   }
   if (!S_ISDIR(file_info.st_mode))
-    return (unlink(path_str) == 0);
+    return (unlink(path_str) == 0) || (errno == ENOENT);
   if (!recursive)
-    return (rmdir(path_str) == 0);
+    return (rmdir(path_str) == 0) || (errno == ENOENT);
 
   bool success = true;
   stack<std::string> directories;
@@ -326,13 +303,13 @@ bool DoDeleteFile(const FilePath& path, bool recursive) {
     if (traversal.GetInfo().IsDirectory())
       directories.push(current.value());
     else
-      success &= (unlink(current.value().c_str()) == 0);
+      success &= (unlink(current.value().c_str()) == 0) || (errno == ENOENT);
   }
 
   while (!directories.empty()) {
     FilePath dir = FilePath(directories.top());
     directories.pop();
-    success &= (rmdir(dir.value().c_str()) == 0);
+    success &= (rmdir(dir.value().c_str()) == 0) || (errno == ENOENT);
   }
   return success;
 }
@@ -343,7 +320,7 @@ bool DoDeleteFile(const FilePath& path, bool recursive) {
 // https://www.gnu.org/software/libc/manual/html_node/Opening-Streams.html for
 // details.
 std::string AppendModeCharacter(StringPiece mode, char mode_char) {
-  std::string result(mode.as_string());
+  std::string result(mode);
   size_t comma_pos = result.find(',');
   result.insert(comma_pos == std::string::npos ? result.length() : comma_pos, 1,
                 mode_char);
@@ -623,7 +600,7 @@ bool GetTempDir(FilePath* path) {
 
 #if !defined(OS_APPLE)  // Mac implementation is in file_util_mac.mm.
 FilePath GetHomeDir() {
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   if (SysInfo::IsRunningOnChromeOS()) {
     // On Chrome OS chrome::DIR_USER_DATA is overridden with a primary user
     // homedir once it becomes available. Return / as the safe option.
@@ -651,7 +628,8 @@ FilePath GetHomeDir() {
 File CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
   // For call to close() inside ScopedFD.
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
-  return File(CreateAndOpenFdForTemporaryFileInDir(dir, temp_file));
+  ScopedFD fd = CreateAndOpenFdForTemporaryFileInDir(dir, temp_file);
+  return fd.is_valid() ? File(std::move(fd)) : File(File::GetLastFileError());
 }
 
 bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
@@ -904,25 +882,30 @@ int WriteFile(const FilePath& filename, const char* data, int size) {
   if (fd < 0)
     return -1;
 
-  int bytes_written = WriteFileDescriptor(fd, data, size) ? size : -1;
+  int bytes_written =
+      WriteFileDescriptor(fd, StringPiece(data, size)) ? size : -1;
   if (IGNORE_EINTR(close(fd)) < 0)
     return -1;
   return bytes_written;
 }
 
-bool WriteFileDescriptor(const int fd, const char* data, int size) {
+bool WriteFileDescriptor(int fd, span<const uint8_t> data) {
   // Allow for partial writes.
   ssize_t bytes_written_total = 0;
+  ssize_t size = checked_cast<ssize_t>(data.size());
   for (ssize_t bytes_written_partial = 0; bytes_written_total < size;
        bytes_written_total += bytes_written_partial) {
-    bytes_written_partial =
-        HANDLE_EINTR(write(fd, data + bytes_written_total,
-                           size - bytes_written_total));
+    bytes_written_partial = HANDLE_EINTR(write(
+        fd, data.data() + bytes_written_total, size - bytes_written_total));
     if (bytes_written_partial < 0)
       return false;
   }
 
   return true;
+}
+
+bool WriteFileDescriptor(int fd, StringPiece data) {
+  return WriteFileDescriptor(fd, as_bytes(make_span(data)));
 }
 
 bool AllocateFileRegion(File* file, int64_t offset, size_t size) {
@@ -978,7 +961,7 @@ bool AllocateFileRegion(File* file, int64_t offset, size_t size) {
 
   // Write starting at the next block boundary after the old file length.
   const int64_t extension_start =
-      base::bits::Align(original_file_len, block_size);
+      base::bits::AlignUp(original_file_len, block_size);
   for (int64_t i = extension_start; i < new_file_len; i += block_size) {
     char existing_byte;
     if (HANDLE_EINTR(pread(file->GetPlatformFile(), &existing_byte, 1, i)) !=
@@ -999,7 +982,7 @@ bool AllocateFileRegion(File* file, int64_t offset, size_t size) {
 
 #if !defined(OS_NACL_NONSFI)
 
-bool AppendToFile(const FilePath& filename, const char* data, int size) {
+bool AppendToFile(const FilePath& filename, span<const uint8_t> data) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   bool ret = true;
   int fd = HANDLE_EINTR(open(filename.value().c_str(), O_WRONLY | O_APPEND));
@@ -1009,7 +992,7 @@ bool AppendToFile(const FilePath& filename, const char* data, int size) {
   }
 
   // This call will either write all of the data or return false.
-  if (!WriteFileDescriptor(fd, data, size)) {
+  if (!WriteFileDescriptor(fd, data)) {
     VPLOG(1) << "Error while writing to file " << filename.value();
     ret = false;
   }
@@ -1020,6 +1003,10 @@ bool AppendToFile(const FilePath& filename, const char* data, int size) {
   }
 
   return ret;
+}
+
+bool AppendToFile(const FilePath& filename, StringPiece data) {
+  return AppendToFile(filename, as_bytes(make_span(data)));
 }
 
 bool GetCurrentDirectory(FilePath* dir) {
@@ -1126,7 +1113,7 @@ int GetMaximumPathComponentLength(const FilePath& path) {
 bool GetShmemTempDir(bool executable, FilePath* path) {
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
   bool disable_dev_shm = false;
-#if !defined(OS_CHROMEOS) && !BUILDFLAG(IS_LACROS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   disable_dev_shm = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableDevShmUsage);
 #endif
@@ -1166,7 +1153,7 @@ bool CopyFile(const FilePath& from_path, const FilePath& to_path) {
   if (!outfile.IsValid())
     return false;
 
-  return CopyFileContents(&infile, &outfile);
+  return CopyFileContents(infile, outfile);
 }
 #endif  // !defined(OS_APPLE)
 
@@ -1244,6 +1231,41 @@ bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
   DeletePathRecursively(from_path);
   return true;
 }
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+bool CopyFileContentsWithSendfile(File& infile,
+                                  File& outfile,
+                                  bool& retry_slow) {
+  int64_t file_size = infile.GetLength();
+  if (file_size < 0) {
+    return false;
+  }
+
+  size_t copied = 0;
+  ssize_t res = 0;
+  while (file_size - copied > 0) {
+    // Don't specify an offset and the kernel will begin reading/writing to the
+    // current file offsets.
+    res = HANDLE_EINTR(sendfile(outfile.GetPlatformFile(),
+                                infile.GetPlatformFile(), /*offset=*/nullptr,
+                                /*length=*/file_size - copied));
+    if (res <= 0) {
+      break;
+    }
+
+    copied += res;
+  }
+
+  // Fallback on non-fatal error cases. None of these errors can happen after
+  // data has started copying, a check is included for good measure. As a result
+  // file sizes and file offsets will not have changed. A slow fallback and
+  // proceed without issues.
+  retry_slow = (copied == 0 && res < 0 &&
+                (errno == EINVAL || errno == ENOSYS || errno == EPERM));
+
+  return res >= 0;
+}
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
 }  // namespace internal
 

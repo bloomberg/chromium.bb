@@ -1,6 +1,7 @@
 include_rules = [
   "-chrome",
-  "+chrome/browser/chromeos/input_method",
+  "+chrome/browser",
+  "+chrome/common",
   "+chrome/grit",
   "-content",
 ]
@@ -14,19 +15,6 @@ specific_include_rules = {
     "+chrome/test",
     "+content/public",
   ],
-  "candidate_window_controller_impl\.cc": [
-    "+ash/shell.h",
-    "+ash/wm/window_util.h",
-  ],
-  "assistive_window_controller\.cc": [
-    "+ash/shell.h",
-    "+ash/wm/window_util.h",
-  ],
-
-  # Detect text input client host.
-  "input_host_helper\.cc": [
-    "+ash/wm/window_util.h",
-  ],
 
   # TODO(erikwright): Bring this list to zero.
   # Do not add to the list of temporarily-allowed dependencies below,
@@ -38,7 +26,7 @@ specific_include_rules = {
   ],
 
   # For testing.
-  ".*(_browsertest|_unittest|_test_helper|)\.(h|cc)": [
+  ".*(_browsertest|_browsertests|_unittest|_test_helper)\.(h|cc)": [
     "+chrome/common",
     "+chrome/browser",
     "+chrome/test",
@@ -47,5 +35,17 @@ specific_include_rules = {
   ],
   "xkeyboard_unittest\.cc": [
     "!content/public/test/test_browser_thread.h",
+  ],
+
+  # TODO: This should not be an allowed dep; see
+  # http://crbug.com/1148093 and
+  # http://b/173144152.
+  "tts_handler\.h": [
+    "!content/public/browser/tts_controller.h",
+  ],
+
+  # TODO: input method owners should audit this block.
+  "(input|ime).*\.(h|cc)": [
+    "+content/public/browser",
   ],
 }

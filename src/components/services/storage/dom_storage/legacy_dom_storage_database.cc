@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "components/services/storage/public/cpp/filesystem/filesystem_proxy.h"
+#include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -52,10 +53,10 @@ void LegacyDomStorageDatabase::ReadAllValues(
   DCHECK(statement.is_valid());
 
   while (statement.Step()) {
-    base::string16 key = statement.ColumnString16(0);
-    base::string16 value;
+    std::u16string key = statement.ColumnString16(0);
+    std::u16string value;
     statement.ColumnBlobAsString16(1, &value);
-    (*result)[key] = base::NullableString16(value, false);
+    (*result)[key] = value;
   }
   known_to_be_empty_ = result->empty();
 
@@ -89,9 +90,9 @@ bool LegacyDomStorageDatabase::CommitChanges(
   auto it = changes.begin();
   for (; it != changes.end(); ++it) {
     sql::Statement statement;
-    base::string16 key = it->first;
-    base::NullableString16 value = it->second;
-    if (value.is_null()) {
+    const std::u16string& key = it->first;
+    const absl::optional<std::u16string>& value = it->second;
+    if (!value.has_value()) {
       statement.Assign(db_->GetCachedStatement(
           SQL_FROM_HERE, "DELETE FROM ItemTable WHERE key=?"));
       statement.BindString16(0, key);
@@ -100,8 +101,8 @@ bool LegacyDomStorageDatabase::CommitChanges(
       statement.Assign(db_->GetCachedStatement(
           SQL_FROM_HERE, "INSERT INTO ItemTable VALUES (?,?)"));
       statement.BindString16(0, key);
-      statement.BindBlob(1, value.string().data(),
-                         value.string().length() * sizeof(base::char16));
+      statement.BindBlob(1, value.value().data(),
+                         value.value().length() * sizeof(char16_t));
       known_to_be_empty_ = false;
       did_insert = true;
     }
@@ -153,12 +154,13 @@ bool LegacyDomStorageDatabase::LazyOpen(bool create_if_needed) {
     return false;
   }
 
-  db_ = std::make_unique<sql::Database>();
+  db_ = std::make_unique<sql::Database>(sql::DatabaseOptions{
+      // This database should only be accessed from the process hosting the
+      // storage service, so exclusive locking is appropriate.
+      .exclusive_locking = true,
+      .page_size = 4096,
+      .cache_size = 500});
   db_->set_histogram_tag("DOMStorageDatabase");
-
-  // This database should only be accessed from the process hosting the storage
-  // service, so exclusive locking is appropriate.
-  db_->set_exclusive_locking();
 
   // This database is only opened to migrate DOMStorage data to a new backend.
   // Given the use case, mmap()'s performance improvements are not worth the
@@ -238,7 +240,7 @@ bool LegacyDomStorageDatabase::DeleteFileAndRecreate() {
 
   tried_to_recreate_ = true;
 
-  base::Optional<base::File::Info> info =
+  absl::optional<base::File::Info> info =
       filesystem_proxy_->GetFileInfo(file_path_);
   // If it's not a directory and we can delete the file, try and open it again.
   if (info && !info->is_directory && sql::Database::Delete(file_path_)) {

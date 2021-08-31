@@ -8,18 +8,22 @@
 #include "base/check.h"
 #include "base/strings/string_split.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "build/chromeos_buildflags.h"
+#include "components/exo/data_exchange_delegate.h"
 #include "components/exo/data_offer.h"
 #include "components/exo/data_source.h"
-#include "components/exo/file_helper.h"
 #include "components/exo/seat.h"
 #include "components/exo/surface.h"
 #include "components/exo/surface_tree_host.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "ui/aura/client/drag_drop_client.h"
+#include "ui/base/clipboard/file_info.h"
+#include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/dragdrop/file_info/file_info.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/point.h"
@@ -29,14 +33,15 @@
 #include "ui/gfx/transform_util.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "components/exo/extended_drag_source.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace exo {
-
 namespace {
+
+using ::ui::mojom::DragOperation;
 
 uint32_t DndActionsToDragOperations(const base::flat_set<DndAction>& actions) {
   uint32_t dnd_operations = 0;
@@ -58,7 +63,7 @@ uint32_t DndActionsToDragOperations(const base::flat_set<DndAction>& actions) {
   return dnd_operations;
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 DndAction DragOperationsToPreferredDndAction(int op) {
   if (op & ui::DragDropTypes::DragOperation::DRAG_COPY)
     return DndAction::kCopy;
@@ -70,13 +75,13 @@ DndAction DragOperationsToPreferredDndAction(int op) {
 }
 #endif
 
-DndAction DragOperationToDndAction(int op) {
+DndAction DragOperationToDndAction(DragOperation op) {
   switch (op) {
-    case ui::DragDropTypes::DragOperation::DRAG_NONE:
+    case DragOperation::kNone:
       return DndAction::kNone;
-    case ui::DragDropTypes::DragOperation::DRAG_MOVE:
+    case DragOperation::kMove:
       return DndAction::kMove;
-    case ui::DragDropTypes::DragOperation::DRAG_COPY:
+    case DragOperation::kCopy:
       return DndAction::kCopy;
     default:
       NOTREACHED();
@@ -136,7 +141,8 @@ class DragDropOperation::IconSurface final : public SurfaceTreeHost,
       return;
     }
 
-    operation_->OnDragIconCaptured(icon_result->AsSkBitmap());
+    auto scoped_bitmap = icon_result->ScopedAccessSkBitmap();
+    operation_->OnDragIconCaptured(scoped_bitmap.GetOutScopedBitmap());
   }
 
   DragDropOperation* const operation_;
@@ -144,23 +150,24 @@ class DragDropOperation::IconSurface final : public SurfaceTreeHost,
 };
 
 base::WeakPtr<DragDropOperation> DragDropOperation::Create(
-    FileHelper* file_helper,
+    DataExchangeDelegate* data_exchange_delegate,
     DataSource* source,
     Surface* origin,
     Surface* icon,
     const gfx::PointF& drag_start_point,
     ui::mojom::DragEventSource event_source) {
-  auto* dnd_op = new DragDropOperation(file_helper, source, origin, icon,
-                                       drag_start_point, event_source);
+  auto* dnd_op = new DragDropOperation(data_exchange_delegate, source, origin,
+                                       icon, drag_start_point, event_source);
   return dnd_op->weak_ptr_factory_.GetWeakPtr();
 }
 
-DragDropOperation::DragDropOperation(FileHelper* file_helper,
-                                     DataSource* source,
-                                     Surface* origin,
-                                     Surface* icon,
-                                     const gfx::PointF& drag_start_point,
-                                     ui::mojom::DragEventSource event_source)
+DragDropOperation::DragDropOperation(
+    DataExchangeDelegate* data_exchange_delegate,
+    DataSource* source,
+    Surface* origin,
+    Surface* icon,
+    const gfx::PointF& drag_start_point,
+    ui::mojom::DragEventSource event_source)
     : source_(std::make_unique<ScopedDataSource>(source, this)),
       origin_(std::make_unique<ScopedSurface>(origin, this)),
       drag_start_point_(drag_start_point),
@@ -168,7 +175,7 @@ DragDropOperation::DragDropOperation(FileHelper* file_helper,
       event_source_(event_source) {
   aura::Window* root_window = origin_->get()->window()->GetRootWindow();
   DCHECK(root_window);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   drag_drop_controller_ = static_cast<ash::DragDropController*>(
       aura::client::GetDragDropClient(root_window));
 #else
@@ -181,7 +188,11 @@ DragDropOperation::DragDropOperation(FileHelper* file_helper,
 
   drag_drop_controller_->AddObserver(this);
 
-#if defined(OS_CHROMEOS)
+  os_exchange_data_->SetSource(std::make_unique<ui::DataTransferEndpoint>(
+      data_exchange_delegate->GetDataTransferEndpointType(
+          origin_->get()->window())));
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   extended_drag_source_ = ExtendedDragSource::Get();
   if (extended_drag_source_) {
     drag_drop_controller_->set_toplevel_window_drag_delegate(
@@ -197,9 +208,9 @@ DragDropOperation::DragDropOperation(FileHelper* file_helper,
       base::BindOnce(&DragDropOperation::ScheduleStartDragDropOperation,
                      weak_ptr_factory_.GetWeakPtr());
 
-  // When the icon is present, make the count kMaxClipboardDataTypes + 1 so we
-  // can wait for the icon to be captured as well.
-  counter_ = base::BarrierClosure(kMaxClipboardDataTypes + (icon ? 1 : 0),
+  // When the icon is present, make the count kMaxDataTypes + 1 so we can wait
+  // for the icon to be captured as well.
+  counter_ = base::BarrierClosure(DataSource::kMaxDataTypes + (icon ? 1 : 0),
                                   std::move(start_op_callback));
 
   source->GetDataForPreferredMimeTypes(
@@ -210,8 +221,10 @@ DragDropOperation::DragDropOperation(FileHelper* file_helper,
                      weak_ptr_factory_.GetWeakPtr()),
       DataSource::ReadDataCallback(),
       base::BindOnce(&DragDropOperation::OnFilenamesRead,
-                     weak_ptr_factory_.GetWeakPtr(), file_helper,
+                     weak_ptr_factory_.GetWeakPtr(), data_exchange_delegate,
                      origin->window()),
+      base::BindOnce(&DragDropOperation::OnFileContentsRead,
+                     weak_ptr_factory_.GetWeakPtr()),
       counter_);
 }
 
@@ -224,7 +237,7 @@ DragDropOperation::~DragDropOperation() {
   if (drag_drop_controller_->IsDragDropInProgress() && started_by_this_object_)
     drag_drop_controller_->DragCancel();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (extended_drag_source_)
     ResetExtendedDragSource();
 #endif
@@ -236,7 +249,7 @@ void DragDropOperation::AbortIfPending() {
 }
 
 void DragDropOperation::OnTextRead(const std::string& mime_type,
-                                   base::string16 data) {
+                                   std::u16string data) {
   DCHECK(os_exchange_data_);
   os_exchange_data_->SetString(std::move(data));
 
@@ -247,19 +260,31 @@ void DragDropOperation::OnTextRead(const std::string& mime_type,
 }
 
 void DragDropOperation::OnHTMLRead(const std::string& mime_type,
-                                   base::string16 data) {
+                                   std::u16string data) {
   DCHECK(os_exchange_data_);
   os_exchange_data_->SetHtml(std::move(data), GURL());
   mime_type_ = mime_type;
   counter_.Run();
 }
 
-void DragDropOperation::OnFilenamesRead(FileHelper* file_helper,
-                                        aura::Window* source,
-                                        const std::string& mime_type,
-                                        const std::vector<uint8_t>& data) {
+void DragDropOperation::OnFilenamesRead(
+    DataExchangeDelegate* data_exchange_delegate,
+    aura::Window* source,
+    const std::string& mime_type,
+    const std::vector<uint8_t>& data) {
   DCHECK(os_exchange_data_);
-  os_exchange_data_->SetFilenames(file_helper->GetFilenames(source, data));
+  os_exchange_data_->SetFilenames(data_exchange_delegate->GetFilenames(
+      data_exchange_delegate->GetDataTransferEndpointType(source), data));
+  mime_type_ = mime_type;
+  counter_.Run();
+}
+
+void DragDropOperation::OnFileContentsRead(const std::string& mime_type,
+                                           const base::FilePath& filename,
+                                           const std::vector<uint8_t>& data) {
+  DCHECK(os_exchange_data_);
+  os_exchange_data_->SetFileContents(filename,
+                                     std::string(data.begin(), data.end()));
   mime_type_ = mime_type;
   counter_.Run();
 }
@@ -268,13 +293,14 @@ void DragDropOperation::OnDragIconCaptured(const SkBitmap& icon_bitmap) {
   DCHECK(icon_);
 
   float scale_factor = origin_->get()->window()->layer()->device_scale_factor();
-  gfx::ImageSkia icon_skia(gfx::ImageSkiaRep(icon_bitmap, scale_factor));
+  gfx::ImageSkia icon_skia =
+      gfx::ImageSkia::CreateFromBitmap(icon_bitmap, scale_factor);
   gfx::Vector2d icon_offset = -icon_->get()->GetBufferOffset();
 
   if (os_exchange_data_) {
     os_exchange_data_->provider().SetDragImage(icon_skia, icon_offset);
   } else {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     drag_drop_controller_->SetDragImage(icon_skia, icon_offset);
 #endif
   }
@@ -307,7 +333,7 @@ void DragDropOperation::StartDragDropOperation() {
 
   // This triggers a nested run loop that terminates when the drag and drop
   // operation is completed.
-  int op = drag_drop_controller_->StartDragAndDrop(
+  DragOperation op = drag_drop_controller_->StartDragAndDrop(
       std::move(os_exchange_data_), origin_->get()->window()->GetRootWindow(),
       origin_->get()->window(), drag_start_point, dnd_operations,
       event_source_);
@@ -316,7 +342,7 @@ void DragDropOperation::StartDragDropOperation() {
   if (!weak_ptr)
     return;
 
-  if (op) {
+  if (op != DragOperation::kNone) {
     // Success
 
     // TODO(crbug.com/994065) This is currently not the actual mime type used by
@@ -344,7 +370,7 @@ void DragDropOperation::OnDragStarted() {
 
 void DragDropOperation::OnDragEnded() {}
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void DragDropOperation::OnDragActionsChanged(int actions) {
   if (!started_by_this_object_)
     return;
@@ -357,7 +383,7 @@ void DragDropOperation::OnDragActionsChanged(int actions) {
   if (dnd_action != DndAction::kNone)
     source_->get()->Target(mime_type_);
   else
-    source_->get()->Target(base::nullopt);
+    source_->get()->Target(absl::nullopt);
 
   source_->get()->Action(dnd_action);
 }

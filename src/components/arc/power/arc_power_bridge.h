@@ -11,9 +11,8 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/timer/timer.h"
-#include "chromeos/dbus/concierge_client.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/arc/mojom/power.mojom.h"
 #include "components/arc/session/connection_observer.h"
@@ -21,6 +20,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/manager/display_configurator.h"
 
 namespace content {
@@ -72,7 +72,7 @@ class ArcPowerBridge : public KeyedService,
 
   // chromeos::PowerManagerClient::Observer overrides.
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
-  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void SuspendDone(base::TimeDelta sleep_duration) override;
   void ScreenBrightnessChanged(
       const power_manager::BacklightBrightnessChange& change) override;
   void PowerChanged(const power_manager::PowerSupplyProperties& proto) override;
@@ -99,7 +99,7 @@ class ArcPowerBridge : public KeyedService,
   WakeLockRequestor* GetWakeLockRequestor(device::mojom::WakeLockType type);
 
   // Called on PowerManagerClient::GetScreenBrightnessPercent() completion.
-  void OnGetScreenBrightnessPercent(base::Optional<double> percent);
+  void OnGetScreenBrightnessPercent(absl::optional<double> percent);
 
   // Called by Android when ready to suspend.
   void OnAndroidSuspendReady(base::UnguessableToken token);
@@ -108,12 +108,12 @@ class ArcPowerBridge : public KeyedService,
   // SuspendVm D-Bus call.
   void OnConciergeSuspendVmResponse(
       base::UnguessableToken token,
-      base::Optional<vm_tools::concierge::SuspendVmResponse> reply);
+      absl::optional<vm_tools::concierge::SuspendVmResponse> reply);
 
   // Called by ConciergeClient when a response has been receive for the
   // ResumeVm D-Bus call.
   void OnConciergeResumeVmResponse(
-      base::Optional<vm_tools::concierge::ResumeVmResponse> reply);
+      absl::optional<vm_tools::concierge::ResumeVmResponse> reply);
 
   // Sends a PowerInstance::UpdateScreenBrightnessSettings mojo call to Android.
   void UpdateAndroidScreenBrightness(double percent);
@@ -140,6 +140,11 @@ class ArcPowerBridge : public KeyedService,
 
   // List of observers.
   base::ObserverList<Observer> observer_list_;
+
+  // Represents whether a device suspend is currently underway, ie. a
+  // SuspendImminent event has been observed, but a SuspendDone event has not
+  // yet been observed.
+  bool is_suspending_ = false;
 
   base::WeakPtrFactory<ArcPowerBridge> weak_ptr_factory_{this};
 

@@ -8,7 +8,6 @@ import {LandingViewProxyImpl} from 'chrome://welcome/landing_view_proxy.js';
 import {navigateTo, Routes} from 'chrome://welcome/navigation_behavior.js';
 import {NuxSetAsDefaultProxyImpl} from 'chrome://welcome/set_as_default/nux_set_as_default_proxy.js';
 import {BookmarkProxyImpl} from 'chrome://welcome/shared/bookmark_proxy.js';
-import {ModuleMetricsProxyImpl} from 'chrome://welcome/shared/module_metrics_proxy.js';
 import {WelcomeBrowserProxyImpl} from 'chrome://welcome/welcome_browser_proxy.js';
 
 import {waitBeforeNextRender} from '../test_util.m.js';
@@ -60,16 +59,15 @@ suite('WelcomeWelcomeAppTest', function() {
 
   setup(function() {
     testWelcomeBrowserProxy = new TestWelcomeBrowserProxy();
-    WelcomeBrowserProxyImpl.instance_ = testWelcomeBrowserProxy;
+    WelcomeBrowserProxyImpl.setInstance(testWelcomeBrowserProxy);
 
     testSetAsDefaultProxy = new TestNuxSetAsDefaultProxy();
-    NuxSetAsDefaultProxyImpl.instance_ = testSetAsDefaultProxy;
+    NuxSetAsDefaultProxyImpl.setInstance(testSetAsDefaultProxy);
 
     // Not used in test, but setting to test proxy anyway, in order to prevent
     // calls to backend.
-    BookmarkProxyImpl.instance_ = new TestBookmarkProxy();
-    LandingViewProxyImpl.instance_ = new TestLandingViewProxy();
-    ModuleMetricsProxyImpl.instance_ = new TestMetricsProxy();
+    BookmarkProxyImpl.setInstance(new TestBookmarkProxy());
+    LandingViewProxyImpl.setInstance(new TestLandingViewProxy());
 
     return resetTestElement();
   });
@@ -81,8 +79,9 @@ suite('WelcomeWelcomeAppTest', function() {
   test('shows landing page by default', function() {
     assertEquals(
         testElement.shadowRoot.querySelectorAll('[slot=view]').length, 1);
-    assertTrue(!!testElement.$$('landing-view'));
-    assertTrue(testElement.$$('landing-view').classList.contains('active'));
+    assertTrue(!!testElement.shadowRoot.querySelector('landing-view'));
+    assertTrue(testElement.shadowRoot.querySelector('landing-view')
+                   .classList.contains('active'));
   });
 
   test('new user route (can set default)', function() {
@@ -155,7 +154,8 @@ suite('WelcomeWelcomeAppTest', function() {
         // Use the existence of the nux-set-as-default as indication of
         // whether or not the promise is resolved with the expected result.
         assertEquals(
-            expectedDefaultExists, !!testElement.$$('nux-set-as-default'));
+            expectedDefaultExists,
+            !!testElement.shadowRoot.querySelector('nux-set-as-default'));
       });
     }
 

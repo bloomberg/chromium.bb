@@ -9,23 +9,26 @@
 #include <memory>
 #include <utility>
 
+#include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/system/scheduler_configuration_manager_base.h"
+#include "components/arc/arc_features.h"
 #include "components/arc/session/arc_client_adapter.h"
 #include "components/arc/session/arc_session_impl.h"
 #include "components/arc/session/arc_start_params.h"
 #include "components/arc/session/arc_upgrade_params.h"
+#include "components/arc/test/arc_util_test_support.h"
 #include "components/arc/test/fake_arc_bridge_host.h"
 #include "components/version_info/channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace cryptohome {
 class Identification;
@@ -75,17 +78,23 @@ class FakeArcClientAdapter : public ArcClientAdapter {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&FakeArcClientAdapter::NotifyArcInstanceStopped,
-                       base::Unretained(this)));
+                       base::Unretained(this), false /* is_system_shutdown */));
   }
 
   void SetUserInfo(const cryptohome::Identification& cryptohome_id,
                    const std::string& hash,
                    const std::string& serial_number) override {}
 
+  void SetDemoModeDelegate(DemoModeDelegate* delegate) override {}
+  void TrimVmMemory(TrimVmMemoryCallback callback) override {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), true, std::string()));
+  }
+
   // Notifies ArcSessionImpl of the ARC instance stop event.
-  void NotifyArcInstanceStopped() {
+  void NotifyArcInstanceStopped(bool is_system_shutdown) {
     for (auto& observer : observer_list_)
-      observer.ArcInstanceStopped();
+      observer.ArcInstanceStopped(is_system_shutdown);
   }
 
   void set_arc_available(bool arc_available) { arc_available_ = arc_available; }
@@ -106,7 +115,7 @@ class FakeArcClientAdapter : public ArcClientAdapter {
   void OnArcUpgraded(chromeos::VoidDBusMethodCallback callback, bool result) {
     std::move(callback).Run(result);
     if (!result)
-      NotifyArcInstanceStopped();
+      NotifyArcInstanceStopped(false /* is_system_shutdown */);
   }
 
   bool arc_available_ = true;
@@ -224,7 +233,7 @@ class TestArcSessionObserver : public ArcSession::Observer {
 
   ~TestArcSessionObserver() override { arc_session_->RemoveObserver(this); }
 
-  const base::Optional<OnSessionStoppedArgs>& on_session_stopped_args() const {
+  const absl::optional<OnSessionStoppedArgs>& on_session_stopped_args() const {
     return on_session_stopped_args_;
   }
 
@@ -241,7 +250,7 @@ class TestArcSessionObserver : public ArcSession::Observer {
  private:
   ArcSession* const arc_session_;            // Not owned.
   base::RunLoop* const run_loop_ = nullptr;  // Not owned.
-  base::Optional<OnSessionStoppedArgs> on_session_stopped_args_;
+  absl::optional<OnSessionStoppedArgs> on_session_stopped_args_;
 
   DISALLOW_COPY_AND_ASSIGN(TestArcSessionObserver);
 };
@@ -268,12 +277,12 @@ class FakeSchedulerConfigurationManager
       obs.OnConfigurationSet(reply_->first, reply_->second);
   }
 
-  base::Optional<std::pair<bool, size_t>> GetLastReply() const override {
+  absl::optional<std::pair<bool, size_t>> GetLastReply() const override {
     return reply_;
   }
 
  private:
-  base::Optional<std::pair<bool, size_t>> reply_;
+  absl::optional<std::pair<bool, size_t>> reply_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSchedulerConfigurationManager);
 };
@@ -654,11 +663,34 @@ TEST_F(ArcSessionImplTest, ArcStopInstance) {
             arc_session->GetStateForTesting());
 
   // Notify ArcClientAdapter's observers of the crash event.
-  GetClient(arc_session.get())->NotifyArcInstanceStopped();
+  GetClient(arc_session.get())
+      ->NotifyArcInstanceStopped(false /* is_system_shutdown */);
 
   EXPECT_EQ(ArcSessionImpl::State::STOPPED, arc_session->GetStateForTesting());
   ASSERT_TRUE(observer.on_session_stopped_args().has_value());
   EXPECT_EQ(ArcStopReason::CRASH, observer.on_session_stopped_args()->reason);
+  EXPECT_TRUE(observer.on_session_stopped_args()->was_running);
+  EXPECT_TRUE(observer.on_session_stopped_args()->upgrade_requested);
+}
+
+// Emulating system shutdown.
+TEST_F(ArcSessionImplTest, ArcStopInstanceSystemShutdown) {
+  auto arc_session = CreateArcSession();
+  TestArcSessionObserver observer(arc_session.get());
+  arc_session->StartMiniInstance();
+  arc_session->RequestUpgrade(DefaultUpgradeParams());
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(ArcSessionImpl::State::RUNNING_FULL_INSTANCE,
+            arc_session->GetStateForTesting());
+
+  // Notify ArcClientAdapter's observers of the shutdown event.
+  GetClient(arc_session.get())
+      ->NotifyArcInstanceStopped(true /* is_system_shutdown */);
+
+  EXPECT_EQ(ArcSessionImpl::State::STOPPED, arc_session->GetStateForTesting());
+  ASSERT_TRUE(observer.on_session_stopped_args().has_value());
+  EXPECT_EQ(ArcStopReason::SHUTDOWN,
+            observer.on_session_stopped_args()->reason);
   EXPECT_TRUE(observer.on_session_stopped_args()->was_running);
   EXPECT_TRUE(observer.on_session_stopped_args()->upgrade_requested);
 }
@@ -924,6 +956,42 @@ TEST_F(ArcSessionImplTest, CanChangeAdbSideloading_True) {
                   ->last_upgrade_params()
                   .is_managed_adb_sideloading_allowed);
 }
+
+struct DalvikMemoryProfileVariant {
+  // Memory stat file
+  const char* file_name;
+  const StartParams::DalvikMemoryProfile expected_profile;
+};
+
+constexpr DalvikMemoryProfileVariant kDalvikMemoryProfileVariant[] = {
+    {"non-existing", StartParams::DalvikMemoryProfile::DEFAULT},
+    {"2G", StartParams::DalvikMemoryProfile::DEFAULT},
+    {"4G", StartParams::DalvikMemoryProfile::M4G},
+    {"8G", StartParams::DalvikMemoryProfile::M8G},
+    {"16G", StartParams::DalvikMemoryProfile::M16G},
+};
+
+class ArcSessionImplDalvikMemoryProfileTest
+    : public ArcSessionImplTest,
+      public ::testing::WithParamInterface<DalvikMemoryProfileVariant> {};
+
+TEST_P(ArcSessionImplDalvikMemoryProfileTest, DalvikMemoryProfiles) {
+  const DalvikMemoryProfileVariant& variant = GetParam();
+
+  auto arc_session = CreateArcSession();
+  arc_session->SetSystemMemoryInfoCallbackForTesting(
+      base::BindRepeating(&GetSystemMemoryInfoForTesting, variant.file_name));
+
+  arc_session->StartMiniInstance();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(
+      variant.expected_profile,
+      GetClient(arc_session.get())->last_start_params().dalvik_memory_profile);
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ArcSessionImplDalvikMemoryProfileTest,
+                         ::testing::ValuesIn(kDalvikMemoryProfileVariant));
 
 }  // namespace
 }  // namespace arc

@@ -9,11 +9,11 @@
 
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/wallpaper_controller.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -21,10 +21,10 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/audio/arc_audio_bridge.h"
 #include "components/arc/intent_helper/control_camera_app_delegate.h"
-#include "components/arc/intent_helper/factory_reset_delegate.h"
 #include "components/arc/intent_helper/open_url_delegate.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/url_formatter/url_fixer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/layout.h"
 #include "url/url_constants.h"
 
@@ -39,7 +39,6 @@ constexpr const char* kArcSchemes[] = {url::kHttpScheme, url::kHttpsScheme,
 // is ChromeNewWindowClient in the browser.
 OpenUrlDelegate* g_open_url_delegate = nullptr;
 ControlCameraAppDelegate* g_control_camera_app_delegate = nullptr;
-FactoryResetDelegate* g_factory_reset_delegate = nullptr;
 
 // Singleton factory for ArcIntentHelperBridge.
 class ArcIntentHelperBridgeFactory
@@ -92,7 +91,13 @@ ArcIntentHelperBridge* ArcIntentHelperBridge::GetForBrowserContext(
 }
 
 // static
-KeyedServiceBaseFactory* ArcIntentHelperBridge::GetFactory() {
+ArcIntentHelperBridge* ArcIntentHelperBridge::GetForBrowserContextForTesting(
+    content::BrowserContext* context) {
+  return ArcIntentHelperBridgeFactory::GetForBrowserContextForTesting(context);
+}
+
+// static
+BrowserContextKeyedServiceFactory* ArcIntentHelperBridge::GetFactory() {
   return ArcIntentHelperBridgeFactory::GetInstance();
 }
 
@@ -113,10 +118,8 @@ void ArcIntentHelperBridge::SetControlCameraAppDelegate(
   g_control_camera_app_delegate = delegate;
 }
 
-// static
-void ArcIntentHelperBridge::SetFactoryResetDelegate(
-    FactoryResetDelegate* delegate) {
-  g_factory_reset_delegate = delegate;
+void ArcIntentHelperBridge::SetDelegate(std::unique_ptr<Delegate> delegate) {
+  delegate_ = std::move(delegate);
 }
 
 ArcIntentHelperBridge::ArcIntentHelperBridge(content::BrowserContext* context,
@@ -137,6 +140,18 @@ void ArcIntentHelperBridge::OnIconInvalidated(const std::string& package_name) {
   icon_loader_.InvalidateIcons(package_name);
 }
 
+void ArcIntentHelperBridge::OnIntentFiltersUpdated(
+    std::vector<IntentFilter> filters) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  intent_filters_.clear();
+
+  for (auto& filter : filters)
+    intent_filters_[filter.package_name()].push_back(std::move(filter));
+
+  for (auto& observer : observer_list_)
+    observer.OnIntentFiltersUpdated(absl::nullopt);
+}
+
 void ArcIntentHelperBridge::OnOpenDownloads() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   RecordOpenType(ArcIntentHelperOpenType::DOWNLOADS);
@@ -155,10 +170,17 @@ void ArcIntentHelperBridge::OnOpenUrl(const std::string& url) {
     g_open_url_delegate->OpenUrlFromArc(gurl);
 }
 
+void ArcIntentHelperBridge::OnOpenCustomTabDeprecated(
+    const std::string& url,
+    int32_t task_id,
+    int32_t surface_id,
+    int32_t top_margin,
+    OnOpenCustomTabCallback callback) {
+  OnOpenCustomTab(url, task_id, std::move(callback));
+}
+
 void ArcIntentHelperBridge::OnOpenCustomTab(const std::string& url,
                                             int32_t task_id,
-                                            int32_t surface_id,
-                                            int32_t top_margin,
                                             OnOpenCustomTabCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   RecordOpenType(ArcIntentHelperOpenType::CUSTOM_TAB);
@@ -180,7 +202,8 @@ void ArcIntentHelperBridge::OnOpenChromePage(mojom::ChromePage page) {
 }
 
 void ArcIntentHelperBridge::FactoryResetArc() {
-  g_factory_reset_delegate->ResetArc();
+  if (delegate_)
+    delegate_->ResetArc();
 }
 
 void ArcIntentHelperBridge::OpenWallpaperPicker() {
@@ -286,6 +309,24 @@ void ArcIntentHelperBridge::OnPreferredAppsChanged(
     observer.OnPreferredAppsChanged();
 }
 
+void ArcIntentHelperBridge::OnDownloadAdded(
+    const std::string& relative_path_as_string,
+    const std::string& owner_package_name) {
+  const base::FilePath download_folder("Download/");
+  const base::FilePath relative_path(relative_path_as_string);
+
+  // Observers should *not* be called when a download is added outside of the
+  // Download/ folder. This would be an unexpected event coming from ARC but
+  // we protect against it because ARC is treated as an untrusted source.
+  if (!download_folder.IsParent(relative_path) ||
+      relative_path.ReferencesParent()) {
+    return;
+  }
+
+  for (auto& observer : observer_list_)
+    observer.OnArcDownloadAdded(relative_path, owner_package_name);
+}
+
 ArcIntentHelperBridge::GetResult ArcIntentHelperBridge::GetActivityIcons(
     const std::vector<ActivityName>& activities,
     OnIconsReadyCallback callback) {
@@ -353,6 +394,33 @@ void ArcIntentHelperBridge::HandleCameraResult(
   instance->HandleCameraResult(intent_id, action, data, std::move(callback));
 }
 
+void ArcIntentHelperBridge::SendNewCaptureBroadcast(bool is_video,
+                                                    std::string file_path) {
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  arc::mojom::IntentHelperInstance* instance = nullptr;
+
+  if (arc_service_manager) {
+    instance = ARC_GET_INSTANCE_FOR_METHOD(
+        arc_service_manager->arc_bridge_service()->intent_helper(),
+        SendBroadcast);
+  }
+  if (!instance) {
+    LOG(ERROR) << "Failed to get instance for SendBroadcast().";
+    return;
+  }
+
+  std::string action =
+      is_video ? "org.chromium.arc.intent_helper.ACTION_SEND_NEW_VIDEO"
+               : "org.chromium.arc.intent_helper.ACTION_SEND_NEW_PICTURE";
+  base::DictionaryValue value;
+  value.SetString("file_path", file_path);
+  std::string extras;
+  base::JSONWriter::Write(value, &extras);
+
+  instance->SendBroadcast(action, "org.chromium.arc.intent_helper",
+                          /*cls=*/std::string(), extras);
+}
+
 // static
 bool ArcIntentHelperBridge::IsIntentHelperPackage(
     const std::string& package_name) {
@@ -370,18 +438,6 @@ ArcIntentHelperBridge::FilterOutIntentHelper(
     handlers_filtered.push_back(std::move(handler));
   }
   return handlers_filtered;
-}
-
-void ArcIntentHelperBridge::OnIntentFiltersUpdated(
-    std::vector<IntentFilter> filters) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  intent_filters_.clear();
-
-  for (auto& filter : filters)
-    intent_filters_[filter.package_name()].push_back(std::move(filter));
-
-  for (auto& observer : observer_list_)
-    observer.OnIntentFiltersUpdated(base::nullopt);
 }
 
 const std::vector<IntentFilter>&

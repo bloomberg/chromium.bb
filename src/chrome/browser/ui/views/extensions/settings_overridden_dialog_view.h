@@ -7,8 +7,9 @@
 
 #include <memory>
 
-#include "base/optional.h"
 #include "chrome/browser/ui/extensions/settings_overridden_dialog_controller.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -16,6 +17,7 @@
 // overridden by an extension.
 class SettingsOverriddenDialogView : public views::DialogDelegateView {
  public:
+  METADATA_HEADER(SettingsOverriddenDialogView);
   explicit SettingsOverriddenDialogView(
       std::unique_ptr<SettingsOverriddenDialogController> controller);
   SettingsOverriddenDialogView(const SettingsOverriddenDialogView&) = delete;
@@ -27,16 +29,12 @@ class SettingsOverriddenDialogView : public views::DialogDelegateView {
   void Show(gfx::NativeWindow parent);
 
  private:
-  // views::DialogDelegateView:
-  ui::ModalType GetModalType() const override;
-  gfx::Size CalculatePreferredSize() const override;
-
   // Notifies the |controller_| of the |result|.
   void NotifyControllerOfResult(
       SettingsOverriddenDialogController::DialogResult result);
 
   // The result of the dialog; set when notifying the controller.
-  base::Optional<SettingsOverriddenDialogController::DialogResult> result_;
+  absl::optional<SettingsOverriddenDialogController::DialogResult> result_;
 
   std::unique_ptr<SettingsOverriddenDialogController> controller_;
 };

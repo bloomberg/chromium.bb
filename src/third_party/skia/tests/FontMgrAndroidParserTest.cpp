@@ -7,6 +7,7 @@
 
 #include "tests/Test.h"
 
+#include "include/core/SkBitmap.h"
 #include "include/core/SkCanvas.h"
 #include "include/core/SkFont.h"
 #include "include/core/SkTypeface.h"
@@ -116,12 +117,10 @@ static void DumpLoadedFonts(SkTDArray<FontFamily*> fontFamilies, const char* lab
             SkDebugf("  name %s\n", fontFamilies[i]->fNames[j].c_str());
         }
         DumpFiles(*fontFamilies[i]);
-        fontFamilies[i]->fallbackFamilies.foreach(
-            [](SkString, std::unique_ptr<FontFamily>* fallbackFamily) {
-                SkDebugf("  Fallback for: %s\n", (*fallbackFamily)->fFallbackFor.c_str());
-                DumpFiles(**fallbackFamily);
-            }
-        );
+        for (const auto& [unused, fallbackFamily] : fontFamilies[i]->fallbackFamilies) {
+            SkDebugf("  Fallback for: %s\n", fallbackFamily->fFallbackFor.c_str());
+            DumpFiles(*fallbackFamily);
+        }
     }
     SkDebugf("\n\n");
 }

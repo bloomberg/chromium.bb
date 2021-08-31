@@ -20,7 +20,13 @@
  * string with a link and sometimes returns a normal string.
  */
 
+import '../../settings_shared_css.js';
+
+import {assert, assertNotReached} from '//resources/js/assert.m.js';
+import {html, Polymer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'settings-localized-link',
 
   properties: {
@@ -38,6 +44,16 @@ Polymer({
       type: String,
       value: '',
     },
+
+    /**
+     * If true, localized link will be disabled.
+     */
+    linkDisabled: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+      observer: 'updateAnchorTagTabIndex_',
+    }
   },
 
   /**
@@ -112,9 +128,26 @@ Polymer({
    * @private
    */
   onAnchorTagClick_(event) {
+    if (this.linkDisabled) {
+      event.preventDefault();
+      return;
+    }
     this.fire('link-clicked', {event});
     // Stop propagation of the event, since it has already been handled by
     // opening the link.
     event.stopPropagation();
   },
+
+  /**
+   *  Removes anchor tag from being targeted by chromeVox when link is
+   *  disabled.
+   *  @private
+   */
+  updateAnchorTagTabIndex_() {
+    const anchorTag = this.$$('a');
+    if (!anchorTag) {
+      return;
+    }
+    anchorTag.tabIndex = this.linkDisabled ? -1 : 0;
+  }
 });

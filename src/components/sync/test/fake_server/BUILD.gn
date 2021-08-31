@@ -33,6 +33,7 @@ static_library("fake_server") {
     "//net",
     "//services/network/public/cpp:cpp",
     "//testing/gtest",
+    "//ui/gfx",
     "//url",
   ]
 
@@ -63,6 +64,7 @@ if (is_android) {
       "//components/sync",
       "//components/sync:test_support_nigori",
       "//testing/gtest",
+      "//url:gurl_android",
       "//url:url",
     ]
   }
