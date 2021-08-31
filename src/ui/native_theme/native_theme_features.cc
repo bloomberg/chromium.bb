@@ -9,8 +9,8 @@
 
 namespace features {
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_FUCHSIA) || \
-    BUILDFLAG(IS_LACROS)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH) || \
+    defined(OS_FUCHSIA) || BUILDFLAG(IS_CHROMEOS_LACROS)
 constexpr base::FeatureState kOverlayScrollbarFeatureState =
     base::FEATURE_ENABLED_BY_DEFAULT;
 #else
@@ -24,21 +24,12 @@ constexpr base::FeatureState kOverlayScrollbarFeatureState =
 const base::Feature kOverlayScrollbar{"OverlayScrollbar",
                                       kOverlayScrollbarFeatureState};
 
-// Enables will flash all scrollbars in page after any scroll update.
-const base::Feature kOverlayScrollbarFlashAfterAnyScrollUpdate{
-    "OverlayScrollbarFlashAfterAnyScrollUpdate", kOverlayScrollbarFeatureState};
-
 }  // namespace features
 
 namespace ui {
 
 bool IsOverlayScrollbarEnabled() {
   return base::FeatureList::IsEnabled(features::kOverlayScrollbar);
-}
-
-bool OverlayScrollbarFlashAfterAnyScrollUpdate() {
-  return base::FeatureList::IsEnabled(
-      features::kOverlayScrollbarFlashAfterAnyScrollUpdate);
 }
 
 }  // namespace ui

@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/containers/flat_map.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
@@ -139,8 +141,8 @@ BrowserThemePackTest::BrowserThemePackTest()
   std::vector<ui::ScaleFactor> scale_factors;
   scale_factors.push_back(ui::SCALE_FACTOR_100P);
   scale_factors.push_back(ui::SCALE_FACTOR_200P);
-  scoped_set_supported_scale_factors_.reset(
-      new ui::test::ScopedSetSupportedScaleFactors(scale_factors));
+  scoped_set_supported_scale_factors_ =
+      std::make_unique<ui::test::ScopedSetSupportedScaleFactors>(scale_factors);
   theme_pack_->InitEmptyPack();
 }
 
@@ -242,9 +244,9 @@ void BrowserThemePackTest::BuildFromUnpackedExtension(
       base::DictionaryValue::From(deserializer.Deserialize(NULL, &error));
   EXPECT_EQ("", error);
   ASSERT_TRUE(valid_value.get());
-  scoped_refptr<Extension> extension(
-      Extension::Create(extension_path, extensions::Manifest::INVALID_LOCATION,
-                        *valid_value, Extension::NO_FLAGS, &error));
+  scoped_refptr<Extension> extension(Extension::Create(
+      extension_path, extensions::mojom::ManifestLocation::kInvalidLocation,
+      *valid_value, Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension.get());
   ASSERT_EQ("", error);
   BrowserThemePack::BuildFromExtension(extension.get(), pack);

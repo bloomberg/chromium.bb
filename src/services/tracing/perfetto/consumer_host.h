@@ -48,6 +48,7 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
         mojo::PendingReceiver<mojom::TracingSessionHost> tracing_session_host,
         mojo::PendingRemote<mojom::TracingSessionClient> tracing_session_client,
         const perfetto::TraceConfig& trace_config,
+        perfetto::base::ScopedFile output_file,
         mojom::TracingClientPriority priority);
     ~TracingSession() override;
 
@@ -108,7 +109,7 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
 
     // If set, we didn't issue OnTracingEnabled() on the session yet. If set and
     // empty, no more pids are pending and we should issue OnTracingEnabled().
-    base::Optional<std::set<base::ProcessId>> pending_enable_tracing_ack_pids_;
+    absl::optional<std::set<base::ProcessId>> pending_enable_tracing_ack_pids_;
     base::OneShotTimer enable_tracing_ack_timer_;
 
     struct DataSourceHandle : public std::pair<std::string, std::string> {
@@ -138,7 +139,8 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
   void EnableTracing(
       mojo::PendingReceiver<mojom::TracingSessionHost> tracing_session_host,
       mojo::PendingRemote<mojom::TracingSessionClient> tracing_session_client,
-      const perfetto::TraceConfig& config) override;
+      const perfetto::TraceConfig& config,
+      base::File output_file) override;
 
   // perfetto::Consumer implementation.
   // This gets called by the Perfetto service as control signals,

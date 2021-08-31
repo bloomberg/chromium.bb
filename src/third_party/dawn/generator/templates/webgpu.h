@@ -74,7 +74,9 @@
 #include <stdbool.h>
 
 #define WGPU_WHOLE_SIZE (0xffffffffffffffffULL)
+// TODO(crbug.com/520): Remove WGPU_STRIDE_UNDEFINED in favor of WGPU_COPY_STRIDE_UNDEFINED.
 #define WGPU_STRIDE_UNDEFINED (0xffffffffUL)
+#define WGPU_COPY_STRIDE_UNDEFINED (0xffffffffUL)
 
 typedef uint32_t WGPUFlags;
 
@@ -112,6 +114,13 @@ typedef struct WGPUChainedStruct {
             {{as_annotated_cType(member)}};
         {% endfor %}
     } {{as_cType(type.name)}};
+
+{% endfor %}
+
+{% for typeDef in by_category["typedef"] %}
+    // {{as_cType(typeDef.name)}} is deprecated.
+    // Use {{as_cType(typeDef.type.name)}} instead.
+    typedef {{as_cType(typeDef.type.name)}} {{as_cType(typeDef.name)}};
 
 {% endfor %}
 

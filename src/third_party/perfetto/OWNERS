@@ -14,11 +14,9 @@ nuskos@google.com
 khokhlov@google.com
 ssid@google.com
 ddrone@google.com
+altimin@google.com
 
 # chromium.org aliases for DEPS on third_party/perfetto.
 eseckler@chromium.org
 nuskos@chromium.org
 skyostil@chromium.org
-
-# TEAM: tracing@chromium.org
-# COMPONENT: Speed>Tracing

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import re
 
 
@@ -78,7 +79,7 @@ class ChromeTraceCategoryFilter(object):
     if filter_string is None:
       return
 
-    filter_set = set([cf.strip() for cf in filter_string.split(',')])
+    filter_set = {cf.strip() for cf in filter_string.split(',')}
     for category in filter_set:
       self.AddFilter(category)
 
@@ -143,8 +144,7 @@ class ChromeTraceCategoryFilter(object):
     categories = []
     for l in lists:
       if stable_output:
-        l = list(l)
-        l.sort()
+        l = sorted(l)
       categories.extend(l)
     return ','.join(categories)
 

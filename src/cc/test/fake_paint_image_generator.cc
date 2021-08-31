@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <cc/test/fake_paint_image_generator.h>
+#include "cc/test/fake_paint_image_generator.h"
 
 #include <utility>
 
@@ -60,7 +60,8 @@ bool FakePaintImageGenerator::GetPixels(const SkImageInfo& info,
   else
     frames_decoded_count_[frame_index]++;
   SkPixmap dst(info, pixels, row_bytes);
-  CHECK(image_pixmap_.scalePixels(dst, kMedium_SkFilterQuality));
+  CHECK(image_pixmap_.scalePixels(
+      dst, {SkFilterMode::kLinear, SkMipmapMode::kNearest}));
   decode_infos_.push_back(info);
   return true;
 }

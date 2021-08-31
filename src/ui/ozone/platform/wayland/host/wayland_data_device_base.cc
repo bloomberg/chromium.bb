@@ -56,16 +56,17 @@ void WaylandDataDeviceBase::ReadClipboardDataFromFD(
     const std::string& mime_type) {
   std::vector<uint8_t> contents;
   wl::ReadDataFromFD(std::move(fd), &contents);
-  connection_->clipboard()->SetData(
-      scoped_refptr<base::RefCountedBytes>(
-          base::RefCountedBytes::TakeVector(&contents)),
-      mime_type);
+  if (!selection_delegate_)
+    return;
+  selection_delegate_->OnSelectionDataReceived(
+      mime_type, base::RefCountedBytes::TakeVector(&contents));
 }
 
 void WaylandDataDeviceBase::RegisterDeferredReadCallback() {
   DCHECK(!deferred_read_callback_);
 
-  deferred_read_callback_.reset(wl_display_sync(connection_->display()));
+  deferred_read_callback_.reset(
+      wl_display_sync(connection_->display_wrapper()));
 
   static const wl_callback_listener kListener = {
       WaylandDataDeviceBase::DeferredReadCallback};

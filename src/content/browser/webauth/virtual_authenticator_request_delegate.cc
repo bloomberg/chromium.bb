@@ -13,16 +13,11 @@
 
 namespace content {
 
-VirtualAuthenticatorRequestDelegate::VirtualAuthenticatorRequestDelegate(
-    FrameTreeNode* frame_tree_node)
-    : frame_tree_node_(frame_tree_node) {}
+VirtualAuthenticatorRequestDelegate::VirtualAuthenticatorRequestDelegate() =
+    default;
 
 VirtualAuthenticatorRequestDelegate::~VirtualAuthenticatorRequestDelegate() =
     default;
-
-bool VirtualAuthenticatorRequestDelegate::SupportsResidentKeys() {
-  return true;
-}
 
 void VirtualAuthenticatorRequestDelegate::SelectAccount(
     std::vector<device::AuthenticatorGetAssertionResponse> responses,
@@ -31,12 +26,6 @@ void VirtualAuthenticatorRequestDelegate::SelectAccount(
   // TODO(crbug.com/991666): Provide a way to determine which account gets
   // picked.
   std::move(callback).Run(std::move(responses[0]));
-}
-
-base::Optional<bool> VirtualAuthenticatorRequestDelegate::
-    IsUserVerifyingPlatformAuthenticatorAvailableOverride() {
-  return AuthenticatorEnvironmentImpl::GetInstance()
-      ->HasVirtualUserVerifyingPlatformAuthenticator(frame_tree_node_);
 }
 
 }  // namespace content

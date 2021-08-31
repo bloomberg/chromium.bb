@@ -29,7 +29,7 @@ endmacro()
 
 # Creates an executable target. The target name is passed as a parameter to the
 # NAME argument, and the sources passed as a parameter to the SOURCES argument:
-# libgav1_add_test(NAME <name> SOURCES <sources> [optional args])
+# libgav1_add_executable(NAME <name> SOURCES <sources> [optional args])
 #
 # Optional args:
 # cmake-format: off
@@ -115,15 +115,35 @@ macro(libgav1_add_executable)
     target_include_directories(${exe_NAME} PRIVATE ${exe_INCLUDES})
   endif()
 
-  if(exe_COMPILE_FLAGS OR LIBGAV1_CXX_FLAGS)
+  unset(exe_LIBGAV1_COMPILE_FLAGS)
+  if(exe_TEST)
+    list(FILTER exe_SOURCES INCLUDE REGEX "\\.c$")
+    list(LENGTH exe_SOURCES exe_SOURCES_length)
+    if(exe_SOURCES_length EQUAL 0)
+      set(exe_LIBGAV1_COMPILE_FLAGS ${LIBGAV1_TEST_CXX_FLAGS})
+    else()
+      set(exe_LIBGAV1_COMPILE_FLAGS ${LIBGAV1_TEST_C_FLAGS})
+    endif()
+  else()
+    set(exe_LIBGAV1_COMPILE_FLAGS ${LIBGAV1_CXX_FLAGS})
+  endif()
+
+  if(exe_COMPILE_FLAGS OR exe_LIBGAV1_COMPILE_FLAGS)
     target_compile_options(${exe_NAME}
-                           PRIVATE ${exe_COMPILE_FLAGS} ${LIBGAV1_CXX_FLAGS})
+                           PRIVATE ${exe_COMPILE_FLAGS}
+                                   ${exe_LIBGAV1_COMPILE_FLAGS})
   endif()
 
   if(exe_LINK_FLAGS OR LIBGAV1_EXE_LINKER_FLAGS)
-    set_target_properties(${exe_NAME}
-                          PROPERTIES LINK_FLAGS ${exe_LINK_FLAGS}
-                                     ${LIBGAV1_EXE_LINKER_FLAGS})
+    list(APPEND exe_LINK_FLAGS "${LIBGAV1_EXE_LINKER_FLAGS}")
+    if(${CMAKE_VERSION} VERSION_LESS "3.13")
+      # LINK_FLAGS is managed as a string.
+      libgav1_set_and_stringify(SOURCE "${exe_LINK_FLAGS}" DEST exe_LINK_FLAGS)
+      set_target_properties(${exe_NAME}
+                            PROPERTIES LINK_FLAGS "${exe_LINK_FLAGS}")
+    else()
+      target_link_options(${exe_NAME} PRIVATE ${exe_LINK_FLAGS})
+    endif()
   endif()
 
   if(exe_OBJLIB_DEPS)
@@ -137,7 +157,7 @@ macro(libgav1_add_executable)
   endif()
 
   if(BUILD_SHARED_LIBS AND (MSVC OR WIN32))
-    target_compile_definitions(${lib_NAME} PRIVATE "LIBGAV1_BUILDING_DLL=0")
+    target_compile_definitions(${exe_NAME} PRIVATE "LIBGAV1_BUILDING_DLL=0")
   endif()
 
   if(exe_LIB_DEPS)

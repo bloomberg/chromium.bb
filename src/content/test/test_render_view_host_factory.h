@@ -13,6 +13,7 @@
 
 namespace content {
 
+class AgentSchedulingGroupHostFactory;
 class SiteInstance;
 class RenderViewHostDelegate;
 class RenderProcessHostFactory;
@@ -23,12 +24,14 @@ class RenderProcessHostFactory;
 // registered at a time, you can only have one of these objects at a time.
 class TestRenderViewHostFactory : public RenderViewHostFactory {
  public:
-  explicit TestRenderViewHostFactory(RenderProcessHostFactory* rph_factory);
+  TestRenderViewHostFactory(RenderProcessHostFactory* rph_factory,
+                            AgentSchedulingGroupHostFactory* asgh_factory);
   ~TestRenderViewHostFactory() override;
 
   virtual void set_render_process_host_factory(
       RenderProcessHostFactory* rph_factory);
   RenderViewHost* CreateRenderViewHost(
+      FrameTree* frame_tree,
       SiteInstance* instance,
       RenderViewHostDelegate* delegate,
       RenderWidgetHostDelegate* widget_delegate,

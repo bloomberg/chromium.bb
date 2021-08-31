@@ -11,7 +11,6 @@
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 
@@ -49,8 +48,9 @@ class BASE_EXPORT FileProxy : public SupportsWeakPtr<FileProxy> {
       OnceCallback<void(File::Error, const char* data, int bytes_read)>;
   using WriteCallback = OnceCallback<void(File::Error, int bytes_written)>;
 
-  FileProxy();
   explicit FileProxy(TaskRunner* task_runner);
+  FileProxy(const FileProxy&) = delete;
+  FileProxy& operator=(const FileProxy&) = delete;
   ~FileProxy();
 
   // Creates or opens a file with the given flags. It is invalid to pass a null
@@ -134,7 +134,6 @@ class BASE_EXPORT FileProxy : public SupportsWeakPtr<FileProxy> {
 
   scoped_refptr<TaskRunner> task_runner_;
   File file_;
-  DISALLOW_COPY_AND_ASSIGN(FileProxy);
 };
 
 }  // namespace base

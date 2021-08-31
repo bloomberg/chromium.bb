@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/numerics/ranges.h"
 
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
@@ -51,8 +52,7 @@ Camera3AController::Camera3AController(
                      ANDROID_CONTROL_AWB_STATE_INACTIVE),
       awb_mode_set_(false),
       set_point_of_interest_running_(false),
-      ae_locked_for_point_of_interest_(false),
-      zero_shutter_lag_enabled_(false) {
+      ae_locked_for_point_of_interest_(false) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   capture_metadata_dispatcher_->AddResultMetadataObserver(this);
@@ -157,6 +157,29 @@ Camera3AController::Camera3AController(
             base::checked_cast<uint8_t>(ae_mode_));
   Set3AMode(cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AWB_MODE,
             base::checked_cast<uint8_t>(awb_mode_));
+
+  // Enable face detection if it's available.
+  auto face_modes = GetMetadataEntryAsSpan<uint8_t>(
+      static_metadata, cros::mojom::CameraMetadataTag::
+                           ANDROID_STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES);
+  // We don't need face landmarks and ids, so using SIMPLE mode instead of FULL
+  // mode should be enough.
+  const auto face_mode_simple = cros::mojom::AndroidStatisticsFaceDetectMode::
+      ANDROID_STATISTICS_FACE_DETECT_MODE_SIMPLE;
+  if (base::Contains(face_modes,
+                     base::checked_cast<uint8_t>(face_mode_simple))) {
+    SetRepeatingCaptureMetadata(
+        cros::mojom::CameraMetadataTag::ANDROID_STATISTICS_FACE_DETECT_MODE,
+        face_mode_simple);
+  }
+
+  auto request_keys = GetMetadataEntryAsSpan<int32_t>(
+      static_metadata_,
+      cros::mojom::CameraMetadataTag::ANDROID_REQUEST_AVAILABLE_REQUEST_KEYS);
+  zero_shutter_lag_supported_ = base::Contains(
+      request_keys,
+      static_cast<int32_t>(
+          cros::mojom::CameraMetadataTag::ANDROID_CONTROL_ENABLE_ZSL));
 }
 
 Camera3AController::~Camera3AController() {
@@ -184,7 +207,7 @@ void Camera3AController::Stabilize3AForStillCapture(
     return;
   }
 
-  if (Is3AStabilized() || zero_shutter_lag_enabled_) {
+  if (Is3AStabilized() || zero_shutter_lag_supported_) {
     std::move(on_3a_stabilized_callback).Run();
     return;
   }
@@ -427,6 +450,36 @@ void Camera3AController::SetExposureTime(bool enable_auto,
   DVLOG(1) << "Setting AE mode to: " << ae_mode_;
 }
 
+void Camera3AController::SetFocusDistance(bool enable_auto,
+                                          float focus_distance_diopters) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (enable_auto) {
+    if (!available_af_modes_.count(
+            cros::mojom::AndroidControlAfMode::ANDROID_CONTROL_AF_MODE_AUTO)) {
+      LOG(WARNING) << "Don't support ANDROID_CONTROL_AF_MODE_AUTO";
+      return;
+    }
+    af_mode_ = cros::mojom::AndroidControlAfMode::ANDROID_CONTROL_AF_MODE_AUTO;
+    capture_metadata_dispatcher_->UnsetRepeatingCaptureMetadata(
+        cros::mojom::CameraMetadataTag::ANDROID_LENS_FOCUS_DISTANCE);
+  } else {
+    if (!available_af_modes_.count(
+            cros::mojom::AndroidControlAfMode::ANDROID_CONTROL_AF_MODE_OFF)) {
+      LOG(WARNING) << "Don't support ANDROID_CONTROL_AE_MODE_OFF";
+      return;
+    }
+    af_mode_ = cros::mojom::AndroidControlAfMode::ANDROID_CONTROL_AF_MODE_OFF;
+    SetRepeatingCaptureMetadata(
+        cros::mojom::CameraMetadataTag::ANDROID_LENS_FOCUS_DISTANCE,
+        focus_distance_diopters);
+  }
+
+  Set3AMode(cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AF_MODE,
+            base::checked_cast<uint8_t>(af_mode_));
+  DVLOG(1) << "Setting AF mode to: " << af_mode_;
+}
+
 bool Camera3AController::IsPointOfInterestSupported() {
   return point_of_interest_supported_;
 }
@@ -551,10 +604,6 @@ void Camera3AController::SetPointOfInterestUnlockAe() {
 
   ae_locked_for_point_of_interest_ = false;
   ClearRepeatingCaptureMetadata();
-}
-
-void Camera3AController::UpdateZeroShutterLagAvailability(bool enabled) {
-  zero_shutter_lag_enabled_ = enabled;
 }
 
 base::WeakPtr<Camera3AController> Camera3AController::GetWeakPtr() {

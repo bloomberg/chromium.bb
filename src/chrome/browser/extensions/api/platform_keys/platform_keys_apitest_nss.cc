@@ -170,14 +170,14 @@ class PlatformKeysTest : public PlatformKeysTestBase {
   void OnKeyRegisteredForCorporateUsage(
       std::unique_ptr<chromeos::platform_keys::ExtensionKeyPermissionsService>
           extension_key_permissions_service,
-      const base::Closure& done_callback,
+      base::OnceClosure done_callback,
       chromeos::platform_keys::Status status) {
     ASSERT_EQ(status, chromeos::platform_keys::Status::kSuccess);
-    done_callback.Run();
+    std::move(done_callback).Run();
   }
 
   void GotPermissionsForExtension(
-      const base::Closure& done_callback,
+      base::OnceClosure done_callback,
       std::unique_ptr<chromeos::platform_keys::ExtensionKeyPermissionsService>
           extension_key_permissions_service) {
     auto* extension_key_permissions_service_unowned =
@@ -189,14 +189,14 @@ class PlatformKeysTest : public PlatformKeysTestBase {
         base::BindOnce(&PlatformKeysTest::OnKeyRegisteredForCorporateUsage,
                        base::Unretained(this),
                        std::move(extension_key_permissions_service),
-                       done_callback));
+                       std::move(done_callback)));
   }
 
-  void SetupTestCerts(const base::Closure& done_callback,
+  void SetupTestCerts(base::OnceClosure done_callback,
                       net::NSSCertDatabase* cert_db) {
     SetupTestClientCerts(cert_db);
     SetupTestCACerts();
-    done_callback.Run();
+    std::move(done_callback).Run();
   }
 
   void SetupTestClientCerts(net::NSSCertDatabase* cert_db) {
@@ -252,7 +252,7 @@ class TestSelectDelegate
 
   void Select(const std::string& extension_id,
               const net::CertificateList& certs,
-              const CertificateSelectedCallback& callback,
+              CertificateSelectedCallback callback,
               content::WebContents* web_contents,
               content::BrowserContext* context) override {
     ASSERT_TRUE(web_contents);
@@ -269,7 +269,7 @@ class TestSelectDelegate
     }
     if (certs_to_select_.size() > 1)
       certs_to_select_.pop_back();
-    callback.Run(selection);
+    std::move(callback).Run(selection);
   }
 
  private:

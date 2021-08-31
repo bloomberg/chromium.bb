@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "components/page_load_metrics/browser/observers/core/largest_contentful_paint_handler.h"
@@ -20,6 +20,7 @@
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace {
@@ -161,7 +162,8 @@ void AMPPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
   subframe_info.navigation_start = navigation_handle->NavigationStart();
 }
 
-void AMPPageLoadMetricsObserver::OnFrameDeleted(content::RenderFrameHost* rfh) {
+void AMPPageLoadMetricsObserver::OnRenderFrameDeleted(
+    content::RenderFrameHost* rfh) {
   if (current_main_frame_nav_info_ &&
       current_main_frame_nav_info_->subframe_rfh == rfh) {
     MaybeRecordAmpDocumentMetrics();
@@ -197,6 +199,10 @@ void AMPPageLoadMetricsObserver::OnSubFrameRenderDataUpdate(
   it->second.render_data.layout_shift_score += render_data.layout_shift_delta;
   it->second.render_data.layout_shift_score_before_input_or_scroll +=
       render_data.layout_shift_delta_before_input_or_scroll;
+
+  it->second.layout_shift_normalization.AddNewLayoutShifts(
+      render_data.new_layout_shifts, base::TimeTicks::Now(),
+      it->second.render_data.layout_shift_score);
 }
 
 void AMPPageLoadMetricsObserver::OnComplete(
@@ -371,7 +377,7 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
       }
     }
 
-    base::Optional<base::TimeDelta> largest_content_paint_time;
+    absl::optional<base::TimeDelta> largest_content_paint_time;
     uint64_t largest_content_paint_size;
     page_load_metrics::ContentfulPaintTimingInfo::LargestContentType
         largest_content_type;
@@ -452,6 +458,29 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
           static_cast<int>(
               roundf(clamped_shift_score_before_input_or_scroll * 100.0f)));
 
+  const page_load_metrics::NormalizedCLSData& normalized_cls_data =
+      subframe_info.layout_shift_normalization.normalized_cls_data();
+  if (!normalized_cls_data.data_tainted) {
+    builder
+        .SetSubFrame_LayoutInstability_AverageCumulativeShiftScore_SessionWindow_Gap5000ms(
+            page_load_metrics::LayoutShiftUkmValue(
+                normalized_cls_data
+                    .session_windows_gap5000ms_maxMax_average_cls))
+        .SetSubFrame_LayoutInstability_MaxCumulativeShiftScore_SessionWindow_Gap1000ms(
+            page_load_metrics::LayoutShiftUkmValue(
+                normalized_cls_data.session_windows_gap1000ms_maxMax_max_cls))
+        .SetSubFrame_LayoutInstability_MaxCumulativeShiftScore_SessionWindow_Gap1000ms_Max5000ms(
+            page_load_metrics::LayoutShiftUkmValue(
+                normalized_cls_data
+                    .session_windows_gap1000ms_max5000ms_max_cls))
+        .SetSubFrame_LayoutInstability_MaxCumulativeShiftScore_SlidingWindow_Duration300ms(
+            page_load_metrics::LayoutShiftUkmValue(
+                normalized_cls_data.sliding_windows_duration300ms_max_cls))
+        .SetSubFrame_LayoutInstability_MaxCumulativeShiftScore_SlidingWindow_Duration1000ms(
+            page_load_metrics::LayoutShiftUkmValue(
+                normalized_cls_data.sliding_windows_duration1000ms_max_cls));
+  }
+
   // For UMA, report (shift_score * 10) an an int in the range [0,100].
   int32_t uma_value = static_cast<int>(roundf(clamped_shift_score * 10.0f));
   if (current_main_frame_nav_info_->is_same_document_navigation) {
@@ -459,12 +488,26 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
         std::string(kHistogramPrefix)
             .append(kHistogramAMPSubframeLayoutInstabilityShiftScore),
         uma_value);
+    if (!normalized_cls_data.data_tainted) {
+      base::UmaHistogramCounts100(
+          "PageLoad.Clients.AMP.LayoutInstability.MaxCumulativeShiftScore."
+          "Subframe.SessionWindow.Gap1000ms.Max5000ms",
+          page_load_metrics::LayoutShiftUmaValue(
+              normalized_cls_data.session_windows_gap1000ms_max5000ms_max_cls));
+    }
   } else {
     UMA_HISTOGRAM_COUNTS_100(
         std::string(kHistogramPrefix)
             .append(
                 kHistogramAMPSubframeLayoutInstabilityShiftScoreFullNavigation),
         uma_value);
+    if (!normalized_cls_data.data_tainted) {
+      base::UmaHistogramCounts100(
+          "PageLoad.Clients.AMP.LayoutInstability.MaxCumulativeShiftScore."
+          "Subframe.FullNavigation.SessionWindow.Gap1000ms.Max5000ms",
+          page_load_metrics::LayoutShiftUmaValue(
+              normalized_cls_data.session_windows_gap1000ms_max5000ms_max_cls));
+    }
   }
 
   builder.Record(ukm::UkmRecorder::Get());

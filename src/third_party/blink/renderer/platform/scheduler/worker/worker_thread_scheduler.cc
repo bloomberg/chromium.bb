@@ -48,7 +48,7 @@ constexpr double kDefaultRecoveryRate = 0.01;
 constexpr base::TimeDelta kDefaultMaxThrottlingDelay =
     base::TimeDelta::FromSeconds(60);
 
-base::Optional<base::TimeDelta> GetMaxBudgetLevel() {
+absl::optional<base::TimeDelta> GetMaxBudgetLevel() {
   int max_budget_level_ms;
   if (!base::StringToInt(
           base::GetFieldTrialParamValue(kWorkerThrottlingTrial,
@@ -57,7 +57,7 @@ base::Optional<base::TimeDelta> GetMaxBudgetLevel() {
     return kDefaultMaxBudget;
   }
   if (max_budget_level_ms < 0)
-    return base::nullopt;
+    return absl::nullopt;
   return base::TimeDelta::FromMilliseconds(max_budget_level_ms);
 }
 
@@ -72,7 +72,7 @@ double GetBudgetRecoveryRate() {
   return recovery_rate;
 }
 
-base::Optional<base::TimeDelta> GetMaxThrottlingDelay() {
+absl::optional<base::TimeDelta> GetMaxThrottlingDelay() {
   int max_throttling_delay_ms;
   if (!base::StringToInt(
           base::GetFieldTrialParamValue(kWorkerThrottlingTrial,
@@ -81,8 +81,15 @@ base::Optional<base::TimeDelta> GetMaxThrottlingDelay() {
     return kDefaultMaxThrottlingDelay;
   }
   if (max_throttling_delay_ms < 0)
-    return base::nullopt;
+    return absl::nullopt;
   return base::TimeDelta::FromMilliseconds(max_throttling_delay_ms);
+}
+
+std::unique_ptr<ukm::MojoUkmRecorder> CreateMojoUkmRecorder() {
+  mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
+      recorder.InitWithNewPipeAndPassReceiver());
+  return std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
 }
 
 }  // namespace
@@ -105,13 +112,6 @@ WorkerThreadScheduler::WorkerThreadScheduler(
       initial_frame_status_(proxy ? proxy->initial_frame_status()
                                   : FrameStatus::kNone),
       ukm_source_id_(proxy ? proxy->ukm_source_id() : ukm::kInvalidSourceId) {
-  if (base::SequencedTaskRunnerHandle::IsSet()) {
-    mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
-    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
-        recorder.InitWithNewPipeAndPassReceiver());
-    ukm_recorder_ = std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
-  }
-
   if (proxy && proxy->parent_frame_type())
     worker_metrics_helper_.SetParentFrameType(*proxy->parent_frame_type());
 
@@ -189,7 +189,7 @@ WorkerThreadScheduler::DefaultTaskQueue() {
   return helper()->DefaultNonMainThreadTaskQueue();
 }
 
-void WorkerThreadScheduler::InitImpl() {
+void WorkerThreadScheduler::Init() {
   initialized_ = true;
   idle_helper_.EnableLongIdlePeriod();
 
@@ -281,6 +281,10 @@ void WorkerThreadScheduler::RecordTaskUkm(
     const base::sequence_manager::TaskQueue::TaskTiming& task_timing) {
   if (!helper()->ShouldRecordTaskUkm(task_timing.has_thread_time()))
     return;
+
+  if (!ukm_recorder_)
+    ukm_recorder_ = CreateMojoUkmRecorder();
+
   ukm::builders::RendererSchedulerTask builder(ukm_source_id_);
 
   builder.SetVersion(kUkmMetricVersion);

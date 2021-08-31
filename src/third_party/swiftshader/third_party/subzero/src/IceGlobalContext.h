@@ -20,7 +20,6 @@
 #include "IceDefs.h"
 #include "IceInstrumentation.h"
 #include "IceIntrinsics.h"
-#include "IceRNG.h"
 #include "IceStringPool.h"
 #include "IceSwitchLowering.h"
 #include "IceTargetLowering.def"
@@ -292,8 +291,6 @@ public:
     return Ret;
   }
 
-  const Intrinsics &getIntrinsicsInfo() const { return IntrinsicsInfo; }
-
   ELFObjectWriter *getObjectWriter() const { return ObjectWriter.get(); }
 
   /// Reset stats at the beginning of a function.
@@ -396,9 +393,6 @@ public:
   ///  - clears the Globals array.
   void lowerGlobals(const std::string &SectionSuffix);
 
-  /// Lowers the profile information.
-  void lowerProfileData();
-
   void dumpConstantLookupCounts();
 
   /// DisposeGlobalVariablesAfterLowering controls whether the memory used by
@@ -489,7 +483,6 @@ private:
 
   ICE_CACHELINE_BOUNDARY;
 
-  Intrinsics IntrinsicsInfo;
   // TODO(jpp): move to EmitterContext.
   std::unique_ptr<ELFObjectWriter> ObjectWriter;
   // Value defining when to wake up the main parse thread.
@@ -507,9 +500,6 @@ private:
   // If Instrumentor is not empty then it will be used to instrument globals and
   // CFGs.
   std::unique_ptr<Instrumentation> Instrumentor = nullptr;
-  // TODO(jpp): move to EmitterContext.
-  VariableDeclaration *ProfileBlockInfoVarDecl = nullptr;
-  std::vector<VariableDeclaration *> ProfileBlockInfos;
   /// Indicates if global variable declarations can be disposed of right after
   /// lowering.
   bool DisposeGlobalVariablesAfterLowering = true;
@@ -563,8 +553,6 @@ private:
     lowerGlobals(NoSuffix);
     HasSeenCode = true;
   }
-
-  void saveBlockInfoPtrs();
 
   llvm::SmallVector<ThreadContext *, 128> AllThreadContexts;
   llvm::SmallVector<std::thread, 128> TranslationThreads;

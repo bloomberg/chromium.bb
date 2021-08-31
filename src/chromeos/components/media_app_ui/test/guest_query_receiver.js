@@ -2,9 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Note we can only import from 'receiver.js': other modules are rolled-up into
+// it, and already loaded.
+import {TEST_ONLY} from './receiver.js';
+const {
+  RenameResult,
+  DELEGATE,
+  assertCast,
+  parentMessagePipe,
+  loadFiles,
+  setLoadFiles,
+} = TEST_ONLY;
+
 /**
  * The last file list loaded into the guest, updated via a spy on loadFiles().
- * @type {?ReceivedFileList}
+ * TODO(b/185734620): This should be type {ReceivedFileList} but closure fails
+ * to resolve it properly. See b/185734620 for details.
  */
 let lastReceivedFileList = null;
 
@@ -17,8 +30,9 @@ const guestTestCases = new Map();
 /**
  * @return {!mediaApp.AbstractFile}
  */
-function firstReceivedItem() {
-  return assertCast(assertCast(lastReceivedFileList).item(0));
+function currentFile() {
+  const fileList = assertCast(lastReceivedFileList);
+  return assertCast(fileList.item(fileList.currentFileIndex));
 }
 
 /**
@@ -44,6 +58,7 @@ async function runTestQuery(data) {
       }
     }
   } else if (data.navigate !== undefined) {
+    // Simulate a user navigating to the next/prev file.
     if (data.navigate.direction === 'next') {
       await assertCast(lastReceivedFileList).loadNext(data.navigate.token);
       result = 'loadNext called';
@@ -53,33 +68,36 @@ async function runTestQuery(data) {
     } else {
       result = 'nothing called';
     }
-  } else if (data.overwriteLastFile) {
+  } else if (data.overwriteLastFile !== undefined) {
+    // Simulate a user overwriting the currently open file.
     const testBlob = new Blob([data.overwriteLastFile]);
-    const file = firstReceivedItem();
-    await assertCast(file.overwriteOriginal).call(file, testBlob);
+    const file = currentFile();
+    try {
+      await assertCast(file.overwriteOriginal).call(file, testBlob);
+      result = 'overwriteOriginal resolved';
+    } catch (/** @type{!Error} */ error) {
+      result = `overwriteOriginal failed Error: ${error}`;
+      if (data.rethrow) {
+        throw error;
+      }
+    }
     extraResultData = {
       receiverFileName: file.name,
       receiverErrorName: file.error
     };
-    result = 'overwriteOriginal resolved';
   } else if (data.deleteLastFile) {
+    // Simulate a user deleting the currently open file.
     try {
-      const deleteResult =
-          await assertCast(firstReceivedItem().deleteOriginalFile)
-              .call(firstReceivedItem());
-      if (deleteResult === DeleteResult.FILE_MOVED) {
-        result = 'deleteOriginalFile resolved file moved';
-      } else {
-        result = 'deleteOriginalFile resolved success';
-      }
+      await assertCast(currentFile().deleteOriginalFile).call(currentFile());
+      result = 'deleteOriginalFile resolved success';
     } catch (/** @type{!Error} */ error) {
       result = `deleteOriginalFile failed Error: ${error}`;
     }
   } else if (data.renameLastFile) {
+    // Simulate a user renaming the currently open file.
     try {
-      const renameResult =
-          await assertCast(firstReceivedItem().renameOriginalFile)
-              .call(firstReceivedItem(), data.renameLastFile);
+      const renameResult = await assertCast(currentFile().renameOriginalFile)
+                               .call(currentFile(), data.renameLastFile);
       if (renameResult === RenameResult.FILE_EXISTS) {
         result = 'renameOriginalFile resolved file exists';
       } else if (
@@ -94,6 +112,7 @@ async function runTestQuery(data) {
       result = `renameOriginalFile failed Error: ${error}`;
     }
   } else if (data.requestSaveFile) {
+    // Call requestSaveFile on the delegate.
     const existingFile = assertCast(lastReceivedFileList).item(0);
     if (!existingFile) {
       result = 'requestSaveFile failed, no file loaded';
@@ -103,11 +122,13 @@ async function runTestQuery(data) {
       result = assertCast(pickedFile.token).toString();
     }
   } else if (data.saveAs) {
+    // Call save as on the first item in the last received file list, simulating
+    // a user clicking save as in the file.
     const existingFile = assertCast(lastReceivedFileList).item(0);
     if (!existingFile) {
       result = 'saveAs failed, no file loaded';
     } else {
-      const file = firstReceivedItem();
+      const file = currentFile();
       try {
         const token = (await DELEGATE.requestSaveFile(
                            existingFile.name, existingFile.mimeType))
@@ -124,15 +145,23 @@ async function runTestQuery(data) {
   } else if (data.getFileErrors) {
     result =
         assertCast(lastReceivedFileList).files.map(file => file.error).join();
-  } else if (data.legacyOpenFile) {
-    // TODO(b/165720635): Remove this once google3 shifts over to using openFile
-    // on the fileList.
-    await DELEGATE.openFile();
   } else if (data.openFile) {
+    // Call open file on file list, simulating a user trying to open a new file.
     await assertCast(lastReceivedFileList).openFile();
   } else if (data.getLastFileName) {
-    result = firstReceivedItem().name;
+    result = currentFile().name;
+  } else if (data.suppressCrashReports) {
+    // TODO(b/172981864): Remove this once we stop triggering crash reports for
+    // NotAFile errors.
+
+    // Remove the implementation of reportError so test code
+    // can safely check that the right errors are being thrown without
+    // triggering a crash.
+    if (chrome) {
+      chrome.crashReportPrivate.reportError = () => {};
+    }
   }
+
   return {testQueryResult: result, testQueryResultData: extraResultData};
 }
 
@@ -156,7 +185,7 @@ async function runTestCase(data) {
  * @param {string} testName
  * @param {function(): !Promise<undefined>} testCase
  */
-function GUEST_TEST(testName, testCase) {
+export function GUEST_TEST(testName, testCase) {
   guestTestCases.set(testName, testCase);
 }
 
@@ -169,18 +198,22 @@ function GUEST_TEST(testName, testCase) {
  */
 async function signalTestHandlersReady() {
   const EXPECTED_ERROR =
-      `No handler registered for message type 'test-handlers-ready'`;
-  while (true) {
+      /No handler registered for message type 'test-handlers-ready'/;
+  let attempts = 10;
+  while (--attempts >= 0) {
     try {
+      // Try to limit log output from message pipe errors.
+      await new Promise(resolve => setTimeout(resolve, 100));
       await parentMessagePipe.sendMessage('test-handlers-ready', {});
       return;
     } catch (/** @type {!GenericErrorResponse} */ e) {
-      if (e.message !== EXPECTED_ERROR) {
+      if (!EXPECTED_ERROR.test(e.message)) {
         console.error('Unexpected error in signalTestHandlersReady', e);
         return;
       }
     }
   }
+  console.error('signalTestHandlersReady failed to signal.');
 }
 
 /** Installs the MessagePipe handlers for receiving test queries. */
@@ -231,14 +264,14 @@ function installTestHandlers() {
   // Install spies.
   const realLoadFiles = loadFiles;
   /**
-   * @param {!ReceivedFileList} fileList
+   * @param {*} fileList
    * @return {!Promise<undefined>}
    */
   async function watchLoadFiles(fileList) {
     lastReceivedFileList = fileList;
     return realLoadFiles(fileList);
   }
-  loadFiles = watchLoadFiles;
+  setLoadFiles(watchLoadFiles);
   signalTestHandlersReady();
 }
 
@@ -248,5 +281,3 @@ if (document.readyState !== 'complete') {
 } else {
   installTestHandlers();
 }
-
-//# sourceURL=guest_query_receiver.js

@@ -11,7 +11,6 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -63,7 +62,7 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
   bool IsPersonalizedUrlDataCollectionActive() const override { return true; }
 
   void Classify(
-      const base::string16& text,
+      const std::u16string& text,
       bool prefer_keyword,
       bool allow_exact_keyword_match,
       metrics::OmniboxEventProto::PageClassification page_classification,
@@ -121,7 +120,7 @@ class ZeroSuggestProviderTest : public testing::Test,
     // Use NTP as the page classification, since REMOTE_NO_URL is enabled by
     // default for the NTP.
     AutocompleteInput input(
-        base::string16(),
+        std::u16string(),
         metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
         TestSchemeClassifier());
     input.set_focus_type(OmniboxFocusType::ON_FOCUS);
@@ -130,7 +129,7 @@ class ZeroSuggestProviderTest : public testing::Test,
 };
 
 void ZeroSuggestProviderTest::SetUp() {
-  client_.reset(new FakeAutocompleteProviderClient());
+  client_ = std::make_unique<FakeAutocompleteProviderClient>();
 
   TemplateURLService* turl_model = client_->GetTemplateURLService();
   turl_model->Load();
@@ -160,7 +159,7 @@ TEST_F(ZeroSuggestProviderTest, AllowZeroSuggestSuggestions) {
   on_focus_input.set_current_url(GURL(input_url));
   on_focus_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
 
-  AutocompleteInput on_clobber_input(base::string16(),
+  AutocompleteInput on_clobber_input(std::u16string(),
                                      metrics::OmniboxEventProto::OTHER,
                                      TestSchemeClassifier());
   on_clobber_input.set_current_url(GURL(input_url));
@@ -184,7 +183,7 @@ TEST_F(ZeroSuggestProviderTest, AllowZeroSuggestSuggestions) {
 
     // Sanity check that we only affect the OTHER page classification.
     AutocompleteInput on_clobber_serp(
-        base::string16(),
+        std::u16string(),
         metrics::OmniboxEventProto::
             SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT,
         TestSchemeClassifier());
@@ -225,7 +224,7 @@ TEST_F(ZeroSuggestProviderTest, TypeOfResultToRun) {
       /*remote_no_url_allowed=*/false);
 
   // Verify the platorm-specific defaults for the NTP.
-  AutocompleteInput ntp_input(base::string16(), metrics::OmniboxEventProto::NTP,
+  AutocompleteInput ntp_input(std::u16string(), metrics::OmniboxEventProto::NTP,
                               TestSchemeClassifier());
   ExpectPlatformSpecificDefaultZeroSuggestBehavior(
       ntp_input,
@@ -279,7 +278,7 @@ TEST_F(ZeroSuggestProviderTest, TypeOfResultToRunForContextualWeb) {
   on_focus_input.set_current_url(GURL(input_url));
   on_focus_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
 
-  AutocompleteInput on_clobber_input(base::string16(),
+  AutocompleteInput on_clobber_input(std::u16string(),
                                      metrics::OmniboxEventProto::OTHER,
                                      TestSchemeClassifier());
   on_clobber_input.set_current_url(GURL(input_url));
@@ -340,7 +339,7 @@ TEST_F(ZeroSuggestProviderTest, TypeOfResultToRunForContextualWeb) {
 TEST_F(ZeroSuggestProviderTest, TestDoesNotReturnMatchesForPrefix) {
   // Use NTP because REMOTE_NO_URL is enabled by default for NTP.
   AutocompleteInput prefix_input(
-      base::ASCIIToUTF16("foobar input"),
+      u"foobar input",
       metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
       TestSchemeClassifier());
 
@@ -411,10 +410,8 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(3U, provider_->matches().size());  // 3 results, no verbatim match
-  if (base::FeatureList::IsEnabled(omnibox::kOmniboxZeroSuggestCaching)) {
-    EXPECT_EQ(json_response,
-              prefs->GetString(omnibox::kZeroSuggestCachedResults));
-  }
+  EXPECT_EQ(json_response,
+            prefs->GetString(omnibox::kZeroSuggestCachedResults));
 }
 
 TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
@@ -433,13 +430,11 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
   ASSERT_EQ(ZeroSuggestProvider::REMOTE_NO_URL,
             provider_->GetResultTypeRunningForTesting());
 
-  if (base::FeatureList::IsEnabled(omnibox::kOmniboxZeroSuggestCaching)) {
-    // Expect that matches get populated synchronously out of the cache.
-    ASSERT_EQ(3U, provider_->matches().size());  // 3 results, no verbatim match
-    EXPECT_EQ(base::ASCIIToUTF16("search1"), provider_->matches()[0].contents);
-    EXPECT_EQ(base::ASCIIToUTF16("search2"), provider_->matches()[1].contents);
-    EXPECT_EQ(base::ASCIIToUTF16("search3"), provider_->matches()[2].contents);
-  }
+  // Expect that matches get populated synchronously out of the cache.
+  ASSERT_EQ(3U, provider_->matches().size());  // 3 results, no verbatim match
+  EXPECT_EQ(u"search1", provider_->matches()[0].contents);
+  EXPECT_EQ(u"search2", provider_->matches()[1].contents);
+  EXPECT_EQ(u"search3", provider_->matches()[2].contents);
 
   GURL suggest_url = GetSuggestURL(
       metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS);
@@ -451,23 +446,15 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
 
   base::RunLoop().RunUntilIdle();
 
-  if (base::FeatureList::IsEnabled(omnibox::kOmniboxZeroSuggestCaching)) {
-    // Expect the same results after the response has been handled.
-    ASSERT_EQ(3U, provider_->matches().size());  // 3 results, no verbatim match
-    EXPECT_EQ(base::ASCIIToUTF16("search1"), provider_->matches()[0].contents);
-    EXPECT_EQ(base::ASCIIToUTF16("search2"), provider_->matches()[1].contents);
-    EXPECT_EQ(base::ASCIIToUTF16("search3"), provider_->matches()[2].contents);
+  // Expect the same results after the response has been handled.
+  ASSERT_EQ(3U, provider_->matches().size());  // 3 results, no verbatim match
+  EXPECT_EQ(u"search1", provider_->matches()[0].contents);
+  EXPECT_EQ(u"search2", provider_->matches()[1].contents);
+  EXPECT_EQ(u"search3", provider_->matches()[2].contents);
 
-    // Expect the new results have been stored.
-    EXPECT_EQ(json_response2,
-              prefs->GetString(omnibox::kZeroSuggestCachedResults));
-  } else {
-    // Expect fresh results after the response has been handled.
-    ASSERT_EQ(3U, provider_->matches().size());  // 3 results, no verbatim match
-    EXPECT_EQ(base::ASCIIToUTF16("search4"), provider_->matches()[0].contents);
-    EXPECT_EQ(base::ASCIIToUTF16("search5"), provider_->matches()[1].contents);
-    EXPECT_EQ(base::ASCIIToUTF16("search6"), provider_->matches()[2].contents);
-  }
+  // Expect the new results have been stored.
+  EXPECT_EQ(json_response2,
+            prefs->GetString(omnibox::kZeroSuggestCachedResults));
 }
 
 TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
@@ -486,15 +473,11 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
   ASSERT_EQ(ZeroSuggestProvider::REMOTE_NO_URL,
             provider_->GetResultTypeRunningForTesting());
 
-  if (base::FeatureList::IsEnabled(omnibox::kOmniboxZeroSuggestCaching)) {
-    // Expect that matches get populated synchronously out of the cache.
-    ASSERT_EQ(3U, provider_->matches().size());  // 3 results, no verbatim match
-    EXPECT_EQ(base::ASCIIToUTF16("search1"), provider_->matches()[0].contents);
-    EXPECT_EQ(base::ASCIIToUTF16("search2"), provider_->matches()[1].contents);
-    EXPECT_EQ(base::ASCIIToUTF16("search3"), provider_->matches()[2].contents);
-  } else {
-    ASSERT_TRUE(provider_->matches().empty());
-  }
+  // Expect that matches get populated synchronously out of the cache.
+  ASSERT_EQ(3U, provider_->matches().size());  // 3 results, no verbatim match
+  EXPECT_EQ(u"search1", provider_->matches()[0].contents);
+  EXPECT_EQ(u"search2", provider_->matches()[1].contents);
+  EXPECT_EQ(u"search3", provider_->matches()[2].contents);
 
   GURL suggest_url = GetSuggestURL(
       metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS);
@@ -507,9 +490,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
   // Expect that the matches have been cleared.
   ASSERT_TRUE(provider_->matches().empty());
 
-  if (base::FeatureList::IsEnabled(omnibox::kOmniboxZeroSuggestCaching)) {
-    // Expect the new results have been stored.
-    EXPECT_EQ(empty_response,
-              prefs->GetString(omnibox::kZeroSuggestCachedResults));
-  }
+  // Expect the new results have been stored.
+  EXPECT_EQ(empty_response,
+            prefs->GetString(omnibox::kZeroSuggestCachedResults));
 }

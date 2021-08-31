@@ -33,10 +33,9 @@ class CookieManager {
 
   // Adds a callback to listen for changes to cookies for the given URL.
   using CookieChangedCallbackList =
-      base::CallbackList<void(const net::CookieChangeInfo&)>;
+      base::RepeatingCallbackList<void(const net::CookieChangeInfo&)>;
   using CookieChangedCallback = CookieChangedCallbackList::CallbackType;
-  using CookieChangedSubscription = CookieChangedCallbackList::Subscription;
-  virtual std::unique_ptr<CookieChangedSubscription> AddCookieChangedCallback(
+  virtual base::CallbackListSubscription AddCookieChangedCallback(
       const GURL& url,
       const std::string* name,
       CookieChangedCallback callback) = 0;

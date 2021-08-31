@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/simulator/alarm_factory.h"
+#include "quic/test_tools/simulator/alarm_factory.h"
 
-#include "net/third_party/quiche/src/quic/core/quic_alarm.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "absl/strings/str_format.h"
+#include "quic/core/quic_alarm.h"
 
 namespace quic {
 namespace simulator {
@@ -21,7 +21,7 @@ class Alarm : public QuicAlarm {
   ~Alarm() override {}
 
   void SetImpl() override {
-    DCHECK(deadline().IsInitialized());
+    QUICHE_DCHECK(deadline().IsInitialized());
     adapter_.Set(deadline());
   }
 
@@ -41,7 +41,7 @@ class Alarm : public QuicAlarm {
     void Cancel() { Unschedule(); }
 
     void Act() override {
-      DCHECK(clock_->Now() >= parent_->deadline());
+      QUICHE_DCHECK(clock_->Now() >= parent_->deadline());
       parent_->Fire();
     }
 
@@ -58,7 +58,7 @@ AlarmFactory::~AlarmFactory() {}
 
 std::string AlarmFactory::GetNewAlarmName() {
   ++counter_;
-  return quiche::QuicheStringPrintf("%s (alarm %i)", name_.c_str(), counter_);
+  return absl::StrFormat("%s (alarm %i)", name_, counter_);
 }
 
 QuicAlarm* AlarmFactory::CreateAlarm(QuicAlarm::Delegate* delegate) {

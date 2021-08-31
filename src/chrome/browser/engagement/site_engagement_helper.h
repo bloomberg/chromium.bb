@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
+#include "components/site_engagement/content/site_engagement_service.h"
 #include "content/public/browser/media_player_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -17,6 +17,10 @@
 namespace content {
 class NavigationHandle;
 }
+
+namespace site_engagement {
+
+enum class EngagementType;
 
 // Per-WebContents class to handle updating the site engagement scores for
 // origins.
@@ -155,7 +159,7 @@ class SiteEngagementService::Helper
 
   // Ask the SiteEngagementService to record engagement via user input at the
   // current WebContents URL.
-  void RecordUserInput(SiteEngagementService::EngagementType type);
+  void RecordUserInput(EngagementType type);
 
   // Ask the SiteEngagementService to record engagement via media playing at the
   // current WebContents URL.
@@ -172,5 +176,7 @@ class SiteEngagementService::Helper
   DISALLOW_COPY_AND_ASSIGN(Helper);
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
+
+}  // namespace site_engagement
 
 #endif  // CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_HELPER_H_

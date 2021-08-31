@@ -16,6 +16,9 @@ bool DisableAppGroupAccess() {
 bool DisableContentSuggestions() {
   return false;
 }
+bool DisableDiscoverFeed() {
+  return false;
+}
 bool DisableFirstRun() {
   return false;
 }
@@ -29,9 +32,6 @@ bool DisableUpdateService() {
   return false;
 }
 bool DisableMainThreadFreezeDetection() {
-  return false;
-}
-bool DisableTableDragAndDrop() {
   return false;
 }
 policy::ConfigurationPolicyProvider* GetOverriddenPlatformPolicyProvider() {

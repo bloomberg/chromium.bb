@@ -15,32 +15,24 @@
 #include "base/containers/mru_cache.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
-#include "base/synchronization/lock.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
-#include "components/optimization_guide/hints_component_info.h"
-#include "components/optimization_guide/hints_fetcher.h"
-#include "components/optimization_guide/optimization_guide_decider.h"
-#include "components/optimization_guide/optimization_guide_service_observer.h"
+#include "components/optimization_guide/content/browser/optimization_guide_decider.h"
+#include "components/optimization_guide/core/hints_component_info.h"
+#include "components/optimization_guide/core/hints_fetcher.h"
+#include "components/optimization_guide/core/optimization_hints_component_observer.h"
+#include "components/optimization_guide/core/push_notification_manager.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
-
-namespace base {
-class FilePath;
-}  // namespace base
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 class NavigationHandle;
 }  // namespace content
-
-namespace leveldb_proto {
-class ProtoDatabaseProvider;
-}  // namespace leveldb_proto
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -51,10 +43,11 @@ class HintCache;
 class HintsFetcherFactory;
 class OptimizationFilter;
 class OptimizationMetadata;
-class OptimizationGuideService;
+class OptimizationGuideStore;
 enum class OptimizationTargetDecision;
 enum class OptimizationTypeDecision;
 class StoreUpdateData;
+class TabUrlProvider;
 class TopHostProvider;
 }  // namespace optimization_guide
 
@@ -63,19 +56,17 @@ class PrefService;
 class Profile;
 
 class OptimizationGuideHintsManager
-    : public optimization_guide::OptimizationGuideServiceObserver,
+    : public optimization_guide::OptimizationHintsComponentObserver,
+      public optimization_guide::PushNotificationManager::Delegate,
       public network::NetworkQualityTracker::EffectiveConnectionTypeObserver,
       public NavigationPredictorKeyedService::Observer {
  public:
   OptimizationGuideHintsManager(
-      const std::vector<optimization_guide::proto::OptimizationType>&
-          optimization_types_at_initialization,
-      optimization_guide::OptimizationGuideService* optimization_guide_service,
       Profile* profile,
-      const base::FilePath& profile_path,
       PrefService* pref_service,
-      leveldb_proto::ProtoDatabaseProvider* database_provider,
+      optimization_guide::OptimizationGuideStore* hint_store,
       optimization_guide::TopHostProvider* top_host_provider,
+      optimization_guide::TabUrlProvider* tab_url_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   ~OptimizationGuideHintsManager() override;
@@ -83,7 +74,12 @@ class OptimizationGuideHintsManager
   // Unhooks the observer to |optimization_guide_service_|.
   void Shutdown();
 
-  // optimization_guide::OptimizationGuideServiceObserver implementation:
+  // Returns the OptimizationGuideDecision from |optimization_type_decision|.
+  static optimization_guide::OptimizationGuideDecision
+  GetOptimizationGuideDecisionFromOptimizationTypeDecision(
+      optimization_guide::OptimizationTypeDecision optimization_type_decision);
+
+  // optimization_guide::OptimizationHintsComponentObserver implementation:
   void OnHintsComponentAvailable(
       const optimization_guide::HintsComponentInfo& info) override;
 
@@ -116,7 +112,7 @@ class OptimizationGuideHintsManager
   // |optimization_metadata| will be populated, if applicable.
   optimization_guide::OptimizationTypeDecision CanApplyOptimization(
       const GURL& navigation_url,
-      const base::Optional<int64_t>& navigation_id,
+      const absl::optional<int64_t>& navigation_id,
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationMetadata* optimization_metadata);
 
@@ -125,7 +121,7 @@ class OptimizationGuideHintsManager
   // |this| to make the decision. Virtual for testing.
   virtual void CanApplyOptimizationAsync(
       const GURL& navigation_url,
-      const base::Optional<int64_t>& navigation_id,
+      const absl::optional<int64_t>& navigation_id,
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationGuideDecisionCallback callback);
 
@@ -165,18 +161,30 @@ class OptimizationGuideHintsManager
   // |navigation_redirect_chain| has finished.
   void OnNavigationFinish(const std::vector<GURL>& navigation_redirect_chain);
 
+  // Fetch the hints for the given predicted URLs.
+  void FetchHintsForPredictions(std::vector<GURL> target_urls);
+
+  // optimization_guide::PushNotificationManager::Delegate:
+  void RemoveFetchedEntriesByHintKeys(
+      base::OnceClosure on_success,
+      optimization_guide::proto::KeyRepresentation key_representation,
+      const base::flat_set<std::string>& hint_keys) override;
+  void PurgeFetchedEntries(base::OnceClosure on_success) override;
+
+  // Returns the hint cache for |this|.
+  optimization_guide::HintCache* hint_cache();
+
+  // Returns the persistent store for |this|.
+  optimization_guide::OptimizationGuideStore* hint_store();
+
+  // Returns the push notification manager for |this|. May be nullptr;
+  optimization_guide::PushNotificationManager* push_notification_manager();
+
   // Add hints to the cache with the provided metadata. For testing only.
   void AddHintForTesting(
       const GURL& url,
       optimization_guide::proto::OptimizationType optimization_type,
-      const base::Optional<optimization_guide::OptimizationMetadata>& metadata);
-
-  // Override the decision returned by |ShouldTargetNavigation|
-  // for |optimization_target|. For testing purposes only.
-  void OverrideTargetDecisionForTesting(
-      optimization_guide::proto::OptimizationTarget optimization_target,
-      optimization_guide::OptimizationGuideDecision
-          optimization_guide_decision);
+      const absl::optional<optimization_guide::OptimizationMetadata>& metadata);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerTest, IsGoogleURL);
@@ -187,58 +195,32 @@ class OptimizationGuideHintsManager
   FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerFetchingTest,
                            HintsFetched_AtSRP_ECT_4G);
   FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerFetchingTest,
+                           HintsFetched_AtSRP_ECT_4G_GoogleLinksIgnored);
+  FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerFetchingTest,
                            HintsFetched_AtNonSRP_ECT_SLOW_2G);
   FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerFetchingTest,
                            HintsFetched_AtSRP_ECT_SLOW_2G_DuplicatesRemoved);
   FRIEND_TEST_ALL_PREFIXES(
       OptimizationGuideHintsManagerFetchingTest,
       HintsFetched_AtSRP_ECT_SLOW_2G_NonHTTPOrHTTPSHostsRemoved);
-  FRIEND_TEST_ALL_PREFIXES(
-      OptimizationGuideHintsManagerFetchingTest,
-      HintsFetched_ExternalAndroidApp_ECT_SLOW_2G_NonHTTPOrHTTPSHostsRemovedAppWhitelisted);
-  FRIEND_TEST_ALL_PREFIXES(
-      OptimizationGuideHintsManagerFetchingTest,
-      HintsFetched_ExternalAndroidApp_ECT_SLOW_2G_NonHTTPOrHTTPSHostsRemovedNotAllAppsWhitelisted);
-  FRIEND_TEST_ALL_PREFIXES(
-      OptimizationGuideHintsManagerFetchingTest,
-      HintsFetched_ExternalAndroidApp_ECT_SLOW_2G_NonHTTPOrHTTPSHostsRemovedAppNotWhitelisted);
-
-  // Processes the hints component.
-  //
-  // Should always be called on the thread that belongs to
-  // |background_task_runner_|.
-  std::unique_ptr<optimization_guide::StoreUpdateData> ProcessHintsComponent(
-      const optimization_guide::HintsComponentInfo& info,
-      const base::flat_set<optimization_guide::proto::OptimizationType>&
-          registered_optimization_types,
-      std::unique_ptr<optimization_guide::StoreUpdateData> update_data);
 
   // Processes the optimization filters contained in the hints component.
-  //
-  // Should always be called on the thread that belongs to
-  // |background_task_runner_|.
   void ProcessOptimizationFilters(
       const google::protobuf::RepeatedPtrField<
           optimization_guide::proto::OptimizationFilter>&
           allowlist_optimization_filters,
       const google::protobuf::RepeatedPtrField<
           optimization_guide::proto::OptimizationFilter>&
-          blocklist_optimization_filters,
-      const base::flat_set<optimization_guide::proto::OptimizationType>&
-          registered_optimization_types);
+          blocklist_optimization_filters);
 
   // Process a set of optimization filters.
   //
   // |is_allowlist| will be used to ensure that the filters are either uses as
-  // allowlists or blocklists. |optimization_filters_lock_| should be held
-  // before calling this function.
+  // allowlists or blocklists.
   void ProcessOptimizationFilterSet(
       const google::protobuf::RepeatedPtrField<
           optimization_guide::proto::OptimizationFilter>& filters,
-      bool is_allowlist,
-      const base::flat_set<optimization_guide::proto::OptimizationType>&
-          registered_optimization_types)
-      EXCLUSIVE_LOCKS_REQUIRED(optimization_filters_lock_);
+      bool is_allowlist);
 
   // Callback run after the hint cache is fully initialized. At this point,
   // the OptimizationGuideHintsManager is ready to process hints.
@@ -247,32 +229,34 @@ class OptimizationGuideHintsManager
   // Updates the cache with the latest hints sent by the Component Updater.
   void UpdateComponentHints(
       base::OnceClosure update_closure,
-      std::unique_ptr<optimization_guide::StoreUpdateData> update_data);
+      std::unique_ptr<optimization_guide::StoreUpdateData> update_data,
+      std::unique_ptr<optimization_guide::proto::Configuration> config);
 
   // Called when the hints have been fully updated with the latest hints from
   // the Component Updater. This is used as a signal during tests.
   void OnComponentHintsUpdated(base::OnceClosure update_closure,
                                bool hints_updated);
 
-  // Method to decide whether to fetch new hints for user's top sites and
-  // proceeds to schedule the fetch.
-  void MaybeScheduleTopHostsHintsFetch();
+  // Returns the URLs that are currently in the active tab model that do not
+  // have a hint available in |hint_cache_|.
+  const std::vector<GURL> GetActiveTabURLsToRefresh();
 
-  // Schedules |hints_fetch_timer_| to fire based on:
-  // 1. The update time for the fetched hints in the store and
-  // 2. The last time a fetch attempt was made.
-  void ScheduleTopHostsHintsFetch();
+  // Schedules |active_tabs_hints_fetch_timer_| to fire based on the last time a
+  // fetch attempt was made.
+  void ScheduleActiveTabsHintsFetch();
 
   // Called to make a request to fetch hints from the remote Optimization Guide
-  // Service. Used to fetch hints for origins frequently visited by the user.
-  void FetchTopHostsHints();
+  // Service. Used to fetch hints for origins frequently visited by the user and
+  // URLs open in the active tab model.
+  void FetchHintsForActiveTabs();
 
-  // Called when the hints for the top hosts have been fetched from the remote
+  // Called when the hints for active tabs have been fetched from the remote
   // Optimization Guide Service and are ready for parsing. This is used when
   // fetching hints in batch mode.
-  void OnTopHostsHintsFetched(
+  void OnHintsForActiveTabsFetched(
       const base::flat_set<std::string>& hosts_fetched,
-      base::Optional<
+      const base::flat_set<GURL>& urls_fetched,
+      absl::optional<
           std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
           get_hints_response);
 
@@ -285,16 +269,16 @@ class OptimizationGuideHintsManager
   // that were requested by |this| to be fetched.
   void OnPageNavigationHintsFetched(
       base::WeakPtr<OptimizationGuideNavigationData> navigation_data_weak_ptr,
-      const base::Optional<GURL>& navigation_url,
+      const absl::optional<GURL>& navigation_url,
       const base::flat_set<GURL>& page_navigation_urls_requested,
       const base::flat_set<std::string>& page_navigation_hosts_requested,
-      base::Optional<
+      absl::optional<
           std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
           get_hints_response);
 
   // Called when the fetched hints have been stored in |hint_cache| and are
   // ready to be used. This is used when hints were fetched in batch mode.
-  void OnFetchedTopHostsHintsStored();
+  void OnFetchedActiveTabsHintsStored();
 
   // Called when the fetched hints have been stored in |hint_cache| and are
   // ready to be used. This is used when hints were fetched in real-time.
@@ -303,7 +287,7 @@ class OptimizationGuideHintsManager
   // whose hints should be loaded into memory when invoked.
   void OnFetchedPageNavigationHintsStored(
       base::WeakPtr<OptimizationGuideNavigationData> navigation_data_weak_ptr,
-      const base::Optional<GURL>& navigation_url,
+      const absl::optional<GURL>& navigation_url,
       const base::flat_set<std::string>& page_navigation_hosts_requested);
 
   // Returns true if there is a fetch currently in-flight for |navigation_url|.
@@ -345,12 +329,12 @@ class OptimizationGuideHintsManager
 
   // Returns true if we can make a request for hints for |prediction|.
   bool IsAllowedToFetchForNavigationPrediction(
-      const base::Optional<NavigationPredictorKeyedService::Prediction>
+      const absl::optional<NavigationPredictorKeyedService::Prediction>
           prediction) const;
 
   // NavigationPredictorKeyedService::Observer:
   void OnPredictionUpdated(
-      const base::Optional<NavigationPredictorKeyedService::Prediction>
+      const absl::optional<NavigationPredictorKeyedService::Prediction>
           prediction) override;
 
   // Returns whether there is an optimization type to fetch for. Will return
@@ -378,13 +362,9 @@ class OptimizationGuideHintsManager
       const GURL& navigation_url,
       optimization_guide::proto::OptimizationType optimization_type);
 
-  // The OptimizationGuideService that this guide is listening to. Not owned.
-  optimization_guide::OptimizationGuideService* const
-      optimization_guide_service_;
-
   // The information of the latest component delivered by
   // |optimization_guide_service_|.
-  base::Optional<optimization_guide::HintsComponentInfo> hints_component_info_;
+  absl::optional<optimization_guide::HintsComponentInfo> hints_component_info_;
 
   // The set of optimization types that have been registered with the hints
   // manager.
@@ -393,25 +373,22 @@ class OptimizationGuideHintsManager
   base::flat_set<optimization_guide::proto::OptimizationType>
       registered_optimization_types_;
 
-  // Synchronizes access to member variables related to optimization filters.
-  base::Lock optimization_filters_lock_;
-
   // The set of optimization types that the component specified by
   // |component_info_| has optimization filters for.
   base::flat_set<optimization_guide::proto::OptimizationType>
-      optimization_types_with_filter_ GUARDED_BY(optimization_filters_lock_);
+      optimization_types_with_filter_;
 
   // A map from optimization type to the host filter that holds the allowlist
   // for that type.
   base::flat_map<optimization_guide::proto::OptimizationType,
                  std::unique_ptr<optimization_guide::OptimizationFilter>>
-      allowlist_optimization_filters_ GUARDED_BY(optimization_filters_lock_);
+      allowlist_optimization_filters_;
 
   // A map from optimization type to the host filter that holds the blocklist
   // for that type.
   base::flat_map<optimization_guide::proto::OptimizationType,
                  std::unique_ptr<optimization_guide::OptimizationFilter>>
-      blocklist_optimization_filters_ GUARDED_BY(optimization_filters_lock_);
+      blocklist_optimization_filters_;
 
   // A map from URL to a map of callbacks (along with the navigation IDs that
   // they were called for) keyed by their optimization type.
@@ -420,12 +397,9 @@ class OptimizationGuideHintsManager
       base::flat_map<
           optimization_guide::proto::OptimizationType,
           std::vector<std::pair<
-              base::Optional<int64_t>,
+              absl::optional<int64_t>,
               optimization_guide::OptimizationGuideDecisionCallback>>>>
       registered_callbacks_;
-
-  // Background thread where hints processing should be performed.
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   // A reference to the profile. Not owned.
   Profile* profile_ = nullptr;
@@ -453,16 +427,20 @@ class OptimizationGuideHintsManager
   std::unique_ptr<optimization_guide::HintsFetcherFactory>
       hints_fetcher_factory_;
 
-  // The external app packages that have been approved for fetching from the
-  // remote Optimization Guide Service.
-  base::flat_set<std::string> external_app_packages_approved_for_fetch_;
-
   // The top host provider that can be queried. Not owned.
   optimization_guide::TopHostProvider* top_host_provider_ = nullptr;
 
+  // The tab URL provider that can be queried. Not owned.
+  optimization_guide::TabUrlProvider* tab_url_provider_ = nullptr;
+
   // The timer used to schedule fetching hints from the remote Optimization
   // Guide Service.
-  base::OneShotTimer top_hosts_hints_fetch_timer_;
+  base::OneShotTimer active_tabs_hints_fetch_timer_;
+
+  // The class that handles push notification processing and informs |this| of
+  // what to do through the implemented Delegate above.
+  std::unique_ptr<optimization_guide::PushNotificationManager>
+      push_notification_manager_;
 
   // The clock used to schedule fetching from the remote Optimization Guide
   // Service.
@@ -478,6 +456,13 @@ class OptimizationGuideHintsManager
 
   // Used in testing to subscribe to an update event in this class.
   base::OnceClosure next_update_closure_;
+
+  // Background thread where hints processing should be performed.
+  //
+  // Warning: This must be the last object, so it is destroyed (and flushed)
+  // first. This will prevent use-after-free issues where the background thread
+  // would access other member variables after they have been destroyed.
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   // Used to get |weak_ptr_| to self on the UI thread.
   base::WeakPtrFactory<OptimizationGuideHintsManager> ui_weak_ptr_factory_{

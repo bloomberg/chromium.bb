@@ -20,12 +20,10 @@ schema_sources_ = [
   "chrome_web_view_internal.json",
   "command_line_private.json",
   "content_settings.json",
-  "context_menus_internal.json",
   "context_menus.json",
   "cookies.json",
   "cryptotoken_private.idl",
   "dashboard_private.json",
-  "data_reduction_proxy.json",
   "debugger.json",
   "desktop_capture.json",
   "developer_private.idl",
@@ -33,6 +31,7 @@ schema_sources_ = [
   "downloads.idl",
   "downloads_internal.idl",
   "enterprise_hardware_platform.idl",
+  "enterprise_reporting_private.idl",
   "font_settings.json",
   "gcm.json",
   "history.json",
@@ -76,24 +75,22 @@ if (!is_android) {
   schema_sources_ += [ "processes.idl" ]
 }
 
-if (is_chromeos || is_mac || is_win) {
-  schema_sources_ += [ "networking_cast_private.idl" ]
-}
-
-if (is_chromeos || chromeos_is_browser_only) {
+if (is_chromeos_ash || is_chromeos_lacros) {
   schema_sources_ += [
+    "enterprise_device_attributes.idl",
     "enterprise_platform_keys.idl",
     "enterprise_platform_keys_internal.idl",
+    "platform_keys_internal.idl",
+    "platform_keys.idl",
   ]
 }
 
-if (is_chromeos) {
+if (is_chromeos_ash) {
   schema_sources_ += [
     "certificate_provider.idl",
     "certificate_provider_internal.idl",
     "document_scan.idl",
     "echo_private.json",
-    "enterprise_device_attributes.idl",
     "enterprise_networking_attributes.idl",
     "enterprise_platform_keys_private.json",
     "file_browser_handler_internal.json",
@@ -103,13 +100,10 @@ if (is_chromeos) {
     "file_system_provider_internal.idl",
     "input_ime.json",
     "input_method_private.json",
-    "launcher_search_provider.idl",
     "login.idl",
     "login_screen_storage.idl",
     "login_screen_ui.idl",
     "login_state.idl",
-    "platform_keys.idl",
-    "platform_keys_internal.idl",
     "quick_unlock_private.idl",
     "terminal_private.json",
     "users_private.idl",
@@ -124,14 +118,6 @@ if (is_chromeos) {
   }
 } else if (is_linux || is_chromeos || is_win) {
   schema_sources_ += [ "input_ime.json" ]
-}
-
-if (!is_chromeos) {
-  schema_sources_ += [ "enterprise_reporting_private.idl" ]
-}
-
-if (enable_print_preview && !is_chromeos) {
-  schema_sources_ += [ "cloud_print_private.json" ]
 }
 
 if (enable_service_discovery) {
@@ -152,7 +138,7 @@ uncompiled_sources_ = [
   "top_sites.json",
 ]
 
-if (is_chromeos) {
+if (is_chromeos_ash) {
   uncompiled_sources_ += [
     "chromeos_info_private.json",
     "media_player_private.json",

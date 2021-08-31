@@ -58,8 +58,8 @@ ChromeMessagingDelegate::IsNativeMessagingHostAllowed(
   // Check if the name or the wildcard is in the blocklist.
   base::Value name_value(native_host_name);
   base::Value wildcard_value("*");
-  if (blocklist->Find(name_value) == blocklist->end() &&
-      blocklist->Find(wildcard_value) == blocklist->end()) {
+  if (!base::Contains(blocklist->GetList(), name_value) &&
+      !base::Contains(blocklist->GetList(), wildcard_value)) {
     return allow_result;
   }
 
@@ -68,7 +68,7 @@ ChromeMessagingDelegate::IsNativeMessagingHostAllowed(
           pref_names::kNativeMessagingAllowlist)) {
     const base::ListValue* allowlist =
         pref_service->GetList(pref_names::kNativeMessagingAllowlist);
-    if (allowlist && allowlist->Find(name_value) != allowlist->end())
+    if (allowlist && base::Contains(allowlist->GetList(), name_value))
       return allow_result;
   }
 
@@ -155,10 +155,10 @@ void ChromeMessagingDelegate::QueryIncognitoConnectability(
     const Extension* target_extension,
     content::WebContents* source_contents,
     const GURL& source_url,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   DCHECK(context->IsOffTheRecord());
   IncognitoConnectability::Get(context)->Query(
-      target_extension, source_contents, source_url, callback);
+      target_extension, source_contents, source_url, std::move(callback));
 }
 
 }  // namespace extensions

@@ -5,9 +5,9 @@
 #include "content/browser/web_package/web_bundle_interceptor_for_network.h"
 
 #include "base/strings/stringprintf.h"
+#include "components/web_package/web_bundle_utils.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
-#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/browser/web_package/web_bundle_reader.h"
 #include "content/browser/web_package/web_bundle_redirect_url_loader.h"
 #include "content/browser/web_package/web_bundle_source.h"
@@ -68,7 +68,7 @@ bool WebBundleInterceptorForNetwork::MaybeCreateLoaderForResponse(
   }
   *client_receiver = forwarding_client_.BindNewPipeAndPassReceiver();
 
-  if (!signed_exchange_utils::HasNoSniffHeader(**response_head)) {
+  if (!web_package::HasNoSniffHeader(**response_head)) {
     web_bundle_utils::CompleteWithInvalidWebBundleError(
         std::move(forwarding_client_), frame_tree_node_id_,
         web_bundle_utils::kNoSniffErrorMessage);
@@ -92,8 +92,7 @@ bool WebBundleInterceptorForNetwork::MaybeCreateLoaderForResponse(
 
   reader_ = base::MakeRefCounted<WebBundleReader>(
       std::move(source), length_hint, std::move(*response_body),
-      url_loader->Unbind(),
-      BrowserContext::GetBlobStorageContext(browser_context_));
+      url_loader->Unbind(), browser_context_->GetBlobStorageContext());
   reader_->ReadMetadata(
       base::BindOnce(&WebBundleInterceptorForNetwork::OnMetadataReady,
                      weak_factory_.GetWeakPtr(), request));
@@ -146,7 +145,7 @@ void WebBundleInterceptorForNetwork::StartResponse(
   network::ResourceRequest new_resource_request = resource_request;
   new_resource_request.url = primary_url_;
   url_loader_factory_->CreateLoaderAndStart(
-      std::move(receiver), 0, 0, 0, new_resource_request, std::move(client),
+      std::move(receiver), 0, 0, new_resource_request, std::move(client),
       net::MutableNetworkTrafficAnnotationTag(
           web_bundle_utils::kTrafficAnnotation));
   std::move(done_callback_).Run(primary_url_, std::move(url_loader_factory_));

@@ -27,7 +27,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_HISTORY_ITEM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_HISTORY_ITEM_H_
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/page_state/page_state.mojom-blink.h"
 #include "third_party/blink/public/platform/web_scroll_anchor_data.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -75,7 +75,7 @@ class CORE_EXPORT HistoryItem final : public GarbageCollected<HistoryItem> {
     ScrollAnchorData scroll_anchor_data_;
   };
 
-  const base::Optional<ViewState>& GetViewState() const { return view_state_; }
+  const absl::optional<ViewState>& GetViewState() const { return view_state_; }
   void ClearViewState() { view_state_.reset(); }
   void CopyViewStateFrom(HistoryItem* other) {
     view_state_ = other->GetViewState();
@@ -120,6 +120,17 @@ class CORE_EXPORT HistoryItem final : public GarbageCollected<HistoryItem> {
 
   ResourceRequest GenerateResourceRequest(mojom::FetchCacheMode);
 
+  const String& GetAppHistoryKey() const { return app_history_key_; }
+  void SetAppHistoryKey(const String& key) { app_history_key_ = key; }
+
+  const String& GetAppHistoryId() const { return app_history_id_; }
+  void SetAppHistoryId(const String& id) { app_history_id_ = id; }
+
+  void SetAppHistoryState(scoped_refptr<SerializedScriptValue>);
+  SerializedScriptValue* GetAppHistoryState() {
+    return app_history_state_.get();
+  }
+
   void Trace(Visitor*) const;
 
  private:
@@ -129,7 +140,7 @@ class CORE_EXPORT HistoryItem final : public GarbageCollected<HistoryItem> {
   Vector<String> document_state_vector_;
   Member<DocumentState> document_state_;
 
-  base::Optional<ViewState> view_state_;
+  absl::optional<ViewState> view_state_;
 
   // If two HistoryItems have the same item sequence number, then they are
   // clones of one another. Traversing history from one such HistoryItem to
@@ -153,8 +164,12 @@ class CORE_EXPORT HistoryItem final : public GarbageCollected<HistoryItem> {
   // info used to repost form data
   scoped_refptr<EncodedFormData> form_data_;
   AtomicString form_content_type_;
+
+  String app_history_key_;
+  String app_history_id_;
+  scoped_refptr<SerializedScriptValue> app_history_state_;
 };  // class HistoryItem
 
 }  // namespace blink
 
-#endif  // HISTORYITEM_H
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_HISTORY_ITEM_H_

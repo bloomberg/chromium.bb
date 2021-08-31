@@ -16,12 +16,20 @@ TESTS = \
 	tests/layout.gpos2.tests \
 	tests/layout.gpos3.tests \
 	tests/layout.gpos4.tests \
+	tests/layout.gpos5.tests \
 	tests/layout.gpos6.tests \
 	tests/layout.gpos8.tests \
+	tests/layout.gpos8.amiri.tests \
+	tests/layout.gpos9.tests \
 	tests/layout.gsub3.tests \
+	tests/layout.gsub5.tests \
 	tests/layout.gsub6.tests \
+	tests/layout.gsub8.tests \
+	tests/layout.khmer.tests \
+	tests/layout.notonastaliqurdu.tests \
 	tests/layout.tests \
 	tests/sbix.tests \
+	tests/variable.tests \
 	$(NULL)
 
 XFAIL_TESTS = \

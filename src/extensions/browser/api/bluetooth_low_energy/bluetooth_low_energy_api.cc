@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -1126,10 +1125,10 @@ void BluetoothLowEnergyRegisterAdvertisementFunction::DoWork() {
 
   event_router->adapter()->RegisterAdvertisement(
       std::move(advertisement_data),
-      base::Bind(
+      base::BindOnce(
           &BluetoothLowEnergyRegisterAdvertisementFunction::SuccessCallback,
           this),
-      base::Bind(
+      base::BindOnce(
           &BluetoothLowEnergyRegisterAdvertisementFunction::ErrorCallback,
           this));
 }
@@ -1188,10 +1187,10 @@ void BluetoothLowEnergyUnregisterAdvertisementFunction::DoWork() {
   }
 
   advertisement->advertisement()->Unregister(
-      base::Bind(
+      base::BindOnce(
           &BluetoothLowEnergyUnregisterAdvertisementFunction::SuccessCallback,
           this, params_->advertisement_id),
-      base::Bind(
+      base::BindOnce(
           &BluetoothLowEnergyUnregisterAdvertisementFunction::ErrorCallback,
           this, params_->advertisement_id));
 }
@@ -1253,10 +1252,10 @@ void BluetoothLowEnergyResetAdvertisingFunction::DoWork() {
   }
 
   event_router->adapter()->ResetAdvertising(
-      base::Bind(&BluetoothLowEnergyResetAdvertisingFunction::SuccessCallback,
-                 this),
-      base::Bind(&BluetoothLowEnergyResetAdvertisingFunction::ErrorCallback,
-                 this));
+      base::BindOnce(
+          &BluetoothLowEnergyResetAdvertisingFunction::SuccessCallback, this),
+      base::BindOnce(&BluetoothLowEnergyResetAdvertisingFunction::ErrorCallback,
+                     this));
 #endif
 }
 
@@ -1289,10 +1288,10 @@ void BluetoothLowEnergySetAdvertisingIntervalFunction::DoWork() {
   event_router->adapter()->SetAdvertisingInterval(
       base::TimeDelta::FromMilliseconds(params_->min_interval),
       base::TimeDelta::FromMilliseconds(params_->max_interval),
-      base::Bind(
+      base::BindOnce(
           &BluetoothLowEnergySetAdvertisingIntervalFunction::SuccessCallback,
           this),
-      base::Bind(
+      base::BindOnce(
           &BluetoothLowEnergySetAdvertisingIntervalFunction::ErrorCallback,
           this));
 #endif

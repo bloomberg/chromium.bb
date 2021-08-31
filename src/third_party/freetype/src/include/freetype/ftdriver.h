@@ -4,7 +4,7 @@
  *
  *   FreeType API for controlling driver modules (specification only).
  *
- * Copyright (C) 2017-2020 by
+ * Copyright (C) 2017-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -362,12 +362,8 @@ FT_BEGIN_HEADER
    *   The same holds for the Type~1 and CID modules if compiled with
    *   `T1_CONFIG_OPTION_OLD_ENGINE`.
    *
-   *   For the 'cff' module, the default engine is 'freetype' if
-   *   `CFF_CONFIG_OPTION_OLD_ENGINE` is defined, and 'adobe' otherwise.
-   *
-   *   For both the 'type1' and 't1cid' modules, the default engine is
-   *   'freetype' if `T1_CONFIG_OPTION_OLD_ENGINE` is defined, and 'adobe'
-   *   otherwise.
+   *   For the 'cff' module, the default engine is 'adobe'.  For both the
+   *   'type1' and 't1cid' modules, the default engine is 'adobe', too.
    *
    * @note:
    *   This property can be used with @FT_Property_Get also.

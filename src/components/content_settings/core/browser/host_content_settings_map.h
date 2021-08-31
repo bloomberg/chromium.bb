@@ -43,6 +43,7 @@ class ProviderInterface;
 class PrefProvider;
 class TestUtils;
 class RuleIterator;
+class WebsiteSettingsInfo;
 }
 
 namespace user_prefs {
@@ -62,7 +63,6 @@ class HostContentSettingsMap : public content_settings::Observer,
     CUSTOM_EXTENSION_PROVIDER,
     INSTALLED_WEBAPP_PROVIDER,
     NOTIFICATION_ANDROID_PROVIDER,
-    EPHEMERAL_PROVIDER,
     ONE_TIME_GEOLOCATION_PROVIDER,
     PREF_PROVIDER,
     DEFAULT_PROVIDER,
@@ -155,15 +155,8 @@ class HostContentSettingsMap : public content_settings::Observer,
   // This may be called on any thread.
   void GetSettingsForOneType(ContentSettingsType content_type,
                              ContentSettingsForOneType* settings,
-                             base::Optional<content_settings::SessionModel>
-                                 session_model = base::nullopt) const;
-
-  // Returns settings that are not applied.
-  // Example: Pattern for flash that are still set through enterprise policy but
-  // won't have any effect because they are deprecated.
-  void GetDiscardedSettingsForOneType(
-      ContentSettingsType content_type,
-      ContentSettingsForOneType* settings) const;
+                             absl::optional<content_settings::SessionModel>
+                                 session_model = absl::nullopt) const;
 
   // Sets the default setting for a particular content type. This method must
   // not be invoked on an incognito map.
@@ -370,7 +363,7 @@ class HostContentSettingsMap : public content_settings::Observer,
       ContentSettingsType content_type,
       ContentSettingsForOneType* settings,
       bool incognito,
-      base::Optional<content_settings::SessionModel> session_model) const;
+      absl::optional<content_settings::SessionModel> session_model) const;
 
   // Call UsedContentSettingsProviders() whenever you access
   // content_settings_providers_ (apart from initialization and
@@ -419,6 +412,8 @@ class HostContentSettingsMap : public content_settings::Observer,
   // It also ensures that we move away from (http://x.com, http://x.com)
   // patterns by replacing these patterns with (http://x.com, *).
   void MigrateSettingsPrecedingPermissionDelegationActivation();
+  void MigrateSingleSettingPrecedingPermissionDelegationActivation(
+      const content_settings::WebsiteSettingsInfo* info);
 
   // Verifies that this secondary pattern is allowed.
   bool IsSecondaryPatternAllowed(

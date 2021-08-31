@@ -12,13 +12,14 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
+#include "chrome/browser/ash/login/existing_user_controller.h"
+#include "chrome/browser/ash/login/signin_specifics.h"
+#include "chrome/browser/ash/login/ui/mock_login_display_host.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login/login_api_lock_handler.h"
-#include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/signin_specifics.h"
-#include "chrome/browser/chromeos/login/ui/mock_login_display_host.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -37,6 +38,7 @@
 #include "extensions/common/extension_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 
 using testing::_;
 using testing::Invoke;
@@ -139,10 +141,9 @@ class LoginApiUnittest : public ExtensionApiUnittest {
   void SetUp() override {
     ExtensionApiUnittest::SetUp();
 
-    fake_chrome_user_manager_ = new chromeos::FakeChromeUserManager();
+    fake_chrome_user_manager_ = new ash::FakeChromeUserManager();
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
-        std::unique_ptr<chromeos::FakeChromeUserManager>(
-            fake_chrome_user_manager_));
+        std::unique_ptr<ash::FakeChromeUserManager>(fake_chrome_user_manager_));
     mock_login_display_host_ =
         std::make_unique<chromeos::MockLoginDisplayHost>();
     mock_existing_user_controller_ =
@@ -187,7 +188,7 @@ class LoginApiUnittest : public ExtensionApiUnittest {
     return std::make_unique<ScopedTestingProfile>(profile, profile_manager());
   }
 
-  chromeos::FakeChromeUserManager* fake_chrome_user_manager_;
+  ash::FakeChromeUserManager* fake_chrome_user_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   std::unique_ptr<chromeos::MockLoginDisplayHost> mock_login_display_host_;
   std::unique_ptr<MockExistingUserController> mock_existing_user_controller_;
@@ -209,6 +210,9 @@ MATCHER_P(MatchUserContextSecret, expected, "") {
 // Test that calling |login.launchManagedGuestSession()| calls the corresponding
 // method from the |ExistingUserController|.
 TEST_F(LoginApiUnittest, LaunchManagedGuestSession) {
+  base::TimeTicks now_ = base::TimeTicks::Now();
+  ui::UserActivityDetector::Get()->set_now_for_test(now_);
+
   std::unique_ptr<ScopedTestingProfile> profile = AddPublicAccountUser(kEmail);
   EXPECT_CALL(*mock_existing_user_controller_,
               Login(GetPublicUserContext(kEmail),
@@ -216,6 +220,10 @@ TEST_F(LoginApiUnittest, LaunchManagedGuestSession) {
       .Times(1);
 
   RunFunction(new LoginLaunchManagedGuestSessionFunction(), "[]");
+
+  // Test that calling |login.launchManagedGuestSession()| triggered a user
+  // activity in the |UserActivityDetector|.
+  EXPECT_EQ(now_, ui::UserActivityDetector::Get()->last_activity_time());
 }
 
 // Test that calling |login.launchManagedGuestSession()| with a password sets
@@ -309,6 +317,9 @@ TEST_F(LoginApiUnittest, FetchDataForNextLoginAttemptClearsPref) {
 }
 
 TEST_F(LoginApiUnittest, LockManagedGuestSession) {
+  base::TimeTicks now_ = base::TimeTicks::Now();
+  ui::UserActivityDetector::Get()->set_now_for_test(now_);
+
   std::unique_ptr<ScopedTestingProfile> profile = AddPublicAccountUser(kEmail);
   fake_chrome_user_manager_->SwitchActiveUser(AccountId::FromUserEmail(kEmail));
   fake_chrome_user_manager_->set_current_user_can_lock(true);
@@ -320,6 +331,10 @@ TEST_F(LoginApiUnittest, LockManagedGuestSession) {
       .WillOnce(Return());
 
   RunFunction(new LoginLockManagedGuestSessionFunction(), "[]");
+
+  // Test that calling |login.lockManagedGuestSession()| triggered a user
+  // activity in the |UserActivityDetector|.
+  EXPECT_EQ(now_, ui::UserActivityDetector::Get()->last_activity_time());
 }
 
 TEST_F(LoginApiUnittest, LockManagedGuestSessionNoActiveUser) {
@@ -361,6 +376,9 @@ TEST_F(LoginApiUnittest, LockManagedGuestSessionSessionNotActive) {
 }
 
 TEST_F(LoginApiUnittest, UnlockManagedGuestSession) {
+  base::TimeTicks now_ = base::TimeTicks::Now();
+  ui::UserActivityDetector::Get()->set_now_for_test(now_);
+
   SetExtensionWithId(kExtensionId);
   std::unique_ptr<ScopedTestingProfile> scoped_profile =
       AddPublicAccountUser(kEmail);
@@ -381,6 +399,10 @@ TEST_F(LoginApiUnittest, UnlockManagedGuestSession) {
       });
 
   RunFunction(new LoginUnlockManagedGuestSessionFunction(), "[\"password\"]");
+
+  // Test that calling |login.unlockManagedGuestSession()| triggered a user
+  // activity in the |UserActivityDetector|.
+  EXPECT_EQ(now_, ui::UserActivityDetector::Get()->last_activity_time());
 }
 
 TEST_F(LoginApiUnittest, UnlockManagedGuestSessionNoActiveUser) {

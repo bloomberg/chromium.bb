@@ -9,12 +9,12 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "components/favicon/core/favicon_types.h"
 #include "sql/database.h"
 #include "sql/init_status.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class FilePath;
@@ -126,6 +126,11 @@ class FaviconDatabase {
   // of the bitmaps for |icon_id| to be out of date.
   bool SetFaviconOutOfDate(favicon_base::FaviconID icon_id);
 
+  // Mark all favicons as out of date that have been modified at or after
+  // |begin| and before |end|. This will set |last_updated| for all matching
+  // bitmaps to be out of date.
+  bool SetFaviconsOutOfDateBetween(base::Time begin, base::Time end);
+
   // Retrieves the newest |last_updated| time across all bitmaps for |icon_id|.
   // Returns true if successful and if there is at least one bitmap.
   bool GetFaviconLastUpdatedTime(favicon_base::FaviconID icon_id,
@@ -198,7 +203,7 @@ class FaviconDatabase {
   // |url| = http://www.google.com would match
   // |page_url| = https://www.google.com/search. The returned optional will be
   // empty if no such |page_url| exists.
-  base::Optional<GURL> FindFirstPageURLForHost(
+  absl::optional<GURL> FindFirstPageURLForHost(
       const GURL& url,
       const favicon_base::IconTypeSet& required_icon_types);
 

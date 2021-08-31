@@ -64,7 +64,7 @@ class DevToolsVideoConsumerTest : public ContentBrowserTest {
   }
 
   void WaitUntilFrameReceived() {
-    run_loop_.reset(new base::RunLoop);
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
   }
 
@@ -87,7 +87,7 @@ class DevToolsVideoConsumerTest : public ContentBrowserTest {
 // Tests that setting new frame dimensions via SetMinAndMaxFrameSizes
 // produces frames of the new dimensions.
 IN_PROC_BROWSER_TEST_F(DevToolsVideoConsumerTest,
-                       SetMinAndMaxFramesChangesDimensions) {
+                       DISABLED_SetMinAndMaxFramesChangesDimensions) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Complete navigation to a page and then start capture. Since navigation is

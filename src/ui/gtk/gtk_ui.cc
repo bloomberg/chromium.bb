@@ -4,8 +4,7 @@
 
 #include "ui/gtk/gtk_ui.h"
 
-#include <gdk/gdk.h>
-#include <gdk/gdkkeysyms.h>
+#include <cairo.h>
 #include <pango/pango.h>
 
 #include <cmath>
@@ -22,17 +21,18 @@
 #include "base/nix/xdg_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/themes/theme_properties.h"  // nogncheck
-#include "printing/buildflags/buildflags.h"
+#include "printing/buildflags/buildflags.h"          // nogncheck
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/cursor/cursor_theme_manager_observer.h"
+#include "ui/base/glib/glib_cast.h"
 #include "ui/base/ime/linux/fake_input_method_context.h"
 #include "ui/base/ime/linux/linux_input_method_context.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
+#include "ui/base/linux/linux_ui_delegate.h"
 #include "ui/display/display.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_keyboard_layout_manager.h"
@@ -45,8 +45,9 @@
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gtk/gtk_compat.h"
 #include "ui/gtk/gtk_key_bindings_handler.h"
-#include "ui/gtk/gtk_ui_delegate.h"
+#include "ui/gtk/gtk_ui_platform.h"
 #include "ui/gtk/gtk_util.h"
 #include "ui/gtk/input_method_context_impl_gtk.h"
 #include "ui/gtk/native_theme_gtk.h"
@@ -71,11 +72,26 @@
 #if defined(USE_OZONE)
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/ozone/buildflags.h"
 #include "ui/ozone/public/ozone_platform.h"
+#if BUILDFLAG(OZONE_PLATFORM_WAYLAND)
+#define USE_WAYLAND
+#endif
+#if BUILDFLAG(OZONE_PLATFORM_X11) && !defined(USE_X11)
+#define USE_X11
+#endif
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "printing/printing_context_linux.h"
+#endif
+
+#if defined(USE_WAYLAND)
+#include "ui/gtk/wayland/gtk_ui_platform_wayland.h"
+#endif
+
+#if defined(USE_X11)
+#include "ui/gtk/x/gtk_ui_platform_x11.h"
 #endif
 
 namespace gtk {
@@ -128,7 +144,7 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
         width, height, width * 4);
     cairo_t* cr = cairo_create(surface);
 
-    ScopedStyleContext context = GetStyleContextFromCss("GtkButton#button");
+    GtkCssContext context = GetStyleContextFromCss("GtkButton#button");
     GtkStateFlags state_flags = StateToStateFlags(state_);
     if (focus_) {
       state_flags =
@@ -140,35 +156,25 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
     if (focus_) {
       gfx::Rect focus_rect(width, height);
 
-#if !GTK_CHECK_VERSION(3, 90, 0)
       if (!GtkCheckVersion(3, 14)) {
         gint focus_pad;
-        gtk_style_context_get_style(context, "focus-padding", &focus_pad,
-                                    nullptr);
+        GtkStyleContextGetStyle(context, "focus-padding", &focus_pad, nullptr);
         focus_rect.Inset(focus_pad, focus_pad);
 
         if (state_ == ui::NativeTheme::kPressed) {
           gint child_displacement_x, child_displacement_y;
           gboolean displace_focus;
-          gtk_style_context_get_style(
-              context, "child-displacement-x", &child_displacement_x,
-              "child-displacement-y", &child_displacement_y, "displace-focus",
-              &displace_focus, nullptr);
+          GtkStyleContextGetStyle(context, "child-displacement-x",
+                                  &child_displacement_x, "child-displacement-y",
+                                  &child_displacement_y, "displace-focus",
+                                  &displace_focus, nullptr);
           if (displace_focus)
             focus_rect.Offset(child_displacement_x, child_displacement_y);
         }
       }
-#endif
 
-      if (!GtkCheckVersion(3, 20)) {
-        GtkBorder border;
-#if GTK_CHECK_VERSION(3, 90, 0)
-        gtk_style_context_get_border(context, &border);
-#else
-        gtk_style_context_get_border(context, state_flags, &border);
-#endif
-        focus_rect.Inset(border.left, border.top, border.right, border.bottom);
-      }
+      if (!GtkCheckVersion(3, 20))
+        focus_rect.Inset(GtkStyleContextGetBorder(context));
 
       gtk_render_focus(context, cr, focus_rect.x(), focus_rect.y(),
                        focus_rect.width(), focus_rect.height());
@@ -208,24 +214,6 @@ class GtkButtonPainter : public views::Painter {
 
   DISALLOW_COPY_AND_ASSIGN(GtkButtonPainter);
 };
-
-struct GObjectDeleter {
-  void operator()(void* ptr) { g_object_unref(ptr); }
-};
-struct GtkIconInfoDeleter {
-  void operator()(GtkIconInfo* ptr) {
-#if GTK_CHECK_VERSION(3, 90, 0)
-    g_object_unref(ptr);
-#else
-    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    gtk_icon_info_free(ptr);
-    G_GNUC_END_IGNORE_DEPRECATIONS
-#endif
-  }
-};
-typedef std::unique_ptr<GIcon, GObjectDeleter> ScopedGIcon;
-typedef std::unique_ptr<GtkIconInfo, GtkIconInfoDeleter> ScopedGtkIconInfo;
-typedef std::unique_ptr<GdkPixbuf, GObjectDeleter> ScopedGdkPixbuf;
 
 // Number of app indicators used (used as part of app-indicator id).
 int indicators_count;
@@ -309,75 +297,38 @@ views::LinuxUI::WindowFrameAction GetDefaultMiddleClickAction() {
   }
 }
 
-const SkBitmap GdkPixbufToSkBitmap(GdkPixbuf* pixbuf) {
-  // TODO(erg): What do we do in the case where the pixbuf fails these dchecks?
-  // I would prefer to use our gtk based canvas, but that would require
-  // recompiling half of our skia extensions with gtk support, which we can't
-  // do in this build.
-  DCHECK_EQ(GDK_COLORSPACE_RGB, gdk_pixbuf_get_colorspace(pixbuf));
-
-  int n_channels = gdk_pixbuf_get_n_channels(pixbuf);
-  int w = gdk_pixbuf_get_width(pixbuf);
-  int h = gdk_pixbuf_get_height(pixbuf);
-
-  SkBitmap ret;
-  ret.allocN32Pixels(w, h);
-  ret.eraseColor(0);
-
-  uint32_t* skia_data = static_cast<uint32_t*>(ret.getAddr(0, 0));
-
-  if (n_channels == 4) {
-    int total_length = w * h;
-    guchar* gdk_pixels = gdk_pixbuf_get_pixels(pixbuf);
-
-    // Now here's the trick: we need to convert the gdk data (which is RGBA and
-    // isn't premultiplied) to skia (which can be anything and premultiplied).
-    for (int i = 0; i < total_length; ++i, gdk_pixels += 4) {
-      const unsigned char& red = gdk_pixels[0];
-      const unsigned char& green = gdk_pixels[1];
-      const unsigned char& blue = gdk_pixels[2];
-      const unsigned char& alpha = gdk_pixels[3];
-
-      skia_data[i] = SkPreMultiplyARGB(alpha, red, green, blue);
-    }
-  } else if (n_channels == 3) {
-    // Because GDK makes rowstrides word aligned, we need to do something a bit
-    // more complex when a pixel isn't perfectly a word of memory.
-    int rowstride = gdk_pixbuf_get_rowstride(pixbuf);
-    guchar* gdk_pixels = gdk_pixbuf_get_pixels(pixbuf);
-    for (int y = 0; y < h; ++y) {
-      int row = y * rowstride;
-
-      for (int x = 0; x < w; ++x) {
-        guchar* pixel = gdk_pixels + row + (x * 3);
-        const unsigned char& red = pixel[0];
-        const unsigned char& green = pixel[1];
-        const unsigned char& blue = pixel[2];
-
-        skia_data[y * w + x] = SkPreMultiplyARGB(255, red, green, blue);
-      }
-    }
-  } else {
-    NOTREACHED();
+std::unique_ptr<GtkUiPlatform> CreateGtkUiPlatform(ui::LinuxUiBackend backend) {
+  switch (backend) {
+#if defined(USE_X11)
+    case ui::LinuxUiBackend::kX11:
+      return std::make_unique<GtkUiPlatformX11>();
+#endif
+#if defined(USE_WAYLAND)
+    case ui::LinuxUiBackend::kWayland:
+      return std::make_unique<GtkUiPlatformWayland>();
+#endif
+    default:
+      NOTREACHED();
+      return nullptr;
   }
-
-  return ret;
 }
 
 }  // namespace
 
-GtkUi::GtkUi(ui::GtkUiDelegate* delegate) : delegate_(delegate) {
+GtkUi::GtkUi() {
   using Action = views::LinuxUI::WindowFrameAction;
   using ActionSource = views::LinuxUI::WindowFrameActionSource;
 
-  DCHECK(delegate_);
   DCHECK(!g_gtk_ui);
   g_gtk_ui = this;
 
-  window_frame_actions_ = {
-      {ActionSource::kDoubleClick, Action::kToggleMaximize},
-      {ActionSource::kMiddleClick, GetDefaultMiddleClickAction()},
-      {ActionSource::kRightClick, Action::kMenu}};
+  CHECK(LoadGtk());
+
+  auto* delegate = ui::LinuxUiDelegate::GetInstance();
+  // TODO(thomasanderson): This should be replaced with DCHECK(delegate) once
+  // fully migrated to ozone.
+  auto backend = delegate ? delegate->GetBackend() : ui::LinuxUiBackend::kX11;
+  platform_ = CreateGtkUiPlatform(backend);
 
   // Avoid GTK initializing atk-bridge, and let AuraLinux implementation
   // do it once it is ready.
@@ -385,18 +336,22 @@ GtkUi::GtkUi(ui::GtkUiDelegate* delegate) : delegate_(delegate) {
   env->SetVar("NO_AT_BRIDGE", "1");
   GtkInitFromCommandLine(*base::CommandLine::ForCurrentProcess());
   native_theme_ = NativeThemeGtk::instance();
-  fake_window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_widget_realize(fake_window_);
+
+  window_frame_actions_ = {
+      {ActionSource::kDoubleClick, Action::kToggleMaximize},
+      {ActionSource::kMiddleClick, GetDefaultMiddleClickAction()},
+      {ActionSource::kRightClick, Action::kMenu}};
 }
 
 GtkUi::~GtkUi() {
-  gtk_widget_destroy(fake_window_);
+  DCHECK_EQ(g_gtk_ui, this);
   g_gtk_ui = nullptr;
 }
 
-ui::GtkUiDelegate* GtkUi::GetDelegate() {
+// static
+GtkUiPlatform* GtkUi::GetPlatform() {
   DCHECK(g_gtk_ui) << "GtkUi instance is not set.";
-  return g_gtk_ui->delegate_;
+  return g_gtk_ui->platform_.get();
 }
 
 void GtkUi::Initialize() {
@@ -425,15 +380,19 @@ void GtkUi::Initialize() {
   g_signal_connect_after(settings, "notify::gtk-cursor-theme-size",
                          G_CALLBACK(OnCursorThemeSizeChangedThunk), this);
 
-  GdkScreen* screen = gdk_screen_get_default();
   // Listen for DPI changes.
-  g_signal_connect_after(screen, "notify::resolution",
-                         G_CALLBACK(OnDeviceScaleFactorMaybeChangedThunk),
-                         this);
+  auto* dpi_callback = G_CALLBACK(OnDeviceScaleFactorMaybeChangedThunk);
+  if (GtkCheckVersion(4)) {
+    g_signal_connect_after(settings, "notify::gtk-xft-dpi", dpi_callback, this);
+  } else {
+    GdkScreen* screen = gdk_screen_get_default();
+    g_signal_connect_after(screen, "notify::resolution", dpi_callback, this);
+  }
+
   // Listen for scale factor changes.  We would prefer to listen on
-  // |screen|, but there is no scale-factor property, so use an
+  // a GdkScreen, but there is no scale-factor property, so use an
   // unmapped window instead.
-  g_signal_connect(fake_window_, "notify::scale-factor",
+  g_signal_connect(GetDummyWindow(), "notify::scale-factor",
                    G_CALLBACK(OnDeviceScaleFactorMaybeChangedThunk), this);
 
   LoadGtkValues();
@@ -450,7 +409,7 @@ void GtkUi::Initialize() {
 
   indicators_count = 0;
 
-  GetDelegate()->OnInitialized();
+  platform_->OnInitialized(GetDummyWindow());
 }
 
 bool GtkUi::GetTint(int id, color_utils::HSL* tint) const {
@@ -567,24 +526,61 @@ bool GtkUi::GetDefaultUsesSystemTheme() const {
 gfx::Image GtkUi::GetIconForContentType(const std::string& content_type,
                                         int size) const {
   // This call doesn't take a reference.
-  GtkIconTheme* theme = gtk_icon_theme_get_default();
+  GtkIconTheme* theme = GetDefaultIconTheme();
 
   std::string content_types[] = {content_type, kUnknownContentType};
 
   for (size_t i = 0; i < base::size(content_types); ++i) {
-    ScopedGIcon icon(g_content_type_get_icon(content_types[i].c_str()));
-    ScopedGtkIconInfo icon_info(gtk_icon_theme_lookup_by_gicon(
-        theme, icon.get(), size,
-        static_cast<GtkIconLookupFlags>(GTK_ICON_LOOKUP_FORCE_SIZE)));
-    if (!icon_info)
-      continue;
-    ScopedGdkPixbuf pixbuf(gtk_icon_info_load_icon(icon_info.get(), nullptr));
-    if (!pixbuf)
-      continue;
+    auto icon = TakeGObject(g_content_type_get_icon(content_type.c_str()));
+    SkBitmap bitmap;
+    if (GtkCheckVersion(4)) {
+      auto icon_paintable = Gtk4IconThemeLookupByGicon(
+          theme, icon.get(), size, 1, GTK_TEXT_DIR_NONE,
+          static_cast<GtkIconLookupFlags>(0));
+      if (!icon_paintable)
+        continue;
 
-    SkBitmap bitmap = GdkPixbufToSkBitmap(pixbuf.get());
-    DCHECK_EQ(size, bitmap.width());
-    DCHECK_EQ(size, bitmap.height());
+      auto* paintable = GlibCast<GdkPaintable>(icon_paintable.get(),
+                                               gdk_paintable_get_type());
+      auto* snapshot = gtk_snapshot_new();
+      gdk_paintable_snapshot(paintable, snapshot, size, size);
+      auto* node = gtk_snapshot_free_to_node(snapshot);
+      GdkTexture* texture = GetTextureFromRenderNode(node);
+
+      bitmap.allocN32Pixels(gdk_texture_get_width(texture),
+                            gdk_texture_get_height(texture));
+      gdk_texture_download(texture, static_cast<guchar*>(bitmap.getAddr(0, 0)),
+                           bitmap.rowBytes());
+
+      gsk_render_node_unref(node);
+    } else {
+      auto icon_info = Gtk3IconThemeLookupByGicon(
+          theme, icon.get(), size,
+          static_cast<GtkIconLookupFlags>(GTK_ICON_LOOKUP_FORCE_SIZE));
+      if (!icon_info)
+        continue;
+      auto* surface =
+          gtk_icon_info_load_surface(icon_info.get(), nullptr, nullptr);
+      if (!surface)
+        continue;
+      DCHECK_EQ(cairo_surface_get_type(surface), CAIRO_SURFACE_TYPE_IMAGE);
+      DCHECK_EQ(cairo_image_surface_get_format(surface), CAIRO_FORMAT_ARGB32);
+
+      SkImageInfo image_info =
+          SkImageInfo::Make(cairo_image_surface_get_width(surface),
+                            cairo_image_surface_get_height(surface),
+                            kBGRA_8888_SkColorType, kUnpremul_SkAlphaType);
+      if (!bitmap.installPixels(
+              image_info, cairo_image_surface_get_data(surface),
+              image_info.minRowBytes(),
+              [](void*, void* surface) {
+                cairo_surface_destroy(
+                    reinterpret_cast<cairo_surface_t*>(surface));
+              },
+              surface)) {
+        continue;
+      }
+    }
     gfx::ImageSkia image_skia = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
     image_skia.MakeThreadSafe();
     return gfx::Image(image_skia);
@@ -607,7 +603,7 @@ std::unique_ptr<views::Border> GtkUi::CreateNativeBorder(
   static struct {
     bool focus;
     views::Button::ButtonState state;
-  } const paintstate[] = {
+  } const paintstates[] = {
       {!kFocus, views::Button::STATE_NORMAL},
       {!kFocus, views::Button::STATE_HOVERED},
       {!kFocus, views::Button::STATE_PRESSED},
@@ -618,12 +614,12 @@ std::unique_ptr<views::Border> GtkUi::CreateNativeBorder(
       {kFocus, views::Button::STATE_DISABLED},
   };
 
-  for (unsigned i = 0; i < base::size(paintstate); i++) {
+  for (const auto& paintstate : paintstates) {
     gtk_border->SetPainter(
-        paintstate[i].focus, paintstate[i].state,
-        border->PaintsButtonState(paintstate[i].focus, paintstate[i].state)
-            ? std::make_unique<GtkButtonPainter>(paintstate[i].focus,
-                                                 paintstate[i].state)
+        paintstate.focus, paintstate.state,
+        border->PaintsButtonState(paintstate.focus, paintstate.state)
+            ? std::make_unique<GtkButtonPainter>(paintstate.focus,
+                                                 paintstate.state)
             : nullptr);
   }
 
@@ -698,7 +694,7 @@ views::LinuxUI::WindowFrameAction GtkUi::GetWindowFrameAction(
 void GtkUi::NotifyWindowManagerStartupComplete() {
   // TODO(port) Implement this using _NET_STARTUP_INFO_BEGIN/_NET_STARTUP_INFO
   // from http://standards.freedesktop.org/startup-notification-spec/ instead.
-  gdk_notify_startup_complete();
+  gdk_display_notify_startup_complete(gdk_display_get_default(), nullptr);
 }
 
 void GtkUi::AddDeviceScaleFactorObserver(
@@ -743,11 +739,14 @@ static struct {
 
 base::flat_map<std::string, std::string> GtkUi::GetKeyboardLayoutMap() {
   GdkDisplay* display = gdk_display_get_default();
-  GdkKeymap* keymap = gdk_keymap_get_for_display(display);
-  if (!keymap)
-    return {};
+  GdkKeymap* keymap = nullptr;
+  if (!GtkCheckVersion(4)) {
+    keymap = gdk_keymap_get_for_display(display);
+    if (!keymap)
+      return {};
+  }
 
-  ui::DomKeyboardLayoutManager* layouts = new ui::DomKeyboardLayoutManager();
+  auto layouts = std::make_unique<ui::DomKeyboardLayoutManager>();
   auto map = base::flat_map<std::string, std::string>();
 
   for (unsigned int i_domcode = 0;
@@ -761,18 +760,21 @@ base::flat_map<std::string, std::string> GtkUi::GetKeyboardLayoutMap() {
     // The order of the layouts is based on the system default ordering in
     // Keyboard Settings. The currently active layout does not affect this
     // order.
-    if (gdk_keymap_get_entries_for_keycode(keymap, keycode, &keys, &keyvals,
-                                           &n_entries)) {
+    const bool success =
+        GtkCheckVersion(4) ? gdk_display_map_keycode(display, keycode, &keys,
+                                                     &keyvals, &n_entries)
+                           : gdk_keymap_get_entries_for_keycode(
+                                 keymap, keycode, &keys, &keyvals, &n_entries);
+    if (success) {
       for (gint i = 0; i < n_entries; ++i) {
         // There are 4 entries per layout group, one each for shift level 0..3.
         // We only care about the unshifted values (level = 0).
         if (keys[i].level == 0) {
           uint16_t unicode = gdk_keyval_to_unicode(keyvals[i]);
           if (unicode == 0) {
-            for (unsigned int i_dead = 0; i_dead < base::size(kDeadKeyMapping);
-                 ++i_dead) {
-              if (keyvals[i] == kDeadKeyMapping[i_dead].gdk_key)
-                unicode = kDeadKeyMapping[i_dead].unicode;
+            for (const auto& i_dead : kDeadKeyMapping) {
+              if (keyvals[i] == i_dead.gdk_key)
+                unicode = i_dead.unicode;
             }
           }
           if (unicode != 0)
@@ -781,9 +783,7 @@ base::flat_map<std::string, std::string> GtkUi::GetKeyboardLayoutMap() {
       }
     }
     g_free(keys);
-    keys = nullptr;
     g_free(keyvals);
-    keyvals = nullptr;
   }
   return layouts->GetFirstAsciiCapableLayout()->GetMap();
 }
@@ -809,11 +809,15 @@ int GtkUi::GetCursorThemeSize() {
 
 bool GtkUi::MatchEvent(const ui::Event& event,
                        std::vector<ui::TextEditCommandAuraLinux>* commands) {
+  // GTK4 dropped custom key bindings.
+  if (GtkCheckVersion(4))
+    return false;
+
   // TODO(crbug.com/963419): Use delegate's |GetGdkKeymap| here to
   // determine if GtkUi's key binding handling implementation is used or not.
   // Ozone/Wayland was unintentionally using GtkUi for keybinding handling, so
   // early out here, for now, until a proper solution for ozone is implemented.
-  if (!GetDelegate()->GetGdkKeymap())
+  if (!platform_->GetGdkKeymap())
     return false;
 
   // Ensure that we have a keyboard handler.
@@ -829,7 +833,7 @@ void GtkUi::OnThemeChanged(GtkSettings* settings, GtkParamSpec* param) {
   native_frame_colors_.clear();
   native_theme_->OnThemeChanged(settings, param);
   LoadGtkValues();
-  native_theme_->NotifyObservers();
+  native_theme_->NotifyOnNativeThemeUpdated();
 }
 
 void GtkUi::OnCursorThemeNameChanged(GtkSettings* settings,
@@ -891,7 +895,7 @@ void GtkUi::UpdateColors() {
   colors_[ThemeProperties::COLOR_NTP_HEADER] =
       GetBorderColor("GtkButton#button");
 
-  SkColor tab_text_color = GetFgColor("GtkLabel");
+  SkColor tab_text_color = GetFgColor("GtkLabel#label");
   colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON] = tab_text_color;
   colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_HOVERED] = tab_text_color;
   colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_PRESSED] = tab_text_color;
@@ -932,19 +936,14 @@ void GtkUi::UpdateColors() {
     const std::string header_selector_inactive = header_selector + ":backdrop";
     const SkColor frame_color =
         SkColorSetA(GetBgColor(header_selector), SK_AlphaOPAQUE);
-    const SkColor frame_color_incognito =
-        color_utils::HSLShift(frame_color, kDefaultTintFrameIncognito);
     const SkColor frame_color_inactive =
         SkColorSetA(GetBgColor(header_selector_inactive), SK_AlphaOPAQUE);
-    const SkColor frame_color_incognito_inactive =
-        color_utils::HSLShift(frame_color_inactive, kDefaultTintFrameIncognito);
 
     color_map[ThemeProperties::COLOR_FRAME_ACTIVE] = frame_color;
     color_map[ThemeProperties::COLOR_FRAME_INACTIVE] = frame_color_inactive;
-    color_map[ThemeProperties::COLOR_FRAME_ACTIVE_INCOGNITO] =
-        frame_color_incognito;
+    color_map[ThemeProperties::COLOR_FRAME_ACTIVE_INCOGNITO] = frame_color;
     color_map[ThemeProperties::COLOR_FRAME_INACTIVE_INCOGNITO] =
-        frame_color_incognito_inactive;
+        frame_color_inactive;
 
     // Compose the window color on the frame color to ensure the resulting tab
     // color is opaque.
@@ -961,28 +960,20 @@ void GtkUi::UpdateColors() {
         tab_color;
 
     const SkColor background_tab_text_color =
-        GetFgColor(header_selector + " GtkLabel.title");
+        GetFgColor(header_selector + " GtkLabel#label.title");
     const SkColor background_tab_text_color_inactive =
-        GetFgColor(header_selector_inactive + " GtkLabel.title");
+        GetFgColor(header_selector_inactive + " GtkLabel#label.title");
 
     color_map[ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE] =
         background_tab_text_color;
     color_map[ThemeProperties::
                   COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO] =
-        color_utils::BlendForMinContrast(
-            color_utils::HSLShift(background_tab_text_color,
-                                  kDefaultTintFrameIncognito),
-            frame_color_incognito)
-            .color;
+        background_tab_text_color;
     color_map[ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE] =
         background_tab_text_color_inactive;
     color_map[ThemeProperties::
                   COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE_INCOGNITO] =
-        color_utils::BlendForMinContrast(
-            color_utils::HSLShift(background_tab_text_color_inactive,
-                                  kDefaultTintFrameIncognito),
-            frame_color_incognito_inactive)
-            .color;
+        background_tab_text_color_inactive;
 
     color_map[ThemeProperties::COLOR_OMNIBOX_TEXT] =
         native_theme_->GetSystemColor(
@@ -1034,8 +1025,7 @@ void GtkUi::UpdateColors() {
 void GtkUi::UpdateDefaultFont() {
   gfx::SetFontRenderParamsDeviceScaleFactor(device_scale_factor_);
 
-  GtkWidget* fake_label = gtk_label_new(nullptr);
-  g_object_ref_sink(fake_label);  // Remove the floating reference.
+  auto fake_label = TakeGObject(gtk_label_new(nullptr));
   PangoContext* pc = gtk_widget_get_pango_context(fake_label);
   const PangoFontDescription* desc = pango_context_get_font_description(pc);
 
@@ -1072,27 +1062,31 @@ void GtkUi::UpdateDefaultFont() {
   default_font_render_params_ =
       gfx::GetFontRenderParams(query, &default_font_family_);
   default_font_style_ = query.style;
-
-  gtk_widget_destroy(fake_label);
-  g_object_unref(fake_label);
 }
 
 float GtkUi::GetRawDeviceScaleFactor() {
   if (display::Display::HasForceDeviceScaleFactor())
     return display::Display::GetForcedDeviceScaleFactor();
 
-  GdkScreen* screen = gdk_screen_get_default();
-  float scale = gtk_widget_get_scale_factor(fake_window_);
+  float scale = gtk_widget_get_scale_factor(GetDummyWindow());
   DCHECK_GT(scale, 0.0);
 
-  gdouble resolution = gdk_screen_get_resolution(screen);
-  // TODO(https://crbug.com/1033552): Remove this hack once the Trusty bots are
-  // fixed to have a resolution of 96, or when the Trusty bots are removed
-  // altogether.
-  if (std::abs(resolution - 95.8486) < 0.001)
-    resolution = 96;
+  double resolution = 0;
+  if (GtkCheckVersion(4)) {
+    auto* settings = gtk_settings_get_default();
+    int dpi = 0;
+    g_object_get(settings, "gtk-xft-dpi", &dpi, nullptr);
+    resolution = dpi / 1024.0;
+  } else {
+    GdkScreen* screen = gdk_screen_get_default();
+    resolution = gdk_screen_get_resolution(screen);
+  }
   if (resolution > 0)
     scale *= resolution / kDefaultDPI;
+
+  // Round to the nearest 64th so that UI can losslessly multiply and divide
+  // the scale factor.
+  scale = roundf(scale * 64) / 64;
 
   return scale;
 }
@@ -1114,7 +1108,3 @@ float GtkUi::GetDeviceScaleFactor() const {
 }
 
 }  // namespace gtk
-
-views::LinuxUI* BuildGtkUi(ui::GtkUiDelegate* delegate) {
-  return new gtk::GtkUi(delegate);
-}

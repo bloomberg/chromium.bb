@@ -1,7 +1,13 @@
 rootWebArea
 ++genericContainer ignored
 ++++genericContainer
-++++++video ignored name='Unable to play media.' restriction=disabled
+++++++video name='Unable to play media.' restriction=disabled
+++++++++genericContainer ignored
+++++++++++genericContainer ignored
+++++++++++genericContainer ignored
 ++++++staticText name=' '
 ++++++++inlineTextBox name=' '
-++++++video ignored name='Unable to play media.' restriction=disabled
+++++++video name='Unable to play media.' restriction=disabled
+++++++++genericContainer ignored
+++++++++++genericContainer ignored
+++++++++++genericContainer ignored

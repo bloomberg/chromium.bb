@@ -9,6 +9,7 @@
 #include "ash/system/model/update_model.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 
@@ -33,13 +34,11 @@ class ASH_EXPORT UpdateNotificationController : public UpdateObserver {
   friend class UpdateNotificationControllerTest;
 
   bool ShouldShowUpdate() const;
-  base::string16 GetNotificationTitle() const;
-  base::string16 GetNotificationMessage() const;
-  void HandleNotificationClick(base::Optional<int> index);
+  std::u16string GetNotificationTitle() const;
+  std::u16string GetNotificationMessage() const;
+  void HandleNotificationClick(absl::optional<int> index);
   void GenerateUpdateNotification(
-      base::Optional<bool> slow_boot_file_path_exists);
-
-  static const char kNotificationId[];
+      absl::optional<bool> slow_boot_file_path_exists);
 
   UpdateModel* const model_;
 

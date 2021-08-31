@@ -78,9 +78,9 @@ TEST_F(PolicyTest, AllPoliciesHaveATestCase) {
 }
 
 TEST_F(PolicyTest, PolicyToPrefMappings) {
-  const std::string no_skipped_prefix;
   policy::VerifyPolicyToPrefMappings(
       policy_test_cases_path_, enterprise_policy_helper_->GetLocalState(),
       enterprise_policy_helper_->GetBrowserState()->GetPrefs(),
-      enterprise_policy_helper_->GetPolicyProvider(), no_skipped_prefix);
+      /* signin_profile_prefs= */ nullptr,
+      enterprise_policy_helper_->GetPolicyProvider());
 }

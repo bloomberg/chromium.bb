@@ -30,6 +30,7 @@ function doesBaseNeedParens(base) {
         astUtils.getPrecedence(base) <= PRECEDENCE_OF_EXPONENTIATION_EXPR ||
 
         // An unary operator cannot be used immediately before an exponentiation expression
+        base.type === "AwaitExpression" ||
         base.type === "UnaryExpression"
     );
 }
@@ -52,7 +53,7 @@ function doesExponentNeedParens(exponent) {
  * @returns {boolean} `true` if the expression needs to be parenthesised.
  */
 function doesExponentiationExpressionNeedParens(node, sourceCode) {
-    const parent = node.parent;
+    const parent = node.parent.type === "ChainExpression" ? node.parent.parent : node.parent;
 
     const needsParens = (
         parent.type === "ClassDeclaration" ||

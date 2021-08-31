@@ -74,10 +74,6 @@ class SigninManagerAndroid : public KeyedService {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& j_callback);
 
-  // Logs out all Google accounts on the web as a part of the rollback flow.
-  // TODO(https://crbug.com/1065029): Remove this along with the feature flag.
-  void LogOutAllAccountsForMobileIdentityConsistencyRollback(JNIEnv* env);
-
  private:
   friend class SigninManagerAndroidTest;
   FRIEND_TEST_ALL_PREFIXES(SigninManagerAndroidTest,
@@ -95,7 +91,7 @@ class SigninManagerAndroid : public KeyedService {
   };
 
   using RegisterPolicyWithAccountCallback = base::OnceCallback<void(
-      const base::Optional<ManagementCredentials>& credentials)>;
+      const absl::optional<ManagementCredentials>& credentials)>;
 
   // If required registers for policy with given account. callback will be
   // called with credentials if the account is managed.
@@ -105,7 +101,7 @@ class SigninManagerAndroid : public KeyedService {
   void OnPolicyRegisterDone(
       const CoreAccountInfo& account_id,
       base::OnceCallback<void()> policy_callback,
-      const base::Optional<ManagementCredentials>& credentials);
+      const absl::optional<ManagementCredentials>& credentials);
 
   void FetchPolicyBeforeSignIn(const CoreAccountInfo& account_id,
                                base::OnceCallback<void()> policy_callback,

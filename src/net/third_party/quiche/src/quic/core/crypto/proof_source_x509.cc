@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/crypto/proof_source_x509.h"
+#include "quic/core/crypto/proof_source_x509.h"
 
 #include <memory>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
-#include "net/third_party/quiche/src/quic/core/crypto/certificate_view.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/quiche_endian.h"
+#include "quic/core/crypto/certificate_view.h"
+#include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/quic_data_writer.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "common/quiche_endian.h"
 
 namespace quic {
 
@@ -88,18 +88,20 @@ bool ProofSourceX509::AddCertificateChain(
     QuicReferenceCountedPointer<Chain> chain,
     CertificatePrivateKey key) {
   if (chain->certs.empty()) {
-    QUIC_BUG << "Empty certificate chain supplied.";
+    QUIC_BUG(quic_bug_10644_1) << "Empty certificate chain supplied.";
     return false;
   }
 
   std::unique_ptr<CertificateView> leaf =
       CertificateView::ParseSingleCertificate(chain->certs[0]);
   if (leaf == nullptr) {
-    QUIC_BUG << "Unable to parse X.509 leaf certificate in the supplied chain.";
+    QUIC_BUG(quic_bug_10644_2)
+        << "Unable to parse X.509 leaf certificate in the supplied chain.";
     return false;
   }
   if (!key.MatchesPublicKey(*leaf)) {
-    QUIC_BUG << "Private key does not match the leaf certificate.";
+    QUIC_BUG(quic_bug_10644_3)
+        << "Private key does not match the leaf certificate.";
     return false;
   }
 
@@ -123,7 +125,7 @@ ProofSourceX509::Certificate* ProofSourceX509::GetCertificate(
   }
   auto dot_pos = hostname.find('.');
   if (dot_pos != std::string::npos) {
-    std::string wildcard = quiche::QuicheStrCat("*", hostname.substr(dot_pos));
+    std::string wildcard = absl::StrCat("*", hostname.substr(dot_pos));
     it = certificate_map_.find(wildcard);
     if (it != certificate_map_.end()) {
       return it->second;

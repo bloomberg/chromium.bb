@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_decoded_headers_accumulator.h"
+#include "quic/core/qpack/qpack_decoded_headers_accumulator.h"
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_header_table.h"
+#include "quic/core/qpack/qpack_decoder.h"
+#include "quic/core/qpack/qpack_header_table.h"
 
 namespace quic {
 
@@ -29,7 +29,7 @@ QpackDecodedHeadersAccumulator::QpackDecodedHeadersAccumulator(
 
 void QpackDecodedHeadersAccumulator::OnHeaderDecoded(absl::string_view name,
                                                      absl::string_view value) {
-  DCHECK(!error_detected_);
+  QUICHE_DCHECK(!error_detected_);
 
   uncompressed_header_bytes_without_overhead_ += name.size() + value.size();
 
@@ -38,9 +38,13 @@ void QpackDecodedHeadersAccumulator::OnHeaderDecoded(absl::string_view name,
   }
 
   uncompressed_header_bytes_including_overhead_ +=
-      name.size() + value.size() + QpackEntry::kSizeOverhead;
+      name.size() + value.size() + kQpackEntrySizeOverhead;
 
-  if (uncompressed_header_bytes_including_overhead_ > max_header_list_size_) {
+  const size_t uncompressed_header_bytes =
+      GetQuicFlag(FLAGS_quic_header_size_limit_includes_overhead)
+          ? uncompressed_header_bytes_including_overhead_
+          : uncompressed_header_bytes_without_overhead_;
+  if (uncompressed_header_bytes > max_header_list_size_) {
     header_list_size_limit_exceeded_ = true;
     quic_header_list_.Clear();
   } else {
@@ -49,8 +53,8 @@ void QpackDecodedHeadersAccumulator::OnHeaderDecoded(absl::string_view name,
 }
 
 void QpackDecodedHeadersAccumulator::OnDecodingCompleted() {
-  DCHECK(!headers_decoded_);
-  DCHECK(!error_detected_);
+  QUICHE_DCHECK(!headers_decoded_);
+  QUICHE_DCHECK(!error_detected_);
 
   headers_decoded_ = true;
 
@@ -64,8 +68,8 @@ void QpackDecodedHeadersAccumulator::OnDecodingCompleted() {
 
 void QpackDecodedHeadersAccumulator::OnDecodingErrorDetected(
     absl::string_view error_message) {
-  DCHECK(!error_detected_);
-  DCHECK(!headers_decoded_);
+  QUICHE_DCHECK(!error_detected_);
+  QUICHE_DCHECK(!headers_decoded_);
 
   error_detected_ = true;
   // Might destroy |this|.
@@ -73,7 +77,7 @@ void QpackDecodedHeadersAccumulator::OnDecodingErrorDetected(
 }
 
 void QpackDecodedHeadersAccumulator::Decode(absl::string_view data) {
-  DCHECK(!error_detected_);
+  QUICHE_DCHECK(!error_detected_);
 
   compressed_header_bytes_ += data.size();
   // Might destroy |this|.
@@ -81,8 +85,8 @@ void QpackDecodedHeadersAccumulator::Decode(absl::string_view data) {
 }
 
 void QpackDecodedHeadersAccumulator::EndHeaderBlock() {
-  DCHECK(!error_detected_);
-  DCHECK(!headers_decoded_);
+  QUICHE_DCHECK(!error_detected_);
+  QUICHE_DCHECK(!headers_decoded_);
 
   // Might destroy |this|.
   decoder_->EndHeaderBlock();

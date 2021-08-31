@@ -43,6 +43,10 @@ namespace dawn_native {
             return DAWN_VALIDATION_ERROR("nextInChain must be nullptr");
         }
 
+        if (descriptor->count > kMaxQueryCount) {
+            return DAWN_VALIDATION_ERROR("Max query count exceeded");
+        }
+
         DAWN_TRY(ValidateQueryType(descriptor->type));
 
         switch (descriptor->type) {
@@ -103,6 +107,8 @@ namespace dawn_native {
         for (uint32_t i = 0; i < descriptor->pipelineStatisticsCount; i++) {
             mPipelineStatistics.push_back(descriptor->pipelineStatistics[i]);
         }
+
+        mQueryAvailability.resize(descriptor->count);
     }
 
     QuerySetBase::QuerySetBase(DeviceBase* device, ObjectBase::ErrorTag tag)
@@ -131,6 +137,14 @@ namespace dawn_native {
         return mPipelineStatistics;
     }
 
+    const std::vector<bool>& QuerySetBase::GetQueryAvailability() const {
+        return mQueryAvailability;
+    }
+
+    void QuerySetBase::SetQueryAvailability(uint32_t index, bool available) {
+        mQueryAvailability[index] = available;
+    }
+
     MaybeError QuerySetBase::ValidateCanUseInSubmitNow() const {
         ASSERT(!IsError());
         if (mState == QuerySetState::Destroyed) {
@@ -139,7 +153,7 @@ namespace dawn_native {
         return {};
     }
 
-    void QuerySetBase::Destroy() {
+    void QuerySetBase::APIDestroy() {
         if (GetDevice()->ConsumedError(ValidateDestroy())) {
             return;
         }

@@ -48,6 +48,8 @@ class HID : public EventTargetWithInlineData,
   void DeviceAdded(device::mojom::blink::HidDeviceInfoPtr device_info) override;
   void DeviceRemoved(
       device::mojom::blink::HidDeviceInfoPtr device_info) override;
+  void DeviceChanged(
+      device::mojom::blink::HidDeviceInfoPtr device_info) override;
 
   // Web-exposed interfaces on hid object:
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect)
@@ -83,9 +85,7 @@ class HID : public EventTargetWithInlineData,
   void FinishRequestDevice(ScriptPromiseResolver*,
                            Vector<device::mojom::blink::HidDeviceInfoPtr>);
 
-  HeapMojoRemote<mojom::blink::HidService,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
-      service_;
+  HeapMojoRemote<mojom::blink::HidService> service_;
   mojo::AssociatedReceiver<device::mojom::blink::HidManagerClient> receiver_{
       this};
   HeapHashSet<Member<ScriptPromiseResolver>> get_devices_promises_;

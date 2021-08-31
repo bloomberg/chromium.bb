@@ -11,7 +11,9 @@
 #include "components/download/public/common/download_item.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
-class InfoBarService;
+namespace infobars {
+class ContentInfoBarManager;
+}
 
 // An infobar that asks if user wants to download an insecurely delivered file
 // initiated from a secure context.  Note that this infobar does not expire if
@@ -22,7 +24,7 @@ class MixedContentDownloadInfoBarDelegate : public ConfirmInfoBarDelegate {
   using ResultCallback = base::OnceCallback<void(bool should_download)>;
 
   static void Create(
-      InfoBarService* infobar_service,
+      infobars::ContentInfoBarManager* infobar_manager,
       const base::FilePath& basename,
       download::DownloadItem::MixedContentStatus mixed_content_status,
       ResultCallback callback);
@@ -40,15 +42,15 @@ class MixedContentDownloadInfoBarDelegate : public ConfirmInfoBarDelegate {
   int GetIconId() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
   void InfoBarDismissed() override;
-  base::string16 GetMessageText() const override;
-  base::string16 GetButtonLabel(InfoBarButton button) const override;
+  std::u16string GetMessageText() const override;
+  std::u16string GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
 
   // Calls callback_ with the appropriate result.
   void PostReply(bool should_download);
 
-  base::string16 message_text_;
+  std::u16string message_text_;
   download::DownloadItem::MixedContentStatus mixed_content_status_;
   ResultCallback callback_;
 

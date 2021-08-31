@@ -16,8 +16,10 @@ import org.chromium.base.IntentUtils;
 import org.chromium.chrome.browser.password_check.CompromisedCredential;
 import org.chromium.chrome.browser.password_check.PasswordCheckComponentUi;
 import org.chromium.chrome.browser.password_check.PasswordCheckEditFragmentView;
-import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Objects;
 
 /**
@@ -33,6 +35,11 @@ public class PasswordCheckChangePasswordHelper {
     private static final String INTENT_PARAMETER = "INTENT";
     private static final String INTENT = "PASSWORD_CHANGE";
     private static final String START_IMMEDIATELY_PARAMETER = "START_IMMEDIATELY";
+    private static final String ORIGINAL_DEEPLINK_PARAMETER = "ORIGINAL_DEEPLINK";
+    private static final String CALLER_PARAMETER = "CALLER";
+    private static final int IN_CHROME_CALLER = 7;
+
+    private static final String ENCODING = "UTF-8";
 
     private final Context mContext;
     private final SettingsLauncher mSettingsLauncher;
@@ -80,8 +87,9 @@ public class PasswordCheckChangePasswordHelper {
      * @param credential A {@link CompromisedCredential}.
      */
     public void launchCctWithScript(CompromisedCredential credential) {
-        Intent intent = buildIntent(credential.getAssociatedUrl().getOrigin().getSpec());
-        populateAutofillAssistantExtras(intent, credential.getUsername());
+        String origin = credential.getAssociatedUrl().getOrigin().getSpec();
+        Intent intent = buildIntent(origin);
+        populateAutofillAssistantExtras(intent, origin, credential.getUsername());
         IntentUtils.safeStartActivity(mContext, intent);
     }
 
@@ -124,13 +132,25 @@ public class PasswordCheckChangePasswordHelper {
      * Populates intent extras for an Autofill Assistant script.
      *
      * @param intent   An {@link Intent} to be populated.
+     * @param origin   An origin for a password change script. One of extras to put.
      * @param username A username for a password change script. One of extras to put.
      */
-    private void populateAutofillAssistantExtras(Intent intent, String username) {
+    private void populateAutofillAssistantExtras(Intent intent, String origin, String username) {
         intent.putExtra(AUTOFILL_ASSISTANT_ENABLED_KEY, true);
-        intent.putExtra(AUTOFILL_ASSISTANT_PACKAGE + PASSWORD_CHANGE_USERNAME_PARAMETER, username);
         intent.putExtra(AUTOFILL_ASSISTANT_PACKAGE + INTENT_PARAMETER, INTENT);
         intent.putExtra(AUTOFILL_ASSISTANT_PACKAGE + START_IMMEDIATELY_PARAMETER, true);
+        intent.putExtra(AUTOFILL_ASSISTANT_PACKAGE + CALLER_PARAMETER, IN_CHROME_CALLER);
+        // Note: All string-typed parameters must be URL-encoded, because the
+        // corresponding extraction logic will URL-*de*code them before use,
+        // see TriggerContext.java.
+        try {
+            intent.putExtra(AUTOFILL_ASSISTANT_PACKAGE + ORIGINAL_DEEPLINK_PARAMETER,
+                    URLEncoder.encode(origin, ENCODING));
+            intent.putExtra(AUTOFILL_ASSISTANT_PACKAGE + PASSWORD_CHANGE_USERNAME_PARAMETER,
+                    URLEncoder.encode(username, ENCODING));
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("Encoding not available.", e);
+        }
         // TODO(crbug.com/1086114): Also add the following parameters when server side changes is
         // ready: CALLER, SOURCE. That would be useful for metrics.
     }

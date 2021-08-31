@@ -22,6 +22,8 @@ cd $( dirname $( readlink -f "${0}" ) ) # go to `/fuzzing/scripts'
 # `fuzzing/src/fuzzing/CMakeLists.txt' for details.
 
 bash "build/libarchive.sh"
+bash "build/zlib.sh"
+bash "build/libpng.sh"
 bash "build/brotli.sh"
 bash "build/bzip2.sh"
 bash "build/freetype.sh"

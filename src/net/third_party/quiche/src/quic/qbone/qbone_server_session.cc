@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/qbone/qbone_server_session.h"
+#include "quic/qbone/qbone_server_session.h"
 
 #include <utility>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/qbone/qbone_constants.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_utils.h"
+#include "quic/qbone/qbone_constants.h"
 
 namespace quic {
 
@@ -66,7 +66,8 @@ void QboneServerSession::Initialize() {
 
 bool QboneServerSession::SendClientRequest(const QboneClientRequest& request) {
   if (!control_stream_) {
-    QUIC_BUG << "Cannot send client request before control stream is created.";
+    QUIC_BUG(quic_bug_11026_1)
+        << "Cannot send client request before control stream is created.";
     return false;
   }
   return control_stream_->SendRequest(request);
@@ -89,7 +90,7 @@ void QboneServerSession::SendPacketToClient(absl::string_view packet) {
 }
 
 void QboneServerSession::SendPacketToNetwork(absl::string_view packet) {
-  DCHECK(writer_ != nullptr);
+  QUICHE_DCHECK(writer_ != nullptr);
   writer_->WritePacketToNetwork(packet.data(), packet.size());
 }
 

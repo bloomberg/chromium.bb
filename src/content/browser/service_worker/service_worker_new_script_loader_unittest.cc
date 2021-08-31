@@ -113,8 +113,7 @@ class MockNetwork {
     uint32_t bytes_written = response.body.size();
     mojo::ScopedDataPipeConsumerHandle consumer;
     mojo::ScopedDataPipeProducerHandle producer;
-    CHECK_EQ(MOJO_RESULT_OK,
-             mojo::CreateDataPipe(nullptr, &producer, &consumer));
+    CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, producer, consumer));
     MojoResult result = producer->WriteData(
         response.body.data(), &bytes_written, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
     CHECK_EQ(MOJO_RESULT_OK, result);
@@ -210,7 +209,6 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
     DCHECK(version_);
 
     // Dummy values.
-    int routing_id = 0;
     int request_id = 10;
     uint32_t options = 0;
     int64_t resource_id = GetNewResourceIdSync(context()->GetStorageControl());
@@ -223,12 +221,16 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
             ? network::mojom::RequestDestination::kServiceWorker
             : network::mojom::RequestDestination::kScript;
 
+    request.mode = (url == version_->script_url())
+                       ? network::mojom::RequestMode::kSameOrigin
+                       : network::mojom::RequestMode::kNoCors;
+
     *out_client = std::make_unique<network::TestURLLoaderClient>();
     *out_loader = ServiceWorkerNewScriptLoader::CreateAndStart(
-        routing_id, request_id, options, request, (*out_client)->CreateRemote(),
-        version_, helper_->url_loader_factory_getter()->GetNetworkFactory(),
+        request_id, options, request, (*out_client)->CreateRemote(), version_,
+        helper_->url_loader_factory_getter()->GetNetworkFactory(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-        resource_id);
+        resource_id, /*is_throttle_needed=*/false);
   }
 
   // Returns false if the entry for |url| doesn't exist in the storage.
@@ -550,6 +552,45 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success_PathRestriction) {
   // WRITE_OK should be recorded once plus one as we record a single write
   // success and the end of the body.
   EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
+  histogram_tester.ExpectUniqueSample(kHistogramWriteResponseResult,
+                                      ServiceWorkerMetrics::WRITE_OK, 2);
+}
+
+TEST_F(ServiceWorkerNewScriptLoaderTest,
+       Fail_ModuleServiceWorker_PathRestriction) {
+  base::HistogramTester histogram_tester;
+
+  std::unique_ptr<network::TestURLLoaderClient> client;
+  std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
+
+  // |kScope| is not under the default scope ("/out-of-scope/"), but the
+  // Service-Worker-Allowed header allows it.
+  const GURL kImportedScriptURL(kNormalImportedScriptURL);
+  const GURL kScope("https://example.com/in-scope/");
+  mock_server_.Set(
+      kImportedScriptURL,
+      MockHTTPServer::Response(std::string("HTTP/1.1 200 OK\n"
+                                           "Content-Type: text/javascript\n\n"),
+                               std::string("٩( ’ω’ )و I'm body!")));
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = kScope;
+  options.type = blink::mojom::ScriptType::kModule;
+  SetUpRegistrationWithOptions(kImportedScriptURL, options);
+  DoRequest(kImportedScriptURL, &client, &loader);
+  client->RunUntilComplete();
+  EXPECT_EQ(net::OK, client->completion_status().error_code);
+
+  // The client should have received the response.
+  EXPECT_TRUE(client->has_received_response());
+  EXPECT_TRUE(client->response_body().is_valid());
+  std::string response;
+  EXPECT_TRUE(
+      mojo::BlockingCopyToString(client->response_body_release(), &response));
+  EXPECT_EQ(mock_server_.Get(kImportedScriptURL).body, response);
+
+  // WRITE_OK should be recorded once plus one as we record a single write
+  // success and the end of the body.
+  EXPECT_TRUE(VerifyStoredResponse(kImportedScriptURL));
   histogram_tester.ExpectUniqueSample(kHistogramWriteResponseResult,
                                       ServiceWorkerMetrics::WRITE_OK, 2);
 }

@@ -27,8 +27,9 @@
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time_override.h"
-#include "base/trace_event/base_tracing.h"
+#include "base/trace_event/base_tracing_forward.h"
 #include "base/values.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 namespace sequence_manager {
@@ -111,7 +112,7 @@ class BASE_EXPORT TaskQueueImpl {
   bool IsEmpty() const;
   size_t GetNumberOfPendingTasks() const;
   bool HasTaskToRunImmediately() const;
-  Optional<TimeTicks> GetNextScheduledWakeUp();
+  absl::optional<TimeTicks> GetNextScheduledWakeUp();
   void SetQueuePriority(TaskQueue::QueuePriority priority);
   TaskQueue::QueuePriority GetQueuePriority() const;
   void AddTaskObserver(TaskObserver* task_observer);
@@ -234,15 +235,8 @@ class BASE_EXPORT TaskQueueImpl {
   // and this queue can be safely deleted on any thread.
   bool IsUnregistered() const;
 
-  // Delete all tasks within this TaskQueue.
-  void DeletePendingTasks();
-
-  // Whether this task queue owns any tasks. Task queue being disabled doesn't
-  // affect this.
-  bool HasTasks() const;
-
  protected:
-  void SetDelayedWakeUpForTesting(Optional<DelayedWakeUp> wake_up);
+  void SetDelayedWakeUpForTesting(absl::optional<DelayedWakeUp> wake_up);
 
  private:
   friend class WorkQueue;
@@ -298,8 +292,6 @@ class BASE_EXPORT TaskQueueImpl {
    private:
     ~TaskRunner() final;
 
-    bool PostTask(PostedTask task) const;
-
     const scoped_refptr<GuardedTaskPoster> task_poster_;
     const scoped_refptr<AssociatedThreadId> associated_thread_;
     const TaskType task_type_;
@@ -324,15 +316,22 @@ class BASE_EXPORT TaskQueueImpl {
       return pending_high_res_tasks_;
     }
 
-    void SweepCancelledTasks();
+    // TODO(crbug.com/1155905): we pass SequenceManager to be able to record
+    // crash keys. Remove this parameter after chasing down this crash.
+    void SweepCancelledTasks(SequenceManagerImpl* sequence_manager);
     std::priority_queue<Task> TakeTasks() { return std::move(queue_); }
     Value AsValue(TimeTicks now) const;
 
    private:
     struct PQueue : public std::priority_queue<Task> {
-      // Expose the container and comparator.
-      using std::priority_queue<Task>::c;
-      using std::priority_queue<Task>::comp;
+      // Removes all cancelled tasks from the queue. Returns the number of
+      // removed high resolution tasks (which could be lower than the total
+      // number of removed tasks).
+      //
+      // TODO(crbug.com/1155905): we pass SequenceManager to be able to record
+      // crash keys. Remove this parameter after chasing down this crash.
+      size_t SweepCancelledTasks(SequenceManagerImpl* sequence_manager);
+      Value AsValue(TimeTicks now) const;
     };
 
     PQueue queue_;
@@ -359,7 +358,7 @@ class BASE_EXPORT TaskQueueImpl {
     bool is_enabled = true;
     trace_event::BlameContext* blame_context = nullptr;  // Not owned.
     EnqueueOrder current_fence;
-    Optional<TimeTicks> delayed_fence;
+    absl::optional<TimeTicks> delayed_fence;
     // Snapshots the next sequence number when the queue is unblocked, otherwise
     // it contains EnqueueOrder::none(). If the EnqueueOrder of a task just
     // popped from this queue is greater than this, it means that the queue was
@@ -387,12 +386,12 @@ class BASE_EXPORT TaskQueueImpl {
     OnTaskCompletedHandler on_task_completed_handler;
     // Last reported wake up, used only in UpdateWakeUp to avoid
     // excessive calls.
-    Optional<DelayedWakeUp> scheduled_wake_up;
+    absl::optional<DelayedWakeUp> scheduled_wake_up;
     // If false, queue will be disabled. Used only for tests.
     bool is_enabled_for_test = true;
     // The time at which the task queue was disabled, if it is currently
     // disabled.
-    Optional<TimeTicks> disabled_time;
+    absl::optional<TimeTicks> disabled_time;
     // Whether or not the task queue should emit tracing events for tasks
     // posted to this queue when it is disabled.
     bool should_report_posted_tasks_when_disabled = false;
@@ -413,7 +412,7 @@ class BASE_EXPORT TaskQueueImpl {
   // threads.
   void PushOntoDelayedIncomingQueue(Task pending_task);
 
-  Optional<DelayedWakeUp> GetNextScheduledWakeUpImpl();
+  absl::optional<DelayedWakeUp> GetNextScheduledWakeUpImpl();
 
   void ScheduleDelayedWorkTask(Task pending_task);
 
@@ -437,7 +436,7 @@ class BASE_EXPORT TaskQueueImpl {
   // Schedules delayed work on time domain and calls the observer.
   void UpdateDelayedWakeUp(LazyNow* lazy_now);
   void UpdateDelayedWakeUpImpl(LazyNow* lazy_now,
-                               Optional<DelayedWakeUp> wake_up);
+                               absl::optional<DelayedWakeUp> wake_up);
 
   // Activate a delayed fence if a time has come.
   void ActivateDelayedFenceIfNeeded(TimeTicks now);
@@ -485,7 +484,7 @@ class BASE_EXPORT TaskQueueImpl {
       ~TracingOnly();
 
       bool is_enabled = true;
-      Optional<TimeTicks> disabled_time;
+      absl::optional<TimeTicks> disabled_time;
       bool should_report_posted_tasks_when_disabled = false;
     };
 

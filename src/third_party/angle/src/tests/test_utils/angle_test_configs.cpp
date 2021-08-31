@@ -49,6 +49,11 @@ bool PlatformParameters::isSwiftshader() const
     return eglParameters.deviceType == EGL_PLATFORM_ANGLE_DEVICE_TYPE_SWIFTSHADER_ANGLE;
 }
 
+EGLint PlatformParameters::getAllocateNonZeroMemoryFeature() const
+{
+    return eglParameters.allocateNonZeroMemoryFeature;
+}
+
 void PlatformParameters::initDefaultParameters()
 {
     // Default debug layers to enabled in tests.
@@ -252,6 +257,20 @@ std::ostream &operator<<(std::ostream &stream, const PlatformParameters &pp)
     if (pp.eglParameters.forceBufferGPUStorageFeatureMtl == EGL_TRUE)
     {
         stream << "_ForceMetalBufferGPUStorage";
+    }
+
+    if (pp.eglParameters.supportsVulkanViewportFlip == EGL_TRUE)
+    {
+        stream << "_VulkanViewportFlip";
+    }
+    else if (pp.eglParameters.supportsVulkanViewportFlip == EGL_FALSE)
+    {
+        stream << "_NoVulkanViewportFlip";
+    }
+
+    if (pp.eglParameters.emulatedVAOs == EGL_TRUE)
+    {
+        stream << "_EmulatedVAOs";
     }
 
     return stream;
@@ -793,6 +812,21 @@ PlatformParameters ES31_VULKAN_NULL()
 PlatformParameters ES31_VULKAN_SWIFTSHADER()
 {
     return PlatformParameters(3, 1, egl_platform::VULKAN_SWIFTSHADER());
+}
+
+PlatformParameters ES32_VULKAN()
+{
+    return PlatformParameters(3, 2, egl_platform::VULKAN());
+}
+
+PlatformParameters ES32_VULKAN_NULL()
+{
+    return PlatformParameters(3, 2, egl_platform::VULKAN_NULL());
+}
+
+PlatformParameters ES32_VULKAN_SWIFTSHADER()
+{
+    return PlatformParameters(3, 2, egl_platform::VULKAN_SWIFTSHADER());
 }
 
 PlatformParameters ES1_METAL()

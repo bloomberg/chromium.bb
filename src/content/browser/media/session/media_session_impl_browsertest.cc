@@ -7,16 +7,20 @@
 #include <stddef.h>
 
 #include <list>
+#include <memory>
 #include <vector>
 
+#include "base/atomic_sequence_num.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
 #include "content/browser/media/session/mock_media_session_player_observer.h"
 #include "content/browser/media/session/mock_media_session_service_impl.h"
@@ -31,6 +35,8 @@
 #include "media/base/media_content_type.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -51,8 +57,7 @@ const double kDefaultVolumeMultiplier = 1.0;
 const double kDuckingVolumeMultiplier = 0.2;
 const double kDifferentDuckingVolumeMultiplier = 0.018;
 
-const base::string16 kExpectedSourceTitlePrefix =
-    base::ASCIIToUTF16("http://example.com:");
+const std::u16string kExpectedSourceTitlePrefix = u"http://example.com:";
 
 constexpr gfx::Size kDefaultFaviconSize = gfx::Size(16, 16);
 
@@ -77,12 +82,12 @@ class MockAudioFocusDelegate : public content::AudioFocusDelegate {
     }
   }
 
-  base::Optional<AudioFocusType> GetCurrentFocusType() const {
+  absl::optional<AudioFocusType> GetCurrentFocusType() const {
     return audio_focus_type_;
   }
 
   void MediaSessionInfoChanged(
-      media_session::mojom::MediaSessionInfoPtr session_info) override {}
+      const media_session::mojom::MediaSessionInfoPtr& session_info) override {}
 
   MOCK_CONST_METHOD0(request_id, const base::UnguessableToken&());
 
@@ -111,7 +116,7 @@ class MockAudioFocusDelegate : public content::AudioFocusDelegate {
   const bool async_mode_ = false;
 
   std::list<AudioFocusType> requests_;
-  base::Optional<AudioFocusType> audio_focus_type_;
+  absl::optional<AudioFocusType> audio_focus_type_;
 };
 
 }  // namespace
@@ -130,6 +135,11 @@ class MediaSessionImplBrowserTest : public ContentBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
                                            "example.com", "/title1.html")));
+
+    // Setup the favicon server.
+    favicon_server().RegisterRequestHandler(base::BindRepeating(
+        &MediaSessionImplBrowserTest::HandleRequest, base::Unretained(this)));
+    ASSERT_TRUE(favicon_server().Start());
 
     media_session_ = MediaSessionImpl::Get(shell()->web_contents());
     mock_audio_focus_delegate_ = new NiceMock<MockAudioFocusDelegate>(
@@ -186,7 +196,7 @@ class MediaSessionImplBrowserTest : public ContentBrowserTest {
 
   bool IsActive() { return media_session_->IsActive(); }
 
-  base::Optional<AudioFocusType> GetSessionAudioFocusType() {
+  absl::optional<AudioFocusType> GetSessionAudioFocusType() {
     return mock_audio_focus_delegate_->GetCurrentFocusType();
   }
 
@@ -215,6 +225,12 @@ class MediaSessionImplBrowserTest : public ContentBrowserTest {
     media_session_->Seek(base::TimeDelta::FromSeconds(-1));
   }
 
+  void UISeekTo() { media_session_->SeekTo(base::TimeDelta::FromSeconds(10)); }
+
+  void UIScrubTo() {
+    media_session_->ScrubTo(base::TimeDelta::FromSeconds(10));
+  }
+
   void UISetAudioSink(const std::string& sink_id) {
     media_session_->SetAudioSinkId(sink_id);
   }
@@ -224,8 +240,9 @@ class MediaSessionImplBrowserTest : public ContentBrowserTest {
   void SystemStopDucking() { media_session_->StopDucking(); }
 
   void EnsureMediaSessionService() {
-    mock_media_session_service_.reset(new NiceMock<MockMediaSessionServiceImpl>(
-        shell()->web_contents()->GetMainFrame()));
+    mock_media_session_service_ =
+        std::make_unique<NiceMock<MockMediaSessionServiceImpl>>(
+            shell()->web_contents()->GetMainFrame());
   }
 
   void SetPlaybackState(blink::mojom::MediaSessionPlaybackState state) {
@@ -269,18 +286,30 @@ class MediaSessionImplBrowserTest : public ContentBrowserTest {
 
   bool IsDucking() const { return media_session_->is_ducking_; }
 
-  base::string16 GetExpectedSourceTitle() {
-    base::string16 expected_title =
+  std::u16string GetExpectedSourceTitle() {
+    std::u16string expected_title =
         base::StrCat({kExpectedSourceTitlePrefix,
                       base::NumberToString16(embedded_test_server()->port())});
 
     return expected_title.substr(strlen("http://"));
   }
 
+  net::EmbeddedTestServer& favicon_server() { return favicon_server_; }
+
+  int get_favicon_calls() { return favicon_calls_.GetNext(); }
+
  protected:
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
+      const net::test_server::HttpRequest& request) {
+    get_favicon_calls();
+    return std::make_unique<net::test_server::BasicHttpResponse>();
+  }
+
   MediaSessionImpl* media_session_;
   MockAudioFocusDelegate* mock_audio_focus_delegate_;
   std::unique_ptr<MockMediaSessionServiceImpl> mock_media_session_service_;
+  net::EmbeddedTestServer favicon_server_;
+  base::AtomicSequenceNumber favicon_calls_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionImplBrowserTest);
 };
@@ -660,6 +689,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   EXPECT_EQ(0, player_observer->received_resume_calls());
   EXPECT_EQ(0, player_observer->received_seek_forward_calls());
   EXPECT_EQ(0, player_observer->received_seek_backward_calls());
+  EXPECT_EQ(0, player_observer->received_seek_to_calls());
 
   SystemSuspend(true);
   EXPECT_EQ(3, player_observer->received_suspend_calls());
@@ -672,6 +702,12 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
 
   UISeekBackward();
   EXPECT_EQ(3, player_observer->received_seek_backward_calls());
+
+  UISeekTo();
+  EXPECT_EQ(3, player_observer->received_seek_to_calls());
+
+  UIScrubTo();
+  EXPECT_EQ(6, player_observer->received_seek_to_calls());
 }
 
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
@@ -702,6 +738,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   EXPECT_EQ(0, player_observer->received_resume_calls());
   EXPECT_EQ(0, player_observer->received_seek_forward_calls());
   EXPECT_EQ(0, player_observer->received_seek_backward_calls());
+  EXPECT_EQ(0, player_observer->received_seek_to_calls());
 
   SystemSuspend(true);
   EXPECT_EQ(3, player_observer->received_suspend_calls());
@@ -714,6 +751,12 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
 
   UISeekBackward();
   EXPECT_EQ(3, player_observer->received_seek_backward_calls());
+
+  UISeekTo();
+  EXPECT_EQ(3, player_observer->received_seek_to_calls());
+
+  UIScrubTo();
+  EXPECT_EQ(6, player_observer->received_seek_to_calls());
 }
 
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
@@ -1532,7 +1575,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
-                       ControlsDontShowWhenOneShotIsPresent) {
+                       ControlsDontShowWhenOnlyOneShotIsPresent) {
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
 
   {
@@ -1554,9 +1597,9 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     StartNewPlayer(player_observer.get(), media::MediaContentType::Transient);
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-    observer.WaitForControllable(false);
+    observer.WaitForControllable(true);
 
-    EXPECT_FALSE(IsControllable());
+    EXPECT_TRUE(IsControllable());
     EXPECT_TRUE(IsActive());
   }
 
@@ -1566,9 +1609,9 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
 
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-    observer.WaitForControllable(false);
+    observer.WaitForControllable(true);
 
-    EXPECT_FALSE(IsControllable());
+    EXPECT_TRUE(IsControllable());
     EXPECT_TRUE(IsActive());
   }
 }
@@ -1628,7 +1671,22 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
-                       DontSuspendWhenOneShotIsPresent) {
+                       DontSuspendWhenOnlyOneShotIsPresent) {
+  auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
+
+  StartNewPlayer(player_observer.get(), media::MediaContentType::OneShot);
+  ResolveAudioFocusSuccess();
+
+  SystemSuspend(false);
+
+  EXPECT_FALSE(IsControllable());
+  EXPECT_TRUE(IsActive());
+
+  EXPECT_EQ(0, player_observer->received_suspend_calls());
+}
+
+IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
+                       SuspendWhenOneShotAndNormalArePresent) {
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
 
   StartNewPlayer(player_observer.get(), media::MediaContentType::OneShot);
@@ -1639,9 +1697,9 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   SystemSuspend(false);
 
   EXPECT_FALSE(IsControllable());
-  EXPECT_TRUE(IsActive());
+  EXPECT_FALSE(IsActive());
 
-  EXPECT_EQ(0, player_observer->received_suspend_calls());
+  EXPECT_EQ(2, player_observer->received_suspend_calls());
 }
 
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
@@ -2228,16 +2286,16 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   EnsureMediaSessionService();
 
   media_session::MediaMetadata expected_metadata;
-  expected_metadata.title = base::ASCIIToUTF16("title");
-  expected_metadata.artist = base::ASCIIToUTF16("artist");
-  expected_metadata.album = base::ASCIIToUTF16("album");
+  expected_metadata.title = u"title";
+  expected_metadata.artist = u"artist";
+  expected_metadata.album = u"album";
   expected_metadata.source_title = GetExpectedSourceTitle();
 
   blink::mojom::SpecMediaMetadataPtr spec_metadata(
       blink::mojom::SpecMediaMetadata::New());
-  spec_metadata->title = base::ASCIIToUTF16("title");
-  spec_metadata->artist = base::ASCIIToUTF16("artist");
-  spec_metadata->album = base::ASCIIToUTF16("album");
+  spec_metadata->title = u"title";
+  spec_metadata->artist = u"artist";
+  spec_metadata->album = u"album";
   mock_media_session_service_->SetMetadata(std::move(spec_metadata));
 
   // Make sure the service is routed,
@@ -2489,7 +2547,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, MetadataWhenFileUrlScheme) {
 
   media_session::MediaMetadata expected_metadata;
   expected_metadata.title = shell()->web_contents()->GetTitle();
-  expected_metadata.source_title = base::ASCIIToUTF16("Local File");
+  expected_metadata.source_title = u"Local File";
   observer.WaitForExpectedMetadata(expected_metadata);
 }
 
@@ -2653,11 +2711,11 @@ IN_PROC_BROWSER_TEST_F(MediaSessionFaviconBrowserTest, StartupInitalization) {
       new FaviconWaiter(shell()->web_contents()));
 
   // Insert the favicon dynamically.
-  ASSERT_TRUE(content::ExecuteScript(
-      shell()->web_contents(),
-      "let l = document.createElement('link'); "
-      "l.rel='icon'; l.type='image/png'; l.href='single_face.jpg'; "
-      "document.head.appendChild(l)"));
+  ASSERT_TRUE(
+      ExecJs(shell()->web_contents(),
+             "let l = document.createElement('link'); "
+             "l.rel='icon'; l.type='image/png'; l.href='single_face.jpg'; "
+             "document.head.appendChild(l)"));
 
   // Wait until it's received by the browser process.
   favicon_waiter->Wait();
@@ -2789,7 +2847,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
   }
 }
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_ANDROID)
 // TODO(https://crbug.com/1000400): Re-enable this test.
 #define MAYBE_PositionStateRouteWithOnePlayer \
   DISABLED_PositionStateRouteWithOnePlayer
@@ -2815,8 +2873,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
     // With one normal player we should use the position that one provides.
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
-    ASSERT_TRUE(
-        ExecuteScript(main_frame, "document.getElementById('video').play()"));
+    ASSERT_TRUE(ExecJs(main_frame, "document.getElementById('video').play()"));
 
     observer.WaitForExpectedPosition(
         media_session::MediaPosition(1.0, duration, base::TimeDelta()));
@@ -2826,8 +2883,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
     // If we seek the player then the position should be updated.
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
-    ASSERT_TRUE(ExecuteScript(
-        main_frame, "document.getElementById('video').currentTime = 1"));
+    ASSERT_TRUE(
+        ExecJs(main_frame, "document.getElementById('video').currentTime = 1"));
 
     // We might only learn about the rate going back to 1.0 when the media time
     // has already progressed a bit.
@@ -2840,8 +2897,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
     // If we pause the player then the rate should be updated.
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
-    ASSERT_TRUE(
-        ExecuteScript(main_frame, "document.getElementById('video').pause()"));
+    ASSERT_TRUE(ExecJs(main_frame, "document.getElementById('video').pause()"));
 
     // Media time may have progressed since the time we seeked to 1s.
     paused_position =
@@ -2854,8 +2910,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
     // If we resume the player then the rate should be updated.
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
-    ASSERT_TRUE(
-        ExecuteScript(main_frame, "document.getElementById('video').play()"));
+    ASSERT_TRUE(ExecJs(main_frame, "document.getElementById('video').play()"));
 
     // We might only learn about the rate going back to 1.0 when the media time
     // has already progressed a bit.
@@ -2867,8 +2922,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
     // If we change the playback rate then the MediaPosition should be updated.
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
-    ASSERT_TRUE(ExecuteScript(
-        main_frame, "document.getElementById('video').playbackRate = 2"));
+    ASSERT_TRUE(ExecJs(main_frame,
+                       "document.getElementById('video').playbackRate = 2"));
 
     // Media time may have progressed since the time we resumed playback.
     observer.WaitForExpectedPositionAtLeast(
@@ -2880,7 +2935,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
     ASSERT_TRUE(
-        ExecuteScript(main_frame, "document.getElementById('video').src = ''"));
+        ExecJs(main_frame, "document.getElementById('video').src = ''"));
 
     observer.WaitForEmptyPosition();
   }
@@ -2934,4 +2989,45 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
             media::MediaContentType::Persistent);
   EXPECT_NE(player_observer->GetAudioOutputSinkId(player_1), "speaker1");
 }
+
+IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, CacheFaviconImages) {
+  std::vector<gfx::Size> valid_sizes;
+  valid_sizes.push_back(gfx::Size(100, 100));
+  valid_sizes.push_back(gfx::Size(200, 200));
+
+  std::vector<blink::mojom::FaviconURLPtr> favicons;
+  favicons.push_back(blink::mojom::FaviconURL::New(
+      favicon_server().GetURL("/favicon.ico"),
+      blink::mojom::FaviconIconType::kFavicon, valid_sizes));
+
+  media_session_->DidUpdateFaviconURL(shell()->web_contents()->GetMainFrame(),
+                                      favicons);
+
+  media_session::MediaImage test_image;
+  test_image.src = favicon_server().GetURL("/favicon.ico");
+  test_image.sizes = valid_sizes;
+
+  {
+    EXPECT_EQ(0, get_favicon_calls());
+
+    base::RunLoop run_loop;
+    media_session_->GetMediaImageBitmap(
+        test_image, 100, 100,
+        base::BindLambdaForTesting([&](const SkBitmap&) { run_loop.Quit(); }));
+    run_loop.Run();
+
+    EXPECT_EQ(2, get_favicon_calls());
+  }
+
+  {
+    base::RunLoop run_loop;
+    media_session_->GetMediaImageBitmap(
+        test_image, 100, 100,
+        base::BindLambdaForTesting([&](const SkBitmap&) { run_loop.Quit(); }));
+    run_loop.Run();
+
+    EXPECT_EQ(3, get_favicon_calls());
+  }
+}
+
 }  // namespace content

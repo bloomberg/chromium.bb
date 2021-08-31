@@ -202,9 +202,8 @@ UniquePtr<SSL_SESSION> SSL_SESSION_dup(SSL_SESSION *session, int dup_flags) {
   OPENSSL_memcpy(new_session->sid_ctx, session->sid_ctx, session->sid_ctx_length);
 
   // Copy the key material.
-  new_session->master_key_length = session->master_key_length;
-  OPENSSL_memcpy(new_session->master_key, session->master_key,
-         session->master_key_length);
+  new_session->secret_length = session->secret_length;
+  OPENSSL_memcpy(new_session->secret, session->secret, session->secret_length);
   new_session->cipher = session->cipher;
 
   // Copy authentication state.
@@ -351,19 +350,19 @@ const EVP_MD *ssl_session_get_digest(const SSL_SESSION *session) {
                                   session->cipher);
 }
 
-int ssl_get_new_session(SSL_HANDSHAKE *hs, int is_server) {
+bool ssl_get_new_session(SSL_HANDSHAKE *hs) {
   SSL *const ssl = hs->ssl;
   if (ssl->mode & SSL_MODE_NO_SESSION_CREATION) {
     OPENSSL_PUT_ERROR(SSL, SSL_R_SESSION_MAY_NOT_BE_CREATED);
-    return 0;
+    return false;
   }
 
   UniquePtr<SSL_SESSION> session = ssl_session_new(ssl->ctx->x509_method);
   if (session == NULL) {
-    return 0;
+    return false;
   }
 
-  session->is_server = is_server;
+  session->is_server = ssl->server;
   session->ssl_version = ssl->version;
   session->is_quic = ssl->quic_method != nullptr;
 
@@ -385,24 +384,9 @@ int ssl_get_new_session(SSL_HANDSHAKE *hs, int is_server) {
     session->auth_timeout = ssl->session_ctx->session_timeout;
   }
 
-  if (is_server) {
-    if (hs->ticket_expected || version >= TLS1_3_VERSION) {
-      // Don't set session IDs for sessions resumed with tickets. This will keep
-      // them out of the session cache.
-      session->session_id_length = 0;
-    } else {
-      session->session_id_length = SSL3_SSL_SESSION_ID_LENGTH;
-      if (!RAND_bytes(session->session_id, session->session_id_length)) {
-        return 0;
-      }
-    }
-  } else {
-    session->session_id_length = 0;
-  }
-
   if (hs->config->cert->sid_ctx_length > sizeof(session->sid_ctx)) {
     OPENSSL_PUT_ERROR(SSL, ERR_R_INTERNAL_ERROR);
-    return 0;
+    return false;
   }
   OPENSSL_memcpy(session->sid_ctx, hs->config->cert->sid_ctx,
                  hs->config->cert->sid_ctx_length);
@@ -414,7 +398,7 @@ int ssl_get_new_session(SSL_HANDSHAKE *hs, int is_server) {
 
   hs->new_session = std::move(session);
   ssl_set_session(ssl, NULL);
-  return 1;
+  return true;
 }
 
 int ssl_ctx_rotate_ticket_encryption_key(SSL_CTX *ctx) {
@@ -963,14 +947,14 @@ void SSL_SESSION_get0_ocsp_response(const SSL_SESSION *session,
 
 size_t SSL_SESSION_get_master_key(const SSL_SESSION *session, uint8_t *out,
                                   size_t max_out) {
-  // TODO(davidben): Fix master_key_length's type and remove these casts.
+  // TODO(davidben): Fix secret_length's type and remove these casts.
   if (max_out == 0) {
-    return (size_t)session->master_key_length;
+    return (size_t)session->secret_length;
   }
-  if (max_out > (size_t)session->master_key_length) {
-    max_out = (size_t)session->master_key_length;
+  if (max_out > (size_t)session->secret_length) {
+    max_out = (size_t)session->secret_length;
   }
-  OPENSSL_memcpy(out, session->master_key, max_out);
+  OPENSSL_memcpy(out, session->secret, max_out);
   return max_out;
 }
 
@@ -1020,7 +1004,8 @@ int SSL_SESSION_should_be_single_use(const SSL_SESSION *session) {
 }
 
 int SSL_SESSION_is_resumable(const SSL_SESSION *session) {
-  return !session->not_resumable;
+  return !session->not_resumable &&
+         (session->session_id_length != 0 || !session->ticket.empty());
 }
 
 int SSL_SESSION_has_ticket(const SSL_SESSION *session) {

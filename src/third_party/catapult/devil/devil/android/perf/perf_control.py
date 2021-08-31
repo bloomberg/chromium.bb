@@ -27,6 +27,18 @@ _PERFORMANCE_MODE_DEFINITIONS = {
     'AFTKMST12': {
         'default_mode_governor': 'interactive',
     },
+    'Pixel 5': {
+        'big_cores': ['cpu6', 'cpu7'],
+        'default_mode_governor': 'schedutil',
+    },
+    'Pixel 4a': {
+        'big_cores': ['cpu6', 'cpu7'],
+        'default_mode_governor': 'schedutil',
+    },
+    'Pixel 4': {
+        'big_cores': ['cpu6', 'cpu7'],
+        'default_mode_governor': 'schedutil',
+    },
     # Pixel 3
     'blueline': {
         'high_perf_mode': {
@@ -46,7 +58,7 @@ _PERFORMANCE_MODE_DEFINITIONS = {
             },
             'gpu_max_freq': 710000000,
         },
-        'big_cores': ['4', '5', '6', '7'],
+        'big_cores': ['cpu4', 'cpu5', 'cpu6', 'cpu7'],
         'default_mode_governor': 'schedutil',
     },
     'Pixel 2': {
@@ -71,7 +83,7 @@ _PERFORMANCE_MODE_DEFINITIONS = {
             },
             'gpu_max_freq': 710000000,
         },
-        'big_cores': ['4', '5', '6', '7'],
+        'big_cores': ['cpu4', 'cpu5', 'cpu6', 'cpu7'],
         'default_mode_governor': 'schedutil',
     },
     'GT-I9300': {
@@ -96,7 +108,7 @@ _PERFORMANCE_MODE_DEFINITIONS = {
             },
             'gpu_max_freq': 624000000,
         },
-        'big_cores': ['2', '3'],
+        'big_cores': ['cpu2', 'cpu3'],
         'default_mode_governor': 'sched',
     },
     'Nexus 7': {
@@ -143,7 +155,7 @@ _PERFORMANCE_MODE_DEFINITIONS = {
             },
             'gpu_max_freq': 600000000,
         },
-        'big_cores': ['4', '5'],
+        'big_cores': ['cpu4', 'cpu5'],
         'default_mode_governor': 'ondemand',
     },
 }
@@ -203,7 +215,7 @@ class PerfControl(object):
       if not isinstance(cpu_max_freq, dict):
         self._SetScalingMaxFreqForCpus(cpu_max_freq, self._cpu_file_list)
       else:
-        for key, max_frequency in cpu_max_freq.iteritems():
+        for key, max_frequency in cpu_max_freq.items():
           # Convert 'X' to 'cpuX' and 'X..Y' to 'cpuX cpu<X+1> .. cpuY'.
           if '..' in key:
             range_min, range_max = key.split('..')
@@ -211,7 +223,7 @@ class PerfControl(object):
           else:
             range_min = range_max = int(key)
           cpu_files = [
-              'cpu%d' % number for number in xrange(range_min, range_max + 1)
+              'cpu%d' % number for number in range(range_min, range_max + 1)
           ]
           # Set the |max_frequency| on requested subset of the cores.
           self._SetScalingMaxFreqForCpus(max_frequency, ' '.join(cpu_files))
@@ -260,7 +272,7 @@ class PerfControl(object):
       _NoisyWarning('No mode definition for device: %s.' %
                     self._device.product_model)
       return
-    self._ForceCpusOffline(cpu_list=big_cores)
+    self._ForceCpusOffline(cpu_list=' '.join(big_cores))
 
   def SetDefaultPerfMode(self):
     """Sets the performance mode for the device to its default mode."""
