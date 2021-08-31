@@ -14,15 +14,16 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/device_identity/device_oauth2_token_store.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
+#include "google_apis/gaia/gaia_access_token_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
-#include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 struct DeviceOAuth2TokenService::PendingRequest {
@@ -127,7 +128,7 @@ OAuth2AccessTokenManager* DeviceOAuth2TokenService::GetAccessTokenManager() {
   return token_manager_.get();
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 void DeviceOAuth2TokenService::SetServiceAccountEmail(
     const std::string& account_email) {
   store_->SetAccountEmail(account_email);
@@ -228,8 +229,9 @@ DeviceOAuth2TokenService::CreateAccessTokenFetcher(
     OAuth2AccessTokenConsumer* consumer) {
   std::string refresh_token = GetRefreshToken();
   DCHECK(!refresh_token.empty());
-  return std::make_unique<OAuth2AccessTokenFetcherImpl>(
-      consumer, url_loader_factory, refresh_token);
+  return GaiaAccessTokenFetcher::
+      CreateExchangeRefreshTokenForAccessTokenInstance(
+          consumer, url_loader_factory, refresh_token);
 }
 
 bool DeviceOAuth2TokenService::HasRefreshToken(
@@ -372,7 +374,7 @@ void DeviceOAuth2TokenService::StartValidation() {
 
   gaia_oauth_client_->RefreshToken(
       client_info, store_->GetRefreshToken(),
-      std::vector<std::string>(1, GaiaConstants::kOAuthWrapBridgeUserInfoScope),
+      std::vector<std::string>(1, GaiaConstants::kGoogleUserInfoEmail),
       max_refresh_token_validation_retries_, this);
 }
 

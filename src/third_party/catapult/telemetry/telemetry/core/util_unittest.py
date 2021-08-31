@@ -1,6 +1,7 @@
 # Copyright 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from __future__ import absolute_import
 import os
 import shutil
 import tempfile
@@ -28,7 +29,7 @@ class TestGetSequentialFileName(unittest.TestCase):
 
   def testGetSequentialFileNameWithOtherSequentialFiles(self):
     # Create test_000.json, test_001.json, test_002.json in test directory.
-    for i in xrange(3):
+    for i in range(3):
       with open(
           os.path.join(self.test_directory, 'test_%03d.json' % i), 'w') as _:
         pass

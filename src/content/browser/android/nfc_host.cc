@@ -50,7 +50,7 @@ void NFCHost::GetNFC(RenderFrameHost* render_frame_host,
     return;
   }
 
-  if (subscription_id_ == PermissionController::kNoPendingOperation) {
+  if (!subscription_id_) {
     // base::Unretained() is safe here because the subscription is canceled when
     // this object is destroyed.
     subscription_id_ = permission_controller_->SubscribePermissionStatusChange(
@@ -62,6 +62,7 @@ void NFCHost::GetNFC(RenderFrameHost* render_frame_host,
   if (!nfc_provider_) {
     content::GetDeviceService().BindNFCProvider(
         nfc_provider_.BindNewPipeAndPassReceiver());
+    MaybeResumeOrSuspendOperations(web_contents()->GetVisibility());
   }
 
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -82,6 +83,10 @@ void NFCHost::RenderFrameHostChanged(RenderFrameHost* old_host,
 }
 
 void NFCHost::OnVisibilityChanged(Visibility visibility) {
+  MaybeResumeOrSuspendOperations(visibility);
+}
+
+void NFCHost::MaybeResumeOrSuspendOperations(Visibility visibility) {
   // For cases NFC not initialized, such as the permission has been revoked.
   if (!nfc_provider_)
     return;
@@ -101,10 +106,8 @@ void NFCHost::OnPermissionStatusChange(blink::mojom::PermissionStatus status) {
 
 void NFCHost::Close() {
   nfc_provider_.reset();
-  if (subscription_id_ != PermissionController::kNoPendingOperation) {
-    permission_controller_->UnsubscribePermissionStatusChange(subscription_id_);
-    subscription_id_ = PermissionController::kNoPendingOperation;
-  }
+  permission_controller_->UnsubscribePermissionStatusChange(subscription_id_);
+  subscription_id_ = PermissionController::SubscriptionId();
 }
 
 }  // namespace content

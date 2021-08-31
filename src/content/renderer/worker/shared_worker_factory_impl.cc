@@ -5,7 +5,6 @@
 #include "content/renderer/worker/shared_worker_factory_impl.h"
 
 #include "base/memory/ptr_util.h"
-#include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/worker/embedded_shared_worker_stub.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -38,7 +37,7 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
         content_settings,
     blink::mojom::ServiceWorkerContainerInfoForClientPtr
         service_worker_container_info,
-    const base::Optional<base::UnguessableToken>& appcache_host_id,
+    const absl::optional<base::UnguessableToken>& appcache_host_id,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories,
@@ -60,7 +59,6 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
       std::move(host), std::move(receiver), std::move(browser_interface_broker),
       ukm_source_id,
       RenderThreadImpl::current()
-          ->resource_dispatcher()
           ->cors_exempt_header_list());
 }
 

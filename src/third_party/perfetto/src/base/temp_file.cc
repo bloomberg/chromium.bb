@@ -14,35 +14,81 @@
  * limitations under the License.
  */
 
-#include "perfetto/base/build_config.h"
-#if !PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
-
 #include "perfetto/ext/base/temp_file.h"
 
-#include <stdlib.h>
-#include <unistd.h>
+#include "perfetto/base/build_config.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+#include <Windows.h>
+#include <direct.h>
+#include <fileapi.h>
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
+
+#include "perfetto/base/logging.h"
+#include "perfetto/ext/base/file_utils.h"
 #include "perfetto/ext/base/string_utils.h"
+
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+namespace {
+std::string GetTempName() {
+  char name[] = "perfetto-XXXXXX";
+  PERFETTO_CHECK(_mktemp_s(name, sizeof(name)) == 0);
+  return name;
+}
+}  // namespace
+#endif
 
 namespace perfetto {
 namespace base {
 
 std::string GetSysTempDir() {
-  const char* tmpdir = getenv("TMPDIR");
-  if (tmpdir)
+  const char* tmpdir = nullptr;
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+  if ((tmpdir = getenv("TMP")))
+    return tmpdir;
+  if ((tmpdir = getenv("TEMP")))
+    return tmpdir;
+  return "C:\\TEMP";
+#else
+  if ((tmpdir = getenv("TMPDIR")))
     return base::StripSuffix(tmpdir, "/");
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
   return "/data/local/tmp";
 #else
   return "/tmp";
-#endif
+#endif  // !OS_ANDROID
+#endif  // !OS_WIN
 }
 
 // static
 TempFile TempFile::Create() {
   TempFile temp_file;
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+  temp_file.path_ = GetSysTempDir() + "\\" + GetTempName();
+  // Several tests want to read-back the temp file while still open. On Windows,
+  // that requires FILE_SHARE_READ. FILE_SHARE_READ is NOT settable when using
+  // the POSIX-compat equivalent function _open(). Hence the CreateFileA +
+  // _open_osfhandle dance here.
+  HANDLE h =
+      ::CreateFileA(temp_file.path_.c_str(), GENERIC_READ | GENERIC_WRITE,
+                    FILE_SHARE_DELETE | FILE_SHARE_READ, nullptr, CREATE_ALWAYS,
+                    FILE_ATTRIBUTE_TEMPORARY, nullptr);
+  PERFETTO_CHECK(PlatformHandleChecker::IsValid(h));
+  // According to MSDN, when using _open_osfhandle the caller must not call
+  // CloseHandle(). Ownership is moved to the file descriptor, which then needs
+  // to be closed with just with _close().
+  temp_file.fd_.reset(_open_osfhandle(reinterpret_cast<intptr_t>(h), 0));
+#else
   temp_file.path_ = GetSysTempDir() + "/perfetto-XXXXXXXX";
   temp_file.fd_.reset(mkstemp(&temp_file.path_[0]));
+#endif
   if (PERFETTO_UNLIKELY(!temp_file.fd_)) {
     PERFETTO_FATAL("Could not create temp file %s", temp_file.path_.c_str());
   }
@@ -70,7 +116,13 @@ ScopedFile TempFile::ReleaseFD() {
 void TempFile::Unlink() {
   if (path_.empty())
     return;
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+  // If the FD is still open DeleteFile will mark the file as pending deletion
+  // and delete it only when the process exists.
+  PERFETTO_CHECK(DeleteFileA(path_.c_str()));
+#else
   PERFETTO_CHECK(unlink(path_.c_str()) == 0);
+#endif
   path_.clear();
 }
 
@@ -80,18 +132,25 @@ TempFile& TempFile::operator=(TempFile&&) = default;
 // static
 TempDir TempDir::Create() {
   TempDir temp_dir;
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+  temp_dir.path_ = GetSysTempDir() + "\\" + GetTempName();
+  PERFETTO_CHECK(_mkdir(temp_dir.path_.c_str()) == 0);
+#else
   temp_dir.path_ = GetSysTempDir() + "/perfetto-XXXXXXXX";
   PERFETTO_CHECK(mkdtemp(&temp_dir.path_[0]));
+#endif
   return temp_dir;
 }
 
 TempDir::TempDir() = default;
+TempDir::TempDir(TempDir&&) noexcept = default;
+TempDir& TempDir::operator=(TempDir&&) = default;
 
 TempDir::~TempDir() {
-  PERFETTO_CHECK(rmdir(path_.c_str()) == 0);
+  if (path_.empty())
+    return;  // For objects that get std::move()d.
+  PERFETTO_CHECK(Rmdir(path_));
 }
 
 }  // namespace base
 }  // namespace perfetto
-
-#endif  // !PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)

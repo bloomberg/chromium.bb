@@ -207,7 +207,7 @@ Status JwkReader::Init(const CryptoData& bytes,
   {
     // Limit the visibility for |value| as it is moved to |dict_| (via
     // |dict_value|) once it has been loaded successfully.
-    base::Optional<base::Value> value = base::JSONReader::Read(json_string);
+    absl::optional<base::Value> value = base::JSONReader::Read(json_string);
     base::DictionaryValue* dict_value = nullptr;
 
     if (!value.has_value() || !value.value().GetAsDictionary(&dict_value))
@@ -331,9 +331,10 @@ Status JwkReader::GetOptionalBool(const std::string& member_name,
   if (!dict_.Get(member_name, &value))
     return Status::Success();
 
-  if (!value->GetAsBoolean(result))
+  if (!value->is_bool())
     return Status::ErrorJwkMemberWrongType(member_name, "boolean");
 
+  *result = value->GetBool();
   *member_exists = true;
   return Status::Success();
 }

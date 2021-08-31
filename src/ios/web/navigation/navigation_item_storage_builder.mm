@@ -15,6 +15,21 @@
 
 namespace web {
 
+int NavigationItemStorageBuilder::ItemStoredSize(
+    NavigationItemImpl* navigation_item) const {
+  DCHECK(navigation_item);
+  int size = 0;
+  size += navigation_item->virtual_url_.spec().size();
+  size += navigation_item->url_.spec().size();
+  size += navigation_item->referrer_.url.spec().size();
+  size += navigation_item->title_.size();
+  for (NSString* key in navigation_item->http_request_headers_) {
+    NSString* value = navigation_item->http_request_headers_[key];
+    size += key.length + value.length;
+  }
+  return size;
+}
+
 CRWNavigationItemStorage* NavigationItemStorageBuilder::BuildStorage(
     NavigationItemImpl* navigation_item) const {
   DCHECK(navigation_item);
@@ -52,9 +67,7 @@ NavigationItemStorageBuilder::BuildNavigationItemImpl(
   // because it is already a session restoration item or because it is an
   // external PDF), don't restore it to avoid issues. See
   // http://crbug.com/1017147 , 1076851 and 1065433.
-  bool should_use_url = navigation_item_storage.URL.SchemeIsHTTPOrHTTPS() ||
-                        web::GetWebClient()->IsEmbedderBlockRestoreUrlEnabled();
-  if (should_use_url) {
+  if (navigation_item_storage.URL.SchemeIsHTTPOrHTTPS()) {
     item->SetURL(navigation_item_storage.URL);
     item->SetVirtualURL(navigation_item_storage.virtualURL);
   } else {

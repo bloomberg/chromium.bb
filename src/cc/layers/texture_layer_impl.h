@@ -5,7 +5,9 @@
 #ifndef CC_LAYERS_TEXTURE_LAYER_IMPL_H_
 #define CC_LAYERS_TEXTURE_LAYER_IMPL_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
@@ -13,11 +15,8 @@
 #include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/resources/cross_thread_shared_bitmap.h"
+#include "components/viz/common/resources/release_callback.h"
 #include "components/viz/common/resources/transferable_resource.h"
-
-namespace viz {
-class SingleReleaseCallback;
-}
 
 namespace cc {
 
@@ -58,9 +57,8 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   void SetUVTopLeft(const gfx::PointF& top_left);
   void SetUVBottomRight(const gfx::PointF& bottom_right);
 
-  void SetTransferableResource(
-      const viz::TransferableResource& resource,
-      std::unique_ptr<viz::SingleReleaseCallback> release_callback);
+  void SetTransferableResource(const viz::TransferableResource& resource,
+                               viz::ReleaseCallback release_callback);
 
   // These methods notify the display compositor, through the
   // CompositorFrameSink, of the existence of a SharedBitmapId and its
@@ -100,8 +98,8 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   // Local ResourceId for the TransferableResource, to be used with the
   // compositor's viz::ClientResourceProvider in order to refer to the
   // TransferableResource given to it.
-  viz::ResourceId resource_id_ = 0;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback_;
+  viz::ResourceId resource_id_ = viz::kInvalidResourceId;
+  viz::ReleaseCallback release_callback_;
 
   // As a pending layer, the set of SharedBitmapIds and the underlying
   // base::SharedMemory that must be notified to the display compositor through

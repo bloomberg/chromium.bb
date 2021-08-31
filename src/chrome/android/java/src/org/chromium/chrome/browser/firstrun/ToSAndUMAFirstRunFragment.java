@@ -4,22 +4,27 @@
 
 package org.chromium.chrome.browser.firstrun;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.Fragment;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.version.ChromeVersionInfo;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -45,21 +50,39 @@ public class ToSAndUMAFirstRunFragment extends Fragment implements FirstRunFragm
         }
     }
 
+    /** Alerts about some methods once ToSAndUMAFirstRunFragment executes them. */
+    public interface Observer {
+        /** See {@link #onNativeInitialized}. */
+        public void onNativeInitialized();
+    }
+
     private static boolean sShowUmaCheckBoxForTesting;
 
-    protected boolean mNativeInitialized;
+    @Nullable
+    private static ToSAndUMAFirstRunFragment.Observer sObserver;
+
+    private boolean mNativeInitialized;
+    private boolean mTosButtonClicked;
 
     private Button mAcceptButton;
     private CheckBox mSendReportCheckBox;
     private TextView mTosAndPrivacy;
     private View mTitle;
     private View mProgressSpinner;
-    private boolean mTriggerAcceptAfterNativeInit;
+
+    private long mTosAcceptedTime;
 
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fre_tosanduma, container, false);
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        getPageDelegate().getPolicyLoadListener().onAvailable(
+                (ignored) -> tryMarkTermsAccepted(false));
     }
 
     @Override
@@ -73,14 +96,9 @@ public class ToSAndUMAFirstRunFragment extends Fragment implements FirstRunFragm
         mSendReportCheckBox = (CheckBox) view.findViewById(R.id.send_report_checkbox);
         mTosAndPrivacy = (TextView) view.findViewById(R.id.tos_and_privacy);
 
-        mAcceptButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                acceptTermsOfService();
-            }
-        });
+        mAcceptButton.setOnClickListener((v) -> onTosButtonClicked());
 
-        mSendReportCheckBox.setChecked(FirstRunActivity.DEFAULT_METRICS_AND_CRASH_REPORTING);
+        mSendReportCheckBox.setChecked(getUmaCheckBoxInitialState());
         if (!canShowUmaCheckBox()) {
             mSendReportCheckBox.setVisibility(View.GONE);
         }
@@ -108,7 +126,7 @@ public class ToSAndUMAFirstRunFragment extends Fragment implements FirstRunFragm
         Bundle freProperties = getPageDelegate().getProperties();
         @ChildAccountStatus.Status
         int childAccountStatus = freProperties.getInt(
-                SigninFirstRunFragment.CHILD_ACCOUNT_STATUS, ChildAccountStatus.NOT_CHILD);
+                SyncConsentFirstRunFragment.CHILD_ACCOUNT_STATUS, ChildAccountStatus.NOT_CHILD);
         if (childAccountStatus == ChildAccountStatus.REGULAR_CHILD) {
             tosText = SpanApplier.applySpans(getString(R.string.fre_tos_and_privacy_child_account),
                     new SpanInfo("<LINK1>", "</LINK1>", clickableGoogleTermsSpan),
@@ -130,7 +148,7 @@ public class ToSAndUMAFirstRunFragment extends Fragment implements FirstRunFragm
         // initialized at which point the activity will skip the page.
         // We distinguish case 1 from case 2 by the value of |mNativeInitialized|, as that is set
         // via onAttachFragment() from FirstRunActivity - which is before this onViewCreated().
-        if (!mNativeInitialized && FirstRunStatus.shouldSkipWelcomePage()) {
+        if (isWaitingForNativeAndPolicyInit() && FirstRunStatus.shouldSkipWelcomePage()) {
             setSpinnerVisible(true);
         }
     }
@@ -165,17 +183,47 @@ public class ToSAndUMAFirstRunFragment extends Fragment implements FirstRunFragm
         assert !mNativeInitialized;
 
         mNativeInitialized = true;
-        if (mTriggerAcceptAfterNativeInit) acceptTermsOfService();
+        tryMarkTermsAccepted(false);
+
+        if (sObserver != null) {
+            sObserver.onNativeInitialized();
+        }
     }
 
-    private void acceptTermsOfService() {
-        if (!mNativeInitialized) {
-            mTriggerAcceptAfterNativeInit = true;
-            setSpinnerVisible(true);
+    @Override
+    public void reset() {
+        // We cannot pass the welcome page when native or policy is not initialized. When this page
+        // is revisited, this means this page is persist and we should re-show the ToS And UMA.
+        assert !isWaitingForNativeAndPolicyInit();
+
+        setSpinnerVisible(false);
+        mSendReportCheckBox.setChecked(getUmaCheckBoxInitialState());
+    }
+
+    private void onTosButtonClicked() {
+        mTosButtonClicked = true;
+        mTosAcceptedTime = SystemClock.elapsedRealtime();
+        tryMarkTermsAccepted(true);
+    }
+
+    /**
+     * This should be called Tos button is clicked for a fresh new FRE, or when native and policies
+     * are initialized if Tos has ever been accepted.
+     *
+     * @param fromButtonClicked Whether called from {@link #onTosButtonClicked()}.
+     */
+    private void tryMarkTermsAccepted(boolean fromButtonClicked) {
+        if (!mTosButtonClicked || isWaitingForNativeAndPolicyInit()) {
+            if (fromButtonClicked) setSpinnerVisible(true);
             return;
         }
 
-        mTriggerAcceptAfterNativeInit = false;
+        // In cases where the attempt is triggered other than button click, the ToS should have been
+        // accepted by the user already.
+        if (!fromButtonClicked) {
+            RecordHistogram.recordTimesHistogram("MobileFre.TosFragment.SpinnerVisibleDuration",
+                    SystemClock.elapsedRealtime() - mTosAcceptedTime);
+        }
         boolean allowCrashUpload = canShowUmaCheckBox() && mSendReportCheckBox.isChecked();
         getPageDelegate().acceptTermsOfService(allowCrashUpload);
     }
@@ -188,6 +236,19 @@ public class ToSAndUMAFirstRunFragment extends Fragment implements FirstRunFragm
         setTosAndUmaVisible(otherElementVisible);
         mTitle.setVisibility(otherElementVisible ? View.VISIBLE : View.INVISIBLE);
         mProgressSpinner.setVisibility(spinnerVisible ? View.VISIBLE : View.GONE);
+    }
+
+    private boolean isWaitingForNativeAndPolicyInit() {
+        return !mNativeInitialized || getPageDelegate().getPolicyLoadListener().get() == null;
+    }
+
+    private boolean getUmaCheckBoxInitialState() {
+        // The shared preference behind PrivacyPreferencesManagerImpl#isMetricsUploadPermitted is
+        // set after ToS is accepted. If ToS is not accepted yet, use the default value.
+        return FirstRunUtils.didAcceptTermsOfService()
+                ? PrivacyPreferencesManagerImpl.getInstance()
+                          .isUsageAndCrashReportingPermittedByUser()
+                : FirstRunActivity.DEFAULT_METRICS_AND_CRASH_REPORTING;
     }
 
     // Exposed methods for ToSAndUMACCTFirstRunFragment
@@ -218,5 +279,11 @@ public class ToSAndUMAFirstRunFragment extends Fragment implements FirstRunFragm
     @VisibleForTesting
     public static void setShowUmaCheckBoxForTesting(boolean showForTesting) {
         sShowUmaCheckBoxForTesting = showForTesting;
+    }
+
+    @VisibleForTesting
+    public static void setObserverForTesting(ToSAndUMAFirstRunFragment.Observer observer) {
+        assert sObserver == null;
+        sObserver = observer;
     }
 }

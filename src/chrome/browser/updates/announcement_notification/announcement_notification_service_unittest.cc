@@ -13,8 +13,12 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/profiles/profile_attributes_init_params.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -90,17 +94,34 @@ class AnnouncementNotificationServiceTest : public testing::Test {
             bool sign_in,
             int current_version,
             bool new_profile,
-            bool guest_session = false) {
-    if (enable_feature) {
-      scoped_feature_list_.InitAndEnableFeatureWithParameters(
-          kAnnouncementNotification, parameters);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(kAnnouncementNotification);
-    }
+            bool guest_profile = false,
+            bool ephemeral_guest_profile = false) {
+    std::vector<base::test::ScopedFeatureList::FeatureAndParams>
+        enabled_features;
+    std::vector<base::Feature> disabled_features;
+    if (enable_feature)
+      enabled_features.emplace_back(kAnnouncementNotification, parameters);
+    else
+      disabled_features.push_back(kAnnouncementNotification);
+
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
+    defined(OS_MAC)
+    if (ephemeral_guest_profile)
+      enabled_features.push_back(
+          {features::kEnableEphemeralGuestProfilesOnDesktop, {}});
+    else
+      disabled_features.push_back(
+          features::kEnableEphemeralGuestProfilesOnDesktop);
+#endif
+
+    scoped_feature_list_.InitWithFeaturesAndParameters(enabled_features,
+                                                       disabled_features);
 
     // Setup sign in status.
-    test_profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    test_profile_manager_ = std::make_unique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(test_profile_manager_->SetUp());
 
     // Build the testing profile.
@@ -110,20 +131,22 @@ class AnnouncementNotificationServiceTest : public testing::Test {
     builder.SetPrefService(
         std::unique_ptr<sync_preferences::PrefServiceSyncable>());
     builder.SetProfileName(kProfileId);
-    builder.OverrideIsNewProfile(new_profile);
-    if (guest_session)
+    builder.SetIsNewProfile(new_profile);
+    if (guest_profile || ephemeral_guest_profile)
       builder.SetGuestSession();
     test_profile_ = builder.Build();
 
     // Mock the sign in profile data.
     DCHECK_EQ(test_profile_->GetPath(),
               test_profile_manager_->profiles_dir().AppendASCII(kProfileId));
-    std::string gaia_id = sign_in ? "dummy_gaia_id" : std::string();
+    ProfileAttributesInitParams params;
+    params.profile_path =
+        test_profile_manager_->profiles_dir().AppendASCII(kProfileId);
+    params.profile_name = u"dummy_name";
+    params.gaia_id = sign_in ? "dummy_gaia_id" : std::string();
+    params.is_consented_primary_account = sign_in;
     test_profile_manager_->profile_attributes_storage()->AddProfile(
-        test_profile_manager_->profiles_dir().AppendASCII(kProfileId),
-        base::ASCIIToUTF16("dummy_name"), gaia_id, base::string16(),
-        sign_in /*is_consented_primary_account*/, 0, std::string(),
-        EmptyAccountId());
+        std::move(params));
 
     // Register pref.
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
@@ -175,10 +198,21 @@ TEST_F(AnnouncementNotificationServiceTest, SkipNewProfile) {
   EXPECT_EQ(CurrentVersionPref(), 2);
 }
 
-TEST_F(AnnouncementNotificationServiceTest, SkipGuestProfile) {
+TEST_F(AnnouncementNotificationServiceTest, SkipOTRGuestProfile) {
   std::map<std::string, std::string> parameters = {
       {kSkipFirstRun, "false"}, {kVersion, "2"}, {kSkipNewProfile, "false"}};
   Init(parameters, true, false, 1, false, /*guest_profile=*/true);
+  ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(false));
+  EXPECT_CALL(*delegate(), ShowNotification()).Times(0);
+  service()->MaybeShowNotification();
+  EXPECT_EQ(CurrentVersionPref(), 2);
+}
+
+TEST_F(AnnouncementNotificationServiceTest, SkipEphemeralGuestProfile) {
+  std::map<std::string, std::string> parameters = {
+      {kSkipFirstRun, "false"}, {kVersion, "2"}, {kSkipNewProfile, "false"}};
+  Init(parameters, true, false, 1, false, /*guest_profile=*/false,
+       /*ephemeral_guest_profile=*/true);
   ON_CALL(*delegate(), IsFirstRun()).WillByDefault(Return(false));
   EXPECT_CALL(*delegate(), ShowNotification()).Times(0);
   service()->MaybeShowNotification();

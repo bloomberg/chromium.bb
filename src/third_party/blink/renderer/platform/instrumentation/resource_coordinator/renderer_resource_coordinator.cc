@@ -7,8 +7,8 @@
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -34,6 +34,11 @@ class DummyRendererResourceCoordinator final
                             ExecutionContext* execution_context) final {}
   void OnScriptStateDetached(ScriptState* script_state) final {}
   void OnScriptStateDestroyed(ScriptState* script_state) final {}
+  void OnBeforeContentFrameAttached(const Frame& frame,
+                                    const HTMLFrameOwnerElement& owner) final {}
+  void OnBeforeContentFrameDetached(const Frame& frame,
+                                    const HTMLFrameOwnerElement& owner) final {}
+  void FireBackgroundTracingTrigger(const String& trigger_name) final {}
 };
 
 }  // namespace

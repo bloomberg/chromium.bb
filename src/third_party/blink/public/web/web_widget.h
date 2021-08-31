@@ -32,7 +32,6 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_WIDGET_H_
 
 #include "base/callback.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/metrics/begin_main_frame_metrics.h"
@@ -40,16 +39,15 @@
 #include "cc/trees/layer_tree_host_client.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
-#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_context.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/input/input_handler_proxy.h"
+#include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_hit_test_result.h"
@@ -60,8 +58,6 @@
 namespace cc {
 class LayerTreeHost;
 class LayerTreeSettings;
-class TaskGraphRunner;
-class UkmRecorderFactory;
 }
 
 namespace ui {
@@ -70,12 +66,13 @@ class LatencyInfo;
 }
 
 namespace blink {
+struct ScreenInfo;
+struct ScreenInfos;
 struct VisualProperties;
 class WebCoalescedInputEvent;
 
 namespace scheduler {
 class WebRenderWidgetSchedulingState;
-class WebThreadScheduler;
 }
 
 class WebWidget {
@@ -85,19 +82,10 @@ class WebWidget {
   // is called. |settings| is typically null. When |settings| is null
   // the default settings will be used, tests may provide a |settings| object to
   // override the defaults.
-  virtual cc::LayerTreeHost* InitializeCompositing(
-      scheduler::WebThreadScheduler* main_thread_scheduler,
-      cc::TaskGraphRunner* task_graph_runner,
-      bool for_child_local_root_frame,
-      const ScreenInfo& screen_info,
-      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+  virtual void InitializeCompositing(
+      scheduler::WebAgentGroupScheduler& agent_group_scheduler,
+      const ScreenInfos& screen_info,
       const cc::LayerTreeSettings* settings) = 0;
-
-  // This method closes and deletes the WebWidget. If a |cleanup_task| is
-  // provided it should run on the |cleanup_runner| after the WebWidget has
-  // added its own tasks to the |cleanup_runner|.
-  virtual void Close(
-      scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner = nullptr) {}
 
   // Set the compositor as visible. If |visible| is true, then the compositor
   // will request a new layer frame sink and begin producing frames from the
@@ -171,7 +159,7 @@ class WebWidget {
       mojom::InputEventResultState ack_state,
       const ui::LatencyInfo& latency_info,
       std::unique_ptr<InputHandlerProxy::DidOverscrollParams>,
-      base::Optional<cc::TouchAction>)>;
+      absl::optional<cc::TouchAction>)>;
 
   // Process the input event, invoking the callback when complete. This
   // method will call the callback synchronously.
@@ -209,9 +197,15 @@ class WebWidget {
   // displayed.
   virtual const ScreenInfo& GetScreenInfo() = 0;
 
+  // Returns information about all available screens.
+  virtual const ScreenInfos& GetScreenInfos() = 0;
+
   // Returns original (non-emulated) information about the screen where this
   // view's widgets are being displayed.
   virtual const ScreenInfo& GetOriginalScreenInfo() = 0;
+
+  // Returns original (non-emulated) information about all available screens.
+  virtual const ScreenInfos& GetOriginalScreenInfos() = 0;
 
   // Called to get the position of the widget's window in screen
   // coordinates. Note, the window includes any decorations such as borders,
@@ -240,4 +234,4 @@ class WebWidget {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_WIDGET_H_

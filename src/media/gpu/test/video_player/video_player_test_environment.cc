@@ -25,7 +25,7 @@ constexpr base::FilePath::CharType kDefaultTestVideoPath[] =
 VideoPlayerTestEnvironment* VideoPlayerTestEnvironment::Create(
     const base::FilePath& video_path,
     const base::FilePath& video_metadata_path,
-    bool enable_validator,
+    ValidatorType validator_type,
     const DecoderImplementation implementation,
     const base::FilePath& output_folder,
     const FrameOutputConfig& frame_output_config) {
@@ -37,14 +37,14 @@ VideoPlayerTestEnvironment* VideoPlayerTestEnvironment::Create(
     return nullptr;
   }
 
-  return new VideoPlayerTestEnvironment(std::move(video), enable_validator,
+  return new VideoPlayerTestEnvironment(std::move(video), validator_type,
                                         implementation, output_folder,
                                         frame_output_config);
 }
 
 VideoPlayerTestEnvironment::VideoPlayerTestEnvironment(
     std::unique_ptr<media::test::Video> video,
-    bool enable_validator,
+    ValidatorType validator_type,
     const DecoderImplementation implementation,
     const base::FilePath& output_folder,
     const FrameOutputConfig& frame_output_config)
@@ -56,9 +56,17 @@ VideoPlayerTestEnvironment::VideoPlayerTestEnvironment(
             media::kVaapiAV1Decoder,
 #endif
           },
-          /*disabled_featureas=*/{}),
+          /*disabled_features=*/
+          {
+#if BUILDFLAG(USE_VAAPI)
+            // Disable this feature so that the decoder test can test a
+            // resolution which is denied for the sake of performance. See
+            // b/171041334.
+            kVaapiEnforceVideoMinMaxResolution,
+#endif
+          }),
       video_(std::move(video)),
-      enable_validator_(enable_validator),
+      validator_type_(validator_type),
       implementation_(implementation),
       frame_output_config_(frame_output_config),
       output_folder_(output_folder),
@@ -77,7 +85,7 @@ void VideoPlayerTestEnvironment::SetUp() {
   // Note: buddy, guado and rikku support import mode for H.264 and VP9, but for
   // VP8 they use a different video decoder (V4L2 instead of VAAPI) and don't
   // support import mode.
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   constexpr const char* kImportModeBlocklist[] = {
       "buddy",      "guado",      "guado-cfm", "guado-kernelnext", "nyan_big",
       "nyan_blaze", "nyan_kitty", "rikku",     "rikku-cfm"};
@@ -85,7 +93,7 @@ void VideoPlayerTestEnvironment::SetUp() {
   import_supported_ = (std::find(std::begin(kImportModeBlocklist),
                                  std::end(kImportModeBlocklist),
                                  board) == std::end(kImportModeBlocklist));
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // VideoDecoders always require import mode to be supported.
   DCHECK(import_supported_ || implementation_ == DecoderImplementation::kVDA);
@@ -101,7 +109,12 @@ VideoPlayerTestEnvironment::GetGpuMemoryBufferFactory() const {
 }
 
 bool VideoPlayerTestEnvironment::IsValidatorEnabled() const {
-  return enable_validator_;
+  return validator_type_ != ValidatorType::kNone;
+}
+
+VideoPlayerTestEnvironment::ValidatorType
+VideoPlayerTestEnvironment::GetValidatorType() const {
+  return validator_type_;
 }
 
 DecoderImplementation VideoPlayerTestEnvironment::GetDecoderImplementation()

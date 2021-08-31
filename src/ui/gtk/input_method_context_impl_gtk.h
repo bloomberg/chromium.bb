@@ -5,15 +5,16 @@
 #ifndef UI_GTK_INPUT_METHOD_CONTEXT_IMPL_GTK_H_
 #define UI_GTK_INPUT_METHOD_CONTEXT_IMPL_GTK_H_
 
+#include <string>
+
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "ui/base/glib/glib_integers.h"
 #include "ui/base/glib/glib_signal.h"
 #include "ui/base/ime/linux/linux_input_method_context.h"
 #include "ui/gfx/geometry/rect.h"
 
-typedef struct _GdkWindow GdkWindow;
-typedef struct _GtkIMContext GtkIMContext;
+using GtkIMContext = struct _GtkIMContext;
+using GdkWindow = struct _GdkWindow;
 
 namespace gtk {
 
@@ -31,7 +32,7 @@ class InputMethodContextImplGtk : public ui::LinuxInputMethodContext {
   void Reset() override;
   void Focus() override;
   void Blur() override;
-  void SetSurroundingText(const base::string16& text,
+  void SetSurroundingText(const std::u16string& text,
                           const gfx::Range& selection_range) override;
 
  private:
@@ -55,25 +56,27 @@ class InputMethodContextImplGtk : public ui::LinuxInputMethodContext {
                      OnPreeditStart,
                      GtkIMContext*);
 
+  // Only used on GTK3.
   void SetContextClientWindow(GdkWindow* window);
 
   // A set of callback functions.  Must not be nullptr.
-  ui::LinuxInputMethodContextDelegate* delegate_;
+  ui::LinuxInputMethodContextDelegate* const delegate_;
 
   // Input method context type flag.
   //   - true if it supports table-based input methods
   //   - false if it supports multiple, loadable input methods
-  bool is_simple_;
+  const bool is_simple_;
 
   // Keeps track of current focus state.
-  bool has_focus_;
+  bool has_focus_ = false;
 
   // IME's input GTK context.
-  GtkIMContext* gtk_context_;
+  GtkIMContext* gtk_context_ = nullptr;
 
-  gpointer gdk_last_set_client_window_;
+  // Only used on GTK3.
+  gpointer gdk_last_set_client_window_ = nullptr;
 
-  // Last known caret bounds relative to the screen coordinates.
+  // Last known caret bounds relative to the screen coordinates, in DIPs.
   gfx::Rect last_caret_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodContextImplGtk);

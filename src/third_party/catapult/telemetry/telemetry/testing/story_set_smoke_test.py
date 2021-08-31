@@ -2,9 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import logging
 import os
 import unittest
+import six
 
 from telemetry.internal import story_runner
 from telemetry import page
@@ -23,9 +25,9 @@ class StorySetSmokeTest(unittest.TestCase):
   def GetAllStorySetClasses(self, story_sets_dir, top_level_dir):
     # We can't test page sets that aren't directly constructible since we
     # don't know what arguments to put for the constructor.
-    return discover.DiscoverClasses(story_sets_dir, top_level_dir,
-                                    story_module.StorySet,
-                                    directly_constructable=True).values()
+    return list(discover.DiscoverClasses(story_sets_dir, top_level_dir,
+                                         story_module.StorySet,
+                                         directly_constructable=True).values())
 
   def CheckArchive(self, story_set):
     """Verify that all URLs of pages in story_set have an associated archive."""
@@ -86,7 +88,7 @@ class StorySetSmokeTest(unittest.TestCase):
     self.assertTrue(
         # We use basestring instead of str because story's URL can be string of
         # unicode.
-        isinstance(story.url, basestring),
+        isinstance(story.url, six.string_types),
         msg='page %s \'s url must have type string' % story.name)
     self.assertIsInstance(
         story.make_javascript_deterministic,

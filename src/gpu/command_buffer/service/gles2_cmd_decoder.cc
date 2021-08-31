@@ -32,7 +32,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_math.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -83,7 +82,9 @@
 #include "gpu/command_buffer/service/validating_abstract_texture_impl.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_preferences.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point.h"
@@ -93,6 +94,7 @@
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/transform.h"
+#include "ui/gfx/video_types.h"
 #include "ui/gl/ca_renderer_layer_params.h"
 #include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/gl_bindings.h"
@@ -2739,6 +2741,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
   bool multi_draw_explicitly_enabled_;
   bool draw_instanced_base_vertex_base_instance_explicitly_enabled_;
   bool multi_draw_instanced_base_vertex_base_instance_explicitly_enabled_;
+  bool arb_texture_rectangle_enabled_;
+  bool oes_egl_image_external_enabled_;
+  bool nv_egl_stream_consumer_external_enabled_;
 
   bool compile_shader_always_succeeds_;
 
@@ -2956,11 +2961,11 @@ ScopedResolvedFramebufferBinder::ScopedResolvedFramebufferBinder(
   GLuint targetid;
   if (internal) {
     if (!decoder_->offscreen_resolved_frame_buffer_.get()) {
-      decoder_->offscreen_resolved_frame_buffer_.reset(
-          new BackFramebuffer(decoder_));
+      decoder_->offscreen_resolved_frame_buffer_ =
+          std::make_unique<BackFramebuffer>(decoder_);
       decoder_->offscreen_resolved_frame_buffer_->Create();
-      decoder_->offscreen_resolved_color_texture_.reset(
-          new BackTexture(decoder));
+      decoder_->offscreen_resolved_color_texture_ =
+          std::make_unique<BackTexture>(decoder);
       decoder_->offscreen_resolved_color_texture_->Create();
 
       DCHECK(decoder_->offscreen_saved_color_format_);
@@ -3513,6 +3518,9 @@ GLES2DecoderImpl::GLES2DecoderImpl(
       multi_draw_explicitly_enabled_(false),
       draw_instanced_base_vertex_base_instance_explicitly_enabled_(false),
       multi_draw_instanced_base_vertex_base_instance_explicitly_enabled_(false),
+      arb_texture_rectangle_enabled_(false),
+      oes_egl_image_external_enabled_(false),
+      nv_egl_stream_consumer_external_enabled_(false),
       compile_shader_always_succeeds_(false),
       lose_context_when_out_of_memory_(false),
       should_use_native_gmb_for_backbuffer_(false),
@@ -3583,7 +3591,7 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
     surface_->SetForceGlFlushOnSwapBuffers();
 
   // Create GPU Tracer for timing values.
-  gpu_tracer_.reset(new GPUTracer(this));
+  gpu_tracer_ = std::make_unique<GPUTracer>(this);
 
   if (workarounds().disable_timestamp_queries) {
     // Forcing time elapsed query for any GPU Timing Client forces it for all
@@ -3606,13 +3614,12 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
     return gpu::ContextResult::kFatalFailure;
   }
 
-  // Only create webgl2-compute for passthrough cmd decoder.
-  if (attrib_helper.context_type == CONTEXT_TYPE_WEBGL2_COMPUTE) {
+  // Only create ES 3.1 contexts with the passthrough cmd decoder.
+  if (attrib_helper.context_type == CONTEXT_TYPE_OPENGLES31_FOR_TESTING) {
     // Must not destroy ContextGroup if it is not initialized.
     group_ = nullptr;
-    LOG(ERROR)
-        << "ContextResult::kFatalFailure: "
-           "webgl2-compute is not supported on validating command decoder.";
+    LOG(ERROR) << "ContextResult::kFatalFailure: "
+                  "ES 3.1 is not supported on validating command decoder.";
     return gpu::ContextResult::kFatalFailure;
   }
 
@@ -3663,8 +3670,8 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   // However, we set it to true everywhere, not to trust drivers to handle
   // out-of-bounds buffer accesses.
   bool needs_emulation = true;
-  transform_feedback_manager_.reset(new TransformFeedbackManager(
-      group_->max_transform_feedback_separate_attribs(), needs_emulation));
+  transform_feedback_manager_ = std::make_unique<TransformFeedbackManager>(
+      group_->max_transform_feedback_separate_attribs(), needs_emulation);
 
   // Register this object as a GPU switching observer.
   if (feature_info_->IsWebGLContext()) {
@@ -3699,7 +3706,7 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   state_.indexed_uniform_buffer_bindings->SetIsBound(true);
 
   state_.InitGenericAttribs(group_->max_vertex_attribs());
-  vertex_array_manager_.reset(new VertexArrayManager());
+  vertex_array_manager_ = std::make_unique<VertexArrayManager>();
 
   GLuint default_vertex_attrib_service_id = 0;
   if (features().native_vertex_array_object) {
@@ -3717,17 +3724,18 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   // vertex_attrib_manager is set to default_vertex_attrib_manager by this call
   DoBindVertexArrayOES(0);
 
-  framebuffer_manager_.reset(new FramebufferManager(
+  framebuffer_manager_ = std::make_unique<FramebufferManager>(
       group_->max_draw_buffers(), group_->max_color_attachments(),
-      group_->framebuffer_completeness_cache()));
+      group_->framebuffer_completeness_cache());
   group_->texture_manager()->AddFramebufferManager(framebuffer_manager_.get());
 
-  query_manager_.reset(new GLES2QueryManager(this, feature_info_.get()));
+  query_manager_ =
+      std::make_unique<GLES2QueryManager>(this, feature_info_.get());
 
-  gpu_fence_manager_.reset(new GpuFenceManager());
+  gpu_fence_manager_ = std::make_unique<GpuFenceManager>();
 
-  multi_draw_manager_.reset(
-      new MultiDrawManager(MultiDrawManager::IndexStorageType::Offset));
+  multi_draw_manager_ = std::make_unique<MultiDrawManager>(
+      MultiDrawManager::IndexStorageType::Offset);
 
   util_.set_num_compressed_texture_formats(
       validators_->compressed_texture_format.GetValues().size());
@@ -3991,30 +3999,33 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   if (offscreen) {
     // Create the target frame buffer. This is the one that the client renders
     // directly to.
-    offscreen_target_frame_buffer_.reset(new BackFramebuffer(this));
+    offscreen_target_frame_buffer_ = std::make_unique<BackFramebuffer>(this);
     offscreen_target_frame_buffer_->Create();
     // Due to GLES2 format limitations, either the color texture (for
     // non-multisampling) or the color render buffer (for multisampling) will be
     // attached to the offscreen frame buffer.  The render buffer has more
     // limited formats available to it, but the texture can't do multisampling.
     if (IsOffscreenBufferMultisampled()) {
-      offscreen_target_color_render_buffer_.reset(new BackRenderbuffer(this));
+      offscreen_target_color_render_buffer_ =
+          std::make_unique<BackRenderbuffer>(this);
       offscreen_target_color_render_buffer_->Create();
     } else {
-      offscreen_target_color_texture_.reset(new BackTexture(this));
+      offscreen_target_color_texture_ = std::make_unique<BackTexture>(this);
       offscreen_target_color_texture_->Create();
     }
-    offscreen_target_depth_render_buffer_.reset(new BackRenderbuffer(this));
+    offscreen_target_depth_render_buffer_ =
+        std::make_unique<BackRenderbuffer>(this);
     offscreen_target_depth_render_buffer_->Create();
-    offscreen_target_stencil_render_buffer_.reset(new BackRenderbuffer(this));
+    offscreen_target_stencil_render_buffer_ =
+        std::make_unique<BackRenderbuffer>(this);
     offscreen_target_stencil_render_buffer_->Create();
 
     if (!offscreen_single_buffer_) {
       // Create the saved offscreen texture. The target frame buffer is copied
       // here when SwapBuffers is called.
-      offscreen_saved_frame_buffer_.reset(new BackFramebuffer(this));
+      offscreen_saved_frame_buffer_ = std::make_unique<BackFramebuffer>(this);
       offscreen_saved_frame_buffer_->Create();
-      offscreen_saved_color_texture_.reset(new BackTexture(this));
+      offscreen_saved_color_texture_ = std::make_unique<BackTexture>(this);
       offscreen_saved_color_texture_->Create();
     }
 
@@ -4266,11 +4277,13 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       feature_info_->feature_flags().oes_compressed_etc1_rgb8_texture;
   caps.texture_format_etc1_npot =
       caps.texture_format_etc1 && !workarounds().etc1_power_of_two_only;
-  // Whether or not a texture will be bound to an EGLImage is
-  // dependent on whether we are using the sync mailbox manager.
+  // Vulkan currently doesn't support single-component cross-thread shared
+  // images.
   caps.disable_one_component_textures =
-      mailbox_manager()->UsesSync() &&
-      workarounds().avoid_one_component_egl_images;
+      group_->shared_image_manager() &&
+      group_->shared_image_manager()->display_context_on_another_thread() &&
+      (workarounds().avoid_one_component_egl_images ||
+       features::IsUsingVulkan());
   caps.texture_rectangle = feature_info_->feature_flags().arb_texture_rectangle;
   caps.texture_usage = feature_info_->feature_flags().angle_texture_usage;
   caps.texture_storage = feature_info_->feature_flags().ext_texture_storage;
@@ -4444,6 +4457,19 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     case CONTEXT_TYPE_WEBGL1:
       shader_spec = SH_WEBGL_SPEC;
       resources.OES_standard_derivatives = derivatives_explicitly_enabled_;
+      resources.ARB_texture_rectangle =
+          (features().arb_texture_rectangle && arb_texture_rectangle_enabled_)
+              ? 1
+              : 0;
+      resources.OES_EGL_image_external =
+          (features().oes_egl_image_external && oes_egl_image_external_enabled_)
+              ? 1
+              : 0;
+      resources.NV_EGL_stream_consumer_external =
+          (features().nv_egl_stream_consumer_external &&
+           nv_egl_stream_consumer_external_enabled_)
+              ? 1
+              : 0;
       resources.EXT_frag_depth = frag_depth_explicitly_enabled_;
       resources.EXT_draw_buffers = draw_buffers_explicitly_enabled_;
       if (!draw_buffers_explicitly_enabled_)
@@ -4454,6 +4480,19 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
       break;
     case CONTEXT_TYPE_WEBGL2:
       shader_spec = SH_WEBGL2_SPEC;
+      resources.ARB_texture_rectangle =
+          (features().arb_texture_rectangle && arb_texture_rectangle_enabled_)
+              ? 1
+              : 0;
+      resources.OES_EGL_image_external =
+          (features().oes_egl_image_external && oes_egl_image_external_enabled_)
+              ? 1
+              : 0;
+      resources.NV_EGL_stream_consumer_external =
+          (features().nv_egl_stream_consumer_external &&
+           nv_egl_stream_consumer_external_enabled_)
+              ? 1
+              : 0;
       break;
     case CONTEXT_TYPE_OPENGLES2:
       shader_spec = SH_GLES2_SPEC;
@@ -4529,8 +4568,6 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     driver_bug_workarounds |= SH_SCALARIZE_VEC_AND_MAT_CONSTRUCTOR_ARGS;
   if (workarounds().regenerate_struct_names)
     driver_bug_workarounds |= SH_REGENERATE_STRUCT_NAMES;
-  if (workarounds().remove_pow_with_constant_exponent)
-    driver_bug_workarounds |= SH_REMOVE_POW_WITH_CONSTANT_EXPONENT;
   if (workarounds().emulate_abs_int_function)
     driver_bug_workarounds |= SH_EMULATE_ABS_INT_FUNCTION;
   if (workarounds().rewrite_texelfetchoffset_to_texelfetch)
@@ -4543,8 +4580,6 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     driver_bug_workarounds |= SH_EMULATE_ISNAN_FLOAT_FUNCTION;
   if (workarounds().use_unused_standard_shared_blocks)
     driver_bug_workarounds |= SH_USE_UNUSED_STANDARD_SHARED_BLOCKS;
-  if (workarounds().dont_remove_invariant_for_fragment_input)
-    driver_bug_workarounds |= SH_DONT_REMOVE_INVARIANT_FOR_FRAGMENT_INPUT;
   if (workarounds().remove_invariant_and_centroid_for_essl3)
     driver_bug_workarounds |= SH_REMOVE_INVARIANT_AND_CENTROID_FOR_ESSL3;
   if (workarounds().rewrite_float_unary_minus_operator)
@@ -5674,7 +5709,7 @@ void GLES2DecoderImpl::CreateBackTexture() {
   }
 
   ++create_back_texture_count_for_test_;
-  offscreen_saved_color_texture_.reset(new BackTexture(this));
+  offscreen_saved_color_texture_ = std::make_unique<BackTexture>(this);
   offscreen_saved_color_texture_->Create();
   offscreen_saved_color_texture_->AllocateStorage(
       offscreen_size_, offscreen_saved_color_format_, false);
@@ -9303,8 +9338,7 @@ bool GLES2DecoderImpl::InitializeSRGBConverter(
     const char* function_name) {
   if (!srgb_converter_.get()) {
     LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(function_name);
-    srgb_converter_.reset(
-        new SRGBConverter(feature_info_.get()));
+    srgb_converter_ = std::make_unique<SRGBConverter>(feature_info_.get());
     srgb_converter_->InitializeSRGBConverter(this);
     if (LOCAL_PEEK_GL_ERROR(function_name) != GL_NO_ERROR) {
       return false;
@@ -12154,137 +12188,6 @@ GLuint GLES2DecoderImpl::DoGetMaxValueInBufferCHROMIUM(
   return max_vertex_accessed;
 }
 
-namespace {
-// Copied from angle/src/libANGLE/validationES2.cpp
-// As we removed shader source string validation in blink level.
-// Addressing http://crbug.com/1108588
-
-// Return true if a character belongs to the ASCII subset as defined in GLSL
-// ES 1.0 spec section 3.1.
-bool IsValidESSLCharacter(unsigned char c) {
-  // Printing characters are valid except " $ ` @ \ ' DEL.
-  if (c >= 32 && c <= 126 && c != '"' && c != '$' && c != '`' && c != '@' &&
-      c != '\\' && c != '\'') {
-    return true;
-  }
-
-  // Horizontal tab, line feed, vertical tab, form feed, carriage return are
-  // also valid.
-  if (c >= 9 && c <= 13) {
-    return true;
-  }
-
-  return false;
-}
-
-bool IsValidESSLShaderSourceString(const char* str,
-                                   size_t len,
-                                   bool lineContinuationAllowed) {
-  enum class ParseState {
-    // Have not seen an ASCII non-whitespace character yet on
-    // this line. Possible that we might see a preprocessor
-    // directive.
-    BEGINING_OF_LINE,
-
-    // Have seen at least one ASCII non-whitespace character
-    // on this line.
-    MIDDLE_OF_LINE,
-
-    // Handling a preprocessor directive. Passes through all
-    // characters up to the end of the line. Disables comment
-    // processing.
-    IN_PREPROCESSOR_DIRECTIVE,
-
-    // Handling a single-line comment. The comment text is
-    // replaced with a single space.
-    IN_SINGLE_LINE_COMMENT,
-
-    // Handling a multi-line comment. Newlines are passed
-    // through to preserve line numbers.
-    IN_MULTI_LINE_COMMENT
-  };
-
-  ParseState state = ParseState::BEGINING_OF_LINE;
-  size_t pos = 0;
-
-  while (pos < len) {
-    char c = str[pos];
-    char next = pos + 1 < len ? str[pos + 1] : 0;
-
-    // Check for newlines
-    if (c == '\n' || c == '\r') {
-      if (state != ParseState::IN_MULTI_LINE_COMMENT) {
-        state = ParseState::BEGINING_OF_LINE;
-      }
-
-      pos++;
-      continue;
-    }
-
-    switch (state) {
-      case ParseState::BEGINING_OF_LINE:
-        if (c == ' ') {
-          // Maintain the BEGINING_OF_LINE state until a non-space is seen
-          pos++;
-        } else if (c == '#') {
-          state = ParseState::IN_PREPROCESSOR_DIRECTIVE;
-          pos++;
-        } else {
-          // Don't advance, re-process this character with the MIDDLE_OF_LINE
-          // state
-          state = ParseState::MIDDLE_OF_LINE;
-        }
-        break;
-
-      case ParseState::MIDDLE_OF_LINE:
-        if (c == '/' && next == '/') {
-          state = ParseState::IN_SINGLE_LINE_COMMENT;
-          pos++;
-        } else if (c == '/' && next == '*') {
-          state = ParseState::IN_MULTI_LINE_COMMENT;
-          pos++;
-        } else if (lineContinuationAllowed && c == '\\' &&
-                   (next == '\n' || next == '\r')) {
-          // Skip line continuation characters
-        } else if (!IsValidESSLCharacter(c)) {
-          return false;
-        }
-        pos++;
-        break;
-
-      case ParseState::IN_PREPROCESSOR_DIRECTIVE:
-        // Line-continuation characters may not be permitted.
-        // Otherwise, just pass it through. Do not parse comments in this state.
-        if (!lineContinuationAllowed && c == '\\') {
-          return false;
-        }
-        pos++;
-        break;
-
-      case ParseState::IN_SINGLE_LINE_COMMENT:
-        // Line-continuation characters are processed before comment processing.
-        // Advance string if a new line character is immediately behind
-        // line-continuation character.
-        if (c == '\\' && (next == '\n' || next == '\r')) {
-          pos++;
-        }
-        pos++;
-        break;
-
-      case ParseState::IN_MULTI_LINE_COMMENT:
-        if (c == '*' && next == '/') {
-          state = ParseState::MIDDLE_OF_LINE;
-          pos++;
-        }
-        pos++;
-        break;
-    }
-  }
-
-  return true;
-}
-}  // namespace
-
 void GLES2DecoderImpl::DoShaderSource(
     GLuint client_id, GLsizei count, const char** data, const GLint* length) {
   std::string str;
@@ -12300,13 +12203,8 @@ void GLES2DecoderImpl::DoShaderSource(
   while (len > 0 && str[len - 1] == '\0') {
     len -= 1;
   }
-  if (!IsValidESSLShaderSourceString(
-          str.data(), len, feature_info_->IsWebGL2OrES3OrHigherContext())) {
-    const char* func_name = "glShaderSource";
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name,
-                       "Shader source contains invalid characters.");
-    return;
-  }
+  // Delegate validation of the incoming shader source to ANGLE's
+  // shader translator.
   Shader* shader = GetShaderInfoNotProgram(client_id, "glShaderSource");
   if (!shader) {
     return;
@@ -13860,7 +13758,7 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerSharedStateCHROMIUM(
   gfx::Transform transform(mem[9], mem[13], mem[17], mem[21], mem[10], mem[14],
                            mem[18], mem[22], mem[11], mem[15], mem[19], mem[23],
                            mem[12], mem[16], mem[20], mem[24]);
-  ca_layer_shared_state_.reset(new CALayerSharedState);
+  ca_layer_shared_state_ = std::make_unique<CALayerSharedState>();
   ca_layer_shared_state_->opacity = c.opacity;
   ca_layer_shared_state_->is_clipped = c.is_clipped ? true : false;
   ca_layer_shared_state_->clip_rect = gfx::ToEnclosingRect(clip_rect);
@@ -13923,7 +13821,7 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
       ca_layer_shared_state_->sorting_context_id,
       ca_layer_shared_state_->transform, image, contents_rect,
       gfx::ToEnclosingRect(bounds_rect), c.background_color, c.edge_aa_mask,
-      ca_layer_shared_state_->opacity, filter);
+      ca_layer_shared_state_->opacity, filter, gfx::ProtectedVideoType::kClear);
   if (!surface_->ScheduleCALayer(params)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glScheduleCALayerCHROMIUM",
                        "failed to schedule CALayer");
@@ -17124,7 +17022,7 @@ void GLES2DecoderImpl::FinishAsyncSwapBuffers(
   TRACE_EVENT_ASYNC_END0("gpu", "AsyncSwapBuffers", swap_id);
   // Handling of the out-fence should have already happened before reaching
   // this function, so we don't expect to get a valid fence here.
-  DCHECK(!result.gpu_fence);
+  DCHECK(result.release_fence.is_null());
 
   FinishSwapBuffers(result.swap_result);
 }
@@ -17258,6 +17156,9 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
   bool desire_multi_draw = false;
   bool desire_draw_instanced_base_vertex_base_instance = false;
   bool desire_multi_draw_instanced_base_vertex_base_instance = false;
+  bool desire_arb_texture_rectangle = false;
+  bool desire_oes_egl_image_external = false;
+  bool desire_nv_egl_stream_consumer_external = false;
   if (feature_info_->context_type() == CONTEXT_TYPE_WEBGL1) {
     desire_standard_derivatives =
         feature_str.find("GL_OES_standard_derivatives ") != std::string::npos;
@@ -17284,6 +17185,13 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
   if (feature_info_->IsWebGLContext()) {
     desire_multi_draw =
         feature_str.find("GL_WEBGL_multi_draw ") != std::string::npos;
+    desire_arb_texture_rectangle =
+        feature_str.find("GL_ANGLE_texture_rectangle ") != std::string::npos;
+    desire_oes_egl_image_external =
+        feature_str.find("GL_OES_EGL_image_external ") != std::string::npos;
+    desire_nv_egl_stream_consumer_external =
+        feature_str.find("GL_NV_EGL_stream_consumer_external ") !=
+        std::string::npos;
   }
   if (desire_standard_derivatives != derivatives_explicitly_enabled_ ||
       desire_fbo_render_mipmap != fbo_render_mipmap_explicitly_enabled_ ||
@@ -17294,7 +17202,11 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
       desire_draw_instanced_base_vertex_base_instance !=
           draw_instanced_base_vertex_base_instance_explicitly_enabled_ ||
       desire_multi_draw_instanced_base_vertex_base_instance !=
-          multi_draw_instanced_base_vertex_base_instance_explicitly_enabled_) {
+          multi_draw_instanced_base_vertex_base_instance_explicitly_enabled_ ||
+      desire_arb_texture_rectangle != arb_texture_rectangle_enabled_ ||
+      desire_oes_egl_image_external != oes_egl_image_external_enabled_ ||
+      desire_nv_egl_stream_consumer_external !=
+          nv_egl_stream_consumer_external_enabled_) {
     derivatives_explicitly_enabled_ |= desire_standard_derivatives;
     fbo_render_mipmap_explicitly_enabled_ |= desire_fbo_render_mipmap;
     frag_depth_explicitly_enabled_ |= desire_frag_depth;
@@ -17305,6 +17217,10 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
         desire_draw_instanced_base_vertex_base_instance;
     multi_draw_instanced_base_vertex_base_instance_explicitly_enabled_ |=
         desire_multi_draw_instanced_base_vertex_base_instance;
+    arb_texture_rectangle_enabled_ |= desire_arb_texture_rectangle;
+    oes_egl_image_external_enabled_ |= desire_oes_egl_image_external;
+    nv_egl_stream_consumer_external_enabled_ |=
+        desire_nv_egl_stream_consumer_external;
     DestroyShaderTranslator();
   }
 
@@ -18540,7 +18456,7 @@ void GLES2DecoderImpl::CopySubTextureHelper(const char* function_name,
       source_type, dest_binding_target, dest_level, dest_internal_format,
       unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
       unpack_unmultiply_alpha == GL_TRUE, dither == GL_TRUE);
-#if BUILDFLAG(IS_ASH) && defined(ARCH_CPU_X86_FAMILY)
+#if BUILDFLAG(IS_CHROMEOS_ASH) && defined(ARCH_CPU_X86_FAMILY)
   // glDrawArrays is faster than glCopyTexSubImage2D on IA Mesa driver,
   // although opposite in Android.
   // TODO(dshwang): After Mesa fixes this issue, remove this hack.
@@ -18596,8 +18512,8 @@ bool GLES2DecoderImpl::InitializeCopyTexImageBlitter(
     const char* function_name) {
   if (!copy_tex_image_blit_.get()) {
     LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(function_name);
-    copy_tex_image_blit_.reset(
-        new CopyTexImageResourceManager(feature_info_.get()));
+    copy_tex_image_blit_ =
+        std::make_unique<CopyTexImageResourceManager>(feature_info_.get());
     copy_tex_image_blit_->Initialize(this);
     if (LOCAL_PEEK_GL_ERROR(function_name) != GL_NO_ERROR)
       return false;
@@ -19909,8 +19825,9 @@ void GLES2DecoderImpl::DoScheduleDCLayerCHROMIUM(GLuint texture_0,
   params.transform =
       gfx::Transform(transform_c1r1, transform_c2r1, transform_c1r2,
                      transform_c2r2, transform_tx, transform_ty);
-  params.is_clipped = is_clipped;
-  params.clip_rect = gfx::Rect(clip_x, clip_y, clip_width, clip_height);
+  if (is_clipped) {
+    params.clip_rect = gfx::Rect(clip_x, clip_y, clip_width, clip_height);
+  }
   params.protected_video_type =
       static_cast<gfx::ProtectedVideoType>(protected_video_type);
 

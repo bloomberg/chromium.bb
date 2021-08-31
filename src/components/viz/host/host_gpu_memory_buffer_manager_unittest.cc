@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
@@ -36,6 +37,24 @@
 namespace viz {
 
 namespace {
+
+bool MustSignalGmbConfigReadyForTest() {
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform()) {
+    // Some Ozone platforms (Ozone/X11) require GPU process initialization to
+    // determine GMB support.
+    return ui::OzonePlatform::GetInstance()
+        ->GetPlatformProperties()
+        .fetch_buffer_formats_for_gmb_on_gpu;
+  }
+#endif
+#if defined(USE_X11)
+  // X11 requires GPU process initialization to determine GMB support.
+  DCHECK(!features::IsUsingOzonePlatform());
+  return true;
+#endif
+  return false;
+}
 
 class TestGpuService : public mojom::GpuService {
  public:
@@ -97,7 +116,7 @@ class TestGpuService : public mojom::GpuService {
                            EstablishGpuChannelCallback callback) override {}
 
   void CloseChannel(int32_t client_id) override {}
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void CreateArcVideoDecodeAccelerator(
       mojo::PendingReceiver<arc::mojom::VideoDecodeAccelerator> vda_receiver)
       override {}
@@ -121,7 +140,7 @@ class TestGpuService : public mojom::GpuService {
   void CreateJpegEncodeAccelerator(
       mojo::PendingReceiver<chromeos_camera::mojom::JpegEncodeAccelerator>
           jea_receiver) override {}
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   void CreateVideoEncodeAcceleratorProvider(
       mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
@@ -141,6 +160,12 @@ class TestGpuService : public mojom::GpuService {
                               int client_id,
                               const gpu::SyncToken& sync_token) override {
     destruction_requests_.push_back({id, client_id});
+  }
+
+  void CopyGpuMemoryBuffer(::gfx::GpuMemoryBufferHandle buffer_handle,
+                           ::base::UnsafeSharedMemoryRegion shared_memory,
+                           CopyGpuMemoryBufferCallback callback) override {
+    std::move(callback).Run(false);
   }
 
   void GetVideoMemoryUsageStats(
@@ -197,8 +222,6 @@ class TestGpuService : public mojom::GpuService {
 
   void ThrowJavaException() override {}
 
-  void Stop(StopCallback callback) override {}
-
  private:
   base::OnceClosure connection_error_handler_;
 
@@ -235,11 +258,8 @@ class HostGpuMemoryBufferManagerTest : public ::testing::Test {
         std::move(gpu_service_provider), 1,
         std::move(gpu_memory_buffer_support),
         base::ThreadTaskRunnerHandle::Get());
-#if defined(USE_X11)
-    // X11 requires GPU process initialization to determine GMB support.
-    if (!features::IsUsingOzonePlatform())
-      gpu_memory_buffer_manager_->native_configurations_initialized_.Signal();
-#endif
+    if (MustSignalGmbConfigReadyForTest())
+      gpu_memory_buffer_manager_->native_configurations_initialized_.Set();
   }
 
   // Not all platforms support native configurations (currently only Windows,
@@ -273,18 +293,17 @@ class HostGpuMemoryBufferManagerTest : public ::testing::Test {
     std::unique_ptr<gfx::GpuMemoryBuffer> buffer;
     base::RunLoop run_loop;
     diff_thread.task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(
-                       [](HostGpuMemoryBufferManager* manager,
-                          std::unique_ptr<gfx::GpuMemoryBuffer>* out_buffer,
-                          base::OnceClosure callback) {
-                         *out_buffer = manager->CreateGpuMemoryBuffer(
-                             gfx::Size(64, 64), gfx::BufferFormat::YVU_420,
-                             gfx::BufferUsage::GPU_READ,
-                             gpu::kNullSurfaceHandle);
-                         std::move(callback).Run();
-                       },
-                       gpu_memory_buffer_manager_.get(), &buffer,
-                       run_loop.QuitClosure()));
+        FROM_HERE,
+        base::BindOnce(
+            [](HostGpuMemoryBufferManager* manager,
+               std::unique_ptr<gfx::GpuMemoryBuffer>* out_buffer,
+               base::OnceClosure callback) {
+              *out_buffer = manager->CreateGpuMemoryBuffer(
+                  gfx::Size(64, 64), gfx::BufferFormat::YVU_420,
+                  gfx::BufferUsage::GPU_READ, gpu::kNullSurfaceHandle, nullptr);
+              std::move(callback).Run();
+            },
+            gpu_memory_buffer_manager_.get(), &buffer, run_loop.QuitClosure()));
     run_loop.Run();
     return buffer;
   }

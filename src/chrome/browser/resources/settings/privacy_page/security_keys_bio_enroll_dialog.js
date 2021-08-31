@@ -16,7 +16,7 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
-import '../settings_shared_css.m.js';
+import '../settings_shared_css.js';
 import '../site_favicon.js';
 import './security_keys_pin_field.js';
 
@@ -64,6 +64,9 @@ Polymer({
     confirmButtonVisible_: Boolean,
 
     /** @private */
+    confirmButtonLabel_: String,
+
+    /** @private */
     deleteInProgress_: Boolean,
 
     /**
@@ -86,10 +89,19 @@ Polymer({
     enrollments_: Array,
 
     /** @private */
+    minPinLength_: Number,
+
+    /** @private */
     progressArcLabel_: String,
 
     /** @private */
     recentEnrollmentName_: String,
+
+    /** @private {?string} */
+    enrollmentNameError_: String,
+
+    /** @private */
+    enrollmentNameMaxUtf8Length_: Number,
   },
 
   /** @private {?SecurityKeysBioEnrollProxy} */
@@ -100,6 +112,9 @@ Polymer({
 
   /** @private {string} */
   recentEnrollmentId_: '',
+
+  /** @private {boolean} */
+  showSetPINButton_: false,
 
   /** @override */
   attached() {
@@ -113,7 +128,8 @@ Polymer({
     this.addWebUIListener(
         'security-keys-bio-enroll-status', this.onEnrollmentSample_.bind(this));
     this.browserProxy_ = SecurityKeysBioEnrollProxyImpl.getInstance();
-    this.browserProxy_.startBioEnroll().then(() => {
+    this.browserProxy_.startBioEnroll().then(([minPinLength]) => {
+      this.minPinLength_ = minPinLength;
       this.dialogPage_ = BioEnrollDialogPage.PIN_PROMPT;
     });
   },
@@ -121,9 +137,11 @@ Polymer({
   /**
    * @private
    * @param {string} error
+   * @param {boolean=} requiresPINChange
    */
-  onError_(error) {
+  onError_(error, requiresPINChange = false) {
     this.errorMsg_ = error;
+    this.showSetPINButton_ = requiresPINChange;
     this.dialogPage_ = BioEnrollDialogPage.ERROR;
   },
 
@@ -136,10 +154,14 @@ Polymer({
         .trySubmit(pin => this.browserProxy_.providePIN(pin))
         .then(
             () => {
-              // Leave confirm button disabled while enumerating fingerprints.
-              // It will be re-enabled by dialogPageChanged_() where
-              // appropriate.
-              this.showEnrollmentsPage_();
+              this.browserProxy_.getSensorInfo().then(sensorInfo => {
+                this.enrollmentNameMaxUtf8Length_ =
+                    sensorInfo.maxTemplateFriendlyName;
+                // Leave confirm button disabled while enumerating fingerprints.
+                // It will be re-enabled by dialogPageChanged_() where
+                // appropriate.
+                this.showEnrollmentsPage_();
+              });
             },
             () => {
               // Wrong PIN.
@@ -171,6 +193,7 @@ Polymer({
         this.cancelButtonVisible_ = true;
         this.cancelButtonDisabled_ = false;
         this.confirmButtonVisible_ = true;
+        this.confirmButtonLabel_ = this.i18n('continue');
         this.confirmButtonDisabled_ = false;
         this.doneButtonVisible_ = false;
         this.$.pin.focus();
@@ -189,14 +212,16 @@ Polymer({
       case BioEnrollDialogPage.CHOOSE_NAME:
         this.cancelButtonVisible_ = false;
         this.confirmButtonVisible_ = true;
+        this.confirmButtonLabel_ = this.i18n('continue');
         this.confirmButtonDisabled_ = !this.recentEnrollmentName_.length;
         this.doneButtonVisible_ = false;
         this.$.enrollmentName.focus();
         break;
       case BioEnrollDialogPage.ERROR:
-        this.cancelButtonVisible_ = false;
-        this.confirmButtonVisible_ = false;
-        this.doneButtonVisible_ = true;
+        this.cancelButtonVisible_ = true;
+        this.confirmButtonVisible_ = this.showSetPINButton_;
+        this.confirmButtonLabel_ = this.i18n('securityKeysSetPinButton');
+        this.doneButtonVisible_ = false;
         break;
       default:
         assertNotReached();
@@ -257,13 +282,19 @@ Polymer({
    * @param {!EnrollmentResponse} response
    */
   onEnrollmentComplete_(response) {
-    if (response.code === Ctap2Status.ERR_KEEPALIVE_CANCEL) {
-      this.showEnrollmentsPage_();
-      return;
-    }
-    if (response.code !== Ctap2Status.OK) {
-      this.onError_(this.i18n('securityKeysBioEnrollmentEnrollingFailedLabel'));
-      return;
+    switch (response.code) {
+      case Ctap2Status.OK:
+        break;
+      case Ctap2Status.ERR_KEEPALIVE_CANCEL:
+        this.showEnrollmentsPage_();
+        return;
+      case Ctap2Status.ERR_FP_DATABASE_FULL:
+        this.onError_(this.i18n('securityKeysBioEnrollmentStorageFullLabel'));
+        return;
+      default:
+        this.onError_(
+            this.i18n('securityKeysBioEnrollmentEnrollingFailedLabel'));
+        return;
     }
 
     this.maxSamples_ = Math.max(this.maxSamples_, 1);
@@ -299,6 +330,10 @@ Polymer({
       case BioEnrollDialogPage.CHOOSE_NAME:
         this.renameNewEnrollment_();
         break;
+      case BioEnrollDialogPage.ERROR:
+        this.$.dialog.close();
+        this.fire('bio-enroll-set-pin');
+        break;
       default:
         assertNotReached();
     }
@@ -307,6 +342,19 @@ Polymer({
   /** @private */
   renameNewEnrollment_() {
     assert(this.dialogPage_ === BioEnrollDialogPage.CHOOSE_NAME);
+
+    // Check that the user-provided name doesn't exceed the maximum permissible
+    // length reported by the security key when encoded as UTF-8. (Note that
+    // JavaScript String length counts code units, but string length maximums in
+    // CTAP 2.1 are generally on UTF-8 bytes.)
+    if (new TextEncoder().encode(this.recentEnrollmentName_).length >
+        this.enrollmentNameMaxUtf8Length_) {
+      this.enrollmentNameError_ =
+          this.i18n('securityKeysBioEnrollmentNameLabelTooLong');
+      return;
+    }
+    this.enrollmentNameError_ = null;
+
     // Disable the confirm button to prevent concurrent submissions. It will
     // be re-enabled by dialogPageChanged_() where appropriate.
     this.confirmButtonDisabled_ = true;
@@ -402,5 +450,14 @@ Polymer({
         enrollments && enrollments.length ?
             'securityKeysBioEnrollmentEnrollmentsLabel' :
             'securityKeysBioEnrollmentNoEnrollmentsLabel');
+  },
+
+  /**
+   * @private
+   * @param {string} string
+   * @return {boolean}
+   */
+  isNullOrEmpty_(string) {
+    return string === '' || !string;
   },
 });

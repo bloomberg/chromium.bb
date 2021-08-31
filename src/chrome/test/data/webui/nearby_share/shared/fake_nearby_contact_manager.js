@@ -15,14 +15,18 @@ cr.define('nearby_share', function() {
     constructor() {
       /** @type {?Array<!nearbyShare.mojom.ContactRecord>} */
       this.contactRecords = null;
-      /** @private {!Array<!string>} */
-      this.allowedContacts_ = [];
+      /** @type {!Array<!string>} */
+      this.allowedContacts = [];
+      /** @private {number} */
+      this.numUnreachable_ = 3;
       /** @private {?nearbyShare.mojom.DownloadContactsObserverInterface} */
       this.observer_;
       /** @private {Object} */
       this.$ = {
         close() {},
       };
+      /** @type {boolean} */
+      this.downloadContactsCalled = false;
     }
 
     /**
@@ -36,13 +40,21 @@ cr.define('nearby_share', function() {
     downloadContacts() {
       // This does nothing intentionally, call failDownload() or
       // completeDownload() to simulate a response.
+      this.downloadContactsCalled = true;
     }
 
     /**
      * @param {!Array<!string>} allowedContacts
      */
     setAllowedContacts(allowedContacts) {
-      this.allowedContacts_ = allowedContacts;
+      this.allowedContacts = allowedContacts;
+    }
+
+    /**
+     * @param {number} numUnreachable
+     */
+    setNumUnreachable(numUnreachable) {
+      this.numUnreachable_ = numUnreachable;
     }
 
     setupContactRecords() {
@@ -64,7 +76,7 @@ cr.define('nearby_share', function() {
           ]
         }
       ];
-      this.allowedContacts_ = ['1'];
+      this.allowedContacts = ['1'];
     }
 
     failDownload() {
@@ -73,8 +85,8 @@ cr.define('nearby_share', function() {
 
     completeDownload() {
       this.observer_.onContactsDownloaded(
-          this.allowedContacts_, this.contactRecords || [],
-          /*num_unreachable_contacts_filtered_out=*/ 3);
+          this.allowedContacts, this.contactRecords || [],
+          /*num_unreachable_contacts_filtered_out=*/ this.numUnreachable_);
     }
   }
   // #cr_define_end

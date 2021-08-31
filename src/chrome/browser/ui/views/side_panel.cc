@@ -6,51 +6,32 @@
 
 #include "base/stl_util.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/layout/fill_layout.h"
+
+namespace {
+
+// TODO(pbos): Figure out what our preferred width should be.
+constexpr int kDefaultWidth = 320;
+
+}  // namespace
 
 SidePanel::SidePanel() {
   AddObserver(this);
   SetVisible(false);
   SetLayoutManager(std::make_unique<views::FillLayout>());
-
-  // TODO(pbos): Figure out what our preferred size should be. Note that only
-  // the width is used by BrowserViewLayout.
-  SetPreferredSize(gfx::Size(320, 16));
+  SetPanelWidth(kDefaultWidth);
 }
 
 SidePanel::~SidePanel() {
   RemoveObserver(this);
 }
 
-void SidePanel::AddContent(
-    std::unique_ptr<views::BubbleDialogDelegateView> view) {
-  // TODO(pbos): When this is false, use AddChildView(std::move(view)) instead.
-  DCHECK(view->owned_by_client());
-  AddChildView(view.get());
-  owned_children_.push_back(std::move(view));
-}
-
-void SidePanel::RemoveContent(views::BubbleDialogDelegateView* view) {
-  DCHECK(Contains(view));
-  base::EraseIf(owned_children_,
-                [view](const auto& c) { return c.get() == view; });
-  DCHECK(!Contains(view));
-}
-
-void SidePanel::OnThemeChanged() {
-  views::View::OnThemeChanged();
-  const ui::ThemeProvider* const theme_provider = GetThemeProvider();
-  SetBorder(views::CreateSolidSidedBorder(
-      0, 1, 0, 0,
-      color_utils::GetResultingPaintColor(
-          theme_provider->GetColor(
-              ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR),
-          theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR))));
-  // TODO(pbos): Figure out transition from theme to background.
-  SetBackground(views::CreateSolidBackground(
-      theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR)));
+void SidePanel::SetPanelWidth(int width) {
+  // Only the width is used by BrowserViewLayout.
+  SetPreferredSize(gfx::Size(width, 1));
 }
 
 void SidePanel::ChildVisibilityChanged(View* child) {
@@ -76,3 +57,6 @@ void SidePanel::UpdateVisibility() {
   }
   SetVisible(false);
 }
+
+BEGIN_METADATA(SidePanel, views::View)
+END_METADATA

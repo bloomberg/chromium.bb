@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/stl_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/async_execution_time_metrics_logger.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
@@ -101,7 +101,7 @@ void RecordFirstSyncMetadataMetrics(const base::TimeDelta& execution_time,
       "CryptAuth.DeviceSyncV2.MetadataSyncer.ExecutionTime.FirstSyncMetadata",
       execution_time);
   LogCryptAuthApiCallSuccessMetric(
-      "CryptAuth.DeviceSyncV2.MetdataSyncer.ApiCallResult.FirstSyncMetadata",
+      "CryptAuth.DeviceSyncV2.MetadataSyncer.ApiCallResult.FirstSyncMetadata",
       result);
 }
 
@@ -111,7 +111,7 @@ void RecordSecondSyncMetadataMetrics(const base::TimeDelta& execution_time,
       "CryptAuth.DeviceSyncV2.MetadataSyncer.ExecutionTime.SecondSyncMetadata",
       execution_time);
   LogCryptAuthApiCallSuccessMetric(
-      "CryptAuth.DeviceSyncV2.MetdataSyncer.ApiCallResult.SecondSyncMetadata",
+      "CryptAuth.DeviceSyncV2.MetadataSyncer.ApiCallResult.SecondSyncMetadata",
       result);
 }
 
@@ -156,7 +156,7 @@ void CryptAuthMetadataSyncerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-base::Optional<base::TimeDelta> CryptAuthMetadataSyncerImpl::GetTimeoutForState(
+absl::optional<base::TimeDelta> CryptAuthMetadataSyncerImpl::GetTimeoutForState(
     State state) {
   switch (state) {
     case State::kWaitingForGroupKeyCreation:
@@ -169,12 +169,12 @@ base::Optional<base::TimeDelta> CryptAuthMetadataSyncerImpl::GetTimeoutForState(
       return kWaitingForSecondSyncMetadataResponseTimeout;
     default:
       // Signifies that there should not be a timeout.
-      return base::nullopt;
+      return absl::nullopt;
   }
 }
 
 // static
-base::Optional<CryptAuthDeviceSyncResult::ResultCode>
+absl::optional<CryptAuthDeviceSyncResult::ResultCode>
 CryptAuthMetadataSyncerImpl::ResultCodeErrorFromTimeoutDuringState(
     State state) {
   switch (state) {
@@ -191,7 +191,7 @@ CryptAuthMetadataSyncerImpl::ResultCodeErrorFromTimeoutDuringState(
       return CryptAuthDeviceSyncResult::ResultCode::
           kErrorTimeoutWaitingForSecondSyncMetadataResponse;
     default:
-      return base::nullopt;
+      return absl::nullopt;
   }
 }
 
@@ -228,7 +228,7 @@ void CryptAuthMetadataSyncerImpl::SetState(State state) {
   state_ = state;
   last_state_change_timestamp_ = base::TimeTicks::Now();
 
-  base::Optional<base::TimeDelta> timeout_for_state = GetTimeoutForState(state);
+  absl::optional<base::TimeDelta> timeout_for_state = GetTimeoutForState(state);
   if (!timeout_for_state)
     return;
 
@@ -239,7 +239,7 @@ void CryptAuthMetadataSyncerImpl::SetState(State state) {
 
 void CryptAuthMetadataSyncerImpl::OnTimeout() {
   // If there's a timeout specified, there should be a corresponding error code.
-  base::Optional<CryptAuthDeviceSyncResult::ResultCode> error_code =
+  absl::optional<CryptAuthDeviceSyncResult::ResultCode> error_code =
       ResultCodeErrorFromTimeoutDuringState(state_);
   DCHECK(error_code);
 
@@ -377,18 +377,27 @@ void CryptAuthMetadataSyncerImpl::AttemptNextStep() {
 
 bool CryptAuthMetadataSyncerImpl::
     ShouldUseCachedEncryptedLocalDeviceMetadata() {
-  std::string last_synced_unencrypted_metadata = pref_service_->GetString(
-      prefs::kCryptAuthLastSyncedUnencryptedLocalDeviceMetadata);
-  std::string last_synced_group_public_key =
-      pref_service_->GetString(prefs::kCryptAuthLastSyncedGroupPublicKey);
+  absl::optional<std::string> last_synced_unencrypted_metadata =
+      util::DecodeFromString(pref_service_->GetString(
+          prefs::kCryptAuthLastSyncedUnencryptedLocalDeviceMetadata));
+  absl::optional<std::string> last_synced_group_public_key =
+      util::DecodeFromString(
+          pref_service_->GetString(prefs::kCryptAuthLastSyncedGroupPublicKey));
+  absl::optional<std::string> last_synced_encrypted_metadata =
+      util::DecodeFromString(pref_service_->GetString(
+          prefs::kCryptAuthLastSyncedEncryptedLocalDeviceMetadata));
+
+  // Persisted values are not encoded properly.
+  if (!last_synced_unencrypted_metadata || !last_synced_group_public_key ||
+      !last_synced_encrypted_metadata) {
+    return false;
+  }
 
   // Prefs should be all set or all unset.
   DCHECK_EQ(last_synced_unencrypted_metadata == kUnsetPrefValue,
             last_synced_group_public_key == kUnsetPrefValue);
   DCHECK_EQ(last_synced_unencrypted_metadata == kUnsetPrefValue,
-            pref_service_->GetString(
-                prefs::kCryptAuthLastSyncedEncryptedLocalDeviceMetadata) ==
-                kUnsetPrefValue);
+            last_synced_encrypted_metadata == kUnsetPrefValue);
 
   if (last_synced_unencrypted_metadata == kUnsetPrefValue)
     return false;
@@ -402,8 +411,9 @@ void CryptAuthMetadataSyncerImpl::EncryptLocalDeviceMetadata() {
   SetState(State::kWaitingForLocalDeviceMetadataEncryption);
 
   if (ShouldUseCachedEncryptedLocalDeviceMetadata()) {
-    OnLocalDeviceMetadataEncrypted(pref_service_->GetString(
-        prefs::kCryptAuthLastSyncedEncryptedLocalDeviceMetadata));
+    OnLocalDeviceMetadataEncrypted(
+        *util::DecodeFromString(pref_service_->GetString(
+            prefs::kCryptAuthLastSyncedEncryptedLocalDeviceMetadata)));
     return;
   }
 
@@ -416,7 +426,7 @@ void CryptAuthMetadataSyncerImpl::EncryptLocalDeviceMetadata() {
 }
 
 void CryptAuthMetadataSyncerImpl::OnLocalDeviceMetadataEncrypted(
-    const base::Optional<std::string>& encrypted_metadata) {
+    const absl::optional<std::string>& encrypted_metadata) {
   DCHECK_EQ(State::kWaitingForLocalDeviceMetadataEncryption, state_);
 
   bool success = encrypted_metadata.has_value();
@@ -444,15 +454,15 @@ void CryptAuthMetadataSyncerImpl::CreateGroupKey() {
       {{CryptAuthKeyBundle::Name::kDeviceSyncBetterTogetherGroupKey,
         CryptAuthKeyCreator::CreateKeyData(CryptAuthKey::Status::kActive,
                                            kGroupKeyType)}},
-      base::nullopt /* server_ephemeral_dh */,
+      absl::nullopt /* server_ephemeral_dh */,
       base::BindOnce(&CryptAuthMetadataSyncerImpl::OnGroupKeyCreated,
                      base::Unretained(this)));
 }
 
 void CryptAuthMetadataSyncerImpl::OnGroupKeyCreated(
     const base::flat_map<CryptAuthKeyBundle::Name,
-                         base::Optional<CryptAuthKey>>& new_keys,
-    const base::Optional<CryptAuthKey>& client_ephemeral_dh) {
+                         absl::optional<CryptAuthKey>>& new_keys,
+    const absl::optional<CryptAuthKey>& client_ephemeral_dh) {
   DCHECK_EQ(State::kWaitingForGroupKeyCreation, state_);
 
   const auto it = new_keys.find(
@@ -532,12 +542,12 @@ void CryptAuthMetadataSyncerImpl::OnSyncMetadataSuccess(
   // the key returned in the respone.
   pref_service_->SetString(
       prefs::kCryptAuthLastSyncedUnencryptedLocalDeviceMetadata,
-      local_device_metadata_.SerializeAsString());
+      util::EncodeAsString(local_device_metadata_.SerializeAsString()));
   pref_service_->SetString(prefs::kCryptAuthLastSyncedGroupPublicKey,
-                           GetGroupKey()->public_key());
+                           util::EncodeAsString(GetGroupKey()->public_key()));
   pref_service_->SetString(
       prefs::kCryptAuthLastSyncedEncryptedLocalDeviceMetadata,
-      *encrypted_local_device_metadata_);
+      util::EncodeAsString(*encrypted_local_device_metadata_));
 
   sync_metadata_response_ = response;
 
@@ -637,8 +647,8 @@ void CryptAuthMetadataSyncerImpl::FinishAttempt(
   key_creator_.reset();
   encryptor_.reset();
 
-  base::Optional<cryptauthv2::ClientDirective> new_client_directive;
-  base::Optional<cryptauthv2::EncryptedGroupPrivateKey>
+  absl::optional<cryptauthv2::ClientDirective> new_client_directive;
+  absl::optional<cryptauthv2::EncryptedGroupPrivateKey>
       encrypted_group_private_key;
   if (sync_metadata_response_) {
     if (sync_metadata_response_->has_client_directive())

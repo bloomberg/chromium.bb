@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string16.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -53,9 +52,6 @@ class CONTENT_EXPORT IndexedDBCallbacks
   // IndexedDBFactory::databases
   virtual void OnSuccess(
       std::vector<blink::mojom::IDBNameAndVersionPtr> names_and_versions);
-
-  // IndexedDBFactory::GetDatabaseNames
-  virtual void OnSuccess(const std::vector<base::string16>& string);
 
   // IndexedDBFactory::Open / DeleteDatabase
   virtual void OnBlocked(int64_t existing_version);

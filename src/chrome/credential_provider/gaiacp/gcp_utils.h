@@ -6,12 +6,13 @@
 #define CHROME_CREDENTIAL_PROVIDER_GAIACP_GCP_UTILS_H_
 
 #include <windows.h>
+
 #include <memory>
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/strings/string16.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "base/win/scoped_handle.h"
@@ -75,6 +76,14 @@ extern const int kMaxNumConsecutiveUploadDeviceFailures;
 // again.
 extern const base::TimeDelta kMaxTimeDeltaSinceLastUserPolicyRefresh;
 
+// Maximum allowed time delta after which experiments should be fetched
+// again.
+extern const base::TimeDelta kMaxTimeDeltaSinceLastExperimentsFetch;
+
+// Path elements for the path where the experiments are stored on disk.
+extern const wchar_t kGcpwExperimentsDirectory[];
+extern const wchar_t kGcpwUserExperimentsFileName[];
+
 // Because of some strange dependency problems with windows header files,
 // define STATUS_SUCCESS here instead of including ntstatus.h or SubAuth.h
 #define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
@@ -103,7 +112,7 @@ struct StdParentHandles {
 // Class used in tests to set registration data for testing.
 class GoogleRegistrationDataForTesting {
  public:
-  explicit GoogleRegistrationDataForTesting(base::string16 serial_number);
+  explicit GoogleRegistrationDataForTesting(std::wstring serial_number);
   ~GoogleRegistrationDataForTesting();
 };
 
@@ -142,7 +151,7 @@ class ScopedStartupInfo {
 
  private:
   STARTUPINFOW info_;
-  base::string16 desktop_;
+  std::wstring desktop_;
 };
 
 // Gets the brand specific path in which to install GCPW.
@@ -154,7 +163,7 @@ base::FilePath GetInstallDirectory();
 // Deletes versions of GCP found under |gcp_path| except for version
 // |product_version|.
 void DeleteVersionsExcept(const base::FilePath& gcp_path,
-                          const base::string16& product_version);
+                          const std::wstring& product_version);
 
 // Waits for the process specified by |procinfo| to terminate.  The handles
 // in |read_handles| can be used to read stdout/err from the process.  Upon
@@ -222,7 +231,7 @@ HRESULT GetPathToDllFromHandle(HINSTANCE dll_handle,
 // with the argument value.
 HRESULT GetEntryPointArgumentForRunDll(HINSTANCE dll_handle,
                                        const wchar_t* entrypoint,
-                                       base::string16* entrypoint_arg);
+                                       std::wstring* entrypoint_arg);
 
 // This function is used to build the command line for rundll32 to call an
 // exported entrypoint from the DLL given by |dll_handle|.
@@ -236,43 +245,43 @@ HRESULT GetCommandLineForEntrypoint(HINSTANCE dll_handle,
 
 // Looks up the name associated to the |sid| (if any). Returns an error on any
 // failure or no name is associated with the |sid|.
-HRESULT LookupLocalizedNameBySid(PSID sid, base::string16* localized_name);
+HRESULT LookupLocalizedNameBySid(PSID sid, std::wstring* localized_name);
 
 // Gets localalized name for builtin administrator account.
 HRESULT GetLocalizedNameBuiltinAdministratorAccount(
-    base::string16* builtin_localized_admin_name);
+    std::wstring* builtin_localized_admin_name);
 
 // Looks up the name associated to the well known |sid_type| (if any). Returns
 // an error on any failure or no name is associated with the |sid_type|.
 HRESULT LookupLocalizedNameForWellKnownSid(WELL_KNOWN_SID_TYPE sid_type,
-                                           base::string16* localized_name);
+                                           std::wstring* localized_name);
 
 // Handles the writing and deletion of a startup sentinel file used to ensure
 // that the GCPW does not crash continuously on startup and render the
 // winlogon process unusable.
 bool WriteToStartupSentinel();
 void DeleteStartupSentinel();
-void DeleteStartupSentinelForVersion(const base::string16& version);
+void DeleteStartupSentinelForVersion(const std::wstring& version);
 
 // Gets a string resource from the DLL with the given id.
-base::string16 GetStringResource(int base_message_id);
+std::wstring GetStringResource(int base_message_id);
 
 // Gets a string resource from the DLL with the given id after replacing the
 // placeholders with the provided substitutions.
-base::string16 GetStringResource(int base_message_id,
-                                 const std::vector<base::string16>& subst);
+std::wstring GetStringResource(int base_message_id,
+                               const std::vector<std::wstring>& subst);
 
 // Gets the language selected by the base::win::i18n::LanguageSelector.
-base::string16 GetSelectedLanguage();
+std::wstring GetSelectedLanguage();
 
 // Securely clear a base::Value that may be a dictionary value that may
 // have a password field.
-void SecurelyClearDictionaryValue(base::Optional<base::Value>* value);
-void SecurelyClearDictionaryValueWithKey(base::Optional<base::Value>* value,
+void SecurelyClearDictionaryValue(absl::optional<base::Value>* value);
+void SecurelyClearDictionaryValueWithKey(absl::optional<base::Value>* value,
                                          const std::string& password_key);
 
-// Securely clear base:string16 and std::string.
-void SecurelyClearString(base::string16& str);
+// Securely clear std::wstring and std::string.
+void SecurelyClearString(std::wstring& str);
 void SecurelyClearString(std::string& str);
 
 // Securely clear a given |buffer| with size |length|.
@@ -281,9 +290,9 @@ void SecurelyClearBuffer(void* buffer, size_t length);
 // Helpers to get strings from base::Values that are expected to be
 // DictionaryValues.
 
-base::string16 GetDictString(const base::Value& dict, const char* name);
-base::string16 GetDictString(const std::unique_ptr<base::Value>& dict,
-                             const char* name);
+std::wstring GetDictString(const base::Value& dict, const char* name);
+std::wstring GetDictString(const std::unique_ptr<base::Value>& dict,
+                           const char* name);
 // Perform a recursive search on a nested dictionary object. Note that the
 // names provided in the input should be in order. Below is an example : Lets
 // say the json object is {"key1": {"key2": {"key3": "value1"}}, "key4":
@@ -312,7 +321,7 @@ std::string GetDictStringUTF8(const std::unique_ptr<base::Value>& dict,
 // Returns the major build version of Windows by reading the registry.
 // See:
 // https://stackoverflow.com/questions/31072543/reliable-way-to-get-windows-version-from-registry
-base::string16 GetWindowsVersion();
+std::wstring GetWindowsVersion();
 
 // Returns the minimum supported version of Chrome for GCPW.
 base::Version GetMinimumSupportedChromeVersion();
@@ -359,7 +368,7 @@ bool ExtractKeysFromDict(
     const std::vector<std::pair<std::string, std::string*>>& needed_outputs);
 
 // Gets the bios serial number of the windows device.
-base::string16 GetSerialNumber();
+std::wstring GetSerialNumber();
 
 // Gets the mac addresses of the windows device.
 std::vector<std::string> GetMacAddresses();
@@ -387,12 +396,12 @@ base::FilePath GetSystemChromePath();
 
 // Generates gcpw dm token for the given |sid|. If any of the lsa operations
 // fail, function returns a result other than S_OK.
-HRESULT GenerateGCPWDmToken(const base::string16& sid);
+HRESULT GenerateGCPWDmToken(const std::wstring& sid);
 
 // Reads the gcpw dm token from lsa store for the given |sid| and writes it back
 // in |token| output parameter.  If any of the lsa operations fail, function
 // returns a result other than S_OK.
-HRESULT GetGCPWDmToken(const base::string16& sid, base::string16* token);
+HRESULT GetGCPWDmToken(const std::wstring& sid, std::wstring* token);
 
 // Gets the gcpw service URL.
 GURL GetGcpwServiceUrl();
@@ -401,8 +410,21 @@ GURL GetGcpwServiceUrl();
 // to a form that points to a development URL as specified with |dev|
 // environment. Final url will be in the form
 // https://{dev}-xxxxx.sandbox.googleapis.com/...
-base::string16 GetDevelopmentUrl(const base::string16& url,
-                                 const base::string16& dev);
+std::wstring GetDevelopmentUrl(const std::wstring& url,
+                               const std::wstring& dev);
+
+// Returns a handle to a file which is stored under DIR_COMMON_APP_DATA > |sid|
+// > |file_dir| > |file_name|. The file is opened with the provided
+// |open_flags|.
+std::unique_ptr<base::File> GetOpenedFileForUser(const std::wstring& sid,
+                                                 uint32_t open_flags,
+                                                 const std::wstring& file_dir,
+                                                 const std::wstring& file_name);
+
+// Returns the time delta since the last fetch for the given |sid|. |flag|
+// stores the last fetch time.
+base::TimeDelta GetTimeDeltaSinceLastFetch(const std::wstring& sid,
+                                           const std::wstring& flag);
 
 }  // namespace credential_provider
 

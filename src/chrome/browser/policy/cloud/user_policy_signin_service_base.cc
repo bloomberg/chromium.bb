@@ -73,9 +73,13 @@ void UserPolicySigninServiceBase::FetchPolicyForSignedInUser(
   manager->core()->service()->RefreshPolicy(std::move(callback));
 }
 
-void UserPolicySigninServiceBase::OnPrimaryAccountCleared(
-    const CoreAccountInfo& previous_primary_account_info) {
-  ShutdownUserCloudPolicyManager();
+void UserPolicySigninServiceBase::OnPrimaryAccountChanged(
+    const signin::PrimaryAccountChangeEvent& event) {
+  if (event.GetEventTypeFor(signin::ConsentLevel::kSync) ==
+      signin::PrimaryAccountChangeEvent::Type::kCleared) {
+    DCHECK(!identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync));
+    ShutdownUserCloudPolicyManager();
+  }
 }
 
 void UserPolicySigninServiceBase::Observe(
@@ -154,7 +158,7 @@ UserPolicySigninServiceBase::CreateClientForRegistrationOnly(
   // If the user should not get policy, just bail out.
   if (!policy_manager() || !ShouldLoadPolicyForUser(username)) {
     DVLOG(1) << "Signed in user is not in the whitelist";
-    return std::unique_ptr<CloudPolicyClient>();
+    return nullptr;
   }
 
   // If the DeviceManagementService is not yet initialized, start it up now.
@@ -187,14 +191,14 @@ void UserPolicySigninServiceBase::InitializeOnProfileReady(Profile* profile) {
   // (http://crbug.com/316229).
   identity_manager()->AddObserver(this);
 
-  AccountId account_id =
-      AccountIdFromAccountInfo(identity_manager()->GetPrimaryAccountInfo());
+  AccountId account_id = AccountIdFromAccountInfo(
+      identity_manager()->GetPrimaryAccountInfo(signin::ConsentLevel::kSync));
   if (!account_id.is_valid())
     ShutdownUserCloudPolicyManager();
   else
-    InitializeForSignedInUser(
-        account_id, content::BrowserContext::GetDefaultStoragePartition(profile)
-                        ->GetURLLoaderFactoryForBrowserProcess());
+    InitializeForSignedInUser(account_id,
+                              profile->GetDefaultStoragePartition()
+                                  ->GetURLLoaderFactoryForBrowserProcess());
 }
 
 void UserPolicySigninServiceBase::InitializeForSignedInUser(

@@ -24,6 +24,8 @@
 #include "core/fxcrt/fx_memory.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxge/fx_font.h"
+#include "third_party/base/check.h"
+#include "third_party/base/check_op.h"
 #include "third_party/base/span.h"
 #include "third_party/base/stl_util.h"
 
@@ -390,10 +392,9 @@ bool CPDF_CIDFont::Load() {
     return false;
 
   m_BaseFontName = pCIDFontDict->GetStringFor("BaseFont");
-  if ((m_BaseFontName.Compare("CourierStd") == 0 ||
-       m_BaseFontName.Compare("CourierStd-Bold") == 0 ||
-       m_BaseFontName.Compare("CourierStd-BoldOblique") == 0 ||
-       m_BaseFontName.Compare("CourierStd-Oblique") == 0) &&
+  if ((m_BaseFontName == "CourierStd" || m_BaseFontName == "CourierStd-Bold" ||
+       m_BaseFontName == "CourierStd-BoldOblique" ||
+       m_BaseFontName == "CourierStd-Oblique") &&
       !IsEmbedded()) {
     m_bAdobeCourierStd = true;
   }
@@ -416,7 +417,7 @@ bool CPDF_CIDFont::Load() {
     pdfium::span<const uint8_t> span = pAcc->GetSpan();
     m_pCMap = pdfium::MakeRetain<CPDF_CMap>(span);
   } else {
-    ASSERT(pEncoding->IsName());
+    DCHECK(pEncoding->IsName());
     ByteString cmap = pEncoding->GetString();
     m_pCMap = manager->GetPredefinedCMap(cmap);
   }
@@ -706,7 +707,7 @@ int CPDF_CIDFont::GlyphFromCharCode(uint32_t charcode, bool* pVertGlyph) {
       if (iBaseEncoding == PDFFONT_ENCODING_WINANSI) {
         index = FT_Get_Char_Index(face, name_unicode);
       } else {
-        ASSERT(iBaseEncoding == PDFFONT_ENCODING_MACROMAN);
+        DCHECK_EQ(iBaseEncoding, PDFFONT_ENCODING_MACROMAN);
         uint32_t maccode =
             FT_CharCodeFromUnicode(FT_ENCODING_APPLE_ROMAN, name_unicode);
         index = maccode ? FT_Get_Char_Index(face, maccode)

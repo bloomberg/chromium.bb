@@ -25,6 +25,7 @@
 #include "perfetto/ext/base/string_utils.h"
 #include "perfetto/ext/base/string_view.h"
 #include "perfetto/ext/base/utils.h"
+#include "src/trace_processor/importers/common/event_tracker.h"
 #include "src/trace_processor/importers/common/flow_tracker.h"
 #include "src/trace_processor/importers/common/process_tracker.h"
 #include "src/trace_processor/importers/common/slice_tracker.h"
@@ -79,13 +80,18 @@ void JsonTraceParser::ParseTracePacket(int64_t timestamp,
     return;
   }
 
-  const Json::Value& value = *(ttp.json_value);
+  auto opt_value = json::ParseJsonString(base::StringView(ttp.json_value));
+  if (!opt_value) {
+    context_->storage->IncrementStats(stats::json_parser_failure);
+    return;
+  }
 
   ProcessTracker* procs = context_->process_tracker.get();
   TraceStorage* storage = context_->storage.get();
   SliceTracker* slice_tracker = context_->slice_tracker.get();
   FlowTracker* flow_tracker = context_->flow_tracker.get();
 
+  const Json::Value& value = *opt_value;
   auto& ph = value["ph"];
   if (!ph.isString())
     return;
@@ -141,6 +147,61 @@ void JsonTraceParser::ParseTracePacket(int64_t timestamp,
       slice_tracker->Scoped(timestamp, track_id, cat_id, name_id,
                             opt_dur.value(), args_inserter);
       MaybeAddFlow(track_id, value);
+      break;
+    }
+    case 'C': {  // TRACE_EVENT_COUNTER
+      auto args = value["args"];
+      if (!args.isObject()) {
+        context_->storage->IncrementStats(stats::json_parser_failure);
+        break;
+      }
+
+      std::string counter_name_prefix = name.ToStdString();
+      if (value.isMember("id")) {
+        counter_name_prefix += " id: " + value["id"].asString();
+      }
+
+      for (auto it = args.begin(); it != args.end(); ++it) {
+        std::string counter_name = counter_name_prefix + " " + it.name();
+        StringId counter_name_id =
+            context_->storage->InternString(base::StringView(counter_name));
+        TrackId track_id = context_->track_tracker->InternProcessCounterTrack(
+            counter_name_id, utid);
+        context_->event_tracker->PushCounter(timestamp, it->asDouble(),
+                                             track_id);
+      }
+      break;
+    }
+    case 'i': {  // TRACE_EVENT_INSTANT
+      base::StringView scope;
+      if (value.isMember("s")) {
+        scope = value["s"].asCString();
+      }
+
+      TrackId track_id;
+      if (scope == "g") {
+        track_id = context_->track_tracker
+                       ->GetOrCreateLegacyChromeGlobalInstantTrack();
+      } else if (scope == "p") {
+        if (!opt_pid) {
+          context_->storage->IncrementStats(stats::json_parser_failure);
+          break;
+        }
+        UniquePid upid = context_->process_tracker->GetOrCreateProcess(pid);
+        track_id =
+            context_->track_tracker->InternLegacyChromeProcessInstantTrack(
+                upid);
+      } else if (scope == "t" || scope.data() == nullptr) {
+        if (!opt_tid) {
+          context_->storage->IncrementStats(stats::json_parser_failure);
+          break;
+        }
+        track_id = context_->track_tracker->InternThreadTrack(utid);
+      } else {
+        context_->storage->IncrementStats(stats::json_parser_failure);
+        break;
+      }
+      context_->slice_tracker->Scoped(timestamp, track_id, cat_id, name_id, 0);
       break;
     }
     case 's': {  // TRACE_EVENT_FLOW_START

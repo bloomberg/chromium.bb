@@ -13,6 +13,7 @@
 #include "base/no_destructor.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_parsing/autofill_parsing_utils.h"
+#include "components/autofill/core/browser/pattern_provider/default_regex_patterns.h"
 #include "components/autofill/core/browser/pattern_provider/pattern_configuration_parser.h"
 #include "components/autofill/core/common/autofill_features.h"
 
@@ -27,10 +28,10 @@ void EnrichPatternsWithEnVersion(
     PatternProvider::Map* type_and_lang_to_patterns) {
   DCHECK(type_and_lang_to_patterns);
   for (auto& p : *type_and_lang_to_patterns) {
-    std::map<std::string, std::vector<MatchingPattern>>& lang_to_patterns =
+    std::map<LanguageCode, std::vector<MatchingPattern>>& lang_to_patterns =
         p.second;
 
-    auto it = lang_to_patterns.find(kSourceCodeLanguage);
+    auto it = lang_to_patterns.find(LanguageCode(kSourceCodeLanguage));
     if (it == lang_to_patterns.end())
       continue;
     std::vector<MatchingPattern> en_patterns = it->second;
@@ -39,10 +40,10 @@ void EnrichPatternsWithEnVersion(
     }
 
     for (auto& q : lang_to_patterns) {
-      const std::string& page_language = q.first;
+      const LanguageCode& page_language = q.first;
       std::vector<MatchingPattern>& patterns = q.second;
 
-      if (page_language != kSourceCodeLanguage) {
+      if (page_language != LanguageCode(kSourceCodeLanguage)) {
         patterns.insert(patterns.end(), en_patterns.begin(), en_patterns.end());
       }
     }
@@ -52,7 +53,7 @@ void EnrichPatternsWithEnVersion(
 // Sorts patterns in descending order by their score.
 void SortPatternsByScore(PatternProvider::Map* type_and_lang_to_patterns) {
   for (auto& p : *type_and_lang_to_patterns) {
-    std::map<std::string, std::vector<MatchingPattern>>& lang_to_patterns =
+    std::map<LanguageCode, std::vector<MatchingPattern>>& lang_to_patterns =
         p.second;
     for (auto& q : lang_to_patterns) {
       std::vector<MatchingPattern>& patterns = q.second;
@@ -65,44 +66,27 @@ void SortPatternsByScore(PatternProvider::Map* type_and_lang_to_patterns) {
 }
 }
 
-PatternProvider* PatternProvider::g_pattern_provider = nullptr;
-
 // static
 PatternProvider& PatternProvider::GetInstance() {
-  if (!g_pattern_provider) {
-    static base::NoDestructor<PatternProvider> instance;
-    g_pattern_provider = instance.get();
-    // TODO(crbug/1147608) This is an ugly hack to avoid loading the JSON. The
-    // motivation is that some Android unit tests fail because a dependency is
-    // missing. Instead of fixing this dependency, we'll go for an alternative
-    // solution that avoids the whole async/sync problem.
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillUsePageLanguageToSelectFieldParsingPatterns) ||
-        base::FeatureList::IsEnabled(
-            features::
-                kAutofillApplyNegativePatternsForFieldTypeDetectionHeuristics)) {
-      field_type_parsing::PopulateFromResourceBundle();
-    }
+  static base::NoDestructor<PatternProvider> instance;
+  static bool initialized = false;
+  if (!initialized) {
+    instance->SetPatterns(CreateDefaultRegexPatterns(), base::Version());
+    initialized = true;
   }
-  return *g_pattern_provider;
-}
-
-// static
-void PatternProvider::ResetPatternProvider() {
-  g_pattern_provider = nullptr;
+  return *instance;
 }
 
 PatternProvider::PatternProvider() = default;
 PatternProvider::~PatternProvider() = default;
 
 void PatternProvider::SetPatterns(PatternProvider::Map patterns,
-                                  const base::Version version,
-                                  const bool overwrite_equal_version) {
+                                  const base::Version& version) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!pattern_version_.IsValid() || pattern_version_ < version ||
-      (overwrite_equal_version && pattern_version_ == version)) {
-    patterns_ = patterns;
+  if (!pattern_version_.IsValid() ||
+      (version.IsValid() && pattern_version_ <= version)) {
+    patterns_ = std::move(patterns);
     pattern_version_ = version;
     EnrichPatternsWithEnVersion(&patterns_);
     SortPatternsByScore(&patterns_);
@@ -111,15 +95,15 @@ void PatternProvider::SetPatterns(PatternProvider::Map patterns,
 
 const std::vector<MatchingPattern> PatternProvider::GetMatchPatterns(
     const std::string& pattern_name,
-    const std::string& page_language) const {
+    const LanguageCode& page_language) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(crbug.com/1134496): Remove feature check once launched.
   if (base::FeatureList::IsEnabled(
-          features::kAutofillUsePageLanguageToSelectFieldParsingPatterns)) {
+          features::kAutofillParsingPatternsLanguageDependent)) {
     auto outer_it = patterns_.find(pattern_name);
     if (outer_it != patterns_.end()) {
-      const std::map<std::string, std::vector<MatchingPattern>>&
+      const std::map<LanguageCode, std::vector<MatchingPattern>>&
           lang_to_pattern = outer_it->second;
       auto inner_it = lang_to_pattern.find(page_language);
       if (inner_it != lang_to_pattern.end()) {
@@ -130,10 +114,8 @@ const std::vector<MatchingPattern> PatternProvider::GetMatchPatterns(
       }
     }
     return GetAllPatternsByType(pattern_name);
-  } else if (
-      base::FeatureList::IsEnabled(
-          features::
-              kAutofillApplyNegativePatternsForFieldTypeDetectionHeuristics)) {
+  } else if (base::FeatureList::IsEnabled(
+                 features::kAutofillParsingPatternsNegativeMatching)) {
     return GetAllPatternsByType(pattern_name);
   } else {
     return {};
@@ -142,15 +124,14 @@ const std::vector<MatchingPattern> PatternProvider::GetMatchPatterns(
 
 const std::vector<MatchingPattern> PatternProvider::GetMatchPatterns(
     ServerFieldType type,
-    const std::string& page_language) const {
-  std::string pattern_name = AutofillType(type).ToString();
-  return GetMatchPatterns(pattern_name, page_language);
+    const LanguageCode& page_language) const {
+  return GetMatchPatterns(AutofillType::ServerFieldTypeToString(type),
+                          page_language);
 }
 
 const std::vector<MatchingPattern> PatternProvider::GetAllPatternsByType(
     ServerFieldType type) const {
-  std::string type_str = AutofillType(type).ToString();
-  return GetAllPatternsByType(type_str);
+  return GetAllPatternsByType(AutofillType::ServerFieldTypeToString(type));
 }
 
 const std::vector<MatchingPattern> PatternProvider::GetAllPatternsByType(
@@ -158,16 +139,16 @@ const std::vector<MatchingPattern> PatternProvider::GetAllPatternsByType(
   auto it = patterns_.find(type);
   if (it == patterns_.end())
     return {};
-  const std::map<std::string, std::vector<MatchingPattern>>& type_patterns =
+  const std::map<LanguageCode, std::vector<MatchingPattern>>& type_patterns =
       it->second;
 
   std::vector<MatchingPattern> all_language_patterns;
   for (const auto& p : type_patterns) {
-    const std::string& page_language = p.first;
+    const LanguageCode& page_language = p.first;
     const std::vector<MatchingPattern>& language_patterns = p.second;
     for (const MatchingPattern& mp : language_patterns) {
-      if (page_language == kSourceCodeLanguage ||
-          mp.language != kSourceCodeLanguage) {
+      if (page_language == LanguageCode(kSourceCodeLanguage) ||
+          mp.language != LanguageCode(kSourceCodeLanguage)) {
         all_language_patterns.push_back(mp);
       }
     }

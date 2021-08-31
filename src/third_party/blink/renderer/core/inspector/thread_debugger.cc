@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "base/rand_util.h"
+
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -24,6 +26,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_trusted_html.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_trusted_script_url.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/inspector_dom_debugger_agent.h"
@@ -206,6 +209,43 @@ ThreadDebugger::descriptionForValueSubtype(v8::Local<v8::Context> context,
     TrustedScriptURL* trusted_script_url =
         V8TrustedScriptURL::ToImplWithTypeCheck(isolate_, value);
     return ToV8InspectorStringBuffer(trusted_script_url->toString());
+  } else if (V8Node::HasInstance(value, isolate_)) {
+    Node* node = V8Node::ToImplWithTypeCheck(isolate_, value);
+    StringBuilder description;
+    switch (node->getNodeType()) {
+      case Node::kElementNode: {
+        const auto* element = To<blink::Element>(node);
+        description.Append(element->TagQName().ToString());
+
+        const AtomicString& id = element->GetIdAttribute();
+        if (!id.IsEmpty()) {
+          description.Append('#');
+          description.Append(id);
+        }
+        if (element->HasClass()) {
+          auto element_class_names = element->ClassNames();
+          auto n_classes = element_class_names.size();
+          for (unsigned i = 0; i < n_classes; ++i) {
+            description.Append('.');
+            description.Append(element_class_names[i]);
+          }
+        }
+        break;
+      }
+      case Node::kDocumentTypeNode: {
+        description.Append("<!DOCTYPE ");
+        description.Append(node->nodeName());
+        description.Append('>');
+        break;
+      }
+      default: {
+        description.Append(node->nodeName());
+        break;
+      }
+    }
+    DCHECK(description.length());
+
+    return ToV8InspectorStringBuffer(description.ToString());
   }
   return nullptr;
 }
@@ -307,13 +347,25 @@ void ThreadDebugger::installAdditionalCommandLineAPI(
       "function getEventListeners(node) { [Command Line API] }",
       v8::SideEffectType::kHasNoSideEffect);
 
+  CreateFunctionProperty(
+      context, object, "getAccessibleName",
+      ThreadDebugger::GetAccessibleNameCallback,
+      "function getAccessibleName(node) { [Command Line API] }",
+      v8::SideEffectType::kHasNoSideEffect);
+
+  CreateFunctionProperty(
+      context, object, "getAccessibleRole",
+      ThreadDebugger::GetAccessibleRoleCallback,
+      "function getAccessibleRole(node) { [Command Line API] }",
+      v8::SideEffectType::kHasNoSideEffect);
+
   v8::Local<v8::Value> function_value;
   bool success =
       V8ScriptRunner::CompileAndRunInternalScript(
           isolate_, ScriptState::From(context),
           ScriptSourceCode("(function(e) { console.log(e.type, e); })",
                            ScriptSourceLocationType::kInternal, nullptr, KURL(),
-                           TextPosition()))
+                           TextPosition::MinimumPosition()))
           .ToLocal(&function_value) &&
       function_value->IsFunction();
   DCHECK(success);
@@ -424,6 +476,36 @@ void ThreadDebugger::UnmonitorEventsCallback(
 }
 
 // static
+void ThreadDebugger::GetAccessibleNameCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  if (info.Length() < 1)
+    return;
+
+  v8::Isolate* isolate = info.GetIsolate();
+  v8::Local<v8::Value> value = info[0];
+
+  Node* node = V8Node::ToImplWithTypeCheck(isolate, value);
+  if (auto* element = DynamicTo<Element>(node)) {
+    V8SetReturnValueString(info, element->computedName(), isolate);
+  }
+}
+
+// static
+void ThreadDebugger::GetAccessibleRoleCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  if (info.Length() < 1)
+    return;
+
+  v8::Isolate* isolate = info.GetIsolate();
+  v8::Local<v8::Value> value = info[0];
+
+  Node* node = V8Node::ToImplWithTypeCheck(isolate, value);
+  if (auto* element = DynamicTo<Element>(node)) {
+    V8SetReturnValueString(info, element->computedRole(), isolate);
+  }
+}
+
+// static
 void ThreadDebugger::GetEventListenersCallback(
     const v8::FunctionCallbackInfo<v8::Value>& callback_info) {
   if (callback_info.Length() < 1)
@@ -499,9 +581,8 @@ void ThreadDebugger::consoleTimeStamp(const v8_inspector::StringView& title) {
   ExecutionContext* ec = CurrentExecutionContext(isolate_);
   // TODO(dgozman): we can save on a copy here if TracedValue would take a
   // StringView.
-  TRACE_EVENT_INSTANT1(
-      "devtools.timeline", "TimeStamp", TRACE_EVENT_SCOPE_THREAD, "data",
-      inspector_time_stamp_event::Data(ec, ToCoreString(title)));
+  DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
+      "TimeStamp", inspector_time_stamp_event::Data, ec, ToCoreString(title));
   probe::ConsoleTimeStamp(ec, ToCoreString(title));
 }
 
@@ -531,6 +612,12 @@ void ThreadDebugger::cancelTimer(void* data) {
       return;
     }
   }
+}
+
+int64_t ThreadDebugger::generateUniqueId() {
+  int64_t result;
+  base::RandBytes(&result, sizeof result);
+  return result;
 }
 
 void ThreadDebugger::OnTimer(TimerBase* timer) {

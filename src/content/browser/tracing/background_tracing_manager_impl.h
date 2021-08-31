@@ -105,8 +105,9 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
 
   // Named triggers
   void TriggerNamedEvent(TriggerHandle, StartedFinalizingCallback) override;
-  TriggerHandle RegisterTriggerType(const char* trigger_name) override;
-  std::string GetTriggerNameFromHandle(TriggerHandle handle) const;
+  TriggerHandle RegisterTriggerType(base::StringPiece trigger_name) override;
+  const std::string& GetTriggerNameFromHandle(
+      TriggerHandle trigger_handle) override;
 
   void OnHistogramTrigger(const std::string& histogram_name);
 
@@ -133,7 +134,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
 
   void AddMetadataGeneratorFunction();
 
-  bool IsAllowedFinalization() const;
+  bool IsAllowedFinalization(bool is_crash_scenario) const;
 
   // Called by BackgroundTracingActiveScenario
   void OnStartTracingDone(BackgroundTracingConfigImpl::CategoryPreset preset);

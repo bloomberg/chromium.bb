@@ -8,10 +8,10 @@
 
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/channel_info.h"
 #include "components/autofill/core/browser/logging/log_router.h"
+#include "components/embedder_support/user_agent_utils.h"
 #include "components/grit/dev_ui_components_resources.h"
 #include "components/version_info/version_info.h"
 #include "components/version_ui/version_handler_helper.h"
@@ -39,17 +39,17 @@ content::WebUIDataSource* CreateInternalsHTMLSource(
   source->AddString(version_ui::kOfficial, version_info::IsOfficialBuild()
                                                ? "official"
                                                : "Developer build");
-  source->AddString(version_ui::kVersionModifier, chrome::GetChannelName());
+  source->AddString(version_ui::kVersionModifier,
+                    chrome::GetChannelName(chrome::WithExtendedStable(true)));
   source->AddString(version_ui::kCL, version_info::GetLastChange());
-  source->AddString(version_ui::kUserAgent, GetUserAgent());
+  source->AddString(version_ui::kUserAgent, embedder_support::GetUserAgent());
   source->AddString("app_locale", g_browser_process->GetApplicationLocale());
   return source;
 }
 
 AutofillCacheResetter::AutofillCacheResetter(
     content::BrowserContext* browser_context)
-    : remover_(
-          content::BrowserContext::GetBrowsingDataRemover(browser_context)) {
+    : remover_(browser_context->GetBrowsingDataRemover()) {
   remover_->AddObserver(this);
 }
 
@@ -111,16 +111,16 @@ void InternalsUIHandler::OnJavascriptDisallowed() {
 
 void InternalsUIHandler::OnLoaded(const base::ListValue* args) {
   AllowJavascript();
-  CallJavascriptFunction(call_on_load_);
+  FireWebUIListener(call_on_load_, base::Value());
   // This is only available in contents, because the iOS BrowsingDataRemover
   // does not allow selectively deleting data per origin and we don't want to
   // wipe the entire cache.
-  CallJavascriptFunction("enableResetCacheButton");
-  CallJavascriptFunction(
-      "notifyAboutIncognito",
+  FireWebUIListener("enable-reset-cache-button", base::Value());
+  FireWebUIListener(
+      "notify-about-incognito",
       base::Value(Profile::FromWebUI(web_ui())->IsIncognitoProfile()));
-  CallJavascriptFunction("notifyAboutVariations",
-                         *version_ui::GetVariationsList());
+  FireWebUIListener("notify-about-variations",
+                    *version_ui::GetVariationsList());
 }
 
 void InternalsUIHandler::OnResetCache(const base::ListValue* args) {
@@ -128,12 +128,12 @@ void InternalsUIHandler::OnResetCache(const base::ListValue* args) {
     content::BrowserContext* browser_context = Profile::FromWebUI(web_ui());
     autofill_cache_resetter_.emplace(browser_context);
   }
-  autofill_cache_resetter_->ResetCache(base::Bind(
+  autofill_cache_resetter_->ResetCache(base::BindOnce(
       &InternalsUIHandler::OnResetCacheDone, base::Unretained(this)));
 }
 
 void InternalsUIHandler::OnResetCacheDone(const std::string& message) {
-  CallJavascriptFunction("notifyResetDone", base::Value(message));
+  FireWebUIListener("notify-reset-done", base::Value(message));
 }
 
 void InternalsUIHandler::StartSubscription() {
@@ -162,7 +162,7 @@ void InternalsUIHandler::EndSubscription() {
 void InternalsUIHandler::LogEntry(const base::Value& entry) {
   if (!registered_with_log_router_ || entry.is_none())
     return;
-  CallJavascriptFunction("addRawLog", entry);
+  FireWebUIListener("add-raw-log", entry);
 }
 
 }  // namespace autofill

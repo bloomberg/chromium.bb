@@ -79,8 +79,10 @@ class CORE_EXPORT TextResourceDecoder {
       TextResourceDecoderOptions::ContentType,
       const WTF::TextEncoding& default_encoding);
 
-  bool CheckForCSSCharset(const char*, wtf_size_t, bool& moved_data_to_buffer);
-  bool CheckForXMLCharset(const char*, wtf_size_t, bool& moved_data_to_buffer);
+  void AddToBuffer(const char* data, wtf_size_t data_length);
+  void AddToBufferIfEmpty(const char* data, wtf_size_t data_length);
+  bool CheckForCSSCharset(const char*, wtf_size_t);
+  bool CheckForXMLCharset(const char*, wtf_size_t);
   void CheckForMetaCharset(const char*, wtf_size_t);
   void AutoDetectEncodingIfAllowed(const char* data, wtf_size_t len);
 
@@ -104,4 +106,4 @@ class CORE_EXPORT TextResourceDecoder {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_TEXT_RESOURCE_DECODER_H_

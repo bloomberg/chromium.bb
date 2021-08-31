@@ -6,14 +6,17 @@
 #define UI_VIEWS_WINDOW_DIALOG_DELEGATE_H_
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/metadata/view_factory.h"
+#include "ui/views/view.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -40,7 +43,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   struct Params {
     Params();
     ~Params();
-    base::Optional<int> default_button = base::nullopt;
+    absl::optional<int> default_button = absl::nullopt;
     bool round_corners = true;
     bool draggable = false;
 
@@ -58,7 +61,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
     // here will get the default text for its type from GetDialogButtonLabel.
     // Prefer to use this field (via SetButtonLabel) rather than override
     // GetDialogButtonLabel - see https://crbug.com/1011446
-    base::string16 button_labels[ui::DIALOG_BUTTON_LAST + 1];
+    std::u16string button_labels[ui::DIALOG_BUTTON_LAST + 1];
 
     // A bitmask of buttons (from ui::DialogButton) that are enabled in this
     // dialog. It's legal for a button to be marked enabled that isn't present
@@ -67,6 +70,8 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   };
 
   DialogDelegate();
+  DialogDelegate(const DialogDelegate&) = delete;
+  DialogDelegate& operator=(const DialogDelegate&) = delete;
   ~DialogDelegate() override;
 
   // Creates a widget at a default location.
@@ -122,7 +127,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   int GetDefaultDialogButton() const;
 
   // Returns the label of the specified dialog button.
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const;
+  std::u16string GetDialogButtonLabel(ui::DialogButton button) const;
 
   // Returns whether the specified dialog button is enabled.
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const;
@@ -207,7 +212,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // necessary to call DialogModelChanged() yourself after calling them.
   void SetDefaultButton(int button);
   void SetButtons(int buttons);
-  void SetButtonLabel(ui::DialogButton button, base::string16 label);
+  void SetButtonLabel(ui::DialogButton button, std::u16string label);
   void SetButtonEnabled(ui::DialogButton button, bool enabled);
 
   // Called when the user presses the dialog's "OK" button or presses the dialog
@@ -331,10 +336,10 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   Params params_;
 
   // The extra view for this dialog, if there is one.
-  std::unique_ptr<View> extra_view_ = nullptr;
+  std::unique_ptr<View> extra_view_;
 
   // The footnote view for this dialog, if there is one.
-  std::unique_ptr<View> footnote_view_ = nullptr;
+  std::unique_ptr<View> footnote_view_;
 
   // Observers for DialogModel changes.
   base::ObserverList<DialogObserver>::Unchecked observer_list_;
@@ -347,8 +352,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // Whether any of the three callbacks just above has been delivered yet, *or*
   // one of the Accept/Cancel methods have been called and returned true.
   bool already_started_close_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(DialogDelegate);
 };
 
 // A DialogDelegate implementation that is-a View. Used to override GetWidget()
@@ -357,18 +360,23 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 // view's hierarchy and is expected to be deleted on DeleteDelegate call.
 class VIEWS_EXPORT DialogDelegateView : public DialogDelegate, public View {
  public:
+  METADATA_HEADER(DialogDelegateView);
   DialogDelegateView();
+  DialogDelegateView(const DialogDelegateView&) = delete;
+  DialogDelegateView& operator=(const DialogDelegateView&) = delete;
   ~DialogDelegateView() override;
 
   // DialogDelegate:
   Widget* GetWidget() override;
   const Widget* GetWidget() const override;
   View* GetContentsView() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DialogDelegateView);
 };
 
+BEGIN_VIEW_BUILDER(VIEWS_EXPORT, DialogDelegateView, View)
+END_VIEW_BUILDER
+
 }  // namespace views
+
+DEFINE_VIEW_BUILDER(VIEWS_EXPORT, DialogDelegateView)
 
 #endif  // UI_VIEWS_WINDOW_DIALOG_DELEGATE_H_

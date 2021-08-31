@@ -9,7 +9,6 @@
 
 #include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/SkGr.h"
-#include "src/gpu/effects/generated/GrConstColorProcessor.h"
 #include "src/gpu/glsl/GrGLSLBlend.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
@@ -124,15 +123,13 @@ private:
 
             // Is opaque if the dst is opaque.
             case SkBlendMode::kSrcATop:
-                flags = (dst ? ProcessorOptimizationFlags(dst) : kAll_OptimizationFlags) &
-                         kPreservesOpaqueInput_OptimizationFlag;
+                flags = ProcessorOptimizationFlags(dst) & kPreservesOpaqueInput_OptimizationFlag;
                 break;
 
             // DstATop is the converse of kSrcATop. Screen is also opaque if the src is a opaque.
             case SkBlendMode::kDstATop:
             case SkBlendMode::kScreen:
-                flags = (src ? ProcessorOptimizationFlags(src) : kAll_OptimizationFlags) &
-                         kPreservesOpaqueInput_OptimizationFlag;
+                flags = ProcessorOptimizationFlags(src) & kPreservesOpaqueInput_OptimizationFlag;
                 break;
 
             // These modes are all opaque if either src or dst is opaque. All the advanced modes
@@ -154,9 +151,8 @@ private:
             case SkBlendMode::kSaturation:
             case SkBlendMode::kColor:
             case SkBlendMode::kLuminosity:
-                flags = ((src ? ProcessorOptimizationFlags(src) : kAll_OptimizationFlags) |
-                         (dst ? ProcessorOptimizationFlags(dst) : kAll_OptimizationFlags)) &
-                         kPreservesOpaqueInput_OptimizationFlag;
+                flags = (ProcessorOptimizationFlags(src) | ProcessorOptimizationFlags(dst)) &
+                        kPreservesOpaqueInput_OptimizationFlag;
                 break;
         }
         if (does_cpu_blend_impl_match_gpu(mode) &&
@@ -175,8 +171,6 @@ private:
         const BlendFragmentProcessor& cs = other.cast<BlendFragmentProcessor>();
         return fMode == cs.fMode;
     }
-
-    bool usesExplicitReturn() const override { return true; }
 
     SkPMColor4f constantOutputForConstantInput(const SkPMColor4f& input) const override {
         const auto* src = this->childProcessor(0);
@@ -213,7 +207,7 @@ private:
         }
     }
 
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
 
     SkBlendMode fMode;
     BlendBehavior fBlendBehavior;
@@ -262,8 +256,8 @@ std::unique_ptr<GrFragmentProcessor> BlendFragmentProcessor::clone() const {
     return std::unique_ptr<GrFragmentProcessor>(new BlendFragmentProcessor(*this));
 }
 
-GrGLSLFragmentProcessor* BlendFragmentProcessor::onCreateGLSLInstance() const{
-    return new GLBlendFragmentProcessor;
+std::unique_ptr<GrGLSLFragmentProcessor> BlendFragmentProcessor::onMakeProgramImpl() const {
+    return std::make_unique<GLBlendFragmentProcessor>();
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -330,7 +324,7 @@ std::unique_ptr<GrFragmentProcessor> GrBlendFragmentProcessor::Make(
         SkBlendMode mode, BlendBehavior behavior) {
     switch (mode) {
         case SkBlendMode::kClear:
-            return GrConstColorProcessor::Make(SK_PMColor4fTRANSPARENT);
+            return GrFragmentProcessor::MakeColor(SK_PMColor4fTRANSPARENT);
         case SkBlendMode::kSrc:
             return GrFragmentProcessor::OverrideInput(std::move(src), SK_PMColor4fWHITE,
                                                       /*useUniform=*/false);

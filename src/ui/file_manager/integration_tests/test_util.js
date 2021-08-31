@@ -694,6 +694,28 @@ const ENTRIES = {
     pinned: true
   }),
 
+  sharedDirectory: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    targetPath: 'Shared',
+    sharedOption: SharedOption.SHARED,
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    nameText: 'Shared',
+    sizeText: '--',
+    typeText: 'Folder'
+  }),
+
+  sharedDirectoryFile: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.txt',
+    targetPath: 'Shared/file.txt',
+    mimeType: 'text/plain',
+    sharedOption: SharedOption.SHARED,
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    nameText: 'file.txt',
+    sizeText: '51 bytes',
+    typeText: 'Plain text'
+  }),
+
   newlyAdded: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'music.ogg',
@@ -771,6 +793,17 @@ const ENTRIES = {
     typeText: 'PDF document',
   }),
 
+  popupPdf: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'popup.pdf',
+    targetPath: 'popup.pdf',
+    mimeType: 'application/pdf',
+    lastModifiedTime: 'Jul 4, 2000, 10:42 AM',
+    nameText: 'popup.pdf',
+    sizeText: '538 bytes',
+    typeText: 'PDF document',
+  }),
+
   imgPdf: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'img.pdf',
@@ -844,6 +877,15 @@ const ENTRIES = {
     targetPath: 'D/E/F',
     lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
     nameText: 'F',
+    sizeText: '--',
+    typeText: 'Folder'
+  }),
+
+  dotTrash: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    targetPath: '.Trash',
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    nameText: '.Trash',
     sizeText: '--',
     typeText: 'Folder'
   }),
@@ -1326,7 +1368,7 @@ const ENTRIES = {
     typeText: 'Plain text'
   }),
 
-  sharedDirectory: new TestEntryInfo({
+  sharedWithMeDirectory: new TestEntryInfo({
     type: EntryType.DIRECTORY,
     targetPath: 'Shared Directory',
     sharedOption: SharedOption.SHARED_WITH_ME,
@@ -1336,7 +1378,7 @@ const ENTRIES = {
     typeText: 'Folder'
   }),
 
-  sharedDirectoryFile: new TestEntryInfo({
+  sharedWithMeDirectoryFile: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'text.txt',
     targetPath: 'Shared Directory/file.txt',

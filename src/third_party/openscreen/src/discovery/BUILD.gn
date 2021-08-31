@@ -61,6 +61,7 @@ source_set("mdns") {
   ]
 }
 
+# TODO(issuetracker.google.com/179705382): Separate out a public target.
 source_set("dnssd") {
   sources = [
     "dnssd/impl/conversion_layer.cc",
@@ -95,6 +96,7 @@ source_set("dnssd") {
   public_deps = [
     ":common",
     ":mdns",
+    "../util",
   ]
 }
 
@@ -108,6 +110,7 @@ source_set("public") {
   public_deps = [
     ":common",
     ":dnssd",
+    "../util",
   ]
 }
 
@@ -117,14 +120,24 @@ source_set("testing") {
   sources = [
     "common/testing/mock_reporting_client.h",
     "dnssd/testing/fake_dns_record_factory.cc",
+    "mdns/testing/hash_test_util.h",
     "mdns/testing/mdns_test_util.cc",
     "mdns/testing/mdns_test_util.h",
   ]
+
+  defines = []
+  if (build_with_chromium) {
+    sources += [ "mdns/testing/hash_test_util_nop.h" ]
+  } else {
+    defines += [ "HASH_TEST_UTIL_USE_ABSL" ]
+    sources += [ "mdns/testing/hash_test_util_abseil.h" ]
+  }
 
   public_deps = [
     ":mdns",
     "../third_party/abseil",
     "../third_party/googletest:gmock",
+    "../third_party/googletest:gtest",
   ]
 }
 
@@ -159,7 +172,10 @@ source_set("unittests") {
   deps = [
     ":dnssd",
     ":mdns",
+    ":public",
     ":testing",
+    "../platform:test",
+    "../third_party/abseil",
     "../third_party/googletest:gmock",
     "../third_party/googletest:gtest",
     "../util",

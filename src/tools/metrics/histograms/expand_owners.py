@@ -17,8 +17,8 @@ _OWNERS = 'OWNERS'
 # module's directory, histograms, and the directory above tools, which may or
 # may not be src depending on the machine running the code, is up three
 # directory levels from the histograms directory.
-_DIR_ABOVE_TOOLS = [os.path.dirname(__file__), '..', '..', '..']
-_SRC = 'src/'
+DIR_ABOVE_TOOLS = [os.path.dirname(__file__), '..', '..', '..']
+SRC = 'src/'
 
 
 class Error(Exception):
@@ -78,8 +78,9 @@ def _IsEmailOrPlaceholder(is_first_owner, owner_tag_text, histogram_name,
 
   if should_check_owner_email and not _IsValidPrimaryOwnerEmail(owner_tag_text):
     raise Error(
-        'The histogram {} must have a valid primary owner, i.e. a '
-        'Googler with an @google.com or @chromium.org email address.'.format(
+        'The histogram {} must have a valid primary owner, i.e. a Googler '
+        'with an @google.com or @chromium.org email address. Please '
+        'manually update the histogram with a valid primary owner.'.format(
             histogram_name))
 
   return is_email or is_placeholder
@@ -91,7 +92,7 @@ def _IsWellFormattedFilePath(path):
   Args:
     path: The path to an OWNERS file, e.g. 'src/gin/OWNERS'.
   """
-  return path.startswith(_SRC) and path.endswith(_OWNERS)
+  return path.startswith(SRC) and path.endswith(_OWNERS)
 
 
 def _GetHigherLevelOwnersFilePath(path):
@@ -111,7 +112,7 @@ def _GetHigherLevelOwnersFilePath(path):
   # The highest directory that is searched for component information is one
   # directory lower than the directory above tools. Depending on the machine
   # running this code, the directory above tools may or may not be src.
-  path_to_limiting_dir = os.path.abspath(os.path.join(*_DIR_ABOVE_TOOLS))
+  path_to_limiting_dir = os.path.abspath(os.path.join(*DIR_ABOVE_TOOLS))
   limiting_dir = path_to_limiting_dir.split(os.sep)[-1]
   owners_file_limit = (os.sep).join([limiting_dir, _OWNERS])
   if path.endswith(owners_file_limit):
@@ -138,10 +139,10 @@ def _GetOwnersFilePath(path):
   if _IsWellFormattedFilePath(path):
     # _SRC is removed because the file system on the machine running the code
     # may not have a(n) src directory.
-    path_without_src = path[len(_SRC):]
+    path_without_src = path[len(SRC):]
 
     return os.path.abspath(
-        os.path.join(*(_DIR_ABOVE_TOOLS + path_without_src.split(os.sep))))
+        os.path.join(*(DIR_ABOVE_TOOLS + path_without_src.split(os.sep))))
 
   raise Error(
       'The given path {} is not well-formatted. Well-formatted paths begin '
@@ -184,7 +185,7 @@ def _ExtractEmailAddressesFromOWNERS(path, depth=0):
 
       elif first_word.startswith(directive):
         next_path = _GetOwnersFilePath(
-          os.path.join(_SRC, first_word[len(directive):]))
+            os.path.join(SRC, first_word[len(directive):]))
 
         if os.path.exists(next_path) and os.path.isfile(next_path):
           extracted_emails.extend(
@@ -241,7 +242,7 @@ def _ExtractComponentViaDirmd(path):
   """
   # Verify that the paths are absolute and the root is a parent of the
   # passed in path.
-  root_path = os.path.abspath(os.path.join(*_DIR_ABOVE_TOOLS))
+  root_path = os.path.abspath(os.path.join(*DIR_ABOVE_TOOLS))
   path = os.path.abspath(path)
   if not path.startswith(root_path):
     raise Error('Path {} is not a subpath of the root path {}.'.format(
@@ -250,13 +251,16 @@ def _ExtractComponentViaDirmd(path):
   dirmd_exe = 'dirmd'
   if sys.platform == 'win32':
     dirmd_exe = 'dirmd.bat'
-  dirmd_path = os.path.join(*(_DIR_ABOVE_TOOLS +
+  dirmd_path = os.path.join(*(DIR_ABOVE_TOOLS +
                               ['third_party', 'depot_tools', dirmd_exe]))
-  dirmd = subprocess.Popen([dirmd_path, 'compute', '--root', root_path, path],
-                           stdout=subprocess.PIPE)
+  dirmd_command = [dirmd_path, 'compute', '--root', root_path, path]
+  dirmd = subprocess.Popen(dirmd_command, stdout=subprocess.PIPE)
   if dirmd.wait() != 0:
     raise Error('dirmd failed.')
   json_out = json.load(dirmd.stdout)
+  # On Windows, dirmd output still uses Unix path separators.
+  if sys.platform == 'win32':
+    subpath = subpath.replace('\\', '/')
   return _ComponentFromDirmd(json_out, subpath)
 
 

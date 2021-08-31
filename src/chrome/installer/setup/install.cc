@@ -89,7 +89,7 @@ void LogShortcutOperation(ShellUtil::ShortcutLocation location,
     case ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR:
       message.append(
           "Start menu/" +
-          base::UTF16ToUTF8(InstallUtil::GetChromeAppsShortcutDirName()) + " ");
+          base::WideToUTF8(InstallUtil::GetChromeAppsShortcutDirName()) + " ");
       break;
     default:
       NOTREACHED();
@@ -97,15 +97,15 @@ void LogShortcutOperation(ShellUtil::ShortcutLocation location,
 
   message.push_back('"');
   if (properties.has_shortcut_name())
-    message.append(base::UTF16ToUTF8(properties.shortcut_name));
+    message.append(base::WideToUTF8(properties.shortcut_name));
   else
-    message.append(base::UTF16ToUTF8(InstallUtil::GetDisplayName()));
+    message.append(base::WideToUTF8(InstallUtil::GetDisplayName()));
   message.push_back('"');
 
   message.append(" shortcut to ");
-  message.append(base::UTF16ToUTF8(properties.target.value()));
+  message.append(base::WideToUTF8(properties.target.value()));
   if (properties.has_arguments())
-    message.append(base::UTF16ToUTF8(properties.arguments));
+    message.append(base::WideToUTF8(properties.arguments));
 
   if (properties.pin_to_taskbar && base::win::CanPinShortcutToTaskbar())
     message.append(" and pinning to the taskbar");
@@ -129,7 +129,7 @@ void ExecuteAndLogShortcutOperation(
 }
 
 void AddChromeToMediaPlayerList() {
-  base::string16 reg_path(kMediaPlayerRegPath);
+  std::wstring reg_path(kMediaPlayerRegPath);
   // registry paths can also be appended like file system path
   reg_path.push_back(base::FilePath::kSeparators[0]);
   reg_path.append(kChromeExe);
@@ -142,15 +142,15 @@ void AddChromeToMediaPlayerList() {
     LOG(ERROR) << "Could not add Chrome to media player inclusion list.";
 }
 
-// Copy master_preferences file provided to installer, in the same folder
+// Copy the initial preferences file provided to installer, in the same folder
 // as chrome.exe so Chrome first run can find it. This function will be called
 // only on the first install of Chrome.
 void CopyPreferenceFileForFirstRun(const InstallerState& installer_state,
                                    const base::FilePath& prefs_source_path) {
   base::FilePath prefs_dest_path(
-      installer_state.target_path().AppendASCII(kDefaultMasterPrefs));
+      installer_state.target_path().AppendASCII(kLegacyInitialPrefs));
   if (!base::CopyFile(prefs_source_path, prefs_dest_path)) {
-    VLOG(1) << "Failed to copy master preferences from:"
+    VLOG(1) << "Failed to copy initial preferences from:"
             << prefs_source_path.value() << " gle: " << ::GetLastError();
   }
 }
@@ -253,20 +253,20 @@ std::string GenerateVisualElementsManifest(const base::Version& version) {
       "</Application>\r\n";
 
   // Construct the relative path to the versioned VisualElements directory.
-  base::string16 elements_dir(base::ASCIIToUTF16(version.GetString()));
+  std::wstring elements_dir(base::ASCIIToWide(version.GetString()));
   elements_dir.push_back(base::FilePath::kSeparators[0]);
   elements_dir.append(kVisualElements);
 
-  const base::string16 manifest_template(base::ASCIIToUTF16(kManifestTemplate));
+  const std::wstring manifest_template(base::ASCIIToWide(kManifestTemplate));
 
   // Fill the manifest with the desired values.
-  const base::char16* logo_suffix =
+  const wchar_t* logo_suffix =
       install_static::InstallDetails::Get().logo_suffix();
-  base::string16 manifest16(base::StringPrintf(
+  std::wstring manifest(base::StringPrintf(
       manifest_template.c_str(), elements_dir.c_str(), logo_suffix,
       elements_dir.c_str(), logo_suffix, elements_dir.c_str(), logo_suffix));
 
-  return base::UTF16ToUTF8(manifest16);
+  return base::WideToUTF8(manifest);
 }
 
 // Whether VisualElements assets exist for this brand and mode.
@@ -510,7 +510,7 @@ InstallStatus InstallOrUpdateProduct(const InstallParams& install_params,
 
     // If this is not the user's first Chrome install, but they have chosen
     // Chrome to become their default browser on the download page, we must
-    // force it here because the master_preferences file will not get copied
+    // force it here because the initial preferences file will not get copied
     // into the build.
     bool force_chrome_default_for_user = false;
     if (result == NEW_VERSION_UPDATED || result == INSTALL_REPAIRED ||
@@ -576,9 +576,9 @@ void HandleOsUpgradeForBrowser(const InstallerState& installer_state,
                                const base::Version& installed_version) {
   VLOG(1) << "Updating and registering shortcuts for --on-os-upgrade.";
 
-  // Read master_preferences copied beside chrome.exe at install.
+  // Read the initial preferences copied beside chrome.exe at install.
   const InitialPreferences prefs(
-      installer_state.target_path().AppendASCII(kDefaultMasterPrefs));
+      installer_state.target_path().AppendASCII(kLegacyInitialPrefs));
 
   // Update shortcuts at this install level (per-user shortcuts on system-level
   // installs will be updated through Active Setup).
@@ -652,10 +652,10 @@ void HandleActiveSetupForBrowser(const InstallerState& installer_state,
           ? INSTALL_SHORTCUT_REPLACE_EXISTING
           : INSTALL_SHORTCUT_CREATE_EACH_IF_NO_SYSTEM_LEVEL;
 
-  // Read master_preferences copied beside chrome.exe at install for the sake of
-  // creating/updating shortcuts.
+  // Read the initial preferences copied beside chrome.exe at install for the
+  // sake of creating/updating shortcuts.
   const base::FilePath installation_root = installer_state.target_path();
-  InitialPreferences prefs(installation_root.AppendASCII(kDefaultMasterPrefs));
+  InitialPreferences prefs(installation_root.AppendASCII(kLegacyInitialPrefs));
   base::FilePath chrome_exe(installation_root.Append(kChromeExe));
   CreateOrUpdateShortcuts(chrome_exe, prefs, CURRENT_USER, install_operation);
 

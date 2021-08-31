@@ -8,8 +8,10 @@
 #ifndef SKSL_IFSTATEMENT
 #define SKSL_IFSTATEMENT
 
+#include "include/private/SkSLStatement.h"
 #include "src/sksl/ir/SkSLExpression.h"
-#include "src/sksl/ir/SkSLStatement.h"
+
+#include <memory>
 
 namespace SkSL {
 
@@ -27,6 +29,19 @@ public:
         , fIfTrue(std::move(ifTrue))
         , fIfFalse(std::move(ifFalse))
         , fIsStatic(isStatic) {}
+
+    // Creates a potentially-simplified form of the if-statement. Typechecks and coerces the test
+    // expression; reports errors via ErrorReporter.
+    static std::unique_ptr<Statement> Convert(const Context& context, int offset, bool isStatic,
+                                              std::unique_ptr<Expression> test,
+                                              std::unique_ptr<Statement> ifTrue,
+                                              std::unique_ptr<Statement> ifFalse);
+
+    // Creates a potentially-simplified form of the if-statement; reports errors via ASSERT.
+    static std::unique_ptr<Statement> Make(const Context& context, int offset, bool isStatic,
+                                           std::unique_ptr<Expression> test,
+                                           std::unique_ptr<Statement> ifTrue,
+                                           std::unique_ptr<Statement> ifFalse);
 
     bool isStatic() const {
         return fIsStatic;
@@ -56,25 +71,9 @@ public:
         return fIfFalse;
     }
 
-    std::unique_ptr<Statement> clone() const override {
-        return std::unique_ptr<Statement>(new IfStatement(fOffset, this->isStatic(),
-                                                          this->test()->clone(),
-                                                          this->ifTrue()->clone(),
-                                                          this->ifFalse() ? this->ifFalse()->clone()
-                                                                          : nullptr));
-    }
+    std::unique_ptr<Statement> clone() const override;
 
-    String description() const override {
-        String result;
-        if (this->isStatic()) {
-            result += "@";
-        }
-        result += "if (" + this->test()->description() + ") " + this->ifTrue()->description();
-        if (this->ifFalse()) {
-            result += " else " + this->ifFalse()->description();
-        }
-        return result;
-    }
+    String description() const override;
 
 private:
     std::unique_ptr<Expression> fTest;

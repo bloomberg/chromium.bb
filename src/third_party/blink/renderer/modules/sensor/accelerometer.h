@@ -23,11 +23,11 @@ class Accelerometer : public Sensor {
                 const SpatialSensorOptions*,
                 ExceptionState&,
                 device::mojom::blink::SensorType,
-                const Vector<mojom::blink::FeaturePolicyFeature>&);
+                const Vector<mojom::blink::PermissionsPolicyFeature>&);
 
-  base::Optional<double> x() const;
-  base::Optional<double> y() const;
-  base::Optional<double> z() const;
+  absl::optional<double> x() const;
+  absl::optional<double> y() const;
+  absl::optional<double> z() const;
 
   void Trace(Visitor*) const override;
 };

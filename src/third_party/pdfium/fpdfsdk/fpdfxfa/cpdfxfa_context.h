@@ -14,6 +14,7 @@
 #include "core/fxcrt/cfx_timer.h"
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/observed_ptr.h"
+#include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/fpdfxfa/cpdfxfa_page.h"
@@ -58,11 +59,9 @@ class CPDFXFA_Context final : public CPDF_Document::Extension,
     return m_pFormFillEnv.Get();
   }
   void SetFormFillEnv(CPDFSDK_FormFillEnvironment* pFormFillEnv);
+  RetainPtr<CPDFXFA_Page> GetOrCreateXFAPage(int page_index);
   RetainPtr<CPDFXFA_Page> GetXFAPage(int page_index);
   RetainPtr<CPDFXFA_Page> GetXFAPage(CXFA_FFPageView* pPage) const;
-  std::vector<RetainPtr<CPDFXFA_Page>>* GetXFAPageList() {
-    return &m_XFAPageList;
-  }
   void ClearChangeMark();
 
   // CPDF_Document::Extension:

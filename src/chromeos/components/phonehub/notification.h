@@ -9,9 +9,8 @@
 #include <ostream>
 #include <string>
 
-#include "base/optional.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/image/image.h"
 
 namespace chromeos {
@@ -24,7 +23,7 @@ class Notification {
  public:
   // Describes the app which generates a notification.
   struct AppMetadata {
-    AppMetadata(const base::string16& visible_app_name,
+    AppMetadata(const std::u16string& visible_app_name,
                 const std::string& package_name,
                 const gfx::Image& icon);
     AppMetadata(const AppMetadata& other);
@@ -32,9 +31,18 @@ class Notification {
     bool operator==(const AppMetadata& other) const;
     bool operator!=(const AppMetadata& other) const;
 
-    base::string16 visible_app_name;
+    std::u16string visible_app_name;
     std::string package_name;
     gfx::Image icon;
+  };
+
+  // Interaction behavior for integration with other features.
+  enum class InteractionBehavior {
+    // Default value. No interactions available.
+    kNone,
+
+    // Notification can be opened.
+    kOpenable
   };
 
   // Notification importance; for more details, see
@@ -70,10 +78,11 @@ class Notification {
       const base::Time& timestamp,
       Importance importance,
       int64_t inline_reply_id,
-      const base::Optional<base::string16>& title = base::nullopt,
-      const base::Optional<base::string16>& text_content = base::nullopt,
-      const base::Optional<gfx::Image>& shared_image = base::nullopt,
-      const base::Optional<gfx::Image>& contact_image = base::nullopt);
+      InteractionBehavior interaction_behavior,
+      const absl::optional<std::u16string>& title = absl::nullopt,
+      const absl::optional<std::u16string>& text_content = absl::nullopt,
+      const absl::optional<gfx::Image>& shared_image = absl::nullopt,
+      const absl::optional<gfx::Image>& contact_image = absl::nullopt);
   Notification(const Notification& other);
   ~Notification();
 
@@ -86,14 +95,17 @@ class Notification {
   base::Time timestamp() const { return timestamp_; }
   Importance importance() const { return importance_; }
   int64_t inline_reply_id() const { return inline_reply_id_; }
-  const base::Optional<base::string16>& title() const { return title_; }
-  const base::Optional<base::string16>& text_content() const {
+  InteractionBehavior interaction_behavior() const {
+    return interaction_behavior_;
+  }
+  const absl::optional<std::u16string>& title() const { return title_; }
+  const absl::optional<std::u16string>& text_content() const {
     return text_content_;
   }
-  const base::Optional<gfx::Image>& shared_image() const {
+  const absl::optional<gfx::Image>& shared_image() const {
     return shared_image_;
   }
-  const base::Optional<gfx::Image>& contact_image() const {
+  const absl::optional<gfx::Image>& contact_image() const {
     return contact_image_;
   }
 
@@ -103,10 +115,11 @@ class Notification {
   base::Time timestamp_;
   Importance importance_;
   int64_t inline_reply_id_;
-  base::Optional<base::string16> title_;
-  base::Optional<base::string16> text_content_;
-  base::Optional<gfx::Image> shared_image_;
-  base::Optional<gfx::Image> contact_image_;
+  InteractionBehavior interaction_behavior_;
+  absl::optional<std::u16string> title_;
+  absl::optional<std::u16string> text_content_;
+  absl::optional<gfx::Image> shared_image_;
+  absl::optional<gfx::Image> contact_image_;
 };
 
 std::ostream& operator<<(std::ostream& stream,
@@ -115,7 +128,8 @@ std::ostream& operator<<(std::ostream& stream,
                          Notification::Importance importance);
 std::ostream& operator<<(std::ostream& stream,
                          const Notification& notification);
-
+std::ostream& operator<<(std::ostream& stream,
+                         const Notification::InteractionBehavior behavior);
 }  // namespace phonehub
 }  // namespace chromeos
 

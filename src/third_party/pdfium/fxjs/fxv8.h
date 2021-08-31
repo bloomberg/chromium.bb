@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "core/fxcrt/fx_string.h"
+#include "third_party/base/span.h"
 #include "v8/include/v8.h"
 
 // The fxv8 functions soften up the interface to the V8 API.
@@ -39,9 +40,16 @@ v8::Local<v8::String> NewStringHelper(v8::Isolate* pIsolate,
 v8::Local<v8::String> NewStringHelper(v8::Isolate* pIsolate,
                                       WideStringView str);
 v8::Local<v8::Array> NewArrayHelper(v8::Isolate* pIsolate);
+v8::Local<v8::Array> NewArrayHelper(v8::Isolate* pIsolate,
+                                    pdfium::span<v8::Local<v8::Value>> values);
 v8::Local<v8::Object> NewObjectHelper(v8::Isolate* pIsolate);
 v8::Local<v8::Date> NewDateHelper(v8::Isolate* pIsolate, double d);
 
+// Conversion to PDFium type without re-entry from known v8 type.
+WideString ToWideString(v8::Isolate* pIsolate, v8::Local<v8::String> pValue);
+ByteString ToByteString(v8::Isolate* pIsolate, v8::Local<v8::String> pValue);
+
+// Conversion to PDFium type with possible re-entry for coercion.
 int32_t ReentrantToInt32Helper(v8::Isolate* pIsolate,
                                v8::Local<v8::Value> pValue);
 bool ReentrantToBooleanHelper(v8::Isolate* pIsolate,

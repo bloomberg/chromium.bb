@@ -39,7 +39,7 @@ git-squash-branch \- Takes all commits in a single branch and replaces them with
 .sp
 git squash\-branch is a simple helper command\&. It takes all the commits on the current branch from the \fImerge_base\fR to HEAD, and reduces them to a single commit\&. The new commit will contain a summary of all the commits which were squashed, preceded by a header message indicating that it\(cqs the result of a squash (or the message you pass on the command line\&.)\&.
 .sp
-Squashing branches is useful when trying to rebase\-update over branches which were pushed to their upsteram (or committed by the \fICommit Queue\fR), and then conflicting changes landed in upstream on top of the push/commit\&. If you know that your branch was committed but \fBgit-rebase-update\fR(1) isn\(cqt able to automatically clean it, you can squash the troublesome branch before git rebase\-update, and then when git rebase\-update presents the conflict, you can verify that the conflict diff is what you expected (and then skip it with git rebase \-\-skip)\&.
+Squashing branches is useful when trying to rebase\-update over branches which were pushed to their upstream (or committed by the \fICommit Queue\fR), and then conflicting changes landed in upstream on top of the push/commit\&. If you know that your branch was committed but \fBgit-rebase-update\fR(1) isn\(cqt able to automatically clean it, you can squash the troublesome branch before git rebase\-update, and then when git rebase\-update presents the conflict, you can verify that the conflict diff is what you expected (and then skip it with git rebase \-\-skip)\&.
 .SH "OPTIONS"
 .PP
 \-m <message>, \-\-message=<message>

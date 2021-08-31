@@ -10,7 +10,6 @@
 #include "base/check.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
@@ -97,7 +96,7 @@ bool AppendFileRefToBody(PP_Instance instance,
     default:
       NOTREACHED();
   }
-  base::Optional<base::Time> optional_modified_time;
+  absl::optional<base::Time> optional_modified_time;
   if (expected_last_modified_time != 0)
     optional_modified_time =
         base::Time::FromDoubleT(expected_last_modified_time);

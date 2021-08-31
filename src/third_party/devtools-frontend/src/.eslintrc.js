@@ -1,5 +1,9 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 const path = require('path');
-const rulesDirPlugin = require('eslint-plugin-rulesdir')
+const rulesDirPlugin = require('eslint-plugin-rulesdir');
 rulesDirPlugin.RULES_DIR = path.join(__dirname, 'scripts', 'eslint_rules', 'lib');
 
 module.exports = {
@@ -19,18 +23,18 @@ module.exports = {
   'parserOptions': {'ecmaVersion': 9, 'sourceType': 'module'},
 
   /**
-     * ESLint rules
-     *
-     * All available rules: http://eslint.org/docs/rules/
-     *
-     * Rules take the following form:
-     *   'rule-name', [severity, { opts }]
-     * Severity: 2 == error, 1 == warning, 0 == off.
-     */
+   * ESLint rules
+   *
+   * All available rules: http://eslint.org/docs/rules/
+   *
+   * Rules take the following form:
+   *   'rule-name', [severity, { opts }]
+   * Severity: 2 == error, 1 == warning, 0 == off.
+   */
   'rules': {
     /**
-         * Enforced rules
-         */
+     * Enforced rules
+     */
 
 
     // syntax preferences
@@ -75,30 +79,11 @@ module.exports = {
     'radix': 2,
     'valid-typeof': 2,
     'no-return-assign': [2, 'always'],
+    'no-implicit-coercion': 2,
 
     // es2015 features
     'require-yield': 2,
     'template-curly-spacing': [2, 'never'],
-
-    // spacing details
-    'space-infix-ops': 2,
-    'space-in-parens': [2, 'never'],
-    'space-before-function-paren': [2, {'anonymous': 'never', 'named': 'never', 'asyncArrow': 'always'}],
-    'no-whitespace-before-property': 2,
-    'keyword-spacing': [
-      2, {
-        'overrides': {
-          'if': {'after': true},
-          'else': {'after': true},
-          'for': {'after': true},
-          'while': {'after': true},
-          'do': {'after': true},
-          'switch': {'after': true},
-          'return': {'after': true}
-        }
-      }
-    ],
-    'arrow-spacing': [2, {'after': true, 'before': true}],
 
     // file whitespace
     'no-multiple-empty-lines': [2, {'max': 2}],
@@ -107,8 +92,8 @@ module.exports = {
     'linebreak-style': [2, 'unix'],
 
     /**
-         * Disabled, aspirational rules
-         */
+     * Disabled, aspirational rules
+     */
 
     'indent': [0, 2, {'SwitchCase': 1, 'CallExpression': {'arguments': 2}, 'MemberExpression': 2}],
 
@@ -129,29 +114,63 @@ module.exports = {
     '@typescript-eslint/explicit-member-accessibility': [0],
     '@typescript-eslint/no-explicit-any': 2,
 
-    // errors on it('test') with no body
-    'mocha/no-pending-tests': 2,
-    // errors on {describe, it}.only
-    'mocha/no-exclusive-tests': 2,
-
     // Closure does not properly typecheck default exports
     'import/no-default-export': 2,
+
+    // Try to spot '// console.log()' left over from debugging
+    'rulesdir/commented_out_console': 2,
 
     // DevTools specific rules
     'rulesdir/es_modules_import': 2,
     'rulesdir/check_license_header': 2,
-    'rulesdir/check_test_definitions': 2,
-    'rulesdir/avoid_assert_equal': 2,
-    'rulesdir/no_repeated_tests': 2,
   },
   'overrides': [{
     'files': ['*.ts'],
     'rules': {
       '@typescript-eslint/explicit-member-accessibility': [2, {'accessibility': 'no-public'}],
-      'comma-dangle': [2, 'always-multiline'],
+      'comma-dangle': 'off',
+      '@typescript-eslint/comma-dangle': [2, 'always-multiline'],
+
       // run just the TypeScript unused-vars rule, else we get duplicate errors
       'no-unused-vars': 0,
       '@typescript-eslint/no-unused-vars': [2, {'argsIgnorePattern': '^_'}],
+      // run just the TypeScript semi rule, else we get duplicate errors
+      'semi': 0,
+      '@typescript-eslint/semi': ['error'],
+      '@typescript-eslint/member-delimiter-style': [
+        'error', {
+          'multiline': {'delimiter': 'semi', 'requireLast': true},
+          'singleline': {'delimiter': 'comma', 'requireLast': false},
+          'overrides': {
+            'interface': {
+              'singleline': {'delimiter': 'semi', 'requireLast': false},
+              'multiline': {'delimiter': 'semi', 'requireLast': true}
+            },
+            'typeLiteral': {
+              'singleline': {'delimiter': 'comma', 'requireLast': false},
+              'multiline': {'delimiter': 'comma', 'requireLast': true}
+            }
+          }
+        }
+      ],
+      // func-call-spacing doesn't work well with .ts
+      'func-call-spacing': 0,
+      '@typescript-eslint/func-call-spacing': 2,
+
+      /**
+       * Enforce that enum members are explicitly defined:
+       * const enum Foo { A = 'a' } rather than const enum Foo { A }
+       */
+      '@typescript-eslint/prefer-enum-initializers': 2,
+      /**
+       * Ban non-null assertion operator, e.g.:
+       * this.foo!.toLowerCase()
+       */
+      '@typescript-eslint/no-non-null-assertion': 2,
+      '@typescript-eslint/consistent-type-imports': 2,
+      'rulesdir/const_enum': 2,
+      'rulesdir/no_underscored_properties': 2,
+      'rulesdir/prefer_readonly_keyword': 2,
     }
   }]
 };

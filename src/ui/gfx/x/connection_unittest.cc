@@ -3,14 +3,12 @@
 // found in the LICENSE file.
 
 #include "ui/gfx/x/connection.h"
+
 #include "base/memory/ref_counted_memory.h"
-#include "ui/gfx/x/xproto.h"
-
-#undef Bool
-
-#include <xcb/xcb.h>
-
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/x/event.h"
+#include "ui/gfx/x/future.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace x11 {
 
@@ -36,14 +34,12 @@ Window CreateWindow(Connection* connection) {
 // Connection setup and teardown.
 TEST(X11ConnectionTest, Basic) {
   Connection connection;
-  ASSERT_TRUE(connection.XcbConnection());
-  EXPECT_TRUE(connection.Ready());
+  ASSERT_TRUE(connection.Ready());
 }
 
 TEST(X11ConnectionTest, Request) {
   Connection connection;
-  ASSERT_TRUE(connection.XcbConnection());
-  EXPECT_TRUE(connection.Ready());
+  ASSERT_TRUE(connection.Ready());
 
   Window window = CreateWindow(&connection);
 
@@ -52,7 +48,7 @@ TEST(X11ConnectionTest, Request) {
   EXPECT_EQ(attributes->map_state, MapState::Unmapped);
   EXPECT_TRUE(attributes->override_redirect);
 
-  auto geometry = connection.GetGeometry({window}).Sync();
+  auto geometry = connection.GetGeometry(window).Sync();
   ASSERT_TRUE(geometry);
   EXPECT_EQ(geometry->x, 0);
   EXPECT_EQ(geometry->y, 0);
@@ -62,8 +58,7 @@ TEST(X11ConnectionTest, Request) {
 
 TEST(X11ConnectionTest, Event) {
   Connection connection;
-  ASSERT_TRUE(connection.XcbConnection());
-  EXPECT_TRUE(connection.Ready());
+  ASSERT_TRUE(connection.Ready());
 
   Window window = CreateWindow(&connection);
 
@@ -75,9 +70,9 @@ TEST(X11ConnectionTest, Event) {
 
   std::vector<uint8_t> data{0};
   auto prop_future = connection.ChangeProperty({
-      .window = static_cast<x11::Window>(window),
-      .property = x11::Atom::WM_NAME,
-      .type = x11::Atom::STRING,
+      .window = static_cast<Window>(window),
+      .property = Atom::WM_NAME,
+      .type = Atom::STRING,
       .format = CHAR_BIT,
       .data_len = 1,
       .data = base::RefCountedBytes::TakeVector(&data),
@@ -86,25 +81,24 @@ TEST(X11ConnectionTest, Event) {
 
   connection.ReadResponses();
   ASSERT_EQ(connection.events().size(), 1u);
-  auto* prop = connection.events().front().As<x11::PropertyNotifyEvent>();
+  auto* prop = connection.events().front().As<PropertyNotifyEvent>();
   ASSERT_TRUE(prop);
-  EXPECT_EQ(prop->atom, x11::Atom::WM_NAME);
+  EXPECT_EQ(prop->atom, Atom::WM_NAME);
   EXPECT_EQ(prop->state, Property::NewValue);
 }
 
 TEST(X11ConnectionTest, Error) {
   Connection connection;
-  ASSERT_TRUE(connection.XcbConnection());
-  EXPECT_TRUE(connection.Ready());
+  ASSERT_TRUE(connection.Ready());
 
   Window invalid_window = connection.GenerateId<Window>();
 
-  auto geometry = connection.GetGeometry({invalid_window}).Sync();
+  auto geometry = connection.GetGeometry(invalid_window).Sync();
   ASSERT_FALSE(geometry);
   auto* error = geometry.error.get();
   ASSERT_TRUE(error);
   // TODO(thomasanderson): Implement As<> for errors, similar to events.
-  auto* drawable_error = reinterpret_cast<x11::DrawableError*>(error);
+  auto* drawable_error = reinterpret_cast<DrawableError*>(error);
   EXPECT_EQ(drawable_error->bad_value, static_cast<uint32_t>(invalid_window));
 }
 

@@ -28,17 +28,22 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 //  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import {contrastRatio, rgbaToHsla} from '../front_end/common/ColorUtils.js';
+import {contrastRatio, contrastRatioAPCA, getAPCAThreshold, getContrastThreshold} from '../front_end/core/common/ColorUtils.js';
 
-import {Bounds, constrainNumber, createChild, createElement, createTextChild, ellipsify, Overlay, ResetData} from './common.js';
-import {buildPath, emptyBounds, PathBounds} from './highlight_common.js';
-import {drawLayoutGridHighlight, GridHighlight} from './highlight_grid_common.js';
-import {HighlightGridOverlay} from './tool_grid.js';
-
-type PathCommands = Array<string|number>;
+import type {Bounds, PathCommands, ResetData} from './common.js';
+import {constrainNumber, createChild, createElement, createTextChild, ellipsify, Overlay} from './common.js';
+import type {PathBounds} from './highlight_common.js';
+import {drawPath, emptyBounds, formatColor, formatRgba, parseHexa} from './highlight_common.js';
+import type {FlexContainerHighlight, FlexItemHighlight} from './highlight_flex_common.js';
+import {drawLayoutFlexContainerHighlight, drawLayoutFlexItemHighlight} from './highlight_flex_common.js';
+import type {GridHighlight} from './highlight_grid_common.js';
+import {drawLayoutGridHighlight} from './highlight_grid_common.js';
+import type {ScrollSnapHighlight} from './highlight_scroll_snap.js';
+import {PersistentOverlay} from './tool_persistent.js';
 
 interface Path {
-  path: PathCommands, outlineColor: string;
+  path: PathCommands;
+  outlineColor: string;
   fillColor: string;
   name: string;
 }
@@ -47,6 +52,8 @@ interface ContrastInfo {
   backgroundColor: string;
   fontSize: string;
   fontWeight: string;
+  contrastAlgorithm: 'apca'|'aa'|'aaa';
+  textOpacity: number;
 }
 
 interface ElementInfo {
@@ -56,6 +63,7 @@ interface ElementInfo {
   className?: string;
   nodeWidth: number;
   nodeHeight: number;
+  isLocked: boolean;
   isLockedAncestor: boolean;
   style: {[key: string]: string|undefined};
   showAccessibilityInfo: boolean;
@@ -63,23 +71,6 @@ interface ElementInfo {
   accessibleName: string;
   accessibleRole: string;
   layoutObjectName?: string;
-}
-
-enum LinePattern {
-  Solid = 'solid',
-  Dotted = 'dotted',
-  Dashed = 'dashed'
-}
-
-interface LineStyle {
-  color?: string;
-  pattern?: LinePattern;
-}
-
-interface FlexContainerHighlight {
-  containerBorder: PathCommands;
-  lines: Array<Array<PathCommands>>;
-  flexContainerHighlightConfig: {containerBorder?: LineStyle; lineSeparator?: LineStyle; itemSeparator?: LineStyle;};
 }
 
 interface Highlight {
@@ -90,19 +81,20 @@ interface Highlight {
   colorFormat: string;
   gridInfo: GridHighlight[];
   flexInfo: FlexContainerHighlight[];
+  flexItemInfo: FlexItemHighlight[];
 }
 
 export class HighlightOverlay extends Overlay {
   private tooltip!: HTMLElement;
-  private gridOverlay?: HighlightGridOverlay;
-  private gridLabelState = {gridLayerCounter: 0, gridPainted: false};
+  private persistentOverlay?: PersistentOverlay;
+  private gridLabelState = {gridLayerCounter: 0};
 
   reset(resetData: ResetData) {
     super.reset(resetData);
     this.tooltip.innerHTML = '';
     this.gridLabelState.gridLayerCounter = 0;
-    if (this.gridOverlay) {
-      this.gridOverlay.reset(resetData);
+    if (this.persistentOverlay) {
+      this.persistentOverlay.reset(resetData);
     }
   }
 
@@ -119,9 +111,9 @@ export class HighlightOverlay extends Overlay {
     this.document.body.append(tooltip);
     this.tooltip = tooltip;
 
-    this.gridOverlay = new HighlightGridOverlay(this.window);
-    this.gridOverlay.renderGridMarkup();
-    this.gridOverlay.setCanvas(canvas);
+    this.persistentOverlay = new PersistentOverlay(this.window);
+    this.persistentOverlay.renderGridMarkup();
+    this.persistentOverlay.setCanvas(canvas);
 
     this.setCanvas(canvas);
 
@@ -139,6 +131,8 @@ export class HighlightOverlay extends Overlay {
     this.context.save();
 
     const bounds = emptyBounds();
+    let contentPath: PathCommands|null = null;
+    let borderPath: PathCommands|null = null;
 
     for (let paths = highlight.paths.slice(); paths.length;) {
       const path = paths.pop();
@@ -146,24 +140,33 @@ export class HighlightOverlay extends Overlay {
         continue;
       }
       this.context.save();
-      drawPath(this.context, path.path, path.fillColor, path.outlineColor, bounds, this.emulationScaleFactor);
+      drawPath(
+          this.context, path.path, path.fillColor, path.outlineColor, undefined, bounds, this.emulationScaleFactor);
       if (paths.length) {
         this.context.globalCompositeOperation = 'destination-out';
-        drawPath(this.context, paths[paths.length - 1].path, 'red', undefined, bounds, this.emulationScaleFactor);
+        drawPath(
+            this.context, paths[paths.length - 1].path, 'red', undefined, undefined, bounds, this.emulationScaleFactor);
       }
       this.context.restore();
+
+      if (path.name === 'content') {
+        contentPath = path.path;
+      }
+      if (path.name === 'border') {
+        borderPath = path.path;
+      }
     }
     this.context.restore();
 
     this.context.save();
 
-    const rulerAtRight =
-        !!(highlight.paths.length && highlight.showRulers && bounds.minX < 20 && bounds.maxX + 20 < this.canvasWidth);
-    const rulerAtBottom =
-        !!(highlight.paths.length && highlight.showRulers && bounds.minY < 20 && bounds.maxY + 20 < this.canvasHeight);
+    const rulerAtRight = Boolean(
+        highlight.paths.length && highlight.showRulers && bounds.minX < 20 && bounds.maxX + 20 < this.canvasWidth);
+    const rulerAtBottom = Boolean(
+        highlight.paths.length && highlight.showRulers && bounds.minY < 20 && bounds.maxY + 20 < this.canvasHeight);
 
     if (highlight.showRulers) {
-      this._drawAxis(this.context, rulerAtRight, rulerAtBottom);
+      this.drawAxis(this.context, rulerAtRight, rulerAtBottom);
     }
 
     if (highlight.paths.length) {
@@ -173,7 +176,7 @@ export class HighlightOverlay extends Overlay {
       }
 
       if (highlight.elementInfo) {
-        _drawElementTitle(highlight.elementInfo, highlight.colorFormat, bounds, this.canvasWidth, this.canvasHeight);
+        drawElementTitle(highlight.elementInfo, highlight.colorFormat, bounds, this.canvasWidth, this.canvasHeight);
       }
     }
     if (highlight.gridInfo) {
@@ -183,10 +186,29 @@ export class HighlightOverlay extends Overlay {
             this.gridLabelState);
       }
     }
+
     if (highlight.flexInfo) {
       for (const flex of highlight.flexInfo) {
         drawLayoutFlexContainerHighlight(
             flex, this.context, this.deviceScaleFactor, this.canvasWidth, this.canvasHeight, this.emulationScaleFactor);
+      }
+    }
+
+    // Draw the highlight for flex item only if the element isn't also a flex container that already has some highlight
+    // config.
+    const isVisibleFlexContainer = highlight.flexInfo?.length && highlight.flexInfo.some(config => {
+      return Object.keys(config.flexContainerHighlightConfig).length > 0;
+    });
+
+    if (highlight.flexItemInfo && !isVisibleFlexContainer) {
+      for (const flexItem of highlight.flexItemInfo) {
+        const path = flexItem.boxSizing === 'content' ? contentPath : borderPath;
+        if (!path) {
+          continue;
+        }
+        drawLayoutFlexItemHighlight(
+            flexItem, path, this.context, this.deviceScaleFactor, this.canvasWidth, this.canvasHeight,
+            this.emulationScaleFactor);
       }
     }
     this.context.restore();
@@ -195,17 +217,22 @@ export class HighlightOverlay extends Overlay {
   }
 
   drawGridHighlight(highlight: GridHighlight) {
-    if (this.gridOverlay) {
-      this.gridOverlay.drawGridHighlight(highlight);
+    if (this.persistentOverlay) {
+      this.persistentOverlay.drawGridHighlight(highlight);
     }
   }
 
-  _drawAxis(context: CanvasRenderingContext2D, rulerAtRight: boolean, rulerAtBottom: boolean) {
-    if (this.gridLabelState.gridPainted) {
-      return;
+  drawFlexContainerHighlight(highlight: FlexContainerHighlight) {
+    if (this.persistentOverlay) {
+      this.persistentOverlay.drawFlexContainerHighlight(highlight);
     }
-    this.gridLabelState.gridPainted = true;
+  }
 
+  drawScrollSnapHighlight(highlight: ScrollSnapHighlight) {
+    this.persistentOverlay?.drawScrollSnapHighlight(highlight);
+  }
+
+  private drawAxis(context: CanvasRenderingContext2D, rulerAtRight: boolean, rulerAtBottom: boolean) {
     context.save();
 
     const pageFactor = this.pageZoomFactor * this.pageScaleFactor * this.emulationScaleFactor;
@@ -344,52 +371,12 @@ const lightGridColor = 'rgba(0,0,0,0.2)';
 const darkGridColor = 'rgba(0,0,0,0.7)';
 const gridBackgroundColor = 'rgba(255, 255, 255, 0.8)';
 
-function parseHexa(hexa: string): Array<number> {
-  return (hexa.match(/#(\w\w)(\w\w)(\w\w)(\w\w)/) || []).slice(1).map(c => parseInt(c, 16) / 255);
-}
-
-function formatColor(hexa: string, colorFormat: string): string {
-  if (colorFormat === 'rgb') {
-    const [r, g, b, a] = parseHexa(hexa);
-    // rgb(r g b [ / a])
-    return `rgb(${(r * 255).toFixed()} ${(g * 255).toFixed()} ${(b * 255).toFixed()}${
-        a === 1 ? '' : ' / ' + Math.round(a * 100) / 100})`;
-  }
-
-  if (colorFormat === 'hsl') {
-    const [h, s, l, a] = rgbaToHsla(parseHexa(hexa));
-    // hsl(hdeg s l [ / a])
-    return `hsl(${Math.round(h * 360)}deg ${Math.round(s * 100)} ${Math.round(l * 100)}${
-        a === 1 ? '' : ' / ' + Math.round(a * 100) / 100})`;
-  }
-
-  if (hexa.endsWith('FF')) {
-    // short hex if no alpha
-    return hexa.substr(0, 7);
-  }
-
-  return hexa;
-}
-
-function computeIsLargeFont(contrast: ContrastInfo) {
-  const boldWeights = new Set(['bold', 'bolder', '600', '700', '800', '900']);
-
-  const fontSizePx = parseFloat(contrast.fontSize.replace('px', ''));
-  const isBold = boldWeights.has(contrast.fontWeight);
-
-  const fontSizePt = fontSizePx * 72 / 96;
-  if (isBold) {
-    return fontSizePt >= 14;
-  }
-  return fontSizePt >= 18;
-}
-
 /**
  * Determine the layout type of the highlighted element based on the config.
  * @param {Object} elementInfo The element information, part of the config object passed to drawHighlight
  * @return {String|null} The layout type of the object, or null if none was found
  */
-function _getElementLayoutType(elementInfo: ElementInfo): string|null {
+function getElementLayoutType(elementInfo: ElementInfo): string|null {
   if (elementInfo.layoutObjectName && elementInfo.layoutObjectName.endsWith('Grid')) {
     return 'grid';
   }
@@ -404,11 +391,11 @@ function _getElementLayoutType(elementInfo: ElementInfo): string|null {
 /**
  * Create the DOM node that displays the description of the highlighted element
  */
-function _createElementDescription(elementInfo: ElementInfo, colorFormat: string): Element {
+function createElementDescription(elementInfo: ElementInfo, colorFormat: string): Element {
   const elementInfoElement = createElement('div', 'element-info');
   const elementInfoHeaderElement = createChild(elementInfoElement, 'div', 'element-info-header');
 
-  const layoutType = _getElementLayoutType(elementInfo);
+  const layoutType = getElementLayoutType(elementInfo);
   if (layoutType) {
     createChild(elementInfoHeaderElement, 'div', `element-layout-type ${layoutType}`);
   }
@@ -436,7 +423,11 @@ function _createElementDescription(elementInfo: ElementInfo, colorFormat: string
   let elementInfoBodyElement: HTMLElement;
 
   if (elementInfo.isLockedAncestor) {
-    addTextRow('Showing the locked ancestor', '');
+    addTextRow('Showing content-visibility ancestor', '');
+  }
+
+  if (elementInfo.isLocked) {
+    addTextRow('Descendants are skipped due to content-visibility', '');
   }
 
   const color = style['color'];
@@ -525,16 +516,30 @@ function _createElementDescription(elementInfo: ElementInfo, colorFormat: string
   }
 
   function addContrastRow(fgColor: string, contrast: ContrastInfo) {
-    const ratio = contrastRatio(parseHexa(fgColor), parseHexa(contrast.backgroundColor));
-    const threshold = computeIsLargeFont(contrast) ? 3.0 : 4.5;
+    const parsedFgColor = parseHexa(fgColor);
+    const parsedBgColor = parseHexa(contrast.backgroundColor);
+    // Merge text opacity into the alpha channel of the color.
+    parsedFgColor[3] *= contrast.textOpacity;
     const valueElement = addRow('Contrast', '', 'element-info-value-contrast');
     const sampleText = createChild(valueElement, 'div', 'contrast-text');
-    sampleText.style.color = fgColor;
+    sampleText.style.color = formatRgba(parsedFgColor, 'rgb');
     sampleText.style.backgroundColor = contrast.backgroundColor;
     sampleText.textContent = 'Aa';
     const valueSpan = createChild(valueElement, 'span');
-    valueSpan.textContent = String(Math.round(ratio * 100) / 100);
-    createChild(valueElement, 'div', ratio < threshold ? 'a11y-icon a11y-icon-warning' : 'a11y-icon a11y-icon-ok');
+    if (contrast.contrastAlgorithm === 'apca') {
+      const percentage = contrastRatioAPCA(parsedFgColor, parsedBgColor);
+      const threshold = getAPCAThreshold(contrast.fontSize, contrast.fontWeight);
+      valueSpan.textContent = String(Math.floor(percentage * 100) / 100) + '%';
+      createChild(
+          valueElement, 'div',
+          threshold === null || Math.abs(percentage) < threshold ? 'a11y-icon a11y-icon-warning' :
+                                                                   'a11y-icon a11y-icon-ok');
+    } else if (contrast.contrastAlgorithm === 'aa' || contrast.contrastAlgorithm === 'aaa') {
+      const ratio = contrastRatio(parsedFgColor, parsedBgColor);
+      const threshold = getContrastThreshold(contrast.fontSize, contrast.fontWeight)[contrast.contrastAlgorithm];
+      valueSpan.textContent = String(Math.floor(ratio * 100) / 100);
+      createChild(valueElement, 'div', ratio < threshold ? 'a11y-icon a11y-icon-warning' : 'a11y-icon a11y-icon-ok');
+    }
   }
 
   return elementInfoElement;
@@ -547,7 +552,7 @@ function _createElementDescription(elementInfo: ElementInfo, colorFormat: string
  * @param {number} canvasWidth
  * @param {number} canvasHeight
  */
-function _drawElementTitle(
+function drawElementTitle(
     elementInfo: ElementInfo, colorFormat: string, bounds: Bounds, canvasWidth: number, canvasHeight: number) {
   // Get the tooltip container and empty it, there can only be one tooltip displayed at the same time.
   const tooltipContainer = document.getElementById('tooltip-container');
@@ -562,7 +567,7 @@ function _drawElementTitle(
   const tooltipContent = createChild(wrapper, 'div', 'tooltip-content');
 
   // Create the tooltip content and append it.
-  const tooltip = _createElementDescription(elementInfo, colorFormat);
+  const tooltip = createElementDescription(elementInfo, colorFormat);
   tooltipContent.appendChild(tooltip);
 
   const titleWidth = tooltipContent.offsetWidth;
@@ -630,24 +635,6 @@ function _drawElementTitle(
   tooltipContent.style.setProperty('--arrow-left', (arrowX - boxX) + 'px');
 }
 
-function drawPath(
-    context: CanvasRenderingContext2D, commands: PathCommands, fillColor: string|undefined,
-    outlineColor: string|undefined, bounds: PathBounds, emulationScaleFactor: number) {
-  context.save();
-  const path = buildPath(commands, bounds, emulationScaleFactor);
-  if (fillColor) {
-    context.fillStyle = fillColor;
-    context.fill(path);
-  }
-  if (outlineColor) {
-    context.lineWidth = 2;
-    context.strokeStyle = outlineColor;
-    context.stroke(path);
-  }
-  context.restore();
-  return path;
-}
-
 const DEFAULT_RULER_COLOR = 'rgba(128, 128, 128, 0.3)';
 
 function drawRulers(
@@ -696,43 +683,4 @@ function drawRulers(
   }
 
   context.restore();
-}
-
-function drawLayoutFlexContainerHighlight(
-    highlight: FlexContainerHighlight, context: CanvasRenderingContext2D, deviceScaleFactor: number,
-    canvasWidth: number, canvasHeight: number, emulationScaleFactor: number) {
-  const config = highlight.flexContainerHighlightConfig;
-  const bounds = emptyBounds();
-  const borderPath = buildPath(highlight.containerBorder, bounds, emulationScaleFactor);
-  drawPathWithLineStyle(context, borderPath, config.containerBorder);
-
-  // If there are no lines, bail out now.
-  if (!highlight.lines || !highlight.lines.length) {
-    return;
-  }
-
-  for (const line of highlight.lines) {
-    for (const item of line) {
-      const bounds = emptyBounds();
-      const linePath = buildPath(item, bounds, emulationScaleFactor);
-      drawPathWithLineStyle(context, linePath, config.itemSeparator);
-    }
-  }
-}
-
-function drawPathWithLineStyle(context: CanvasRenderingContext2D, path: Path2D, lineStyle?: LineStyle) {
-  if (lineStyle && lineStyle.color) {
-    context.save();
-    context.translate(0.5, 0.5);
-    context.lineWidth = 1;
-    if (lineStyle.pattern === LinePattern.Dashed) {
-      context.setLineDash([3, 3]);
-    }
-    if (lineStyle.pattern === LinePattern.Dotted) {
-      context.setLineDash([2, 2]);
-    }
-    context.strokeStyle = lineStyle.color;
-    context.stroke(path);
-    context.restore();
-  }
 }

@@ -44,7 +44,7 @@ endif()
 list(APPEND aom_build_vars ${AOM_CONFIG_VARS} ${AOM_OPTION_VARS})
 foreach(cache_var ${aom_build_vars})
   get_property(cache_var_helpstring CACHE ${cache_var} PROPERTY HELPSTRING)
-  if("${cache_var_helpstring}" STREQUAL "${cmake_cmdline_helpstring}")
+  if(cache_var_helpstring STREQUAL cmake_cmdline_helpstring)
     set(AOM_CMAKE_CONFIG "${AOM_CMAKE_CONFIG} -D${cache_var}=${${cache_var}}")
   endif()
 endforeach()
@@ -53,11 +53,10 @@ string(STRIP "${AOM_CMAKE_CONFIG}" AOM_CMAKE_CONFIG)
 # Detect target CPU.
 if(NOT AOM_TARGET_CPU)
   string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" cpu_lowercase)
-  if("${cpu_lowercase}" STREQUAL "amd64"
-     OR "${cpu_lowercase}" STREQUAL "x86_64")
-    if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
+  if(cpu_lowercase STREQUAL "amd64" OR cpu_lowercase STREQUAL "x86_64")
+    if(CMAKE_SIZEOF_VOID_P EQUAL 4)
       set(AOM_TARGET_CPU "x86")
-    elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
+    elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
       set(AOM_TARGET_CPU "x86_64")
     else()
       message(
@@ -66,15 +65,13 @@ if(NOT AOM_TARGET_CPU)
                     "      CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}\n"
                     "      CMAKE_GENERATOR=${CMAKE_GENERATOR}\n")
     endif()
-  elseif("${cpu_lowercase}" STREQUAL "i386"
-         OR "${cpu_lowercase}" STREQUAL "x86")
+  elseif(cpu_lowercase STREQUAL "i386" OR cpu_lowercase STREQUAL "x86")
     set(AOM_TARGET_CPU "x86")
-  elseif("${cpu_lowercase}" MATCHES "^arm"
-         OR "${cpu_lowercase}" MATCHES "^mips")
+  elseif(cpu_lowercase MATCHES "^arm" OR cpu_lowercase MATCHES "^mips")
     set(AOM_TARGET_CPU "${cpu_lowercase}")
-  elseif("${cpu_lowercase}" MATCHES "aarch64")
+  elseif(cpu_lowercase MATCHES "aarch64")
     set(AOM_TARGET_CPU "arm64")
-  elseif("${cpu_lowercase}" MATCHES "^ppc")
+  elseif(cpu_lowercase MATCHES "^ppc")
     set(AOM_TARGET_CPU "ppc")
   else()
     message(WARNING "The architecture ${CMAKE_SYSTEM_PROCESSOR} is not "
@@ -106,7 +103,7 @@ message("--- aom_configure: Detected CPU: ${AOM_TARGET_CPU}")
 set(AOM_TARGET_SYSTEM ${CMAKE_SYSTEM_NAME})
 
 string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type_lowercase)
-if("${build_type_lowercase}" STREQUAL "debug")
+if(build_type_lowercase STREQUAL "debug")
   set(CONFIG_DEBUG 1)
 endif()
 
@@ -121,8 +118,8 @@ if(NOT MSVC)
     # TODO(tomfinegan): clang needs -pie in CMAKE_EXE_LINKER_FLAGS for this to
     # work.
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-    if("${AOM_TARGET_SYSTEM}" STREQUAL "Linux"
-       AND "${AOM_TARGET_CPU}" MATCHES "^armv[78]")
+    if(AOM_TARGET_SYSTEM STREQUAL "Linux"
+       AND AOM_TARGET_CPU MATCHES "^armv[78]")
       set(AOM_AS_FLAGS ${AOM_AS_FLAGS} --defsym PIC=1)
     else()
       set(AOM_AS_FLAGS ${AOM_AS_FLAGS} -DPIC)
@@ -130,7 +127,7 @@ if(NOT MSVC)
   endif()
 endif()
 
-if("${AOM_TARGET_CPU}" STREQUAL "x86" OR "${AOM_TARGET_CPU}" STREQUAL "x86_64")
+if(AOM_TARGET_CPU STREQUAL "x86" OR AOM_TARGET_CPU STREQUAL "x86_64")
   find_program(AS_EXECUTABLE yasm $ENV{YASM_PATH})
   if(NOT AS_EXECUTABLE OR ENABLE_NASM)
     unset(AS_EXECUTABLE CACHE)
@@ -150,11 +147,11 @@ if("${AOM_TARGET_CPU}" STREQUAL "x86" OR "${AOM_TARGET_CPU}" STREQUAL "x86_64")
   get_asm_obj_format("objformat")
   set(AOM_AS_FLAGS -f ${objformat} ${AOM_AS_FLAGS})
   string(STRIP "${AOM_AS_FLAGS}" AOM_AS_FLAGS)
-elseif("${AOM_TARGET_CPU}" MATCHES "arm")
-  if("${AOM_TARGET_SYSTEM}" STREQUAL "Darwin")
+elseif(AOM_TARGET_CPU MATCHES "arm")
+  if(AOM_TARGET_SYSTEM STREQUAL "Darwin")
     set(AS_EXECUTABLE as)
     set(AOM_AS_FLAGS -arch ${AOM_TARGET_CPU} -isysroot ${CMAKE_OSX_SYSROOT})
-  elseif("${AOM_TARGET_SYSTEM}" STREQUAL "Windows")
+  elseif(AOM_TARGET_SYSTEM STREQUAL "Windows")
     if(NOT AS_EXECUTABLE)
       set(AS_EXECUTABLE ${CMAKE_C_COMPILER} -c -mimplicit-it=always)
     endif()
@@ -198,13 +195,13 @@ if(CONFIG_GPROF)
   require_compiler_flag("-pg" YES)
 endif()
 
-if("${AOM_TARGET_SYSTEM}" MATCHES "Darwin\|Linux\|Windows\|Android")
+if(AOM_TARGET_SYSTEM MATCHES "Darwin\|Linux\|Windows\|Android")
   set(CONFIG_OS_SUPPORT 1)
 endif()
 
 # The default _WIN32_WINNT value in MinGW is 0x0502 (Windows XP with SP2). Set
 # it to 0x0601 (Windows 7).
-if("${AOM_TARGET_SYSTEM}" STREQUAL "Windows")
+if(AOM_TARGET_SYSTEM STREQUAL "Windows")
   add_compiler_flag_if_supported("-D_WIN32_WINNT=0x0601")
 endif()
 
@@ -278,7 +275,7 @@ else()
   add_compiler_flag_if_supported("-Wdisabled-optimization")
   add_compiler_flag_if_supported("-Wextra")
   add_compiler_flag_if_supported("-Wfloat-conversion")
-  add_compiler_flag_if_supported("-Wimplicit-function-declaration")
+  add_c_flag_if_supported("-Wimplicit-function-declaration")
   add_compiler_flag_if_supported("-Wlogical-op")
   add_compiler_flag_if_supported("-Wpointer-arith")
   add_compiler_flag_if_supported("-Wshorten-64-to-32")
@@ -289,8 +286,7 @@ else()
   add_compiler_flag_if_supported("-Wunused")
   add_compiler_flag_if_supported("-Wvla")
 
-  if(CMAKE_C_COMPILER_ID MATCHES "GNU"
-     AND "${SANITIZE}" MATCHES "address|undefined")
+  if(CMAKE_C_COMPILER_ID MATCHES "GNU" AND SANITIZE MATCHES "address|undefined")
 
     # This combination has more stack overhead, so we account for it by
     # providing higher stack limit than usual.
@@ -304,6 +300,11 @@ else()
     add_cxx_flag_if_supported("-Wstack-usage=240000")
   endif()
 
+  if(CMAKE_C_COMPILER_ID MATCHES "GNU" AND SANITIZE MATCHES "address")
+    # Disable no optimization warning when compiling with sanitizers
+    add_compiler_flag_if_supported("-Wno-disabled-optimization")
+  endif()
+
   # Add -Wshadow only for C files to avoid massive gtest warning spam.
   add_c_flag_if_supported("-Wshadow")
 
@@ -312,7 +313,7 @@ else()
 
   # Quiet gcc 6 vs 7 abi warnings:
   # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=77728
-  if("${AOM_TARGET_CPU}" MATCHES "arm")
+  if(AOM_TARGET_CPU MATCHES "arm")
     add_cxx_flag_if_supported("-Wno-psabi")
   endif()
 
@@ -320,7 +321,7 @@ else()
     add_compiler_flag_if_supported("-Werror")
   endif()
 
-  if("${build_type_lowercase}" MATCHES "rel")
+  if(build_type_lowercase MATCHES "rel")
     add_compiler_flag_if_supported("-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0")
   endif()
   add_compiler_flag_if_supported("-D_LARGEFILE_SOURCE")

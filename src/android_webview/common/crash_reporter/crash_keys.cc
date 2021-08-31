@@ -41,6 +41,7 @@ const char* const kWebViewCrashKeyAllowList[] = {
     "gpu-vsver",
     "gpu-gl-vendor",
     "gpu-gl-renderer",
+    "gr-context-type",
     "oop_read_failure",
 
     // components/viz
@@ -52,6 +53,83 @@ const char* const kWebViewCrashKeyAllowList[] = {
     "discardable-memory-free",
     "mojo-message-error",
     "total-discardable-memory-allocated",
+
+    // Navigation
+    "VerifyDidCommit-prev_ldwb",
+    "VerifyDidCommit-prev_ldwbu",
+    "VerifyDidCommit-base_url_fdu_empty",
+    "VerifyDidCommit-data_url_empty",
+    "VerifyDidCommit-history_url_fdu_empty",
+
+    "VerifyDidCommit-intended_browser",
+    "VerifyDidCommit-intended_renderer",
+
+    "VerifyDidCommit-method_post_browser",
+    "VerifyDidCommit-method_post_renderer",
+    "VerifyDidCommit-original_method_post",
+
+    "VerifyDidCommit-unreachable_browser",
+    "VerifyDidCommit-unreachable_renderer",
+
+    "VerifyDidCommit-post_id_matches",
+    "VerifyDidCommit-post_id_-1_browser",
+    "VerifyDidCommit-post_id_-1_renderer",
+
+    "VerifyDidCommit-override_ua_browser",
+    "VerifyDidCommit-override_ua_renderer",
+
+    "VerifyDidCommit-code_browser",
+    "VerifyDidCommit-code_renderer",
+
+    "VerifyDidCommit-suh_browser",
+    "VerifyDidCommit-suh_renderer",
+
+    "VerifyDidCommit-gesture_browser",
+    "VerifyDidCommit-gesture_renderer",
+
+    "VerifyDidCommit-replace_browser",
+    "VerifyDidCommit-replace_renderer",
+
+    "VerifyDidCommit-is_same_document",
+    "VerifyDidCommit-is_history_api",
+    "VerifyDidCommit-renderer_initiated",
+    "VerifyDidCommit-is_subframe",
+    "VerifyDidCommit-is_form_submission",
+    "VerifyDidCommit-is_error_page",
+    "VerifyDidCommit-net_error",
+
+    "VerifyDidCommit-is_server_redirect",
+    "VerifyDidCommit-redirects_size",
+
+    "VerifyDidCommit-entry_offset",
+    "VerifyDidCommit-entry_count",
+    "VerifyDidCommit-last_committed_index",
+
+    "VerifyDidCommit-is_reload",
+    "VerifyDidCommit-is_restore",
+    "VerifyDidCommit-is_history",
+    "VerifyDidCommit-has_valid_page_state",
+
+    "VerifyDidCommit-has_gesture",
+    "VerifyDidCommit-was_click",
+
+    "VerifyDidCommit-nav_url_blank",
+    "VerifyDidCommit-nav_url_srcdoc",
+    "VerifyDidCommit-nav_url_blocked",
+    "VerifyDidCommit-nav_url_error",
+
+    "VerifyDidCommit-original_same_doc",
+
+    "VerifyDidCommit-committed_real_load",
+    "VerifyDidCommit-last_url_empty",
+    "VerifyDidCommit-last_url_blank",
+    "VerifyDidCommit-last_url_srcdoc",
+    "VerifyDidCommit-last_url_error",
+
+    "VerifyDidCommit-last_method",
+    "VerifyDidCommit-last_code",
+
+    "VerifyDidCommit-has_si_url",
 
     // services/network
     "network_deserialization",

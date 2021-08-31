@@ -9,12 +9,12 @@
 
 #include <memory>
 
-#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "media/capture/video/video_capture_device.h"
-#include "media/fuchsia/common/sysmem_buffer_pool.h"
-#include "media/fuchsia/common/sysmem_buffer_reader.h"
+#include "media/fuchsia/common/sysmem_client.h"
+#include "media/fuchsia/common/vmo_buffer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 
@@ -77,11 +77,10 @@ class CAPTURE_EXPORT VideoCaptureDeviceFuchsia : public VideoCaptureDevice {
       fidl::InterfaceHandle<fuchsia::sysmem::BufferCollectionToken>
           token_handle);
 
-  // Callback for SysmemBufferPool::Creator.
-  void OnBufferCollectionCreated(std::unique_ptr<SysmemBufferPool> collection);
-
-  // Callback for SysmemBufferPool::CreateReader().
-  void OnBufferReaderCreated(std::unique_ptr<SysmemBufferReader> reader);
+  // Callback for SysmemCollectionClient::AcquireBuffers().
+  void OnBuffersAcquired(
+      std::vector<VmoBuffer> buffers,
+      const fuchsia::sysmem::SingleBufferSettings& buffer_settings);
 
   // Calls Stream::GetNextFrame() in a loop to receive incoming frames.
   void ReceiveNextFrame();
@@ -95,12 +94,12 @@ class CAPTURE_EXPORT VideoCaptureDeviceFuchsia : public VideoCaptureDevice {
 
   std::unique_ptr<Client> client_;
 
-  media::BufferAllocator sysmem_allocator_;
-  std::unique_ptr<SysmemBufferPool::Creator> buffer_collection_creator_;
-  std::unique_ptr<SysmemBufferPool> buffer_collection_;
-  std::unique_ptr<SysmemBufferReader> buffer_reader_;
+  SysmemAllocatorClient sysmem_allocator_;
+  std::unique_ptr<SysmemCollectionClient> buffer_collection_;
+  std::vector<VmoBuffer> buffers_;
+  fuchsia::sysmem::ImageFormatConstraints buffers_format_;
 
-  base::Optional<gfx::Size> frame_size_;
+  absl::optional<gfx::Size> frame_size_;
   fuchsia::camera3::Orientation orientation_ =
       fuchsia::camera3::Orientation::UP;
 
