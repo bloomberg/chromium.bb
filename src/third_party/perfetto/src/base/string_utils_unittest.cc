@@ -134,10 +134,15 @@ TEST(StringUtilsTest, StringToDouble) {
   EXPECT_DOUBLE_EQ(StringToDouble("1").value(), 1l);
   EXPECT_DOUBLE_EQ(StringToDouble("-42").value(), -42l);
   EXPECT_DOUBLE_EQ(StringToDouble("-42.5").value(), -42.5l);
+  EXPECT_DOUBLE_EQ(StringToDouble("0.5").value(), .5l);
+  EXPECT_DOUBLE_EQ(StringToDouble(".5").value(), .5l);
   EXPECT_EQ(StringToDouble(""), nullopt);
   EXPECT_EQ(StringToDouble("!?"), nullopt);
   EXPECT_EQ(StringToDouble("abc"), nullopt);
   EXPECT_EQ(StringToDouble("123 abc"), nullopt);
+  EXPECT_EQ(StringToDouble("124,456"), nullopt);
+  EXPECT_EQ(StringToDouble("4 2"), nullopt);
+  EXPECT_EQ(StringToDouble(" - 42"), nullopt);
 }
 
 TEST(StringUtilsTest, StartsWith) {
@@ -281,6 +286,29 @@ TEST(StringUtilsTest, TrimLeading) {
   EXPECT_EQ(TrimLeading("a"), "a");
   EXPECT_EQ(TrimLeading(" aaaa"), "aaaa");
   EXPECT_EQ(TrimLeading(" aaaaa     "), "aaaaa     ");
+}
+
+TEST(StringUtilsTest, Base64Encode) {
+  auto base64_encode = [](const std::string& str) {
+    return Base64Encode(str.c_str(), str.size());
+  };
+
+  EXPECT_EQ(base64_encode(""), "");
+  EXPECT_EQ(base64_encode("f"), "Zg==");
+  EXPECT_EQ(base64_encode("fo"), "Zm8=");
+  EXPECT_EQ(base64_encode("foo"), "Zm9v");
+  EXPECT_EQ(base64_encode("foob"), "Zm9vYg==");
+  EXPECT_EQ(base64_encode("fooba"), "Zm9vYmE=");
+  EXPECT_EQ(base64_encode("foobar"), "Zm9vYmFy");
+
+  EXPECT_EQ(Base64Encode("foo\0bar", 7), "Zm9vAGJhcg==");
+
+  std::vector<uint8_t> buffer = {0x04, 0x53, 0x42, 0x35,
+                                 0x32, 0xFF, 0x00, 0xFE};
+  EXPECT_EQ(Base64Encode(buffer.data(), buffer.size()), "BFNCNTL/AP4=");
+
+  buffer = {0xfb, 0xf0, 0x3e, 0x07, 0xfc};
+  EXPECT_EQ(Base64Encode(buffer.data(), buffer.size()), "+/A+B/w=");
 }
 
 }  // namespace

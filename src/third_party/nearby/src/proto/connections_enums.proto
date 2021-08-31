@@ -16,6 +16,7 @@ syntax = "proto2";
 
 package location.nearby.proto.connections;
 
+
 option optimize_for = LITE_RUNTIME;
 option java_package = "com.google.location.nearby.proto";
 option java_outer_classname = "ConnectionsEnums";
@@ -66,9 +67,10 @@ enum SessionRole {
   DISCOVERER = 2;
 }
 
+// LINT.IfChange
 enum Medium {
   UNKNOWN_MEDIUM = 0;
-  MDNS = 1;
+  MDNS = 1 [deprecated = true];
   BLUETOOTH = 2;
   WIFI_HOTSPOT = 3;
   BLE = 4;
@@ -78,6 +80,7 @@ enum Medium {
   WIFI_DIRECT = 8;
   WEB_RTC = 9;
 }
+// LINT.ThenChange(//depot/google3/java/com/google/android/gmscore/integ/client/nearby/src/com/google/android/gms/nearby/connection/Medium.java)
 
 // The result of a ConnectionRequest.
 enum ConnectionRequestResponse {

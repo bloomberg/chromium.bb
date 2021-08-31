@@ -50,7 +50,6 @@ BackgroundKeyboardHandler = class {
 
     chrome.accessibilityPrivate.setKeyboardListener(
         true, ChromeVox.isStickyPrefOn);
-    window['prefs'].switchToKeyMap('keymap_default');
   }
 
   /**
@@ -77,6 +76,9 @@ BackgroundKeyboardHandler = class {
     }
 
     Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
+
+    // Try to restore to the last valid range.
+    ChromeVoxState.instance.restoreLastValidRangeIfNeeded();
 
     // Defer first to the math handler, if it exists, then ordinary keyboard
     // commands.

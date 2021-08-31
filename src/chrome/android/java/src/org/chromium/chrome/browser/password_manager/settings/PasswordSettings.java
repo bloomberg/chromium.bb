@@ -39,12 +39,12 @@ import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
-import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.webauthn.CableAuthenticatorModuleProvider;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SearchUtils;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.settings.TextMessagePreference;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
@@ -349,6 +349,10 @@ public class PasswordSettings
             passwordParent.addPreference(preference);
         }
         mNoPasswords = passwordParent.getPreferenceCount() == 0;
+        if (mMenu != null) {
+            mMenu.findItem(R.id.export_passwords)
+                    .setEnabled(!mNoPasswords && !mExportFlow.isActive());
+        }
         if (mNoPasswords) {
             if (count == 0) displayEmptyScreenMessage(); // Show if the list was already empty.
             if (mSearchQuery == null) {
@@ -431,13 +435,16 @@ public class PasswordSettings
     @Override
     public void onDestroy() {
         super.onDestroy();
-        PasswordManagerHandlerProvider.getInstance().removeObserver(this);
+
         // The component should only be destroyed when the activity has been closed by the user
         // (e.g. by pressing on the back button) and not when the activity is temporarily destroyed
         // by the system.
-        if (getActivity().isFinishing() && mPasswordCheck != null
-                && mManagePasswordsReferrer != ManagePasswordsReferrer.CHROME_SETTINGS) {
-            PasswordCheckFactory.destroy();
+        if (getActivity().isFinishing()) {
+            PasswordManagerHandlerProvider.getInstance().removeObserver(this);
+            if (mPasswordCheck != null
+                    && mManagePasswordsReferrer != ManagePasswordsReferrer.CHROME_SETTINGS) {
+                PasswordCheckFactory.destroy();
+            }
         }
     }
 
@@ -453,11 +460,13 @@ public class PasswordSettings
             intent.setPackage(getActivity().getPackageName());
             getActivity().startActivity(intent);
         } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.EDIT_PASSWORDS_IN_SETTINGS)) {
-            // Launch preference activity with a PasswordEntryEditor fragment.
+            boolean isBlockedCredential =
+                    !preference.getExtras().containsKey(PasswordSettings.PASSWORD_LIST_NAME);
             PasswordManagerHandlerProvider.getInstance()
                     .getPasswordManagerHandler()
-                    .showPasswordEntryEditingView(getContext(),
-                            preference.getExtras().getInt(PasswordSettings.PASSWORD_LIST_ID));
+                    .showPasswordEntryEditingView(getActivity(), new SettingsLauncherImpl(),
+                            preference.getExtras().getInt(PasswordSettings.PASSWORD_LIST_ID),
+                            isBlockedCredential);
         } else {
             // Launch preference activity with PasswordEntryViewer fragment with
             // intent extras specifying the object.

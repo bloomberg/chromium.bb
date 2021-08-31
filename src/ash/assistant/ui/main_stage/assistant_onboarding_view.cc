@@ -18,7 +18,6 @@
 #include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -115,7 +114,7 @@ AssistantOnboardingView::AssistantOnboardingView(
   SetID(AssistantViewID::kOnboardingView);
   InitLayout();
 
-  assistant_controller_observer_.Add(AssistantController::Get());
+  assistant_controller_observation_.Observe(AssistantController::Get());
   AssistantSuggestionsController::Get()->GetModel()->AddObserver(this);
   AssistantUiController::Get()->GetModel()->AddObserver(this);
 }
@@ -143,7 +142,9 @@ void AssistantOnboardingView::ChildPreferredSizeChanged(views::View* child) {
 void AssistantOnboardingView::OnAssistantControllerDestroying() {
   AssistantUiController::Get()->GetModel()->RemoveObserver(this);
   AssistantSuggestionsController::Get()->GetModel()->RemoveObserver(this);
-  assistant_controller_observer_.Remove(AssistantController::Get());
+  DCHECK(assistant_controller_observation_.IsObservingSource(
+      AssistantController::Get()));
+  assistant_controller_observation_.Reset();
 }
 
 void AssistantOnboardingView::OnOnboardingSuggestionsChanged(
@@ -154,8 +155,8 @@ void AssistantOnboardingView::OnOnboardingSuggestionsChanged(
 void AssistantOnboardingView::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    base::Optional<AssistantEntryPoint> entry_point,
-    base::Optional<AssistantExitPoint> exit_point) {
+    absl::optional<AssistantEntryPoint> entry_point,
+    absl::optional<AssistantExitPoint> exit_point) {
   if (new_visibility != AssistantVisibility::kVisible)
     return;
 

@@ -28,8 +28,8 @@ class WebTestShellPlatformDelegate : public ShellPlatformDelegate {
                        UIControl control,
                        bool is_enabled) override;
   void SetAddressBarURL(Shell* shell, const GURL& url) override;
-  void SetTitle(Shell* shell, const base::string16& title) override;
-  void RenderViewReady(Shell* shell) override;
+  void SetTitle(Shell* shell, const std::u16string& title) override;
+  void MainFrameCreated(Shell* shell) override;
   std::unique_ptr<JavaScriptDialogManager> CreateJavaScriptDialogManager(
       Shell* shell) override;
   bool HandleRequestToLockMouse(Shell* shell,

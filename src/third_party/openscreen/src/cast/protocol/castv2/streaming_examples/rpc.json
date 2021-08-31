@@ -1,6 +1,6 @@
 {
+  "seqNum": 12345,
   "sessionId": 735189,
-  "seqNum": 6789,
   "type": "RPC",
   "result": "ok",
   "rpc": "SGVsbG8gZnJvbSB0aGUgQ2FzdCBSZWNlaXZlciE="

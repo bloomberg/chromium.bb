@@ -34,16 +34,19 @@ class AemuTarget(qemu_target.QemuTarget):
           self).__init__(out_dir, target_cpu, system_log_file, cpu_cores,
                          require_kvm, ram_size_mb, fuchsia_out_dir)
 
-    # TODO(crbug.com/1000907): Enable AEMU for arm64.
-    if platform.machine() == 'aarch64':
-      raise Exception('AEMU does not support arm64 hosts.')
     self._enable_graphics = enable_graphics
     self._hardware_gpu = hardware_gpu
 
   @staticmethod
+  def CreateFromArgs(args):
+    return AemuTarget(args.out_dir, args.target_cpu, args.system_log_file,
+                      args.cpu_cores, args.require_kvm, args.ram_size_mb,
+                      args.enable_graphics, args.hardware_gpu,
+                      args.fuchsia_out_dir)
+
+  @staticmethod
   def RegisterArgs(arg_parser):
-    emu_target.EmuTarget.RegisterArgs(arg_parser)
-    aemu_args = arg_parser.add_argument_group('aemu', 'AEMU Arguments')
+    aemu_args = arg_parser.add_argument_group('aemu', 'AEMU arguments')
     aemu_args.add_argument('--enable-graphics',
                            action='store_true',
                            default=False,
@@ -97,10 +100,12 @@ class AemuTarget(qemu_target.QemuTarget):
 
     aemu_command.extend([
       '-vga', 'none',
-      '-device', 'isa-debug-exit,iobase=0xf4,iosize=0x04',
       '-device', 'virtio-keyboard-pci',
       '-device', 'virtio_input_multi_touch_pci_1',
       '-device', 'ich9-ahci,id=ahci'])
+    if platform.machine() == 'x86_64':
+      aemu_command.extend(['-device', 'isa-debug-exit,iobase=0xf4,iosize=0x04'])
+
     logging.info(' '.join(aemu_command))
     return aemu_command
 

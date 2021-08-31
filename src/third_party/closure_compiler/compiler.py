@@ -6,15 +6,15 @@
 """Runs Closure compiler on JavaScript files to check for errors and produce
 minified output."""
 
+from __future__ import print_function
+
 import os
 import subprocess
 
 
 _CURRENT_DIR = os.path.join(os.path.dirname(__file__))
-_JAVA_BIN = "java"
-_JDK_PATH = os.path.join(_CURRENT_DIR, "..", "jdk", "current", "bin", _JAVA_BIN)
-_JAVA_PATH = _JDK_PATH if os.path.isfile(_JDK_PATH) else _JAVA_BIN
-
+_JAVA_PATH = os.path.join(_CURRENT_DIR, "..", "jdk", "current", "bin", "java")
+assert os.path.isfile(_JAVA_PATH), "java only allowed in android builds"
 
 class Compiler(object):
   """Runs the Closure compiler on given source files to typecheck them
@@ -43,7 +43,7 @@ class Compiler(object):
       msg: A debug message to log.
     """
     if self._verbose:
-      print "(INFO) %s" % msg
+      print("(INFO) %s" % msg)
 
   def run_jar(self, jar, args):
     """Runs a .jar from the command line with arguments.
@@ -60,7 +60,8 @@ class Compiler(object):
     self._log_debug("Running jar: %s" % shell_command)
 
     devnull = open(os.devnull, "w")
-    kwargs = {"stdout": devnull, "stderr": subprocess.PIPE, "shell": True}
-    process = subprocess.Popen(shell_command, **kwargs)
+    process = subprocess.Popen(shell_command, universal_newlines=True,
+                               shell=True, stdout=devnull,
+                               stderr=subprocess.PIPE)
     _, stderr = process.communicate()
     return process.returncode, stderr

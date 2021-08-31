@@ -52,16 +52,11 @@ class PermissionServiceImpl::PendingRequest {
         std::vector<PermissionStatus>(request_size_, PermissionStatus::DENIED));
   }
 
-  int id() const { return id_; }
-  void set_id(int id) { id_ = id; }
-
   void RunCallback(const std::vector<PermissionStatus>& results) {
     std::move(callback_).Run(results);
   }
 
  private:
-  // Request ID received from the PermissionController.
-  int id_;
   RequestPermissionsCallback callback_;
   size_t request_size_;
 };
@@ -129,13 +124,11 @@ void PermissionServiceImpl::RequestPermissions(
       std::make_unique<PendingRequest>(types, std::move(callback));
 
   int pending_request_id = pending_requests_.Add(std::move(pending_request));
-  int id = PermissionControllerImpl::FromBrowserContext(browser_context)
-               ->RequestPermissions(
-                   types, context_->render_frame_host(), origin_.GetURL(),
-                   user_gesture,
-                   base::BindOnce(
-                       &PermissionServiceImpl::OnRequestPermissionsResponse,
-                       weak_factory_.GetWeakPtr(), pending_request_id));
+  PermissionControllerImpl::FromBrowserContext(browser_context)
+      ->RequestPermissions(
+          types, context_->render_frame_host(), origin_.GetURL(), user_gesture,
+          base::BindOnce(&PermissionServiceImpl::OnRequestPermissionsResponse,
+                         weak_factory_.GetWeakPtr(), pending_request_id));
 
   // Check if the request still exists. It may have been removed by the
   // the response callback.
@@ -143,7 +136,6 @@ void PermissionServiceImpl::RequestPermissions(
       pending_requests_.Lookup(pending_request_id);
   if (!in_progress_request)
     return;
-  in_progress_request->set_id(id);
 }
 
 void PermissionServiceImpl::OnRequestPermissionsResponse(
@@ -213,14 +205,14 @@ PermissionStatus PermissionServiceImpl::GetPermissionStatusFromType(
 
   GURL requesting_origin(origin_.GetURL());
   if (context_->render_frame_host()) {
-    return BrowserContext::GetPermissionController(browser_context)
+    return browser_context->GetPermissionController()
         ->GetPermissionStatusForFrame(type, context_->render_frame_host(),
                                       requesting_origin);
   }
 
   DCHECK(context_->GetEmbeddingOrigin().is_empty());
-  return BrowserContext::GetPermissionController(browser_context)
-      ->GetPermissionStatus(type, requesting_origin, requesting_origin);
+  return browser_context->GetPermissionController()->GetPermissionStatus(
+      type, requesting_origin, requesting_origin);
 }
 
 void PermissionServiceImpl::ResetPermissionStatus(PermissionType type) {

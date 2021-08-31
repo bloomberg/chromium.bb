@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 interface SupportedEnvVars {
+  /* eslint-disable @typescript-eslint/naming-convention */
   NO_SHUFFLE: boolean;      // Whether or not to shuffle tests.
   STRESS: boolean;          // Stress test (slowdown CPU; multiple iterations)
   VERBOSE: boolean;         // Log stdout from the workers.
   THROTTLE: number;         // CPU throttle multiplier.
   TEST_LIST: string;        // Absolute path to the test list.
-  TEST_FILE: string;        // Absolute path to the test file from the test list to run in isolation.
+  TEST_PATTERNS: string;    // A semicolon-separated list of extglob pattern to filter the tests.
   DEBUG: boolean;           // Debug mode. When enabled, has longer timeouts and runs Chrome in head mode.
   ITERATIONS: number;       // Number of test iterations.
   JOBS: number;             // Number of workers to use.
@@ -17,6 +18,7 @@ interface SupportedEnvVars {
   INTERACTIVE: boolean;     // [Unused]: Placeholder for screenshot diffing.
   TIMEOUT: number;          // The timeout in ms to wait for tests.
   CHROME_FEATURES: string;  // --enable-features={} for the Chrome binary.
+  /* eslint-enable @typescript-eslint/naming-convention */
 }
 
 export function getEnvVar<Key extends keyof SupportedEnvVars>(
@@ -24,7 +26,7 @@ export function getEnvVar<Key extends keyof SupportedEnvVars>(
   const envVar = process.env[name];
 
   if (typeof defaultValue === 'boolean') {
-    return (!!envVar) as SupportedEnvVars[Key];
+    return (Boolean(envVar)) as SupportedEnvVars[Key];
   }
 
   if (typeof defaultValue === 'number') {

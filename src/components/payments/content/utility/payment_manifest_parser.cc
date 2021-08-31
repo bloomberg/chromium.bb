@@ -193,7 +193,7 @@ void ParseIcons(const base::DictionaryValue& dict,
     return;
   }
 
-  for (const auto& icon : *icons_list) {
+  for (const auto& icon : icons_list->GetList()) {
     if (!icon.is_dict()) {
       log.Warn(base::StringPrintf(
           "Each item in the list \"%s\" should be a dictionary.",
@@ -471,7 +471,7 @@ bool PaymentManifestParser::ParseWebAppManifestIntoVector(
 
     base::ListValue* fingerprints_list = nullptr;
     if (!related_application->GetList(kFingerprints, &fingerprints_list) ||
-        fingerprints_list->empty() ||
+        fingerprints_list->GetList().empty() ||
         fingerprints_list->GetSize() > kMaximumNumberOfItems) {
       log.Error(base::StringPrintf(
           "\"%s\" must be a non-empty list of at most %zu items.",
@@ -574,7 +574,7 @@ bool PaymentManifestParser::ParseWebAppInstallationInfoIntoStructs(
   if (dict->GetDictionary(kPayment, &payment_dict)) {
     const base::ListValue* delegation_list = nullptr;
     if (payment_dict->GetList(kSupportedDelegations, &delegation_list)) {
-      if (delegation_list->empty() ||
+      if (delegation_list->GetList().empty() ||
           delegation_list->GetSize() > kMaximumNumberOfSupportedDelegations) {
         log.Error(base::StringPrintf(
             "\"%s.%s\" must be a non-empty list of at most %zu entries.",
@@ -582,7 +582,7 @@ bool PaymentManifestParser::ParseWebAppInstallationInfoIntoStructs(
             kMaximumNumberOfSupportedDelegations));
         return false;
       }
-      for (const auto& delegation_item : *delegation_list) {
+      for (const auto& delegation_item : delegation_list->GetList()) {
         std::string delegation_name = delegation_item.GetString();
         if (delegation_name == "shippingAddress") {
           installation_info->supported_delegations.shipping_address = true;

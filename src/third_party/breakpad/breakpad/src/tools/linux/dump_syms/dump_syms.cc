@@ -37,13 +37,16 @@
 #include <vector>
 
 #include "common/linux/dump_symbols.h"
+#include "common/path_helper.h"
 
 using google_breakpad::WriteSymbolFile;
 using google_breakpad::WriteSymbolFileHeader;
 
 int usage(const char* self) {
-  fprintf(stderr, "Usage: %s [OPTION] <binary-with-debugging-info> "
-          "[directories-for-debug-file]\n\n", self);
+  fprintf(stderr,
+          "Usage: %s [OPTION] <binary-with-debugging-info> "
+          "[directories-for-debug-file]\n\n",
+          google_breakpad::BaseName(self).c_str());
   fprintf(stderr, "Options:\n");
   fprintf(stderr, "  -i:         Output module header information only.\n");
   fprintf(stderr, "  -c          Do not generate CFI section\n");

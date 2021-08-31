@@ -72,6 +72,13 @@ void MimeSniffingURLLoader::Start(
                                    task_runner_);
 }
 
+void MimeSniffingURLLoader::OnReceiveEarlyHints(
+    network::mojom::EarlyHintsPtr early_hints) {
+  // OnReceiveEarlyHints() shouldn't be called. See the comment in
+  // OnReceiveResponse().
+  NOTREACHED();
+}
+
 void MimeSniffingURLLoader::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr response_head) {
   // OnReceiveResponse() shouldn't be called because MimeSniffingURLLoader is
@@ -153,7 +160,7 @@ void MimeSniffingURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const net::HttpRequestHeaders& modified_cors_exempt_headers,
-    const base::Optional<GURL>& new_url) {
+    const absl::optional<GURL>& new_url) {
   // MimeSniffingURLLoader starts handling the request after
   // OnReceivedResponse(). A redirect response is not expected.
   NOTREACHED();
@@ -251,7 +258,7 @@ void MimeSniffingURLLoader::CompleteSniffing() {
   throttle_->ResumeWithNewResponseHead(std::move(response_head_));
   mojo::ScopedDataPipeConsumerHandle body_to_send;
   MojoResult result =
-      mojo::CreateDataPipe(nullptr, &body_producer_handle_, &body_to_send);
+      mojo::CreateDataPipe(nullptr, body_producer_handle_, body_to_send);
   if (result != MOJO_RESULT_OK) {
     Abort();
     return;

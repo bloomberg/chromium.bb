@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/mediarecorder/media_recorder_handler.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
@@ -24,6 +25,7 @@
 #include "third_party/blink/renderer/platform/media_capabilities/web_media_configuration.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -159,11 +161,9 @@ bool MediaRecorderHandler::CanSupportMimeType(const String& type,
   if (type.IsEmpty())
     return true;
 
-  const bool video =
-      !CodeUnitCompareIgnoringASCIICase(type, "video/webm") ||
-      !CodeUnitCompareIgnoringASCIICase(type, "video/x-matroska");
-  const bool audio =
-      video ? false : (!CodeUnitCompareIgnoringASCIICase(type, "audio/webm"));
+  const bool video = EqualIgnoringASCIICase(type, "video/webm") ||
+                     EqualIgnoringASCIICase(type, "video/x-matroska");
+  const bool audio = !video && EqualIgnoringASCIICase(type, "audio/webm");
   if (!video && !audio)
     return false;
 
@@ -193,7 +193,7 @@ bool MediaRecorderHandler::CanSupportMimeType(const String& type,
     String codec_string = String::FromUTF8(codec);
     auto* const* found = std::find_if(
         &codecs[0], &codecs[codecs_count], [&codec_string](const char* name) {
-          return !CodeUnitCompareIgnoringASCIICase(codec_string, name);
+          return EqualIgnoringASCIICase(codec_string, name);
         });
     if (found == &codecs[codecs_count])
       return false;
@@ -201,12 +201,14 @@ bool MediaRecorderHandler::CanSupportMimeType(const String& type,
   return true;
 }
 
-bool MediaRecorderHandler::Initialize(MediaRecorder* recorder,
-                                      MediaStreamDescriptor* media_stream,
-                                      const String& type,
-                                      const String& codecs,
-                                      int32_t audio_bits_per_second,
-                                      int32_t video_bits_per_second) {
+bool MediaRecorderHandler::Initialize(
+    MediaRecorder* recorder,
+    MediaStreamDescriptor* media_stream,
+    const String& type,
+    const String& codecs,
+    int32_t audio_bits_per_second,
+    int32_t video_bits_per_second,
+    AudioTrackRecorder::BitrateMode audio_bitrate_mode) {
   DCHECK(IsMainThread());
   // Save histogram data so we can see how much MediaStream Recorder is used.
   // The histogram counts the number of calls to the JS API.
@@ -244,7 +246,12 @@ bool MediaRecorderHandler::Initialize(MediaRecorder* recorder,
 
   audio_bits_per_second_ = audio_bits_per_second;
   video_bits_per_second_ = video_bits_per_second;
+  audio_bitrate_mode_ = audio_bitrate_mode;
   return true;
+}
+
+AudioTrackRecorder::BitrateMode MediaRecorderHandler::AudioBitrateMode() {
+  return audio_bitrate_mode_;
 }
 
 bool MediaRecorderHandler::Start(int timeslice) {
@@ -280,12 +287,14 @@ bool MediaRecorderHandler::Start(int timeslice) {
     return false;
   }
 
-  webm_muxer_.reset(
-      new media::WebmMuxer(CodecIdToMediaAudioCodec(audio_codec_id_),
-                           use_video_tracks, use_audio_tracks,
-                           WTF::BindRepeating(&MediaRecorderHandler::WriteData,
-                                              WrapWeakPersistent(this))));
-
+  webm_muxer_ = std::make_unique<media::WebmMuxer>(
+      CodecIdToMediaAudioCodec(audio_codec_id_), use_video_tracks,
+      use_audio_tracks,
+      WTF::BindRepeating(&MediaRecorderHandler::WriteData,
+                         WrapWeakPersistent(this)));
+  if (timeslice > 0) {
+    webm_muxer_->SetMaximumDurationToForceDataOutput(timeslice_);
+  }
   if (use_video_tracks) {
     // TODO(mcasas): The muxer API supports only one video track. Extend it to
     // several video tracks, see http://crbug.com/528523.
@@ -294,6 +303,7 @@ bool MediaRecorderHandler::Start(int timeslice) {
         << "Only recording first video track.";
     if (!video_tracks_[0])
       return false;
+    UpdateTrackLiveAndEnabled(*video_tracks_[0], /*is_video=*/true);
 
     MediaStreamVideoTrack* const video_track =
         static_cast<MediaStreamVideoTrack*>(
@@ -332,6 +342,7 @@ bool MediaRecorderHandler::Start(int timeslice) {
         << " tracks is not implemented.  Only recording first audio track.";
     if (!audio_tracks_[0])
       return false;
+    UpdateTrackLiveAndEnabled(*audio_tracks_[0], /*is_video=*/false);
 
     const AudioTrackRecorder::OnEncodedAudioCB on_encoded_audio_cb =
         media::BindToCurrentLoop(WTF::BindRepeating(
@@ -341,7 +352,8 @@ bool MediaRecorderHandler::Start(int timeslice) {
                   WrapWeakPersistent(this)));
     audio_recorders_.emplace_back(std::make_unique<AudioTrackRecorder>(
         audio_codec_id_, audio_tracks_[0], std::move(on_encoded_audio_cb),
-        std::move(on_track_source_changed_cb), audio_bits_per_second_));
+        std::move(on_track_source_changed_cb), audio_bits_per_second_,
+        audio_bitrate_mode_));
   }
 
   recording_ = true;
@@ -652,23 +664,34 @@ bool MediaRecorderHandler::UpdateTracksAndCheckIfChanged() {
   if (audio_tracks_changed)
     audio_tracks_ = audio_tracks;
 
+  if (video_tracks_.size())
+    UpdateTrackLiveAndEnabled(*video_tracks_[0], /*is_video=*/true);
+  if (audio_tracks_.size())
+    UpdateTrackLiveAndEnabled(*audio_tracks_[0], /*is_video=*/false);
+
   return video_tracks_changed || audio_tracks_changed;
+}
+
+void MediaRecorderHandler::UpdateTrackLiveAndEnabled(
+    const MediaStreamComponent& track,
+    bool is_video) {
+  const bool track_live_and_enabled =
+      track.Source()->GetReadyState() == MediaStreamSource::kReadyStateLive &&
+      track.Enabled();
+  if (webm_muxer_)
+    webm_muxer_->SetLiveAndEnabled(track_live_and_enabled, is_video);
 }
 
 void MediaRecorderHandler::OnSourceReadyStateChanged() {
   for (const auto& track : video_tracks_) {
     DCHECK(track->Source());
-    if (track->Source()->GetReadyState() !=
-        MediaStreamSource::kReadyStateEnded) {
+    if (track->Source()->GetReadyState() != MediaStreamSource::kReadyStateEnded)
       return;
-    }
   }
   for (const auto& track : audio_tracks_) {
     DCHECK(track->Source());
-    if (track->Source()->GetReadyState() !=
-        MediaStreamSource::kReadyStateEnded) {
+    if (track->Source()->GetReadyState() != MediaStreamSource::kReadyStateEnded)
       return;
-    }
   }
   // All tracks are ended, so stop the recorder in accordance with
   // https://www.w3.org/TR/mediastream-recording/#mediarecorder-methods.

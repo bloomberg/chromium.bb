@@ -35,7 +35,6 @@ constexpr std::array<uint8_t, 32> kTestLocalSeed = {
     0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
     0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
 };
-constexpr std::array<uint8_t, 5> kTestGetInfoBytes = {1, 2, 3, 4, 5};
 
 }  // namespace
 
@@ -48,8 +47,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* raw_data, size_t size) {
   const bool have_local_key = input[0] & 2;
   input = input.subspan(1);
 
-  base::Optional<base::span<const uint8_t, 65>> peer_identity;
-  base::Optional<base::span<const uint8_t, 32>> local_seed;
+  absl::optional<base::span<const uint8_t, 65>> peer_identity;
+  absl::optional<base::span<const uint8_t, 32>> local_seed;
   bssl::UniquePtr<EC_KEY> local_key;
   if (have_local_key) {
     local_seed = kTestLocalSeed;
@@ -62,14 +61,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* raw_data, size_t size) {
   }
 
   if (initiate) {
-    cablev2::HandshakeInitiator handshaker(kTestPSK, peer_identity,
-                                           std::move(local_key));
-    handshaker.BuildInitialMessage(kTestGetInfoBytes);
+    cablev2::HandshakeInitiator handshaker(kTestPSK, peer_identity, local_seed);
+    handshaker.BuildInitialMessage();
     handshaker.ProcessResponse(input);
   } else {
     std::vector<uint8_t> response;
-    cablev2::RespondToHandshake(kTestPSK, local_seed, peer_identity, input,
-                                &response);
+    cablev2::RespondToHandshake(kTestPSK, std::move(local_key), peer_identity,
+                                input, &response);
   }
 
   return 0;

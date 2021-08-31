@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/hpack/decoder/hpack_whole_entry_buffer.h"
+#include "http2/hpack/decoder/hpack_whole_entry_buffer.h"
 
-#include "net/third_party/quiche/src/http2/platform/api/http2_estimate_memory_usage.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_flags.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_macros.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_string_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "absl/strings/str_cat.h"
+#include "http2/platform/api/http2_estimate_memory_usage.h"
+#include "http2/platform/api/http2_flag_utils.h"
+#include "http2/platform/api/http2_flags.h"
+#include "http2/platform/api/http2_logging.h"
+#include "http2/platform/api/http2_macros.h"
+#include "http2/platform/api/http2_string_utils.h"
 
 namespace http2 {
 
@@ -54,7 +55,7 @@ void HpackWholeEntryBuffer::OnStartLiteralHeader(HpackEntryType entry_type,
 void HpackWholeEntryBuffer::OnNameStart(bool huffman_encoded, size_t len) {
   HTTP2_DVLOG(2) << "HpackWholeEntryBuffer::OnNameStart: huffman_encoded="
                  << (huffman_encoded ? "true" : "false") << ",  len=" << len;
-  DCHECK_EQ(maybe_name_index_, 0u);
+  QUICHE_DCHECK_EQ(maybe_name_index_, 0u);
   if (!error_detected_) {
     if (len > max_string_size_bytes_) {
       HTTP2_DVLOG(1) << "Name length (" << len << ") is longer than permitted ("
@@ -71,7 +72,7 @@ void HpackWholeEntryBuffer::OnNameData(const char* data, size_t len) {
   HTTP2_DVLOG(2) << "HpackWholeEntryBuffer::OnNameData: len=" << len
                  << " data:\n"
                  << Http2HexDump(absl::string_view(data, len));
-  DCHECK_EQ(maybe_name_index_, 0u);
+  QUICHE_DCHECK_EQ(maybe_name_index_, 0u);
   if (!error_detected_ && !name_.OnData(data, len)) {
     ReportError(HpackDecodingError::kNameHuffmanError, "");
     HTTP2_CODE_COUNT_N(decompress_failure_3, 19, 23);
@@ -80,7 +81,7 @@ void HpackWholeEntryBuffer::OnNameData(const char* data, size_t len) {
 
 void HpackWholeEntryBuffer::OnNameEnd() {
   HTTP2_DVLOG(2) << "HpackWholeEntryBuffer::OnNameEnd";
-  DCHECK_EQ(maybe_name_index_, 0u);
+  QUICHE_DCHECK_EQ(maybe_name_index_, 0u);
   if (!error_detected_ && !name_.OnEnd()) {
     ReportError(HpackDecodingError::kNameHuffmanError, "");
     HTTP2_CODE_COUNT_N(decompress_failure_3, 20, 23);
@@ -92,7 +93,7 @@ void HpackWholeEntryBuffer::OnValueStart(bool huffman_encoded, size_t len) {
                  << (huffman_encoded ? "true" : "false") << ",  len=" << len;
   if (!error_detected_) {
     if (len > max_string_size_bytes_) {
-      std::string detailed_error = quiche::QuicheStrCat(
+      std::string detailed_error = absl::StrCat(
           "Value length (", len, ") of [", name_.GetStringIfComplete(),
           "] is longer than permitted (", max_string_size_bytes_, ")");
       HTTP2_DVLOG(1) << detailed_error;

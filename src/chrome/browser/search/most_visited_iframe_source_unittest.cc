@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
-#include "chrome/grit/local_ntp_resources.h"
+#include "chrome/grit/new_tab_page_instant_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
@@ -146,23 +146,22 @@ TEST_F(MostVisitedIframeSourceTest, GetMimeType) {
   EXPECT_EQ("text/html", source()->GetMimeType("foo.html"));
   EXPECT_EQ("application/javascript", source()->GetMimeType("foo.js"));
   EXPECT_EQ("text/css", source()->GetMimeType("foo.css"));
-  EXPECT_EQ("image/png", source()->GetMimeType("foo.png"));
   EXPECT_EQ("", source()->GetMimeType("bogus"));
 }
 
 TEST_F(MostVisitedIframeSourceTest, SendResource) {
-  SendResource(IDR_MOST_VISITED_TITLE_HTML);
+  SendResource(IDR_NEW_TAB_PAGE_INSTANT_MOST_VISITED_TITLE_HTML);
   EXPECT_FALSE(response_string().empty());
 }
 
 TEST_F(MostVisitedIframeSourceTest, SendJSWithOrigin) {
   source()->set_origin(kInstantOrigin);
-  SendJSWithOrigin(IDR_MOST_VISITED_TITLE_JS);
+  SendJSWithOrigin(IDR_NEW_TAB_PAGE_INSTANT_MOST_VISITED_TITLE_JS);
   EXPECT_FALSE(response_string().empty());
   source()->set_origin(kNonInstantOrigin);
-  SendJSWithOrigin(IDR_MOST_VISITED_TITLE_JS);
+  SendJSWithOrigin(IDR_NEW_TAB_PAGE_INSTANT_MOST_VISITED_TITLE_JS);
   EXPECT_FALSE(response_string().empty());
   source()->set_origin(std::string());
-  SendJSWithOrigin(IDR_MOST_VISITED_TITLE_JS);
+  SendJSWithOrigin(IDR_NEW_TAB_PAGE_INSTANT_MOST_VISITED_TITLE_JS);
   EXPECT_TRUE(response_string().empty());
 }

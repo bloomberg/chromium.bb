@@ -30,15 +30,16 @@
 #define GRPC_AUTH_JSON_TYPE_INVALID "invalid"
 #define GRPC_AUTH_JSON_TYPE_SERVICE_ACCOUNT "service_account"
 #define GRPC_AUTH_JSON_TYPE_AUTHORIZED_USER "authorized_user"
+#define GRPC_AUTH_JSON_TYPE_EXTERNAL_ACCOUNT "external_account"
 
 // Gets a child property from a json node.
-const char* grpc_json_get_string_property(const grpc_json* json,
+const char* grpc_json_get_string_property(const grpc_core::Json& json,
                                           const char* prop_name,
                                           grpc_error** error);
 
 // Copies the value of the json child property specified by prop_name.
 // Returns false if the property was not found.
-bool grpc_copy_json_string_property(const grpc_json* json,
+bool grpc_copy_json_string_property(const grpc_core::Json& json,
                                     const char* prop_name, char** copied_value);
 
 #endif /* GRPC_CORE_LIB_SECURITY_UTIL_JSON_UTIL_H */

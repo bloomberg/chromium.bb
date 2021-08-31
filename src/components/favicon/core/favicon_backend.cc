@@ -478,6 +478,12 @@ bool FaviconBackend::SetFaviconsOutOfDateForPage(const GURL& page_url) {
   return true;
 }
 
+bool FaviconBackend::SetFaviconsOutOfDateBetween(base::Time begin,
+                                                 base::Time end) {
+  TRACE_EVENT0("browser", "FaviconBackend::SetFaviconsOutOfDateForPage");
+  return db_->SetFaviconsOutOfDateBetween(begin, end);
+}
+
 void FaviconBackend::TouchOnDemandFavicon(const GURL& icon_url) {
   TRACE_EVENT0("browser", "FaviconBackend::TouchOnDemandFavicon");
 
@@ -620,7 +626,7 @@ FaviconBackend::GetFaviconsFromDB(const GURL& page_url,
     // host of |page_url| for fuzzy matching. Query the database for a page_url
     // that is known to exist and matches the host of |page_url|. Do this only
     // if we have a HTTP/HTTPS url.
-    base::Optional<GURL> fallback_page_url =
+    absl::optional<GURL> fallback_page_url =
         db_->FindFirstPageURLForHost(page_url, icon_types);
 
     if (fallback_page_url) {

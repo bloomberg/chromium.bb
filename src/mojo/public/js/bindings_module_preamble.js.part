@@ -1,4 +1,1 @@
-const mojo = {
-  internal: { interfaceSupport: {} },
-  interfaceControl: {}
-};
+const preservedGlobalMojo = self && self.mojo;

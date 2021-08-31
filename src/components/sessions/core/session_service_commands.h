@@ -9,16 +9,13 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
-#include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/task/cancelable_task_tracker.h"
-#include "base/token.h"
 #include "components/sessions/core/command_storage_manager.h"
+#include "components/sessions/core/session_command.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/sessions_export.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ui_base_types.h"
 
 namespace sessions {
@@ -49,7 +46,7 @@ SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetWindowTypeCommand(
     SessionWindow::WindowType type);
 SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateTabGroupCommand(
     const SessionID& tab_id,
-    base::Optional<tab_groups::TabGroupId> group);
+    absl::optional<tab_groups::TabGroupId> group);
 SESSIONS_EXPORT std::unique_ptr<SessionCommand>
 CreateTabGroupMetadataUpdateCommand(
     const tab_groups::TabGroupId group,
@@ -91,6 +88,10 @@ SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateLastActiveTimeCommand(
 SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetWindowWorkspaceCommand(
     const SessionID& window_id,
     const std::string& workspace);
+
+SESSIONS_EXPORT std::unique_ptr<SessionCommand>
+CreateSetWindowVisibleOnAllWorkspacesCommand(const SessionID& window_id,
+                                             bool visible_on_all_workspaces);
 
 SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetTabGuidCommand(
     const SessionID& tab_id,

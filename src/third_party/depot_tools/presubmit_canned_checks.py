@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import os as _os
+
 from warnings import warn
 _HERE = _os.path.dirname(_os.path.abspath(__file__))
 
@@ -104,17 +105,11 @@ def CheckChangeWasUploaded(input_api, output_api):
 
 ### Content checks
 
-def CheckAuthorizedAuthor(input_api, output_api, bot_allowlist=None,
-                          bot_whitelist=None):
+
+def CheckAuthorizedAuthor(input_api, output_api, bot_allowlist=None):
   """For non-googler/chromites committers, verify the author's email address is
   in AUTHORS.
   """
-  # TODO(https://crbug.com/1098560): Remove non inclusive parameter names.
-  if bot_whitelist is not None:
-    warn('Use bot_allowlist in CheckAuthorizedAuthor')
-  if bot_allowlist is None:
-    bot_allowlist = bot_whitelist
-
   if input_api.is_committing:
     error_type = output_api.PresubmitError
   else:
@@ -131,10 +126,14 @@ def CheckAuthorizedAuthor(input_api, output_api, bot_allowlist=None,
 
   authors_path = input_api.os_path.join(
       input_api.PresubmitLocalPath(), 'AUTHORS')
-  valid_authors = (
-      input_api.re.match(r'[^#]+\s+\<(.+?)\>\s*$', line)
-      for line in open(authors_path))
-  valid_authors = [item.group(1).lower() for item in valid_authors if item]
+  author_re = input_api.re.compile(r'[^#]+\s+\<(.+?)\>\s*$')
+  valid_authors = []
+  with open(authors_path, 'rb') as fp:
+    for line in fp:
+      m = author_re.match(line.decode('utf8'))
+      if m:
+        valid_authors.append(m.group(1).lower())
+
   if not any(input_api.fnmatch.fnmatch(author.lower(), valid)
              for valid in valid_authors):
     input_api.logging.info('Valid authors are %s', ', '.join(valid_authors))
@@ -551,10 +550,32 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
     return []
 
 
-def CheckLicense(input_api, output_api, license_re, source_file_filter=None,
-    accept_empty_files=True):
+def CheckLicense(input_api, output_api, license_re=None, project_name=None,
+    source_file_filter=None, accept_empty_files=True):
   """Verifies the license header.
   """
+
+  project_name = project_name or 'Chromium'
+
+  # Accept any year number from 2006 to the current year, or the special
+  # 2006-20xx string used on the oldest files. 2006-20xx is deprecated, but
+  # tolerated on old files.
+  current_year = int(input_api.time.strftime('%Y'))
+  allowed_years = (str(s) for s in reversed(range(2006, current_year + 1)))
+  years_re = '(' + '|'.join(allowed_years) + '|2006-2008|2006-2009|2006-2010)'
+
+  # The (c) is deprecated, but tolerate it until it's removed from all files.
+  license_re = license_re or (
+      r'.*? Copyright (\(c\) )?%(year)s The %(project)s Authors\. '
+        r'All rights reserved\.\n'
+      r'.*? Use of this source code is governed by a BSD-style license that '
+        r'can be\n'
+      r'.*? found in the LICENSE file\.(?: \*/)?\n'
+  ) % {
+      'year': years_re,
+      'project': project_name,
+  }
+
   license_re = input_api.re.compile(license_re, input_api.re.MULTILINE)
   bad_files = []
   for f in input_api.AffectedSourceFiles(source_file_filter):
@@ -619,25 +640,21 @@ def CheckTreeIsOpen(input_api, output_api,
                                       long_text=str(e))]
   return []
 
-def GetUnitTestsInDirectory(
-    input_api, output_api, directory, files_to_check=None, files_to_skip=None,
-    env=None, run_on_python2=True, run_on_python3=True, whitelist=None,
-    blacklist=None, allowlist=None, blocklist=None):
+def GetUnitTestsInDirectory(input_api,
+                            output_api,
+                            directory,
+                            files_to_check=None,
+                            files_to_skip=None,
+                            env=None,
+                            run_on_python2=True,
+                            run_on_python3=True,
+                            allowlist=None,
+                            blocklist=None):
   """Lists all files in a directory and runs them. Doesn't recurse.
 
   It's mainly a wrapper for RunUnitTests. Use allowlist and blocklist to filter
   tests accordingly.
   """
-  # TODO(https://crbug.com/1098560): Remove non inclusive parameter names.
-  if allowlist is not None or whitelist is not None:
-    warn('Use files_to_check in GetUnitTestsInDirectory')
-  if blocklist is not None or blacklist is not None:
-    warn('Use files_to_skip in GetUnitTestsInDirectory')
-  if files_to_check is None:
-    files_to_check = allowlist or whitelist
-  if files_to_skip is None:
-    files_to_skip = blocklist or blacklist
-
   unit_tests = []
   test_path = input_api.os_path.abspath(
       input_api.os_path.join(input_api.PresubmitLocalPath(), directory))
@@ -720,26 +737,18 @@ def GetUnitTests(
   return results
 
 
-def GetUnitTestsRecursively(input_api, output_api, directory,
-                            files_to_check=None, files_to_skip=None,
-                            run_on_python2=True, run_on_python3=True,
-                            whitelist=None, blacklist=None, allowlist=None,
-                            blocklist=None):
-  """Gets all files in the directory tree (git repo) that match the whitelist.
+def GetUnitTestsRecursively(input_api,
+                            output_api,
+                            directory,
+                            files_to_check,
+                            files_to_skip,
+                            run_on_python2=True,
+                            run_on_python3=True):
+  """Gets all files in the directory tree (git repo) that match files_to_check.
 
   Restricts itself to only find files within the Change's source repo, not
   dependencies.
   """
-  # TODO(https://crbug.com/1098560): Remove non inclusive parameter names.
-  if files_to_check is None:
-    warn('Use files_to_check in GetUnitTestsRecursively')
-    files_to_check = allowlist or whitelist
-  if files_to_skip is None:
-    warn('Use files_to_skip in GetUnitTestsRecursively')
-    files_to_skip = blocklist or blacklist
-  assert files_to_check is not None
-  assert files_to_skip is not None
-
   def check(filename):
     return (any(input_api.re.match(f, filename) for f in files_to_check) and
             not any(input_api.re.match(f, filename) for f in files_to_skip))
@@ -872,25 +881,20 @@ def _FetchAllFiles(input_api, files_to_check, files_to_skip):
   return files
 
 
-def GetPylint(input_api, output_api, files_to_check=None, files_to_skip=None,
-              disabled_warnings=None, extra_paths_list=None, pylintrc=None,
-              white_list=None, black_list=None, allow_list=None,
-              block_list=None):
+def GetPylint(input_api,
+              output_api,
+              files_to_check=None,
+              files_to_skip=None,
+              disabled_warnings=None,
+              extra_paths_list=None,
+              pylintrc=None):
   """Run pylint on python files.
 
   The default files_to_check enforces looking only at *.py files.
   """
 
-  # TODO(https://crbug.com/1098560): Remove non inclusive parameter names.
-  if allow_list or white_list:
-    warn('Use files_to_check in GetPylint')
-  if block_list or black_list:
-    warn('Use files_to_skip in GetPylint')
-
-  files_to_check = tuple(files_to_check or allow_list or white_list or
-                         (r'.*\.py$',))
-  files_to_skip = tuple(files_to_skip or block_list or black_list or
-                    input_api.DEFAULT_FILES_TO_SKIP)
+  files_to_check = tuple(files_to_check or (r'.*\.py$', ))
+  files_to_skip = tuple(files_to_skip or input_api.DEFAULT_FILES_TO_SKIP)
   extra_paths_list = extra_paths_list or []
 
   if input_api.is_committing:
@@ -1012,39 +1016,6 @@ def RunPylint(input_api, *args, **kwargs):
   return input_api.RunTests(GetPylint(input_api, *args, **kwargs), False)
 
 
-def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
-    ignored):
-  try:
-    connection = input_api.urllib_request.urlopen(url)
-    raw_data = connection.read()
-    connection.close()
-  except IOError:
-    return [output_api.PresubmitNotifyResult('%s is not accessible' % url)]
-
-  try:
-    data = input_api.json.loads(raw_data)
-  except ValueError:
-    return [output_api.PresubmitNotifyResult('Received malformed json while '
-                                             'looking up buildbot status')]
-
-  out = []
-  for (builder_name, builder) in data.items():
-    if builder_name in ignored:
-      continue
-    if builder.get('state', '') == 'offline':
-      continue
-    pending_builds_len = len(builder.get('pending_builds', []))
-    if pending_builds_len > max_pendings:
-      out.append('%s has %d build(s) pending' %
-                  (builder_name, pending_builds_len))
-  if out:
-    return [output_api.PresubmitPromptWarning(
-        'Build(s) pending. It is suggested to wait that no more than %d '
-            'builds are pending.' % max_pendings,
-        long_text='\n'.join(out))]
-  return []
-
-
 def CheckDirMetadataFormat(input_api, output_api, dirmd_bin=None):
   # TODO(crbug.com/1102997): Remove OWNERS once DIR_METADATA migration is
   # complete.
@@ -1067,6 +1038,33 @@ def CheckDirMetadataFormat(input_api, output_api, dirmd_bin=None):
 
   return [input_api.Command(
       name, cmd, kwargs, output_api.PresubmitError)]
+
+
+def CheckNoNewMetadataInOwners(input_api, output_api):
+  """Check that no metadata is added to OWNERS files."""
+  _METADATA_LINE_RE = input_api.re.compile(
+      r'^#\s*(TEAM|COMPONENT|OS|WPT-NOTIFY)+\s*:\s*\S+$',
+      input_api.re.MULTILINE | input_api.re.IGNORECASE)
+  affected_files = input_api.change.AffectedFiles(
+      include_deletes=False,
+      file_filter=lambda f: input_api.basename(f.LocalPath()) == 'OWNERS')
+
+  errors = []
+  for f in affected_files:
+    for _, line in f.ChangedContents():
+      if _METADATA_LINE_RE.search(line):
+        errors.append(f.AbsoluteLocalPath())
+        break
+
+  if not errors:
+    return []
+
+  return [output_api.PresubmitError(
+      'New metadata was added to the following OWNERS files, but should '
+      'have been added to DIR_METADATA files instead:\n' +
+      '\n'.join(errors) + '\n' +
+      'See https://source.chromium.org/chromium/infra/infra/+/HEAD:'
+      'go/src/infra/tools/dirmd/proto/dir_metadata.proto for details.')]
 
 
 def CheckOwnersDirMetadataExclusive(input_api, output_api):
@@ -1104,6 +1102,8 @@ def CheckOwnersDirMetadataExclusive(input_api, output_api):
 
 
 def CheckOwnersFormat(input_api, output_api):
+  if input_api.gerrit and input_api.gerrit.IsCodeOwnersEnabledOnRepo():
+    return []
   affected_files = set([
       f.LocalPath()
       for f in input_api.change.AffectedFiles()
@@ -1121,41 +1121,30 @@ def CheckOwnersFormat(input_api, output_api):
         'Error parsing OWNERS files:\n%s' % e)]
 
 
-def CheckOwners(input_api, output_api, source_file_filter=None):
-  if input_api.change.issue:
-    # Skip OWNERS check when Bot-Commit label is approved. This label is
-    # intended for commits made by trusted bots that don't require review nor
-    # owners approval.
-    if input_api.gerrit.IsBotCommitApproved(input_api.change.issue):
-      return []
-    # Skip OWNERS check when Owners-Override label is approved. This is intended
-    # for global owners, trusted bots, and on-call sheriffs. Review is still
-    # required for these changes.
-    if input_api.gerrit.IsOwnersOverrideApproved(input_api.change.issue):
-      return []
+def CheckOwners(
+    input_api, output_api, source_file_filter=None, allow_tbr=True):
+  # Skip OWNERS check when Owners-Override label is approved. This is intended
+  # for global owners, trusted bots, and on-call sheriffs. Review is still
+  # required for these changes.
+  if (input_api.change.issue
+      and input_api.gerrit.IsOwnersOverrideApproved(input_api.change.issue)):
+    return []
+
+  if input_api.gerrit and input_api.gerrit.IsCodeOwnersEnabledOnRepo():
+    return []
 
   affected_files = set([f.LocalPath() for f in
       input_api.change.AffectedFiles(file_filter=source_file_filter)])
-  owners_db = input_api.owners_db
-  owners_db.override_files = input_api.change.OriginalOwnersFiles()
   owner_email, reviewers = GetCodereviewOwnerAndReviewers(
-      input_api,
-      owners_db.email_regexp,
-      approval_needed=input_api.is_committing)
+      input_api, approval_needed=input_api.is_committing)
 
   owner_email = owner_email or input_api.change.author_email
 
-  finder = input_api.owners_finder(
-      affected_files,
-      input_api.change.RepositoryRoot(),
-      owner_email,
-      reviewers,
-      fopen=open,
-      os_path=input_api.os_path,
-      email_postfix='',
-      disable_color=True,
-      override_files=input_api.change.OriginalOwnersFiles())
-  missing_files = finder.unreviewed_files
+  approval_status = input_api.owners_client.GetFilesApprovalStatus(
+      affected_files, reviewers.union([owner_email]), [])
+  missing_files = [
+      f for f in affected_files
+      if approval_status[f] != input_api.owners_client.APPROVED]
   affects_owners = any('OWNERS' in name for name in missing_files)
 
   if input_api.is_committing:
@@ -1184,29 +1173,28 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
     if input_api.tbr and affects_owners:
       output_list.append(output_fn('TBR for OWNERS files are ignored.'))
     if not input_api.is_committing:
-      suggested_owners = owners_db.reviewers_for(missing_files, owner_email)
-      owners_with_comments = []
-      def RecordComments(text):
-        owners_with_comments.append(finder.print_indent() + text)
-      finder.writeln = RecordComments
-      for owner in suggested_owners:
-        finder.print_comments(owner)
+      suggested_owners = input_api.owners_client.SuggestOwners(
+          missing_files, exclude=[owner_email])
       output_list.append(output_fn('Suggested OWNERS: ' +
           '(Use "git-cl owners" to interactively select owners.)\n    %s' %
-          ('\n    '.join(owners_with_comments))))
+          ('\n    '.join(suggested_owners))))
     return output_list
 
-  if input_api.is_committing and not reviewers:
+  if (input_api.is_committing and not reviewers and
+      not input_api.gerrit.IsBotCommitApproved(input_api.change.issue)):
     return [output_fn('Missing LGTM from someone other than %s' % owner_email)]
   return []
 
 
-def GetCodereviewOwnerAndReviewers(input_api, email_regexp, approval_needed):
+def GetCodereviewOwnerAndReviewers(
+    input_api, _email_regexp=None, approval_needed=True):
   """Return the owner and reviewers of a change, if any.
 
   If approval_needed is True, only reviewers who have approved the change
   will be returned.
   """
+  # Recognizes 'X@Y' email addresses. Very simplistic.
+  EMAIL_REGEXP = input_api.re.compile(r'^[\w\-\+\%\.]+\@[\w\-\+\%\.]+$')
   issue = input_api.change.issue
   if not issue:
     return None, (set() if approval_needed else
@@ -1215,7 +1203,7 @@ def GetCodereviewOwnerAndReviewers(input_api, email_regexp, approval_needed):
   owner_email = input_api.gerrit.GetChangeOwner(issue)
   reviewers = set(
       r for r in input_api.gerrit.GetChangeReviewers(issue, approval_needed)
-      if _match_reviewer_email(r, owner_email, email_regexp))
+      if _match_reviewer_email(r, owner_email, EMAIL_REGEXP))
   input_api.logging.debug('owner: %s; approvals given by: %s',
                           owner_email, ', '.join(sorted(reviewers)))
   return owner_email, reviewers
@@ -1269,26 +1257,6 @@ def PanProjectChecks(input_api, output_api,
       r'.+\.txt$',
       r'.+\.json$',
   ))
-  project_name = project_name or 'Chromium'
-
-  # Accept any year number from 2006 to the current year, or the special
-  # 2006-20xx string used on the oldest files. 2006-20xx is deprecated, but
-  # tolerated on old files.
-  current_year = int(input_api.time.strftime('%Y'))
-  allowed_years = (str(s) for s in reversed(range(2006, current_year + 1)))
-  years_re = '(' + '|'.join(allowed_years) + '|2006-2008|2006-2009|2006-2010)'
-
-  # The (c) is deprecated, but tolerate it until it's removed from all files.
-  license_header = license_header or (
-      r'.*? Copyright (\(c\) )?%(year)s The %(project)s Authors\. '
-        r'All rights reserved\.\n'
-      r'.*? Use of this source code is governed by a BSD-style license that '
-        r'can be\n'
-      r'.*? found in the LICENSE file\.(?: \*/)?\n'
-  ) % {
-      'year': years_re,
-      'project': project_name,
-  }
 
   results = []
   # This code loads the default skip list (e.g. third_party, experimental, etc)
@@ -1334,7 +1302,8 @@ def PanProjectChecks(input_api, output_api,
       input_api, output_api, source_file_filter=sources))
   snapshot("checking license")
   results.extend(input_api.canned_checks.CheckLicense(
-      input_api, output_api, license_header, source_file_filter=sources))
+      input_api, output_api, license_header, project_name,
+      source_file_filter=sources))
 
   if input_api.is_committing:
     snapshot("checking was uploaded")
@@ -1548,12 +1517,12 @@ def CheckForCommitObjects(input_api, output_api):
   full_tree = input_api.subprocess.check_output(
           ['git', 'ls-tree', '-r', '--full-tree', 'HEAD'],
           cwd=input_api.PresubmitLocalPath()
-        )
+        ).decode('utf8')
   tree_entries = full_tree.split('\n')
-  tree_entries = filter(lambda x: len(x) > 0, tree_entries)
+  tree_entries = [x for x in tree_entries if len(x) > 0]
   tree_entries = map(parse_tree_entry, tree_entries)
-  bad_tree_entries = filter(lambda x: x[1] == 'commit', tree_entries)
-  bad_tree_entries = map(lambda x: x[3], bad_tree_entries)
+  bad_tree_entries = [x for x in tree_entries if x[1] == 'commit']
+  bad_tree_entries = [x[3] for x in bad_tree_entries]
   if len(bad_tree_entries) > 0:
     return [output_api.PresubmitError(
       'Commit objects present within tree.\n'
@@ -1754,3 +1723,135 @@ def CheckJsonParses(input_api, output_api):
         warnings.append(output_api.PresubmitPromptWarning(
             '%s does not appear to be valid JSON.' % f.LocalPath()))
   return warnings
+
+# string pattern, sequence of strings to show when pattern matches,
+# error flag. True if match is a presubmit error, otherwise it's a warning.
+_NON_INCLUSIVE_TERMS = (
+    (
+        # Note that \b pattern in python re is pretty particular. In this
+        # regexp, 'class WhiteList ...' will match, but 'class FooWhiteList
+        # ...' will not. This may require some tweaking to catch these cases
+        # without triggering a lot of false positives. Leaving it naive and
+        # less matchy for now.
+        r'/\b(?i)((black|white)list|slave)\b',  # nocheck
+        (
+            'Please don\'t use blacklist, whitelist, '  # nocheck
+            'or slave in your',  # nocheck
+            'code and make every effort to use other terms. Using "// nocheck"',
+            '"# nocheck" or "<!-- nocheck -->"',
+            'at the end of the offending line will bypass this PRESUBMIT error',
+            'but avoid using this whenever possible. Reach out to',
+            'community@chromium.org if you have questions'),
+        True),)
+
+
+def _GetMessageForMatchingTerm(input_api, affected_file, line_number, line,
+                               term, message):
+  """Helper method for CheckInclusiveLanguage.
+
+  Returns an string composed of the name of the file, the line number where the
+  match has been found and the additional text passed as |message| in case the
+  target type name matches the text inside the line passed as parameter.
+  """
+  result = []
+
+  # A // nocheck comment will bypass this error.
+  if line.endswith(" nocheck") or line.endswith("<!-- nocheck -->"):
+    return result
+
+  # Ignore C-style single-line comments about banned terms.
+  if input_api.re.search(r"//.*$", line):
+    line = input_api.re.sub(r"//.*$", "", line)
+
+  # Ignore lines from C-style multi-line comments.
+  if input_api.re.search(r"^\s*\*", line):
+    return result
+
+  # Ignore Python-style comments about banned terms.
+  # This actually removes comment text from the first # on.
+  if input_api.re.search(r"#.*$", line):
+    line = input_api.re.sub(r"#.*$", "", line)
+
+  matched = False
+  if term[0:1] == '/':
+    regex = term[1:]
+    if input_api.re.search(regex, line):
+      matched = True
+  elif term in line:
+    matched = True
+
+  if matched:
+    result.append('    %s:%d:' % (affected_file.LocalPath(), line_number))
+    for message_line in message:
+      result.append('      %s' % message_line)
+
+  return result
+
+
+def CheckInclusiveLanguage(input_api, output_api,
+                           excluded_directories_relative_path=None,
+                           non_inclusive_terms=_NON_INCLUSIVE_TERMS):
+  """Make sure that banned non-inclusive terms are not used."""
+
+  # Presubmit checks may run on a bot where the changes are actually
+  # in a repo that isn't chromium/src (e.g., when testing src + tip-of-tree
+  # ANGLE), but this particular check only makes sense for changes to
+  # chromium/src.
+  if input_api.change.RepositoryRoot() != input_api.PresubmitLocalPath():
+    return []
+
+  warnings = []
+  errors = []
+
+  if excluded_directories_relative_path is None:
+    excluded_directories_relative_path = [
+        'infra',
+        'inclusive_language_presubmit_exempt_dirs.txt'
+    ]
+
+  # Note that this matches exact path prefixes, and does not match
+  # subdirectories. Only files directly in an exlcluded path will
+  # match.
+  def IsExcludedFile(affected_file, excluded_paths):
+    local_dir = input_api.os_path.dirname(affected_file.LocalPath())
+
+    return local_dir in excluded_paths
+
+  def CheckForMatch(affected_file, line_num, line, term, message, error):
+    problems = _GetMessageForMatchingTerm(input_api, affected_file, line_num,
+                                          line, term, message)
+
+    if problems:
+      if error:
+        errors.extend(problems)
+      else:
+        warnings.extend(problems)
+
+  excluded_paths = []
+  dirs_file_path = input_api.os_path.join(input_api.change.RepositoryRoot(),
+                                          *excluded_directories_relative_path)
+  f = input_api.ReadFile(dirs_file_path)
+
+  for line in f.splitlines():
+    path = line.split()[0]
+    if len(path) > 0:
+      excluded_paths.append(path)
+
+  excluded_paths = set(excluded_paths)
+  for f in input_api.AffectedFiles():
+    for line_num, line in f.ChangedContents():
+      for term, message, error in non_inclusive_terms:
+        if IsExcludedFile(f, excluded_paths):
+          continue
+        CheckForMatch(f, line_num, line, term, message, error)
+
+  result = []
+  if (warnings):
+    result.append(
+        output_api.PresubmitPromptWarning(
+            'Banned non-inclusive language was used.\n' + '\n'.join(warnings)))
+  if (errors):
+    result.append(
+        output_api.PresubmitError('Banned non-inclusive language was used.\n' +
+                                  '\n'.join(errors)))
+  return result

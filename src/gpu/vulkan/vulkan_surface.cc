@@ -12,9 +12,14 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "build/build_config.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_swap_chain.h"
+
+#if defined(OS_ANDROID)
+#include <android/native_window_jni.h>
+#endif
 
 namespace gpu {
 
@@ -77,17 +82,26 @@ uint32_t kMinImageCount = 3u;
 
 VulkanSurface::~VulkanSurface() {
   DCHECK_EQ(static_cast<VkSurfaceKHR>(VK_NULL_HANDLE), surface_);
+#if defined(OS_ANDROID)
+  if (accelerated_widget_)
+    ANativeWindow_release(accelerated_widget_);
+#endif
 }
 
 VulkanSurface::VulkanSurface(VkInstance vk_instance,
                              gfx::AcceleratedWidget accelerated_widget,
                              VkSurfaceKHR surface,
-                             bool enforce_protected_memory)
+                             uint64_t acquire_next_image_timeout_ns)
     : vk_instance_(vk_instance),
       accelerated_widget_(accelerated_widget),
       surface_(surface),
-      enforce_protected_memory_(enforce_protected_memory) {
+      acquire_next_image_timeout_ns_(acquire_next_image_timeout_ns) {
   DCHECK_NE(static_cast<VkSurfaceKHR>(VK_NULL_HANDLE), surface_);
+
+#if defined(OS_ANDROID)
+  if (accelerated_widget_)
+    ANativeWindow_acquire(accelerated_widget_);
+#endif
 }
 
 bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
@@ -283,13 +297,13 @@ bool VulkanSurface::CreateSwapChain(const gfx::Size& size,
   image_size_ = image_size;
   transform_ = transform;
 
-  auto swap_chain = std::make_unique<VulkanSwapChain>();
+  auto swap_chain =
+      std::make_unique<VulkanSwapChain>(acquire_next_image_timeout_ns_);
   // Create swap chain.
   auto min_image_count = std::max(surface_caps.minImageCount, kMinImageCount);
   if (!swap_chain->Initialize(device_queue_, surface_, surface_format_,
                               image_size_, min_image_count, image_usage_flags_,
-                              vk_transform, enforce_protected_memory_,
-                              std::move(swap_chain_))) {
+                              vk_transform, std::move(swap_chain_))) {
     return false;
   }
 

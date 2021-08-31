@@ -10,8 +10,6 @@ static_library("common") {
     "autofill_constants.h",
     "autofill_data_validation.cc",
     "autofill_data_validation.h",
-    "autofill_features.cc",
-    "autofill_features.h",
     "autofill_internals/log_message.cc",
     "autofill_internals/log_message.h",
     "autofill_internals/logging_scope.cc",
@@ -41,6 +39,7 @@ static_library("common") {
     "form_field_data_predictions.h",
     "gaia_id_hash.cc",
     "gaia_id_hash.h",
+    "language_code.h",
     "logging/log_buffer.cc",
     "logging/log_buffer.h",
     "password_form_fill_data.cc",
@@ -48,16 +47,20 @@ static_library("common") {
     "password_form_generation_data.h",
     "password_generation_util.cc",
     "password_generation_util.h",
-    "renderer_id.h",
     "save_password_progress_logger.cc",
     "save_password_progress_logger.h",
     "signatures.cc",
     "signatures.h",
+    "unique_ids.cc",
+    "unique_ids.h",
   ]
+
+  public_deps = [ ":features" ]
 
   deps = [
     "//base",
     "//base:i18n",
+    "//build:chromeos_buildflags",
 
     # Note: Can't use mojom:mojo_types here, as that already depends on :common.
     "//components/autofill/core/common/mojom:mojo_types_shared",
@@ -72,6 +75,17 @@ static_library("common") {
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+}
+
+component("features") {
+  output_name = "autofill_core_common_features"
+  defines = [ "IS_AUTOFILL_IMPL" ]
+  sources = [
+    "autofill_features.cc",
+    "autofill_features.h",
+  ]
+
+  deps = [ "//base" ]
 }
 
 source_set("unit_tests") {

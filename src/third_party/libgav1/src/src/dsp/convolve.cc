@@ -623,6 +623,8 @@ void ConvolveIntraBlockCopy2D_C(const void* const reference,
                                 const int /*vertical_filter_id*/,
                                 const int width, const int height,
                                 void* prediction, const ptrdiff_t pred_stride) {
+  assert(width >= 4 && width <= kMaxSuperBlockSizeInPixels);
+  assert(height >= 4 && height <= kMaxSuperBlockSizeInPixels);
   const auto* src = static_cast<const Pixel*>(reference);
   const ptrdiff_t src_stride = reference_stride / sizeof(Pixel);
   auto* dest = static_cast<Pixel*>(prediction);
@@ -676,6 +678,8 @@ void ConvolveIntraBlockCopy1D_C(const void* const reference,
                                 const int /*vertical_filter_id*/,
                                 const int width, const int height,
                                 void* prediction, const ptrdiff_t pred_stride) {
+  assert(width >= 4 && width <= kMaxSuperBlockSizeInPixels);
+  assert(height >= 4 && height <= kMaxSuperBlockSizeInPixels);
   const auto* src = static_cast<const Pixel*>(reference);
   const ptrdiff_t src_stride = reference_stride / sizeof(Pixel);
   auto* dest = static_cast<Pixel*>(prediction);

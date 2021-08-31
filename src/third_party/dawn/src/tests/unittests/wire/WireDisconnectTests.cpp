@@ -80,7 +80,7 @@ TEST_F(WireDisconnectTests, ServerLostThenDisconnect) {
     wgpuDeviceSetDeviceLostCallback(device, mockDeviceLostCallback.Callback(),
                                     mockDeviceLostCallback.MakeUserdata(this));
 
-    api.CallDeviceLostCallback(apiDevice, "some reason");
+    api.CallDeviceSetDeviceLostCallbackCallback(apiDevice, "some reason");
 
     // Flush the device lost return command.
     EXPECT_CALL(mockDeviceLostCallback, Call(StrEq("some reason"), this)).Times(Exactly(1));
@@ -98,7 +98,7 @@ TEST_F(WireDisconnectTests, ServerLostThenDisconnectInCallback) {
     wgpuDeviceSetDeviceLostCallback(device, mockDeviceLostCallback.Callback(),
                                     mockDeviceLostCallback.MakeUserdata(this));
 
-    api.CallDeviceLostCallback(apiDevice, "lost reason");
+    api.CallDeviceSetDeviceLostCallbackCallback(apiDevice, "lost reason");
 
     // Disconnect the client inside the lost callback. We should see the callback
     // only once.
@@ -122,7 +122,7 @@ TEST_F(WireDisconnectTests, DisconnectThenServerLost) {
 
     // Lose the device on the server. The client callback shouldn't be
     // called again.
-    api.CallDeviceLostCallback(apiDevice, "lost reason");
+    api.CallDeviceSetDeviceLostCallbackCallback(apiDevice, "lost reason");
     EXPECT_CALL(mockDeviceLostCallback, Call(_, _)).Times(Exactly(0));
     FlushServer();
 }
@@ -145,8 +145,19 @@ TEST_F(WireDisconnectTests, DeleteClientDestroysObjects) {
     DeleteClient();
 
     // Expect release on all objects created by the client.
-    EXPECT_CALL(api, QueueRelease(apiQueue)).Times(1);
-    EXPECT_CALL(api, CommandEncoderRelease(apiCommandEncoder)).Times(1);
-    EXPECT_CALL(api, SamplerRelease(apiSampler)).Times(1);
+    Sequence s1, s2, s3;
+    EXPECT_CALL(api, QueueRelease(apiQueue)).Times(1).InSequence(s1);
+    EXPECT_CALL(api, CommandEncoderRelease(apiCommandEncoder)).Times(1).InSequence(s2);
+    EXPECT_CALL(api, SamplerRelease(apiSampler)).Times(1).InSequence(s3);
+    EXPECT_CALL(api, OnDeviceSetUncapturedErrorCallback(apiDevice, nullptr, nullptr))
+        .Times(1)
+        .InSequence(s1, s2);
+    EXPECT_CALL(api, OnDeviceSetDeviceLostCallback(apiDevice, nullptr, nullptr))
+        .Times(1)
+        .InSequence(s1, s2);
+    EXPECT_CALL(api, DeviceRelease(apiDevice)).Times(1).InSequence(s1, s2, s3);
     FlushClient();
+
+    // Signal that we already released and cleared callbacks for |apiDevice|
+    DefaultApiDeviceWasReleased();
 }

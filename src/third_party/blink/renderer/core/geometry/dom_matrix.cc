@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/geometry/dom_matrix.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_matrix_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_string_unrestricteddoublesequence.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 
@@ -19,6 +20,45 @@ DOMMatrix* DOMMatrix::Create(ExecutionContext* execution_context,
   return MakeGarbageCollected<DOMMatrix>(TransformationMatrix());
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+DOMMatrix* DOMMatrix::Create(
+    ExecutionContext* execution_context,
+    const V8UnionStringOrUnrestrictedDoubleSequence* init,
+    ExceptionState& exception_state) {
+  DCHECK(init);
+
+  switch (init->GetContentType()) {
+    case V8UnionStringOrUnrestrictedDoubleSequence::ContentType::kString: {
+      if (!execution_context->IsWindow()) {
+        exception_state.ThrowTypeError(
+            "DOMMatrix can't be constructed with strings on workers.");
+        return nullptr;
+      }
+
+      DOMMatrix* matrix =
+          MakeGarbageCollected<DOMMatrix>(TransformationMatrix());
+      matrix->SetMatrixValueFromString(execution_context, init->GetAsString(),
+                                       exception_state);
+      return matrix;
+    }
+    case V8UnionStringOrUnrestrictedDoubleSequence::ContentType::
+        kUnrestrictedDoubleSequence: {
+      const Vector<double>& sequence = init->GetAsUnrestrictedDoubleSequence();
+      if (sequence.size() != 6 && sequence.size() != 16) {
+        exception_state.ThrowTypeError(
+            "The sequence must contain 6 elements for a 2D matrix or 16 "
+            "elements "
+            "for a 3D matrix.");
+        return nullptr;
+      }
+      return MakeGarbageCollected<DOMMatrix>(sequence, sequence.size());
+    }
+  }
+
+  NOTREACHED();
+  return nullptr;
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 DOMMatrix* DOMMatrix::Create(ExecutionContext* execution_context,
                              StringOrUnrestrictedDoubleSequence& init,
                              ExceptionState& exception_state) {
@@ -49,6 +89,7 @@ DOMMatrix* DOMMatrix::Create(ExecutionContext* execution_context,
   NOTREACHED();
   return nullptr;
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 DOMMatrix* DOMMatrix::Create(DOMMatrixReadOnly* other,
                              ExceptionState& exception_state) {
@@ -68,30 +109,26 @@ DOMMatrix* DOMMatrix::CreateForSerialization(double sequence[], int size) {
 
 DOMMatrix* DOMMatrix::fromFloat32Array(NotShared<DOMFloat32Array> float32_array,
                                        ExceptionState& exception_state) {
-  if (float32_array.View()->length() != 6 &&
-      float32_array.View()->length() != 16) {
+  if (float32_array->length() != 6 && float32_array->length() != 16) {
     exception_state.ThrowTypeError(
         "The sequence must contain 6 elements for a 2D matrix or 16 elements "
         "for a 3D matrix.");
     return nullptr;
   }
   return MakeGarbageCollected<DOMMatrix>(
-      float32_array.View()->Data(),
-      static_cast<int>(float32_array.View()->length()));
+      float32_array->Data(), static_cast<int>(float32_array->length()));
 }
 
 DOMMatrix* DOMMatrix::fromFloat64Array(NotShared<DOMFloat64Array> float64_array,
                                        ExceptionState& exception_state) {
-  if (float64_array.View()->length() != 6 &&
-      float64_array.View()->length() != 16) {
+  if (float64_array->length() != 6 && float64_array->length() != 16) {
     exception_state.ThrowTypeError(
         "The sequence must contain 6 elements for a 2D matrix or 16 elements "
         "for a 3D matrix.");
     return nullptr;
   }
   return MakeGarbageCollected<DOMMatrix>(
-      float64_array.View()->Data(),
-      static_cast<int>(float64_array.View()->length()));
+      float64_array->Data(), static_cast<int>(float64_array->length()));
 }
 
 template <typename T>
@@ -297,7 +334,7 @@ DOMMatrix* DOMMatrix::invertSelf() {
   if (is2d_) {
     AffineTransform affine_transform = matrix_.ToAffineTransform();
     if (affine_transform.IsInvertible()) {
-      matrix_ = affine_transform.Inverse();
+      matrix_ = TransformationMatrix(affine_transform.Inverse());
       return this;
     }
   } else {

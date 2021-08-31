@@ -4,12 +4,12 @@
 
 #include "chrome/browser/metrics/ambient_mode_metrics_provider.h"
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ambient/ambient_client.h"
 #include "ash/public/cpp/ambient/ambient_metrics.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
 
 namespace {
@@ -34,11 +34,15 @@ AmbientModeMetricsProvider::~AmbientModeMetricsProvider() = default;
 
 void AmbientModeMetricsProvider::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto_unused) {
-  if (!chromeos::features::IsAmbientModeEnabled() ||
-      !ash::AmbientClient::Get()->IsAmbientModeAllowed()) {
+  if (!chromeos::features::IsAmbientModeEnabled())
     return;
-  }
 
+  auto* ambient_client = ash::AmbientClient::Get();
+  if (!ambient_client || !ambient_client->IsAmbientModeAllowed())
+    return;
+
+  // |IsAmbientModeAllowed| guarantees a valid profile exists for the active
+  // user.
   PrefService* pref_service =
       ProfileManager::GetActiveUserProfile()->GetPrefs();
   DCHECK(pref_service);

@@ -46,13 +46,14 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSecti
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.SectionSeparator;
 import org.chromium.chrome.browser.payments.ui.PaymentUiService.PaymentUisShowStateReconciler;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.version.ChromeVersionInfo;
 import org.chromium.components.autofill.EditableOption;
 import org.chromium.components.browser_ui.widget.FadingEdgeScrollView;
 import org.chromium.components.browser_ui.widget.animation.FocusAnimator;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.components.payments.PaymentApp;
+import org.chromium.components.payments.PaymentAppType;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
@@ -277,8 +278,8 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
     /**
      * Length of the animation to either show the UI or expand it to full height.
      * Note that click of 'Pay' button is not accepted until the animation is done, so this duration
-     * also serves the function of preventing the user from accidently double-clicking on the screen
-     * when triggering payment and thus authorizing unwanted transaction.
+     * also serves the function of preventing the user from accidentally double-clicking on the
+     * screen when triggering payment and thus authorizing unwanted transaction.
      */
     private static final int DIALOG_ENTER_ANIMATION_MS = 225;
 
@@ -305,6 +306,7 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
     private final ViewGroup mRequestView;
     private final Callback<PaymentInformation> mUpdateSectionsCallback;
     private final ShippingStrings mShippingStrings;
+    private final int mAnimatorTranslation;
 
     private FadingEdgeScrollView mPaymentContainer;
     private LinearLayout mPaymentContainerLayout;
@@ -338,7 +340,6 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
 
     private Animator mSheetAnimator;
     private FocusAnimator mSectionAnimator;
-    private int mAnimatorTranslation;
 
     /**
      * Builds the UI for PaymentRequest.
@@ -652,7 +653,7 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
             mRetryErrorView.setVisibility(View.GONE);
         } else {
             if (mIsExpandedToFullHeight) {
-                // Add paddings instead of margin to let getMeasuredHeight return correct value for
+                // Add padding instead of margin to let getMeasuredHeight return correct value for
                 // section resize animation.
                 int paddingSize = mContext.getResources().getDimensionPixelSize(
                         R.dimen.editor_dialog_section_large_spacing);
@@ -987,7 +988,7 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
 
     /**
      * Called when the user has clicked on pay. The message is shown while the payment information
-     * is processed right until a confimation from the merchant is received.
+     * is processed right until a confirmation from the merchant is received.
      */
     public void showProcessingMessage() {
         assert mIsProcessingPayClicked;
@@ -1043,7 +1044,8 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
         PaymentApp selectedApp = mPaymentMethodSectionInformation == null
                 ? null
                 : (PaymentApp) mPaymentMethodSectionInformation.getSelectedItem();
-        mPayButton.setText(selectedApp != null && !selectedApp.isAutofillInstrument()
+        mPayButton.setText(
+                selectedApp != null && selectedApp.getPaymentAppType() != PaymentAppType.AUTOFILL
                         ? R.string.payments_continue_button
                         : R.string.payments_pay_button);
         mReadyToPayNotifierForTest.run();
@@ -1152,7 +1154,7 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
         view.setMovementMethod(LinkMovementMethod.getInstance());
         ApiCompatibilityUtils.setTextAppearance(view, R.style.TextAppearance_TextMedium_Secondary);
 
-        // Add paddings instead of margin to let getMeasuredHeight return correct value for section
+        // Add padding instead of margin to let getMeasuredHeight return correct value for section
         // resize animation.
         int paddingSize = mContext.getResources().getDimensionPixelSize(
                 R.dimen.editor_dialog_section_large_spacing);

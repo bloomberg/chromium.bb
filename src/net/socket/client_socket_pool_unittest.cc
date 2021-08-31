@@ -12,16 +12,14 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
+#include "net/base/schemeful_site.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace net {
 
 namespace {
-
-// TODO(950069): Add testing for frame_origin in NetworkIsolationKey
-// using kAppendInitiatingFrameOriginToNetworkIsolationKey.
 
 TEST(ClientSocketPool, GroupIdOperators) {
   base::test::ScopedFeatureList feature_list;
@@ -46,14 +44,15 @@ TEST(ClientSocketPool, GroupIdOperators) {
       PrivacyMode::PRIVACY_MODE_ENABLED,
   };
 
-  const auto kOriginA = url::Origin::Create(GURL("http://a.test/"));
-  const auto kOriginB = url::Origin::Create(GURL("http://b.test/"));
+  const SchemefulSite kSiteA(GURL("http://a.test/"));
+  const SchemefulSite kSiteB(GURL("http://b.test/"));
   const NetworkIsolationKey kNetworkIsolationKeys[] = {
-      NetworkIsolationKey(kOriginA, kOriginA),
-      NetworkIsolationKey(kOriginB, kOriginB),
+      NetworkIsolationKey(kSiteA, kSiteA),
+      NetworkIsolationKey(kSiteB, kSiteB),
   };
 
-  const bool kDisableSecureDnsValues[] = {false, true};
+  const SecureDnsPolicy kDisableSecureDnsValues[] = {SecureDnsPolicy::kAllow,
+                                                     SecureDnsPolicy::kDisable};
 
   // All previously created |group_ids|. They should all be less than the
   // current group under consideration.
@@ -68,10 +67,10 @@ TEST(ClientSocketPool, GroupIdOperators) {
         SCOPED_TRACE(privacy_mode);
         for (const auto& network_isolation_key : kNetworkIsolationKeys) {
           SCOPED_TRACE(network_isolation_key.ToString());
-          for (const auto& disable_secure_dns : kDisableSecureDnsValues) {
+          for (const auto& secure_dns_policy : kDisableSecureDnsValues) {
             ClientSocketPool::GroupId group_id(
                 host_port_pair, socket_type, privacy_mode,
-                network_isolation_key, disable_secure_dns);
+                network_isolation_key, secure_dns_policy);
             for (const auto& lower_group_id : group_ids) {
               EXPECT_FALSE(lower_group_id == group_id);
               EXPECT_TRUE(lower_group_id < group_id);
@@ -95,99 +94,89 @@ TEST(ClientSocketPool, GroupIdOperators) {
 
 TEST(ClientSocketPool, GroupIdToString) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kPartitionConnectionsByNetworkIsolationKey},
-      {features::kAppendFrameOriginToNetworkIsolationKey});
+  feature_list.InitAndEnableFeature(
+      features::kPartitionConnectionsByNetworkIsolationKey);
 
-  EXPECT_EQ("foo:80 <null>",
+  EXPECT_EQ("foo:80 <null null>",
             ClientSocketPool::GroupId(
                 HostPortPair("foo", 80), ClientSocketPool::SocketType::kHttp,
                 PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
-                false /* disable_secure_dns */)
+                SecureDnsPolicy::kAllow)
                 .ToString());
-  EXPECT_EQ("bar:443 <null>",
+  EXPECT_EQ("bar:443 <null null>",
             ClientSocketPool::GroupId(
                 HostPortPair("bar", 443), ClientSocketPool::SocketType::kHttp,
                 PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
-                false /* disable_secure_dns */)
+                SecureDnsPolicy::kAllow)
                 .ToString());
-  EXPECT_EQ("pm/bar:80 <null>",
+  EXPECT_EQ("pm/bar:80 <null null>",
             ClientSocketPool::GroupId(
                 HostPortPair("bar", 80), ClientSocketPool::SocketType::kHttp,
                 PrivacyMode::PRIVACY_MODE_ENABLED, NetworkIsolationKey(),
-                false /* disable_secure_dns */)
+                SecureDnsPolicy::kAllow)
                 .ToString());
 
-  EXPECT_EQ("ssl/foo:80 <null>",
+  EXPECT_EQ("ssl/foo:80 <null null>",
             ClientSocketPool::GroupId(
                 HostPortPair("foo", 80), ClientSocketPool::SocketType::kSsl,
                 PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
-                false /* disable_secure_dns */)
+                SecureDnsPolicy::kAllow)
                 .ToString());
-  EXPECT_EQ("ssl/bar:443 <null>",
+  EXPECT_EQ("ssl/bar:443 <null null>",
             ClientSocketPool::GroupId(
                 HostPortPair("bar", 443), ClientSocketPool::SocketType::kSsl,
                 PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
-                false /* disable_secure_dns */)
+                SecureDnsPolicy::kAllow)
                 .ToString());
-  EXPECT_EQ("pm/ssl/bar:80 <null>",
+  EXPECT_EQ("pm/ssl/bar:80 <null null>",
             ClientSocketPool::GroupId(
                 HostPortPair("bar", 80), ClientSocketPool::SocketType::kSsl,
                 PrivacyMode::PRIVACY_MODE_ENABLED, NetworkIsolationKey(),
-                false /* disable_secure_dns */)
+                SecureDnsPolicy::kAllow)
                 .ToString());
 
-  EXPECT_EQ(
-      "ssl/foo:443 <https://foo.com>",
-      ClientSocketPool::GroupId(
-          HostPortPair("foo", 443), ClientSocketPool::SocketType::kSsl,
-          PrivacyMode::PRIVACY_MODE_DISABLED,
-          NetworkIsolationKey(url::Origin::Create(GURL("https://foo.com")),
-                              url::Origin::Create(GURL("https://foo.com"))),
-          false /* disable_secure_dns */)
-          .ToString());
+  EXPECT_EQ("ssl/foo:443 <https://foo.test https://bar.test>",
+            ClientSocketPool::GroupId(
+                HostPortPair("foo", 443), ClientSocketPool::SocketType::kSsl,
+                PrivacyMode::PRIVACY_MODE_DISABLED,
+                NetworkIsolationKey(SchemefulSite(GURL("https://foo.test")),
+                                    SchemefulSite(GURL("https://bar.test"))),
+                SecureDnsPolicy::kAllow)
+                .ToString());
 
-  EXPECT_EQ("dsd/pm/ssl/bar:80 <null>",
+  EXPECT_EQ("dsd/pm/ssl/bar:80 <null null>",
             ClientSocketPool::GroupId(
                 HostPortPair("bar", 80), ClientSocketPool::SocketType::kSsl,
                 PrivacyMode::PRIVACY_MODE_ENABLED, NetworkIsolationKey(),
-                true /* disable_secure_dns */)
+                SecureDnsPolicy::kDisable)
                 .ToString());
 }
 
 TEST(ClientSocketPool, PartitionConnectionsByNetworkIsolationKeyDisabled) {
-  // Partitioning connections by NetworkIsolationKey is disabled by default, so
-  // test both the explicitly and implicitly disabled cases.
-  const auto kOriginFoo = url::Origin::Create(GURL("https://foo.com"));
-  const auto kOriginBar = url::Origin::Create(GURL("https://bar.com"));
-  for (bool explicitly_disabled : {false, true}) {
-    base::test::ScopedFeatureList feature_list;
-    if (explicitly_disabled) {
-      feature_list.InitAndDisableFeature(
-          features::kPartitionConnectionsByNetworkIsolationKey);
-    }
+  const SchemefulSite kSiteFoo(GURL("https://foo.com"));
+  const SchemefulSite kSiteBar(GURL("https://bar.com"));
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kPartitionConnectionsByNetworkIsolationKey);
 
-    ClientSocketPool::GroupId group_id1(
-        HostPortPair("foo", 443), ClientSocketPool::SocketType::kSsl,
-        PrivacyMode::PRIVACY_MODE_DISABLED,
-        NetworkIsolationKey(kOriginFoo, kOriginFoo),
-        false /* disable_secure_dns */);
+  ClientSocketPool::GroupId group_id1(
+      HostPortPair("foo", 443), ClientSocketPool::SocketType::kSsl,
+      PrivacyMode::PRIVACY_MODE_DISABLED,
+      NetworkIsolationKey(kSiteFoo, kSiteFoo), SecureDnsPolicy::kAllow);
 
-    ClientSocketPool::GroupId group_id2(
-        HostPortPair("foo", 443), ClientSocketPool::SocketType::kSsl,
-        PrivacyMode::PRIVACY_MODE_DISABLED,
-        NetworkIsolationKey(kOriginBar, kOriginBar),
-        false /* disable_secure_dns */);
+  ClientSocketPool::GroupId group_id2(
+      HostPortPair("foo", 443), ClientSocketPool::SocketType::kSsl,
+      PrivacyMode::PRIVACY_MODE_DISABLED,
+      NetworkIsolationKey(kSiteBar, kSiteBar), SecureDnsPolicy::kAllow);
 
-    EXPECT_FALSE(group_id1.network_isolation_key().IsFullyPopulated());
-    EXPECT_FALSE(group_id2.network_isolation_key().IsFullyPopulated());
-    EXPECT_EQ(group_id1.network_isolation_key(),
-              group_id2.network_isolation_key());
-    EXPECT_EQ(group_id1, group_id2);
+  EXPECT_FALSE(group_id1.network_isolation_key().IsFullyPopulated());
+  EXPECT_FALSE(group_id2.network_isolation_key().IsFullyPopulated());
+  EXPECT_EQ(group_id1.network_isolation_key(),
+            group_id2.network_isolation_key());
+  EXPECT_EQ(group_id1, group_id2);
 
-    EXPECT_EQ("ssl/foo:443", group_id1.ToString());
-    EXPECT_EQ("ssl/foo:443", group_id2.ToString());
-  }
+  EXPECT_EQ("ssl/foo:443", group_id1.ToString());
+  EXPECT_EQ("ssl/foo:443", group_id2.ToString());
 }
 
 }  // namespace

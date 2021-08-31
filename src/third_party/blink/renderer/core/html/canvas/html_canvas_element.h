@@ -145,9 +145,16 @@ class CORE_EXPORT HTMLCanvasElement final
     return toBlob(callback, mime_type, ScriptValue(), exception_state);
   }
 
+  bool IsPresentationAttribute(const QualifiedName&) const final;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableCSSPropertyValueSet*) final;
+
   // Used for canvas capture.
   void AddListener(CanvasDrawListener*);
   void RemoveListener(CanvasDrawListener*);
+  // Derived from OffscreenCanvasPlaceholder.
+  bool HasCanvasCapture() const final { return !listeners_.IsEmpty(); }
 
   // Used for rendering
   void DidDraw(const FloatRect&) override;
@@ -217,11 +224,11 @@ class CORE_EXPORT HTMLCanvasElement final
   void SetNeedsCompositingUpdate() override;
   void UpdateMemoryUsage() override;
   bool ShouldAccelerate2dContext() const override;
-  SkFilterQuality FilterQuality() const override;
   bool LowLatencyEnabled() const override;
   CanvasResourceProvider* GetOrCreateCanvasResourceProvider(
       RasterModeHint hint) override;
   bool IsPrinting() const override;
+  void SetFilterQuality(SkFilterQuality filter_quality) override;
 
   // CanvasRenderingContextHost implementation.
   UkmParameters GetUkmParameters() override;
@@ -232,13 +239,13 @@ class CORE_EXPORT HTMLCanvasElement final
   // ImageBitmapSource implementation
   IntSize BitmapSourceSize() const override;
   ScriptPromise CreateImageBitmap(ScriptState*,
-                                  base::Optional<IntRect> crop_rect,
+                                  absl::optional<IntRect> crop_rect,
                                   const ImageBitmapOptions*,
                                   ExceptionState&) override;
 
   // OffscreenCanvasPlaceholder implementation.
   void SetOffscreenCanvasResource(scoped_refptr<CanvasResource>,
-                                  unsigned resource_id) override;
+                                  viz::ResourceId resource_id) override;
   void Trace(Visitor*) const override;
 
   void SetResourceProviderForTesting(std::unique_ptr<CanvasResourceProvider>,
@@ -265,7 +272,7 @@ class CORE_EXPORT HTMLCanvasElement final
   ::blink::SurfaceLayerBridge* SurfaceLayerBridge() const {
     return surface_layer_bridge_.get();
   }
-  void CreateLayer();
+  bool CreateLayer();
 
   void DetachContext() override { context_ = nullptr; }
 
@@ -335,7 +342,6 @@ class CORE_EXPORT HTMLCanvasElement final
       IdentifiableToken canvas_contents_token) const;
 
   void PaintInternal(GraphicsContext&, const PhysicalRect&);
-  void UpdateFilterQuality(SkFilterQuality filter_quality);
 
   using ContextFactoryVector =
       Vector<std::unique_ptr<CanvasRenderingContextFactory>>;
@@ -394,6 +400,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   bool origin_clean_;
   bool needs_unbuffered_input_ = false;
+  bool style_is_visible_ = false;
 
   // It prevents repeated attempts in allocating resources after the first
   // attempt failed.
@@ -418,7 +425,7 @@ class CORE_EXPORT HTMLCanvasElement final
   // GPU Memory Management
   mutable intptr_t externally_allocated_memory_;
 
-  scoped_refptr<StaticBitmapImage> transparent_image_ = nullptr;
+  scoped_refptr<StaticBitmapImage> transparent_image_;
 };
 
 }  // namespace blink

@@ -10,11 +10,11 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
-#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "services/tracing/perfetto/test_utils.h"
 #include "services/tracing/public/cpp/buildflags.h"
 #include "services/tracing/public/cpp/perfetto/producer_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,6 +24,7 @@
 #if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
 #include "base/test/trace_event_analyzer.h"
 #include "services/tracing/public/cpp/stack_sampling/loader_lock_sampler_win.h"
+#include "services/tracing/public/cpp/stack_sampling/loader_lock_sampling_thread_win.h"
 #endif
 
 #if defined(OS_MAC)
@@ -39,7 +40,7 @@ using ::testing::Return;
 
 #if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
 
-class MockLoaderLockSampler : public TracingSamplerProfiler::LoaderLockSampler {
+class MockLoaderLockSampler : public LoaderLockSampler {
  public:
   MockLoaderLockSampler() = default;
   ~MockLoaderLockSampler() override = default;
@@ -60,45 +61,48 @@ class LoaderLockEventAnalyzer {
     return analyzer->FindEvents(
         trace_analyzer::Query::EventName() ==
             trace_analyzer::Query::String(
-                TracingSamplerProfiler::kLoaderLockHeldEventName),
+                LoaderLockSamplingThread::kLoaderLockHeldEventName),
         &events);
   }
 };
 
 #endif  // BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
 
-class TracingSampleProfilerTest : public testing::Test {
+class TracingSampleProfilerTest : public TracingUnitTest {
  public:
   TracingSampleProfilerTest() = default;
   ~TracingSampleProfilerTest() override = default;
 
   void SetUp() override {
+    TracingUnitTest::SetUp();
+
+#if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
+    // Override the default LoaderLockSampler because in production it is
+    // expected to be called from a single thread, and each test may re-create
+    // the sampling thread.
+    ON_CALL(mock_loader_lock_sampler_, IsLoaderLockHeld())
+        .WillByDefault(Return(false));
+    LoaderLockSamplingThread::SetLoaderLockSamplerForTesting(
+        &mock_loader_lock_sampler_);
+#endif
+
     events_stack_received_count_ = 0u;
-    PerfettoTracedProcess::ResetTaskRunnerForTesting();
-    PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner();
 
-    auto perfetto_wrapper = std::make_unique<PerfettoTaskRunner>(
-        task_environment_.GetMainThreadTaskRunner());
-
+    auto perfetto_wrapper = std::make_unique<base::tracing::PerfettoTaskRunner>(
+        base::ThreadTaskRunnerHandle::Get());
     producer_ =
         std::make_unique<TestProducerClient>(std::move(perfetto_wrapper),
                                              /*log_only_main_thread=*/false);
-
-#if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
-    ON_CALL(mock_loader_lock_sampler_, IsLoaderLockHeld())
-        .WillByDefault(Return(false));
-    TracingSamplerProfiler::SetLoaderLockSamplerForTesting(
-        &mock_loader_lock_sampler_);
-#endif
   }
 
   void TearDown() override {
-    // Be sure there is no pending/running tasks.
-    task_environment_.RunUntilIdle();
+    producer_.reset();
 
 #if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
-    TracingSamplerProfiler::SetLoaderLockSamplerForTesting(nullptr);
+    LoaderLockSamplingThread::SetLoaderLockSamplerForTesting(nullptr);
 #endif
+
+    TracingUnitTest::TearDown();
   }
 
   void BeginTrace() {
@@ -145,8 +149,6 @@ class TracingSampleProfilerTest : public testing::Test {
   const TestProducerClient* producer() const { return producer_.get(); }
 
  protected:
-  base::test::TaskEnvironment task_environment_;
-
   // We want our singleton torn down after each test.
   base::ShadowingAtExitManager at_exit_manager_;
   base::trace_event::TraceResultBuffer trace_buffer_;
@@ -338,11 +340,8 @@ TEST_F(TracingSampleProfilerTest, SampleLoaderLockOnMainThread) {
 
   // Since the loader lock state changed each time it was sampled an event
   // should be emitted each time.
+  ASSERT_GE(call_count, 1U);
   EXPECT_EQ(event_analyzer.CountEvents(), call_count);
-
-  // Loader lock should have been sampled every time the stack is sampled,
-  // although not every stack sample generates a stack event.
-  EXPECT_GE(call_count, events_stack_received_count_);
 }
 
 TEST_F(TracingSampleProfilerTest, SampleLoaderLockAlwaysHeld) {
@@ -411,10 +410,13 @@ TEST_F(TracingSampleProfilerTest, SampleLoaderLockOnChildThread) {
 TEST_F(TracingSampleProfilerTest, SampleLoaderLockWithoutMock) {
   if (ShouldSkipTestForMacOS11())
     GTEST_SKIP() << "Stack sampler is not supported on macOS 11";
+
   // Use the real loader lock sampler. This tests that it is initialized
   // correctly in TracingSamplerProfiler.
-  TracingSamplerProfiler::SetLoaderLockSamplerForTesting(nullptr);
+  LoaderLockSamplingThread::SetLoaderLockSamplerForTesting(nullptr);
 
+  // This must be the only thread that uses the real loader lock sampler in the
+  // test process.
   auto profiler = TracingSamplerProfiler::CreateOnMainThread();
   BeginTrace();
   base::RunLoop().RunUntilIdle();
@@ -428,23 +430,25 @@ TEST_F(TracingSampleProfilerTest, SampleLoaderLockWithoutMock) {
 
 #endif  // BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
 
-class TracingProfileBuilderTest : public testing::Test {
+class TracingProfileBuilderTest : public TracingUnitTest {
  public:
   void SetUp() override {
-    auto perfetto_wrapper = std::make_unique<PerfettoTaskRunner>(
-        task_environment_.GetMainThreadTaskRunner());
+    TracingUnitTest::SetUp();
+
+    auto perfetto_wrapper = std::make_unique<base::tracing::PerfettoTaskRunner>(
+        base::ThreadTaskRunnerHandle::Get());
     producer_client_ = std::make_unique<TestProducerClient>(
         std::move(perfetto_wrapper), /*log_only_main_thread=*/false);
   }
 
-  void TearDown() override { producer_client_.reset(); }
+  void TearDown() override {
+    producer_client_.reset();
+    TracingUnitTest::TearDown();
+  }
 
   TestProducerClient* producer() { return producer_client_.get(); }
 
  private:
-  // Should be the first member.
-  base::test::TaskEnvironment task_environment_;
-
   std::unique_ptr<TestProducerClient> producer_client_;
 };
 

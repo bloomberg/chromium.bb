@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_event_queue.h"
 
 #include "base/bind.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
@@ -79,7 +79,7 @@ void ServiceWorkerEventQueue::EnqueueNormal(
     int event_id,
     StartCallback start_callback,
     AbortCallback abort_callback,
-    base::Optional<base::TimeDelta> custom_timeout) {
+    absl::optional<base::TimeDelta> custom_timeout) {
   EnqueueEvent(std::make_unique<Event>(
       event_id, Event::Type::Normal, std::move(start_callback),
       std::move(abort_callback), std::move(custom_timeout)));
@@ -89,7 +89,7 @@ void ServiceWorkerEventQueue::EnqueuePending(
     int event_id,
     StartCallback start_callback,
     AbortCallback abort_callback,
-    base::Optional<base::TimeDelta> custom_timeout) {
+    absl::optional<base::TimeDelta> custom_timeout) {
   EnqueueEvent(std::make_unique<Event>(
       event_id, Event::Type::Pending, std::move(start_callback),
       std::move(abort_callback), std::move(custom_timeout)));
@@ -99,7 +99,7 @@ void ServiceWorkerEventQueue::EnqueueOffline(
     int event_id,
     StartCallback start_callback,
     AbortCallback abort_callback,
-    base::Optional<base::TimeDelta> custom_timeout) {
+    absl::optional<base::TimeDelta> custom_timeout) {
   EnqueueEvent(std::make_unique<ServiceWorkerEventQueue::Event>(
       event_id, ServiceWorkerEventQueue::Event::Type::Offline,
       std::move(start_callback), std::move(abort_callback),
@@ -356,7 +356,7 @@ ServiceWorkerEventQueue::Event::Event(
     ServiceWorkerEventQueue::Event::Type type,
     StartCallback start_callback,
     AbortCallback abort_callback,
-    base::Optional<base::TimeDelta> custom_timeout)
+    absl::optional<base::TimeDelta> custom_timeout)
     : event_id(event_id),
       type(type),
       start_callback(std::move(start_callback)),

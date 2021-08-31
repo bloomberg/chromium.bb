@@ -7,12 +7,19 @@
 #include <algorithm>
 #include <utility>
 
+#include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 
 namespace viz {
 namespace {
+
+// The minimum number of frames for which a frame interval preference should
+// persist before we toggle to it. This is only applied when lowering the frame
+// rate. If the new preference is higher than the current setting, it is applied
+// immediately.
+constexpr size_t kMinNumOfFramesToToggleInterval = 6;
 
 bool AreAlmostEqual(base::TimeDelta a, base::TimeDelta b) {
   if (a.is_min() || b.is_min() || a.is_max() || b.is_max())
@@ -36,10 +43,9 @@ FrameRateDecider::ScopedAggregate::~ScopedAggregate() {
 FrameRateDecider::FrameRateDecider(SurfaceManager* surface_manager,
                                    Client* client,
                                    bool hw_support_for_multiple_refresh_rates,
-                                   bool supports_set_frame_rate,
-                                   size_t num_of_frames_to_toggle_interval)
+                                   bool supports_set_frame_rate)
     : supported_intervals_{BeginFrameArgs::DefaultInterval()},
-      min_num_of_frames_to_toggle_interval_(num_of_frames_to_toggle_interval),
+      min_num_of_frames_to_toggle_interval_(kMinNumOfFramesToToggleInterval),
       surface_manager_(surface_manager),
       client_(client),
       hw_support_for_multiple_refresh_rates_(
@@ -164,7 +170,7 @@ void FrameRateDecider::UpdatePreferredFrameIntervalIfNeeded() {
   // animating. This ensures that, for instance, if we're currently displaying
   // a video while the rest of the page is static, we choose the frame interval
   // optimal for the video.
-  base::Optional<base::TimeDelta> min_frame_sink_interval;
+  absl::optional<base::TimeDelta> min_frame_sink_interval;
   bool all_frame_sinks_have_same_interval = true;
   for (const auto& frame_sink_id : frame_sinks_updated_in_previous_frame_) {
     auto interval =

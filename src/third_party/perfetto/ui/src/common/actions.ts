@@ -14,12 +14,20 @@
 
 import {Draft} from 'immer';
 
-import {assertExists} from '../base/logging';
+import {assertExists, assertTrue} from '../base/logging';
 import {randomColor} from '../common/colorizer';
-import {ConvertTrace, ConvertTraceToPprof} from '../controller/trace_converter';
+import {
+  ConvertTrace,
+  ConvertTraceAndDownload,
+  ConvertTraceToPprof
+} from '../controller/trace_converter';
+import {ACTUAL_FRAMES_SLICE_TRACK_KIND} from '../tracks/actual_frames/common';
 import {ASYNC_SLICE_TRACK_KIND} from '../tracks/async_slices/common';
 import {COUNTER_TRACK_KIND} from '../tracks/counter/common';
 import {DEBUG_SLICE_TRACK_KIND} from '../tracks/debug_slices/common';
+import {
+  EXPECTED_FRAMES_SLICE_TRACK_KIND
+} from '../tracks/expected_frames/common';
 import {HEAP_PROFILE_TRACK_KIND} from '../tracks/heap_profile/common';
 import {
   PROCESS_SCHEDULING_TRACK_KIND
@@ -44,24 +52,36 @@ import {
   Status,
   TraceSource,
   TraceTime,
+  TrackKindPriority,
   TrackState,
   VisibleState,
 } from './state';
 
 type StateDraft = Draft<State>;
 
+const highPriorityTrackOrder = [
+  PROCESS_SCHEDULING_TRACK_KIND,
+  PROCESS_SUMMARY_TRACK,
+  EXPECTED_FRAMES_SLICE_TRACK_KIND,
+  ACTUAL_FRAMES_SLICE_TRACK_KIND
+];
+
+const lowPriorityTrackOrder =
+    [HEAP_PROFILE_TRACK_KIND, COUNTER_TRACK_KIND, ASYNC_SLICE_TRACK_KIND];
+
 export interface AddTrackArgs {
   id?: string;
   engineId: string;
   kind: string;
   name: string;
-  isMainThread?: boolean;
+  trackKindPriority: TrackKindPriority;
   trackGroup?: string;
   config: {};
 }
 
 export interface PostedTrace {
   title: string;
+  fileName?: string;
   url?: string;
   buffer: ArrayBuffer;
 }
@@ -87,6 +107,20 @@ function clearTraceState(state: StateDraft) {
   state.availableAdbDevices = availableAdbDevices;
   state.chromeCategories = chromeCategories;
   state.newEngineMode = newEngineMode;
+}
+
+function rank(ts: TrackState): number[] {
+  const hpRank = rankIndex(ts.kind, highPriorityTrackOrder);
+  const lpRank = rankIndex(ts.kind, lowPriorityTrackOrder);
+  // TODO(hjd): Create sortBy object on TrackState to avoid this cast.
+  const tid = (ts.config as {tid?: number}).tid || 0;
+  return [hpRank, ts.trackKindPriority.valueOf(), lpRank, tid];
+}
+
+function rankIndex<T>(element: T, array: T[]): number {
+  const index = array.indexOf(element);
+  if (index === -1) return array.length;
+  return index;
 }
 
 export const StateActions = {
@@ -147,7 +181,15 @@ export const StateActions = {
   // TODO(b/141359485): Actions should only modify state.
   convertTraceToJson(
       _: StateDraft, args: {file: Blob, truncate?: 'start'|'end'}): void {
-    ConvertTrace(args.file, args.truncate);
+    ConvertTrace(args.file, 'json', args.truncate);
+  },
+
+  convertTraceToSystraceAndDownload(_: StateDraft, args: {file: Blob}): void {
+    ConvertTraceAndDownload(args.file, 'systrace');
+  },
+
+  convertTraceToJsonAndDownload(_: StateDraft, args: {file: Blob}): void {
+    ConvertTraceAndDownload(args.file, 'json');
   },
 
   convertTraceToPprof(
@@ -171,7 +213,7 @@ export const StateActions = {
 
   addTrack(state: StateDraft, args: {
     id?: string; engineId: string; kind: string; name: string;
-    trackGroup?: string; config: {}; isMainThread: boolean;
+    trackGroup?: string; config: {}; trackKindPriority: TrackKindPriority;
   }): void {
     const id = args.id !== undefined ? args.id : `${state.nextId++}`;
     state.tracks[id] = {
@@ -179,7 +221,7 @@ export const StateActions = {
       engineId: args.engineId,
       kind: args.kind,
       name: args.name,
-      isMainThread: args.isMainThread,
+      trackKindPriority: args.trackKindPriority,
       trackGroup: args.trackGroup,
       config: args.config,
     };
@@ -217,7 +259,7 @@ export const StateActions = {
           engineId: args.engineId,
           kind: DEBUG_SLICE_TRACK_KIND,
           name: args.name,
-          isMainThread: false,
+          trackKindPriority: TrackKindPriority.ORDINARY,
           trackGroup: SCROLLING_TRACK_GROUP,
           config: {
             maxDepth: 1,
@@ -237,39 +279,20 @@ export const StateActions = {
   },
 
   sortThreadTracks(state: StateDraft, _: {}): void {
-    const threadTrackOrder = [
-      PROCESS_SCHEDULING_TRACK_KIND,
-      PROCESS_SUMMARY_TRACK,
-      HEAP_PROFILE_TRACK_KIND,
-      COUNTER_TRACK_KIND,
-      ASYNC_SLICE_TRACK_KIND
-    ];
+    // Use a numeric collator so threads are sorted as T1, T2, ..., T10, T11,
+    // rather than T1, T10, T11, ..., T2, T20, T21 .
+    const coll = new Intl.Collator([], {sensitivity: 'base', numeric: true});
     for (const group of Object.values(state.trackGroups)) {
       group.tracks.sort((a: string, b: string) => {
-        const aKind = threadTrackOrder.indexOf(state.tracks[a].kind);
-        const bKind = threadTrackOrder.indexOf(state.tracks[b].kind);
+        const aRank = rank(state.tracks[a]);
+        const bRank = rank(state.tracks[b]);
+        for (let i = 0; i < aRank.length; i++) {
+          if (aRank[i] !== bRank[i]) return aRank[i] - bRank[i];
+        }
+
         const aName = state.tracks[a].name.toLocaleLowerCase();
         const bName = state.tracks[b].name.toLocaleLowerCase();
-        if (aKind === bKind) {
-          if (state.tracks[a].isMainThread && state.tracks[b].isMainThread) {
-            return 0;
-          } else if (state.tracks[a].isMainThread) {
-            return -1;
-          } else if (state.tracks[b].isMainThread) {
-            return 1;
-          }
-          if (aName > bName) {
-            return 1;
-          } else if (aName === bName) {
-            return 0;
-          } else {
-            return -1;
-          }
-        } else {
-          if (aKind === -1) return 1;
-          if (bKind === -1) return -1;
-          return aKind - bKind;
-        }
+        return coll.compare(aName, bName);
       });
     }
   },
@@ -511,6 +534,7 @@ export const StateActions = {
 
   markArea(state: StateDraft, args: {area: Area, persistent: boolean}): void {
     const areaId = `${state.nextAreaId++}`;
+    assertTrue(args.area.endSec >= args.area.startSec);
     state.areas[areaId] = {
       id: areaId,
       startSec: args.area.startSec,
@@ -731,6 +755,7 @@ export const StateActions = {
 
   selectArea(state: StateDraft, args: {area: Area}): void {
     const areaId = `${state.nextAreaId++}`;
+    assertTrue(args.area.endSec >= args.area.startSec);
     state.areas[areaId] = {
       id: areaId,
       startSec: args.area.startSec,
@@ -741,6 +766,7 @@ export const StateActions = {
   },
 
   editArea(state: StateDraft, args: {area: Area, areaId: string}): void {
+    assertTrue(args.area.endSec >= args.area.startSec);
     state.areas[args.areaId] = {
       id: args.areaId,
       startSec: args.area.startSec,

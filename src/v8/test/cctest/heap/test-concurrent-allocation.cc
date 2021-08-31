@@ -20,6 +20,7 @@
 #include "src/heap/concurrent-allocator-inl.h"
 #include "src/heap/heap.h"
 #include "src/heap/local-heap-inl.h"
+#include "src/heap/parked-scope.h"
 #include "src/heap/safepoint.h"
 #include "src/objects/heap-number.h"
 #include "src/objects/heap-object.h"
@@ -64,7 +65,8 @@ void AllocateSomeObjects(LocalHeap* local_heap) {
 
 class ConcurrentAllocationThread final : public v8::base::Thread {
  public:
-  explicit ConcurrentAllocationThread(Heap* heap, std::atomic<int>* pending)
+  explicit ConcurrentAllocationThread(Heap* heap,
+                                      std::atomic<int>* pending = nullptr)
       : v8::base::Thread(base::Thread::Options("ThreadWithLocalHeap")),
         heap_(heap),
         pending_(pending) {}
@@ -73,7 +75,7 @@ class ConcurrentAllocationThread final : public v8::base::Thread {
     LocalHeap local_heap(heap_, ThreadKind::kBackground);
     UnparkedScope unparked_scope(&local_heap);
     AllocateSomeObjects(&local_heap);
-    pending_->fetch_sub(1);
+    if (pending_) pending_->fetch_sub(1);
   }
 
   Heap* heap_;
@@ -82,8 +84,6 @@ class ConcurrentAllocationThread final : public v8::base::Thread {
 
 UNINITIALIZED_TEST(ConcurrentAllocationInOldSpace) {
   FLAG_max_old_space_size = 32;
-  FLAG_concurrent_allocation = true;
-  FLAG_local_heaps = true;
   FLAG_stress_concurrent_allocation = false;
 
   v8::Isolate::CreateParams create_params;
@@ -117,8 +117,6 @@ UNINITIALIZED_TEST(ConcurrentAllocationInOldSpace) {
 
 UNINITIALIZED_TEST(ConcurrentAllocationInOldSpaceFromMainThread) {
   FLAG_max_old_space_size = 4;
-  FLAG_concurrent_allocation = true;
-  FLAG_local_heaps = true;
   FLAG_stress_concurrent_allocation = false;
 
   v8::Isolate::CreateParams create_params;
@@ -126,12 +124,110 @@ UNINITIALIZED_TEST(ConcurrentAllocationInOldSpaceFromMainThread) {
   v8::Isolate* isolate = v8::Isolate::New(create_params);
   Isolate* i_isolate = reinterpret_cast<Isolate*>(isolate);
 
+  AllocateSomeObjects(i_isolate->main_thread_local_heap());
+
+  isolate->Dispose();
+}
+
+UNINITIALIZED_TEST(ConcurrentAllocationWhileMainThreadIsParked) {
+  FLAG_max_old_space_size = 4;
+  FLAG_stress_concurrent_allocation = false;
+
+  v8::Isolate::CreateParams create_params;
+  create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
+  v8::Isolate* isolate = v8::Isolate::New(create_params);
+  Isolate* i_isolate = reinterpret_cast<Isolate*>(isolate);
+
+  std::vector<std::unique_ptr<ConcurrentAllocationThread>> threads;
+  const int kThreads = 4;
+
   {
-    LocalHeap local_heap(i_isolate->heap(), ThreadKind::kMain);
-    UnparkedScope unparked_scope(&local_heap);
-    AllocateSomeObjects(&local_heap);
+    ParkedScope scope(i_isolate->main_thread_local_isolate());
+
+    for (int i = 0; i < kThreads; i++) {
+      auto thread =
+          std::make_unique<ConcurrentAllocationThread>(i_isolate->heap());
+      CHECK(thread->Start());
+      threads.push_back(std::move(thread));
+    }
+
+    for (auto& thread : threads) {
+      thread->Join();
+    }
   }
 
+  isolate->Dispose();
+}
+
+UNINITIALIZED_TEST(ConcurrentAllocationWhileMainThreadParksAndUnparks) {
+  FLAG_max_old_space_size = 4;
+  FLAG_stress_concurrent_allocation = false;
+  FLAG_incremental_marking = false;
+
+  v8::Isolate::CreateParams create_params;
+  create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
+  v8::Isolate* isolate = v8::Isolate::New(create_params);
+  Isolate* i_isolate = reinterpret_cast<Isolate*>(isolate);
+
+  std::vector<std::unique_ptr<ConcurrentAllocationThread>> threads;
+  const int kThreads = 4;
+
+  for (int i = 0; i < kThreads; i++) {
+    auto thread =
+        std::make_unique<ConcurrentAllocationThread>(i_isolate->heap());
+    CHECK(thread->Start());
+    threads.push_back(std::move(thread));
+  }
+
+  for (int i = 0; i < 300'000; i++) {
+    ParkedScope scope(i_isolate->main_thread_local_isolate());
+  }
+
+  {
+    ParkedScope scope(i_isolate->main_thread_local_isolate());
+
+    for (auto& thread : threads) {
+      thread->Join();
+    }
+  }
+
+  isolate->Dispose();
+}
+
+UNINITIALIZED_TEST(ConcurrentAllocationWhileMainThreadRunsWithSafepoints) {
+  FLAG_max_old_space_size = 4;
+  FLAG_stress_concurrent_allocation = false;
+  FLAG_incremental_marking = false;
+
+  v8::Isolate::CreateParams create_params;
+  create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
+  v8::Isolate* isolate = v8::Isolate::New(create_params);
+  Isolate* i_isolate = reinterpret_cast<Isolate*>(isolate);
+
+  std::vector<std::unique_ptr<ConcurrentAllocationThread>> threads;
+  const int kThreads = 4;
+
+  for (int i = 0; i < kThreads; i++) {
+    auto thread =
+        std::make_unique<ConcurrentAllocationThread>(i_isolate->heap());
+    CHECK(thread->Start());
+    threads.push_back(std::move(thread));
+  }
+
+  // Some of the following Safepoint() invocations are supposed to perform a GC.
+  for (int i = 0; i < 1'000'000; i++) {
+    i_isolate->main_thread_local_heap()->Safepoint();
+  }
+
+  {
+    ParkedScope scope(i_isolate->main_thread_local_isolate());
+
+    for (auto& thread : threads) {
+      thread->Join();
+    }
+  }
+
+  i_isolate->main_thread_local_heap()->Safepoint();
   isolate->Dispose();
 }
 
@@ -153,7 +249,7 @@ class LargeObjectConcurrentAllocationThread final : public v8::base::Thread {
           kLargeObjectSize, AllocationType::kOld, AllocationOrigin::kRuntime,
           AllocationAlignment::kWordAligned);
       if (result.IsRetry()) {
-        local_heap.PerformCollection();
+        local_heap.TryPerformCollection();
       } else {
         Address address = result.ToAddress();
         CreateFixedArray(heap_, address, kLargeObjectSize);
@@ -170,8 +266,6 @@ class LargeObjectConcurrentAllocationThread final : public v8::base::Thread {
 
 UNINITIALIZED_TEST(ConcurrentAllocationInLargeSpace) {
   FLAG_max_old_space_size = 32;
-  FLAG_concurrent_allocation = true;
-  FLAG_local_heaps = true;
   FLAG_stress_concurrent_allocation = false;
 
   v8::Isolate::CreateParams create_params;
@@ -246,9 +340,7 @@ class ConcurrentBlackAllocationThread final : public v8::base::Thread {
 };
 
 UNINITIALIZED_TEST(ConcurrentBlackAllocation) {
-  FLAG_concurrent_allocation = true;
-  FLAG_local_heaps = true;
-
+  if (!FLAG_incremental_marking) return;
   v8::Isolate::CreateParams create_params;
   create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
   v8::Isolate* isolate = v8::Isolate::New(create_params);
@@ -308,13 +400,12 @@ class ConcurrentWriteBarrierThread final : public v8::base::Thread {
 };
 
 UNINITIALIZED_TEST(ConcurrentWriteBarrier) {
+  if (!FLAG_incremental_marking) return;
   if (!FLAG_concurrent_marking) {
     // The test requires concurrent marking barrier.
     return;
   }
   ManualGCScope manual_gc_scope;
-  FLAG_concurrent_allocation = true;
-  FLAG_local_heaps = true;
 
   v8::Isolate::CreateParams create_params;
   create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
@@ -374,14 +465,13 @@ class ConcurrentRecordRelocSlotThread final : public v8::base::Thread {
 };
 
 UNINITIALIZED_TEST(ConcurrentRecordRelocSlot) {
+  if (!FLAG_incremental_marking) return;
   if (!FLAG_concurrent_marking) {
     // The test requires concurrent marking barrier.
     return;
   }
   FLAG_manual_evacuation_candidates_selection = true;
   ManualGCScope manual_gc_scope;
-  FLAG_concurrent_allocation = true;
-  FLAG_local_heaps = true;
 
   v8::Isolate::CreateParams create_params;
   create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
@@ -396,7 +486,15 @@ UNINITIALIZED_TEST(ConcurrentRecordRelocSlot) {
     i::byte buffer[i::Assembler::kDefaultBufferSize];
     MacroAssembler masm(i_isolate, v8::internal::CodeObjectRequired::kYes,
                         ExternalAssemblerBuffer(buffer, sizeof(buffer)));
+#if V8_TARGET_ARCH_ARM64
+    // Arm64 requires stack alignment.
+    UseScratchRegisterScope temps(&masm);
+    Register tmp = temps.AcquireX();
+    masm.Mov(tmp, Operand(ReadOnlyRoots(heap).undefined_value_handle()));
+    masm.Push(tmp, padreg);
+#else
     masm.Push(ReadOnlyRoots(heap).undefined_value_handle());
+#endif
     CodeDesc desc;
     masm.GetCode(i_isolate, &desc);
     Handle<Code> code_handle =

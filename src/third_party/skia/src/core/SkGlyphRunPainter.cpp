@@ -13,10 +13,10 @@
 #include "src/gpu/GrColorInfo.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/ops/GrAtlasTextOp.h"
-#include "src/gpu/text/GrSDFTOptions.h"
+#include "src/gpu/text/GrSDFTControl.h"
 #include "src/gpu/text/GrTextBlobCache.h"
 #endif
 
@@ -48,7 +48,7 @@ SkGlyphRunListPainter::SkGlyphRunListPainter(const SkSurfaceProps& props,
         ,  fColorType{colorType}, fScalerContextFlags{flags}
         ,  fStrikeCache{strikeCache} {}
 
-// TODO: unify with code in GrSDFTOptions.cpp
+// TODO: unify with code in GrSDFTControl.cpp
 static SkScalerContextFlags compute_scaler_context_flags(const SkColorSpace* cs) {
     // If we're doing linear blending, then we can disable the gamma hacks.
     // Otherwise, leave them on. In either case, we still want the contrast boost:
@@ -73,13 +73,13 @@ SkGlyphRunListPainter::SkGlyphRunListPainter(const SkSurfaceProps& props, const 
                                 compute_scaler_context_flags(csi.colorSpace()),
                                 SkStrikeCache::GlobalStrikeCache()) {}
 
-SkGlyphRunListPainter::SkGlyphRunListPainter(const GrRenderTargetContext& rtc)
+SkGlyphRunListPainter::SkGlyphRunListPainter(const GrSurfaceDrawContext& rtc)
         : SkGlyphRunListPainter{rtc.surfaceProps(), rtc.colorInfo()} {}
 
 #endif
 
 void SkGlyphRunListPainter::drawForBitmapDevice(
-        const SkGlyphRunList& glyphRunList, const SkMatrix& deviceMatrix,
+        const SkGlyphRunList& glyphRunList, const SkPaint& paint, const SkMatrix& deviceMatrix,
         const BitmapDevicePainter* bitmapDevice) {
     ScopedBuffers _ = this->ensureBuffers(glyphRunList);
 
@@ -87,10 +87,9 @@ void SkGlyphRunListPainter::drawForBitmapDevice(
     //  gpu build. Remove when SkGlyphRunListPainter is split into GPU and CPU version.
     (void)fStrikeCache;
 
-    const SkPaint& runPaint = glyphRunList.paint();
     // The bitmap blitters can only draw lcd text to a N32 bitmap in srcOver. Otherwise,
     // convert the lcd text into A8 text. The props communicates this to the scaler.
-    auto& props = (kN32_SkColorType == fColorType && runPaint.isSrcOver())
+    auto& props = (kN32_SkColorType == fColorType && paint.isSrcOver())
                   ? fDeviceProps
                   : fBitmapFallbackProps;
 
@@ -100,10 +99,10 @@ void SkGlyphRunListPainter::drawForBitmapDevice(
 
         fRejects.setSource(glyphRun.source());
 
-        if (SkStrikeSpec::ShouldDrawAsPath(runPaint, runFont, deviceMatrix)) {
+        if (SkStrikeSpec::ShouldDrawAsPath(paint, runFont, deviceMatrix)) {
 
             SkStrikeSpec strikeSpec = SkStrikeSpec::MakePath(
-                    runFont, runPaint, props, fScalerContextFlags);
+                    runFont, paint, props, fScalerContextFlags);
 
             auto strike = strikeSpec.findOrCreateStrike();
 
@@ -113,22 +112,107 @@ void SkGlyphRunListPainter::drawForBitmapDevice(
 
             // The paint we draw paths with must have the same anti-aliasing state as the runFont
             // allowing the paths to have the same edging as the glyph masks.
-            SkPaint pathPaint = runPaint;
+            SkPaint pathPaint = paint;
             pathPaint.setAntiAlias(runFont.hasSomeAntiAliasing());
 
             bitmapDevice->paintPaths(
                     &fDrawable, strikeSpec.strikeToSourceRatio(), drawOrigin, pathPaint);
         }
-        if (!fRejects.source().empty()) {
+        if (!fRejects.source().empty() && !deviceMatrix.hasPerspective()) {
             SkStrikeSpec strikeSpec = SkStrikeSpec::MakeMask(
-                    runFont, runPaint, props, fScalerContextFlags, deviceMatrix);
+                    runFont, paint, props, fScalerContextFlags, deviceMatrix);
 
             auto strike = strikeSpec.findOrCreateStrike();
 
             fDrawable.startBitmapDevice(
                     fRejects.source(), drawOrigin, deviceMatrix, strike->roundingSpec());
             strike->prepareForDrawingMasksCPU(&fDrawable);
-            bitmapDevice->paintMasks(&fDrawable, runPaint);
+            fRejects.flipRejectsToSource();
+            bitmapDevice->paintMasks(&fDrawable, paint);
+        }
+        if (!fRejects.source().empty()) {
+            SkMatrix runMatrix = deviceMatrix;
+            runMatrix.preTranslate(drawOrigin.x(), drawOrigin.y());
+            std::vector<SkPoint> sourcePositions;
+
+            // Create a strike is source space to calculate scale information.
+            SkStrikeSpec scaleStrikeSpec = SkStrikeSpec::MakeMask(
+                    runFont, paint, props, fScalerContextFlags, SkMatrix::I());
+            SkBulkGlyphMetrics metrics{scaleStrikeSpec};
+
+            auto glyphIDs = fRejects.source().get<0>();
+            auto positions = fRejects.source().get<1>();
+            SkSpan<const SkGlyph*> glyphs = metrics.glyphs(glyphIDs);
+            SkScalar maxScale = SK_ScalarMin;
+
+            // Calculate the scale that makes the longest edge 1:1 with its side in the cache.
+            for (auto [glyph, pos] : SkMakeZip(glyphs, positions)) {
+                SkPoint corners[4];
+                SkPoint srcPos = pos + drawOrigin;
+                // Store off the positions in device space to position the glyphs during drawing.
+                sourcePositions.push_back(srcPos);
+                SkRect rect = glyph->rect();
+                rect.makeOffset(srcPos);
+                runMatrix.mapRectToQuad(corners, rect);
+                // left top -> right top
+                SkScalar scale = (corners[1] - corners[0]).length() / rect.width();
+                maxScale = std::max(maxScale, scale);
+                // right top -> right bottom
+                scale = (corners[2] - corners[1]).length() / rect.height();
+                maxScale = std::max(maxScale, scale);
+                // right bottom -> left bottom
+                scale = (corners[3] - corners[2]).length() / rect.width();
+                maxScale = std::max(maxScale, scale);
+                // left bottom -> left top
+                scale = (corners[0] - corners[3]).length() / rect.height();
+                maxScale = std::max(maxScale, scale);
+            }
+
+            if (maxScale * runFont.getSize() > 256) {
+                maxScale = 256.0f / runFont.getSize();
+            }
+
+            SkMatrix cacheScale = SkMatrix::Scale(maxScale, maxScale);
+            SkStrikeSpec strikeSpec = SkStrikeSpec::MakeMask(
+                    runFont, paint, props, fScalerContextFlags, cacheScale);
+
+            auto strike = strikeSpec.findOrCreateStrike();
+
+            // Figure out all the positions and packed glyphIDs based on the device matrix.
+            fDrawable.startBitmapDevice(
+                    fRejects.source(), drawOrigin, deviceMatrix, strike->roundingSpec());
+
+            strike->prepareForDrawingMasksCPU(&fDrawable);
+            auto variants = fDrawable.drawable().get<0>();
+            for (auto [variant, srcPos] : SkMakeZip(variants, sourcePositions)) {
+                SkGlyph* glyph = variant.glyph();
+                SkMask mask = glyph->mask();
+                // TODO: is this needed will A8 and BW just work?
+                if (mask.fFormat != SkMask::kARGB32_Format) {
+                    continue;
+                }
+                SkBitmap bm;
+                bm.installPixels(SkImageInfo::MakeN32Premul(mask.fBounds.size()),
+                                 mask.fImage,
+                                 mask.fRowBytes);
+
+                // Since the glyph in the cache is scaled by maxScale, its top left vector is too
+                // long. Reduce it to find proper positions on the device.
+                SkPoint realPos = srcPos
+                        + SkPoint::Make(mask.fBounds.left(), mask.fBounds.top()) * (1.0f/maxScale);
+
+                // Calculate the preConcat matrix for drawBitmap to get the rectangle from the
+                // glyph cache (which is multiplied by maxScale) to land in the right place.
+                SkMatrix translate = SkMatrix::Translate(realPos);
+                translate.preScale(1.0f/maxScale, 1.0f/maxScale);
+
+                // Draw the bitmap using the rect from the scaled cache, and not the source
+                // rectangle for the glyph.
+                bitmapDevice->drawBitmap(
+                        bm, translate, nullptr, SkSamplingOptions{SkFilterMode::kLinear},
+                        paint);
+            }
+            fRejects.flipRejectsToSource();
         }
 
         // TODO: have the mask stage above reject the glyphs that are too big, and handle the
@@ -136,119 +220,152 @@ void SkGlyphRunListPainter::drawForBitmapDevice(
     }
 }
 
+// Use the following in your args.gn to dump telemetry for diagnosing chrome Renderer/GPU
+// differences.
+// extra_cflags = ["-D", "SK_TRACE_GLYPH_RUN_PROCESS"]
+
 #if SK_SUPPORT_GPU
-void SkGlyphRunListPainter::processGlyphRunList(const SkGlyphRunList& glyphRunList,
-                                                const SkMatrix& drawMatrix,
-                                                const SkSurfaceProps& props,
-                                                bool contextSupportsDistanceFieldText,
-                                                const GrSDFTOptions& options,
-                                                SkGlyphRunPainterInterface* process) {
-
-    SkPoint origin = glyphRunList.origin();
-    const SkPaint& runPaint = glyphRunList.paint();
-    ScopedBuffers _ = this->ensureBuffers(glyphRunList);
-
-    for (const auto& glyphRun : glyphRunList) {
-        fRejects.setSource(glyphRun.source());
-        const SkFont& runFont = glyphRun.font();
-
-
-        bool useSDFT = options.canDrawAsDistanceFields(
-                runPaint, runFont, drawMatrix, props, contextSupportsDistanceFieldText);
-
-        bool usePaths =
-                useSDFT ? false : SkStrikeSpec::ShouldDrawAsPath(runPaint, runFont, drawMatrix);
-
-        if (useSDFT) {
-            // Process SDFT - This should be the .009% case.
-            SkScalar minScale, maxScale;
-            SkStrikeSpec strikeSpec;
-            std::tie(strikeSpec, minScale, maxScale) =
-                    SkStrikeSpec::MakeSDFT(runFont, runPaint, fDeviceProps, drawMatrix, options);
-
-            if (!strikeSpec.isEmpty()) {
-                SkScopedStrikeForGPU strike = strikeSpec.findOrCreateScopedStrike(fStrikeCache);
-
-                fDrawable.startSource(fRejects.source());
-                strike->prepareForSDFTDrawing(&fDrawable, &fRejects);
-                fRejects.flipRejectsToSource();
-
-                if (process && !fDrawable.drawableIsEmpty()) {
-                    // processSourceSDFT must be called even if there are no glyphs to make sure
-                    // runs are set correctly.
-                    process->processSourceSDFT(
-                            fDrawable.drawable(), strikeSpec, runFont, minScale, maxScale);
-                }
-            }
+void SkGlyphRunListPainter::processGlyphRun(const SkGlyphRun& glyphRun,
+                                            const SkMatrix& drawMatrix,
+                                            const SkPaint& runPaint,
+                                            const GrSDFTControl& control,
+                                            SkGlyphRunPainterInterface* process,
+                                            const char* tag) {
+    #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
+        SkString msg;
+        msg.appendf("\nStart glyph run processing");
+        if (tag != nullptr) {
+            msg.appendf(" for %s ", tag);
         }
+        msg.appendf("\n");
+    #endif
+    ScopedBuffers _ = this->ensureBuffers(glyphRun);
+    fRejects.setSource(glyphRun.source());
+    const SkFont& runFont = glyphRun.font();
 
-        if (!usePaths && !fRejects.source().empty()) {
-            // Process masks including ARGB - this should be the 99.99% case.
+    GrSDFTControl::DrawingType drawingType = control.drawingType(runFont, runPaint, drawMatrix);
 
-            SkStrikeSpec strikeSpec = SkStrikeSpec::MakeMask(
-                    runFont, runPaint, fDeviceProps, fScalerContextFlags, drawMatrix);
+    if (drawingType == GrSDFTControl::kSDFT) {
+        // Process SDFT - This should be the .009% case.
+        const auto& [strikeSpec, minScale, maxScale] =
+                SkStrikeSpec::MakeSDFT(runFont, runPaint, fDeviceProps, drawMatrix, control);
 
+        #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
+            msg.appendf("  SDFT case:\n%s", strikeSpec.dump().c_str());
+        #endif
+
+        if (!strikeSpec.isEmpty()) {
             SkScopedStrikeForGPU strike = strikeSpec.findOrCreateScopedStrike(fStrikeCache);
 
-            SkPoint residual = fDrawable.startGPUDevice(
-                    fRejects.source(), origin, drawMatrix, strike->roundingSpec());
-            strike->prepareForMaskDrawing(&fDrawable, &fRejects);
+            fDrawable.startSource(fRejects.source());
+            #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
+                msg.appendf("    glyphs:(x,y):\n      %s\n", fDrawable.dumpInput().c_str());
+            #endif
+            strike->prepareForSDFTDrawing(&fDrawable, &fRejects);
             fRejects.flipRejectsToSource();
 
             if (process && !fDrawable.drawableIsEmpty()) {
-                // processDeviceMasks must be called even if there are no glyphs to make sure runs
-                // are set correctly.
-                process->processDeviceMasks(fDrawable.drawable(), strikeSpec, residual);
+                // processSourceSDFT must be called even if there are no glyphs to make sure
+                // runs are set correctly.
+                process->processSourceSDFT(
+                        fDrawable.drawable(), strikeSpec, runFont, minScale, maxScale);
             }
         }
+    }
 
-        // Glyphs are generated in different scales relative to the source space. Masks are drawn
-        // in device space, and SDFT and Paths are draw in a fixed constant space. The
-        // maxDimensionInSourceSpace is used to calculate the factor from strike space to source
-        // space.
-        SkScalar maxDimensionInSourceSpace = 0.0;
-        if (!fRejects.source().empty()) {
-            // Path case - handle big things without color and that have a path.
-            SkStrikeSpec strikeSpec = SkStrikeSpec::MakePath(
-                    runFont, runPaint, fDeviceProps, fScalerContextFlags);
+    if (drawingType != GrSDFTControl::kPath && !fRejects.source().empty()) {
+        // Process masks including ARGB - this should be the 99.99% case.
 
-            if (!strikeSpec.isEmpty()) {
-                SkScopedStrikeForGPU strike = strikeSpec.findOrCreateScopedStrike(fStrikeCache);
+        SkStrikeSpec strikeSpec = SkStrikeSpec::MakeMask(
+                runFont, runPaint, fDeviceProps, fScalerContextFlags, drawMatrix);
 
-                fDrawable.startSource(fRejects.source());
-                strike->prepareForPathDrawing(&fDrawable, &fRejects);
-                fRejects.flipRejectsToSource();
-                maxDimensionInSourceSpace =
-                        fRejects.rejectedMaxDimension() * strikeSpec.strikeToSourceRatio();
+        #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
+            msg.appendf("  Mask case:\n%s", strikeSpec.dump().c_str());
+        #endif
 
-                if (process && !fDrawable.drawableIsEmpty()) {
-                    // processSourcePaths must be called even if there are no glyphs to make sure
-                    // runs are set correctly.
-                    process->processSourcePaths(fDrawable.drawable(), runFont, strikeSpec);
-                }
+        SkScopedStrikeForGPU strike = strikeSpec.findOrCreateScopedStrike(fStrikeCache);
+
+        fDrawable.startGPUDevice(fRejects.source(), drawMatrix, strike->roundingSpec());
+        #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
+            msg.appendf("    glyphs:(x,y):\n      %s\n", fDrawable.dumpInput().c_str());
+        #endif
+        strike->prepareForMaskDrawing(&fDrawable, &fRejects);
+        fRejects.flipRejectsToSource();
+
+        if (process && !fDrawable.drawableIsEmpty()) {
+            // processDeviceMasks must be called even if there are no glyphs to make sure runs
+            // are set correctly.
+            process->processDeviceMasks(fDrawable.drawable(), strikeSpec);
+        }
+    }
+
+    // Glyphs are generated in different scales relative to the source space. Masks are drawn
+    // in device space, and SDFT and Paths are draw in a fixed constant space. The
+    // maxDimensionInSourceSpace is used to calculate the factor from strike space to source
+    // space.
+    SkScalar maxDimensionInSourceSpace = 0.0;
+    if (!fRejects.source().empty()) {
+        // Path case - handle big things without color and that have a path.
+        SkStrikeSpec strikeSpec = SkStrikeSpec::MakePath(
+                runFont, runPaint, fDeviceProps, fScalerContextFlags);
+
+        #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
+            msg.appendf("  Path case:\n%s", strikeSpec.dump().c_str());
+        #endif
+
+        if (!strikeSpec.isEmpty()) {
+            SkScopedStrikeForGPU strike = strikeSpec.findOrCreateScopedStrike(fStrikeCache);
+
+            fDrawable.startSource(fRejects.source());
+            #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
+                msg.appendf("    glyphs:(x,y):\n      %s\n", fDrawable.dumpInput().c_str());
+            #endif
+            strike->prepareForPathDrawing(&fDrawable, &fRejects);
+            fRejects.flipRejectsToSource();
+            maxDimensionInSourceSpace =
+                    fRejects.rejectedMaxDimension() * strikeSpec.strikeToSourceRatio();
+
+            if (process && !fDrawable.drawableIsEmpty()) {
+                // processSourcePaths must be called even if there are no glyphs to make sure
+                // runs are set correctly.
+                process->processSourcePaths(fDrawable.drawable(), runFont, strikeSpec);
             }
         }
+    }
 
-        if (!fRejects.source().empty() && maxDimensionInSourceSpace != 0) {
-            // Draw of last resort. Scale the bitmap to the screen.
-            SkStrikeSpec strikeSpec = SkStrikeSpec::MakeSourceFallback(
-                    runFont, runPaint, fDeviceProps,
-                    fScalerContextFlags, maxDimensionInSourceSpace);
+    if (!fRejects.source().empty() && maxDimensionInSourceSpace != 0) {
+        // Draw of last resort. Scale the bitmap to the screen.
+        SkStrikeSpec strikeSpec = SkStrikeSpec::MakeSourceFallback(
+                runFont, runPaint, fDeviceProps,
+                fScalerContextFlags, maxDimensionInSourceSpace);
 
-            if (!strikeSpec.isEmpty()) {
-                SkScopedStrikeForGPU strike = strikeSpec.findOrCreateScopedStrike(fStrikeCache);
+        #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
+            msg.appendf("Transformed case:\n%s", strikeSpec.dump().c_str());
+        #endif
 
-                fDrawable.startSource(fRejects.source());
-                strike->prepareForMaskDrawing(&fDrawable, &fRejects);
-                fRejects.flipRejectsToSource();
-                SkASSERT(fRejects.source().empty());
+        if (!strikeSpec.isEmpty()) {
+            SkScopedStrikeForGPU strike = strikeSpec.findOrCreateScopedStrike(fStrikeCache);
 
-                if (process && !fDrawable.drawableIsEmpty()) {
-                    process->processSourceMasks(fDrawable.drawable(), strikeSpec);
-                }
+            fDrawable.startSource(fRejects.source());
+            #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
+                msg.appendf("glyphs:(x,y):\n      %s\n", fDrawable.dumpInput().c_str());
+            #endif
+            strike->prepareForMaskDrawing(&fDrawable, &fRejects);
+            fRejects.flipRejectsToSource();
+            SkASSERT(fRejects.source().empty());
+
+            if (process && !fDrawable.drawableIsEmpty()) {
+                process->processSourceMasks(fDrawable.drawable(), strikeSpec);
             }
         }
-    }  // For all glyph runs
+    }
+    #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
+        msg.appendf("End glyph run processing");
+        if (tag != nullptr) {
+            msg.appendf(" for %s ", tag);
+        }
+        SkDebugf("%s\n", msg.c_str());
+    #endif
 }
 #endif  // SK_SUPPORT_GPU
 
@@ -258,6 +375,10 @@ auto SkGlyphRunListPainter::ensureBuffers(const SkGlyphRunList& glyphRunList) ->
         size = std::max(run.runSize(), size);
     }
     return ScopedBuffers(this, size);
+}
+
+auto SkGlyphRunListPainter::ensureBuffers(const SkGlyphRun& glyphRun) -> ScopedBuffers {
+    return ScopedBuffers(this, glyphRun.runSize());
 }
 
 SkGlyphRunListPainter::ScopedBuffers::ScopedBuffers(SkGlyphRunListPainter* painter, size_t size)

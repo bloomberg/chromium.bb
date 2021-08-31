@@ -16,12 +16,13 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/notifications/platform_notification_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/site_engagement/content/site_engagement_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -50,7 +51,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
@@ -70,7 +71,7 @@ void RecordUserVisibleStatus(blink::mojom::PushUserVisibleStatus status) {
 
 content::StoragePartition* GetStoragePartition(Profile* profile,
                                                const GURL& origin) {
-  return content::BrowserContext::GetStoragePartitionForSite(profile, origin);
+  return profile->GetStoragePartitionForUrl(origin);
 }
 
 NotificationDatabaseData CreateDatabaseData(
@@ -109,7 +110,7 @@ void PushMessagingNotificationManager::EnforceUserVisibleOnlyRequirements(
     EnforceRequirementsCallback message_handled_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (ShouldSkipUserVisibleOnlyRequirements(origin)) {
     std::move(message_handled_callback)
         .Run(/* did_show_generic_notification= */ false);
@@ -151,9 +152,9 @@ void PushMessagingNotificationManager::DidCountVisibleNotifications(
 
   // Sites with a currently visible tab don't need to show notifications.
 #if defined(OS_ANDROID)
-  for (auto it = TabModelList::begin(); it != TabModelList::end(); ++it) {
-    Profile* profile = (*it)->GetProfile();
-    WebContents* active_web_contents = (*it)->GetActiveWebContents();
+  for (const TabModel* model : TabModelList::models()) {
+    Profile* profile = model->GetProfile();
+    WebContents* active_web_contents = model->GetActiveWebContents();
 #else
   for (auto* browser : *BrowserList::GetInstance()) {
     Profile* profile = browser->profile();
@@ -285,7 +286,7 @@ void PushMessagingNotificationManager::DidWriteNotificationData(
       .Run(/* did_show_generic_notification= */ true);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 bool PushMessagingNotificationManager::ShouldSkipUserVisibleOnlyRequirements(
     const GURL& origin) {
   // This is a short-term exception to user visible only enforcement added
@@ -322,7 +323,7 @@ bool PushMessagingNotificationManager::ShouldSkipUserVisibleOnlyRequirements(
   }
 
   // Check if origin matches current messages url
-  base::Optional<GURL> app_url = android_sms_app_manager->GetCurrentAppUrl();
+  absl::optional<GURL> app_url = android_sms_app_manager->GetCurrentAppUrl();
   if (!app_url)
     app_url = chromeos::android_sms::GetAndroidMessagesURL();
 

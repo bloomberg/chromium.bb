@@ -133,6 +133,8 @@ std::unique_ptr<FloatingObject> FloatingObject::UnsafeClone() const {
 
 template <FloatingObject::Type FloatTypeValue>
 class ComputeFloatOffsetAdapter {
+  STACK_ALLOCATED();
+
  public:
   typedef FloatingObjectInterval IntervalType;
 
@@ -157,7 +159,7 @@ class ComputeFloatOffsetAdapter {
  protected:
   virtual bool UpdateOffsetIfNeeded(const FloatingObject&) = 0;
 
-  const LayoutBlockFlow* layout_object_;
+  const LayoutBlockFlow* layout_object_ = nullptr;
   LayoutUnit line_top_;
   LayoutUnit line_bottom_;
   LayoutUnit offset_;
@@ -205,6 +207,8 @@ class ComputeFloatOffsetForLineLayoutAdapter
 };
 
 class FindNextFloatLogicalBottomAdapter {
+  STACK_ALLOCATED();
+
  public:
   typedef FloatingObjectInterval IntervalType;
 
@@ -224,7 +228,7 @@ class FindNextFloatLogicalBottomAdapter {
   LayoutUnit NextShapeLogicalBottom() { return next_shape_logical_bottom_; }
 
  private:
-  const LayoutBlockFlow* const layout_object_;
+  const LayoutBlockFlow* layout_object_ = nullptr;
   LayoutUnit below_logical_height_;
   LayoutUnit above_logical_height_;
   LayoutUnit next_logical_bottom_;

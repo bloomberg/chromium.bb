@@ -38,25 +38,27 @@ ANGLEPlatform::ANGLEPlatform(angle::LogErrorFunc logErrorFunc, uint32_t preRotat
 
     mPlatformMethods.logError = logErrorFunc;
 
+    // Enable non-conformant ES versions and extensions for testing.  Our test expectations would
+    // suppress failing tests, but allowing continuous testing of the pieces that are implemented.
+    mEnableFeatureOverrides.push_back("exposeNonConformantExtensionsAndVersions");
+
     // Create pre-rotation attributes.
     switch (preRotation)
     {
         case 90:
-            mEnableFeatureOverrides.push_back("emulated_prerotation_90");
+            mEnableFeatureOverrides.push_back("emulatedPrerotation90");
             break;
         case 180:
-            mEnableFeatureOverrides.push_back("emulated_prerotation_180");
+            mEnableFeatureOverrides.push_back("emulatedPrerotation180");
             break;
         case 270:
-            mEnableFeatureOverrides.push_back("emulated_prerotation_270");
+            mEnableFeatureOverrides.push_back("emulatedPrerotation270");
             break;
         default:
             break;
     }
-    if (!mEnableFeatureOverrides.empty())
-    {
-        mEnableFeatureOverrides.push_back(nullptr);
-    }
+
+    mEnableFeatureOverrides.push_back(nullptr);
 
 #if (DE_OS == DE_OS_WIN32)
     {
