@@ -7,7 +7,6 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/values.h"
 #include "components/prefs/command_line_pref_store.h"
 
 // This PrefStore keeps track of preferences set by command-line switches,
@@ -40,6 +39,9 @@ class ChromeCommandLinePrefStore : public CommandLinePrefStore {
 
   // Determines whether the background mode is force-disabled.
   void ApplyBackgroundModeSwitches();
+
+  // Re-enables some ports that may have been disallowed for security reasons.
+  void ApplyExplicitlyAllowedPortSwitch();
 
   // Mappings of command line switches to prefs.
   static const BooleanSwitchToPreferenceMapEntry boolean_switch_map_[];

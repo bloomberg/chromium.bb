@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -302,7 +302,7 @@ class VideoDecodePerfHistoryTest : public testing::Test {
                past_is_efficient);
     // Zero it out to make verification readable.
     if (!old_stats)
-      old_stats.reset(new DecodeStatsEntry(0, 0, 0));
+      old_stats = std::make_unique<DecodeStatsEntry>(0, 0, 0);
     EXPECT_UKM(UkmEntry::kPerf_PastVideoFramesDecodedName,
                old_stats->frames_decoded);
     EXPECT_UKM(UkmEntry::kPerf_PastVideoFramesDroppedName,

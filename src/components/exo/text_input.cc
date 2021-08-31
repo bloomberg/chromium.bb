@@ -8,6 +8,7 @@
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "base/strings/string_piece.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
@@ -72,7 +73,13 @@ void TextInput::Resync() {
     input_method_->OnCaretBoundsChanged(this);
 }
 
-void TextInput::SetSurroundingText(const base::string16& text,
+void TextInput::Reset() {
+  composition_ = ui::CompositionText();
+  if (input_method_)
+    input_method_->CancelComposition(this);
+}
+
+void TextInput::SetSurroundingText(const std::u16string& text,
                                    uint32_t cursor_pos,
                                    uint32_t anchor) {
   surrounding_text_ = text;
@@ -121,6 +128,7 @@ uint32_t TextInput::ConfirmCompositionText(bool keep_selection) {
   const uint32_t composition_text_length =
       static_cast<uint32_t>(composition_.text.length());
   delegate_->Commit(composition_.text);
+  composition_ = ui::CompositionText();
   return composition_text_length;
 }
 
@@ -131,17 +139,28 @@ void TextInput::ClearCompositionText() {
   delegate_->SetCompositionText(composition_);
 }
 
-void TextInput::InsertText(const base::string16& text) {
+void TextInput::InsertText(const std::u16string& text,
+                           InsertTextCursorBehavior cursor_behavior) {
+  // TODO(crbug.com/1155331): Handle |cursor_behavior| correctly.
   delegate_->Commit(text);
 }
 
 void TextInput::InsertChar(const ui::KeyEvent& event) {
-  base::char16 ch = event.GetCharacter();
+  char16_t ch = event.GetCharacter();
   if (u_isprint(ch)) {
-    InsertText(base::string16(1, ch));
+    InsertText(
+        std::u16string(1, ch),
+        ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
     return;
   }
-  delegate_->SendKey(event);
+  // TextInput is currently used only for Lacros, and this is the
+  // short term workaround not to duplicate KeyEvent there.
+  // This is what we do for ARC, which is being removed in the near
+  // future.
+  // TODO(fukino): Get rid of this, too, when the wl_keyboard::key
+  // and text_input::keysym events are handled properly in Lacros.
+  if (window_ && ConsumedByIme(window_, event))
+    delegate_->SendKey(event);
 }
 
 ui::TextInputType TextInput::GetTextInputType() const {
@@ -166,6 +185,11 @@ bool TextInput::CanComposeInline() const {
 
 gfx::Rect TextInput::GetCaretBounds() const {
   return caret_bounds_ + window_->GetBoundsInScreen().OffsetFromOrigin();
+}
+
+gfx::Rect TextInput::GetSelectionBoundingBox() const {
+  NOTIMPLEMENTED();
+  return gfx::Rect();
 }
 
 bool TextInput::GetCompositionCharacterBounds(uint32_t index,
@@ -239,7 +263,7 @@ bool TextInput::DeleteRange(const gfx::Range& range) {
 }
 
 bool TextInput::GetTextFromRange(const gfx::Range& range,
-                                 base::string16* text) const {
+                                 std::u16string* text) const {
   gfx::Range text_range;
   if (!GetTextRange(&text_range) || !text_range.Contains(range))
     return false;
@@ -348,15 +372,29 @@ gfx::Rect TextInput::GetAutocorrectCharacterBounds() const {
 }
 
 // TODO(crbug.com/1091088) Implement setAutocorrectRange
-bool TextInput::SetAutocorrectRange(const base::string16& autocorrect_text,
-                                    const gfx::Range& range) {
+bool TextInput::SetAutocorrectRange(const gfx::Range& range) {
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
-// TODO(crbug.com/1091088) Implement ClearAutocorrectRange
-void TextInput::ClearAutocorrectRange() {
+absl::optional<ui::GrammarFragment> TextInput::GetGrammarFragment(
+    const gfx::Range& range) {
+  // TODO(https://crbug.com/1201454): Implement this method.
   NOTIMPLEMENTED_LOG_ONCE();
+  return absl::nullopt;
+}
+
+bool TextInput::ClearGrammarFragments(const gfx::Range& range) {
+  // TODO(https://crbug.com/1201454): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+
+bool TextInput::AddGrammarFragments(
+    const std::vector<ui::GrammarFragment>& fragments) {
+  // TODO(https://crbug.com/1201454): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
 }
 
 void TextInput::OnKeyboardVisibilityChanged(bool is_visible) {

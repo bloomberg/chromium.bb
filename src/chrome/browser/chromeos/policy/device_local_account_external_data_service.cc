@@ -4,20 +4,21 @@
 
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_service.h"
 
+#include <memory>
 #include <set>
 #include <utility>
 
+#include "ash/constants/ash_paths.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
-#include "chromeos/constants/chromeos_paths.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/policy_constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace policy {
 
@@ -27,8 +28,9 @@ DeviceLocalAccountExternalDataService::DeviceLocalAccountExternalDataService(
     : parent_(parent), backend_task_runner_(std::move(backend_task_runner)) {
   const base::FilePath cache_dir = base::PathService::CheckedGet(
       chromeos::DIR_DEVICE_LOCAL_ACCOUNT_EXTERNAL_DATA);
-  resource_cache_.reset(new ResourceCache(cache_dir, backend_task_runner_,
-                                          /* max_cache_size */ base::nullopt));
+  resource_cache_ =
+      std::make_unique<ResourceCache>(cache_dir, backend_task_runner_,
+                                      /* max_cache_size */ absl::nullopt);
   parent_->AddObserver(this);
 }
 
@@ -74,10 +76,8 @@ scoped_refptr<DeviceLocalAccountExternalDataManager>
       external_data_managers_[account_id];
   if (!external_data_manager.get()) {
     external_data_manager = new DeviceLocalAccountExternalDataManager(
-        account_id,
-        base::Bind(&GetChromePolicyDetails),
-        backend_task_runner_,
-        resource_cache_.get());
+        account_id, base::BindRepeating(&GetChromePolicyDetails),
+        backend_task_runner_, resource_cache_.get());
   }
   external_data_manager->SetPolicyStore(policy_store);
   return external_data_manager;

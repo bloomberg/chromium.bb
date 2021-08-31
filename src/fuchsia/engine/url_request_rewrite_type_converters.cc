@@ -5,6 +5,7 @@
 #include "fuchsia/engine/url_request_rewrite_type_converters.h"
 
 #include "base/strings/strcat.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "fuchsia/base/string_util.h"
 #include "net/base/url_util.h"
@@ -46,10 +47,11 @@ struct TypeConverter<mojom::UrlRequestRewriteRemoveHeaderPtr,
     mojom::UrlRequestRewriteRemoveHeaderPtr remove_header =
         mojom::UrlRequestRewriteRemoveHeader::New();
     if (input.has_query_pattern())
-      remove_header->query_pattern = base::make_optional(input.query_pattern());
-    if (input.has_header_name())
+      remove_header->query_pattern = absl::make_optional(input.query_pattern());
+    if (input.has_header_name()) {
       remove_header->header_name =
-          cr_fuchsia::BytesAsString(input.header_name()).as_string();
+          std::string(cr_fuchsia::BytesAsString(input.header_name()));
+    }
     return remove_header;
   }
 };
@@ -168,7 +170,7 @@ TypeConverter<mojom::UrlRequestRulePtr, fuchsia::web::UrlRequestRewriteRule>::
   }
 
   if (input.has_schemes_filter())
-    rule->schemes_filter = base::make_optional(input.schemes_filter());
+    rule->schemes_filter = absl::make_optional(input.schemes_filter());
 
   if (input.has_rewrites()) {
     rule->actions = mojo::ConvertTo<std::vector<mojom::UrlRequestActionPtr>>(

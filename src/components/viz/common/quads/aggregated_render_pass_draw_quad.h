@@ -7,8 +7,6 @@
 
 #include <stddef.h>
 
-#include <memory>
-
 #include "cc/paint/filter_operations.h"
 #include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/common/quads/draw_quad.h"
@@ -53,7 +51,7 @@ class VIZ_COMMON_EXPORT AggregatedRenderPassDrawQuad
               const gfx::RectF& tex_coord_rect,
               bool force_anti_aliasing_off,
               float backdrop_filter_quality,
-              bool can_use_backdrop_filter_cache);
+              bool intersects_damage_under);
 
   AggregatedRenderPassId render_pass_id;
 

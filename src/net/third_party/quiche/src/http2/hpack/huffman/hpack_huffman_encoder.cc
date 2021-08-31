@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/hpack/huffman/hpack_huffman_encoder.h"
+#include "http2/hpack/huffman/hpack_huffman_encoder.h"
 
-#include "net/third_party/quiche/src/http2/hpack/huffman/huffman_spec_tables.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
+#include "http2/hpack/huffman/huffman_spec_tables.h"
+#include "http2/platform/api/http2_logging.h"
 
 namespace http2 {
 
@@ -20,7 +20,7 @@ size_t HuffmanSize(absl::string_view plain) {
 void HuffmanEncode(absl::string_view plain,
                    size_t encoded_size,
                    std::string* huffman) {
-  DCHECK(huffman != nullptr);
+  QUICHE_DCHECK(huffman != nullptr);
   huffman->reserve(huffman->size() + encoded_size);
   uint64_t bit_buffer = 0;  // High-bit is next bit to output. Not clear if that
                             // is more performant than having the low-bit be the
@@ -116,7 +116,7 @@ void HuffmanEncodeFast(absl::string_view input,
     *(current + 4) |= code & 0xff;
   }
 
-  DCHECK_EQ(encoded_size, (bit_counter + 7) / 8);
+  QUICHE_DCHECK_EQ(encoded_size, (bit_counter + 7) / 8);
 
   // EOF
   if (bit_counter % 8 != 0) {

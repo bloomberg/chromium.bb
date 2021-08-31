@@ -104,6 +104,7 @@ bool ShouldIgnoreGeneratedEvent(ui::AXEventGenerator::Event event_type) {
     case ui::AXEventGenerator::Event::ACCESS_KEY_CHANGED:
     case ui::AXEventGenerator::Event::ACTIVE_DESCENDANT_CHANGED:
     case ui::AXEventGenerator::Event::ALERT:
+    case ui::AXEventGenerator::Event::ARIA_CURRENT_CHANGED:
     case ui::AXEventGenerator::Event::ATOMIC_CHANGED:
     case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
     case ui::AXEventGenerator::Event::BUSY_CHANGED:
@@ -140,6 +141,8 @@ bool ShouldIgnoreGeneratedEvent(ui::AXEventGenerator::Event event_type) {
     case ui::AXEventGenerator::Event::LIVE_STATUS_CHANGED:
     case ui::AXEventGenerator::Event::LOAD_COMPLETE:
     case ui::AXEventGenerator::Event::LOAD_START:
+    case ui::AXEventGenerator::Event::MENU_POPUP_END:
+    case ui::AXEventGenerator::Event::MENU_POPUP_START:
     case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:
     case ui::AXEventGenerator::Event::MULTILINE_STATE_CHANGED:
     case ui::AXEventGenerator::Event::MULTISELECTABLE_STATE_CHANGED:

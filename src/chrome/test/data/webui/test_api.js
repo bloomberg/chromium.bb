@@ -160,13 +160,6 @@ Test.prototype = {
   featuresWithParameters: null,
 
   /**
-   * This should be initialized by the test fixture and can be referenced
-   * during the test run. It holds any mocked handler methods.
-   * @type {?Mock}
-   */
-  mockHandler: null,
-
-  /**
    * Value is passed through call to C++ RunJavascriptF to invoke this test.
    * @type {boolean}
    */
@@ -204,30 +197,6 @@ Test.prototype = {
   closureModuleDeps: [],
 
   /**
-   * Create a new class to handle |messageNames|, assign it to
-   * |this.mockHandler|, register its messages and return it.
-   * @return {Mock} Mock handler class assigned to |this.mockHandler|.
-   */
-  makeAndRegisterMockHandler: function(messageNames) {
-    var MockClass = makeMockClass(messageNames);
-    this.mockHandler = mock(MockClass);
-    registerMockMessageCallbacks(this.mockHandler, MockClass);
-    return this.mockHandler;
-  },
-
-  /**
-   * Create a container of mocked standalone functions to handle
-   * |functionNames|, assign it to |this.mockLocalFunctions| and return it.
-   * @param {!Array<string>} functionNames
-   * @return {Mock} Mock handler class.
-   * @see makeMockFunctions
-   */
-  makeMockLocalFunctions: function(functionNames) {
-    this.mockLocalFunctions = makeMockFunctions(functionNames);
-    return this.mockLocalFunctions;
-  },
-
-  /**
    * Override this method to perform initialization during preload (such as
    * creating mocks and registering handlers).
    * @type {Function}
@@ -241,9 +210,7 @@ Test.prototype = {
   setUp: function() {},
 
   /**
-   * Override this method to perform tasks after running your test. If you
-   * create a mock class, you must call Mock4JS.verifyAllMocks() in this
-   * phase.
+   * Override this method to perform tasks after running your test.
    * @type {Function}
    */
   tearDown: function() {
@@ -253,8 +220,6 @@ Test.prototype = {
         noAnimationStyle.parentNode.removeChild(noAnimationStyle);
       }
     }
-
-    Mock4JS.verifyAllMocks();
   },
 
   /**
@@ -436,112 +401,6 @@ TestCase.prototype = {
   },
 
 };
-
-/**
- * Registry of javascript-defined callbacks for {@code chrome.send}.
- * @type {Object}
- */
-var sendCallbacks = {};
-
-/**
- * Registers the message, object and callback for {@code chrome.send}
- * @param {string} name The name of the message to route to this |callback|.
- * @param {Object} messageHandler Pass as |this| when calling the |callback|.
- * @param {function(...)} callback Called by {@code chrome.send}.
- * @see sendCallbacks
- */
-function registerMessageCallback(name, messageHandler, callback) {
-  sendCallbacks[name] = [messageHandler, callback];
-}
-
-/**
- * Register all methods of {@code mockClass.prototype} with messages of the
- * same name as the method, using the proxy of the |mockObject| as the
- * |messageHandler| when registering.
- * @param {Mock} mockObject The mock to register callbacks against.
- * @param {Function} mockClass Constructor for the mocked class.
- * @see registerMessageCallback
- * @see overrideChrome
- */
-function registerMockMessageCallbacks(mockObject, mockClass) {
-  if (!deferGlobalOverrides && !originalChrome) {
-    overrideChrome();
-  }
-  var mockProxy = mockObject.proxy();
-  for (var func in mockClass.prototype) {
-    if (typeof mockClass.prototype[func] === 'function') {
-      registerMessageCallback(func, mockProxy, mockProxy[func]);
-    }
-  }
-}
-
-/**
- * When preloading JavaScript libraries, this is true until the
- * DOMContentLoaded event has been received as globals cannot be overridden
- * until the page has loaded its JavaScript.
- * @type {boolean}
- */
-var deferGlobalOverrides = false;
-
-/**
- * Empty function for use in making mocks.
- * @const
- */
-function emptyFunction() {}
-
-/**
- * Make a mock from the supplied |methodNames| array.
- * @param {Array<string>} methodNames Array of names of methods to mock.
- * @return {Function} Constructor with prototype filled in with methods
- *     matching |methodNames|.
- */
-function makeMockClass(methodNames) {
-  function MockConstructor() {}
-  for (var i = 0; i < methodNames.length; i++) {
-    MockConstructor.prototype[methodNames[i]] = emptyFunction;
-  }
-  return MockConstructor;
-}
-
-/**
- * Create a new class to handle |functionNames|, add method 'functions()'
- * that returns a container of standalone functions based on the mock class
- * members, and return it.
- * @return {Mock} Mock handler class.
- */
-function makeMockFunctions(functionNames) {
-  var MockClass = makeMockClass(functionNames);
-  var mockFunctions = mock(MockClass);
-  var mockProxy = mockFunctions.proxy();
-
-  mockFunctions.functions_ = {};
-
-  for (var func in MockClass.prototype) {
-    if (typeof MockClass.prototype[func] === 'function') {
-      mockFunctions.functions_[func] = mockProxy[func].bind(mockProxy);
-    }
-  }
-
-  mockFunctions.functions = function() {
-    return this.functions_;
-  };
-
-  return mockFunctions;
-}
-
-/**
- * Overrides {@code chrome.send} for routing messages to javascript
- * functions. Also falls back to sending with the original chrome object.
- * @param {string} messageName The message to route.
- */
-function send(messageName) {
-  var callback = sendCallbacks[messageName];
-  if (callback !== undefined) {
-    callback[1].apply(callback[0], Array.prototype.slice.call(arguments, 1));
-  } else {
-    this.__proto__.send.apply(this.__proto__, arguments);
-  }
-}
 
 /**
  * true when testDone has been called.
@@ -931,50 +790,15 @@ function createTestCase(testFixture, testName) {
 }
 
 /**
- * Overrides the |chrome| object to enable mocking calls to chrome.send().
- */
-function overrideChrome() {
-  if (originalChrome) {
-    console.error('chrome object already overridden');
-    return;
-  }
-
-  originalChrome = chrome;
-  /** @suppress {const|checkTypes} */
-  chrome = {
-    __proto__: originalChrome,
-    send: send,
-    originalSend: originalChrome.send.bind(originalChrome),
-  };
-}
-
-/**
  * Used by WebUIBrowserTest to preload the javascript libraries at the
  * appropriate time for javascript injection into the current page. This
  * creates a test case and calls its preLoad for any early initialization such
  * as registering handlers before the page's javascript runs it's OnLoad
- * method. This is called before the page is loaded, so the |chrome| object is
- * not yet bound and this DOMContentLoaded listener will be called first to
- * override |chrome| in order to route messages registered in |sendCallbacks|.
+ * method. This is called before the page is loaded.
  * @param {string} testFixture The test fixture name.
  * @param {string} testName The test name.
- * @see sendCallbacks
  */
 function preloadJavascriptLibraries(testFixture, testName) {
-  deferGlobalOverrides = true;
-
-  // The document seems to change from the point of preloading to the point of
-  // events (and doesn't fire), whereas the window does not. Listening to the
-  // capture phase allows this event to fire first.
-  window.addEventListener('DOMContentLoaded', function() {
-    if (chrome.send) {
-      overrideChrome();
-    }
-
-    // Override globals at load time so they will be defined.
-    assertTrue(deferGlobalOverrides);
-    deferGlobalOverrides = false;
-  }, true);
   currentTestCase = createTestCase(testFixture, testName);
   currentTestCase.preLoad();
 }
@@ -1229,17 +1053,6 @@ CallFunctionAction.prototype = {
 
 /**
  * Syntactic sugar for use with will() on a Mock4JS.Mock.
- * @param {!Function} func The function to call when the method is invoked.
- * @param {...*} var_args Arguments to pass when calling func.
- * @return {CallFunctionAction} Action for use in will.
- */
-function callFunction(func, var_args) {
-  return new CallFunctionAction(
-      null, null, func, Array.prototype.slice.call(arguments, 1));
-}
-
-/**
- * Syntactic sugar for use with will() on a Mock4JS.Mock.
  * @param {SaveMockArguments} savedArgs Arguments saved with this object
  *     are passed to |func|.
  * @param {!Function} func The function to call when the method is invoked.
@@ -1424,12 +1237,8 @@ function exportExpects() {
  * Exports methods related to Mock4JS mocking.
  */
 function exportMock4JsHelpers() {
-  exports.callFunction = callFunction;
   exports.callFunctionWithSavedArgs = callFunctionWithSavedArgs;
   exports.SaveMockArguments = SaveMockArguments;
-
-  // Import the Mock4JS helpers.
-  Mock4JS.addMockSupport(exports);
 }
 
 // Exports.
@@ -1440,7 +1249,6 @@ exportExpects();
 exportMock4JsHelpers();
 exports.preloadJavascriptLibraries = preloadJavascriptLibraries;
 exports.setWaitUser = setWaitUser;
-exports.registerMessageCallback = registerMessageCallback;
 exports.resetTestState = resetTestState;
 exports.runAllActions = runAllActions;
 exports.runAllActionsAsync = runAllActionsAsync;

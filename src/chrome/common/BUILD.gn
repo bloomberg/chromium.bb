@@ -5,6 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/chrome_build.gni")  # For branding_file_path.
 import("//build/config/chromeos/ui_mode.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/util/process_version.gni")
 import("//chrome/browser/downgrade/buildflags.gni")
 import("//chrome/common/features.gni")
@@ -16,6 +17,7 @@ import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//pdf/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
+import("//printing/buildflags/buildflags.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -45,10 +47,10 @@ buildflag_header("buildflags") {
     "ENABLE_DOWNGRADE_PROCESSING=$enable_downgrade_processing",
     "ENABLE_HANGOUT_SERVICES_EXTENSION=$enable_hangout_services_extension",
     "ENABLE_ONE_CLICK_SIGNIN=$enable_one_click_signin",
-    "ENABLE_NATIVE_NOTIFICATIONS=$enable_native_notifications",
     "ENABLE_SERVICE_DISCOVERY=$enable_service_discovery",
     "ENABLE_SESSION_SERVICE=$enable_session_service",
     "ENABLE_SUPERVISED_USERS=$enable_supervised_users",
+    "ENABLE_SYSTEM_NOTIFICATIONS=$enable_system_notifications",
     "ENABLE_WAYLAND_SERVER=$enable_wayland_server",
     "ENABLE_WEBUI_TAB_STRIP=$enable_webui_tab_strip",
     "OPTIMIZE_WEBUI=$optimize_webui",
@@ -60,7 +62,10 @@ source_set("channel_info") {
     "channel_info.cc",
     "channel_info.h",
   ]
-  deps = [ "//build:branding_buildflags" ]
+  deps = [
+    "//build:branding_buildflags",
+    "//build:chromeos_buildflags",
+  ]
   public_deps = [
     "//base",
     "//components/version_info",
@@ -74,7 +79,7 @@ source_set("channel_info") {
   } else if (is_android) {
     sources += [ "channel_info_android.cc" ]
     public_deps += [ "//components/version_info/android:channel_getter" ]
-  } else if (is_chromeos) {
+  } else if (is_chromeos_ash) {
     sources += [ "channel_info_chromeos.cc" ]
     deps += [ "//chromeos/crosapi/cpp" ]
   } else if (is_posix) {
@@ -95,12 +100,14 @@ source_set("ini_parser") {
 static_library("common") {
   sources = [
     "all_messages.h",
+    "child_process_host_flags.h",
     "child_process_logging.h",
     "chrome_content_client.cc",
     "chrome_content_client.h",
     "chrome_content_client_constants.cc",
     "chrome_descriptors.h",
     "chrome_isolated_world_ids.h",
+    "chrome_resource_request_blocked_reason.h",
     "chrome_result_codes.h",
     "common_message_generator.cc",
     "common_message_generator.h",
@@ -113,6 +120,8 @@ static_library("common") {
     "google_url_loader_throttle.h",
     "logging_chrome.cc",
     "logging_chrome.h",
+    "media/cdm_registration.cc",
+    "media/cdm_registration.h",
     "media/media_resource_provider.cc",
     "media/media_resource_provider.h",
     "media_galleries/metadata_types.h",
@@ -154,6 +163,7 @@ static_library("common") {
     "//base:base_static",
     "//base:i18n",
     "//base/util/values:values_util",
+    "//build:branding_buildflags",
     "//chrome:resources",
     "//chrome:strings",
     "//chrome/app/theme:theme_resources",
@@ -161,7 +171,6 @@ static_library("common") {
     "//chrome/common/net",
     "//chrome/common/privacy_budget",
     "//chrome/common/profiler",
-    "//chrome/common/qr_code_generator",
     "//chrome/common/search:mojo_bindings",
     "//chrome/installer/util:with_no_strings",
     "//components/cast_certificate",
@@ -234,9 +243,10 @@ static_library("common") {
   ]
 
   deps = [
-    "//build:branding_buildflags",
+    "//build:chromeos_buildflags",
     "//components/crash/core/app",
     "//components/google/core/common",
+    "//components/live_caption:constants",
     "//components/metrics:call_stack_profile_builder",
     "//components/no_state_prefetch/common",
     "//components/no_state_prefetch/common:mojo_bindings",
@@ -257,8 +267,6 @@ static_library("common") {
       "extensions/api/omnibox/omnibox_handler.h",
       "extensions/api/speech/tts_engine_manifest_handler.cc",
       "extensions/api/speech/tts_engine_manifest_handler.h",
-      "extensions/api/spellcheck/spellcheck_handler.cc",
-      "extensions/api/spellcheck/spellcheck_handler.h",
       "extensions/api/storage/storage_schema_manifest_handler.cc",
       "extensions/api/storage/storage_schema_manifest_handler.h",
       "extensions/api/system_indicator/system_indicator_handler.cc",
@@ -338,7 +346,7 @@ static_library("common") {
     public_deps += [ ":app_mode_app_support" ]
   }
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     assert(enable_extensions)
     sources += [
       "extensions/api/file_browser_handlers/file_browser_handler.cc",
@@ -349,7 +357,7 @@ static_library("common") {
       "extensions/api/input_ime/input_components_handler.h",
     ]
     public_deps += [ "//ash/keyboard/ui" ]
-    deps += [ "//chromeos/constants" ]
+    deps += [ "//ash/constants" ]
   }
 
   if (enable_nacl) {
@@ -363,7 +371,7 @@ static_library("common") {
       "//components/printing/common",
       "//printing",
     ]
-    if (enable_print_preview && !is_chromeos) {
+    if (enable_print_preview && !is_chromeos_ash) {
       # Part of the service_process_util code below is based on a model where
       # the cloud print service is a long-lived process independent of chrome,
       # which is not appropriate on android.
@@ -401,6 +409,7 @@ static_library("common") {
       "media/chrome_media_drm_bridge_client.cc",
       "media/chrome_media_drm_bridge_client.h",
     ]
+    deps += [ "//components/embedder_support/android/common:url_constants" ]
   } else {
     # Non-Android.
     public_deps += [ "//chrome/common/importer" ]
@@ -449,7 +458,6 @@ static_library("common") {
       "ppapi_utils.cc",
       "ppapi_utils.h",
     ]
-    public_deps += [ "//third_party/adobe/flash:flapper_version_h" ]
   }
   if (enable_plugins && enable_extensions) {
     sources += [
@@ -459,14 +467,10 @@ static_library("common") {
   }
 
   if (enable_library_cdms) {
-    sources += [
-      "media/cdm_manifest.cc",
-      "media/cdm_manifest.h",
-    ]
     deps += [ "//media/cdm:cdm_paths" ]  # Needed by chrome_content_client.cc
 
     if (enable_widevine) {
-      if (is_linux) {
+      if (is_linux || is_chromeos_lacros) {
         sources += [
           "media/component_widevine_cdm_hint_file_linux.cc",
           "media/component_widevine_cdm_hint_file_linux.h",
@@ -532,11 +536,12 @@ static_library("non_code_constants") {
     ":buildflags",
     ":version_header",
     "//base",
-    "//build:branding_buildflags",
+    "//build:chromeos_buildflags",
     "//ppapi/buildflags",
   ]
 
   public_deps = [
+    "//build:branding_buildflags",
     "//printing/buildflags",
     "//ui/base:buildflags",
   ]
@@ -554,6 +559,7 @@ component("chrome_features") {
     ":buildflags",
     ":non_code_constants",
     "//base",
+    "//build:chromeos_buildflags",
     "//components/offline_pages/buildflags",
     "//device/vr/buildflags",
     "//extensions/buildflags",
@@ -585,6 +591,7 @@ static_library("constants") {
     ":non_code_constants",
     "//content/public/common:result_codes",
     "//rlz/buildflags",
+    "//third_party/widevine/cdm:buildflags",
   ]
 
   deps = [
@@ -604,10 +611,6 @@ static_library("constants") {
     "//third_party/widevine/cdm:buildflags",
   ]
 
-  if (enable_extensions) {
-    public_deps += [ "//components/services/app_service/public/mojom" ]
-  }
-
   if (is_android) {
     sources += [ "chrome_paths_android.cc" ]
 
@@ -623,8 +626,11 @@ static_library("constants") {
     # implemented in //ui/base, so we need that dependency.
     deps += [ "//ui/base" ]
   }
-  if (is_lacros) {
-    sources += [ "chrome_paths_lacros.cc" ]
+  if (is_chromeos_lacros) {
+    sources += [
+      "chrome_paths_lacros.cc",
+      "chrome_paths_lacros.h",
+    ]
     deps += [ "//chromeos/crosapi/cpp" ]
   } else if (is_linux || is_chromeos) {
     sources += [ "chrome_paths_linux.cc" ]
@@ -699,6 +705,8 @@ mojom("mojo_bindings") {
   sources = [
     "cache_stats_recorder.mojom",
     "chrome_render_frame.mojom",
+    "draggable_regions.mojom",
+    "lite_video_service.mojom",
     "media/webrtc_logging.mojom",
     "metrics.mojom",
     "net/net_error_page_support.mojom",
@@ -707,18 +715,16 @@ mojom("mojo_bindings") {
     "network_easter_egg.mojom",
     "open_search_description_document_handler.mojom",
     "plugin.mojom",
+    "previews_resource_loading_hints.mojom",
     "renderer_configuration.mojom",
     "subresource_redirect_service.mojom",
     "sync_encryption_keys_extension.mojom",
-    "web_page_metadata.mojom",
   ]
 
   deps = []
 
   if (is_android) {
     sources += [ "sandbox_status_extension_android.mojom" ]
-  } else {
-    sources += [ "caption.mojom" ]
   }
 
   if (is_mac) {
@@ -733,10 +739,6 @@ mojom("mojo_bindings") {
     sources += [ "mhtml_page_notifier.mojom" ]
     deps += [ "//third_party/blink/public/mojom:mojom_mhtml_load_result" ]
     enabled_features = [ "enable_offline_pages" ]
-  }
-
-  if (enable_extensions) {
-    sources += [ "url_loader_factory_proxy.mojom" ]
   }
 
   public_deps = [
@@ -765,24 +767,9 @@ mojom("mojo_bindings") {
   ]
 
   component_deps = [ "//content/public/common" ]
-
-  cpp_typemaps = [
-    {
-      types = [
-        {
-          mojom = "chrome.mojom.WebApplicationInfo"
-          cpp = "::WebApplicationInfo"
-        },
-      ]
-      traits_headers = [ "web_application_info.h" ]
-      traits_private_headers =
-          [ "web_application_info_provider_param_traits.h" ]
-      traits_deps = [ "//ipc" ]
-    },
-  ]
 }
 
-if (enable_print_preview && !is_chromeos) {
+if (enable_print_preview && !is_chromeos_ash) {
   mojom("service_process_mojom") {
     sources = [
       "cloud_print.mojom",

@@ -3,83 +3,105 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import './shared_style.js';
 import './strings.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {StoreObserver} from 'chrome://resources/js/cr/ui/store.m.js';
+import {StoreClientInterface as CrUiStoreClientInterface} from 'chrome://resources/js/cr/ui/store_client.m.js';
+import {isRTL} from 'chrome://resources/js/util.m.js';
+import {html, microTask, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {changeFolderOpen, selectFolder} from './actions.js';
-import {CommandManager} from './command_manager.js';
+import {BookmarksCommandManagerElement} from './command_manager.js';
 import {FOLDER_OPEN_BY_DEFAULT_DEPTH, MenuSource, ROOT_NODE_ID} from './constants.js';
-import {StoreClient} from './store_client.js';
+import {BookmarksStoreClientInterface, StoreClient} from './store_client.js';
 import {BookmarkNode, BookmarksPageState} from './types.js';
 import {hasChildFolders, isShowingSearch} from './util.js';
 
-Polymer({
-  is: 'bookmarks-folder-node',
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {BookmarksStoreClientInterface}
+ * @implements {CrUiStoreClientInterface}
+ * @implements {StoreObserver<BookmarksPageState>}
+ */
+const BookmarksFolderNodeElementBase =
+    mixinBehaviors(StoreClient, PolymerElement);
 
-  _template: html`{__html_template__}`,
+/** @polymer */
+export class BookmarksFolderNodeElement extends BookmarksFolderNodeElementBase {
+  static get is() {
+    return 'bookmarks-folder-node';
+  }
 
-  behaviors: [
-    StoreClient,
-  ],
+  static get template() {
+    return html`{__html_template__}`;
+  }
 
-  properties: {
-    itemId: {
-      type: String,
-      observer: 'updateFromStore',
-    },
+  static get properties() {
+    return {
+      itemId: {
+        type: String,
+        observer: 'updateFromStore',
+      },
 
-    depth: {
-      type: Number,
-      observer: 'depthChanged_',
-    },
+      depth: {
+        type: Number,
+        observer: 'depthChanged_',
+      },
 
-    isOpen: {
-      type: Boolean,
-      computed: 'computeIsOpen_(openState_, depth)',
-    },
+      isOpen: {
+        type: Boolean,
+        computed: 'computeIsOpen_(openState_, depth)',
+      },
 
-    /** @type {BookmarkNode} */
-    item_: Object,
+      /** @type {BookmarkNode} */
+      item_: Object,
 
-    /** @private {?boolean} */
-    openState_: Boolean,
+      /** @private {?boolean} */
+      openState_: Boolean,
 
-    /** @private */
-    selectedFolder_: String,
+      /** @private */
+      selectedFolder_: String,
 
-    /** @private */
-    searchActive_: Boolean,
+      /** @private */
+      searchActive_: Boolean,
 
-    /** @private */
-    isSelectedFolder_: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true,
-      computed: 'computeIsSelected_(itemId, selectedFolder_, searchActive_)'
-    },
+      /** @private */
+      isSelectedFolder_: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+        computed: 'computeIsSelected_(itemId, selectedFolder_, searchActive_)'
+      },
 
-    /** @private */
-    hasChildFolder_: {
-      type: Boolean,
-      computed: 'computeHasChildFolder_(item_.children)',
-    },
-  },
+      /** @private */
+      hasChildFolder_: {
+        type: Boolean,
+        computed: 'computeHasChildFolder_(item_.children)',
+      },
+    };
+  }
 
-  listeners: {
-    'keydown': 'onKeydown_',
-  },
+  static get observers() {
+    return [
+      'updateAriaExpanded_(hasChildFolder_, isOpen)',
+      'scrollIntoViewIfNeeded_(isSelectedFolder_)',
+    ];
+  }
 
-  observers: [
-    'updateAriaExpanded_(hasChildFolder_, isOpen)',
-    'scrollIntoViewIfNeeded_(isSelectedFolder_)',
-  ],
+  ready() {
+    super.ready();
+
+    this.addEventListener('keydown', e => this.onKeydown_(e));
+  }
 
   /** @override */
-  attached() {
+  connectedCallback() {
+    super.connectedCallback();
     this.watch('item_', state => {
       return /** @type {!BookmarksPageState} */ (state).nodes[this.itemId];
     });
@@ -97,17 +119,26 @@ Polymer({
     });
 
     this.updateFromStore();
-  },
+  }
+
+  /**
+   * @param {boolean} isSelectedFolder
+   * @return {string}
+   * @private
+   */
+  getContainerClass_(isSelectedFolder) {
+    return isSelectedFolder ? 'selected' : '';
+  }
 
   /** @return {!HTMLElement} */
   getFocusTarget() {
     return /** @type {!HTMLDivElement} */ (this.$.container);
-  },
+  }
 
   /** @return {HTMLElement} */
   getDropTarget() {
     return /** @type {!HTMLDivElement} */ (this.$.container);
-  },
+  }
 
   /**
    * @private
@@ -131,7 +162,7 @@ Polymer({
       handled = false;
     }
 
-    if (this.getComputedStyleValue('direction') === 'rtl') {
+    if (isRTL()) {
       xDirection *= -1;
     }
 
@@ -139,7 +170,7 @@ Polymer({
         xDirection, yDirection, this.root.activeElement);
 
     if (!handled) {
-      handled = CommandManager.getInstance().handleKeyEvent(
+      handled = BookmarksCommandManagerElement.getInstance().handleKeyEvent(
           e, new Set([this.itemId]));
     }
 
@@ -149,7 +180,7 @@ Polymer({
 
     e.preventDefault();
     e.stopPropagation();
-  },
+  }
 
   /**
    * @private
@@ -225,7 +256,7 @@ Polymer({
     if (newFocusFolderNode.itemId !== ROOT_NODE_ID) {
       newFocusFolderNode.getFocusTarget().focus();
     }
-  },
+  }
 
   /**
    * Returns the next or previous visible bookmark node relative to |child|.
@@ -252,7 +283,7 @@ Polymer({
     }
 
     return newFocus;
-  },
+  }
 
   /**
    * Returns the immediate parent folder node, or null if there is none.
@@ -266,7 +297,7 @@ Polymer({
       parentFolderNode = parentFolderNode.parentNode || parentFolderNode.host;
     }
     return parentFolderNode || null;
-  },
+  }
 
   /**
    * @private
@@ -279,14 +310,14 @@ Polymer({
     }
 
     return children.pop().getLastVisibleDescendant_();
-  },
+  }
 
   /** @private */
   selectFolder_() {
     if (!this.isSelectedFolder_) {
       this.dispatch(selectFolder(this.itemId, this.getState().nodes));
     }
-  },
+  }
 
   /**
    * @param {!Event} e
@@ -295,9 +326,9 @@ Polymer({
   onContextMenu_(e) {
     e.preventDefault();
     this.selectFolder_();
-    CommandManager.getInstance().openCommandMenuAtPosition(
+    BookmarksCommandManagerElement.getInstance().openCommandMenuAtPosition(
         e.clientX, e.clientY, MenuSource.TREE, new Set([this.itemId]));
-  },
+  }
 
   /**
    * @private
@@ -305,7 +336,7 @@ Polymer({
    */
   getChildFolderNodes_() {
     return Array.from(this.root.querySelectorAll('bookmarks-folder-node'));
-  },
+  }
 
   /**
    * Toggles whether the folder is open.
@@ -315,7 +346,7 @@ Polymer({
   toggleFolder_(e) {
     this.dispatch(changeFolderOpen(this.itemId, !this.isOpen));
     e.stopPropagation();
-  },
+  }
 
   /**
    * @private
@@ -323,7 +354,7 @@ Polymer({
    */
   preventDefault_(e) {
     e.preventDefault();
-  },
+  }
 
   /**
    * @private
@@ -333,7 +364,7 @@ Polymer({
    */
   computeIsSelected_(itemId, selectedFolder, searchActive) {
     return itemId === selectedFolder && !searchActive;
-  },
+  }
 
   /**
    * @private
@@ -341,7 +372,7 @@ Polymer({
    */
   computeHasChildFolder_() {
     return hasChildFolders(this.itemId, this.getState().nodes);
-  },
+  }
 
   /** @private */
   depthChanged_() {
@@ -349,7 +380,7 @@ Polymer({
     if (this.depth === -1) {
       this.$.descendants.removeAttribute('role');
     }
-  },
+  }
 
   /**
    * @private
@@ -357,7 +388,7 @@ Polymer({
    */
   getChildDepth_() {
     return this.depth + 1;
-  },
+  }
 
   /**
    * @param {string} itemId
@@ -366,7 +397,7 @@ Polymer({
    */
   isFolder_(itemId) {
     return !this.getState().nodes[itemId].url;
-  },
+  }
 
   /**
    * @private
@@ -374,7 +405,7 @@ Polymer({
    */
   isRootFolder_() {
     return this.itemId === ROOT_NODE_ID;
-  },
+  }
 
   /**
    * @private
@@ -385,7 +416,7 @@ Polymer({
     // search is active, even though this node is not technically selected. This
     // allows the sidebar to be focusable during a search.
     return this.selectedFolder_ === this.itemId ? '0' : '-1';
-  },
+  }
 
   /**
    * Sets the 'aria-expanded' accessibility on nodes which need it. Note that
@@ -400,7 +431,7 @@ Polymer({
     } else {
       this.getFocusTarget().removeAttribute('aria-expanded');
     }
-  },
+  }
 
   /**
    * Scrolls the folder node into view when the folder is selected.
@@ -411,8 +442,8 @@ Polymer({
       return;
     }
 
-    this.async(() => this.$.container.scrollIntoViewIfNeeded());
-  },
+    microTask.run(() => this.$.container.scrollIntoViewIfNeeded());
+  }
 
   /**
    * @param {?boolean} openState
@@ -422,5 +453,8 @@ Polymer({
   computeIsOpen_(openState, depth) {
     return openState != null ? openState :
                                depth <= FOLDER_OPEN_BY_DEFAULT_DEPTH;
-  },
-});
+  }
+}
+
+customElements.define(
+    BookmarksFolderNodeElement.is, BookmarksFolderNodeElement);

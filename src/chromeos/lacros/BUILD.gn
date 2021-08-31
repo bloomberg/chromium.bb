@@ -6,24 +6,78 @@ import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/linux/gtk/gtk.gni")
 import("//build/lacros/lacros_resource_sizes.gni")
 
+if (is_chromeos_device) {
+  import("//build/config/chromeos/rules.gni")
+}
+
 # Code lives in the lacros-chrome browser only, not ash-chrome.
-assert(chromeos_is_browser_only)
+assert(is_chromeos_lacros)
 assert(!use_gtk)
 
 component("lacros") {
   defines = [ "IS_CHROMEOS_LACROS_IMPL" ]
   deps = [
     "//base",
+    "//build:chromeos_buildflags",
+    "//chromeos/crosapi/cpp",
     "//chromeos/crosapi/mojom",
+    "//chromeos/process_proxy",
+    "//chromeos/startup",
     "//mojo/public/cpp/bindings",
   ]
   sources = [
     "lacros_chrome_service_delegate.h",
     "lacros_chrome_service_impl.cc",
     "lacros_chrome_service_impl.h",
+    "lacros_chrome_service_impl_never_blocking_state.cc",
+    "lacros_chrome_service_impl_never_blocking_state.h",
+    "lacros_service.h",
+    "system_idle_cache.cc",
+    "system_idle_cache.h",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+  deps = [
+    "//base",
+    "//chromeos/crosapi/mojom",
+    "//chromeos/lacros",
+  ]
+  sources = [
+    "lacros_test_helper.cc",
+    "lacros_test_helper.h",
   ]
 }
 
 lacros_resource_sizes_test("resource_sizes_lacros_chrome") {
   data_deps = [ "//chrome:chrome" ]
+}
+
+if (is_chromeos_device) {
+  lacros_tast_tests("lacros_smoke_tast_tests") {
+    # A list of tests that are known to work reliably.
+    # TODO(crbug.com/1158590): use --attr-expr instead of hard-coding the tests.
+    tast_tests = [
+      "lacros.AppLauncherLaunch",
+      "lacros.AudioPlay",
+      "lacros.Basic",
+
+      # TODO(crbug.com/1205526): Enable this test again.
+      #"lacros.ShelfLaunch",
+    ]
+  }
+
+  lacros_tast_tests("lacros_fyi_tast_tests") {
+    # The following expression filters out all non-critical tests. See the link
+    # below for more details:
+    # https://chromium.googlesource.com/chromiumos/platform/tast/+/main/docs/test_attributes.md
+    tast_attr_expr = "\"group:mainline\" && (\"dep:lacros\" || \"dep:lacros_stable\" || \"dep:lacros_unstable\")"
+
+    tast_disabled_tests = [
+      # Chromium CI/CQ is meant to test the tip of the trunk or branch, but
+      # test tests again the live Lacros on Omaha, so it's not applicable here.
+      "lacros.ShelfLaunch.omaha",
+    ]
+  }
 }

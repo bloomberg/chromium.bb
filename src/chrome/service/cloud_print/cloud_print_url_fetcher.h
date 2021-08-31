@@ -106,7 +106,7 @@ class CloudPrintURLFetcher
 
     // Authentication information may change between retries.
     // CloudPrintURLFetcher will request auth info before sending any request.
-    virtual std::string GetAuthHeader() = 0;
+    virtual std::string GetAuthHeaderValue() = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -122,15 +122,18 @@ class CloudPrintURLFetcher
   void StartGetRequest(RequestType type,
                        const GURL& url,
                        Delegate* delegate,
-                       int max_retries,
-                       const std::string& additional_headers);
+                       int max_retries);
+  void StartGetRequestWithAcceptHeader(RequestType type,
+                                       const GURL& url,
+                                       Delegate* delegate,
+                                       int max_retries,
+                                       const std::string& accept_header);
   void StartPostRequest(RequestType type,
                         const GURL& url,
                         Delegate* delegate,
                         int max_retries,
                         const std::string& post_data_mime_type,
-                        const std::string& post_data,
-                        const std::string& additional_headers);
+                        const std::string& post_data);
 
   // net::URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -152,13 +155,13 @@ class CloudPrintURLFetcher
                           int max_retries,
                           const std::string& post_data_mime_type,
                           const std::string& post_data,
-                          const std::string& additional_headers);
+                          const std::string& additional_accept_header);
   void SetupRequestHeaders();
 
   std::unique_ptr<net::URLFetcher> request_;
   Delegate* delegate_;
   int num_retries_;
-  std::string additional_headers_;
+  std::string additional_accept_header_;
   std::string post_data_mime_type_;
   std::string post_data_;
 

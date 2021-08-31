@@ -23,6 +23,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/win/registry.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_switcher/browser_switcher_policy_migrator.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "chrome/browser/browser_switcher/browser_switcher_sitelist.h"
@@ -113,8 +114,8 @@ void SaveDataToFile(const std::string& data, base::FilePath path) {
 }
 
 // URL to fetch the IEEM sitelist from. Only used for testing.
-base::Optional<std::string>* IeemSitelistUrlForTesting() {
-  static base::NoDestructor<base::Optional<std::string>>
+absl::optional<std::string>* IeemSitelistUrlForTesting() {
+  static base::NoDestructor<absl::optional<std::string>>
       ieem_sitelist_url_for_testing;
   return ieem_sitelist_url_for_testing.get();
 }
@@ -172,13 +173,13 @@ void BrowserSwitcherServiceWin::LoadRulesFromPrefs() {
   BrowserSwitcherService::LoadRulesFromPrefs();
   if (prefs().UseIeSitelist())
     sitelist()->SetIeemSitelist(
-        ParsedXml(prefs().GetCachedIeemSitelist(), base::nullopt));
+        ParsedXml(prefs().GetCachedIeemSitelist(), absl::nullopt));
 }
 
 base::FilePath BrowserSwitcherServiceWin::GetCacheDir() {
   if (!cache_dir_for_testing_.empty())
     return cache_dir_for_testing_;
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   base::FilePath path;
   if (!base::PathService::Get(base::DIR_LOCAL_APP_DATA, &path))
     return path;
@@ -203,7 +204,7 @@ GURL BrowserSwitcherServiceWin::GetIeemSitelistUrl() {
   if (!prefs().UseIeSitelist())
     return GURL();
 
-  if (*IeemSitelistUrlForTesting() != base::nullopt)
+  if (*IeemSitelistUrlForTesting() != absl::nullopt)
     return GURL((*IeemSitelistUrlForTesting()).value());
 
   base::win::RegKey key;
@@ -214,7 +215,7 @@ GURL BrowserSwitcherServiceWin::GetIeemSitelistUrl() {
   std::wstring url_string;
   if (ERROR_SUCCESS != key.ReadValue(kIeSiteListValue, &url_string))
     return GURL();
-  return GURL(base::UTF16ToUTF8(url_string));
+  return GURL(base::WideToUTF8(url_string));
 }
 
 void BrowserSwitcherServiceWin::OnIeemSitelistParsed(ParsedXml xml) {

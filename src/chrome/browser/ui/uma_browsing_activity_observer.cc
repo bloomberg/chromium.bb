@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "ui/gfx/range/range.h"
 
 namespace chrome {
 namespace {
@@ -94,10 +96,14 @@ void UMABrowsingActivityObserver::LogTimeBeforeUpdate() const {
       UpgradeDetector::GetInstance()->upgrade_detected_time();
   if (upgrade_detected_time.is_null())
     return;
-  const base::Time now = base::Time::Now();
-  UMA_HISTOGRAM_EXACT_LINEAR(
-      "UpgradeDetector.DaysBeforeUpgrade",
-      base::TimeDelta(now - upgrade_detected_time).InDays(), 30);
+  const base::TimeDelta time_since_upgrade =
+      base::Time::Now() - upgrade_detected_time;
+  constexpr int kMaxDays = 30;
+  base::UmaHistogramExactLinear("UpgradeDetector.DaysBeforeUpgrade",
+                                base::TimeDelta(time_since_upgrade).InDays(),
+                                kMaxDays);
+  base::UmaHistogramCounts1000("UpgradeDetector.HoursBeforeUpgrade",
+                               base::TimeDelta(time_since_upgrade).InHours());
 }
 
 void UMABrowsingActivityObserver::LogRenderProcessHostCount() const {
@@ -175,22 +181,28 @@ void UMABrowsingActivityObserver::LogBrowserTabCount() const {
   // Record how many tabs total are open (across all windows).
   UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerLoad", tab_count, 1, 200, 50);
 
-  // Record how many tab groups are open across all windows.
+  // Record how many tab groups (including zero) are open across all windows.
   UMA_HISTOGRAM_COUNTS_100("TabGroups.UserGroupCountPerLoad", tab_group_count);
+
+  // Record how many tab groups are open across all windows.
+  if (tab_group_count != 0) {
+    UMA_HISTOGRAM_COUNTS_100("TabGroups.NonZeroUserGroupCountPerLoad",
+                             tab_group_count);
+  }
 
   // Record how many tabs are in the current group. Records 0 if the active tab
   // is not in a group.
   const Browser* current_browser = BrowserList::GetInstance()->GetLastActive();
   if (current_browser) {
     TabStripModel* const tab_strip_model = current_browser->tab_strip_model();
-    const base::Optional<tab_groups::TabGroupId> active_group =
+    const absl::optional<tab_groups::TabGroupId> active_group =
         tab_strip_model->GetTabGroupForTab(tab_strip_model->active_index());
     UMA_HISTOGRAM_COUNTS_100("Tabs.TabCountInGroupPerLoad",
                              active_group.has_value()
                                  ? tab_strip_model->group_model()
                                        ->GetTabGroup(active_group.value())
                                        ->ListTabs()
-                                       .size()
+                                       .length()
                                  : 0);
   }
 

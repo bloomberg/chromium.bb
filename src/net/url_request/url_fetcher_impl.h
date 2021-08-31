@@ -55,12 +55,12 @@ class NET_EXPORT_PRIVATE URLFetcherImpl : public URLFetcher {
   int GetLoadFlags() const override;
   void SetReferrer(const std::string& referrer) override;
   void SetReferrerPolicy(ReferrerPolicy referrer_policy) override;
-  void SetExtraRequestHeaders(
-      const std::string& extra_request_headers) override;
-  void AddExtraRequestHeader(const std::string& header_line) override;
+  void ClearExtraRequestHeaders() override;
+  void AddExtraRequestHeader(const std::string& name,
+                             const std::string& value) override;
   void SetRequestContext(
       URLRequestContextGetter* request_context_getter) override;
-  void SetInitiator(const base::Optional<url::Origin>& initiator) override;
+  void SetInitiator(const absl::optional<url::Origin>& initiator) override;
   void SetURLRequestUserData(
       const void* key,
       const CreateDataCallback& create_data_callback) override;

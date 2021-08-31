@@ -31,11 +31,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREADING_PRIMITIVES_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREADING_PRIMITIVES_H_
 
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
 #include "base/thread_annotations.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 #if defined(OS_WIN)

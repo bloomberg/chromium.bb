@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/graphics/box_reflection.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_convolve_matrix.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -52,6 +53,7 @@ class CORE_EXPORT FilterOperation : public GarbageCollected<FilterOperation> {
     SEPIA,
     SATURATE,
     HUE_ROTATE,
+    LUMINANCE_TO_ALPHA,
     INVERT,
     OPACITY,
     BRIGHTNESS,
@@ -59,6 +61,8 @@ class CORE_EXPORT FilterOperation : public GarbageCollected<FilterOperation> {
     BLUR,
     DROP_SHADOW,
     BOX_REFLECT,
+    COLOR_MATRIX,
+    CONVOLVE_MATRIX,
     NONE
   };
 
@@ -68,14 +72,17 @@ class CORE_EXPORT FilterOperation : public GarbageCollected<FilterOperation> {
       case SEPIA:
       case SATURATE:
       case HUE_ROTATE:
+      case LUMINANCE_TO_ALPHA:
       case INVERT:
       case OPACITY:
       case BRIGHTNESS:
       case CONTRAST:
       case BLUR:
       case DROP_SHADOW:
+      case COLOR_MATRIX:
         return true;
       case REFERENCE:
+      case CONVOLVE_MATRIX:
       case BOX_REFLECT:
         return false;
       case NONE:
@@ -152,8 +159,9 @@ struct DowncastTraits<ReferenceFilterOperation> {
   }
 };
 
-// GRAYSCALE, SEPIA, SATURATE and HUE_ROTATE are variations on a basic color
-// matrix effect.  For HUE_ROTATE, the angle of rotation is stored in m_amount.
+// GRAYSCALE, SEPIA, SATURATE, HUE_ROTATE and LUMINANCE_TO_ALPHA are variations
+// on a basic color matrix effect.  For HUE_ROTATE, the angle of rotation is
+// stored in amount_. For LUMINANCE_TO_ALPHA amount_ is unused.
 class CORE_EXPORT BasicColorMatrixFilterOperation : public FilterOperation {
  public:
   BasicColorMatrixFilterOperation(double amount, OperationType type)
@@ -173,18 +181,46 @@ class CORE_EXPORT BasicColorMatrixFilterOperation : public FilterOperation {
   double amount_;
 };
 
+// Generic color matrices
+class CORE_EXPORT ColorMatrixFilterOperation : public FilterOperation {
+ public:
+  ColorMatrixFilterOperation(Vector<float> values, OperationType type)
+      : FilterOperation(type), values_(std::move(values)) {}
+
+  const Vector<float>& Values() const { return values_; }
+
+ private:
+  bool operator==(const FilterOperation& o) const override {
+    if (!IsSameType(o))
+      return false;
+    const ColorMatrixFilterOperation* other =
+        static_cast<const ColorMatrixFilterOperation*>(&o);
+    return values_ == other->values_;
+  }
+
+  Vector<float> values_;
+};
+
 inline bool IsBasicColorMatrixFilterOperation(
     const FilterOperation& operation) {
   FilterOperation::OperationType type = operation.GetType();
   return type == FilterOperation::GRAYSCALE || type == FilterOperation::SEPIA ||
          type == FilterOperation::SATURATE ||
-         type == FilterOperation::HUE_ROTATE;
+         type == FilterOperation::HUE_ROTATE ||
+         type == FilterOperation::LUMINANCE_TO_ALPHA;
 }
 
 template <>
 struct DowncastTraits<BasicColorMatrixFilterOperation> {
   static bool AllowFrom(const FilterOperation& op) {
     return IsBasicColorMatrixFilterOperation(op);
+  }
+};
+
+template <>
+struct DowncastTraits<ColorMatrixFilterOperation> {
+  static bool AllowFrom(const FilterOperation& op) {
+    return op.GetType() == FilterOperation::COLOR_MATRIX;
   }
 };
 
@@ -308,6 +344,62 @@ template <>
 struct DowncastTraits<BoxReflectFilterOperation> {
   static bool AllowFrom(const FilterOperation& op) {
     return op.GetType() == FilterOperation::BOX_REFLECT;
+  }
+};
+
+class CORE_EXPORT ConvolveMatrixFilterOperation : public FilterOperation {
+ public:
+  ConvolveMatrixFilterOperation(const IntSize& kernel_size,
+                                float divisor,
+                                float bias,
+                                const IntPoint& target_offset,
+                                FEConvolveMatrix::EdgeModeType edge_mode,
+                                bool preserve_alpha,
+                                const Vector<float>& kernel_matrix)
+      : FilterOperation(CONVOLVE_MATRIX),
+        kernel_size_(kernel_size),
+        divisor_(divisor),
+        bias_(bias),
+        target_offset_(target_offset),
+        edge_mode_(edge_mode),
+        preserve_alpha_(preserve_alpha),
+        kernel_matrix_(kernel_matrix) {}
+
+  const IntSize& KernelSize() const { return kernel_size_; }
+  float Divisor() const { return divisor_; }
+  float Bias() const { return bias_; }
+  const IntPoint& TargetOffset() const { return target_offset_; }
+  FEConvolveMatrix::EdgeModeType EdgeMode() const { return edge_mode_; }
+  bool PreserveAlpha() const { return preserve_alpha_; }
+  const Vector<float>& KernelMatrix() const { return kernel_matrix_; }
+
+ private:
+  bool operator==(const FilterOperation& o) const override {
+    if (!IsSameType(o))
+      return false;
+    const ConvolveMatrixFilterOperation* other =
+        static_cast<const ConvolveMatrixFilterOperation*>(&o);
+    return (kernel_size_ == other->kernel_size_ &&
+            divisor_ == other->divisor_ && bias_ == other->bias_ &&
+            target_offset_ == other->target_offset_ &&
+            edge_mode_ == other->edge_mode_ &&
+            preserve_alpha_ == other->preserve_alpha_ &&
+            kernel_matrix_ == other->kernel_matrix_);
+  }
+
+  IntSize kernel_size_;
+  float divisor_;
+  float bias_;
+  IntPoint target_offset_;
+  FEConvolveMatrix::EdgeModeType edge_mode_;
+  bool preserve_alpha_;
+  Vector<float> kernel_matrix_;
+};
+
+template <>
+struct DowncastTraits<ConvolveMatrixFilterOperation> {
+  static bool AllowFrom(const FilterOperation& op) {
+    return op.GetType() == FilterOperation::CONVOLVE_MATRIX;
   }
 };
 

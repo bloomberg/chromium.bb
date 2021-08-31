@@ -37,14 +37,12 @@ class LinkTest : public test::BaseControlTestWidget {
 
     event_generator_ = std::make_unique<ui::test::EventGenerator>(
         GetContext(), widget()->GetNativeWindow());
-    event_generator_->set_assume_window_at_origin(false);
   }
 
  protected:
   void CreateWidgetContent(View* container) override {
     // Create a widget containing a link which does not take the full size.
-    link_ = container->AddChildView(
-        std::make_unique<Link>(base::ASCIIToUTF16("TestLink")));
+    link_ = container->AddChildView(std::make_unique<Link>(u"TestLink"));
     link_->SetBoundsRect(
         gfx::ScaleToEnclosedRect(container->GetLocalBounds(), 0.5f));
   }

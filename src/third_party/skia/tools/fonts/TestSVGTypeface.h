@@ -15,6 +15,7 @@
 #include "include/core/SkRect.h"
 #include "include/core/SkRefCnt.h"
 #include "include/core/SkScalar.h"
+#include "include/core/SkSpan.h"
 #include "include/core/SkStream.h"
 #include "include/core/SkString.h"
 #include "include/core/SkTypeface.h"
@@ -23,7 +24,6 @@
 #include "include/private/SkMutex.h"
 #include "include/private/SkTArray.h"
 #include "include/private/SkTHash.h"
-#include "src/core/SkSpan.h"
 
 #include <memory>
 
@@ -80,8 +80,8 @@ public:
 protected:
     void exportTtxCommon(SkWStream*, const char* type, const SkTArray<GlyfInfo>* = nullptr) const;
 
-    SkScalerContext* onCreateScalerContext(const SkScalerContextEffects&,
-                                           const SkDescriptor* desc) const override;
+    std::unique_ptr<SkScalerContext> onCreateScalerContext(const SkScalerContextEffects&,
+                                                           const SkDescriptor* desc) const override;
     void onFilterRec(SkScalerContextRec* rec) const override;
     void getGlyphToUnicodeMap(SkUnichar*) const override;
     std::unique_ptr<SkAdvancedTypefaceMetrics> onGetAdvancedMetrics() const override;

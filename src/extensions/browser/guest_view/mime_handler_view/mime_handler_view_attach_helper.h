@@ -15,13 +15,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/render_process_host_observer.h"
-#include "extensions/common/mojom/guest_view.mojom.h"
 
 namespace content {
 class RenderFrameHost;
 class RenderProcessHost;
 class WebContents;
 }  // namespace content
+
+class GURL;
 
 namespace extensions {
 
@@ -86,11 +87,11 @@ class MimeHandlerViewAttachHelper : content::RenderProcessHostObserver {
   // SiteInstance) has been created.
   static void CreateFullPageMimeHandlerView(int32_t frame_tree_node_id,
                                             const GURL& resource_url,
-                                            const std::string& mime_type,
                                             const std::string& stream_id,
                                             const std::string& token);
 
-  MimeHandlerViewAttachHelper(content::RenderProcessHost* render_process_host);
+  explicit MimeHandlerViewAttachHelper(
+      content::RenderProcessHost* render_process_host);
 
   // From the time the MimeHandlerViewGuest starts the attach process
   // (AttachToOuterWebContents) to when the inner WebContents of GuestView

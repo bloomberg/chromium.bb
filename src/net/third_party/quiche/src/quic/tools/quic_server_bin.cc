@@ -7,12 +7,14 @@
 
 #include <vector>
 
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/tools/quic_epoll_server_factory.h"
-#include "net/third_party/quiche/src/quic/tools/quic_toy_server.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_system_event_loop.h"
+#include "quic/tools/quic_epoll_server_factory.h"
+#include "quic/tools/quic_toy_server.h"
 
 int main(int argc, char* argv[]) {
+  QuicSystemEventLoop event_loop("quic_server");
   const char* usage = "Usage: quic_server [options]";
   std::vector<std::string> non_option_args =
       quic::QuicParseCommandLineFlags(usage, argc, argv);

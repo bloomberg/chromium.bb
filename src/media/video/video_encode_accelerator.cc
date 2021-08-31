@@ -8,6 +8,8 @@
 
 #include "base/callback.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 namespace media {
 
@@ -47,11 +49,11 @@ VideoEncodeAccelerator::Config::Config(
     const gfx::Size& input_visible_size,
     VideoCodecProfile output_profile,
     uint32_t initial_bitrate,
-    base::Optional<uint32_t> initial_framerate,
-    base::Optional<uint32_t> gop_length,
-    base::Optional<uint8_t> h264_output_level,
+    absl::optional<uint32_t> initial_framerate,
+    absl::optional<uint32_t> gop_length,
+    absl::optional<uint8_t> h264_output_level,
     bool is_constrained_h264,
-    base::Optional<StorageType> storage_type,
+    absl::optional<StorageType> storage_type,
     ContentType content_type,
     const std::vector<SpatialLayer>& spatial_layers)
     : input_format(input_format),
@@ -98,7 +100,7 @@ std::string VideoEncodeAccelerator::Config::AsHumanReadableString() const {
   for (size_t i = 0; i < spatial_layers.size(); ++i) {
     const auto& sl = spatial_layers[i];
     str += base::StringPrintf(
-        ", {SatialLayer#%zu: width=%" PRId32 ", height=%" PRId32
+        ", {SpatialLayer#%zu: width=%" PRId32 ", height=%" PRId32
         ", bitrate_bps=%" PRIu32 ", framerate=%" PRId32
         ", max_qp=%u, num_of_temporal_layers=%u}",
         i, sl.width, sl.height, sl.bitrate_bps, sl.framerate, sl.max_qp,
@@ -127,8 +129,7 @@ VideoEncodeAccelerator::~VideoEncodeAccelerator() = default;
 VideoEncodeAccelerator::SupportedProfile::SupportedProfile()
     : profile(media::VIDEO_CODEC_PROFILE_UNKNOWN),
       max_framerate_numerator(0),
-      max_framerate_denominator(0) {
-}
+      max_framerate_denominator(0) {}
 
 VideoEncodeAccelerator::SupportedProfile::SupportedProfile(
     VideoCodecProfile profile,
@@ -150,6 +151,16 @@ void VideoEncodeAccelerator::Flush(FlushCallback flush_callback) {
 
 bool VideoEncodeAccelerator::IsFlushSupported() {
   return false;
+}
+
+bool VideoEncodeAccelerator::IsGpuFrameResizeSupported() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // TODO(crbug.com/1166889) Add proper method overrides in
+  // MojoVideoEncodeAccelerator and other subclasses that might return true.
+  return true;
+#else
+  return false;
+#endif
 }
 
 void VideoEncodeAccelerator::RequestEncodingParametersChange(

@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_ip_address.h"
+#include "quic/platform/api/quic_ip_address.h"
 
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <string>
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -22,7 +23,8 @@ static int ToPlatformAddressFamily(IpAddressFamily family) {
     case IpAddressFamily::IP_UNSPEC:
       return AF_UNSPEC;
   }
-  QUIC_BUG << "Invalid IpAddressFamily " << static_cast<int32_t>(family);
+  QUIC_BUG(quic_bug_10126_1)
+      << "Invalid IpAddressFamily " << static_cast<int32_t>(family);
   return AF_UNSPEC;
 }
 
@@ -84,7 +86,8 @@ bool operator==(QuicIpAddress lhs, QuicIpAddress rhs) {
     case IpAddressFamily::IP_UNSPEC:
       return true;
   }
-  QUIC_BUG << "Invalid IpAddressFamily " << static_cast<int32_t>(lhs.family_);
+  QUIC_BUG(quic_bug_10126_2)
+      << "Invalid IpAddressFamily " << static_cast<int32_t>(lhs.family_);
   return false;
 }
 
@@ -113,7 +116,8 @@ std::string QuicIpAddress::ToPackedString() const {
     case IpAddressFamily::IP_UNSPEC:
       return "";
   }
-  QUIC_BUG << "Invalid IpAddressFamily " << static_cast<int32_t>(family_);
+  QUIC_BUG(quic_bug_10126_3)
+      << "Invalid IpAddressFamily " << static_cast<int32_t>(family_);
   return "";
 }
 
@@ -125,7 +129,8 @@ std::string QuicIpAddress::ToString() const {
   char buffer[INET6_ADDRSTRLEN] = {0};
   const char* result =
       inet_ntop(AddressFamilyToInt(), address_.bytes, buffer, sizeof(buffer));
-  QUIC_BUG_IF(result == nullptr) << "Failed to convert an IP address to string";
+  QUIC_BUG_IF(quic_bug_10126_4, result == nullptr)
+      << "Failed to convert an IP address to string";
   return buffer;
 }
 
@@ -199,11 +204,12 @@ bool QuicIpAddress::IsIPv6() const {
 bool QuicIpAddress::InSameSubnet(const QuicIpAddress& other,
                                  int subnet_length) {
   if (!IsInitialized()) {
-    QUIC_BUG << "Attempting to do subnet matching on undefined address";
+    QUIC_BUG(quic_bug_10126_5)
+        << "Attempting to do subnet matching on undefined address";
     return false;
   }
   if ((IsIPv4() && subnet_length > 32) || (IsIPv6() && subnet_length > 128)) {
-    QUIC_BUG << "Subnet mask is out of bounds";
+    QUIC_BUG(quic_bug_10126_6) << "Subnet mask is out of bounds";
     return false;
   }
 
@@ -217,18 +223,18 @@ bool QuicIpAddress::InSameSubnet(const QuicIpAddress& other,
   if (bits_to_check == 0) {
     return true;
   }
-  DCHECK_LT(static_cast<size_t>(bytes_to_check), sizeof(address_.bytes));
+  QUICHE_DCHECK_LT(static_cast<size_t>(bytes_to_check), sizeof(address_.bytes));
   int mask = (~0u) << (8u - bits_to_check);
   return (lhs[bytes_to_check] & mask) == (rhs[bytes_to_check] & mask);
 }
 
 in_addr QuicIpAddress::GetIPv4() const {
-  DCHECK(IsIPv4());
+  QUICHE_DCHECK(IsIPv4());
   return address_.v4;
 }
 
 in6_addr QuicIpAddress::GetIPv6() const {
-  DCHECK(IsIPv6());
+  QUICHE_DCHECK(IsIPv6());
   return address_.v6;
 }
 

@@ -13,7 +13,6 @@
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/time/time.h"
 #include "cc/input/touch_action.h"
 #include "content/browser/renderer_host/input/fling_scheduler.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
@@ -80,8 +79,8 @@ class CONTENT_EXPORT InputRouterImpl
   void SetDeviceScaleFactor(float device_scale_factor) override;
   void SetFrameTreeNodeId(int frame_tree_node_id) override;
   void SetForceEnableZoom(bool enabled) override;
-  base::Optional<cc::TouchAction> AllowedTouchAction() override;
-  base::Optional<cc::TouchAction> ActiveTouchAction() override;
+  absl::optional<cc::TouchAction> AllowedTouchAction() override;
+  absl::optional<cc::TouchAction> ActiveTouchAction() override;
   mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> BindNewHost()
       override;
   void StopFling() override;

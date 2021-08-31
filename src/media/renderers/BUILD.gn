@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/libaom/options.gni")
-
 source_set("renderers") {
   # Do not expand the visibility here without double-checking with OWNERS, this
   # is a roll-up target which is part of the //media component. Most other DEPs
@@ -28,6 +26,8 @@ source_set("renderers") {
     "renderer_impl.h",
     "video_frame_yuv_converter.cc",
     "video_frame_yuv_converter.h",
+    "video_frame_yuv_mailboxes_holder.cc",
+    "video_frame_yuv_mailboxes_holder.h",
     "video_overlay_factory.cc",
     "video_overlay_factory.h",
     "video_renderer_impl.cc",
@@ -50,7 +50,6 @@ source_set("renderers") {
     "//media/base",
     "//media/filters",
     "//media/video",
-    "//third_party/libaom:libaom_buildflags",
     "//third_party/libyuv",
     "//ui/gfx:geometry_skia",
     "//ui/gfx:memory_buffer",
@@ -75,8 +74,6 @@ source_set("renderers") {
       "win/media_foundation_renderer.cc",
       "win/media_foundation_renderer.h",
       "win/media_foundation_renderer_extension.h",
-      "win/media_foundation_renderer_factory.cc",
-      "win/media_foundation_renderer_factory.h",
       "win/media_foundation_source_wrapper.cc",
       "win/media_foundation_source_wrapper.h",
       "win/media_foundation_stream_wrapper.cc",
@@ -99,6 +96,27 @@ source_set("renderers") {
 
     # TODO(crbug.com/167187): Fix size_t to int trunctaions.
     "//build/config/compiler:no_size_t_to_int_warning",
+  ]
+}
+
+# Note: This is a roll-up only target; do not expand the visibility. DEPS should
+# depend on the //media:test_support target instead.
+static_library("test_support") {
+  visibility = [ "//media:test_support" ]
+  testonly = true
+  sources = [
+    "shared_image_video_frame_test_utils.cc",
+    "shared_image_video_frame_test_utils.h",
+  ]
+  configs += [ "//media:media_config" ]
+  deps = [
+    "//base",
+    "//components/viz/common",
+    "//gpu:test_support",
+    "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/common",
+    "//media/base:test_support",
+    "//ui/gfx",
   ]
 }
 

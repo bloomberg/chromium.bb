@@ -14,7 +14,10 @@
 #include "components/page_load_metrics/browser/layout_shift_normalization.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
-#include "third_party/blink/public/common/mobile_metrics/mobile_friendliness.h"
+
+namespace blink {
+struct MobileFriendliness;
+}  // namespace blink
 
 namespace content {
 class NavigationHandle;
@@ -123,7 +126,7 @@ class PageLoadMetricsUpdateDispatcher {
         const mojom::FrameRenderDataUpdate& render_data) = 0;
     virtual void UpdateFeaturesUsage(
         content::RenderFrameHost* rfh,
-        const mojom::PageLoadFeatures& new_features) = 0;
+        const std::vector<blink::UseCounterFeature>& new_features) = 0;
     virtual void UpdateResourceDataUse(
         content::RenderFrameHost* rfh,
         const std::vector<mojom::ResourceDataUpdatePtr>& resources) = 0;
@@ -149,7 +152,7 @@ class PageLoadMetricsUpdateDispatcher {
       content::RenderFrameHost* render_frame_host,
       mojom::PageLoadTimingPtr new_timing,
       mojom::FrameMetadataPtr new_metadata,
-      mojom::PageLoadFeaturesPtr new_features,
+      const std::vector<blink::UseCounterFeature>& new_features,
       const std::vector<mojom::ResourceDataUpdatePtr>& resources,
       mojom::FrameRenderDataUpdatePtr render_data,
       mojom::CpuTimingPtr new_cpu_timing,
@@ -164,13 +167,14 @@ class PageLoadMetricsUpdateDispatcher {
   // This method is only intended to be called for PageLoadFeatures being
   // recorded directly from the browser process. Features coming from the
   // renderer process should use the main flow into |UpdateMetrics|.
-  void UpdateFeatures(content::RenderFrameHost* render_frame_host,
-                      const mojom::PageLoadFeatures& new_features);
+  void UpdateFeatures(
+      content::RenderFrameHost* render_frame_host,
+      const std::vector<blink::UseCounterFeature>& new_features);
 
   void DidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle);
 
-  void OnFrameDeleted(content::RenderFrameHost* render_frame_host);
+  void OnFrameDeleted(int frame_tree_node_id);
 
   void ShutDown();
 
@@ -185,8 +189,12 @@ class PageLoadMetricsUpdateDispatcher {
     return *(subframe_metadata_.get());
   }
   const PageRenderData& page_render_data() const { return page_render_data_; }
-  const NormalizedCLSData& normalized_cls_data() const {
-    return layout_shift_normalization_.normalized_cls_data();
+  const NormalizedCLSData& normalized_cls_data(
+      PageLoadMetricsObserverDelegate::BfcacheStrategy bfcache_strategy) const {
+    return bfcache_strategy ==
+                   PageLoadMetricsObserverDelegate::BfcacheStrategy::RESET
+               ? layout_shift_normalization_for_bfcache_.normalized_cls_data()
+               : layout_shift_normalization_.normalized_cls_data();
   }
   const PageRenderData& main_frame_render_data() const {
     return main_frame_render_data_;
@@ -197,7 +205,11 @@ class PageLoadMetricsUpdateDispatcher {
   const blink::MobileFriendliness& mobile_friendliness() const {
     return mobile_friendliness_;
   }
-
+  void UpdateLayoutShiftNormalizationForBfcache() {
+    cumulative_layout_shift_score_for_bfcache_ =
+        page_render_data_.layout_shift_score;
+    layout_shift_normalization_for_bfcache_.ClearAllLayoutShifts();
+  }
   // Ensures all pending updates will get dispatched.
   void FlushPendingTimingUpdates();
 
@@ -290,6 +302,10 @@ class PageLoadMetricsUpdateDispatcher {
       frame_intersection_updates_;
 
   LayoutShiftNormalization layout_shift_normalization_;
+  // Layout shift normalization data for bfcache which needs to be reset each
+  // time the page enters the BackForward cache.
+  LayoutShiftNormalization layout_shift_normalization_for_bfcache_;
+  float cumulative_layout_shift_score_for_bfcache_ = 0.0;
 
   // Navigation start offsets for the most recently committed document in each
   // frame.

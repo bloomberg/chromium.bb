@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.ui.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.display.DisplayAndroid;
+import org.chromium.url.GURL;
 
 import java.io.File;
 import java.lang.annotation.Retention;
@@ -73,7 +74,7 @@ public class TabContentManager {
     // Whether to allow to refetch tab thumbnail if the aspect ratio is not matching.
     public static final BooleanCachedFieldTrialParameter ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION =
             new BooleanCachedFieldTrialParameter(
-                    ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "allow_to_refetch", false);
+                    ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "allow_to_refetch", true);
 
     @VisibleForTesting
     public static final String UMA_THUMBNAIL_FETCHING_RESULT =
@@ -131,7 +132,7 @@ public class TabContentManager {
             String commandLineSwitch) {
         int val = -1;
         // TODO(crbug/959054): Convert this to Finch config.
-        if (TabUiFeatureUtilities.isGridTabSwitcherEnabled()) {
+        if (TabUiFeatureUtilities.isGridTabSwitcherEnabled(context)) {
             // With Grid Tab Switcher, we can greatly reduce the capacity of thumbnail cache.
             // See crbug.com/959054 for more details.
             if (resourceId == R.integer.default_thumbnail_cache_size) val = 2;
@@ -209,7 +210,7 @@ public class TabContentManager {
 
         boolean useApproximationThumbnails =
                 !DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext);
-        boolean saveJpegThumbnails = TabUiFeatureUtilities.isGridTabSwitcherEnabled();
+        boolean saveJpegThumbnails = TabUiFeatureUtilities.isGridTabSwitcherEnabled(mContext);
 
         mNativeTabContentManager = TabContentManagerJni.get().init(TabContentManager.this,
                 mFullResThumbnailsMaxSize, approximationCacheSize, compressionQueueMaxSize,
@@ -577,7 +578,7 @@ public class TabContentManager {
      * @param tabId The id of the {@link Tab} thumbnail to check.
      * @param url   The current URL of the {@link Tab}.
      */
-    public void invalidateIfChanged(int tabId, String url) {
+    public void invalidateIfChanged(int tabId, GURL url) {
         if (mNativeTabContentManager != 0) {
             TabContentManagerJni.get().invalidateIfChanged(
                     mNativeTabContentManager, TabContentManager.this, tabId, url);
@@ -589,7 +590,7 @@ public class TabContentManager {
      * @param id The id of the {@link Tab} thumbnail to check.
      * @param url   The current URL of the {@link Tab}.
      */
-    public void invalidateTabThumbnail(int id, String url) {
+    public void invalidateTabThumbnail(int id, GURL url) {
         invalidateIfChanged(id, url);
     }
 
@@ -663,7 +664,7 @@ public class TabContentManager {
         void cacheTabWithBitmap(long nativeTabContentManager, TabContentManager caller, Object tab,
                 Object bitmap, float thumbnailScale);
         void invalidateIfChanged(
-                long nativeTabContentManager, TabContentManager caller, int tabId, String url);
+                long nativeTabContentManager, TabContentManager caller, int tabId, GURL url);
         void updateVisibleIds(long nativeTabContentManager, TabContentManager caller,
                 int[] priority, int primaryTabId);
         void removeTabThumbnail(long nativeTabContentManager, TabContentManager caller, int tabId);

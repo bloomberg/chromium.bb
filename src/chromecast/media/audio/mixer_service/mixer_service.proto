@@ -145,6 +145,7 @@ message StreamInterruption {
     INTERRUPTED_UNDERRUN = 2;        // Mixer output underrun.
     INTERRUPTED_CONFIG_CHANGE = 3;   // Mixer output config changed.
     INTERRUPTED_OUTPUT_STOPPED = 4;  // Mixer stopped playing out audio.
+    INTERRUPTED_SOCKET_OVERFLOW = 5;  // Mixer couldn't send over the socket.
   }
 
   optional InterruptionReason reason = 1;
@@ -186,6 +187,13 @@ message SetDeviceMuted {
 message SetVolumeLimit {
   optional ContentType content_type = 1;
   optional float max_volume_multiplier = 2;
+}
+
+// Asks the mixer to return a list of registered builtin post processors.
+message ListPostprocessors {}
+
+message PostprocessorList{
+  repeated string postprocessors = 1;
 }
 
 // Sends arbitrary config data to a specific postprocessor.
@@ -259,4 +267,6 @@ message Generic {
   optional StreamInterruption stream_interruption = 22;
   optional SetAudioClockRate set_audio_clock_rate = 23;
   optional MixerUnderrun mixer_underrun = 24;
+  optional ListPostprocessors list_postprocessors = 25;
+  optional PostprocessorList postprocessor_list = 26;
 }

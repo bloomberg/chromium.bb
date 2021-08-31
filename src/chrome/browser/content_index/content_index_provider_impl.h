@@ -9,13 +9,12 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
-#include "base/optional.h"
 #include "chrome/browser/content_index/content_index_metrics.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "content/public/browser/content_index_provider.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 class WebContents;
@@ -25,14 +24,19 @@ namespace offline_items_collection {
 class OfflineContentAggregator;
 }  // namespace offline_items_collection
 
-class Profile;
+namespace site_engagement {
 class SiteEngagementService;
+}
+
+class Profile;
 
 class ContentIndexProviderImpl
     : public KeyedService,
       public offline_items_collection::OfflineContentProvider,
       public content::ContentIndexProvider {
  public:
+  static const char kProviderNamespace[];
+
   explicit ContentIndexProviderImpl(Profile* profile);
   ~ContentIndexProviderImpl() override;
 
@@ -68,10 +72,8 @@ class ContentIndexProviderImpl
                   RenameCallback callback) override;
   void ChangeSchedule(
       const offline_items_collection::ContentId& id,
-      base::Optional<offline_items_collection::OfflineItemSchedule> schedule)
+      absl::optional<offline_items_collection::OfflineItemSchedule> schedule)
       override;
-  void AddObserver(Observer* observer) override;
-  void RemoveObserver(Observer* observer) override;
 
   void SetIconSizesForTesting(std::vector<gfx::Size> icon_sizes) {
     icon_sizes_for_testing_ = std::move(icon_sizes);
@@ -79,7 +81,7 @@ class ContentIndexProviderImpl
 
  private:
   void DidGetItem(SingleItemCallback callback,
-                  base::Optional<content::ContentIndexEntry> entry);
+                  absl::optional<content::ContentIndexEntry> entry);
   void DidGetAllEntriesAcrossStorageParitions(
       std::unique_ptr<OfflineItemList> item_list,
       MultipleItemCallback callback);
@@ -90,7 +92,7 @@ class ContentIndexProviderImpl
   void DidGetIcons(const offline_items_collection::ContentId& id,
                    VisualsCallback callback,
                    std::vector<SkBitmap> icons);
-  void DidGetEntryToOpen(base::Optional<content::ContentIndexEntry> entry);
+  void DidGetEntryToOpen(absl::optional<content::ContentIndexEntry> entry);
   void DidOpenTab(content::ContentIndexEntry entry,
                   content::WebContents* web_contents);
   offline_items_collection::OfflineItem EntryToOfflineItem(
@@ -99,9 +101,8 @@ class ContentIndexProviderImpl
   Profile* profile_;
   ContentIndexMetrics metrics_;
   offline_items_collection::OfflineContentAggregator* aggregator_;
-  SiteEngagementService* site_engagement_service_;
-  base::ObserverList<Observer>::Unchecked observers_;
-  base::Optional<std::vector<gfx::Size>> icon_sizes_for_testing_;
+  site_engagement::SiteEngagementService* site_engagement_service_;
+  absl::optional<std::vector<gfx::Size>> icon_sizes_for_testing_;
   base::WeakPtrFactory<ContentIndexProviderImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ContentIndexProviderImpl);

@@ -40,7 +40,7 @@ class ArcAppfuseBridgeFactory
 };
 
 void RunWithScopedHandle(base::OnceCallback<void(mojo::ScopedHandle)> callback,
-                         base::Optional<base::ScopedFD> fd) {
+                         absl::optional<base::ScopedFD> fd) {
   if (!fd || !fd.value().is_valid()) {
     LOG(ERROR) << "Invalid FD: fd.has_value() = " << fd.has_value();
     std::move(callback).Run(mojo::ScopedHandle());
@@ -62,6 +62,12 @@ void RunWithScopedHandle(base::OnceCallback<void(mojo::ScopedHandle)> callback,
 ArcAppfuseBridge* ArcAppfuseBridge::GetForBrowserContext(
     content::BrowserContext* context) {
   return ArcAppfuseBridgeFactory::GetForBrowserContext(context);
+}
+
+// static
+ArcAppfuseBridge* ArcAppfuseBridge::GetForBrowserContextForTesting(
+    content::BrowserContext* context) {
+  return ArcAppfuseBridgeFactory::GetForBrowserContextForTesting(context);
 }
 
 ArcAppfuseBridge::ArcAppfuseBridge(content::BrowserContext* context,

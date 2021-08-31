@@ -159,12 +159,14 @@ void PDFWebContentsHelper::SelectBetweenCoordinates(const gfx::PointF& base,
 
 void PDFWebContentsHelper::OnSelectionEvent(ui::SelectionEventType event) {}
 
-void PDFWebContentsHelper::OnDragUpdate(const gfx::PointF& position) {}
+void PDFWebContentsHelper::OnDragUpdate(
+    const ui::TouchSelectionDraggable::Type type,
+    const gfx::PointF& position) {}
 
 std::unique_ptr<ui::TouchHandleDrawable>
 PDFWebContentsHelper::CreateDrawable() {
   // We can return null here, as the manager will look after this.
-  return std::unique_ptr<ui::TouchHandleDrawable>();
+  return nullptr;
 }
 
 void PDFWebContentsHelper::OnManagerWillDestroy(
@@ -233,8 +235,8 @@ bool PDFWebContentsHelper::ShouldShowQuickMenu() {
   return false;
 }
 
-base::string16 PDFWebContentsHelper::GetSelectedText() {
-  return base::string16();
+std::u16string PDFWebContentsHelper::GetSelectedText() {
+  return std::u16string();
 }
 
 void PDFWebContentsHelper::InitTouchSelectionClientManager() {
@@ -258,7 +260,11 @@ void PDFWebContentsHelper::HasUnsupportedFeature() {
 void PDFWebContentsHelper::SaveUrlAs(const GURL& url,
                                      blink::mojom::ReferrerPtr referrer) {
   client_->OnSaveURL(web_contents());
-  web_contents()->SaveFrame(url, referrer.To<content::Referrer>());
+
+  if (content::RenderFrameHost* rfh =
+          web_contents()->GetOuterWebContentsFrame()) {
+    web_contents()->SaveFrame(url, referrer.To<content::Referrer>(), rfh);
+  }
 }
 
 void PDFWebContentsHelper::UpdateContentRestrictions(

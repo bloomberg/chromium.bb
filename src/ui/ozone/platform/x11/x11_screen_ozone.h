@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/base/x/x11_display_manager.h"
-#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/x/event.h"
 #include "ui/ozone/public/platform_screen.h"
@@ -23,7 +22,7 @@ class X11WindowManager;
 
 // A PlatformScreen implementation for X11.
 class X11ScreenOzone : public PlatformScreen,
-                       public XEventDispatcher,
+                       public x11::EventObserver,
                        public XDisplayManager::Delegate {
  public:
   X11ScreenOzone();
@@ -55,9 +54,10 @@ class X11ScreenOzone : public PlatformScreen,
   std::string GetCurrentWorkspace() override;
   base::Value GetGpuExtraInfoAsListValue(
       const gfx::GpuExtraInfo& gpu_extra_info) override;
+  void SetDeviceScaleFactor(float scale) override;
 
-  // Overridden from ui::XEventDispatcher:
-  bool DispatchXEvent(x11::Event* event) override;
+  // Overridden from x11::EventObserver:
+  void OnEvent(const x11::Event& event) override;
 
  private:
   friend class X11ScreenOzoneTest;
@@ -70,6 +70,10 @@ class X11ScreenOzone : public PlatformScreen,
 
   X11WindowManager* const window_manager_;
   std::unique_ptr<ui::XDisplayManager> x11_display_manager_;
+
+  // Scale value that DesktopScreenOzoneLinux sets by listening to
+  // DeviceScaleFactorObserver.
+  float device_scale_factor_ = 1.0f;
 
   DISALLOW_COPY_AND_ASSIGN(X11ScreenOzone);
 };

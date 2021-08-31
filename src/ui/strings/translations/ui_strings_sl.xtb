@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">Vgrajeni zaslon</translation>
 <translation id="335581015389089642">Speech</translation>
 <translation id="3389286852084373014">Besedilo je preveliko</translation>
+<translation id="3406306243914553062">Vsebina HTML</translation>
 <translation id="348799646910989694">Polica je samodejno skrita</translation>
 <translation id="3554637740840164787">Element <ph name="ITEM_TITLE" /> je bil pripet</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Še 1 dan}one{Še # dan}two{Še # dneva}few{Še # dni}other{Še # dni}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">Številka</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
 <translation id="3842239759367498783">Nadaljevanje branja v mobilni napravi <ph name="TITLE" /></translation>
 <translation id="385051799172605136">Nazaj</translation>
 <translation id="3889424535448813030">Puščica desno</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Pred 1 mesecem}one{Pred # mesecem}two{Pred # mesecema}few{Pred # meseci}other{Pred # meseci}}</translation>
 <translation id="4289300219472526559">Start Speaking</translation>
 <translation id="430191667033048642">Aplikacija <ph name="MOVED_APP_NAME" /> premaknjena v mapo <ph name="FOLDER_NAME" />.</translation>
+<translation id="4306392492252714209">Odstrani iz odložišča.</translation>
 <translation id="4316910396681052118">VSE APLIKACIJE</translation>
 <translation id="4491109536499578614">Slika</translation>
 <translation id="4588090240171750605">Pomik desno</translation>
@@ -211,6 +214,7 @@
 <translation id="7430878839542012341">Želite izbrisati to iskanje iz zgodovine?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
+<translation id="7620655452534002301">Odstranjeno.</translation>
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="7781829728241885113">Včeraj</translation>
 <translation id="7814458197256864873">&amp;Kopiraj</translation>
@@ -226,11 +230,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{Pred 1 h}one{Pred # h}two{Pred # urama}few{Pred # urami}other{Pred # urami}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Še 1 s}one{Še # s}two{Še # s}few{Še # s}other{Še # s}}</translation>
 <translation id="8134065097954893699">Vnovično nalaganje te strani</translation>
-<translation id="8144660977431427332">Pri iskanju se uporablja tehnologija Pomočnika Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, samodokončanje</translation>
 <translation id="815598010540052116">Pomik dol</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Stran dol</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">Zavihek</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, aplikacija</translation>
 <translation id="8259556432390118667">Vrednost barve v šestnajstiškem zapisu</translation>

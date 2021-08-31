@@ -17,7 +17,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/x/event.h"
 #include "ui/gfx/x/shm.h"
@@ -26,7 +25,7 @@ namespace ui {
 
 // Creates XImages backed by shared memory that will be shared with the X11
 // server for processing.
-class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool : public XEventDispatcher {
+class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool : public x11::EventObserver {
  public:
   XShmImagePool(x11::Connection* connection,
                 x11::Drawable drawable,
@@ -77,8 +76,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool : public XEventDispatcher {
     x11::Shm::Seg shmseg{};
   };
 
-  // XEventDispatcher:
-  bool DispatchXEvent(x11::Event* xev) override;
+  // x11::EventObserver:
+  void OnEvent(const x11::Event& xev) override;
 
   void Cleanup();
 

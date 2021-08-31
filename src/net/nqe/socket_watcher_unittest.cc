@@ -33,7 +33,7 @@ class NetworkQualitySocketWatcherTest : public TestWithTaskEnvironment {
   static void OnUpdatedRTTAvailableStoreParams(
       SocketPerformanceWatcherFactory::Protocol protocol,
       const base::TimeDelta& rtt,
-      const base::Optional<IPHash>& host) {
+      const absl::optional<IPHash>& host) {
     // Need to verify before another callback is executed, or explicitly call
     // |ResetCallbackParams()|.
     ASSERT_FALSE(callback_executed_);
@@ -45,7 +45,7 @@ class NetworkQualitySocketWatcherTest : public TestWithTaskEnvironment {
   static void OnUpdatedRTTAvailable(
       SocketPerformanceWatcherFactory::Protocol protocol,
       const base::TimeDelta& rtt,
-      const base::Optional<IPHash>& host) {
+      const absl::optional<IPHash>& host) {
     // Need to verify before another callback is executed, or explicitly call
     // |ResetCallbackParams()|.
     ASSERT_FALSE(callback_executed_);
@@ -61,7 +61,7 @@ class NetworkQualitySocketWatcherTest : public TestWithTaskEnvironment {
   }
 
   static void VerifyCallbackParams(const base::TimeDelta& rtt,
-                                   const base::Optional<IPHash>& host) {
+                                   const absl::optional<IPHash>& host) {
     ASSERT_TRUE(callback_executed_);
     EXPECT_EQ(rtt, callback_rtt_);
     if (host)
@@ -73,7 +73,7 @@ class NetworkQualitySocketWatcherTest : public TestWithTaskEnvironment {
 
   static void ResetExpectedCallbackParams() {
     callback_rtt_ = base::TimeDelta::FromMilliseconds(0);
-    callback_host_ = base::nullopt;
+    callback_host_ = absl::nullopt;
     callback_executed_ = false;
     should_notify_rtt_callback_ = false;
   }
@@ -82,7 +82,7 @@ class NetworkQualitySocketWatcherTest : public TestWithTaskEnvironment {
 
  private:
   static base::TimeDelta callback_rtt_;
-  static base::Optional<IPHash> callback_host_;
+  static absl::optional<IPHash> callback_host_;
   static bool callback_executed_;
   static bool should_notify_rtt_callback_;
 
@@ -92,8 +92,8 @@ class NetworkQualitySocketWatcherTest : public TestWithTaskEnvironment {
 base::TimeDelta NetworkQualitySocketWatcherTest::callback_rtt_ =
     base::TimeDelta::FromMilliseconds(0);
 
-base::Optional<IPHash> NetworkQualitySocketWatcherTest::callback_host_ =
-    base::nullopt;
+absl::optional<IPHash> NetworkQualitySocketWatcherTest::callback_host_ =
+    absl::nullopt;
 
 bool NetworkQualitySocketWatcherTest::callback_executed_ = false;
 
@@ -109,8 +109,9 @@ TEST_F(NetworkQualitySocketWatcherTest, NotificationsThrottled) {
   IPAddress ip_address;
   ASSERT_TRUE(ip_address.AssignFromIPLiteral("157.0.0.1"));
   ip_list.push_back(ip_address);
+  std::vector<std::string> aliases({"canonical.example.com"});
   AddressList address_list =
-      AddressList::CreateFromIPAddressList(ip_list, "canonical.example.com");
+      AddressList::CreateFromIPAddressList(ip_list, std::move(aliases));
 
   SocketWatcher socket_watcher(
       SocketPerformanceWatcherFactory::PROTOCOL_TCP, address_list,
@@ -153,8 +154,9 @@ TEST_F(NetworkQualitySocketWatcherTest, QuicFirstNotificationDropped) {
   IPAddress ip_address;
   ASSERT_TRUE(ip_address.AssignFromIPLiteral("157.0.0.1"));
   ip_list.push_back(ip_address);
+  std::vector<std::string> aliases({"canonical.example.com"});
   AddressList address_list =
-      AddressList::CreateFromIPAddressList(ip_list, "canonical.example.com");
+      AddressList::CreateFromIPAddressList(ip_list, std::move(aliases));
 
   SocketWatcher socket_watcher(
       SocketPerformanceWatcherFactory::PROTOCOL_QUIC, address_list,
@@ -214,8 +216,9 @@ TEST_F(NetworkQualitySocketWatcherTest, MAYBE_PrivateAddressRTTNotNotified) {
     IPAddress ip_address;
     ASSERT_TRUE(ip_address.AssignFromIPLiteral(test.ip_address));
     ip_list.push_back(ip_address);
+    std::vector<std::string> aliases({"canonical.example.com"});
     AddressList address_list =
-        AddressList::CreateFromIPAddressList(ip_list, "canonical.example.com");
+        AddressList::CreateFromIPAddressList(ip_list, std::move(aliases));
 
     SocketWatcher socket_watcher(
         SocketPerformanceWatcherFactory::PROTOCOL_TCP, address_list,
@@ -253,8 +256,9 @@ TEST_F(NetworkQualitySocketWatcherTest, RemoteHostIPHashComputedCorrectly) {
     IPAddress ip_address;
     ASSERT_TRUE(ip_address.AssignFromIPLiteral(test.ip_address));
     ip_list.push_back(ip_address);
+    std::vector<std::string> aliases({"canonical.example.com"});
     AddressList address_list =
-        AddressList::CreateFromIPAddressList(ip_list, "canonical.example.com");
+        AddressList::CreateFromIPAddressList(ip_list, std::move(aliases));
 
     SocketWatcher socket_watcher(
         SocketPerformanceWatcherFactory::PROTOCOL_TCP, address_list,

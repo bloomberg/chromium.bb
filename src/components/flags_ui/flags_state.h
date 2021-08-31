@@ -96,6 +96,16 @@ class FlagsState {
                               const char* enable_features_flag_name,
                               const char* disable_features_flag_name);
 
+  // Returns the FeatureEntry named |internal_name|. Returns null if no entry is
+  // matched.
+  const FeatureEntry* FindFeatureEntryByName(
+      const std::string& internal_name) const;
+
+  // Gets sanitized entries from |flags_storage|, filtering out any entries that
+  // don't exist in |feature_entries_|, and updates |flags_storage|.
+  void GetSanitizedEnabledFlags(FlagsStorage* flags_storage,
+                                std::set<std::string>* result) const;
+
   // Reads the state from |flags_storage| and fills |switches| with the set of
   // switches corresponding to enabled entries and |features| with the set of
   // strings corresponding to enabled/disabled base::Feature states. Feature
@@ -150,20 +160,6 @@ class FlagsState {
   // This is exposed only for testing.
   static int GetCurrentPlatform();
 
-  // Compares a set of switches of the two provided command line objects and
-  // returns true if they are the same and false otherwise.
-  // If |out_difference| is not NULL, it's filled with set_symmetric_difference
-  // between sets.
-  // Only switches between --flag-switches-begin and --flag-switches-end are
-  // compared. The embedder may use |extra_flag_sentinel_begin_flag_name| and
-  // |extra_sentinel_end_flag_name| to specify other delimiters, if supported.
-  static bool AreSwitchesIdenticalToCurrentCommandLine(
-      const base::CommandLine& new_cmdline,
-      const base::CommandLine& active_cmdline,
-      std::set<base::CommandLine::StringType>* out_difference,
-      const char* extra_flag_sentinel_begin_flag_name,
-      const char* extra_flag_sentinel_end_flag_name);
-
  private:
   // Keeps track of affected switches for each FeatureEntry, based on which
   // choice is selected for it.
@@ -214,10 +210,6 @@ class FlagsState {
       const std::set<std::string>& enabled_entries,
       int platform_mask) const;
 
-  // Gets sanitized entries from |flags_storage|, filtering out any entries that
-  // don't exist in |feature_entries_|, and updates |flags_storage|.
-  void GetSanitizedEnabledFlags(FlagsStorage* flags_storage,
-                                std::set<std::string>* result) const;
 
   // Variant of GetSanitizedEnabledFlags that also removes any flags that aren't
   // enabled on the current platform.
@@ -234,10 +226,6 @@ class FlagsState {
       std::set<std::string>* enabled_entries,
       std::map<std::string, SwitchEntry>* name_to_switch_map) const;
 
-  // Returns the FeatureEntry named |internal_name|. Returns null if no entry is
-  // matched.
-  const FeatureEntry* FindFeatureEntryByName(
-      const std::string& internal_name) const;
 
   // Returns whether there is a FeatureEntry named by |name| in
   // |feature_entries_| that:

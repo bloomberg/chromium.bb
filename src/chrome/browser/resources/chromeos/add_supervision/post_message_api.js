@@ -20,7 +20,7 @@ const MAX_INITIALIZATION_ATTEMPTS = 8;
  * methods provided in methodList should be implemented as methods
  * of the subclass.
  */
-/* #export */ class PostMessageAPIServer {
+export class PostMessageAPIServer {
   constructor(clientElement, methodList, targetURL, messageOriginURLFilter) {
     /**
      * The Window type element to which this server will listen for messages,
@@ -48,7 +48,7 @@ const MAX_INITIALIZATION_ATTEMPTS = 8;
 
     /**
      * Map that stores references to the methods implemented by the API.
-     * @private {!Map<string, function(!Array): (Promise|Object|undefined)>}
+     * @private {!Map<string, function(!Array):?>}
      */
     this.apiFns_ = new Map();
 
@@ -65,10 +65,18 @@ const MAX_INITIALIZATION_ATTEMPTS = 8;
      */
     this.numInitializationAttempts_ = 0;
 
+    /**
+     * Indicates whether the communication channel between this server and the
+     * WebView has been established.
+     * @private {boolean}
+     */
+    this.isInitialized_ = false;
+
     // Wait for content to load before attempting to initializing the
     // message listener.
     this.clientElement_.addEventListener('contentload', () => {
       this.numInitializationAttempts_ = 0;
+      this.isInitialized_ = false;
       this.initialize();
     });
 
@@ -83,8 +91,8 @@ const MAX_INITIALIZATION_ATTEMPTS = 8;
    * function.
    *
    * @param {!string} methodName name of the method to register.
-   * @param {!function(!Array): (Promise|Object|undefined)} method The function
-   *     to associate with the name.
+   * @param {!function(!Array):?} method The function to associate with the
+   *     name.
    */
   registerMethod(methodName, method) {
     this.apiFns_.set(methodName, method);
@@ -94,8 +102,12 @@ const MAX_INITIALIZATION_ATTEMPTS = 8;
    * Send initialization message to client element.
    */
   initialize() {
-    if (this.numInitializationAttempts_ < MAX_INITIALIZATION_ATTEMPTS &&
-        this.originMatchesFilter_(this.clientElement_.src)) {
+    if (this.isInitialized_ ||
+        !this.originMatchesFilter(this.clientElement_.src)) {
+      return;
+    }
+
+    if (this.numInitializationAttempts_ < MAX_INITIALIZATION_ATTEMPTS) {
       // Tell the embedded webviews whose src matches our origin to initialize
       // by sending it a message, which will include a handle for it to use to
       // send messages back.
@@ -119,19 +131,27 @@ const MAX_INITIALIZATION_ATTEMPTS = 8;
 
       this.numInitializationAttempts_++;
     } else {
-      // Exponential backoff has maxed out, so restart the init attempt cycle.
-      this.numInitializationAttempts_ = 0;
-      this.initialize();
+      // Exponential backoff has maxed out. Show error page if present.
+      this.onInitializationError(this.clientElement_.src);
     }
   }
 
   /**
+   *  Virtual method to be overridden by implementations of this class to notify
+   * them that we were unable to initialize communication channel with the
+   * `clientElement_`.
+   *
+   * @param {!string} origin The origin URL that was not able to initialize
+   *     communication.
+   */
+  onInitializationError(origin) {}
+
+  /**
    * Determines if the specified origin matches the origin filter.
-   * @private
    * @param {!string} origin The origin URL to match with the filter.
    * @return {boolean}  whether the specified origin matches the filter.
    */
-  originMatchesFilter_(origin) {
+  originMatchesFilter(origin) {
     const originURL = new URL(origin);
 
     // We allow the pathname portion of the URL to be a prefix filter,
@@ -147,23 +167,29 @@ const MAX_INITIALIZATION_ATTEMPTS = 8;
    * @param {Event} event  The postMessage event to handle.
    */
   onMessage_(event) {
-    if (!this.originMatchesFilter_(event.origin)) {
+    if (!this.originMatchesFilter(event.origin)) {
       console.log('Message received from unauthorized origin: ' + event.origin);
       return;
     }
 
-    if (this.initialization_timeout_id_) {
-      // Cancel the current init timeout, and signal to the initialization
-      // polling process that we have received an init message from the guest
-      // content, so it doesn't reschedule the timer.
-      clearTimeout(this.initialization_timeout_id_);
-      this.initialization_timeout_id_ = 0;
-    }
-
     if (event.data === 'init') {
+      if (this.initialization_timeout_id_) {
+        // Cancel the current init timeout, and signal to the initialization
+        // polling process that we have received an init message from the guest
+        // content, so it doesn't reschedule the timer.
+        clearTimeout(this.initialization_timeout_id_);
+        this.initialization_timeout_id_ = 0;
+      }
+
+      this.isInitialized_ = true;
       return;
     }
-
+    // If we have gotten this far, we have received a message from a trusted
+    // origin, and we should try to process it.  We can't gate this on whether
+    // the channel is initialized, because we can receive events out of order,
+    // and method calls can be received before the init event. Essentially, we
+    // should treat the channel as being potentially as soon as we send 'init'
+    // to the guest content.
     const methodId = event.data.methodId;
     const fn = event.data.fn;
     const args = event.data.args || [];
@@ -199,7 +225,7 @@ const MAX_INITIALIZATION_ATTEMPTS = 8;
  * over the postMessage API.  This should be subclassed and the methods in the
  * server that the client needs to access should be provided in methodList.
  */
-/* #export */ class PostMessageAPIClient {
+export class PostMessageAPIClient {
   /**
    * @param {!Array<string>} methodList The list of methods accessible via the
    *     client.
@@ -270,7 +296,7 @@ const MAX_INITIALIZATION_ATTEMPTS = 8;
    *     sent from the server.
    */
   onInitialize_(event) {
-    if (!this.originMatchesFilter_(event.origin)) {
+    if (!this.originMatchesFilter(event.origin)) {
       console.error(
           'Initialization event received from non-authorized origin: ' +
           event.origin);
@@ -287,7 +313,7 @@ const MAX_INITIALIZATION_ATTEMPTS = 8;
    * @param {!string} origin The origin URL to match with the filter.
    * @return {boolean}  whether the specified origin matches the filter.
    */
-  originMatchesFilter_(origin) {
+  originMatchesFilter(origin) {
     return origin == this.serverOriginURLFilter_;
   }
 
@@ -297,7 +323,7 @@ const MAX_INITIALIZATION_ATTEMPTS = 8;
    *     API.
    */
   onMessage_(event) {
-    if (!this.originMatchesFilter_(event.origin)) {
+    if (!this.originMatchesFilter(event.origin)) {
       console.error(
           'Message received from non-authorized origin: ' + event.origin);
       return;

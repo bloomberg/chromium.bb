@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -103,7 +103,7 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState(
       origin_(url::Origin::Create(contents->GetVisibleURL())),
       download_count_(0),
       download_seen_(false) {
-  observer_.Add(GetContentSettings(contents));
+  observation_.Observe(GetContentSettings(contents));
   NavigationEntry* last_entry =
       contents->GetController().GetLastCommittedEntry();
   if (last_entry)
@@ -149,13 +149,13 @@ void DownloadRequestLimiter::TabDownloadState::DidStartNavigation(
                                      PROMPT_BEFORE_DOWNLOAD);
       return;
     }
-
-    // If this is a forward/back navigation, also don't reset a prompting or
-    // blocking limiter state unless a new host is encounted. This prevents a
-    // page to use history forward/backward to trigger multiple downloads.
-    if (IsNavigationRestricted(navigation_handle))
-      return;
   }
+
+  // If this is a forward/back navigation, also don't reset a prompting or
+  // blocking limiter state if an origin is limited. This prevents a page
+  // to use history forward/backward to trigger multiple downloads.
+  if (!shouldClearDownloadState(navigation_handle))
+    return;
 
   if (status_ == DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS ||
       status_ == DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED) {
@@ -178,9 +178,9 @@ void DownloadRequestLimiter::TabDownloadState::DidFinishNavigation(
     return;
 
   // Treat browser-initiated navigations as user interactions as long as the
-  // navigation isn't restricted.
+  // navigation can clear download state.
   if (!navigation_handle->IsRendererInitiated() &&
-      !IsNavigationRestricted(navigation_handle)) {
+      shouldClearDownloadState(navigation_handle)) {
     OnUserInteraction();
     return;
   }
@@ -300,8 +300,7 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState()
       status_(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD),
       ui_status_(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT),
       download_count_(0),
-      download_seen_(false),
-      observer_(this) {}
+      download_seen_(false) {}
 
 bool DownloadRequestLimiter::TabDownloadState::is_showing_prompt() const {
   return factory_.HasWeakPtrs();
@@ -450,16 +449,19 @@ void DownloadRequestLimiter::TabDownloadState::SetDownloadStatusAndNotifyImpl(
   content_settings::UpdateLocationBarUiForWebContents(web_contents());
 }
 
-bool DownloadRequestLimiter::TabDownloadState::IsNavigationRestricted(
+bool DownloadRequestLimiter::TabDownloadState::shouldClearDownloadState(
     content::NavigationHandle* navigation_handle) {
-  url::Origin origin = url::Origin::Create(navigation_handle->GetURL());
+  // For forward/backward navigations, don't clear download state if some
+  // origins are restricted.
   if (navigation_handle->GetPageTransition() &
       ui::PAGE_TRANSITION_FORWARD_BACK) {
-    auto it = download_status_map_.find(origin);
-    if (it != download_status_map_.end())
-      return it->second != ALLOW_ALL_DOWNLOADS;
+    for (const auto& entry : download_status_map_) {
+      if (entry.second == PROMPT_BEFORE_DOWNLOAD ||
+          entry.second == DOWNLOADS_NOT_ALLOWED)
+        return false;
+    }
   }
-  return false;
+  return true;
 }
 
 // DownloadRequestLimiter ------------------------------------------------------
@@ -514,7 +516,7 @@ void DownloadRequestLimiter::CanDownload(
     const content::WebContents::Getter& web_contents_getter,
     const GURL& url,
     const std::string& request_method,
-    base::Optional<url::Origin> request_initiator,
+    absl::optional<url::Origin> request_initiator,
     bool from_download_cross_origin_redirect,
     Callback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -546,7 +548,7 @@ void DownloadRequestLimiter::CanDownload(
 void DownloadRequestLimiter::OnCanDownloadDecided(
     const content::WebContents::Getter& web_contents_getter,
     const std::string& request_method,
-    base::Optional<url::Origin> request_initiator,
+    absl::optional<url::Origin> request_initiator,
     bool from_download_cross_origin_redirect,
     Callback orig_callback,
     bool allow) {
@@ -584,7 +586,7 @@ ContentSetting DownloadRequestLimiter::GetAutoDownloadContentSetting(
 void DownloadRequestLimiter::CanDownloadImpl(
     content::WebContents* originating_contents,
     const std::string& request_method,
-    base::Optional<url::Origin> request_initiator,
+    absl::optional<url::Origin> request_initiator,
     bool from_download_cross_origin_redirect,
     Callback callback) {
   DCHECK(originating_contents);

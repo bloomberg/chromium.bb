@@ -11,10 +11,10 @@
 #include "base/task/post_task.h"
 #include "base/task_runner.h"
 #include "chrome/browser/policy/messaging_layer/upload/dm_server_upload_service.h"
-#include "chrome/browser/policy/messaging_layer/util/status.h"
-#include "chrome/browser/policy/messaging_layer/util/statusor.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
-#include "components/policy/proto/record.pb.h"
+#include "components/reporting/proto/record.pb.h"
+#include "components/reporting/util/status.h"
+#include "components/reporting/util/statusor.h"
 
 namespace reporting {
 
@@ -22,25 +22,38 @@ namespace reporting {
 class UploadClient {
  public:
   // ReportSuccessfulUploadCallback is used to pass server responses back to
-  // the owner of |this|.
+  // the owner of |this| (the respone consists of sequencing information and
+  // forceConfirm flag).
   using ReportSuccessfulUploadCallback =
-      base::RepeatingCallback<void(SequencingInformation)>;
+      DmServerUploadService::ReportSuccessfulUploadCallback;
 
-  static void Create(
-      std::unique_ptr<policy::CloudPolicyClient> cloud_policy_client,
-      ReportSuccessfulUploadCallback report_upload_success_cb,
-      base::OnceCallback<void(StatusOr<std::unique_ptr<UploadClient>>)>
-          created_cb);
+  // ReceivedEncryptionKeyCallback is called if server attached encryption key
+  // to the response.
+  using EncryptionKeyAttachedCallback =
+      base::RepeatingCallback<void(SignedEncryptionInfo)>;
 
-  ~UploadClient();
+  // CreatedCallback gets a result of Upload client creation (unique pointer or
+  // error status).
+  using CreatedCallback =
+      base::OnceCallback<void(StatusOr<std::unique_ptr<UploadClient>>)>;
+
+  static void Create(policy::CloudPolicyClient* cloud_policy_client,
+                     ReportSuccessfulUploadCallback report_upload_success_cb,
+                     EncryptionKeyAttachedCallback encryption_key_attached_cb,
+                     CreatedCallback created_cb);
+
+  virtual ~UploadClient();
   UploadClient(const UploadClient& other) = delete;
   UploadClient& operator=(const UploadClient& other) = delete;
 
-  Status EnqueueUpload(std::unique_ptr<std::vector<EncryptedRecord>> record);
+  virtual Status EnqueueUpload(
+      bool need_encryption_keys,
+      std::unique_ptr<std::vector<EncryptedRecord>> record);
 
- private:
+ protected:
   UploadClient();
 
+ private:
   std::unique_ptr<DmServerUploadService> dm_server_upload_service_;
 };
 

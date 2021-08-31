@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
-#include "third_party/blink/renderer/core/html/custom/v0_custom_element_processing_stack.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/xml/dom_parser.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
@@ -112,7 +111,6 @@ void V8SetReflectedBooleanAttribute(
   v8::Isolate* isolate = info.GetIsolate();
   Element* impl = V8Element::ToImpl(info.Holder());
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext,
                                  interface_name, idl_attribute_name);
   CEReactionsScope ce_reactions_scope;
@@ -131,7 +129,6 @@ void V8SetReflectedDOMStringAttribute(
     const QualifiedName& content_attr) {
   Element* impl = V8Element::ToImpl(info.Holder());
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
   CEReactionsScope ce_reactions_scope;
 
   // Prepare the value to be set.
@@ -147,7 +144,6 @@ void V8SetReflectedNullableDOMStringAttribute(
     const QualifiedName& content_attr) {
   Element* impl = V8Element::ToImpl(info.Holder());
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
   CEReactionsScope ce_reactions_scope;
 
   // Prepare the value to be set.
@@ -203,7 +199,7 @@ void SetupIDLCallbackInterfaceTemplate(
       V8AtomicString(isolate, wrapper_type_info->interface_name));
 }
 
-base::Optional<size_t> FindIndexInEnumStringTable(
+absl::optional<size_t> FindIndexInEnumStringTable(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
     base::span<const char* const> enum_value_table,
@@ -212,9 +208,9 @@ base::Optional<size_t> FindIndexInEnumStringTable(
   const String& str_value = NativeValueTraits<IDLStringV2>::NativeValue(
       isolate, value, exception_state);
   if (exception_state.HadException())
-    return base::nullopt;
+    return absl::nullopt;
 
-  base::Optional<size_t> index =
+  absl::optional<size_t> index =
       FindIndexInEnumStringTable(str_value, enum_value_table);
 
   if (!index.has_value()) {
@@ -225,14 +221,14 @@ base::Optional<size_t> FindIndexInEnumStringTable(
   return index;
 }
 
-base::Optional<size_t> FindIndexInEnumStringTable(
+absl::optional<size_t> FindIndexInEnumStringTable(
     const String& str_value,
     base::span<const char* const> enum_value_table) {
   for (size_t i = 0; i < enum_value_table.size(); ++i) {
     if (Equal(str_value.Impl(), enum_value_table[i]))
       return i;
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void ReportInvalidEnumSetToAttribute(v8::Isolate* isolate,
@@ -413,8 +409,6 @@ void InstallCSSPropertyAttributes(
     v8::Local<v8::FunctionTemplate> set_func = v8::FunctionTemplate::New(
         isolate, CSSPropertyAttributeSet, v8_property_name, signature, 1,
         v8::ConstructorBehavior::kThrow, v8::SideEffectType::kHasSideEffect);
-    get_func->RemovePrototype();
-    set_func->RemovePrototype();
     get_func->SetAcceptAnyReceiver(false);
     set_func->SetAcceptAnyReceiver(false);
     get_func->SetClassName(
@@ -485,9 +479,6 @@ void PerformAttributeSetCEReactionsReflect(
     return;
   }
 
-  // [Reflect]
-  V0CustomElementProcessingStack::CallbackDeliveryScope v0_custom_element_scope;
-  // [CEReactions]
   CEReactionsScope ce_reactions_scope;
 
   Element* blink_receiver = V8Element::ToWrappableUnsafe(info.This());

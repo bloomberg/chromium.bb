@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_SIGNIN_IDENTITY_MANAGER_FACTORY_H_
 #define CHROME_BROWSER_SIGNIN_IDENTITY_MANAGER_FACTORY_H_
 
-#include <memory>
-#include <string>
-
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -26,11 +23,6 @@ class IdentityManagerFactory : public BrowserContextKeyedServiceFactory {
    public:
     // Called when a IdentityManager instance is created.
     virtual void IdentityManagerCreated(
-        signin::IdentityManager* identity_manager) {}
-
-    // Called when a IdentityManager instance is being shut down. Observers
-    // of |identity_manager| should remove themselves at this point.
-    virtual void IdentityManagerShutdown(
         signin::IdentityManager* identity_manager) {}
 
    protected:
@@ -61,7 +53,6 @@ class IdentityManagerFactory : public BrowserContextKeyedServiceFactory {
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  void BrowserContextShutdown(content::BrowserContext* profile) override;
   void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
 

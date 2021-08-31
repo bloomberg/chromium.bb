@@ -8,18 +8,6 @@
 <link rel="stylesheet" href="chrome://policy/policy.css">
 <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
 
-<if expr="is_ios">
-    <!-- TODO(crbug.com/487000): Remove this once injected by web. -->
-    <script src="chrome://resources/js/ios/web_ui.js"></script>
-</if>
-
-<script src="chrome://resources/js/action_link.js"></script>
-<script src="chrome://resources/js/cr.js"></script>
-<script src="chrome://resources/js/cr/ui.js"></script>
-<script src="chrome://resources/js/cr/ui/focus_outline_manager.js"></script>
-<script src="chrome://resources/js/load_time_data.js"></script>
-<script src="chrome://resources/js/assert.js"></script>
-<script src="chrome://resources/js/util.js"></script>
 </head>
 
 <body>
@@ -41,6 +29,7 @@
         </label>
       </div>
     </div>
+    <div aria-live="polite" id="screen-reader-message"></div>
   </header>
   <main id="policy-ui">
     <section id="status-section" class="status-box-section" hidden>
@@ -57,14 +46,6 @@
       <div class="status-entry" hidden>
         <div class="label">$i18n{labelVersion}</div>
         <div class="version"></div>
-      </div>
-      <div class="status-entry" hidden>
-        <div class="label">$i18n{labelEnterpriseEnrollmentDomain}</div>
-        <div class="enterprise-enrollment-domain"></div>
-      </div>
-      <div class="status-entry" hidden>
-        <div class="label">$i18n{labelEnterpriseDisplayDomain}</div>
-        <div class="enterprise-display-domain"></div>
       </div>
       <div class="status-entry" hidden>
         <div class="label">$i18n{labelMachineEnrollmentMachineName}</div>
@@ -85,6 +66,10 @@
       <div class="status-entry" hidden>
         <div class="label">$i18n{labelUsername}</div>
         <div class="username"></div>
+      </div>
+      <div class="status-entry" hidden>
+        <div class="label">$i18n{labelManagedBy}</div>
+        <div class="managed-by"></div>
       </div>
       <div class="status-entry" hidden>
         <div class="label">$i18n{labelGaiaId}</div>
@@ -134,6 +119,10 @@
         <div class="label">$i18n{labelVersion}</div>
         <div class="version"></div>
       </div>
+      <div class="status-entry" hidden>
+        <div class="label">$i18n{labelLastCloudReportSentTimestamp}</div>
+        <div class="last-cloud-report-sent-timestamp"></div>
+      </div>
     </fieldset>
 
     <div class="policy-table" id="policy-table-template" role="table"
@@ -157,7 +146,7 @@
     <div class="policy-conflict-data" id="policy-conflict-template"
          role="rowgroup" hidden>
       <div class="policy conflict row" role="row">
-          <div class="name" role="rowheader">$i18n{conflict}</div>
+          <div class="name" role="rowheader">$i18n{conflictValue}</div>
           <div class="value" role="cell"></div>
           <div class="source" role="cell"></div>
           <div class="scope" role="cell"></div>
@@ -176,7 +165,7 @@
         <div class="name" role="rowheader" aria-labelledby="name">
           <a class="link" target="_blank">
             <span id="name"></span>
-            <img src="../../../../ui/webui/resources/images/open_in_new.svg">
+            <img src="chrome://resources/images/open_in_new.svg">
           </a>
         </div>
         <div class="value" role="cell"></div>
@@ -194,7 +183,7 @@
         <div class="value" role="cell"></div>
         <div class="copy" role="cell">
           <a is="action-link" class="copy-value link" role="cell">
-            <img src="../../../../ui/webui/resources/images/icon_copy_content.svg">
+            <img src="chrome://resources/images/icon_copy_content.svg">
           </a>
         </div>
       </div>
@@ -206,11 +195,13 @@
         <div class="name" role="rowheader">$i18n{warning}</div>
         <div class="value" role="cell"></div>
       </div>
+      <div class="infos row" role="row" hidden>
+        <div class="name" role="rowheader">$i18n{info}</div>
+        <div class="value" role="cell"></div>
+      </div>
     </div>
   </div>
 </body>
 
-<script src="chrome://policy/strings.js"></script>
-<script src="chrome://policy/policy_base.js"></script>
-<script src="chrome://policy/policy.js"></script>
+<script type="module" src="policy.js"></script>
 </html>

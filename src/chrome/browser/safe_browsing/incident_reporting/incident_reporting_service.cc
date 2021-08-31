@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -361,7 +362,7 @@ IncidentReportingService::CreatePreferenceValidationDelegate(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (profile->IsOffTheRecord())
-    return std::unique_ptr<prefs::mojom::TrackedPreferenceValidationDelegate>();
+    return nullptr;
   return std::make_unique<PreferenceValidationDelegate>(profile,
                                                         GetIncidentReceiver());
 }
@@ -373,7 +374,7 @@ void IncidentReportingService::RegisterDelayedAnalysisCallback(
   // |callback| will be run on the blocking pool. The receiver will bounce back
   // to the origin thread if needed.
   delayed_analysis_callbacks_.RegisterCallback(
-      base::BindOnce(std::move(callback), base::Passed(GetIncidentReceiver())));
+      base::BindOnce(std::move(callback), GetIncidentReceiver()));
 
   // Start running the callbacks if any profiles are participating in safe
   // browsing extended reporting. If none are now, running will commence if/when
@@ -617,7 +618,7 @@ void IncidentReportingService::BeginReportProcessing() {
 
   // Creates a new report if needed.
   if (!report_)
-    report_.reset(new ClientIncidentReport());
+    report_ = std::make_unique<ClientIncidentReport>();
 
   // Ensure that collection tasks are running (calls are idempotent).
   BeginIncidentCollation();

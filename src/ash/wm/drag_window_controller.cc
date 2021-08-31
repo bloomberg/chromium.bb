@@ -78,7 +78,7 @@ class DragWindowController::DragWindowDetails {
 
   void Update(aura::Window* original_window,
               bool is_touch_dragging,
-              const base::Optional<gfx::Rect>& shadow_bounds) {
+              const absl::optional<gfx::Rect>& shadow_bounds) {
     const float opacity =
         GetDragWindowOpacity(root_window_, original_window, is_touch_dragging);
     if (opacity == 0.f) {
@@ -103,7 +103,7 @@ class DragWindowController::DragWindowDetails {
   friend class DragWindowController;
 
   void CreateDragWindow(aura::Window* original_window,
-                        const base::Optional<gfx::Rect>& shadow_bounds) {
+                        const absl::optional<gfx::Rect>& shadow_bounds) {
     DCHECK(!widget_);
     views::Widget::InitParams params;
     params.type = views::Widget::InitParams::TYPE_POPUP;
@@ -111,9 +111,9 @@ class DragWindowController::DragWindowDetails {
     params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
     params.layer_type = ui::LAYER_NOT_DRAWN;
     params.name = "DragWindow";
-    params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
+    params.activatable = views::Widget::InitParams::Activatable::kNo;
     params.accept_events = false;
-    const int parent_id = original_window->parent()->id();
+    const int parent_id = original_window->parent()->GetId();
     params.parent = root_window_->GetChildById(parent_id);
 
     widget_ = std::make_unique<views::Widget>();
@@ -130,7 +130,7 @@ class DragWindowController::DragWindowDetails {
         /*show_non_client_view=*/true));
 
     aura::Window* window = widget_->GetNativeWindow();
-    window->set_id(kShellWindowId_PhantomWindow);
+    window->SetId(kShellWindowId_PhantomWindow);
     window->SetProperty(aura::client::kAnimationsDisabledKey, true);
     gfx::Rect bounds = original_window->bounds();
     ::wm::ConvertRectToScreen(original_window->parent(), &bounds);
@@ -162,7 +162,7 @@ class DragWindowController::DragWindowDetails {
 DragWindowController::DragWindowController(
     aura::Window* window,
     bool is_touch_dragging,
-    const base::Optional<gfx::Rect>& shadow_bounds)
+    const absl::optional<gfx::Rect>& shadow_bounds)
     : window_(window),
       is_touch_dragging_(is_touch_dragging),
       shadow_bounds_(shadow_bounds),

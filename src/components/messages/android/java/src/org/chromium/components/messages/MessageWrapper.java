@@ -22,17 +22,19 @@ public final class MessageWrapper {
     /**
      * Creates an instance of MessageWrapper and links it with native MessageWrapper object.
      * @param nativeMessageWrapper Pointer to native MessageWrapper.
+     * @param messageIdentifier Message identifier of the new message.
      * @return reference to created MessageWrapper.
      */
     @CalledByNative
-    static MessageWrapper create(long nativeMessageWrapper) {
-        return new MessageWrapper(nativeMessageWrapper);
+    static MessageWrapper create(long nativeMessageWrapper, int messageIdentifier) {
+        return new MessageWrapper(nativeMessageWrapper, messageIdentifier);
     }
 
-    private MessageWrapper(long nativeMessageWrapper) {
+    private MessageWrapper(long nativeMessageWrapper, int messageIdentifier) {
         mNativeMessageWrapper = nativeMessageWrapper;
         mMessageProperties =
-                new PropertyModel.Builder(MessageBannerProperties.SINGLE_ACTION_MESSAGE_KEYS)
+                new PropertyModel.Builder(MessageBannerProperties.ALL_KEYS)
+                        .with(MessageBannerProperties.MESSAGE_IDENTIFIER, messageIdentifier)
                         .with(MessageBannerProperties.ON_PRIMARY_ACTION, this::handleActionClick)
                         .with(MessageBannerProperties.ON_SECONDARY_ACTION,
                                 this::handleSecondaryActionClick)
@@ -56,12 +58,23 @@ public final class MessageWrapper {
 
     @CalledByNative
     String getDescription() {
-        return mMessageProperties.get(MessageBannerProperties.DESCRIPTION);
+        CharSequence description = mMessageProperties.get(MessageBannerProperties.DESCRIPTION);
+        return description == null ? null : description.toString();
     }
 
     @CalledByNative
-    void setDescription(String description) {
+    void setDescription(CharSequence description) {
         mMessageProperties.set(MessageBannerProperties.DESCRIPTION, description);
+    }
+
+    @CalledByNative
+    int getDescriptionMaxLines() {
+        return mMessageProperties.get(MessageBannerProperties.DESCRIPTION_MAX_LINES);
+    }
+
+    @CalledByNative
+    void setDescriptionMaxLines(int maxLines) {
+        mMessageProperties.set(MessageBannerProperties.DESCRIPTION_MAX_LINES, maxLines);
     }
 
     @CalledByNative
@@ -75,13 +88,14 @@ public final class MessageWrapper {
     }
 
     @CalledByNative
-    String getSecondaryActionText() {
-        return mMessageProperties.get(MessageBannerProperties.SECONDARY_ACTION_TEXT);
+    String getSecondaryButtonMenuText() {
+        return mMessageProperties.get(MessageBannerProperties.SECONDARY_BUTTON_MENU_TEXT);
     }
 
     @CalledByNative
-    void setSecondaryActionText(String secondaryActionText) {
-        mMessageProperties.set(MessageBannerProperties.SECONDARY_ACTION_TEXT, secondaryActionText);
+    void setSecondaryButtonMenuText(String secondaryButtonMenuText) {
+        mMessageProperties.set(
+                MessageBannerProperties.SECONDARY_BUTTON_MENU_TEXT, secondaryButtonMenuText);
     }
 
     @CalledByNative
@@ -96,6 +110,12 @@ public final class MessageWrapper {
     }
 
     @CalledByNative
+    void disableIconTint() {
+        mMessageProperties.set(
+                MessageBannerProperties.ICON_TINT_COLOR, MessageBannerProperties.TINT_NONE);
+    }
+
+    @CalledByNative
     @DrawableRes
     int getSecondaryIconResourceId() {
         return mMessageProperties.get(MessageBannerProperties.SECONDARY_ICON_RESOURCE_ID);
@@ -104,6 +124,11 @@ public final class MessageWrapper {
     @CalledByNative
     void setSecondaryIconResourceId(@DrawableRes int resourceId) {
         mMessageProperties.set(MessageBannerProperties.SECONDARY_ICON_RESOURCE_ID, resourceId);
+    }
+
+    @CalledByNative
+    void setDuration(long customDuration) {
+        mMessageProperties.set(MessageBannerProperties.DISMISSAL_DURATION, customDuration);
     }
 
     @CalledByNative
@@ -121,17 +146,17 @@ public final class MessageWrapper {
         MessageWrapperJni.get().handleSecondaryActionClick(mNativeMessageWrapper);
     }
 
-    private void handleMessageDismissed() {
+    private void handleMessageDismissed(@DismissReason int dismissReason) {
         // mNativeMessageWrapper can be null if the message was dismissed from native API.
         // In this case dismiss callback should have already been called.
         if (mNativeMessageWrapper == 0) return;
-        MessageWrapperJni.get().handleDismissCallback(mNativeMessageWrapper);
+        MessageWrapperJni.get().handleDismissCallback(mNativeMessageWrapper, dismissReason);
     }
 
     @NativeMethods
     interface Natives {
         void handleActionClick(long nativeMessageWrapper);
         void handleSecondaryActionClick(long nativeMessageWrapper);
-        void handleDismissCallback(long nativeMessageWrapper);
+        void handleDismissCallback(long nativeMessageWrapper, @DismissReason int dismissReason);
     }
 }

@@ -19,11 +19,15 @@ const char kSafeSitesFilterBehavior[] = "policy.safe_sites_filter_behavior";
 // "SystemFeaturesDisableList").
 const char kSystemFeaturesDisableList[] = "policy.system_features_disable_list";
 
+// Enum specifying the user experience of disabled features.
+// See the SystemFeaturesDisableMode policy for details.
+const char kSystemFeaturesDisableMode[] = "policy.system_features_disable_mode";
+
 // Blocks access to the listed host patterns.
-const char kUrlBlacklist[] = "policy.url_blacklist";
+const char kUrlBlocklist[] = "policy.url_blocklist";
 
 // Allows access to the listed host patterns, as exceptions to the blacklist.
-const char kUrlWhitelist[] = "policy.url_whitelist";
+const char kUrlAllowlist[] = "policy.url_allowlist";
 
 // Integer that specifies the policy refresh rate for user-policy in
 // milliseconds. Not all values are meaningful, so it is clamped to a sane range
@@ -38,6 +42,9 @@ const char kCloudManagementEnrollmentMandatory[] =
 // Boolean that specifies whether the cloud policy will override conflicting
 // machine policy.
 const char kCloudPolicyOverridesPlatformPolicy[] = "policy.cloud_override";
+
+// Boolean policy preference to enable reporting of data leak prevention events.
+const char kDlpReportingEnabled[] = "policy.dlp_reporting_enabled";
 
 // A list of Data leak prevention rules.
 const char kDlpRulesList[] = "policy.dlp_rules_list";

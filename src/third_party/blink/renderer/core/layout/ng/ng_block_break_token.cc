@@ -36,7 +36,7 @@ scoped_refptr<NGBlockBreakToken> NGBlockBreakToken::Create(
 
 NGBlockBreakToken::NGBlockBreakToken(PassKey key,
                                      const NGBoxFragmentBuilder& builder)
-    : NGBreakToken(kBlockBreakToken, kUnfinished, builder.node_),
+    : NGBreakToken(kBlockBreakToken, builder.node_),
       consumed_block_size_(builder.consumed_block_size_),
       sequence_number_(builder.sequence_number_),
       num_children_(builder.child_break_tokens_.size()) {
@@ -44,6 +44,8 @@ NGBlockBreakToken::NGBlockBreakToken(PassKey key,
   has_seen_all_children_ = builder.has_seen_all_children_;
   is_caused_by_column_spanner_ = builder.FoundColumnSpanner();
   is_at_block_end_ = builder.is_at_block_end_;
+  has_unpositioned_list_marker_ =
+      static_cast<bool>(builder.UnpositionedListMarker());
   for (wtf_size_t i = 0; i < builder.child_break_tokens_.size(); ++i) {
     child_break_tokens_[i] = builder.child_break_tokens_[i].get();
     child_break_tokens_[i]->AddRef();
@@ -51,7 +53,7 @@ NGBlockBreakToken::NGBlockBreakToken(PassKey key,
 }
 
 NGBlockBreakToken::NGBlockBreakToken(PassKey key, NGLayoutInputNode node)
-    : NGBreakToken(kBlockBreakToken, kUnfinished, node), num_children_(0) {}
+    : NGBreakToken(kBlockBreakToken, node), num_children_(0) {}
 
 const NGInlineBreakToken* NGBlockBreakToken::InlineBreakTokenFor(
     const NGLayoutInputNode& node) const {

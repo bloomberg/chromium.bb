@@ -44,6 +44,21 @@ Polymer({
       observer: 'authenticatorChanged_',
     },
 
+    roundedButton: {
+      type: Boolean,
+      value: false,
+    },
+
+    actionButtonClasses_: {
+      type: String,
+      computed: 'getActionButtonClasses_(roundedButton)',
+    },
+
+    secondaryButtonClasses_: {
+      type: String,
+      computed: 'getSecondaryButtonClasses_(roundedButton)',
+    },
+
     /**
      * Controls label and availability on the action buttons.
      * @private {!ActionButtonsData}
@@ -97,6 +112,7 @@ Polymer({
    */
   onPrimaryActionButtonClicked_() {
     this.authenticator.sendMessageToWebview('primaryActionHit');
+    this.focusWebview_();
   },
 
   /**
@@ -105,6 +121,38 @@ Polymer({
    */
   onSecondaryActionButtonClicked_() {
     this.authenticator.sendMessageToWebview('secondaryActionHit');
+    this.focusWebview_();
+  },
+
+  /** @private */
+  focusWebview_() {
+    this.fire('set-focus-to-webview');
+  },
+
+  /**
+   * @private
+   * @param {boolean} roundedButton
+   * @return {string}
+   */
+  getActionButtonClasses_(roundedButton) {
+    let cssClasses = ['action-button'];
+    if (roundedButton) {
+      cssClasses.push('rounded-button');
+    }
+    return cssClasses.join(' ');
+  },
+
+  /**
+   * @private
+   * @param {boolean} roundedButton
+   * @return {string}
+   */
+  getSecondaryButtonClasses_(roundedButton) {
+    let cssClasses = ['secondary-button'];
+    if (roundedButton) {
+      cssClasses.push('rounded-button');
+    }
+    return cssClasses.join(' ');
   },
 
   /** @param {Object} authExtHost */
