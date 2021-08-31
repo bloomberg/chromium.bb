@@ -4,6 +4,8 @@
 
 #include "components/cast_certificate/cast_cert_validator.h"
 
+#include <memory>
+
 #include "base/test/task_environment.h"
 #include "components/cast_certificate/cast_cert_reader.h"
 #include "components/cast_certificate/cast_cert_test_helpers.h"
@@ -65,7 +67,7 @@ void RunTest(CastCertError expected_result,
              const std::string& optional_signed_data_file_name) {
   base::test::TaskEnvironment te;
   auto certs = ReadCertificateChainFromFile(
-      testing::GetCastTestCertsCertsDirectory().AppendASCII(certs_file_name));
+      testing::GetCastCertificatesSubDirectory().AppendASCII(certs_file_name));
 
   std::unique_ptr<net::TrustStoreInMemory> trust_store;
 
@@ -89,7 +91,7 @@ void RunTest(CastCertError expected_result,
       certs.pop_back();
 
       // Add it to the trust store as a trust anchor
-      trust_store.reset(new net::TrustStoreInMemory);
+      trust_store = std::make_unique<net::TrustStoreInMemory>();
 
       if (trust_store_dependency == TRUST_STORE_FROM_TEST_FILE_UNCONSTRAINED) {
         // This is a test-only mode where anchor constraints are not enforced.

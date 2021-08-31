@@ -41,7 +41,17 @@ if (POLICY CMP0077)
   cmake_policy(SET CMP0077 NEW)
 endif (POLICY CMP0077)
 
-project(absl CXX)
+# Allow the user to specify the MSVC runtime
+if (POLICY CMP0091)
+  cmake_policy(SET CMP0091 NEW)
+endif (POLICY CMP0091)
+
+# Set BUILD_TESTING to OFF by default.
+# This must come before the project() and include(CTest) lines.
+OPTION(BUILD_TESTING "Build tests" OFF)
+
+project(absl LANGUAGES CXX)
+include(CTest)
 
 # Output directory is correct by default for most build setups. However, when
 # building Abseil as a DLL, it is important to have the DLL in the same
@@ -51,7 +61,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # when absl is included as subproject (i.e. using add_subdirectory(abseil-cpp))
 # in the source tree of a project that uses it, install rules are disabled.
-if(NOT "^${CMAKE_SOURCE_DIR}$" STREQUAL "^${PROJECT_SOURCE_DIR}$")
+if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   option(ABSL_ENABLE_INSTALL "Enable install rule" OFF)
 else()
   option(ABSL_ENABLE_INSTALL "Enable install rule" ON)
@@ -62,8 +72,8 @@ list(APPEND CMAKE_MODULE_PATH
   ${CMAKE_CURRENT_LIST_DIR}/absl/copts
 )
 
-include(AbseilInstallDirs)
 include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
 include(AbseilDll)
 include(AbseilHelpers)
 
@@ -104,13 +114,7 @@ set(ABSL_LOCAL_GOOGLETEST_DIR "/usr/src/googletest" CACHE PATH
   "If ABSL_USE_GOOGLETEST_HEAD is OFF and ABSL_GOOGLETEST_URL is not set, specifies the directory of a local GoogleTest checkout."
   )
 
-option(ABSL_RUN_TESTS "If ON, Abseil tests will be run." OFF)
-
-if(${ABSL_RUN_TESTS})
-  # enable CTest.  This will set BUILD_TESTING to ON unless otherwise specified
-  # on the command line
-  include(CTest)
-
+if(BUILD_TESTING)
   ## check targets
   if (NOT ABSL_USE_EXTERNAL_GOOGLETEST)
     set(absl_gtest_build_dir ${CMAKE_BINARY_DIR}/googletest-build)
@@ -160,16 +164,16 @@ if(ABSL_ENABLE_INSTALL)
   # install as a subdirectory only
   install(EXPORT ${PROJECT_NAME}Targets
     NAMESPACE absl::
-    DESTINATION "${ABSL_INSTALL_CONFIGDIR}"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
   )
 
   configure_package_config_file(
     CMake/abslConfig.cmake.in
     "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-    INSTALL_DESTINATION "${ABSL_INSTALL_CONFIGDIR}"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
   )
   install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-    DESTINATION "${ABSL_INSTALL_CONFIGDIR}"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
   )
 
   # Abseil only has a version in LTS releases.  This mechanism is accomplished
@@ -182,12 +186,12 @@ if(ABSL_ENABLE_INSTALL)
     )
 
     install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-      DESTINATION ${ABSL_INSTALL_CONFIGDIR}
+      DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
     )
   endif()  # absl_VERSION
 
   install(DIRECTORY absl
-    DESTINATION ${ABSL_INSTALL_INCLUDEDIR}
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     FILES_MATCHING
       PATTERN "*.inc"
       PATTERN "*.h"

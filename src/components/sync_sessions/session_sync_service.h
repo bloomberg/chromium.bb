@@ -5,9 +5,6 @@
 #ifndef COMPONENTS_SYNC_SESSIONS_SESSION_SYNC_SERVICE_H_
 #define COMPONENTS_SYNC_SESSIONS_SESSION_SYNC_SERVICE_H_
 
-#include <memory>
-#include <string>
-
 #include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
@@ -39,9 +36,8 @@ class SessionSyncService : public KeyedService {
   virtual OpenTabsUIDelegate* GetOpenTabsUIDelegate() = 0;
 
   // Allows client code to be notified when foreign sessions change.
-  virtual std::unique_ptr<base::CallbackList<void()>::Subscription>
-  SubscribeToForeignSessionsChanged(const base::RepeatingClosure& cb)
-      WARN_UNUSED_RESULT = 0;
+  virtual base::CallbackListSubscription SubscribeToForeignSessionsChanged(
+      const base::RepeatingClosure& cb) WARN_UNUSED_RESULT = 0;
 
   // For ProfileSyncService to initialize the controller for SESSIONS.
   virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
@@ -51,9 +47,6 @@ class SessionSyncService : public KeyedService {
   // GetOpenTabsUIDelegate() returns null or not.
   virtual void ProxyTabsStateChanged(
       syncer::DataTypeController::State state) = 0;
-
-  // Used on Android only, to override the machine tag.
-  virtual void SetSyncSessionsGUID(const std::string& guid) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionSyncService);

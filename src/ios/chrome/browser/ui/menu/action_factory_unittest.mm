@@ -27,8 +27,6 @@
 #error "This file requires ARC support."
 #endif
 
-#if defined(__IPHONE_13_0)
-
 namespace {
 MenuScenario kTestMenuScenario = MenuScenario::kHistoryEntry;
 }  // namespace
@@ -86,6 +84,44 @@ TEST_F(ActionFactoryTest, CreateActionWithParameters) {
 
     EXPECT_TRUE([test_title_ isEqualToString:action.title]);
     EXPECT_EQ(mockImage, action.image);
+  }
+}
+
+// Tests that the bookmark action has the right title and image.
+TEST_F(ActionFactoryTest, BookmarkAction) {
+  if (@available(iOS 13.0, *)) {
+    ActionFactory* factory =
+        [[ActionFactory alloc] initWithBrowser:test_browser_.get()
+                                      scenario:kTestMenuScenario];
+
+    UIImage* expectedImage = [UIImage imageNamed:@"bookmark"];
+    NSString* expectedTitle =
+        l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_ADDTOBOOKMARKS);
+
+    UIAction* action = [factory actionToBookmarkWithBlock:^{
+    }];
+
+    EXPECT_TRUE([expectedTitle isEqualToString:action.title]);
+    EXPECT_EQ(expectedImage, action.image);
+  }
+}
+
+// Tests that the close action has the right title and image.
+TEST_F(ActionFactoryTest, CloseAction) {
+  if (@available(iOS 13.0, *)) {
+    ActionFactory* factory =
+        [[ActionFactory alloc] initWithBrowser:test_browser_.get()
+                                      scenario:kTestMenuScenario];
+
+    UIImage* expectedImage = [UIImage imageNamed:@"close"];
+    NSString* expectedTitle =
+        l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_CLOSETAB);
+
+    UIAction* action = [factory actionToCloseTabWithBlock:^{
+    }];
+
+    EXPECT_TRUE([expectedTitle isEqualToString:action.title]);
+    EXPECT_EQ(expectedImage, action.image);
   }
 }
 
@@ -213,8 +249,26 @@ TEST_F(ActionFactoryTest, OpenInNewWindowAction) {
 
     UIAction* action =
         [factory actionToOpenInNewWindowWithURL:testURL
-                                 activityOrigin:WindowActivityToolsOrigin
-                                     completion:nil];
+                                 activityOrigin:WindowActivityToolsOrigin];
+
+    EXPECT_TRUE([expectedTitle isEqualToString:action.title]);
+    EXPECT_EQ(expectedImage, action.image);
+  }
+}
+
+// Tests that the read later action has the right title and image.
+TEST_F(ActionFactoryTest, ReadLaterAction) {
+  if (@available(iOS 13.0, *)) {
+    ActionFactory* factory =
+        [[ActionFactory alloc] initWithBrowser:test_browser_.get()
+                                      scenario:kTestMenuScenario];
+
+    UIImage* expectedImage = [UIImage imageNamed:@"read_later"];
+    NSString* expectedTitle =
+        l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST);
+
+    UIAction* action = [factory actionToAddToReadingListWithBlock:^{
+    }];
 
     EXPECT_TRUE([expectedTitle isEqualToString:action.title]);
     EXPECT_EQ(expectedImage, action.image);
@@ -377,4 +431,22 @@ TEST_F(ActionFactoryTest, viewOfflineVersion) {
   }
 }
 
-#endif  // defined(__IPHONE_13_0)
+// Tests that the Open with JavaScript evaluation has have the right titles and
+// image.
+TEST_F(ActionFactoryTest, OpenWithJavaScript) {
+  if (@available(iOS 13.0, *)) {
+    ActionFactory* factory =
+        [[ActionFactory alloc] initWithBrowser:test_browser_.get()
+                                      scenario:kTestMenuScenario];
+
+    UIImage* expectedImage = [UIImage imageNamed:@"open"];
+
+    NSString* expectedTitle =
+        l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPEN);
+
+    UIAction* actionWithBlock = [factory actionToOpenJavascriptWithBlock:^{
+    }];
+    EXPECT_TRUE([expectedTitle isEqualToString:actionWithBlock.title]);
+    EXPECT_EQ(expectedImage, actionWithBlock.image);
+  }
+}

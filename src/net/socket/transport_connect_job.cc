@@ -5,6 +5,7 @@
 #include "net/socket/transport_connect_job.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -19,7 +20,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/trace_constants.h"
-#include "net/dns/public/secure_dns_mode.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
@@ -50,11 +51,11 @@ bool AddressListOnlyContainsIPv6(const AddressList& list) {
 TransportSocketParams::TransportSocketParams(
     const HostPortPair& host_port_pair,
     const NetworkIsolationKey& network_isolation_key,
-    bool disable_secure_dns,
+    SecureDnsPolicy secure_dns_policy,
     const OnHostResolutionCallback& host_resolution_callback)
     : destination_(host_port_pair),
       network_isolation_key_(network_isolation_key),
-      disable_secure_dns_(disable_secure_dns),
+      secure_dns_policy_(secure_dns_policy),
       host_resolution_callback_(host_resolution_callback) {}
 
 TransportSocketParams::~TransportSocketParams() = default;
@@ -269,8 +270,7 @@ int TransportConnectJob::DoResolveHost() {
 
   HostResolver::ResolveHostParameters parameters;
   parameters.initial_priority = priority();
-  if (params_->disable_secure_dns())
-    parameters.secure_dns_mode_override = SecureDnsMode::kOff;
+  parameters.secure_dns_policy = params_->secure_dns_policy();
   request_ = host_resolver()->CreateRequest(params_->destination(),
                                             params_->network_isolation_key(),
                                             net_log(), parameters);
@@ -370,7 +370,8 @@ int TransportConnectJob::DoTransportConnectComplete(int result) {
       race_result = RACE_IPV6_WINS;
     HistogramDuration(connect_timing_, race_result);
 
-    SetSocket(std::move(transport_socket_));
+    DCHECK(request_);
+    SetSocket(std::move(transport_socket_), request_->GetDnsAliasResults());
   } else {
     // Failure will be returned via |GetAdditionalErrorState|, so save
     // connection attempts from both sockets for use there.
@@ -397,8 +398,8 @@ void TransportConnectJob::DoIPv6FallbackTransportConnect() {
   DCHECK(!fallback_transport_socket_.get());
   DCHECK(!fallback_addresses_.get());
 
-  fallback_addresses_.reset(
-      new AddressList(request_->GetAddressResults().value()));
+  fallback_addresses_ =
+      std::make_unique<AddressList>(request_->GetAddressResults().value());
   MakeAddressListStartWithIPv4(fallback_addresses_.get());
 
   // Create a |SocketPerformanceWatcher|, and pass the ownership.
@@ -448,7 +449,9 @@ void TransportConnectJob::DoIPv6FallbackTransportConnectComplete(int result) {
 
     connect_timing_.connect_start = fallback_connect_start_time_;
     HistogramDuration(connect_timing_, RACE_IPV4_WINS);
-    SetSocket(std::move(fallback_transport_socket_));
+    DCHECK(request_);
+    SetSocket(std::move(fallback_transport_socket_),
+              request_->GetDnsAliasResults());
     next_state_ = STATE_NONE;
   } else {
     // Failure will be returned via |GetAdditionalErrorState|, so save

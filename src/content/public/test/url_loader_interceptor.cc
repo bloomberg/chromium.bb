@@ -167,10 +167,14 @@ class URLLoaderClientInterceptor : public network::mojom::URLLoaderClient {
     std::move(factory_getter)
         .Run()
         ->CreateLoaderAndStart(
-            std::move(params.receiver), params.routing_id, params.request_id,
-            params.options, std::move(params.url_request),
+            std::move(params.receiver), params.request_id, params.options,
+            std::move(params.url_request),
             delegating_client_receiver_.BindNewPipeAndPassRemote(),
             params.traffic_annotation);
+  }
+
+  void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override {
+    original_client_->OnReceiveEarlyHints(std::move(early_hints));
   }
 
   void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override {
@@ -249,7 +253,6 @@ class URLLoaderInterceptor::Interceptor
   // network::mojom::URLLoaderFactory implementation:
   void CreateLoaderAndStart(
       mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-      int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& url_request,
@@ -259,7 +262,6 @@ class URLLoaderInterceptor::Interceptor
     RequestParams params;
     params.process_id = process_id_getter_.Run();
     params.receiver = std::move(receiver);
-    params.routing_id = routing_id;
     params.request_id = request_id;
     params.options = options;
     params.url_request = std::move(url_request);
@@ -545,7 +547,7 @@ void URLLoaderInterceptor::WriteResponse(
     base::StringPiece headers,
     base::StringPiece body,
     network::mojom::URLLoaderClient* client,
-    base::Optional<net::SSLInfo> ssl_info) {
+    absl::optional<net::SSLInfo> ssl_info) {
   net::HttpResponseInfo info;
   info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
@@ -562,7 +564,7 @@ void URLLoaderInterceptor::WriteResponse(
     const std::string& relative_path,
     network::mojom::URLLoaderClient* client,
     const std::string* headers,
-    base::Optional<net::SSLInfo> ssl_info) {
+    absl::optional<net::SSLInfo> ssl_info) {
   return WriteResponse(GetDataFilePath(relative_path), client, headers,
                        std::move(ssl_info));
 }
@@ -571,7 +573,7 @@ void URLLoaderInterceptor::WriteResponse(
     const base::FilePath& file_path,
     network::mojom::URLLoaderClient* client,
     const std::string* headers,
-    base::Optional<net::SSLInfo> ssl_info) {
+    absl::optional<net::SSLInfo> ssl_info) {
   base::ScopedAllowBlockingForTesting allow_io;
   std::string headers_str;
   if (headers) {
@@ -602,7 +604,7 @@ MojoResult URLLoaderInterceptor::WriteResponseBody(
   options.capacity_num_bytes = body.size();
 
   MojoResult result =
-      CreateDataPipe(&options, &producer_handle, &consumer_handle);
+      CreateDataPipe(&options, producer_handle, consumer_handle);
   if (result != MOJO_RESULT_OK) {
     return result;
   }

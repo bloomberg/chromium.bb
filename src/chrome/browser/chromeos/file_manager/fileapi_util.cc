@@ -15,11 +15,13 @@
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/url_utils.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "google_apis/drive/task_util.h"
@@ -45,10 +47,9 @@ using blink::mojom::NativeFileInfo;
 namespace {
 
 GURL ConvertRelativeFilePathToFileSystemUrl(const base::FilePath& relative_path,
-                                            const std::string& extension_id) {
+                                            const GURL& source_url) {
   GURL base_url = storage::GetFileSystemRootURI(
-      extensions::Extension::GetBaseURLFromExtensionId(extension_id),
-      storage::kFileSystemTypeExternal);
+      source_url, storage::kFileSystemTypeExternal);
   return GURL(base_url.spec() +
               net::EscapeUrlEncodedData(relative_path.AsUTF8Unsafe(),
                                         false));  // Space to %20 instead of +.
@@ -71,10 +72,11 @@ EntryDefinition CreateEntryDefinitionWithError(base::File::Error error) {
 // or if shutdown is invoked during ResolveURL(). Must be called on UI thread.
 class FileDefinitionListConverter {
  public:
-  FileDefinitionListConverter(Profile* profile,
-                              const std::string& extension_id,
-                              const FileDefinitionList& file_definition_list,
-                              EntryDefinitionListCallback callback);
+  FileDefinitionListConverter(
+      scoped_refptr<storage::FileSystemContext> file_system_context,
+      const url::Origin& origin,
+      const FileDefinitionList& file_definition_list,
+      EntryDefinitionListCallback callback);
   ~FileDefinitionListConverter() = default;
 
  private:
@@ -102,25 +104,23 @@ class FileDefinitionListConverter {
       const EntryDefinition& entry_definition);
 
   scoped_refptr<storage::FileSystemContext> file_system_context_;
-  const std::string extension_id_;
+  const url::Origin origin_;
   const FileDefinitionList file_definition_list_;
   EntryDefinitionListCallback callback_;
   std::unique_ptr<EntryDefinitionList> result_;
 };
 
 FileDefinitionListConverter::FileDefinitionListConverter(
-    Profile* profile,
-    const std::string& extension_id,
+    scoped_refptr<storage::FileSystemContext> file_system_context,
+    const url::Origin& origin,
     const FileDefinitionList& file_definition_list,
     EntryDefinitionListCallback callback)
-    : extension_id_(extension_id),
+    : file_system_context_(file_system_context),
+      origin_(origin),
       file_definition_list_(file_definition_list),
       callback_(std::move(callback)),
       result_(new EntryDefinitionList) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  file_system_context_ =
-      GetFileSystemContextForExtensionId(profile, extension_id_);
 
   // Deletes the converter, once the scoped pointer gets out of scope. It is
   // either, if the conversion is finished, or ResolveURL() is terminated, and
@@ -147,9 +147,7 @@ void FileDefinitionListConverter::ConvertNextIterator(
   }
 
   storage::FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
-      url::Origin::Create(
-          extensions::Extension::GetBaseURLFromExtensionId(extension_id_)),
-      storage::kFileSystemTypeExternal, iterator->virtual_path);
+      origin_, storage::kFileSystemTypeExternal, iterator->virtual_path);
 
   if (!url.is_valid()) {
     OnIteratorConverted(
@@ -449,12 +447,23 @@ EntryDefinition::EntryDefinition(const EntryDefinition& other) = default;
 
 EntryDefinition::~EntryDefinition() = default;
 
-storage::FileSystemContext* GetFileSystemContextForExtensionId(
+const GURL GetFileManagerURL() {
+  return extensions::Extension::GetBaseURLFromExtensionId(kFileManagerAppId);
+}
+
+storage::FileSystemContext* GetFileManagerFileSystemContext(Profile* profile) {
+  return GetFileSystemContextForSourceURL(profile, GetFileManagerURL());
+}
+
+storage::FileSystemContext* GetFileSystemContextForSourceURL(
     Profile* profile,
-    const std::string& extension_id) {
-  return extensions::util::GetStoragePartitionForExtensionId(extension_id,
-                                                             profile)
-      ->GetFileSystemContext();
+    const GURL& source_url) {
+  content::StoragePartition* const partition =
+      content::HasWebUIScheme(source_url)
+          ? profile->GetDefaultStoragePartition()
+          : extensions::util::GetStoragePartitionForExtensionId(
+                source_url.host(), profile);
+  return partition->GetFileSystemContext();
 }
 
 storage::FileSystemContext* GetFileSystemContextForRenderFrameHost(
@@ -465,27 +474,24 @@ storage::FileSystemContext* GetFileSystemContextForRenderFrameHost(
 
 bool ConvertAbsoluteFilePathToFileSystemUrl(Profile* profile,
                                             const base::FilePath& absolute_path,
-                                            const std::string& extension_id,
+                                            const GURL& source_url,
                                             GURL* url) {
   base::FilePath relative_path;
-  if (!ConvertAbsoluteFilePathToRelativeFileSystemPath(profile,
-                                                       extension_id,
-                                                       absolute_path,
-                                                       &relative_path)) {
+  if (!ConvertAbsoluteFilePathToRelativeFileSystemPath(
+          profile, source_url, absolute_path, &relative_path)) {
     return false;
   }
-  *url = ConvertRelativeFilePathToFileSystemUrl(relative_path, extension_id);
+  *url = ConvertRelativeFilePathToFileSystemUrl(relative_path, source_url);
   return true;
 }
 
 bool ConvertAbsoluteFilePathToRelativeFileSystemPath(
     Profile* profile,
-    const std::string& extension_id,
+    const GURL& source_url,
     const base::FilePath& absolute_path,
     base::FilePath* virtual_path) {
   storage::ExternalFileSystemBackend* backend =
-      GetFileSystemContextForExtensionId(profile, extension_id)
-          ->external_backend();
+      GetFileSystemContextForSourceURL(profile, source_url)->external_backend();
   if (!backend)
     return false;
 
@@ -497,20 +503,20 @@ bool ConvertAbsoluteFilePathToRelativeFileSystemPath(
 }
 
 void ConvertFileDefinitionListToEntryDefinitionList(
-    Profile* profile,
-    const std::string& extension_id,
+    scoped_refptr<storage::FileSystemContext> file_system_context,
+    const url::Origin& origin,
     const FileDefinitionList& file_definition_list,
     EntryDefinitionListCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // The converter object destroys itself.
-  new FileDefinitionListConverter(profile, extension_id, file_definition_list,
-                                  std::move(callback));
+  new FileDefinitionListConverter(file_system_context, origin,
+                                  file_definition_list, std::move(callback));
 }
 
 void ConvertFileDefinitionToEntryDefinition(
-    Profile* profile,
-    const std::string& extension_id,
+    scoped_refptr<storage::FileSystemContext> file_system_context,
+    const url::Origin& origin,
     const FileDefinition& file_definition,
     EntryDefinitionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -518,7 +524,7 @@ void ConvertFileDefinitionToEntryDefinition(
   FileDefinitionList file_definition_list;
   file_definition_list.push_back(file_definition);
   ConvertFileDefinitionListToEntryDefinitionList(
-      profile, extension_id, file_definition_list,
+      file_system_context, origin, file_definition_list,
       base::BindOnce(&OnConvertFileDefinitionDone, std::move(callback)));
 }
 

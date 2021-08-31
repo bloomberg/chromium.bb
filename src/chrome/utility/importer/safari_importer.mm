@@ -7,11 +7,11 @@
 #include "chrome/utility/importer/safari_importer.h"
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/files/file_util.h"
 #include "base/mac/foundation_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -52,14 +52,14 @@ void SafariImporter::StartImport(const importer::SourceProfile& source_profile,
 }
 
 void SafariImporter::ImportBookmarks() {
-  base::string16 toolbar_name =
+  std::u16string toolbar_name =
       bridge_->GetLocalizedString(IDS_BOOKMARK_BAR_FOLDER_NAME);
   std::vector<ImportedBookmarkEntry> bookmarks;
   ParseBookmarks(toolbar_name, &bookmarks);
 
   // Write bookmarks into profile.
   if (!bookmarks.empty() && !cancelled()) {
-    const base::string16& first_folder_name =
+    const std::u16string& first_folder_name =
         bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_SAFARI);
     bridge_->AddBookmarks(bookmarks, first_folder_name);
   }
@@ -81,8 +81,7 @@ void SafariImporter::ImportBookmarks() {
 
 bool SafariImporter::OpenDatabase(sql::Database* db) {
   // Construct ~/Library/Safari/WebpageIcons.db path.
-  NSString* library_dir = [NSString
-      stringWithUTF8String:library_dir_.value().c_str()];
+  NSString* library_dir = base::SysUTF8ToNSString(library_dir_.value());
   NSString* safari_dir = [library_dir
       stringByAppendingPathComponent:@"Safari"];
   NSString* favicons_db_path = [safari_dir
@@ -141,19 +140,19 @@ void SafariImporter::LoadFaviconData(
 
 void SafariImporter::RecursiveReadBookmarksFolder(
     NSDictionary* bookmark_folder,
-    const std::vector<base::string16>& parent_path_elements,
+    const std::vector<std::u16string>& parent_path_elements,
     bool is_in_toolbar,
-    const base::string16& toolbar_name,
+    const std::u16string& toolbar_name,
     std::vector<ImportedBookmarkEntry>* out_bookmarks) {
   DCHECK(bookmark_folder);
 
-  NSString* type = [bookmark_folder objectForKey:@"WebBookmarkType"];
-  NSString* title = [bookmark_folder objectForKey:@"Title"];
+  NSString* type = bookmark_folder[@"WebBookmarkType"];
+  NSString* title = bookmark_folder[@"Title"];
 
   // Are we the dictionary that contains all other bookmarks?
   // We need to know this so we don't add it to the path.
-  bool is_top_level_bookmarks_container = [bookmark_folder
-      objectForKey:@"WebBookmarkFileVersion"] != nil;
+  bool is_top_level_bookmarks_container =
+      bookmark_folder[@"WebBookmarkFileVersion"] != nil;
 
   // We're expecting a list of bookmarks here, if that isn't what we got, fail.
   if (!is_top_level_bookmarks_container) {
@@ -168,7 +167,7 @@ void SafariImporter::RecursiveReadBookmarksFolder(
     }
   }
 
-  NSArray* elements = [bookmark_folder objectForKey:@"Children"];
+  NSArray* elements = bookmark_folder[@"Children"];
   if (!elements &&
       (!parent_path_elements.empty() || !is_in_toolbar) &&
       ![title isEqualToString:@"BookmarksMenu"]) {
@@ -188,7 +187,7 @@ void SafariImporter::RecursiveReadBookmarksFolder(
     return;
   }
 
-  std::vector<base::string16> path_elements(parent_path_elements);
+  std::vector<std::u16string> path_elements(parent_path_elements);
   // Create a folder for the toolbar, but not for the bookmarks menu.
   if (path_elements.empty() && [title isEqualToString:@"BookmarksBar"]) {
     is_in_toolbar = true;
@@ -202,7 +201,7 @@ void SafariImporter::RecursiveReadBookmarksFolder(
 
   // Iterate over individual bookmarks.
   for (NSDictionary* bookmark in elements) {
-    NSString* type = [bookmark objectForKey:@"WebBookmarkType"];
+    NSString* type = bookmark[@"WebBookmarkType"];
     if (!type)
       continue;
 
@@ -220,9 +219,8 @@ void SafariImporter::RecursiveReadBookmarksFolder(
     if (![type isEqualToString:@"WebBookmarkTypeLeaf"])
       continue;
 
-    NSString* url = [bookmark objectForKey:@"URLString"];
-    NSString* title = [[bookmark objectForKey:@"URIDictionary"]
-        objectForKey:@"title"];
+    NSString* url = bookmark[@"URLString"];
+    NSString* title = bookmark[@"URIDictionary"][@"title"];
 
     if (!url || !title)
       continue;
@@ -241,13 +239,12 @@ void SafariImporter::RecursiveReadBookmarksFolder(
 }
 
 void SafariImporter::ParseBookmarks(
-    const base::string16& toolbar_name,
+    const std::u16string& toolbar_name,
     std::vector<ImportedBookmarkEntry>* bookmarks) {
   DCHECK(bookmarks);
 
   // Construct ~/Library/Safari/Bookmarks.plist path
-  NSString* library_dir = [NSString
-      stringWithUTF8String:library_dir_.value().c_str()];
+  NSString* library_dir = base::SysUTF8ToNSString(library_dir_.value());
   NSString* safari_dir = [library_dir
       stringByAppendingPathComponent:@"Safari"];
   NSString* bookmarks_plist = [safari_dir
@@ -260,7 +257,7 @@ void SafariImporter::ParseBookmarks(
     return;
 
   // Recursively read in bookmarks.
-  std::vector<base::string16> parent_path_elements;
+  std::vector<std::u16string> parent_path_elements;
   RecursiveReadBookmarksFolder(bookmarks_dict, parent_path_elements, false,
                                toolbar_name, bookmarks);
 }

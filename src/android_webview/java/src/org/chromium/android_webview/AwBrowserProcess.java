@@ -8,6 +8,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.ApplicationInfo;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
@@ -45,17 +46,22 @@ import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.components.component_updater.ComponentLoaderPolicyBridge;
+import org.chromium.components.component_updater.EmbeddedComponentLoader;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.policy.CombinedPolicyProvider;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
 import org.chromium.content_public.browser.ChildProcessLauncherHelper;
+import org.chromium.content_public.browser.trusttokens.TrustTokenFulfillerManager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -77,6 +83,7 @@ public final class AwBrowserProcess {
             PostTask.createSequencedTaskRunner(TaskTraits.BEST_EFFORT_MAY_BLOCK);
 
     private static String sWebViewPackageName;
+    private static @ApkType int sApkType;
 
     /**
      * Loads the native library, and performs basic static construction of objects needed
@@ -150,6 +157,9 @@ public final class AwBrowserProcess {
                     AwSafeBrowsingConfigHelper.maybeEnableSafeBrowsingFromManifest(appContext);
                 }
 
+                TrustTokenFulfillerManager.setFactory(
+                        PlatformServiceBridge.getInstance().getLocalTrustTokenFulfillerFactory());
+
                 try (ScopedSysTraceEvent e2 = ScopedSysTraceEvent.scoped(
                              "AwBrowserProcess.startBrowserProcessesSync")) {
                     BrowserStartupController.getInstance().startBrowserProcessesSync(
@@ -169,6 +179,27 @@ public final class AwBrowserProcess {
     public static String getWebViewPackageName() {
         if (sWebViewPackageName == null) return ""; // May be null in testing.
         return sWebViewPackageName;
+    }
+
+    public static void initializeApkType(ApplicationInfo info) {
+        if (info.sharedLibraryFiles != null && info.sharedLibraryFiles.length > 0) {
+            // Only Trichrome uses shared library files.
+            sApkType = ApkType.TRICHROME;
+        } else if (info.className.toLowerCase(Locale.ROOT).contains("monochrome")) {
+            // Only Monochrome has "monochrome" in the application class name.
+            sApkType = ApkType.MONOCHROME;
+        } else {
+            // Everything else must be standalone.
+            sApkType = ApkType.STANDALONE;
+        }
+    }
+
+    /**
+     * Returns the WebView APK type.
+     */
+    @CalledByNative
+    public static @ApkType int getApkType() {
+        return sApkType;
     }
 
     /**
@@ -258,20 +289,21 @@ public final class AwBrowserProcess {
         // again if anything goes wrong. This makes sense given that a failure
         // to copy a file usually means that retrying won't succeed either,
         // because e.g. the disk is full, or the file system is corrupted.
-        final ParcelFileDescriptor[] minidumpFds = new ParcelFileDescriptor[minidumpFiles.length];
+        final List<ParcelFileDescriptor> minidumpFds = new ArrayList<>(minidumpFiles.length);
         try {
             for (int i = 0; i < minidumpFiles.length; ++i) {
                 try {
-                    minidumpFds[i] = ParcelFileDescriptor.open(
-                            minidumpFiles[i], ParcelFileDescriptor.MODE_READ_ONLY);
+                    minidumpFds.add(ParcelFileDescriptor.open(
+                            minidumpFiles[i], ParcelFileDescriptor.MODE_READ_ONLY));
                 } catch (FileNotFoundException e) {
-                    minidumpFds[i] = null; // This is slightly ugly :)
+                    // Don't add null file descriptors to the array.
                 }
             }
             try {
                 List<Map<String, String>> crashesInfoList =
                         getCrashKeysForCrashFiles(minidumpFiles, crashesInfoMap);
-                service.transmitCrashes(minidumpFds, crashesInfoList);
+                service.transmitCrashes(
+                        minidumpFds.toArray(new ParcelFileDescriptor[0]), crashesInfoList);
             } catch (RemoteException e) {
                 // TODO(gsennton): add a UMA metric here to ensure we aren't losing
                 // too many minidumps because of this.
@@ -279,9 +311,9 @@ public final class AwBrowserProcess {
         } finally {
             deleteMinidumps(minidumpFiles);
             // Close FDs
-            for (int i = 0; i < minidumpFds.length; ++i) {
+            for (ParcelFileDescriptor fd : minidumpFds) {
                 try {
-                    if (minidumpFds[i] != null) minidumpFds[i].close();
+                    fd.close();
                 } catch (IOException e) {
                 }
             }
@@ -297,49 +329,55 @@ public final class AwBrowserProcess {
      */
     public static void handleMinidumps(final boolean userApproved) {
         sSequencedTaskRunner.postTask(() -> {
-            final Context appContext = ContextUtils.getApplicationContext();
-            final File crashSpoolDir = new File(appContext.getCacheDir().getPath(), "WebView");
-            if (!crashSpoolDir.isDirectory()) return;
-            final CrashFileManager crashFileManager = new CrashFileManager(crashSpoolDir);
+            try {
+                final Context appContext = ContextUtils.getApplicationContext();
+                final File cacheDir = new File(PathUtils.getCacheDirectory());
+                final CrashFileManager crashFileManager = new CrashFileManager(cacheDir);
 
-            // The lifecycle of a minidump in the app directory is very simple: foo.dmpNNNNN --
-            // where NNNNN is a Process ID (PID) -- gets created, and is either deleted or
-            // copied over to the shared crash directory for all WebView-using apps.
-            Map<String, Map<String, String>> crashesInfoMap =
-                    crashFileManager.importMinidumpsCrashKeys();
-            final File[] minidumpFiles = crashFileManager.getCurrentMinidumpsSansLogcat();
-            if (minidumpFiles.length == 0) return;
+                // The lifecycle of a minidump in the app directory is very simple: foo.dmpNNNNN --
+                // where NNNNN is a Process ID (PID) -- gets created, and is either deleted or
+                // copied over to the shared crash directory for all WebView-using apps.
+                Map<String, Map<String, String>> crashesInfoMap =
+                        crashFileManager.importMinidumpsCrashKeys();
+                final File[] minidumpFiles = crashFileManager.getCurrentMinidumpsSansLogcat();
+                if (minidumpFiles.length == 0) return;
 
-            // Delete the minidumps if the user doesn't allow crash data uploading.
-            if (!userApproved) {
-                deleteMinidumps(minidumpFiles);
-                return;
-            }
-
-            final Intent intent = new Intent();
-            intent.setClassName(getWebViewPackageName(), ServiceNames.CRASH_RECEIVER_SERVICE);
-
-            ServiceConnection connection = new ServiceConnection() {
-                private boolean mHasConnected;
-
-                @Override
-                public void onServiceConnected(ComponentName className, IBinder service) {
-                    if (mHasConnected) return;
-                    mHasConnected = true;
-                    // onServiceConnected is called on the UI thread, so punt this back to
-                    // the background thread.
-                    sSequencedTaskRunner.postTask(() -> {
-                        transmitMinidumps(minidumpFiles, crashesInfoMap,
-                                ICrashReceiverService.Stub.asInterface(service));
-                        appContext.unbindService(this);
-                    });
+                // Delete the minidumps if the user doesn't allow crash data uploading.
+                if (!userApproved) {
+                    deleteMinidumps(minidumpFiles);
+                    return;
                 }
 
-                @Override
-                public void onServiceDisconnected(ComponentName className) {}
-            };
-            if (!appContext.bindService(intent, connection, Context.BIND_AUTO_CREATE)) {
-                Log.w(TAG, "Could not bind to Minidump-copying Service " + intent);
+                final Intent intent = new Intent();
+                intent.setClassName(getWebViewPackageName(), ServiceNames.CRASH_RECEIVER_SERVICE);
+
+                ServiceConnection connection = new ServiceConnection() {
+                    private boolean mHasConnected;
+
+                    @Override
+                    public void onServiceConnected(ComponentName className, IBinder service) {
+                        if (mHasConnected) return;
+                        mHasConnected = true;
+                        // onServiceConnected is called on the UI thread, so punt this back to
+                        // the background thread.
+                        sSequencedTaskRunner.postTask(() -> {
+                            transmitMinidumps(minidumpFiles, crashesInfoMap,
+                                    ICrashReceiverService.Stub.asInterface(service));
+                            appContext.unbindService(this);
+                        });
+                    }
+
+                    @Override
+                    public void onServiceDisconnected(ComponentName className) {}
+                };
+                if (!appContext.bindService(intent, connection, Context.BIND_AUTO_CREATE)) {
+                    Log.w(TAG, "Could not bind to Minidump-copying Service " + intent);
+                }
+            } catch (RuntimeException e) {
+                // We don't want to crash the app if we hit an unexpected exception during minidump
+                // uploading as this could potentially put the app into a persistently bad state.
+                // Just log it.
+                Log.e(TAG, "Exception during minidump uploading process!", e);
             }
         });
     }
@@ -449,11 +487,30 @@ public final class AwBrowserProcess {
         }
     }
 
+    /**
+     * Load components files from {@link
+     * org.chromium.android_webview.services.ComponentsProviderService}.
+     */
+    public static void loadComponents() {
+        ComponentLoaderPolicyBridge[] componentPolicies =
+                AwBrowserProcessJni.get().getComponentLoaderPolicies();
+        // Don't connect to the service if there are no components to load.
+        if (componentPolicies.length == 0) {
+            return;
+        }
+        EmbeddedComponentLoader loader =
+                new EmbeddedComponentLoader(Arrays.asList(componentPolicies));
+        final Intent intent = new Intent();
+        intent.setClassName(getWebViewPackageName(), ServiceNames.COMPONENTS_PROVIDER_SERVICE);
+        loader.connect(intent);
+    }
+
     // Do not instantiate this class.
     private AwBrowserProcess() {}
 
     @NativeMethods
     interface Natives {
         void setProcessNameCrashKey(String processName);
+        ComponentLoaderPolicyBridge[] getComponentLoaderPolicies();
     }
 }

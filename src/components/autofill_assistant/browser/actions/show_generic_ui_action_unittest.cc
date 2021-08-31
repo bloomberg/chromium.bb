@@ -14,6 +14,8 @@
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/user_model.h"
 #include "components/autofill_assistant/browser/value_util.h"
+#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -36,19 +38,20 @@ using ::testing::SizeIs;
 using ::testing::UnorderedElementsAre;
 using ::testing::UnorderedElementsAreArray;
 
-class ShowGenericUiActionTest : public content::RenderViewHostTestHarness {
+class ShowGenericUiActionTest : public testing::Test {
  public:
-  ShowGenericUiActionTest() {}
-
   void SetUp() override {
-    RenderViewHostTestHarness::SetUp();
+    web_contents_ = content::WebContentsTester::CreateTestWebContents(
+        &browser_context_, nullptr);
+    content::WebContentsTester::For(web_contents_.get())
+        ->SetLastCommittedURL(GURL(kFakeUrl));
 
-    ON_CALL(mock_action_delegate_, OnSetGenericUi(_, _, _))
+    ON_CALL(mock_action_delegate_, SetGenericUi(_, _, _))
         .WillByDefault(
             Invoke([&](std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-                       base::OnceCallback<void(const ClientStatus&)>&
+                       base::OnceCallback<void(const ClientStatus&)>
                            end_action_callback,
-                       base::OnceCallback<void(const ClientStatus&)>&
+                       base::OnceCallback<void(const ClientStatus&)>
                            view_inflation_finished_callback) {
               std::move(view_inflation_finished_callback)
                   .Run(ClientStatus(ACTION_APPLIED));
@@ -67,10 +70,8 @@ class ShowGenericUiActionTest : public content::RenderViewHostTestHarness {
         .WillByDefault(
             RunOnceCallback<1>(std::vector<WebsiteLoginManager::Login>{
                 WebsiteLoginManager::Login(GURL(kFakeUrl), kFakeUsername)}));
-    content::WebContentsTester::For(web_contents())
-        ->SetLastCommittedURL(GURL(kFakeUrl));
     ON_CALL(mock_action_delegate_, GetWebContents())
-        .WillByDefault(Return(web_contents()));
+        .WillByDefault(Return(web_contents_.get()));
   }
 
  protected:
@@ -85,6 +86,10 @@ class ShowGenericUiActionTest : public content::RenderViewHostTestHarness {
     return action;
   }
 
+  content::BrowserTaskEnvironment task_environment_;
+  content::RenderViewHostTestEnabler rvh_test_enabler_;
+  content::TestBrowserContext browser_context_;
+  std::unique_ptr<content::WebContents> web_contents_;
   UserData user_data_;
   UserModel user_model_;
   MockPersonalDataManager mock_personal_data_manager_;
@@ -95,13 +100,12 @@ class ShowGenericUiActionTest : public content::RenderViewHostTestHarness {
 };
 
 TEST_F(ShowGenericUiActionTest, FailedViewInflationEndsAction) {
-  ON_CALL(mock_action_delegate_, OnSetGenericUi(_, _, _))
-      .WillByDefault(
-          Invoke([&](std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-                     base::OnceCallback<void(const ClientStatus&)>&
-                         end_action_callback,
-                     base::OnceCallback<void(const ClientStatus&)>&
-                         view_inflation_finished_callback) {
+  ON_CALL(mock_action_delegate_, SetGenericUi(_, _, _))
+      .WillByDefault(Invoke(
+          [&](std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+              base::OnceCallback<void(const ClientStatus&)> end_action_callback,
+              base::OnceCallback<void(const ClientStatus&)>
+                  view_inflation_finished_callback) {
             std::move(view_inflation_finished_callback)
                 .Run(ClientStatus(INVALID_ACTION));
           }));
@@ -117,7 +121,7 @@ TEST_F(ShowGenericUiActionTest, FailedViewInflationEndsAction) {
 TEST_F(ShowGenericUiActionTest, GoesIntoPromptState) {
   InSequence seq;
   EXPECT_CALL(mock_action_delegate_, Prompt(_, _, _, _, _)).Times(1);
-  EXPECT_CALL(mock_action_delegate_, OnSetGenericUi(_, _, _)).Times(1);
+  EXPECT_CALL(mock_action_delegate_, SetGenericUi(_, _, _)).Times(1);
   EXPECT_CALL(mock_action_delegate_, ClearGenericUi()).Times(1);
   EXPECT_CALL(mock_action_delegate_, CleanUpAfterPrompt()).Times(1);
   EXPECT_CALL(
@@ -157,13 +161,13 @@ TEST_F(ShowGenericUiActionTest, NonEmptyOutputModel) {
 
   proto_.add_output_model_identifiers("value_2");
 
-  ON_CALL(mock_action_delegate_, OnSetGenericUi(_, _, _))
-      .WillByDefault(
-          Invoke([this](std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-                        base::OnceCallback<void(const ClientStatus&)>&
-                            end_action_callback,
-                        base::OnceCallback<void(const ClientStatus&)>&
-                            view_inflation_finished_callback) {
+  ON_CALL(mock_action_delegate_, SetGenericUi(_, _, _))
+      .WillByDefault(Invoke(
+          [this](
+              std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+              base::OnceCallback<void(const ClientStatus&)> end_action_callback,
+              base::OnceCallback<void(const ClientStatus&)>
+                  view_inflation_finished_callback) {
             std::move(view_inflation_finished_callback)
                 .Run(ClientStatus(ACTION_APPLIED));
             user_model_.SetValue("value_2", SimpleValue(std::string("change")));
@@ -200,7 +204,7 @@ TEST_F(ShowGenericUiActionTest, OutputModelNotSubsetOfInputModel) {
   proto_.add_output_model_identifiers("value_2");
   proto_.add_output_model_identifiers("value_3");
 
-  EXPECT_CALL(mock_action_delegate_, OnSetGenericUi(_, _, _)).Times(0);
+  EXPECT_CALL(mock_action_delegate_, SetGenericUi(_, _, _)).Times(0);
   EXPECT_CALL(mock_action_delegate_, ClearGenericUi()).Times(1);
   EXPECT_CALL(
       callback_,
@@ -250,6 +254,9 @@ TEST_F(ShowGenericUiActionTest, RequestProfiles) {
   autofill::test::SetProfileInfo(
       &profile_a, "Marion", "Mitchell", "Morrison", "marion@me.xyz", "Fox",
       "123 Zoo St.", "unit 5", "Hollywood", "CA", "91601", "US", "16505678910");
+  AutofillProfileProto profile_a_proto;
+  profile_a_proto.set_guid(profile_a.guid());
+
   ON_CALL(mock_personal_data_manager_, IsAutofillProfileEnabled)
       .WillByDefault(Return(true));
   ON_CALL(mock_personal_data_manager_, GetProfiles)
@@ -260,7 +267,7 @@ TEST_F(ShowGenericUiActionTest, RequestProfiles) {
   // Keep action alive by storing it in local variable.
   auto action = Run();
 
-  EXPECT_THAT(user_model_.GetProfile(profile_a.guid())->Compare(profile_a),
+  EXPECT_THAT(user_model_.GetProfile(profile_a_proto)->Compare(profile_a),
               Eq(0));
   ValueProto expected_value;
   expected_value.set_is_client_side_only(true);
@@ -273,13 +280,15 @@ TEST_F(ShowGenericUiActionTest, RequestProfiles) {
                                  "editor@gmail.com", "", "203 Barfield Lane",
                                  "", "Mountain View", "CA", "94043", "US",
                                  "+12345678901");
+  AutofillProfileProto profile_b_proto;
+  profile_b_proto.set_guid(profile_b.guid());
   ON_CALL(mock_personal_data_manager_, GetProfiles)
       .WillByDefault(Return(
           std::vector<autofill::AutofillProfile*>({&profile_a, &profile_b})));
   mock_personal_data_manager_.NotifyPersonalDataObserver();
-  EXPECT_THAT(user_model_.GetProfile(profile_a.guid())->Compare(profile_a),
+  EXPECT_THAT(user_model_.GetProfile(profile_a_proto)->Compare(profile_a),
               Eq(0));
-  EXPECT_THAT(user_model_.GetProfile(profile_b.guid())->Compare(profile_b),
+  EXPECT_THAT(user_model_.GetProfile(profile_b_proto)->Compare(profile_b),
               Eq(0));
   expected_value.mutable_profiles()->add_values()->set_guid(profile_b.guid());
   EXPECT_THAT(user_model_.GetValue("profiles")->profiles().values(),
@@ -290,8 +299,8 @@ TEST_F(ShowGenericUiActionTest, RequestProfiles) {
       .WillByDefault(
           Return(std::vector<autofill::AutofillProfile*>({&profile_b})));
   mock_personal_data_manager_.NotifyPersonalDataObserver();
-  EXPECT_EQ(user_model_.GetProfile(profile_a.guid()), nullptr);
-  EXPECT_THAT(user_model_.GetProfile(profile_b.guid())->Compare(profile_b),
+  EXPECT_EQ(user_model_.GetProfile(profile_a_proto), nullptr);
+  EXPECT_THAT(user_model_.GetProfile(profile_b_proto)->Compare(profile_b),
               Eq(0));
   expected_value.Clear();
   expected_value.set_is_client_side_only(true);
@@ -305,8 +314,8 @@ TEST_F(ShowGenericUiActionTest, RequestProfiles) {
       .WillByDefault(Return(
           std::vector<autofill::AutofillProfile*>({&profile_a, &profile_b})));
   mock_personal_data_manager_.NotifyPersonalDataObserver();
-  EXPECT_EQ(user_model_.GetProfile(profile_a.guid()), nullptr);
-  EXPECT_THAT(user_model_.GetProfile(profile_b.guid())->Compare(profile_b),
+  EXPECT_EQ(user_model_.GetProfile(profile_a_proto), nullptr);
+  EXPECT_THAT(user_model_.GetProfile(profile_b_proto)->Compare(profile_b),
               Eq(0));
   expected_value.Clear();
   expected_value.set_is_client_side_only(true);
@@ -332,6 +341,8 @@ TEST_F(ShowGenericUiActionTest, RequestCreditCards) {
   autofill::test::SetCreditCardInfo(&credit_card_a, "Marion Mitchell",
                                     "4111 1111 1111 1111", "01", "2050",
                                     profile_a.guid());
+  AutofillCreditCardProto credit_card_a_proto;
+  credit_card_a_proto.set_guid(credit_card_a.guid());
   ON_CALL(mock_personal_data_manager_, GetCreditCards)
       .WillByDefault(
           Return(std::vector<autofill::CreditCard*>({&credit_card_a})));
@@ -341,7 +352,7 @@ TEST_F(ShowGenericUiActionTest, RequestCreditCards) {
   auto action = Run();
 
   EXPECT_THAT(
-      user_model_.GetCreditCard(credit_card_a.guid())->Compare(credit_card_a),
+      user_model_.GetCreditCard(credit_card_a_proto)->Compare(credit_card_a),
       Eq(0));
   ValueProto expected_value;
   expected_value.set_is_client_side_only(true);
@@ -359,15 +370,17 @@ TEST_F(ShowGenericUiActionTest, RequestCreditCards) {
   autofill::test::SetCreditCardInfo(&credit_card_b, "John Doe",
                                     "4111 1111 1111 1111", "01", "2050",
                                     profile_b.guid());
+  AutofillCreditCardProto credit_card_b_proto;
+  credit_card_b_proto.set_guid(credit_card_b.guid());
   ON_CALL(mock_personal_data_manager_, GetCreditCards)
       .WillByDefault(Return(std::vector<autofill::CreditCard*>(
           {&credit_card_a, &credit_card_b})));
   mock_personal_data_manager_.NotifyPersonalDataObserver();
   EXPECT_THAT(
-      user_model_.GetCreditCard(credit_card_a.guid())->Compare(credit_card_a),
+      user_model_.GetCreditCard(credit_card_a_proto)->Compare(credit_card_a),
       Eq(0));
   EXPECT_THAT(
-      user_model_.GetCreditCard(credit_card_b.guid())->Compare(credit_card_b),
+      user_model_.GetCreditCard(credit_card_b_proto)->Compare(credit_card_b),
       Eq(0));
   expected_value.mutable_credit_cards()->add_values()->set_guid(
       credit_card_b.guid());
@@ -380,9 +393,9 @@ TEST_F(ShowGenericUiActionTest, RequestCreditCards) {
       .WillByDefault(
           Return(std::vector<autofill::CreditCard*>({&credit_card_b})));
   mock_personal_data_manager_.NotifyPersonalDataObserver();
-  EXPECT_EQ(user_model_.GetCreditCard(credit_card_a.guid()), nullptr);
+  EXPECT_EQ(user_model_.GetCreditCard(credit_card_a_proto), nullptr);
   EXPECT_THAT(
-      user_model_.GetCreditCard(credit_card_b.guid())->Compare(credit_card_b),
+      user_model_.GetCreditCard(credit_card_b_proto)->Compare(credit_card_b),
       Eq(0));
   expected_value.Clear();
   expected_value.set_is_client_side_only(true);
@@ -398,9 +411,9 @@ TEST_F(ShowGenericUiActionTest, RequestCreditCards) {
       .WillByDefault(Return(std::vector<autofill::CreditCard*>(
           {&credit_card_a, &credit_card_b})));
   mock_personal_data_manager_.NotifyPersonalDataObserver();
-  EXPECT_EQ(user_model_.GetCreditCard(credit_card_a.guid()), nullptr);
+  EXPECT_EQ(user_model_.GetCreditCard(credit_card_a_proto), nullptr);
   EXPECT_THAT(
-      user_model_.GetCreditCard(credit_card_b.guid())->Compare(credit_card_b),
+      user_model_.GetCreditCard(credit_card_b_proto)->Compare(credit_card_b),
       Eq(0));
   expected_value.Clear();
   expected_value.set_is_client_side_only(true);
@@ -445,7 +458,7 @@ TEST_F(ShowGenericUiActionTest, ElementPreconditionMissesIdentifier) {
       ->add_filters()
       ->set_css_selector("selector");
 
-  EXPECT_CALL(mock_action_delegate_, OnSetGenericUi(_, _, _)).Times(0);
+  EXPECT_CALL(mock_action_delegate_, SetGenericUi(_, _, _)).Times(0);
   EXPECT_CALL(mock_action_delegate_, ClearGenericUi()).Times(1);
   EXPECT_CALL(
       callback_,
@@ -459,13 +472,12 @@ TEST_F(ShowGenericUiActionTest, ElementPreconditionMissesIdentifier) {
 }
 
 TEST_F(ShowGenericUiActionTest, EndActionOnNavigation) {
-  ON_CALL(mock_action_delegate_, OnSetGenericUi(_, _, _))
-      .WillByDefault(
-          Invoke([&](std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-                     base::OnceCallback<void(const ClientStatus&)>&
-                         end_action_callback,
-                     base::OnceCallback<void(const ClientStatus&)>&
-                         view_inflation_finished_callback) {
+  ON_CALL(mock_action_delegate_, SetGenericUi(_, _, _))
+      .WillByDefault(Invoke(
+          [&](std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+              base::OnceCallback<void(const ClientStatus&)> end_action_callback,
+              base::OnceCallback<void(const ClientStatus&)>
+                  view_inflation_finished_callback) {
             std::move(view_inflation_finished_callback)
                 .Run(ClientStatus(ACTION_APPLIED));
           }));
@@ -498,13 +510,12 @@ TEST_F(ShowGenericUiActionTest, BreakingNavigationBeforeUiIsSet) {
                    bool browse_mode, bool browse_mode_invisible) {
         std::move(end_navigation_callback).Run();
       });
-  ON_CALL(mock_action_delegate_, OnSetGenericUi(_, _, _))
-      .WillByDefault(
-          Invoke([&](std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-                     base::OnceCallback<void(const ClientStatus&)>&
-                         end_action_callback,
-                     base::OnceCallback<void(const ClientStatus&)>&
-                         view_inflation_finished_callback) {
+  ON_CALL(mock_action_delegate_, SetGenericUi(_, _, _))
+      .WillByDefault(Invoke(
+          [&](std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+              base::OnceCallback<void(const ClientStatus&)> end_action_callback,
+              base::OnceCallback<void(const ClientStatus&)>
+                  view_inflation_finished_callback) {
             std::move(view_inflation_finished_callback)
                 .Run(ClientStatus(ACTION_APPLIED));
             // Also end action when UI is set. At this point, the action should

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/profile_policy_connector.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -13,6 +14,7 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_switcher/browser_switcher_policy_migrator.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
@@ -29,7 +31,7 @@
 #include "components/policy/core/common/schema_registry_tracking_policy_provider.h"
 #include "components/policy/policy_constants.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -44,7 +46,7 @@
 
 namespace policy {
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 namespace internal {
 
 // This class allows observing a |device_wide_policy_service| for policy updates
@@ -133,7 +135,7 @@ ProxyPolicyProvider* GetProxyPolicyProvider() {
 }
 }  // namespace
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 ProfilePolicyConnector::ProfilePolicyConnector() = default;
 
@@ -149,7 +151,7 @@ void ProfilePolicyConnector::Init(
   configuration_policy_provider_ = configuration_policy_provider;
   policy_store_ = policy_store;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   auto* browser_policy_connector =
       static_cast<BrowserPolicyConnectorChromeOS*>(connector);
 #else
@@ -166,7 +168,7 @@ void ProfilePolicyConnector::Init(
     policy_providers_.push_back(wrapped_platform_policy_provider_.get());
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (browser_policy_connector->GetDeviceCloudPolicyManager()) {
     policy_providers_.push_back(
         browser_policy_connector->GetDeviceCloudPolicyManager());
@@ -193,12 +195,13 @@ void ProfilePolicyConnector::Init(
   if (configuration_policy_provider)
     policy_providers_.push_back(configuration_policy_provider);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!user) {
     DCHECK(schema_registry);
     // This case occurs for the signin and the lock screen app profiles.
-    special_user_policy_provider_.reset(new LoginProfilePolicyProvider(
-        browser_policy_connector->GetPolicyService()));
+    special_user_policy_provider_ =
+        std::make_unique<LoginProfilePolicyProvider>(
+            browser_policy_connector->GetPolicyService());
   } else {
     // |user| should never be nullptr except for the signin and the lock screen
     // app profile.
@@ -223,7 +226,7 @@ void ProfilePolicyConnector::Init(
       std::make_unique<browser_switcher::BrowserSwitcherPolicyMigrator>());
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   migrators.push_back(std::make_unique<LegacyChromePolicyMigrator>(
       policy::key::kDeviceNativePrinters, policy::key::kDevicePrinters));
   migrators.push_back(std::make_unique<LegacyChromePolicyMigrator>(
@@ -259,10 +262,10 @@ void ProfilePolicyConnector::Init(
     policy_service_ = std::make_unique<PolicyServiceImpl>(policy_providers_,
                                                           std::move(migrators));
   }
-#else   // defined(OS_CHROMEOS)
+#else   // BUILDFLAG(IS_CHROMEOS_ASH)
   policy_service_ = std::make_unique<PolicyServiceImpl>(policy_providers_,
                                                         std::move(migrators));
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void ProfilePolicyConnector::InitForTesting(
@@ -272,7 +275,7 @@ void ProfilePolicyConnector::InitForTesting(
 }
 
 void ProfilePolicyConnector::OverrideIsManagedForTesting(bool is_managed) {
-  is_managed_override_.reset(new bool(is_managed));
+  is_managed_override_ = std::make_unique<bool>(is_managed);
 }
 
 void ProfilePolicyConnector::SetPlatformPolicyProviderForTesting(
@@ -281,7 +284,7 @@ void ProfilePolicyConnector::SetPlatformPolicyProviderForTesting(
 }
 
 void ProfilePolicyConnector::Shutdown() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (is_primary_user_)
     GetProxyPolicyProvider()->SetDelegate(nullptr);
 
@@ -308,17 +311,26 @@ bool ProfilePolicyConnector::IsProfilePolicy(const char* policy_key) const {
   return provider == configuration_policy_provider_;
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void ProfilePolicyConnector::TriggerProxiedPoliciesWaitTimeoutForTesting() {
   CHECK(proxied_policies_propagated_watcher_);
   proxied_policies_propagated_watcher_->OnProviderUpdatePropagationTimedOut();
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+base::flat_set<std::string> ProfilePolicyConnector::user_affiliation_ids()
+    const {
+  auto* store = GetActualPolicyStore();
+  if (!store || !store->has_policy())
+    return {};
+  const auto& ids = store->policy()->user_affiliation_ids();
+  return {ids.begin(), ids.end()};
+}
 
 const CloudPolicyStore* ProfilePolicyConnector::GetActualPolicyStore() const {
   if (policy_store_)
     return policy_store_;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (special_user_policy_provider_) {
     // |special_user_policy_provider_| is non-null for device-local accounts,
     // for the login profile, and the lock screen app profile.
@@ -352,7 +364,7 @@ ConfigurationPolicyProvider* ProfilePolicyConnector::GetPlatformProvider(
   return browser_policy_connector->GetPlatformProvider();
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 std::unique_ptr<PolicyService>
 ProfilePolicyConnector::CreatePolicyServiceWithInitializationThrottled(
     const std::vector<ConfigurationPolicyProvider*>& policy_providers,

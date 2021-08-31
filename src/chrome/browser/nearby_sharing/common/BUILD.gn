@@ -13,12 +13,30 @@ source_set("common") {
     "nearby_share_http_result.h",
     "nearby_share_prefs.cc",
     "nearby_share_prefs.h",
+    "nearby_share_profile_info_provider.h",
+    "nearby_share_switches.cc",
+    "nearby_share_switches.h",
   ]
 
+  public_deps = [ "//base" ]
+
   deps = [
-    "//base",
     "//chrome/browser/ui/webui/nearby_share/public/mojom",
     "//components/pref_registry",
     "//components/prefs",
+    "//net",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
   ]
+}
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "fake_nearby_share_profile_info_provider.cc",
+    "fake_nearby_share_profile_info_provider.h",
+  ]
+
+  deps = [ ":common" ]
 }

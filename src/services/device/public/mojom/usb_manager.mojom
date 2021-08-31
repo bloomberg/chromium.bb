@@ -21,7 +21,8 @@ interface UsbDeviceManager {
   GetDevices(UsbEnumerationOptions? options) => (array<UsbDeviceInfo> results);
 
   // Requests a device by guid.
-  GetDevice(string guid, pending_receiver<UsbDevice> device_receiver,
+  GetDevice(string guid, array<uint8> blocked_interface_classes,
+            pending_receiver<UsbDevice> device_receiver,
             pending_remote<UsbDeviceClient>? device_client);
 
   // Requests a device by guid. The returned device will be permitted to send
@@ -40,7 +41,7 @@ interface UsbDeviceManager {
 
   // Check whether permission_broker will allow a future Open call for
   // a given USB device to succeed.
-  [EnableIf=is_chromeos]
+  [EnableIf=is_chromeos_ash]
   CheckAccess(string guid) => (bool success);
 
   // Attempt to open a USB device using permission_broker and return
@@ -48,7 +49,7 @@ interface UsbDeviceManager {
   // |allowed_interfaces_mask|. The |lifeline_fd| should be the remote end of
   // a pipe created locally, and when this pipe is closed permission_broker
   // reattaches any kernel drivers that may have been detached when opening.
-  [EnableIf=is_chromeos]
+  [EnableIf=is_chromeos_ash]
   OpenFileDescriptor(string guid, uint32 allowed_interfaces_mask,
                      handle<platform> lifeline_fd)
       => (mojo_base.mojom.File? fd);

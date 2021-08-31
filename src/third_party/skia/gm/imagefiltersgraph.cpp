@@ -38,8 +38,7 @@ protected:
     SkISize onISize() override { return SkISize::Make(600, 150); }
 
     void onOnceBeforeDraw() override {
-        fImage = SkImage::MakeFromBitmap(
-                ToolUtils::create_string_bitmap(100, 100, SK_ColorWHITE, 20, 70, 96, "e"));
+        fImage = ToolUtils::create_string_image(100, 100, SK_ColorWHITE, 20, 70, 96, "e");
     }
 
     void onDraw(SkCanvas* canvas) override {
@@ -149,8 +148,8 @@ protected:
 private:
     static void DrawClippedImage(SkCanvas* canvas, const SkImage* image, const SkPaint& paint) {
         canvas->save();
-        canvas->clipRect(SkRect::MakeIWH(image->width(), image->height()));
-        canvas->drawImage(image, 0, 0, &paint);
+        canvas->clipIRect(image->bounds());
+        canvas->drawImage(image, 0, 0, SkSamplingOptions(), &paint);
         canvas->restore();
     }
 

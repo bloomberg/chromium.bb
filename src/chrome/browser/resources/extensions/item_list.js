@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_components/managed_footnote/managed_footnote.m.js';
+import 'chrome://resources/cr_components/managed_footnote/managed_footnote.js';
 import './shared_style.js';
 import './checkup.js';
 
@@ -99,9 +99,12 @@ Polymer({
    */
   computeFilter_() {
     const formattedFilter = this.filter.trim().toLowerCase();
-    return formattedFilter ?
-        i => i.name.toLowerCase().includes(formattedFilter) :
-        null;
+    if (!formattedFilter) {
+      return null;
+    }
+
+    return i => [i.name, i.id].some(
+               s => s.toLowerCase().includes(formattedFilter));
   },
 
   /** @private */

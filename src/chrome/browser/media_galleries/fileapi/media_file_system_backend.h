@@ -15,7 +15,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
+#include "components/download/public/common/quarantine_connection.h"
 #include "storage/browser/file_system/file_system_backend.h"
 #include "storage/browser/file_system/task_runner_bound_observer_list.h"
 
@@ -36,7 +38,9 @@ class MediaPathFilter;
 
 class MediaFileSystemBackend : public storage::FileSystemBackend {
  public:
-  explicit MediaFileSystemBackend(const base::FilePath& profile_path);
+  MediaFileSystemBackend(
+      const base::FilePath& profile_path,
+      download::QuarantineConnectionCallback quarantine_connection_callback);
   ~MediaFileSystemBackend() override;
 
   // Asserts that the current task is sequenced with any other task that calls
@@ -104,7 +108,7 @@ class MediaFileSystemBackend : public storage::FileSystemBackend {
 
   std::unique_ptr<storage::AsyncFileUtil> native_media_file_util_;
 
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<DeviceMediaAsyncFileUtil> device_media_async_file_util_;
 #endif
 

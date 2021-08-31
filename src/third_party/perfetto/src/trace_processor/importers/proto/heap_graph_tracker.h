@@ -58,7 +58,7 @@ struct PathFromRoot {
 void MarkRoot(TraceStorage* s,
               tables::HeapGraphObjectTable::Id id,
               StringPool::Id type);
-void FindPathFromRoot(const TraceStorage& s,
+void FindPathFromRoot(TraceStorage* storage,
                       tables::HeapGraphObjectTable::Id id,
                       PathFromRoot* path);
 
@@ -101,12 +101,13 @@ class HeapGraphTracker : public Destructible {
   void AddInternedType(uint32_t seq_id,
                        uint64_t intern_id,
                        StringPool::Id strid,
-                       uint64_t location_id,
+                       base::Optional<uint64_t> location_id,
                        uint64_t object_size,
                        std::vector<uint64_t> field_name_ids,
                        uint64_t superclass_id,
                        uint64_t classloader_id,
-                       bool no_fields);
+                       bool no_fields,
+                       StringPool::Id kind);
   void AddInternedFieldName(uint32_t seq_id,
                             uint64_t intern_id,
                             base::StringView str);
@@ -139,6 +140,10 @@ class HeapGraphTracker : public Destructible {
       const int64_t current_ts,
       const UniquePid current_upid);
 
+  uint64_t GetLastObjectId(uint32_t seq_id) {
+    return GetOrCreateSequence(seq_id).last_object_id;
+  }
+
  private:
   struct InternedField {
     StringPool::Id name;
@@ -152,10 +157,12 @@ class HeapGraphTracker : public Destructible {
     uint64_t superclass_id;
     bool no_fields;
     uint64_t classloader_id;
+    StringPool::Id kind;
   };
   struct SequenceState {
     UniquePid current_upid = 0;
     int64_t current_ts = 0;
+    uint64_t last_object_id = 0;
     std::vector<SourceRoot> current_roots;
     std::map<uint64_t, InternedType> interned_types;
     std::map<uint64_t, StringPool::Id> interned_location_names;

@@ -28,12 +28,12 @@
 namespace grpc_core {
 
 enum class MemoryOrder {
-  RELAXED = std::memory_order_relaxed,
-  CONSUME = std::memory_order_consume,
-  ACQUIRE = std::memory_order_acquire,
-  RELEASE = std::memory_order_release,
-  ACQ_REL = std::memory_order_acq_rel,
-  SEQ_CST = std::memory_order_seq_cst
+  RELAXED = static_cast<int>(std::memory_order_relaxed),
+  CONSUME = static_cast<int>(std::memory_order_consume),
+  ACQUIRE = static_cast<int>(std::memory_order_acquire),
+  RELEASE = static_cast<int>(std::memory_order_release),
+  ACQ_REL = static_cast<int>(std::memory_order_acq_rel),
+  SEQ_CST = static_cast<int>(std::memory_order_seq_cst)
 };
 
 template <typename T>
@@ -47,6 +47,10 @@ class Atomic {
 
   void Store(T val, MemoryOrder order) {
     storage_.store(val, static_cast<std::memory_order>(order));
+  }
+
+  T Exchange(T desired, MemoryOrder order) {
+    return storage_.exchange(desired, static_cast<std::memory_order>(order));
   }
 
   bool CompareExchangeWeak(T* expected, T desired, MemoryOrder success,

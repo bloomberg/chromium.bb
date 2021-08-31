@@ -32,7 +32,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/css/basic_shape_functions.h"
 #include "third_party/blink/renderer/core/css/css_axis_value.h"
-#include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_color.h"
 #include "third_party/blink/renderer/core/css/css_content_distribution_value.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_font_family_value.h"
@@ -114,24 +114,19 @@ scoped_refptr<StyleReflection> StyleBuilderConverter::ConvertBoxReflect(
   return reflection;
 }
 
-Color StyleBuilderConverter::ConvertColor(StyleResolverState& state,
-                                          const CSSValue& value,
-                                          bool for_visited_link) {
-  return state.GetDocument().GetTextLinkColors().ColorFromCSSValue(
-      value, state.Style()->GetCurrentColor(), state.Style()->UsedColorScheme(),
-      for_visited_link);
-}
-
 scoped_refptr<StyleSVGResource> StyleBuilderConverter::ConvertElementReference(
     StyleResolverState& state,
     const CSSValue& value) {
-  const auto* url_value = DynamicTo<cssvalue::CSSURIValue>(value);
-  if (!url_value)
+  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    DCHECK_EQ(identifier_value->GetValueID(), CSSValueID::kNone);
     return nullptr;
+  }
+
+  const auto& url_value = To<cssvalue::CSSURIValue>(value);
   SVGResource* resource =
       state.GetElementStyleResources().GetSVGResourceFromValue(
-          state.GetElement().OriginatingTreeScope(), *url_value);
-  return StyleSVGResource::Create(resource, url_value->ValueForSerialization());
+          CSSPropertyID::kInvalid, url_value);
+  return StyleSVGResource::Create(resource, url_value.ValueForSerialization());
 }
 
 LengthBox StyleBuilderConverter::ConvertClip(StyleResolverState& state,
@@ -153,7 +148,7 @@ scoped_refptr<ClipPathOperation> StyleBuilderConverter::ConvertClipPath(
   if (const auto* url_value = DynamicTo<cssvalue::CSSURIValue>(value)) {
     SVGResource* resource =
         state.GetElementStyleResources().GetSVGResourceFromValue(
-            state.GetElement().OriginatingTreeScope(), *url_value);
+            CSSPropertyID::kClipPath, *url_value);
     // TODO(fs): Doesn't work with external SVG references (crbug.com/109212.)
     return ReferenceClipPathOperation::Create(
         url_value->ValueForSerialization(), resource);
@@ -166,8 +161,10 @@ scoped_refptr<ClipPathOperation> StyleBuilderConverter::ConvertClipPath(
 
 FilterOperations StyleBuilderConverter::ConvertFilterOperations(
     StyleResolverState& state,
-    const CSSValue& value) {
-  return FilterOperationResolver::CreateFilterOperations(state, value);
+    const CSSValue& value,
+    CSSPropertyID property_id) {
+  return FilterOperationResolver::CreateFilterOperations(state, value,
+                                                         property_id);
 }
 
 FilterOperations StyleBuilderConverter::ConvertOffscreenFilterOperations(
@@ -379,12 +376,11 @@ static float ComputeFontSize(const CSSToLengthConversionData& conversion_data,
     }
     return result;
   }
-  if (primitive_value.IsCalculatedPercentageWithLength()) {
+  if (primitive_value.IsCalculated()) {
     return To<CSSMathFunctionValue>(primitive_value)
         .ToCalcValue(conversion_data)
         ->Evaluate(parent_size.value);
   }
-
   NOTREACHED();
   return 0;
 }
@@ -418,7 +414,9 @@ FontDescription::Size StyleBuilderConverterBase::ConvertFontSize(
   // have revealed an existing bug with calculated lengths. Investigate.
   const bool is_absolute =
       parent_size.is_absolute || primitive_value.IsMathFunctionValue() ||
-      !To<CSSNumericLiteralValue>(primitive_value).IsFontRelativeLength();
+      !To<CSSNumericLiteralValue>(primitive_value).IsFontRelativeLength() ||
+      To<CSSNumericLiteralValue>(primitive_value).GetType() ==
+          CSSPrimitiveValue::UnitType::kRems;
   return FontDescription::Size(
       0, ComputeFontSize(conversion_data, primitive_value, parent_size),
       is_absolute);
@@ -1062,8 +1060,8 @@ void StyleBuilderConverter::CreateImplicitNamedGridLinesFromGridArea(
   }
 }
 
-float StyleBuilderConverter::ConvertBorderWidth(StyleResolverState& state,
-                                                const CSSValue& value) {
+LayoutUnit StyleBuilderConverter::ConvertBorderWidth(StyleResolverState& state,
+                                                     const CSSValue& value) {
   double result = 0;
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     switch (identifier_value->GetValueID()) {
@@ -1088,9 +1086,8 @@ float StyleBuilderConverter::ConvertBorderWidth(StyleResolverState& state,
         primitive_value.ComputeLength<float>(state.CssToLengthConversionData());
   }
   if (result > 0.0 && result < 1.0)
-    return 1.0;
-  return clampTo<float>(result, defaultMinimumForClamp<float>(),
-                        defaultMaximumForClamp<float>());
+    return LayoutUnit(1);
+  return LayoutUnit(result);
 }
 
 LayoutUnit StyleBuilderConverter::ConvertLayoutUnit(StyleResolverState& state,
@@ -1098,12 +1095,12 @@ LayoutUnit StyleBuilderConverter::ConvertLayoutUnit(StyleResolverState& state,
   return LayoutUnit::Clamp(ConvertComputedLength<float>(state, value));
 }
 
-base::Optional<Length> StyleBuilderConverter::ConvertGapLength(
+absl::optional<Length> StyleBuilderConverter::ConvertGapLength(
     const StyleResolverState& state,
     const CSSValue& value) {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value && identifier_value->GetValueID() == CSSValueID::kNormal)
-    return base::nullopt;
+    return absl::nullopt;
 
   return ConvertLength(state, value);
 }
@@ -1401,7 +1398,7 @@ ShadowData StyleBuilderConverter::ConvertShadow(
       // Document dependent CSS colors.
       color = StyleColor(Color::kBlack);
       if (auto* color_value =
-              DynamicTo<cssvalue::CSSColorValue>(shadow.color.Get())) {
+              DynamicTo<cssvalue::CSSColor>(shadow.color.Get())) {
         color = StyleColor(color_value->Value());
       } else {
         CSSValueID value_id =
@@ -1418,7 +1415,7 @@ ShadowData StyleBuilderConverter::ConvertShadow(
             break;
           default:
             color = StyleColor(StyleColor::ColorFromKeyword(
-                value_id, ComputedStyle::InitialStyle().UsedColorScheme()));
+                value_id, mojom::blink::ColorScheme::kLight));
         }
       }
     }
@@ -1490,7 +1487,7 @@ scoped_refptr<SVGDashArray> StyleBuilderConverter::ConvertStrokeDasharray(
     const CSSValue& value) {
   const auto* dashes = DynamicTo<CSSValueList>(value);
   if (!dashes)
-    return SVGComputedStyle::InitialStrokeDashArray();
+    return EmptyDashArray();
 
   scoped_refptr<SVGDashArray> array = base::MakeRefCounted<SVGDashArray>();
 
@@ -1560,7 +1557,8 @@ StyleAutoColor StyleBuilderConverter::ConvertStyleAutoColor(
 }
 
 SVGPaint StyleBuilderConverter::ConvertSVGPaint(StyleResolverState& state,
-                                                const CSSValue& value) {
+                                                const CSSValue& value,
+                                                bool for_visited_link) {
   const CSSValue* local_value = &value;
   SVGPaint paint;
   if (const auto* list = DynamicTo<CSSValueList>(value)) {
@@ -1579,6 +1577,7 @@ SVGPaint StyleBuilderConverter::ConvertSVGPaint(StyleResolverState& state,
       paint.type =
           !paint.resource ? SVG_PAINTTYPE_NONE : SVG_PAINTTYPE_URI_NONE;
     } else {
+      // TODO(fs): Pass along |for_visited_link|.
       paint.color = ConvertStyleColor(state, *local_value);
       paint.type =
           !paint.resource ? SVG_PAINTTYPE_COLOR : SVG_PAINTTYPE_URI_COLOR;
@@ -1936,7 +1935,7 @@ static const CSSValue& ComputeRegisteredPropertyValue(
                 : mojom::blink::ColorScheme::kLight;
       Color color = document.GetTextLinkColors().ColorFromCSSValue(
           value, Color(), scheme, false);
-      return *cssvalue::CSSColorValue::Create(color.Rgb());
+      return *cssvalue::CSSColor::Create(color.Rgb());
     }
   }
 
@@ -2039,7 +2038,7 @@ bool ListHasAuto(const CSSValueList& list) {
 }  // namespace
 
 StyleAspectRatio StyleBuilderConverter::ConvertAspectRatio(
-    StyleResolverState& state,
+    const StyleResolverState& state,
     const CSSValue& value) {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value && identifier_value->GetValueID() == CSSValueID::kAuto)

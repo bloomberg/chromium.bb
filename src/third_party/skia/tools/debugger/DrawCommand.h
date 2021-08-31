@@ -43,7 +43,6 @@ public:
         kDrawDRRect_OpType,
         kDrawImage_OpType,
         kDrawImageLattice_OpType,
-        kDrawImageNine_OpType,
         kDrawImageRect_OpType,
         kDrawImageRectLayer_OpType, // unique to DebugCanvas
         kDrawOval_OpType,
@@ -67,8 +66,9 @@ public:
         kSave_OpType,
         kSaveLayer_OpType,
         kSetMatrix_OpType,
+        kSetM44_OpType,
 
-        kLast_OpType = kSetMatrix_OpType
+        kLast_OpType = kSetM44_OpType
     };
 
     static const int kOpTypeCount = kLast_OpType + 1;
@@ -252,7 +252,8 @@ private:
 
 class DrawImageCommand : public DrawCommand {
 public:
-    DrawImageCommand(const SkImage* image, SkScalar left, SkScalar top, const SkPaint* paint);
+    DrawImageCommand(const SkImage* image, SkScalar left, SkScalar top,
+                     const SkSamplingOptions&, const SkPaint* paint);
     void execute(SkCanvas* canvas) const override;
     bool render(SkCanvas* canvas) const override;
     void toJSON(SkJSONWriter& writer, UrlDataManager& urlDataManager) const override;
@@ -262,6 +263,7 @@ private:
     sk_sp<const SkImage> fImage;
     SkScalar             fLeft;
     SkScalar             fTop;
+    SkSamplingOptions    fSampling;
     SkTLazy<SkPaint>     fPaint;
 
     using INHERITED = DrawCommand;
@@ -272,6 +274,7 @@ public:
     DrawImageLatticeCommand(const SkImage*           image,
                             const SkCanvas::Lattice& lattice,
                             const SkRect&            dst,
+                            SkFilterMode,
                             const SkPaint*           paint);
     void execute(SkCanvas* canvas) const override;
     bool render(SkCanvas* canvas) const override;
@@ -282,26 +285,7 @@ private:
     sk_sp<const SkImage> fImage;
     SkCanvas::Lattice    fLattice;
     SkRect               fDst;
-    SkTLazy<SkPaint>     fPaint;
-
-    using INHERITED = DrawCommand;
-};
-
-class DrawImageNineCommand : public DrawCommand {
-public:
-    DrawImageNineCommand(const SkImage* image,
-                         const SkIRect& center,
-                         const SkRect&  dst,
-                         const SkPaint* paint);
-    void execute(SkCanvas* canvas) const override;
-    bool render(SkCanvas* canvas) const override;
-    void toJSON(SkJSONWriter& writer, UrlDataManager& urlDataManager) const override;
-    uint64_t imageId(UrlDataManager& udb) const;
-
-private:
-    sk_sp<const SkImage> fImage;
-    SkIRect              fCenter;
-    SkRect               fDst;
+    SkFilterMode         fFilter;
     SkTLazy<SkPaint>     fPaint;
 
     using INHERITED = DrawCommand;
@@ -310,8 +294,9 @@ private:
 class DrawImageRectCommand : public DrawCommand {
 public:
     DrawImageRectCommand(const SkImage*              image,
-                         const SkRect*               src,
+                         const SkRect&               src,
                          const SkRect&               dst,
+                         const SkSamplingOptions&    sampling,
                          const SkPaint*              paint,
                          SkCanvas::SrcRectConstraint constraint);
     void execute(SkCanvas* canvas) const override;
@@ -321,8 +306,9 @@ public:
 
 private:
     sk_sp<const SkImage>        fImage;
-    SkTLazy<SkRect>             fSrc;
+    SkRect                      fSrc;
     SkRect                      fDst;
+    SkSamplingOptions           fSampling;
     SkTLazy<SkPaint>            fPaint;
     SkCanvas::SrcRectConstraint fConstraint;
 
@@ -337,8 +323,9 @@ public:
     DrawImageRectLayerCommand(DebugLayerManager*          layerManager,
                               const int                   nodeId,
                               const int                   frame,
-                              const SkRect*               src,
+                              const SkRect&               src,
                               const SkRect&               dst,
+                              const SkSamplingOptions&    sampling,
                               const SkPaint*              paint,
                               SkCanvas::SrcRectConstraint constraint);
     void execute(SkCanvas* canvas) const override;
@@ -349,8 +336,9 @@ private:
     DebugLayerManager*          fLayerManager;
     int                         fNodeId;
     int                         fFrame;
-    SkTLazy<SkRect>             fSrc;
+    SkRect                      fSrc;
     SkRect                      fDst;
+    SkSamplingOptions           fSampling;
     SkTLazy<SkPaint>            fPaint;
     SkCanvas::SrcRectConstraint fConstraint;
 
@@ -594,6 +582,7 @@ public:
                      const SkColor[],
                      int,
                      SkBlendMode,
+                     const SkSamplingOptions&,
                      const SkRect*,
                      const SkPaint*);
 
@@ -605,6 +594,7 @@ private:
     SkTDArray<SkRect>    fTex;
     SkTDArray<SkColor>   fColors;
     SkBlendMode          fBlendMode;
+    SkSamplingOptions    fSampling;
     SkTLazy<SkRect>      fCull;
     SkTLazy<SkPaint>     fPaint;
 
@@ -643,6 +633,18 @@ public:
 
 private:
     SkMatrix fMatrix;
+
+    using INHERITED = DrawCommand;
+};
+
+class SetM44Command : public DrawCommand {
+public:
+    SetM44Command(const SkM44& matrix);
+    void execute(SkCanvas* canvas) const override;
+    void toJSON(SkJSONWriter& writer, UrlDataManager& urlDataManager) const override;
+
+private:
+    SkM44 fMatrix;
 
     using INHERITED = DrawCommand;
 };
@@ -699,6 +701,7 @@ public:
                               int count,
                               const SkPoint[],
                               const SkMatrix[],
+                              const SkSamplingOptions&,
                               const SkPaint*,
                               SkCanvas::SrcRectConstraint);
     void execute(SkCanvas* canvas) const override;
@@ -708,6 +711,7 @@ private:
     int                                   fCount;
     SkAutoTArray<SkPoint>                 fDstClips;
     SkAutoTArray<SkMatrix>                fPreViewMatrices;
+    SkSamplingOptions                     fSampling;
     SkTLazy<SkPaint>                      fPaint;
     SkCanvas::SrcRectConstraint           fConstraint;
 

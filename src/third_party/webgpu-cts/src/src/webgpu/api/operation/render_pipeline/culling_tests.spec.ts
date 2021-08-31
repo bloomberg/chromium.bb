@@ -61,16 +61,16 @@ g.test('culling')
     const format = 'rgba8unorm';
 
     const texture = t.device.createTexture({
-      size: { width: size, height: size, depth: 1 },
+      size: { width: size, height: size, depthOrArrayLayers: 1 },
       format,
-      usage: GPUTextureUsage.OUTPUT_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+      usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
     });
 
     const depthTexture = t.params.depthStencilFormat
       ? t.device.createTexture({
-          size: { width: size, height: size, depth: 1 },
+          size: { width: size, height: size, depthOrArrayLayers: 1 },
           format: t.params.depthStencilFormat,
-          usage: GPUTextureUsage.OUTPUT_ATTACHMENT,
+          usage: GPUTextureUsage.RENDER_ATTACHMENT,
         })
       : null;
 
@@ -78,13 +78,14 @@ g.test('culling')
     const pass = encoder.beginRenderPass({
       colorAttachments: [
         {
-          attachment: texture.createView(),
+          view: texture.createView(),
           loadValue: { r: 0.0, g: 0.0, b: 1.0, a: 1.0 },
+          storeOp: 'store',
         },
       ],
       depthStencilAttachment: depthTexture
         ? {
-            attachment: depthTexture.createView(),
+            view: depthTexture.createView(),
             depthLoadValue: 1.0,
             depthStoreOp: 'store',
             stencilLoadValue: 0,
@@ -96,42 +97,50 @@ g.test('culling')
     // Draw two triangles with different winding orders:
     // 1. The top-left one is counterclockwise (CCW)
     // 2. The bottom-right one is clockwise (CW)
-    const vertexModule = t.makeShaderModule('vertex', {
-      glsl: `#version 450
-            const vec2 pos[6] = vec2[6](vec2(-1.0f,  1.0f),
-                                        vec2(-1.0f,  0.0f),
-                                        vec2( 0.0f,  1.0f),
-                                        vec2( 0.0f, -1.0f),
-                                        vec2( 1.0f,  0.0f),
-                                        vec2( 1.0f, -1.0f));
-            void main() {
-                gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
-            }`,
-    });
-
-    const fragmentModule = t.makeShaderModule('fragment', {
-      glsl: `#version 450
-      layout(location = 0) out vec4 fragColor;
-      void main() {
-        if (gl_FrontFacing) {
-          fragColor = vec4(0.0, 1.0, 0.0, 1.0);
-        } else {
-          fragColor = vec4(1.0, 0.0, 0.0, 1.0);
-        }
-      }`,
-    });
-
     pass.setPipeline(
       t.device.createRenderPipeline({
-        vertexStage: { module: vertexModule, entryPoint: 'main' },
-        fragmentStage: { module: fragmentModule, entryPoint: 'main' },
-        primitiveTopology: t.params.primitiveTopology,
-        rasterizationState: {
+        vertex: {
+          module: t.device.createShaderModule({
+            code: `
+              [[stage(vertex)]] fn main(
+                [[builtin(vertex_index)]] VertexIndex : i32
+                ) -> [[builtin(position)]] vec4<f32> {
+                let pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+                    vec2<f32>(-1.0,  1.0),
+                    vec2<f32>(-1.0,  0.0),
+                    vec2<f32>( 0.0,  1.0),
+                    vec2<f32>( 0.0, -1.0),
+                    vec2<f32>( 1.0,  0.0),
+                    vec2<f32>( 1.0, -1.0));
+                return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
+              }`,
+          }),
+          entryPoint: 'main',
+        },
+        fragment: {
+          module: t.device.createShaderModule({
+            code: `
+              [[stage(fragment)]] fn main(
+                [[builtin(front_facing)]] FrontFacing : bool
+                ) -> [[location(0)]] vec4<f32> {
+                var color : vec4<f32>;
+                if (FrontFacing) {
+                  color = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+                } else {
+                  color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+                }
+                return color;
+              }`,
+          }),
+          entryPoint: 'main',
+          targets: [{ format }],
+        },
+        primitive: {
+          topology: t.params.primitiveTopology,
           frontFace: t.params.frontFace,
           cullMode: t.params.cullMode,
         },
-        colorStates: [{ format }],
-        depthStencilState: depthTexture
+        depthStencil: depthTexture
           ? { format: t.params.depthStencilFormat as GPUTextureFormat }
           : undefined,
       })
@@ -140,7 +149,7 @@ g.test('culling')
     pass.draw(6, 1, 0, 0);
     pass.endPass();
 
-    t.device.defaultQueue.submit([encoder.finish()]);
+    t.device.queue.submit([encoder.finish()]);
 
     // front facing color is green, non front facing is red, background is blue
     const kCCWTriangleTopLeftColor = faceColor('ccw', t.params.frontFace, t.params.cullMode);

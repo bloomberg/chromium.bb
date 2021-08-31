@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">Pantalla integrada</translation>
 <translation id="335581015389089642">Voz</translation>
 <translation id="3389286852084373014">O texto é demasiado longo</translation>
+<translation id="3406306243914553062">Contido HTML</translation>
 <translation id="348799646910989694">O estante ocúltase automaticamente</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" />(fixouse)</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Queda 1 día}other{Quedan # días}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">Número</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
 <translation id="3842239759367498783">Continúa coa lectura desde o dispositivo móbil <ph name="TITLE" /></translation>
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3889424535448813030">Frecha cara á dereita</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Hai un mes}other{Hai # meses}}</translation>
 <translation id="4289300219472526559">Comeza a falar</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> moveuse ao cartafol <ph name="FOLDER_NAME" />.</translation>
+<translation id="4306392492252714209">Quitar do portapapeis.</translation>
 <translation id="4316910396681052118">TODAS AS APLICACIÓNS</translation>
 <translation id="4491109536499578614">Imaxe</translation>
 <translation id="4588090240171750605">Desprazar cara á dereita</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">Queres eliminar esta busca do historial?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emojis</translation>
+<translation id="7620655452534002301">Eliminouse.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7781829728241885113">Onte</translation>
 <translation id="7814458197256864873">&amp;Copiar</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{Hai unha hora}other{Hai # horas}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Queda un segundo}other{Quedan # segundos}}</translation>
 <translation id="8134065097954893699">Volvendo cargar esta páxina</translation>
-<translation id="8144660977431427332">As túas buscas realízanse coa tecnoloxía do Asistente de Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, autocompletar</translation>
 <translation id="815598010540052116">Desprazarse cara abaixo</translation>
 <translation id="8179976553408161302">Intro</translation>
 <translation id="8210608804940886430">Avanzar páxina</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">Tabulador</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, aplicación</translation>
 <translation id="8259556432390118667">Valor hexadecimal da cor</translation>

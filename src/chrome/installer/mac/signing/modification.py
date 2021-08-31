@@ -12,6 +12,7 @@ import os.path
 
 from . import commands, parts
 
+_CF_BUNDLE_DISPLAY_NAME = 'CFBundleDisplayName'
 _CF_BUNDLE_EXE = 'CFBundleExecutable'
 _CF_BUNDLE_ID = 'CFBundleIdentifier'
 _CF_BUNDLE_NAME = 'CFBundleName'
@@ -47,8 +48,34 @@ def _modify_plists(paths, dist, config):
                                 config.base_config.base_bundle_id,
                                 config.base_bundle_id)
 
-            app_plist[_CF_BUNDLE_ID] = config.base_bundle_id
+            alert_helper_app_path = os.path.join(
+                paths.work, config.framework_dir, 'Helpers',
+                '{} Helper (Alerts).app'.format(config.product))
+            alert_helper_plist_path = os.path.join(alert_helper_app_path,
+                                                   'Contents', 'Info.plist')
+            with commands.PlistContext(
+                    alert_helper_plist_path,
+                    rewrite=True) as alert_helper_plist:
+                alert_helper_plist[_CF_BUNDLE_ID] = \
+                        alert_helper_plist[_CF_BUNDLE_ID].replace(
+                                config.base_config.base_bundle_id,
+                                config.base_bundle_id)
+
+            alert_helper_plist_strings_path = os.path.join(
+                alert_helper_app_path, 'Contents', 'Resources', 'base.lproj',
+                'InfoPlist.strings')
+            with commands.PlistContext(
+                    alert_helper_plist_strings_path, rewrite=True,
+                    binary=True) as alert_helper_plist_strings:
+                alert_helper_plist_strings[_CF_BUNDLE_DISPLAY_NAME] = \
+                        '{} {}'.format(
+                            alert_helper_plist_strings[_CF_BUNDLE_DISPLAY_NAME],
+                            dist.app_name_fragment)
+
+            app_plist[_CF_BUNDLE_DISPLAY_NAME] = '{} {}'.format(
+                app_plist[_CF_BUNDLE_DISPLAY_NAME], dist.app_name_fragment)
             app_plist[_CF_BUNDLE_EXE] = config.app_product
+            app_plist[_CF_BUNDLE_ID] = config.base_bundle_id
             app_plist[_CF_BUNDLE_NAME] = '{} {}'.format(
                 app_plist[_CF_BUNDLE_NAME], dist.app_name_fragment)
             app_plist[_KS_PRODUCT_ID] += '.' + dist.channel
@@ -107,6 +134,14 @@ def _replace_icons(paths, dist, config):
     commands.copy_files(new_app_icon, os.path.join(resources_dir, 'app.icns'))
     commands.copy_files(new_document_icon,
                         os.path.join(resources_dir, 'document.icns'))
+
+    # Also update the icon in the Alert Helper app.
+    alert_helper_resources_dir = os.path.join(
+        paths.work, config.framework_dir, 'Helpers',
+        '{} Helper (Alerts).app'.format(config.product), 'Contents',
+        'Resources')
+    commands.copy_files(new_app_icon,
+                        os.path.join(alert_helper_resources_dir, 'app.icns'))
 
 
 def _rename_enterprise_manifest(paths, dist, config):

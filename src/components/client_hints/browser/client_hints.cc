@@ -18,7 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
-#include "third_party/blink/public/common/loader/network_utils.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 
 namespace client_hints {
 
@@ -52,6 +52,8 @@ void ClientHints::GetAllowedClientHintsFromSource(
                                        &client_hints_rules);
   client_hints::GetAllowedClientHintsFromSource(url, client_hints_rules,
                                                 client_hints);
+  for (auto hint : additional_hints_)
+    client_hints->SetIsEnabled(hint, true);
 }
 
 bool ClientHints::IsJavaScriptAllowed(const GURL& url) {
@@ -88,7 +90,7 @@ void ClientHints::PersistClientHints(
   // TODO(tbansal): crbug.com/735518. Consider killing the renderer that sent
   // the malformed IPC.
   if (!primary_url.is_valid() ||
-      !blink::network_utils::IsOriginSecure(primary_url))
+      !network::IsUrlPotentiallyTrustworthy(primary_url))
     return;
 
   if (!IsJavaScriptAllowed(primary_url))
@@ -147,6 +149,15 @@ void ClientHints::PersistClientHints(
       100);
 
   UMA_HISTOGRAM_COUNTS_100("ClientHints.UpdateSize", client_hints.size());
+}
+
+void ClientHints::SetAdditionalClientHints(
+    const std::vector<network::mojom::WebClientHintsType>& hints) {
+  additional_hints_ = hints;
+}
+
+void ClientHints::ClearAdditionalClientHints() {
+  additional_hints_.clear();
 }
 
 }  // namespace client_hints

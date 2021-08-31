@@ -10,6 +10,7 @@
 #include "test_utils/gl_raii.h"
 #include "util/random_utils.h"
 #include "util/shader_utils.h"
+#include "util/test_utils.h"
 
 using namespace angle;
 
@@ -341,6 +342,33 @@ TEST_P(ClearTestRGB, DefaultFramebufferRGB)
     glClearColor(0.25f, 0.5f, 0.5f, 0.5f);
     glClear(GL_COLOR_BUFFER_BIT);
     EXPECT_PIXEL_NEAR(0, 0, 64, 128, 128, 255, 1.0);
+}
+
+// Invalidate the RGB default framebuffer and verify that the alpha channel is not cleared, and
+// stays set after drawing.
+TEST_P(ClearTestRGB, InvalidateDefaultFramebufferRGB)
+{
+    ANGLE_GL_PROGRAM(blueProgram, essl1_shaders::vs::Simple(), essl1_shaders::fs::Blue());
+
+    // Some GPUs don't support RGB format default framebuffer,
+    // so skip if the back buffer has alpha bits.
+    EGLWindow *window          = getEGLWindow();
+    EGLDisplay display         = window->getDisplay();
+    EGLConfig config           = window->getConfig();
+    EGLint backbufferAlphaBits = 0;
+    eglGetConfigAttrib(display, config, EGL_ALPHA_SIZE, &backbufferAlphaBits);
+    ANGLE_SKIP_TEST_IF(backbufferAlphaBits != 0);
+    // glInvalidateFramebuffer() isn't supported with GLES 2.0
+    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3);
+    ANGLE_SKIP_TEST_IF(IsD3D11());
+
+    const GLenum discards[] = {GL_COLOR};
+    glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, discards);
+    EXPECT_PIXEL_NEAR(0, 0, 0, 0, 0, 255, 1.0);
+
+    // Don't explicitly clear, but draw blue (make sure alpha is not cleared)
+    drawQuad(blueProgram, essl1_shaders::PositionAttrib(), 0.5f);
+    EXPECT_PIXEL_NEAR(0, 0, 0, 0, 255, 255, 1.0);
 }
 
 // Test clearing a RGBA8 Framebuffer
@@ -992,6 +1020,9 @@ TEST_P(ClearTestES3, MaskedClearHeterogeneousAttachments)
     // http://anglebug.com/4855
     ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
 
+    // TODO(anglebug.com/5491)
+    ANGLE_SKIP_TEST_IF(IsIOS() && IsOpenGLES());
+
     constexpr uint32_t kSize                              = 16;
     constexpr uint32_t kAttachmentCount                   = 3;
     constexpr float kDepthClearValue                      = 0.256f;
@@ -1113,6 +1144,9 @@ TEST_P(ClearTestES3, ScissoredClearHeterogeneousAttachments)
 
     // http://anglebug.com/5237
     ANGLE_SKIP_TEST_IF(IsWindows7() && IsD3D11() && IsNVIDIA());
+
+    // TODO(anglebug.com/5491)
+    ANGLE_SKIP_TEST_IF(IsIOS() && IsOpenGLES());
 
     constexpr uint32_t kSize                              = 16;
     constexpr uint32_t kHalfSize                          = kSize / 2;
@@ -1896,6 +1930,8 @@ TEST_P(ClearTestES3, ClearMaxAttachments)
 {
     // http://anglebug.com/4612
     ANGLE_SKIP_TEST_IF(IsOSX() && IsDesktopOpenGL());
+    // http://anglebug.com/5397
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsD3D11());
 
     constexpr GLsizei kSize = 16;
 
@@ -2425,15 +2461,37 @@ TEST_P(ClearTest, ClearThenScissoredMaskedClear)
     EXPECT_PIXEL_RECT_EQ(kSize / 2, 0, kSize / 2, kSize, GLColor::red);
 }
 
+// This is a test that must be verified visually.
+//
+// Tests that clear of the default framebuffer applies to the window.
+TEST_P(ClearTest, DISABLED_ClearReachesWindow)
+{
+    ANGLE_GL_PROGRAM(blueProgram, essl1_shaders::vs::Simple(), essl1_shaders::fs::Blue());
+
+    // Draw blue.
+    drawQuad(blueProgram, essl1_shaders::PositionAttrib(), 0.5f);
+    swapBuffers();
+
+    // Use glClear to clear to red.  Regression test for the Vulkan backend where this clear
+    // remained "deferred" and didn't make it to the window on swap.
+    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    swapBuffers();
+
+    // Wait for visual verification.
+    angle::Sleep(2000);
+}
+
 #ifdef Bool
 // X11 craziness.
 #    undef Bool
 #endif
 
-// Use this to select which configurations (e.g. which renderer, which GLES major version) these
-// tests should be run against.
 ANGLE_INSTANTIATE_TEST_ES2_AND_ES3(ClearTest);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ClearTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(ClearTestES3);
+
 ANGLE_INSTANTIATE_TEST_COMBINE_4(MaskedScissoredClearTest,
                                  MaskedScissoredClearVariationsTestPrint,
                                  testing::Range(0, 3),
@@ -2451,6 +2509,8 @@ ANGLE_INSTANTIATE_TEST_COMBINE_4(MaskedScissoredClearTest,
                                  ES3_VULKAN(),
                                  ES2_METAL(),
                                  ES3_METAL());
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(VulkanClearTest);
 ANGLE_INSTANTIATE_TEST_COMBINE_4(VulkanClearTest,
                                  MaskedScissoredClearVariationsTestPrint,
                                  testing::Range(0, 3),
@@ -2461,6 +2521,7 @@ ANGLE_INSTANTIATE_TEST_COMBINE_4(VulkanClearTest,
                                  ES3_VULKAN());
 
 // Not all ANGLE backends support RGB backbuffers
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ClearTestRGB);
 ANGLE_INSTANTIATE_TEST(ClearTestRGB,
                        ES2_D3D11(),
                        ES3_D3D11(),

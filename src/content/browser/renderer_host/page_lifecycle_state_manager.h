@@ -5,8 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PAGE_LIFECYCLE_STATE_MANAGER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PAGE_LIFECYCLE_STATE_MANAGER_H_
 
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "content/browser/renderer_host/input/one_shot_timeout_monitor.h"
 #include "content/common/content_export.h"
 #include "content/public/common/page_visibility_state.h"
@@ -30,19 +30,21 @@ class CONTENT_EXPORT PageLifecycleStateManager {
         const blink::mojom::PageLifecycleState& new_state);
     virtual void OnUpdateSentToRenderer(
         const blink::mojom::PageLifecycleState& new_state);
+    virtual void OnDeleted();
   };
 
   explicit PageLifecycleStateManager(
       RenderViewHostImpl* render_view_host_impl,
-      blink::mojom::PageVisibilityState web_contents_visibility_state);
+      blink::mojom::PageVisibilityState frame_tree_visibility);
   ~PageLifecycleStateManager();
 
   void SetIsFrozen(bool frozen);
-  void SetWebContentsVisibility(
+  void SetFrameTreeVisibility(
       blink::mojom::PageVisibilityState visibility_state);
   void SetIsInBackForwardCache(
       bool is_in_back_forward_cache,
       blink::mojom::PageRestoreParamsPtr page_restore_params);
+  bool IsInBackForwardCache() const { return is_in_back_forward_cache_; }
 
   // Called when we're committing main-frame same-site navigations where we did
   // a proactive BrowsingInstance swap and we're reusing the old page's renderer
@@ -67,9 +69,16 @@ class CONTENT_EXPORT PageLifecycleStateManager {
     return *last_acknowledged_state_;
   }
 
-  const blink::mojom::PageLifecycleState& last_state_sent_to_renderer() const {
-    return *last_state_sent_to_renderer_;
+  void SetIsLeavingBackForwardCache(base::OnceClosure done_cb);
+
+  bool DidReceiveBackForwardCacheAck() const {
+    return did_receive_back_forward_cache_ack_;
   }
+
+  // Whether the renderer is expected to send channel associated IPCs related to
+  // this page. E.g. while a page is in the back-forward cache the page should
+  // be performing no work and thus not sending any IPCs.
+  bool RendererExpectedToSendChannelAssociatedIpcs() const;
 
   void SetDelegateForTesting(TestDelegate* test_delegate_);
 
@@ -77,10 +86,12 @@ class CONTENT_EXPORT PageLifecycleStateManager {
   // Send mojo message to renderer if the effective (page) lifecycle state has
   // changed.
   void SendUpdatesToRendererIfNeeded(
-      blink::mojom::PageRestoreParamsPtr page_restore_params);
+      blink::mojom::PageRestoreParamsPtr page_restore_params,
+      base::OnceClosure done_cb);
 
   void OnPageLifecycleChangedAck(
-      blink::mojom::PageLifecycleStatePtr acknowledged_state);
+      blink::mojom::PageLifecycleStatePtr acknowledged_state,
+      base::OnceClosure done_cb);
   void OnBackForwardCacheTimeout();
 
   // This represents the frozen state set by |SetIsFrozen|, which corresponds to
@@ -90,12 +101,16 @@ class CONTENT_EXPORT PageLifecycleStateManager {
   bool is_set_frozen_called_ = false;
 
   bool is_in_back_forward_cache_ = false;
+  bool eviction_enabled_ = false;
 
-  // This represents the visibility set by |SetVisibility|, which is web
-  // contents visibility state. Effective visibility, i.e. per-page visibility
-  // is computed based on |is_in_back_forward_cache_| and
-  // |web_contents_visibility_|.
-  blink::mojom::PageVisibilityState web_contents_visibility_;
+  bool did_receive_back_forward_cache_ack_ = false;
+
+  // This represents the frame tree visibility (same as web contents visibility
+  // state for primary frame tree, hidden for prerendering frame tree) which is
+  // set by |SetFrameTreeVisibility|. Effective visibility, i.e. per-page
+  // visibility is computed based on |is_in_back_forward_cache_| and
+  // |frame_tree_visibility_|.
+  blink::mojom::PageVisibilityState frame_tree_visibility_;
 
   blink::mojom::PagehideDispatch pagehide_dispatch_ =
       blink::mojom::PagehideDispatch::kNotDispatched;
@@ -104,7 +119,7 @@ class CONTENT_EXPORT PageLifecycleStateManager {
 
   // This is the per-page state computed based on web contents / tab lifecycle
   // states, i.e. |is_set_frozen_called_|, |is_in_back_forward_cache_| and
-  // |web_contents_visibility_|.
+  // |frame_tree_visibility_|.
   blink::mojom::PageLifecycleStatePtr last_acknowledged_state_;
 
   // This is the per-page state that is sent to renderer most lately.

@@ -15,20 +15,29 @@
 // A helper tool to perform various transformations on traces, notably
 // protobuf-to-JSON conversion and trace truncation.
 
+#include <cstdint>
 #include <iostream>
 #include <istream>
 
-#include "gflags/gflags.h"
+#include "absl/flags/flag.h"
+#include "absl/flags/parse.h"
 #include "google/protobuf/util/json_util.h"
 #include "lib/quic_trace.pb.h"
 
-DEFINE_bool(whitespace, true, "Add whitespace to the JSON output");
-DEFINE_string(input_format, "protobuf", "Can be 'protobuf' or 'json'.");
-DEFINE_string(output_format, "protobuf", "Can be 'protobuf' or 'json'.");
-DEFINE_int64(truncate_after_time_us,
-             -1,
-             "If positive, removes all events after the specified point in "
-             "time (us) from the trace.");
+ABSL_FLAG(bool, whitespace, true, "Add whitespace to the JSON output");
+ABSL_FLAG(std::string,
+          input_format,
+          "protobuf",
+          "Can be 'protobuf' or 'json'.");
+ABSL_FLAG(std::string,
+          output_format,
+          "protobuf",
+          "Can be 'protobuf' or 'json'.");
+ABSL_FLAG(int64_t,
+          truncate_after_time_us,
+          -1,
+          "If positive, removes all events after the specified point in "
+          "time (us) from the trace.");
 
 namespace {
 
@@ -41,7 +50,7 @@ bool IsValidFormatString(const std::string& format) {
 }
 
 bool InputTrace(quic_trace::Trace* trace) {
-  if (FLAGS_input_format == "protobuf") {
+  if (absl::GetFlag(FLAGS_input_format) == "protobuf") {
     return trace->ParseFromIstream(&std::cin);
   }
 
@@ -53,27 +62,27 @@ bool InputTrace(quic_trace::Trace* trace) {
 }
 
 void OutputTrace(const quic_trace::Trace& trace) {
-  if (FLAGS_output_format == "protobuf") {
+  if (absl::GetFlag(FLAGS_output_format) == "protobuf") {
     trace.SerializeToOstream(&std::cout);
     return;
   }
 
   std::string output;
   JsonOptions options;
-  options.add_whitespace = FLAGS_whitespace;
+  options.add_whitespace = absl::GetFlag(FLAGS_whitespace);
   MessageToJsonString(trace, &output, options);
   std::cout << output;
 }
 
 void MaybeTruncateTrace(quic_trace::Trace* trace) {
-  if (FLAGS_truncate_after_time_us <= 0) {
+  if (absl::GetFlag(FLAGS_truncate_after_time_us) <= 0) {
     return;
   }
 
   auto* events = trace->mutable_events();
   while (!events->empty() &&
-         events->rbegin()->time_us() >
-             static_cast<uint64_t>(FLAGS_truncate_after_time_us)) {
+         events->rbegin()->time_us() > static_cast<uint64_t>(absl::GetFlag(
+                                           FLAGS_truncate_after_time_us))) {
     events->RemoveLast();
   }
 }
@@ -81,16 +90,16 @@ void MaybeTruncateTrace(quic_trace::Trace* trace) {
 }  // namespace
 
 int main(int argc, char* argv[]) {
-  gflags::ParseCommandLineFlags(&argc, &argv, true);
+  absl::ParseCommandLine(argc, argv);
 
-  if (!IsValidFormatString(FLAGS_input_format)) {
-    std::cerr << "Invalid format specified: " << FLAGS_input_format
-              << std::endl;
+  if (!IsValidFormatString(absl::GetFlag(FLAGS_input_format))) {
+    std::cerr << "Invalid format specified: "
+              << absl::GetFlag(FLAGS_input_format) << std::endl;
     return 1;
   }
-  if (!IsValidFormatString(FLAGS_output_format)) {
-    std::cerr << "Invalid format specified: " << FLAGS_output_format
-              << std::endl;
+  if (!IsValidFormatString(absl::GetFlag(FLAGS_output_format))) {
+    std::cerr << "Invalid format specified: "
+              << absl::GetFlag(FLAGS_output_format) << std::endl;
     return 1;
   }
 

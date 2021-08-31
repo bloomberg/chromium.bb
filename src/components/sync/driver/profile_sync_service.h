@@ -20,7 +20,6 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/invalidation/public/identity_provider.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/base/model_type.h"
@@ -64,6 +63,7 @@ class ProfileSyncService : public SyncService,
                            public SyncEngineHost,
                            public SyncPrefObserver,
                            public DataTypeManagerObserver,
+                           public SyncServiceCrypto::Delegate,
                            public signin::IdentityManager::Observer {
  public:
   // If AUTO_START, sync will set IsFirstSetupComplete() automatically and sync
@@ -86,7 +86,6 @@ class ProfileSyncService : public SyncService,
     // TODO(treib): Remove this and instead retrieve it via
     // SyncClient::GetIdentityManager (but mind LocalSync).
     signin::IdentityManager* identity_manager = nullptr;
-    invalidation::IdentityProvider* invalidations_identity_provider = nullptr;
     StartBehavior start_behavior = MANUAL_START;
     NetworkTimeUpdateCallback network_time_update_callback;
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
@@ -124,8 +123,8 @@ class ProfileSyncService : public SyncService,
   bool IsSetupInProgress() const override;
   ModelTypeSet GetPreferredDataTypes() const override;
   ModelTypeSet GetActiveDataTypes() const override;
-  ModelTypeSet GetBackedOffDataTypes() const override;
   void StopAndClear() override;
+  void SetSyncAllowedByPlatform(bool allowed) override;
   void OnDataTypeRequestsSyncStartup(ModelType type) override;
   void TriggerRefresh(const ModelTypeSet& types) override;
   void DataTypePreconditionChanged(ModelType type) override;
@@ -137,6 +136,7 @@ class ProfileSyncService : public SyncService,
   void AddTrustedVaultRecoveryMethodFromWeb(
       const std::string& gaia_id,
       const std::vector<uint8_t>& public_key,
+      int method_type_hint,
       base::OnceClosure callback) override;
   void AddObserver(SyncServiceObserver* observer) override;
   void RemoveObserver(SyncServiceObserver* observer) override;
@@ -164,9 +164,8 @@ class ProfileSyncService : public SyncService,
       ModelTypeSet initial_types,
       const WeakHandle<JsBackend>& js_backend,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-      const std::string& birthday,
-      const std::string& bag_of_chips,
-      bool success) override;
+      bool success,
+      bool is_first_time_sync_configure) override;
   void OnSyncCycleCompleted(const SyncCycleSnapshot& snapshot) override;
   void OnProtocolEvent(const ProtocolEvent& event) override;
   void OnConnectionStatusChange(ConnectionStatus status) override;
@@ -177,6 +176,13 @@ class ProfileSyncService : public SyncService,
   // DataTypeManagerObserver implementation.
   void OnConfigureDone(const DataTypeManager::ConfigureResult& result) override;
   void OnConfigureStart() override;
+
+  // SyncServiceCrypto::Delegate implementation.
+  void CryptoStateChanged() override;
+  void CryptoRequiredUserActionChanged() override;
+  void ReconfigureDataTypesDueToCrypto() override;
+  void EncryptionBootstrapTokenChanged(
+      const std::string& bootstrap_token) override;
 
   // IdentityManager::Observer implementation.
   void OnAccountsInCookieUpdated(
@@ -203,9 +209,6 @@ class ProfileSyncService : public SyncService,
   // KeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).
   void Shutdown() override;
-
-  bool IsPassphrasePrompted() const;
-  void SetPassphrasePrompted(bool prompted);
 
 #if defined(OS_ANDROID)
   // Persists the fact that sync should no longer respect whether Android master
@@ -241,6 +244,9 @@ class ProfileSyncService : public SyncService,
 
   ModelTypeSet GetRegisteredDataTypesForTest() const;
 
+  void GetThrottledDataTypesForTest(
+      base::OnceCallback<void(ModelTypeSet)> cb) const;
+
   // Simulates that all policies just got loaded. This does nothing if the
   // policies were already loaded.
   void TriggerPoliciesLoadedForTest();
@@ -251,8 +257,6 @@ class ProfileSyncService : public SyncService,
   SyncEncryptionHandler::Observer* GetEncryptionObserverForTest();
 
   SyncClient* GetSyncClientForTest();
-
-  static std::string GenerateCacheGUIDForTest();
 
  private:
   // Passed as an argument to StopImpl to control whether or not the sync
@@ -278,11 +282,12 @@ class ProfileSyncService : public SyncService,
   // Callbacks for SyncUserSettingsImpl.
   void SyncAllowedByPlatformChanged(bool allowed);
 
-  bool IsEngineAllowedToRun() const;
+  // A wrapper around SyncUserSettings::SetSyncRequested(), such that the
+  // notification which is synchronously triggered will be ignored in the
+  // implementation of OnSyncRequestedPrefChange().
+  void SetSyncRequestedAndIgnoreNotification(bool is_requested);
 
-  // Same as GetTransportState() returning PAUSED. In this state, the engine
-  // shouldn't run.
-  bool IsInPausedState() const;
+  bool IsEngineAllowedToRun() const;
 
   // Reconfigures the data type manager with the latest enabled types.
   // Note: Does not initialize the engine if it is not already initialized.
@@ -330,9 +335,6 @@ class ProfileSyncService : public SyncService,
   // Called when configuration is complete.
   void StartSyncingWithServer();
 
-  // Sets the last synced time to the current time.
-  void UpdateLastSyncedTime();
-
   // Notify all observers that a change has occurred.
   void NotifyObservers();
 
@@ -362,15 +364,6 @@ class ProfileSyncService : public SyncService,
 
   // Called when a SetupInProgressHandle issued by this instance is destroyed.
   void OnSetupInProgressHandleDestroyed();
-
-  // Called by SyncServiceCrypto when a passphrase is required or accepted.
-  void ReconfigureDueToPassphrase(ConfigureReason reason);
-
-  // Called by SyncServiceCrypto when its required user action changes.
-  void OnRequiredUserActionChanged();
-
-  // Helper function to prevent future bugs that avoid notyfing while clearing.
-  void ClearLocalTransportDataAndNotify();
 
   // This profile's SyncClient, which abstracts away non-Sync dependencies and
   // the Sync API component factory.
@@ -436,16 +429,25 @@ class ProfileSyncService : public SyncService,
   // or user signed out.
   bool sync_disabled_by_admin_;
 
+  // Whether Sync is allowed at the platform level (e.g. Android's "MasterSync"
+  // toggle). Maps to DISABLE_REASON_PLATFORM_OVERRIDE.
+  bool sync_allowed_by_platform_ = true;
+
   // Information describing an unrecoverable error.
-  base::Optional<UnrecoverableErrorReason> unrecoverable_error_reason_ =
-      base::nullopt;
+  absl::optional<UnrecoverableErrorReason> unrecoverable_error_reason_ =
+      absl::nullopt;
   std::string unrecoverable_error_message_;
   base::Location unrecoverable_error_location_;
 
   // Manages the start and stop of the data types.
   std::unique_ptr<DataTypeManager> data_type_manager_;
 
-  base::ObserverList<SyncServiceObserver>::Unchecked observers_;
+  // Note: This is an Optional so that we can control its destruction - in
+  // particular, to trigger the "check_empty" test in Shutdown().
+  absl::optional<base::ObserverList<SyncServiceObserver,
+                                    /*check_empty=*/true>::Unchecked>
+      observers_;
+
   base::ObserverList<ProtocolEventObserver>::Unchecked
       protocol_event_observers_;
 
@@ -466,12 +468,6 @@ class ProfileSyncService : public SyncService,
   // or must delay loading for some reason).
   DataTypeStatusTable::TypeErrorMap data_type_error_map_;
 
-  // This provider tells the invalidations code which identity to register for.
-  // The account that it registers for should be the same as the currently
-  // syncing account, so we'll need to update this whenever the account changes.
-  // May be null (if local Sync is enabled).
-  invalidation::IdentityProvider* const invalidations_identity_provider_;
-
   // List of available data type controllers.
   DataTypeController::TypeMap data_type_controllers_;
 
@@ -482,15 +478,9 @@ class ProfileSyncService : public SyncService,
 
   std::unique_ptr<SyncStoppedReporter> sync_stopped_reporter_;
 
-  // Whether the major version has changed since the last time Chrome ran,
-  // and therefore a passphrase required state should result in prompting
-  // the user. This logic is only enabled on platforms that consume the
-  // IsPassphrasePrompted sync preference.
-  bool passphrase_prompt_triggered_by_version_;
-
-  // Used by StopAndClear() to remember that clearing of data is needed (as
-  // sync is stopped after a callback from |user_settings_|).
-  bool is_stopping_and_clearing_;
+  // Used in OnSyncRequestedPrefChange() to know whether the notification was
+  // caused by the service itself setting the pref.
+  bool is_setting_sync_requested_;
 
   // Used for UMA to determine whether TrustedVaultErrorShownOnStartup
   // histogram needs to recorded. Set to false iff histogram was already

@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/reporting_context.h"
 
-#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -12,9 +12,9 @@
 #include "third_party/blink/renderer/core/frame/csp/csp_violation_report_body.h"
 #include "third_party/blink/renderer/core/frame/deprecation_report_body.h"
 #include "third_party/blink/renderer/core/frame/document_policy_violation_report_body.h"
-#include "third_party/blink/renderer/core/frame/feature_policy_violation_report_body.h"
 #include "third_party/blink/renderer/core/frame/intervention_report_body.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/permissions_policy_violation_report_body.h"
 #include "third_party/blink/renderer/core/frame/report.h"
 #include "third_party/blink/renderer/core/frame/reporting_observer.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -129,7 +129,7 @@ void ReportingContext::CountReport(Report* report) {
 
   if (type == ReportType::kDeprecation) {
     feature = WebFeature::kDeprecationReport;
-  } else if (type == ReportType::kFeaturePolicyViolation) {
+  } else if (type == ReportType::kPermissionsPolicyViolation) {
     feature = WebFeature::kFeaturePolicyReport;
   } else if (type == ReportType::kIntervention) {
     feature = WebFeature::kInterventionReport;
@@ -143,7 +143,7 @@ void ReportingContext::CountReport(Report* report) {
 const HeapMojoRemote<mojom::blink::ReportingServiceProxy>&
 ReportingContext::GetReportingService() const {
   if (!reporting_service_.is_bound()) {
-    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
+    execution_context_->GetBrowserInterfaceBroker().GetInterface(
         reporting_service_.BindNewPipeAndPassReceiver(
             execution_context_->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   }
@@ -173,7 +173,7 @@ void ReportingContext::SendToReportingAPI(Report* report,
                                           const String& endpoint) const {
   const String& type = report->type();
   if (!(type == ReportType::kCSPViolation || type == ReportType::kDeprecation ||
-        type == ReportType::kFeaturePolicyViolation ||
+        type == ReportType::kPermissionsPolicyViolation ||
         type == ReportType::kIntervention ||
         type == ReportType::kDocumentPolicyViolation)) {
     return;
@@ -204,12 +204,12 @@ void ReportingContext::SendToReportingAPI(Report* report,
     GetReportingService()->QueueDeprecationReport(
         url, body->id(), body->AnticipatedRemoval(), body->message(),
         body->sourceFile(), line_number, column_number);
-  } else if (type == ReportType::kFeaturePolicyViolation) {
-    // Send the feature policy violation report.
-    const FeaturePolicyViolationReportBody* body =
-        static_cast<FeaturePolicyViolationReportBody*>(report->body());
-    GetReportingService()->QueueFeaturePolicyViolationReport(
-        url, body->featureId(), body->disposition(), "Feature policy violation",
+  } else if (type == ReportType::kPermissionsPolicyViolation) {
+    // Send the permissions policy violation report.
+    const PermissionsPolicyViolationReportBody* body =
+        static_cast<PermissionsPolicyViolationReportBody*>(report->body());
+    GetReportingService()->QueuePermissionsPolicyViolationReport(
+        url, body->featureId(), body->disposition(), body->message(),
         body->sourceFile(), line_number, column_number);
   } else if (type == ReportType::kIntervention) {
     // Send the intervention report.
@@ -223,9 +223,8 @@ void ReportingContext::SendToReportingAPI(Report* report,
         static_cast<DocumentPolicyViolationReportBody*>(report->body());
     // Send the document policy violation report.
     GetReportingService()->QueueDocumentPolicyViolationReport(
-        url, endpoint, body->featureId(), body->disposition(),
-        "Document policy violation", body->sourceFile(), line_number,
-        column_number);
+        url, endpoint, body->featureId(), body->disposition(), body->message(),
+        body->sourceFile(), line_number, column_number);
   }
 }
 

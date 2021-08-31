@@ -11,6 +11,9 @@
 
 namespace blink {
 
+class ExceptionState;
+class ScriptState;
+
 namespace bindings {
 
 // UnionBase is the common base class of all the IDL union classes.  Most
@@ -22,9 +25,16 @@ class PLATFORM_EXPORT UnionBase : public GarbageCollected<UnionBase> {
  public:
   virtual ~UnionBase() = default;
 
+  virtual v8::MaybeLocal<v8::Value> ToV8Value(
+      ScriptState* script_state) const = 0;
+
   virtual void Trace(Visitor*) const {}
 
  protected:
+  // Helper function to reduce the binary size of the generated bindings.
+  static void ThrowTypeErrorNotOfType(ExceptionState& exception_state,
+                                      const char* expected_type);
+
   UnionBase() = default;
 };
 

@@ -14,6 +14,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/installer/util/shell_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
@@ -21,7 +22,7 @@
 #include "ui/views/widget/widget.h"
 
 UninstallView::UninstallView(int* user_selection,
-                             const base::Closure& quit_closure)
+                             const base::RepeatingClosure& quit_closure)
     : confirm_label_(nullptr),
       delete_profile_(nullptr),
       change_default_browser_(nullptr),
@@ -38,7 +39,7 @@ UninstallView::UninstallView(int* user_selection,
   SetCloseCallback(base::BindOnce(&UninstallView::OnDialogCancelled,
                                   base::Unretained(this)));
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
-      views::TEXT, views::TEXT));
+      views::DialogContentType::kText, views::DialogContentType::kText));
   SetupControls();
 }
 
@@ -162,12 +163,15 @@ int UninstallView::GetItemCount() const {
   return browsers_->size();
 }
 
-base::string16 UninstallView::GetItemAt(int index) const {
+std::u16string UninstallView::GetItemAt(int index) const {
   DCHECK_LT(index, static_cast<int>(browsers_->size()));
   BrowsersMap::const_iterator i = browsers_->begin();
   std::advance(i, index);
-  return i->first;
+  return base::WideToUTF16(i->first);
 }
+
+BEGIN_METADATA(UninstallView, views::DialogDelegateView)
+END_METADATA
 
 namespace chrome {
 

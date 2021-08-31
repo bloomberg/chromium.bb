@@ -19,53 +19,29 @@
 #include "src/utils/common.h"
 #include "src/utils/constants.h"
 #include "src/utils/logging.h"
-#include "src/utils/parameter_tree.h"
 #include "src/utils/types.h"
 
 namespace libgav1 {
 
-namespace {
-
-// Returns the number of super block rows/columns for |value4x4| where value4x4
-// is either rows4x4 or columns4x4.
-int RowsOrColumns4x4ToSuperBlocks(int value4x4, bool use_128x128_superblock) {
-  return use_128x128_superblock ? DivideBy128(MultiplyBy4(value4x4) + 127)
-                                : DivideBy64(MultiplyBy4(value4x4) + 63);
-}
-
-}  // namespace
-
-bool BlockParametersHolder::Reset(int rows4x4, int columns4x4,
-                                  bool use_128x128_superblock) {
+bool BlockParametersHolder::Reset(int rows4x4, int columns4x4) {
   rows4x4_ = rows4x4;
   columns4x4_ = columns4x4;
-  use_128x128_superblock_ = use_128x128_superblock;
-  if (!block_parameters_cache_.Reset(rows4x4_, columns4x4_)) {
-    LIBGAV1_DLOG(ERROR, "block_parameters_cache_.Reset() failed.");
-    return false;
+  index_ = 0;
+  return block_parameters_cache_.Reset(rows4x4_, columns4x4_) &&
+         block_parameters_.Resize(rows4x4_ * columns4x4_);
+}
+
+BlockParameters* BlockParametersHolder::Get(int row4x4, int column4x4,
+                                            BlockSize block_size) {
+  const size_t index = index_.fetch_add(1, std::memory_order_relaxed);
+  if (index >= block_parameters_.size()) return nullptr;
+  auto& bp = block_parameters_.get()[index];
+  if (bp == nullptr) {
+    bp.reset(new (std::nothrow) BlockParameters);
+    if (bp == nullptr) return nullptr;
   }
-  const int rows =
-      RowsOrColumns4x4ToSuperBlocks(rows4x4_, use_128x128_superblock_);
-  const int columns =
-      RowsOrColumns4x4ToSuperBlocks(columns4x4_, use_128x128_superblock_);
-  const BlockSize sb_size =
-      use_128x128_superblock_ ? kBlock128x128 : kBlock64x64;
-  const int multiplier = kNum4x4BlocksWide[sb_size];
-  if (!trees_.Reset(rows, columns, /*zero_initialize=*/false)) {
-    LIBGAV1_DLOG(ERROR, "trees_.Reset() failed.");
-    return false;
-  }
-  for (int i = 0; i < rows; ++i) {
-    for (int j = 0; j < columns; ++j) {
-      trees_[i][j] =
-          ParameterTree::Create(i * multiplier, j * multiplier, sb_size);
-      if (trees_[i][j] == nullptr) {
-        LIBGAV1_DLOG(ERROR, "Allocation of trees_[%d][%d] failed.", i, j);
-        return false;
-      }
-    }
-  }
-  return true;
+  FillCache(row4x4, column4x4, block_size, bp.get());
+  return bp.get();
 }
 
 void BlockParametersHolder::FillCache(int row4x4, int column4x4,

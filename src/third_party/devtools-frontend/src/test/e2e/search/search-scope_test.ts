@@ -4,7 +4,7 @@
 
 import {assert} from 'chai';
 
-import {$, $$, getBrowserAndPages, goToResource, waitFor, waitForFunction} from '../../shared/helper.js';
+import {$, $$, getBrowserAndPages, goToResource, timeout, waitFor, waitForFunction} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
 import {triggerFindDialog} from '../helpers/search-helpers.js';
 
@@ -15,6 +15,10 @@ describe('The Search Panel', async () => {
     const SEARCH_RESULTS = '.search-results';
     const SEARCH_FILE_RESULT = '.search-result';
     const SEARCH_CHILDREN_RESULT = '.search-match-link';
+
+    // Wait for Devtools to settle before navigating:
+    // https://crbug.com/1150334
+    await timeout(500);
 
     // Load the search page, which has results in the HTML, JS, and CSS.
     await goToResource('search/search.html');
@@ -49,10 +53,18 @@ describe('The Search Panel', async () => {
       const SEARCH_RESULT_FILE_NAME = '.search-result-file-name';
       const SEARCH_RESULT_MATCHES_COUNT = '.search-result-matches-count';
 
+      const fileNameElement = value.querySelector(SEARCH_RESULT_FILE_NAME);
+      const matchesCountElement = value.querySelector(SEARCH_RESULT_MATCHES_COUNT);
+      if (!fileNameElement) {
+        assert.fail('Could not find search result file name element.');
+      }
+      if (!matchesCountElement) {
+        assert.fail('Could not find search result matches count element.');
+      }
       // Wrap the entries with the file details.
       return {
-        fileName: value.querySelector(SEARCH_RESULT_FILE_NAME)!.firstChild!.textContent as string,
-        matchesCount: parseInt(value.querySelector(SEARCH_RESULT_MATCHES_COUNT)!.textContent as string, 10),
+        fileName: fileNameElement.firstChild && fileNameElement.firstChild.textContent || '',
+        matchesCount: parseInt(matchesCountElement.textContent || '', 10),
       };
     })));
 
@@ -72,9 +84,19 @@ describe('The Search Panel', async () => {
       const SEARCH_MATCH_LINE_NUMBER = '.search-match-line-number';
       const SEARCH_MATCH_CONTENT = '.search-match-content';
 
+      const lineNumberElement = value.querySelector(SEARCH_MATCH_LINE_NUMBER);
+      const matchContentElement = value.querySelector(SEARCH_MATCH_CONTENT);
+
+      if (!lineNumberElement) {
+        assert.fail('Could not find search line number element.');
+      }
+      if (!matchContentElement) {
+        assert.fail('Could not find search match content element.');
+      }
+
       return {
-        line: value.querySelector(SEARCH_MATCH_LINE_NUMBER)!.textContent,
-        content: value.querySelector(SEARCH_MATCH_CONTENT)!.textContent,
+        line: lineNumberElement.textContent || '',
+        content: matchContentElement.textContent || '',
       };
     })));
 

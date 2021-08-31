@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_install_prompt_test_helper.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -18,8 +19,8 @@ ExtensionInstallPromptTestHelper::~ExtensionInstallPromptTestHelper() {}
 
 ExtensionInstallPrompt::DoneCallback
 ExtensionInstallPromptTestHelper::GetCallback() {
-  return base::Bind(&ExtensionInstallPromptTestHelper::HandleResult,
-                    base::Unretained(this));
+  return base::BindOnce(&ExtensionInstallPromptTestHelper::HandleResult,
+                        base::Unretained(this));
 }
 
 ExtensionInstallPrompt::Result
@@ -45,5 +46,5 @@ void ExtensionInstallPromptTestHelper::HandleResult(
     ADD_FAILURE() << "HandleResult() called twice!";
   if (quit_closure_)
     std::move(quit_closure_).Run();
-  result_.reset(new ExtensionInstallPrompt::Result(result));
+  result_ = std::make_unique<ExtensionInstallPrompt::Result>(result);
 }

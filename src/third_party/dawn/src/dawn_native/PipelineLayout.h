@@ -37,7 +37,11 @@ namespace dawn_native {
         ityp::array<BindGroupIndex, Ref<BindGroupLayoutBase>, kMaxBindGroups>;
     using BindGroupLayoutMask = ityp::bitset<BindGroupIndex, kMaxBindGroups>;
 
-    using StageAndDescriptor = std::pair<SingleShaderStage, const ProgrammableStageDescriptor*>;
+    struct StageAndDescriptor {
+        SingleShaderStage shaderStage;
+        ShaderModuleBase* module;
+        std::string entryPoint;
+    };
 
     class PipelineLayoutBase : public CachedObject {
       public:
@@ -45,7 +49,7 @@ namespace dawn_native {
         ~PipelineLayoutBase() override;
 
         static PipelineLayoutBase* MakeError(DeviceBase* device);
-        static ResultOrError<PipelineLayoutBase*> CreateDefault(
+        static ResultOrError<Ref<PipelineLayoutBase>> CreateDefault(
             DeviceBase* device,
             std::vector<StageAndDescriptor> stages);
 
@@ -61,10 +65,9 @@ namespace dawn_native {
         // [0, kMaxBindGroups]
         BindGroupIndex GroupsInheritUpTo(const PipelineLayoutBase* other) const;
 
-        // Functors necessary for the unordered_set<PipelineLayoutBase*>-based cache.
-        struct HashFunc {
-            size_t operator()(const PipelineLayoutBase* pl) const;
-        };
+        // Functions necessary for the unordered_set<PipelineLayoutBase*>-based cache.
+        size_t ComputeContentHash() override;
+
         struct EqualityFunc {
             bool operator()(const PipelineLayoutBase* a, const PipelineLayoutBase* b) const;
         };

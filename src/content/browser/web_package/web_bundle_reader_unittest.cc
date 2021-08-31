@@ -10,13 +10,13 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/optional.h"
 #include "base/test/task_environment.h"
 #include "components/web_package/mojom/web_bundle_parser.mojom.h"
 #include "content/browser/web_package/mock_web_bundle_reader_factory.h"
 #include "content/browser/web_package/web_bundle_source.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -218,8 +218,7 @@ TEST_F(WebBundleReaderTest, ReadResponseBody) {
   options.struct_size = sizeof(MojoCreateDataPipeOptions);
   options.element_num_bytes = 1;
   options.capacity_num_bytes = response->payload_length + 1;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            mojo::CreateDataPipe(&options, &producer, &consumer));
+  ASSERT_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(&options, producer, consumer));
 
   base::RunLoop run_loop;
   net::Error callback_result;

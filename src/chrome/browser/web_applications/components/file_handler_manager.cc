@@ -5,6 +5,8 @@
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -100,26 +102,40 @@ void FileHandlerManager::EnableAndRegisterOsFileHandlers(const AppId& app_id) {
 }
 
 void FileHandlerManager::DisableAndUnregisterOsFileHandlers(
-    const AppId& app_id) {
+    const AppId& app_id,
+    std::unique_ptr<ShortcutInfo> info,
+    base::OnceCallback<void(bool)> callback) {
+  // Updating prefs must be done on the UI Thread.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   UpdateBoolWebAppPref(profile()->GetPrefs(), app_id, kFileHandlersEnabled,
                        /*value=*/false);
 
   // Temporarily allow file handlers unregistration only if an app has them.
   // TODO(crbug.com/1088434, crbug.com/1076688): Do not start async
-  // CreateShortcuts process in OnWebAppUninstalled / Unregistration.
+  // CreateShortcuts process in OnWebAppWillBeUninstalled / Unregistration.
   const apps::FileHandlers* file_handlers = GetAllFileHandlers(app_id);
 
   if (!ShouldRegisterFileHandlersWithOs() || !file_handlers ||
       file_handlers->empty() || disable_os_integration_for_testing_) {
+    // This bool signals if there was not an error. Exiting early here is WAI,
+    // so this is a success.
+    std::move(callback).Run(true);
     return;
   }
 
   // File handler information is embedded in the shortcut, when
   // |DeleteSharedAppShims| is called in
   // |OsIntegrationManager::UninstallOsHooks|, file handlers are also
-  // unregistered./
-#if !defined(OS_MAC)
-  UnregisterFileHandlersWithOs(app_id, profile());
+  // unregistered.
+#if defined(OS_MAC)
+  // When updating file handlers, |callback| here triggers the registering of
+  // the new file handlers. It is therefore important that |callback| not be
+  // dropped on the floor.
+  // https://crbug.com/1201993
+  std::move(callback).Run(true);
+#else
+  UnregisterFileHandlersWithOs(app_id, profile(), std::move(info),
+                               std::move(callback));
 #endif
 }
 
@@ -167,7 +183,8 @@ void FileHandlerManager::DisableForceEnabledFileHandlingOriginTrial(
 
 const apps::FileHandlers* FileHandlerManager::GetEnabledFileHandlers(
     const AppId& app_id) {
-  if (AreFileHandlersEnabled(app_id) && IsFileHandlingAPIAvailable(app_id))
+  if (AreFileHandlersEnabled(app_id) && IsFileHandlingAPIAvailable(app_id) &&
+      !registrar_->IsAppFileHandlerPermissionBlocked(app_id))
     return GetAllFileHandlers(app_id);
 
   return nullptr;
@@ -218,7 +235,8 @@ void FileHandlerManager::UpdateFileHandlersForOriginTrialExpiryTime(
     if (!file_handlers_enabled)
       EnableAndRegisterOsFileHandlers(app_id);
   } else if (file_handlers_enabled) {
-    DisableAndUnregisterOsFileHandlers(app_id);
+    // TODO(crbug.com/1076688): Retrieve shortcuts before they're unregistered.
+    DisableAndUnregisterOsFileHandlers(app_id, nullptr, base::DoNothing());
   }
 }
 
@@ -236,29 +254,30 @@ int FileHandlerManager::CleanupAfterOriginTrials() {
       continue;
 
     // If the trial has expired, unregister handlers.
-    DisableAndUnregisterOsFileHandlers(app_id);
+    // TODO(crbug.com/1076688): Retrieve shortcuts before they're unregistered.
+    DisableAndUnregisterOsFileHandlers(app_id, nullptr, base::DoNothing());
     cleaned_up_count++;
   }
 
   return cleaned_up_count;
 }
 
-const base::Optional<GURL> FileHandlerManager::GetMatchingFileHandlerURL(
+const absl::optional<GURL> FileHandlerManager::GetMatchingFileHandlerURL(
     const AppId& app_id,
     const std::vector<base::FilePath>& launch_files) {
-  if (!IsFileHandlingAPIAvailable(app_id))
-    return base::nullopt;
+  if (!IsFileHandlingAPIAvailable(app_id) || launch_files.empty())
+    return absl::nullopt;
 
   const apps::FileHandlers* file_handlers = GetAllFileHandlers(app_id);
-  if (!file_handlers || launch_files.empty())
-    return base::nullopt;
+  if (!file_handlers)
+    return absl::nullopt;
 
   std::set<std::string> launch_file_extensions;
   for (const auto& file_path : launch_files) {
     std::string file_extension =
         base::FilePath(file_path.Extension()).AsUTF8Unsafe();
     if (file_extension.length() <= 1)
-      return base::nullopt;
+      return absl::nullopt;
     launch_file_extensions.insert(file_extension);
   }
 
@@ -267,7 +286,7 @@ const base::Optional<GURL> FileHandlerManager::GetMatchingFileHandlerURL(
     std::set<std::string> supported_file_extensions =
         apps::GetFileExtensionsFromFileHandlers({file_handler});
     for (const auto& file_extension : launch_file_extensions) {
-      if (!supported_file_extensions.count(file_extension)) {
+      if (!base::Contains(supported_file_extensions, file_extension)) {
         all_launch_file_extensions_supported = false;
         break;
       }
@@ -277,7 +296,7 @@ const base::Optional<GURL> FileHandlerManager::GetMatchingFileHandlerURL(
       return file_handler.action;
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool FileHandlerManager::IsFileHandlingForceEnabled(const AppId& app_id) {

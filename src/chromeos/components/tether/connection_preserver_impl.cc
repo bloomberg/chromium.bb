@@ -163,7 +163,7 @@ void ConnectionPreserverImpl::SetPreservedConnection(
 
   preserved_connection_device_id_ = device_id;
 
-  base::Optional<multidevice::RemoteDeviceRef> remote_device =
+  absl::optional<multidevice::RemoteDeviceRef> remote_device =
       GetRemoteDevice(preserved_connection_device_id_);
   if (!remote_device) {
     PA_LOG(ERROR) << "Given invalid remote device ID: "
@@ -173,9 +173,18 @@ void ConnectionPreserverImpl::SetPreservedConnection(
     return;
   }
 
+  absl::optional<multidevice::RemoteDeviceRef> local_device =
+      device_sync_client_->GetLocalDeviceMetadata();
+  if (!local_device) {
+    PA_LOG(ERROR) << "ConnectionPreserverImpl::" << __func__
+                  << ": Local device unexpectedly null.";
+    RemovePreservedConnectionIfPresent();
+    return;
+  }
+
   connection_attempt_ = secure_channel_client_->ListenForConnectionFromDevice(
-      *remote_device, *device_sync_client_->GetLocalDeviceMetadata(),
-      kTetherFeature, secure_channel::ConnectionMedium::kBluetoothLowEnergy,
+      *remote_device, *local_device, kTetherFeature,
+      secure_channel::ConnectionMedium::kBluetoothLowEnergy,
       secure_channel::ConnectionPriority::kLow);
   connection_attempt_->SetDelegate(this);
 
@@ -202,13 +211,13 @@ void ConnectionPreserverImpl::RemovePreservedConnectionIfPresent() {
   preserved_connection_timer_->Stop();
 }
 
-base::Optional<multidevice::RemoteDeviceRef>
+absl::optional<multidevice::RemoteDeviceRef>
 ConnectionPreserverImpl::GetRemoteDevice(const std::string device_id) {
   for (const auto& remote_device : device_sync_client_->GetSyncedDevices()) {
     if (remote_device.GetDeviceId() == device_id)
       return remote_device;
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void ConnectionPreserverImpl::SetTimerForTesting(

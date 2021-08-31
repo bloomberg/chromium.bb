@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
@@ -59,7 +60,7 @@ NGLayoutOpportunity FindLayoutOpportunityForFloat(
 // should only be set when we want to fragmentation to occur.
 NGConstraintSpace CreateConstraintSpaceForFloat(
     const NGUnpositionedFloat& unpositioned_float,
-    base::Optional<LayoutUnit> origin_block_offset = base::nullopt) {
+    absl::optional<LayoutUnit> origin_block_offset = absl::nullopt) {
   const ComputedStyle& style = unpositioned_float.node.Style();
   const NGConstraintSpace& parent_space = unpositioned_float.parent_space;
   NGConstraintSpaceBuilder builder(parent_space, style.GetWritingDirection(),
@@ -89,7 +90,6 @@ NGConstraintSpace CreateConstraintSpaceForFloat(
   builder.SetPercentageResolutionSize(unpositioned_float.percentage_size);
   builder.SetReplacedPercentageResolutionSize(
       unpositioned_float.replaced_percentage_size);
-  builder.SetIsShrinkToFit(style.LogicalWidth().IsAuto());
   return builder.ToConstraintSpace();
 }
 
@@ -262,6 +262,14 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
           *unpositioned_float, fragmentainer_delta);
 
       layout_result = node.Layout(space, unpositioned_float->token.get());
+
+      if (layout_result->Status() != NGLayoutResult::kSuccess) {
+        DCHECK_EQ(layout_result->Status(),
+                  NGLayoutResult::kOutOfFragmentainerSpace);
+        need_break_before = true;
+        return NGPositionedFloat(std::move(layout_result), NGBfcOffset(),
+                                 need_break_before);
+      }
 
       // If we knew the right block-offset up front, we're done.
       if (!optimistically_placed)

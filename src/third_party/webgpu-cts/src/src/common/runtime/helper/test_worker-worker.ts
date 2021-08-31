@@ -1,6 +1,7 @@
 import { DefaultTestFileLoader } from '../../framework/file_loader.js';
 import { Logger } from '../../framework/logging/logger.js';
 import { parseQuery } from '../../framework/query/parseQuery.js';
+import { TestQueryWithExpectation } from '../../framework/query/query.js';
 import { assert } from '../../framework/util/util.js';
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -10,6 +11,7 @@ const loader = new DefaultTestFileLoader();
 
 self.onmessage = async (ev: MessageEvent) => {
   const query: string = ev.data.query;
+  const expectations: TestQueryWithExpectation[] = ev.data.expectations;
   const debug: boolean = ev.data.debug;
 
   const log = new Logger(debug);
@@ -19,7 +21,7 @@ self.onmessage = async (ev: MessageEvent) => {
 
   const testcase = testcases[0];
   const [rec, result] = log.record(testcase.query.toString());
-  await testcase.run(rec);
+  await testcase.run(rec, expectations);
 
   self.postMessage({ query, result });
 };

@@ -5,7 +5,10 @@
 package org.chromium.chrome.browser.tab.state;
 
 import android.content.Context;
+import android.os.StrictMode;
+import android.os.SystemClock;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.MainThread;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.util.AtomicFile;
@@ -14,8 +17,9 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.SequencedTaskRunner;
@@ -26,10 +30,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.LinkedList;
 import java.util.Locale;
-
-import android.os.StrictMode;
 
 /**
  * {@link PersistedTabDataStorage} which uses a file for the storage
@@ -40,7 +46,7 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
         @Override
         public void onResult(Integer result) {}
     };
-    private static final int DECREMENT_SEMAPHORE_VAL = 1;
+    protected static final int DECREMENT_SEMAPHORE_VAL = 1;
 
     private static final String sBaseDirName = "persisted_tab_data_storage";
     private static class BaseStorageDirectoryHolder {
@@ -57,6 +63,7 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
         }
     }
     private SequencedTaskRunner mSequencedTaskRunner;
+    private boolean mFirstOperationRecorded;
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     protected LinkedList<StorageRequest> mQueue = new LinkedList<>();
@@ -68,16 +75,17 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
 
     @MainThread
     @Override
-    public void save(int tabId, String dataId, byte[] data) {
-        save(tabId, dataId, data, NO_OP_CALLBACK);
+    public void save(int tabId, String dataId, Supplier<ByteBuffer> dataSupplier) {
+        save(tabId, dataId, dataSupplier, NO_OP_CALLBACK);
     }
 
     // Callback used for test synchronization between save, restore and delete operations
+    @MainThread
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    protected void save(int tabId, String dataId, byte[] data, Callback<Integer> callback) {
-        ThreadUtils.assertOnUiThread();
+    protected void save(int tabId, String dataId, Supplier<ByteBuffer> dataSupplier,
+            Callback<Integer> callback) {
         // TODO(crbug.com/1059637) we should introduce a retry mechanisms
-        addSaveRequest(new FileSaveRequest(tabId, dataId, data, callback));
+        addSaveRequest(new FileSaveRequest(tabId, dataId, dataSupplier, callback));
         processNextItemOnQueue();
     }
 
@@ -91,15 +99,13 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
 
     @MainThread
     @Override
-    public void restore(int tabId, String dataId, Callback<byte[]> callback) {
-        ThreadUtils.assertOnUiThread();
-        mQueue.add(new FileRestoreRequest(tabId, dataId, callback));
-        processNextItemOnQueue();
+    public void restore(int tabId, String dataId, Callback<ByteBuffer> callback) {
+        addStorageRequestAndProcessNext(new FileRestoreRequest(tabId, dataId, callback));
     }
 
     @MainThread
     @Override
-    public byte[] restore(int tabId, String dataId) {
+    public ByteBuffer restore(int tabId, String dataId) {
         return new FileRestoreRequest(tabId, dataId, null).executeSyncTask();
     }
 
@@ -110,15 +116,23 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
     }
 
     // Callback used for test synchronization between save, restore and delete operations
+    @MainThread
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     protected void delete(int tabId, String dataId, Callback<Integer> callback) {
-        ThreadUtils.assertOnUiThread();
-        mQueue.add(new FileDeleteRequest(tabId, dataId, callback));
+        addStorageRequestAndProcessNext(new FileDeleteRequest(tabId, dataId, callback));
+    }
+
+    protected void addStorageRequestAndProcessNext(StorageRequest storageRequest) {
+        mQueue.add(storageRequest);
         processNextItemOnQueue();
     }
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    protected File getFile(int tabId, String dataId) {
+    /**
+     * @return {@link File} serialized {@link CriticalPersistedTabData} is stored in
+     * @param tabId tab identifier
+     * @param dataId type of data stored for the {@link Tab}
+     */
+    protected static File getFile(int tabId, String dataId) {
         return new File(getOrCreateBaseStorageDirectory(),
                 String.format(Locale.ENGLISH, "%d%s", tabId, dataId));
     }
@@ -130,7 +144,7 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
     /**
      * Request for saving, restoring and deleting {@link PersistedTabData}
      */
-    private abstract class StorageRequest<T> {
+    protected abstract class StorageRequest<T> {
         protected final int mTabId;
         protected final String mDataId;
         protected final File mFile;
@@ -142,7 +156,7 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
         StorageRequest(int tabId, String dataId) {
             mTabId = tabId;
             mDataId = dataId;
-            mFile = getFile(tabId, dataId);
+            mFile = FilePersistedTabDataStorage.getFile(tabId, dataId);
         }
 
         /**
@@ -181,35 +195,51 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
             result = 31 * result + mFile.hashCode();
             return result;
         }
+
+        /**
+         * @return type of storage request (save, restore or delete)
+         */
+        abstract @StorageRequestType int getStorageRequestType();
     }
 
     /**
      * Request to save {@link PersistedTabData}
      */
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     protected class FileSaveRequest extends StorageRequest<Void> {
-        private byte[] mData;
-        private Callback<Integer> mCallback;
+        protected Supplier<ByteBuffer> mDataSupplier;
+        protected Callback<Integer> mCallback;
 
         /**
          * @param tabId identifier for the {@link Tab}
          * @param dataId identifier for the {@link PersistedTabData}
-         * @param data - data to be saved
+         * @param dataSupplier {@link Supplier} containing data to be saved
          */
-        FileSaveRequest(int tabId, String dataId, byte[] data, Callback<Integer> callback) {
+        FileSaveRequest(int tabId, String dataId, Supplier<ByteBuffer> dataSupplier,
+                Callback<Integer> callback) {
             super(tabId, dataId);
-            mData = data;
+            mDataSupplier = dataSupplier;
             mCallback = callback;
         }
 
         @Override
         public Void executeSyncTask() {
+            ByteBuffer data = mDataSupplier.get();
+            if (data == null) {
+                mDataSupplier = null;
+                return null;
+            }
             FileOutputStream outputStream = null;
             boolean success = false;
             try {
+                long startTime = SystemClock.elapsedRealtime();
                 outputStream = new FileOutputStream(mFile);
-                outputStream.write(mData);
+                FileChannel fileChannel = outputStream.getChannel();
+                fileChannel.write(data);
                 success = true;
+                RecordHistogram.recordTimesHistogram(
+                        String.format(Locale.US, "Tabs.PersistedTabData.Storage.SaveTime.%s",
+                                getUmaTag()),
+                        SystemClock.elapsedRealtime() - startTime);
             } catch (FileNotFoundException e) {
                 Log.e(TAG,
                         String.format(Locale.ENGLISH,
@@ -251,6 +281,12 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
         public boolean equals(Object other) {
             if (!(other instanceof FileSaveRequest)) return false;
             return super.equals(other);
+        }
+
+        @Override
+        @StorageRequestType
+        int getStorageRequestType() {
+            return StorageRequestType.SAVE;
         }
     }
 
@@ -308,13 +344,19 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
             if (!(other instanceof FileDeleteRequest)) return false;
             return super.equals(other);
         }
+
+        @Override
+        @StorageRequestType
+        int getStorageRequestType() {
+            return StorageRequestType.DELETE;
+        }
     }
 
     /**
      * Request to restore saved serialized {@link PersistedTabData}
      */
-    private class FileRestoreRequest extends StorageRequest<byte[]> {
-        private Callback<byte[]> mCallback;
+    protected class FileRestoreRequest extends StorageRequest<ByteBuffer> {
+        protected Callback<ByteBuffer> mCallback;
 
         /**
          * @param tabId identifier for the {@link Tab}
@@ -322,19 +364,24 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
          * @param callback - callback to return the retrieved serialized
          * {@link PersistedTabData} in
          */
-        FileRestoreRequest(int tabId, String dataId, Callback<byte[]> callback) {
+        FileRestoreRequest(int tabId, String dataId, Callback<ByteBuffer> callback) {
             super(tabId, dataId);
             mCallback = callback;
         }
 
         @Override
-        public byte[] executeSyncTask() {
+        public ByteBuffer executeSyncTask() {
             boolean success = false;
             byte[] res = null;
             try {
+                long startTime = SystemClock.elapsedRealtime();
                 AtomicFile atomicFile = new AtomicFile(mFile);
                 res = atomicFile.readFully();
                 success = true;
+                RecordHistogram.recordTimesHistogram(
+                        String.format(Locale.US, "Tabs.PersistedTabData.Storage.LoadTime.%s",
+                                getUmaTag()),
+                        SystemClock.elapsedRealtime() - startTime);
             } catch (FileNotFoundException e) {
                 Log.e(TAG,
                         String.format(Locale.ENGLISH,
@@ -350,19 +397,19 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
             }
             RecordHistogram.recordBooleanHistogram(
                     "Tabs.PersistedTabData.Storage.Restore." + getUmaTag(), success);
-            return res;
+            return res == null ? null : ByteBuffer.wrap(res);
         }
 
         @Override
         public AsyncTask getAsyncTask() {
-            return new AsyncTask<byte[]>() {
+            return new AsyncTask<ByteBuffer>() {
                 @Override
-                protected byte[] doInBackground() {
+                protected ByteBuffer doInBackground() {
                     return executeSyncTask();
                 }
 
                 @Override
-                protected void onPostExecute(byte[] res) {
+                protected void onPostExecute(ByteBuffer res) {
                     PostTask.runOrPostTask(
                             UiThreadTaskTraits.DEFAULT, () -> { mCallback.onResult(res); });
                     processNextItemOnQueue();
@@ -374,16 +421,71 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
             if (!(other instanceof FileRestoreRequest)) return false;
             return super.equals(other);
         }
+
+        @Override
+        @StorageRequestType
+        int getStorageRequestType() {
+            return StorageRequestType.RESTORE;
+        }
+    }
+
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+    @IntDef({StorageRequestType.SAVE, StorageRequestType.RESTORE, StorageRequestType.DELETE})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface StorageRequestType {
+        int SAVE = 0;
+        int RESTORE = 1;
+        int DELETE = 2;
+        int NUM_ENTRIES = 3;
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     protected void processNextItemOnQueue() {
         if (mQueue.isEmpty()) return;
-        mQueue.poll().getAsyncTask().executeOnTaskRunner(mSequencedTaskRunner);
+        StorageRequest storageRequest = mQueue.poll();
+        // First operation should be a restore (to restore the active tab) - any other
+        // operations coming in before the restore will block restoration of the active
+        // tab and hurt startup latency.
+        if (!mFirstOperationRecorded) {
+            RecordHistogram.recordEnumeratedHistogram("Tabs.PersistedTabData.Storage.Save."
+                            + getUmaTag() + ".FirstStorageRequestType",
+                    storageRequest.getStorageRequestType(), StorageRequestType.NUM_ENTRIES);
+            mFirstOperationRecorded = true;
+        }
+        storageRequest.getAsyncTask().executeOnTaskRunner(mSequencedTaskRunner);
     }
 
     @Override
     public String getUmaTag() {
         return "File";
+    }
+
+    /**
+     * Determines if a {@link Tab} is incognito or not based on the existence of the
+     * corresponding {@link CriticalPersistedTabData} file. This involves a disk access
+     * and will be slow. This method can be called from the UI thread.
+     * @param tabId identifier for the {@link Tab}
+     * @return true/false if the {@link Tab} is incognito based on the existence of the
+     *         CriticalPersistedTabData file and null if it is not known if the
+     *         {@link Tab} is incognito or not.
+     */
+    public static Boolean isIncognito(int tabId) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            String regularId =
+                    PersistedTabDataConfiguration.get(CriticalPersistedTabData.class, false)
+                            .getId();
+            File regularFile = FilePersistedTabDataStorage.getFile(tabId, regularId);
+            if (regularFile.exists()) {
+                return false;
+            }
+            String incognitoId =
+                    PersistedTabDataConfiguration.get(CriticalPersistedTabData.class, true).getId();
+            File incognitoFile = FilePersistedTabDataStorage.getFile(tabId, incognitoId);
+            if (incognitoFile.exists()) {
+                return true;
+            }
+            return null;
+        }
     }
 }

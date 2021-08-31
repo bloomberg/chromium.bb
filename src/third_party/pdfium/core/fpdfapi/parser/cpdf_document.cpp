@@ -16,6 +16,8 @@
 #include "core/fpdfapi/parser/cpdf_reference.h"
 #include "core/fxcodec/jbig2/JBig2_DocumentContext.h"
 #include "core/fxcrt/fx_codepage.h"
+#include "core/fxcrt/scoped_set_insertion.h"
+#include "third_party/base/check.h"
 #include "third_party/base/stl_util.h"
 
 namespace {
@@ -37,8 +39,7 @@ int CountPages(CPDF_Dictionary* pPages,
       continue;
     if (pKid->KeyExist("Kids")) {
       // Use |visited_pages| to help detect circular references of pages.
-      pdfium::ScopedSetInsertion<CPDF_Dictionary*> local_add(visited_pages,
-                                                             pKid);
+      ScopedSetInsertion<CPDF_Dictionary*> local_add(visited_pages, pKid);
       count += CountPages(pKid, visited_pages);
     } else {
       // This page is a leaf node.
@@ -173,7 +174,7 @@ void CPDF_Document::LoadPages() {
 
   uint32_t first_page_num = linearized_header->GetFirstPageNo();
   uint32_t page_count = linearized_header->GetPageCount();
-  ASSERT(first_page_num < page_count);
+  DCHECK(first_page_num < page_count);
   m_PageList.resize(page_count);
   m_PageList[first_page_num] = objnum;
 }
@@ -250,7 +251,7 @@ void CPDF_Document::ResetTraversal() {
 }
 
 void CPDF_Document::SetParser(std::unique_ptr<CPDF_Parser> pParser) {
-  ASSERT(!m_pParser);
+  DCHECK(!m_pParser);
   m_pParser = std::move(pParser);
 }
 
@@ -301,6 +302,12 @@ CPDF_Dictionary* CPDF_Document::GetPageDictionary(int iPage) {
 
 void CPDF_Document::SetPageObjNum(int iPage, uint32_t objNum) {
   m_PageList[iPage] = objNum;
+}
+
+JBig2_DocumentContext* CPDF_Document::GetOrCreateCodecContext() {
+  if (!m_pCodecContext)
+    m_pCodecContext = std::make_unique<JBig2_DocumentContext>();
+  return m_pCodecContext.get();
 }
 
 int CPDF_Document::GetPageIndex(uint32_t objnum) {
@@ -357,8 +364,8 @@ uint32_t CPDF_Document::GetUserPermissions() const {
 }
 
 void CPDF_Document::CreateNewDoc() {
-  ASSERT(!m_pRootDict);
-  ASSERT(!m_pInfoDict);
+  DCHECK(!m_pRootDict);
+  DCHECK(!m_pInfoDict);
   m_pRootDict.Reset(NewIndirect<CPDF_Dictionary>());
   m_pRootDict->SetNewFor<CPDF_Name>("Type", "Catalog");
 
@@ -417,7 +424,7 @@ bool CPDF_Document::InsertDeletePDFPage(CPDF_Dictionary* pPages,
     if (pdfium::Contains(*pVisited, pKid))
       return false;
 
-    pdfium::ScopedSetInsertion<CPDF_Dictionary*> insertion(pVisited, pKid);
+    ScopedSetInsertion<CPDF_Dictionary*> insertion(pVisited, pKid);
     if (!InsertDeletePDFPage(pKid, nPagesToGo, pPageDict, bInsert, pVisited))
       return false;
 

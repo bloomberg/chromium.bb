@@ -14,6 +14,7 @@ import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * User data for a {@link Tab} managing an ID of an external application that opened it.
@@ -39,8 +40,7 @@ public final class TabAssociatedApp extends TabWebContentsUserData implements Im
         super(tab);
         tab.addObserver(new EmptyTabObserver() {
             @Override
-            public void onInitialized(
-                    Tab tab, String appId, @Nullable Boolean hasThemeColor, int themeColor) {
+            public void onInitialized(Tab tab, String appId) {
                 if (appId != null) setAppId(appId);
             }
 
@@ -57,6 +57,11 @@ public final class TabAssociatedApp extends TabWebContentsUserData implements Im
             @Override
             public void onDestroyed(Tab tab) {
                 tab.removeObserver(this);
+            }
+
+            @Override
+            public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
+                // Intentionally do nothing to prevent automatic observer removal on detachment.
             }
         });
     }

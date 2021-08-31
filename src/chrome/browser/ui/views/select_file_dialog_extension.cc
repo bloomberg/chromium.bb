@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
@@ -21,15 +22,15 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/platform_apps/app_window_registry_util.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/ui/login_web_dialog.h"
+#include "chrome/browser/ash/login/ui/webui_login_view.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/extensions/file_manager/select_file_dialog_extension_user_data.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/select_file_dialog_util.h"
 #include "chrome/browser/chromeos/file_manager/url_util.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
-#include "chrome/browser/chromeos/login/ui/webui_login_view.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_view_host.h"
@@ -40,7 +41,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_system.h"
@@ -295,15 +295,15 @@ void SelectFileDialogExtension::OnFileSelectionCanceled(RoutingID routing_id) {
   dialog->selection_index_ = 0;
 }
 
-content::RenderViewHost* SelectFileDialogExtension::GetRenderViewHost() {
-  if (extension_dialog_.get())
-    return extension_dialog_->host()->render_view_host();
+content::RenderFrameHost* SelectFileDialogExtension::GetMainFrame() {
+  if (extension_dialog_)
+    return extension_dialog_->host()->main_frame_host();
   return nullptr;
 }
 
 void SelectFileDialogExtension::SelectFileWithFileManagerParams(
     Type type,
-    const base::string16& title,
+    const std::u16string& title,
     const base::FilePath& default_path,
     const FileTypeInfo* file_types,
     int file_type_index,
@@ -354,19 +354,15 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
   // Convert the above absolute paths to file system URLs.
   GURL selection_url;
   if (!file_manager::util::ConvertAbsoluteFilePathToFileSystemUrl(
-      profile_,
-      selection_path,
-      file_manager::kFileManagerAppId,
-      &selection_url)) {
+          profile_, selection_path, file_manager::util::GetFileManagerURL(),
+          &selection_url)) {
     // Due to the current design, an invalid temporal cache file path may passed
     // as |default_path| (crbug.com/178013 #9-#11). In such a case, we use the
     // last selected directory as a workaround. Real fix is tracked at
     // crbug.com/110119.
     if (!file_manager::util::ConvertAbsoluteFilePathToFileSystemUrl(
-        profile_,
-        fallback_path.Append(default_path.BaseName()),
-        file_manager::kFileManagerAppId,
-        &selection_url)) {
+            profile_, fallback_path.Append(default_path.BaseName()),
+            file_manager::util::GetFileManagerURL(), &selection_url)) {
       DVLOG(1) << "Unable to resolve the selection URL.";
     }
   }
@@ -374,15 +370,11 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
   GURL current_directory_url;
   base::FilePath current_directory_path = selection_path.DirName();
   if (!file_manager::util::ConvertAbsoluteFilePathToFileSystemUrl(
-      profile_,
-      current_directory_path,
-      file_manager::kFileManagerAppId,
-      &current_directory_url)) {
+          profile_, current_directory_path,
+          file_manager::util::GetFileManagerURL(), &current_directory_url)) {
     // Fallback if necessary, see the comment above.
     if (!file_manager::util::ConvertAbsoluteFilePathToFileSystemUrl(
-            profile_,
-            fallback_path,
-            file_manager::kFileManagerAppId,
+            profile_, fallback_path, file_manager::util::GetFileManagerURL(),
             &current_directory_url)) {
       DVLOG(1) << "Unable to resolve the current directory URL for: "
                << fallback_path.value();
@@ -406,10 +398,8 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
   dialog_params.title =
       !title.empty() ? title
                      : file_manager::util::GetSelectFileDialogTitle(type);
-  if (base::FeatureList::IsEnabled(chromeos::features::kFilesNG)) {
-    dialog_params.title_color = kFilePickerActiveTitleColor;
-    dialog_params.title_inactive_color = kFilePickerInactiveTitleColor;
-  }
+  dialog_params.title_color = kFilePickerActiveTitleColor;
+  dialog_params.title_inactive_color = kFilePickerInactiveTitleColor;
 
   ExtensionDialog* dialog = ExtensionDialog::Show(
       file_manager_url,
@@ -434,7 +424,7 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
 
 void SelectFileDialogExtension::SelectFileImpl(
     Type type,
-    const base::string16& title,
+    const std::u16string& title,
     const base::FilePath& default_path,
     const FileTypeInfo* file_types,
     int file_type_index,
@@ -462,16 +452,22 @@ bool SelectFileDialogExtension::IsResizeable() const {
 void SelectFileDialogExtension::NotifyListener() {
   if (!listener_)
     return;
+
+  // The selected files are passed by reference to the listener. Ensure they
+  // outlive the dialog if it is immediately deleted by the listener.
+  std::vector<ui::SelectedFileInfo> selection_files =
+      std::move(selection_files_);
+
   switch (selection_type_) {
     case CANCEL:
       listener_->FileSelectionCanceled(params_);
       break;
     case SINGLE_FILE:
-      listener_->FileSelectedWithExtraInfo(selection_files_[0],
-                                           selection_index_, params_);
+      listener_->FileSelectedWithExtraInfo(selection_files[0], selection_index_,
+                                           params_);
       break;
     case MULTIPLE_FILES:
-      listener_->MultiFilesSelectedWithExtraInfo(selection_files_, params_);
+      listener_->MultiFilesSelectedWithExtraInfo(selection_files, params_);
       break;
     default:
       NOTREACHED();

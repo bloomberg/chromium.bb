@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/ntp_snippets/category.h"
@@ -73,7 +72,7 @@ RemoteSuggestion::CreateFromContentSuggestionsDictionary(
     return nullptr;
   }
   std::vector<std::string> parsed_ids;
-  for (const auto& value : *ids) {
+  for (const base::Value& value : ids->GetList()) {
     std::string id;
     if (!value.GetAsString(&id)) {
       return nullptr;

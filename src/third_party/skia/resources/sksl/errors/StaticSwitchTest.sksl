@@ -1,0 +1,8 @@
+half4 main() {
+    @switch (int(sqrt(1))) {
+        case 1:
+            return half4(1);
+        default:
+            return half4(0);
+    }
+}

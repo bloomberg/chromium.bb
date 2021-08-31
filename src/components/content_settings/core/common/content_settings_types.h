@@ -21,7 +21,6 @@ enum class ContentSettingsType : int32_t {
   COOKIES = 0,
   IMAGES,
   JAVASCRIPT,
-  PLUGINS,
 
   // This setting governs both popups and unwanted redirects like tab-unders and
   // framebusting.
@@ -126,6 +125,8 @@ enum class ContentSettingsType : int32_t {
   // Nothing is stored in this setting at present. Please refer to
   // PeriodicBackgroundSyncPermissionContext for details on how this permission
   // is ascertained.
+  // This content setting is not registered because it does not require access
+  // to any existing providers.
   PERIODIC_BACKGROUND_SYNC,
 
   // Content setting which stores whether to allow sites to ask for permission
@@ -157,7 +158,7 @@ enum class ContentSettingsType : int32_t {
 
   // Content settings which stores whether to allow sites to ask for permission
   // to save changes to an original file selected by the user through the
-  // File System API.
+  // File System Access API.
   FILE_SYSTEM_WRITE_GUARD,
 
   // Content settings for installed web apps that browsing history may be
@@ -193,7 +194,7 @@ enum class ContentSettingsType : int32_t {
   AR,
 
   // Content setting which stores whether to allow site to open and read files
-  // and directories selected through the File System API.
+  // and directories selected through the File System Access API.
   FILE_SYSTEM_READ_GUARD,
 
   // Access to first party storage in a third-party context. Exceptions are
@@ -228,6 +229,37 @@ enum class ContentSettingsType : int32_t {
   // Stores per-origin state of the most recently selected directory for the use
   // by the File System Access API.
   FILE_SYSTEM_LAST_PICKED_DIRECTORY,
+
+  // Capture the current tab using getCurrentBrowsingContextMedia().
+  // TODO(crbug.com/1150788): Apply this to getDisplayMedia() as well.
+  // No values are stored for this type, this is solely needed to be able to
+  // register the PermissionContext.
+  DISPLAY_CAPTURE,
+
+  // Register file-type associations with the operating system and obtain
+  // read-only access to files that the user chooses to open with this
+  // installed web application from the system file manager. This setting has
+  // no effect on the File System API, <input type="file">, or the ability to
+  // access files through drag & drop or clipboard paste operations.
+  FILE_HANDLING,
+
+  // Website setting to store permissions metadata granted to paths on the local
+  // file system via the File System Access API. |FILE_SYSTEM_WRITE_GUARD| is
+  // the corresponding "guard" setting.
+  FILE_SYSTEM_ACCESS_CHOOSER_DATA,
+
+  // Stores a grant for the browser to intermediate or allow without
+  // restriction sharing of identity information by an identity provider to
+  // specified relying parties. The setting is associated with the identity
+  // provider's origin.
+  // This is managed by WebID.
+  FEDERATED_IDENTITY_SHARING,
+
+  // Stores a grant that allows a relying party to send a request for identity
+  // information to specified identity providers, potentially through any
+  // anti-tracking measures that would otherwise prevent it. This setting is
+  // associated with the relying party's origin.
+  FEDERATED_IDENTITY_REQUEST,
 
   NUM_TYPES,
 };

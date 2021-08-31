@@ -54,7 +54,7 @@ WebTestPermissionManager::WebTestPermissionManager()
 
 WebTestPermissionManager::~WebTestPermissionManager() {}
 
-int WebTestPermissionManager::RequestPermission(
+void WebTestPermissionManager::RequestPermission(
     PermissionType permission,
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
@@ -67,10 +67,9 @@ int WebTestPermissionManager::RequestPermission(
                           WebContents::FromRenderFrameHost(render_frame_host)
                               ->GetLastCommittedURL()
                               .GetOrigin()));
-  return PermissionController::kNoPendingOperation;
 }
 
-int WebTestPermissionManager::RequestPermissions(
+void WebTestPermissionManager::RequestPermissions(
     const std::vector<PermissionType>& permissions,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
@@ -91,7 +90,6 @@ int WebTestPermissionManager::RequestPermissions(
   }
 
   std::move(callback).Run(result);
-  return PermissionController::kNoPendingOperation;
 }
 
 void WebTestPermissionManager::ResetPermission(PermissionType permission,
@@ -147,7 +145,8 @@ WebTestPermissionManager::GetPermissionStatusForFrame(
           .GetOrigin());
 }
 
-int WebTestPermissionManager::SubscribePermissionStatusChange(
+WebTestPermissionManager::SubscriptionId
+WebTestPermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
@@ -170,14 +169,18 @@ int WebTestPermissionManager::SubscribePermissionStatusChange(
       GetPermissionStatus(permission, subscription->permission.origin,
                           subscription->permission.embedding_origin);
 
-  return subscriptions_.Add(std::move(subscription));
+  auto id = subscription_id_generator_.GenerateNextId();
+  subscriptions_.AddWithID(std::move(subscription), id);
+  return id;
 }
 
 void WebTestPermissionManager::UnsubscribePermissionStatusChange(
-    int subscription_id) {
+    SubscriptionId subscription_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Whether |subscription_id| is known will be checked by the Remove() call.
+  if (!subscriptions_.Lookup(subscription_id))
+    return;
+
   subscriptions_.Remove(subscription_id);
 }
 

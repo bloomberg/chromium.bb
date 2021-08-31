@@ -22,6 +22,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "components/version_info/version_info.h"
 #include "components/webrtc_logging/browser/log_cleanup.h"
@@ -311,7 +312,7 @@ void WebRtcLogUploader::OnSimpleLoaderComplete(
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
   DCHECK(!shutdown_);
   network::SimpleURLLoader* loader = it->get();
-  base::Optional<int> response_code;
+  absl::optional<int> response_code;
   if (loader->ResponseInfo() && loader->ResponseInfo()->headers) {
     response_code = loader->ResponseInfo()->headers->response_code();
   }
@@ -347,7 +348,9 @@ void WebRtcLogUploader::SetupMultipart(
   const char product[] = "Chrome";
 #elif defined(OS_MAC)
   const char product[] = "Chrome_Mac";
-#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #if !defined(ADDRESS_SANITIZER)
   const char product[] = "Chrome_Linux";
 #else
@@ -355,7 +358,7 @@ void WebRtcLogUploader::SetupMultipart(
 #endif
 #elif defined(OS_ANDROID)
   const char product[] = "Chrome_Android";
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
   const char product[] = "Chrome_ChromeOS";
 #else
 #error Platform not supported.
@@ -597,7 +600,7 @@ void WebRtcLogUploader::AddUploadedLogInfoToUploadListFile(
 }
 
 void WebRtcLogUploader::NotifyUploadDoneAndLogStats(
-    base::Optional<int> response_code,
+    absl::optional<int> response_code,
     int network_error_code,
     const std::string& report_id,
     WebRtcLogUploader::UploadDoneData upload_done_data) {

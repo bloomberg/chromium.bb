@@ -9,12 +9,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace web_app {
 
@@ -27,9 +27,9 @@ InstallFinalizer::FinalizeOptions::FinalizeOptions(const FinalizeOptions&) =
 
 void InstallFinalizer::UninstallExternalWebAppByUrl(
     const GURL& app_url,
-    ExternalInstallSource external_install_source,
+    webapps::WebappUninstallSource webapp_uninstall_source,
     UninstallWebAppCallback callback) {
-  base::Optional<AppId> app_id = registrar().LookupExternalAppId(app_url);
+  absl::optional<AppId> app_id = registrar().LookupExternalAppId(app_url);
   if (!app_id.has_value()) {
     LOG(WARNING) << "Couldn't uninstall web app with url " << app_url
                  << "; No corresponding web app for url.";
@@ -38,7 +38,7 @@ void InstallFinalizer::UninstallExternalWebAppByUrl(
     return;
   }
 
-  UninstallExternalWebApp(app_id.value(), external_install_source,
+  UninstallExternalWebApp(app_id.value(), webapp_uninstall_source,
                           std::move(callback));
 }
 
@@ -70,10 +70,6 @@ void InstallFinalizer::ReparentTab(const AppId& app_id,
   DCHECK(web_contents);
   return ui_manager().ReparentAppTabToWindow(web_contents, app_id,
                                              shortcut_created);
-}
-
-InstallFinalizer* InstallFinalizer::legacy_finalizer_for_testing() {
-  return nullptr;
 }
 
 AppRegistrar& InstallFinalizer::registrar() const {

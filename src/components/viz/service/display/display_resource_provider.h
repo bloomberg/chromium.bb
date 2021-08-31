@@ -22,13 +22,12 @@
 #include "components/viz/common/resources/return_callback.h"
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/display/external_use_client.h"
 #include "components/viz/service/display/resource_fence.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "third_party/khronos/GLES2/gl2ext.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -36,17 +35,9 @@ namespace gfx {
 class ColorSpace;
 }  // namespace gfx
 
-namespace gpu {
-namespace gles2 {
-class GLES2Interface;
-}  // namespace gles2
-}  // namespace gpu
-
 namespace viz {
 
-class ContextProvider;
 class ScopedAllowGpuAccessForDisplayResourceProvider;
-class SharedBitmapManager;
 
 // This class provides abstractions for receiving and using resources from other
 // modules/threads/processes. It abstracts away GL textures vs GpuMemoryBuffers
@@ -67,19 +58,12 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     kGpu,
     kSoftware,
   };
-  // TODO(cblume, crbug.com/900973): |enable_shared_images| is a temporary
-  // solution that unblocks us until SharedImages are threadsafe in WebView.
-  DisplayResourceProvider(Mode mode,
-                          ContextProvider* compositor_context_provider,
-                          SharedBitmapManager* shared_bitmap_manager,
-                          bool enable_shared_images = true);
   ~DisplayResourceProvider() override;
 
   DisplayResourceProvider(const DisplayResourceProvider&) = delete;
   DisplayResourceProvider& operator=(const DisplayResourceProvider&) = delete;
 
   bool IsSoftware() const { return mode_ == kSoftware; }
-  void DidLoseContextProvider() { lost_context_provider_ = true; }
   size_t num_resources() const { return resources_.size(); }
 
   // base::trace_event::MemoryDumpProvider implementation.
@@ -91,29 +75,19 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   // can't really be promoted to an overlay.
   bool IsBackedBySurfaceTexture(ResourceId id);
 
-  // Return the number of resources that request promotion hints.
-  size_t CountPromotionHintRequestsForTesting();
-
-  // This should be called after WaitSyncToken in GLRenderer.
-  void InitializePromotionHintRequest(ResourceId id);
+  // Indicates if this resource wants to receive promotion hints.
+  bool DoesResourceWantPromotionHint(ResourceId id);
 #endif
 
-  // Indicates if this resource wants to receive promotion hints.
-  bool DoesResourceWantPromotionHint(ResourceId id) const;
-
-  // Return true if and only if any resource wants a promotion hint.
-  bool DoAnyResourcesWantPromotionHints() const;
-
   bool IsResourceSoftwareBacked(ResourceId id);
-  GLenum GetResourceTextureTarget(ResourceId id);
   // Return the format of the underlying buffer that can be used for scanout.
   gfx::BufferFormat GetBufferFormat(ResourceId id);
   ResourceFormat GetResourceFormat(ResourceId id);
   const gfx::ColorSpace& GetColorSpace(ResourceId id);
   // Indicates if this resource may be used for a hardware overlay plane.
   bool IsOverlayCandidate(ResourceId id);
-
-  void WaitSyncToken(ResourceId id);
+  SurfaceId GetSurfaceId(ResourceId id);
+  int GetChildId(ResourceId id);
 
   // Checks whether a resource is in use.
   bool InUse(ResourceId id);
@@ -121,98 +95,9 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   // The following lock classes are part of the DisplayResourceProvider API and
   // are needed to read the resource contents. The user must ensure that they
   // only use GL locks on GL resources, etc, and this is enforced by assertions.
-  class VIZ_SERVICE_EXPORT ScopedReadLockGL {
-   public:
-    ScopedReadLockGL(DisplayResourceProvider* resource_provider,
-                     ResourceId resource_id);
-    ~ScopedReadLockGL();
 
-    ScopedReadLockGL(const ScopedReadLockGL&) = delete;
-    ScopedReadLockGL& operator=(const ScopedReadLockGL&) = delete;
-
-    GLuint texture_id() const { return texture_id_; }
-    GLenum target() const { return target_; }
-    const gfx::Size& size() const { return size_; }
-    const gfx::ColorSpace& color_space() const { return color_space_; }
-
-   private:
-    DisplayResourceProvider* const resource_provider_;
-    const ResourceId resource_id_;
-
-    GLuint texture_id_ = 0;
-    GLenum target_ = GL_TEXTURE_2D;
-    gfx::Size size_;
-    gfx::ColorSpace color_space_;
-  };
-
-  class VIZ_SERVICE_EXPORT ScopedOverlayLockGL {
-   public:
-    ScopedOverlayLockGL(DisplayResourceProvider* resource_provider,
-                        ResourceId resource_id);
-    ~ScopedOverlayLockGL();
-
-    ScopedOverlayLockGL(const ScopedOverlayLockGL&) = delete;
-    ScopedOverlayLockGL& operator=(const ScopedOverlayLockGL&) = delete;
-
-    GLuint texture_id() const { return texture_id_; }
-
-   private:
-    DisplayResourceProvider* const resource_provider_;
-    const ResourceId resource_id_;
-    GLuint texture_id_ = 0;
-  };
-
-  class VIZ_SERVICE_EXPORT ScopedSamplerGL {
-   public:
-    ScopedSamplerGL(DisplayResourceProvider* resource_provider,
-                    ResourceId resource_id,
-                    GLenum filter);
-    ScopedSamplerGL(DisplayResourceProvider* resource_provider,
-                    ResourceId resource_id,
-                    GLenum unit,
-                    GLenum filter);
-    ~ScopedSamplerGL();
-
-    ScopedSamplerGL(const ScopedSamplerGL&) = delete;
-    ScopedSamplerGL& operator=(const ScopedSamplerGL&) = delete;
-
-    GLuint texture_id() const { return resource_lock_.texture_id(); }
-    GLenum target() const { return target_; }
-    const gfx::ColorSpace& color_space() const {
-      return resource_lock_.color_space();
-    }
-
-   private:
-    const ScopedReadLockGL resource_lock_;
-    const GLenum unit_;
-    const GLenum target_;
-  };
-
-  class VIZ_SERVICE_EXPORT ScopedReadLockSkImage {
-   public:
-    ScopedReadLockSkImage(DisplayResourceProvider* resource_provider,
-                          ResourceId resource_id,
-                          SkAlphaType alpha_type = kPremul_SkAlphaType,
-                          GrSurfaceOrigin origin = kTopLeft_GrSurfaceOrigin);
-    ~ScopedReadLockSkImage();
-
-    ScopedReadLockSkImage(const ScopedReadLockSkImage&) = delete;
-    ScopedReadLockSkImage& operator=(const ScopedReadLockSkImage& other) =
-        delete;
-
-    const SkImage* sk_image() const { return sk_image_.get(); }
-    sk_sp<SkImage> TakeSkImage() { return std::move(sk_image_); }
-
-    bool valid() const { return !!sk_image_; }
-
-   private:
-    DisplayResourceProvider* const resource_provider_;
-    const ResourceId resource_id_;
-    sk_sp<SkImage> sk_image_;
-  };
-
- private:
-  // Forward declared for LockSetForExternalUse below.
+ protected:
+  // Forward declared for ScopedReadLockSharedImage below.
   struct ChildResource;
 
  public:
@@ -236,47 +121,22 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
       return resource_->sync_token();
     }
 
+    // Sets the given |release_fence| onto this resource.
+    // This is propagated to ReturnedResource when the resource is freed.
+    void SetReleaseFence(gfx::GpuFenceHandle release_fence);
+
+    // Returns true iff this resource has a read lock fence set.
+    bool HasReadLockFence() const;
+
+   protected:
+    ChildResource* resource() { return resource_; }
+
    private:
     void Reset();
 
     DisplayResourceProvider* resource_provider_ = nullptr;
     ResourceId resource_id_ = kInvalidResourceId;
     ChildResource* resource_ = nullptr;
-  };
-
-  // Maintains set of resources locked for external use by SkiaRenderer.
-  class VIZ_SERVICE_EXPORT LockSetForExternalUse {
-   public:
-    // There should be at most one instance of this class per
-    // |resource_provider|. Both |resource_provider| and |client| outlive this
-    // class.
-    LockSetForExternalUse(DisplayResourceProvider* resource_provider,
-                          ExternalUseClient* client);
-    ~LockSetForExternalUse();
-
-    LockSetForExternalUse(const LockSetForExternalUse&) = delete;
-    LockSetForExternalUse& operator=(const LockSetForExternalUse& other) =
-        delete;
-
-    // Lock a resource for external use. The return value was created by
-    // |client| at some point in the past. The SkImage color space will be set
-    // to |color_space| if valid, otherwise it will be set to the resource's
-    // color space. If |is_video_plane| is true, the image color space will be
-    // set to nullptr (to avoid LOG spam).
-    ExternalUseClient::ImageContext* LockResource(
-        ResourceId resource_id,
-        bool is_video_plane = false,
-        const gfx::ColorSpace& color_space = gfx::ColorSpace());
-
-    // Unlock all locked resources with a |sync_token|.  The |sync_token| should
-    // be waited on before reusing the resource's backing to ensure that any
-    // external use of it is completed. This |sync_token| should have been
-    // verified.  All resources must be unlocked before destroying this class.
-    void UnlockResources(const gpu::SyncToken& sync_token);
-
-   private:
-    DisplayResourceProvider* const resource_provider_;
-    std::vector<std::pair<ResourceId, ChildResource*>> resources_;
   };
 
   // All resources that are returned to children while an instance of this
@@ -293,29 +153,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     const bool was_access_to_gpu_thread_allowed_;
   };
 
-  class VIZ_SERVICE_EXPORT SynchronousFence : public ResourceFence {
-   public:
-    explicit SynchronousFence(gpu::gles2::GLES2Interface* gl);
-
-    SynchronousFence(const SynchronousFence&) = delete;
-    SynchronousFence& operator=(const SynchronousFence&) = delete;
-
-    // ResourceFence implementation.
-    void Set() override;
-    bool HasPassed() override;
-
-    // Returns true if fence has been set but not yet synchornized.
-    bool has_synchronized() const { return has_synchronized_; }
-
-   private:
-    ~SynchronousFence() override;
-
-    void Synchronize();
-
-    gpu::gles2::GLES2Interface* gl_;
-    bool has_synchronized_;
-  };
-
   // Sets the current read fence. If a resource is locked for read
   // and has read fences enabled, the resource will not allow writes
   // until this fence has passed.
@@ -323,15 +160,18 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     current_read_lock_fence_ = fence;
   }
 
-  // Creates accounting for a child. Returns a child ID.
-  int CreateChild(const ReturnCallback& return_callback);
+  // Creates accounting for a child. Returns a child ID. surface_id is used to
+  // associate resources to the surface they belong to. This is used for
+  // overlays on webview where overlays are updated outside of normal draw (i.e
+  // DrawAndSwap isn't called).
+  int CreateChild(ReturnCallback return_callback, const SurfaceId& surface_id);
 
   // Destroys accounting for the child, deleting all accounted resources.
   void DestroyChild(int child);
 
   // Gets the child->parent resource ID map.
-  const std::unordered_map<ResourceId, ResourceId>& GetChildToParentMap(
-      int child) const;
+  const std::unordered_map<ResourceId, ResourceId, ResourceIdHasher>&
+  GetChildToParentMap(int child) const;
 
   // Receives resources from a child, moving them from mailboxes. ResourceIds
   // passed are in the child namespace, and will be translated to the parent
@@ -353,14 +193,17 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
                                      const ResourceIdSet& resources_from_child);
 
   // Returns the mailbox corresponding to a resource id.
-  gpu::Mailbox GetMailbox(int resource_id);
+  gpu::Mailbox GetMailbox(ResourceId resource_id);
 
   // Sets if the GPU thread is available (it always is for Chrome, but for
   // WebView it happens only when Android calls us on RenderThread.
   void SetAllowAccessToGPUThread(bool allow);
 
- private:
+ protected:
   friend class ScopedAllowGpuAccessForDisplayResourceProvider;
+
+  enum class CanDeleteNowResult { kYes, kYesButLoseResource, kNo };
+
   enum DeleteStyle {
     NORMAL,
     FOR_SHUTDOWN,
@@ -397,11 +240,15 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
 
   struct Child {
     Child();
-    Child(const Child& other);
+    Child(Child&& other);
+    Child& operator=(Child&& other);
     ~Child();
 
-    std::unordered_map<ResourceId, ResourceId> child_to_parent_map;
+    int id;
+    std::unordered_map<ResourceId, ResourceId, ResourceIdHasher>
+        child_to_parent_map;
     ReturnCallback return_callback;
+    SurfaceId surface_id;
     bool marked_for_deletion = false;
   };
 
@@ -490,6 +337,10 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     // to avoid map lookups further down the pipeline.
     std::unique_ptr<ExternalUseClient::ImageContext> image_context;
 
+    // A release fence to propagate to ReturnedResource so clients may
+    // use it.
+    gfx::GpuFenceHandle release_fence;
+
    private:
     // Tracks if a sync token needs to be waited on before using the resource.
     SynchronizationState synchronization_state_;
@@ -500,9 +351,11 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   };
 
   using ChildMap = std::unordered_map<int, Child>;
-  using ResourceMap = std::unordered_map<ResourceId, ChildResource>;
+  using ResourceMap =
+      std::unordered_map<ResourceId, ChildResource, ResourceIdHasher>;
 
-  ChildResource* InsertResource(ResourceId id, ChildResource resource);
+  explicit DisplayResourceProvider(Mode mode);
+
   ChildResource* GetResource(ResourceId id);
 
   // TODO(ericrk): TryGetResource is part of a temporary workaround for cases
@@ -510,33 +363,28 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   // return nullptr if a resource is not found. https://crbug.com/811858
   ChildResource* TryGetResource(ResourceId id);
 
-  void PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
-                                    const ChildResource* resource);
-
-  void DeleteResourceInternal(ResourceMap::iterator it, DeleteStyle style);
-
-  void WaitSyncTokenInternal(ChildResource* resource);
-
-  // Returns null if we do not have a ContextProvider.
-  gpu::gles2::GLES2Interface* ContextGL() const;
-
-  const ChildResource* LockForRead(ResourceId id, bool overlay_only);
-  void UnlockForRead(ResourceId id, bool overlay_only);
-
   void TryReleaseResource(ResourceId id, ChildResource* resource);
   // Binds the given GL resource to a texture target for sampling using the
   // specified filter for both minification and magnification. Returns the
   // texture target used. The resource must be locked for reading.
-  GLenum BindForSampling(ResourceId resource_id, GLenum unit, GLenum filter);
   bool ReadLockFenceHasPassed(const ChildResource* resource);
-#if defined(OS_ANDROID)
-  void DeletePromotionHint(ResourceMap::iterator it, DeleteStyle style);
-#endif
 
   void DeleteAndReturnUnusedResourcesToChild(
       ChildMap::iterator child_it,
       DeleteStyle style,
       const std::vector<ResourceId>& unused);
+  virtual std::vector<ReturnedResource>
+  DeleteAndReturnUnusedResourcesToChildImpl(
+      Child& child_info,
+      DeleteStyle style,
+      const std::vector<ResourceId>& unused) = 0;
+  CanDeleteNowResult CanDeleteNow(const Child& child_info,
+                                  const ChildResource& resource,
+                                  DeleteStyle style);
+
+  // Destroys DisplayResourceProvider, must be called before destructor because
+  // it might call virtual functions from inside.
+  void Destroy();
   void DestroyChildInternal(ChildMap::iterator it, DeleteStyle style);
 
   void SetBatchReturnResources(bool aggregate);
@@ -544,38 +392,23 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
 
   THREAD_CHECKER(thread_checker_);
   const Mode mode_;
-  ContextProvider* const compositor_context_provider_;
-  SharedBitmapManager* const shared_bitmap_manager_;
 
   ResourceMap resources_;
   ChildMap children_;
-  base::flat_map<ResourceId, sk_sp<SkImage>> resource_sk_images_;
-  // Used to release resources held by an external consumer.
-  ExternalUseClient* external_use_client_ = nullptr;
 
   base::flat_map<int, std::vector<ResourceId>> batched_returning_resources_;
   scoped_refptr<ResourceFence> current_read_lock_fence_;
   // Keep track of whether deleted resources should be batched up or returned
   // immediately.
   int batch_return_resources_lock_count_ = 0;
-  // Set to true when the ContextProvider becomes lost, to inform that resources
-  // modified by this class are now in an indeterminate state.
-  bool lost_context_provider_ = false;
   // The ResourceIds in DisplayResourceProvider start from 2 to avoid
   // conflicts with id from ClientResourceProvider.
-  ResourceId next_id_ = 2;
+  ResourceIdGenerator resource_id_generator_{2u};
   // Used as child id when creating a child.
   int next_child_ = 1;
   // A process-unique ID used for disambiguating memory dumps from different
   // resource providers.
   int tracing_id_;
-
-#if defined(OS_ANDROID)
-  // Set of ResourceIds that would like to be notified about promotion hints.
-  ResourceIdSet wants_promotion_hints_set_;
-#endif
-
-  bool enable_shared_images_;
 
   // Indicates that gpu thread is available and calls like
   // ReleaseImageContexts() are expected to finish in finite time. It's always

@@ -34,6 +34,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_array_buffer.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_string.h"
 #include "third_party/blink/renderer/core/events/progress_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
@@ -335,7 +336,10 @@ void FileReader::abort() {
   loading_state_ = kLoadingStateAborted;
 
   DCHECK_NE(kDone, state_);
-  state_ = kDone;
+  // Synchronously cancel the loader before dispatching events. This way we make
+  // sure the FileReader internal state stays consistent even if another load
+  // is started from one of the event handlers, or right after abort returns.
+  Terminate();
 
   base::AutoReset<bool> firing_events(&still_firing_events_, true);
 
@@ -347,17 +351,34 @@ void FileReader::abort() {
       ThrottlingController::RemoveReader(GetExecutionContext(), this);
 
   FireEvent(event_type_names::kAbort);
+  // TODO(https://crbug.com/1204139): Only fire loadend event if no new load was
+  // started from the abort event handler.
   FireEvent(event_type_names::kLoadend);
 
   // All possible events have fired and we're done, no more pending activity.
   ThrottlingController::FinishReader(GetExecutionContext(), this, final_step);
-
-  // Also synchronously cancel the loader, as script might initiate a new load
-  // right after this method returns, in which case an async termination would
-  // terminate the wrong loader.
-  Terminate();
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+V8UnionArrayBufferOrString* FileReader::result() const {
+  if (error_ || !loader_)
+    return nullptr;
+
+  // Only set the result after |loader_| has finished loading which means that
+  // FileReader::DidFinishLoading() has also been called. This ensures that the
+  // result is not available until just before the kLoad event is fired.
+  if (!loader_->HasFinishedLoading() || state_ != ReadyState::kDone) {
+    return nullptr;
+  }
+
+  if (read_type_ == FileReaderLoader::kReadAsArrayBuffer) {
+    return MakeGarbageCollected<V8UnionArrayBufferOrString>(
+        loader_->ArrayBufferResult());
+  }
+  return MakeGarbageCollected<V8UnionArrayBufferOrString>(
+      loader_->StringResult());
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 void FileReader::result(StringOrArrayBuffer& result_attribute) const {
   if (error_ || !loader_)
     return;
@@ -374,6 +395,7 @@ void FileReader::result(StringOrArrayBuffer& result_attribute) const {
   else
     result_attribute.SetString(loader_->StringResult());
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void FileReader::Terminate() {
   if (loader_) {
@@ -428,6 +450,8 @@ void FileReader::DidFinishLoading() {
       ThrottlingController::RemoveReader(GetExecutionContext(), this);
 
   FireEvent(event_type_names::kLoad);
+  // TODO(https://crbug.com/1204139): Only fire loadend event if no new load was
+  // started from the abort event handler.
   FireEvent(event_type_names::kLoadend);
 
   // All possible events have fired and we're done, no more pending activity.

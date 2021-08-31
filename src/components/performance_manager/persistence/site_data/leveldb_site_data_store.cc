@@ -16,6 +16,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
@@ -100,8 +101,8 @@ bool ShouldAttemptDbRepair(const leveldb::Status& status) {
 }
 
 struct DatabaseSizeResult {
-  base::Optional<int64_t> num_rows;
-  base::Optional<int64_t> on_disk_size_kb;
+  absl::optional<int64_t> num_rows;
+  absl::optional<int64_t> on_disk_size_kb;
 };
 
 std::string SerializeOriginIntoDatabaseKey(const url::Origin& origin) {
@@ -150,7 +151,7 @@ class LevelDBSiteDataStore::AsyncHelper {
 
   // Implementations of the DB manipulation functions of
   // LevelDBSiteDataStore that run on a blocking sequence.
-  base::Optional<SiteDataProto> ReadSiteDataFromDB(const url::Origin& origin);
+  absl::optional<SiteDataProto> ReadSiteDataFromDB(const url::Origin& origin);
   void WriteSiteDataIntoDB(const url::Origin& origin,
                            const SiteDataProto& site_characteristic_proto);
   void RemoveSiteDataFromDB(const std::vector<url::Origin>& site_origin);
@@ -158,14 +159,19 @@ class LevelDBSiteDataStore::AsyncHelper {
   // Returns a struct with unset fields on failure.
   DatabaseSizeResult GetDatabaseSize();
 
-  bool DBIsInitialized() { return db_ != nullptr; }
+  bool DBIsInitialized() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return db_ != nullptr;
+  }
 
   leveldb::DB* GetDBForTesting() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(DBIsInitialized());
     return db_.get();
   }
 
   void SetInitializationCallbackForTesting(base::OnceClosure callback) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     init_callback_for_testing_ = std::move(callback);
     if (DBIsInitialized())
       std::move(init_callback_for_testing_).Run();
@@ -184,24 +190,27 @@ class LevelDBSiteDataStore::AsyncHelper {
 
   // A levelDB environment that gets used for testing. This allows using an
   // in-memory database when needed.
-  std::unique_ptr<leveldb::Env> env_for_testing_;
+  std::unique_ptr<leveldb::Env> env_for_testing_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   // The on disk location of the database.
-  const base::FilePath db_path_;
+  const base::FilePath db_path_ GUARDED_BY_CONTEXT(sequence_checker_);
   // The connection to the LevelDB database.
-  std::unique_ptr<leveldb::DB> db_;
+  std::unique_ptr<leveldb::DB> db_ GUARDED_BY_CONTEXT(sequence_checker_);
   // The options to be used for all database read operations.
-  leveldb::ReadOptions read_options_;
+  leveldb::ReadOptions read_options_ GUARDED_BY_CONTEXT(sequence_checker_);
   // The options to be used for all database write operations.
-  leveldb::WriteOptions write_options_;
+  leveldb::WriteOptions write_options_ GUARDED_BY_CONTEXT(sequence_checker_);
 
-  base::OnceClosure init_callback_for_testing_;
+  base::OnceClosure init_callback_for_testing_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(AsyncHelper);
 };
 
 void LevelDBSiteDataStore::AsyncHelper::OpenOrCreateDatabase() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   OpeningType opening_type = OpenOrCreateDatabaseImpl();
 
   if (init_callback_for_testing_)
@@ -243,13 +252,13 @@ void LevelDBSiteDataStore::AsyncHelper::OpenOrCreateDatabase() {
   }
 }
 
-base::Optional<SiteDataProto>
+absl::optional<SiteDataProto>
 LevelDBSiteDataStore::AsyncHelper::ReadSiteDataFromDB(
     const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!db_)
-    return base::nullopt;
+    return absl::nullopt;
 
   leveldb::Status s;
   std::string protobuf_value;
@@ -259,11 +268,11 @@ LevelDBSiteDataStore::AsyncHelper::ReadSiteDataFromDB(
     s = db_->Get(read_options_, SerializeOriginIntoDatabaseKey(origin),
                  &protobuf_value);
   }
-  base::Optional<SiteDataProto> site_characteristic_proto;
+  absl::optional<SiteDataProto> site_characteristic_proto;
   if (s.ok()) {
     site_characteristic_proto = SiteDataProto();
     if (!site_characteristic_proto->ParseFromString(protobuf_value)) {
-      site_characteristic_proto = base::nullopt;
+      site_characteristic_proto = absl::nullopt;
       DLOG(ERROR) << "Error while trying to parse a SiteDataProto "
                   << "protobuf.";
     }
@@ -506,12 +515,29 @@ void LevelDBSiteDataStore::SetInitializationCallbackForTesting(
                                 std::move(callback)));
 }
 
-bool LevelDBSiteDataStore::DatabaseIsInitializedForTesting() {
-  return async_helper_->DBIsInitialized();
+void LevelDBSiteDataStore::DatabaseIsInitializedForTesting(
+    base::OnceCallback<void(bool)> reply_cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  blocking_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&LevelDBSiteDataStore::AsyncHelper::DBIsInitialized,
+                     base::Unretained(async_helper_.get())),
+      std::move(reply_cb));
 }
 
-leveldb::DB* LevelDBSiteDataStore::GetDBForTesting() {
-  return async_helper_->GetDBForTesting();
+void LevelDBSiteDataStore::RunTaskWithRawDBForTesting(
+    base::OnceCallback<void(leveldb::DB*)> task,
+    base::OnceClosure after_task_run_closure) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto task_on_blocking_task_runner = base::BindOnce(
+      [](LevelDBSiteDataStore::AsyncHelper* helper,
+         base::OnceCallback<void(leveldb::DB*)> task) {
+        std::move(task).Run(helper->GetDBForTesting());  // IN-TEST
+      },
+      base::Unretained(async_helper_.get()), std::move(task));
+  blocking_task_runner_->PostTaskAndReply(
+      FROM_HERE, std::move(task_on_blocking_task_runner),
+      std::move(after_task_run_closure));
 }
 
 // static
