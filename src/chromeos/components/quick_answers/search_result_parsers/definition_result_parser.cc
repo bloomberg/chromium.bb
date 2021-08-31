@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_utils.h"
 
@@ -55,8 +54,6 @@ bool DefinitionResultParser::Parse(const Value* result,
           ? BuildDefinitionTitleText(query_term->c_str(), phonetics->c_str())
           : query_term->c_str();
   quick_answer->result_type = ResultType::kDefinitionResult;
-  quick_answer->primary_answer = *definition;
-  quick_answer->secondary_answer = secondary_answer;
   quick_answer->title.push_back(
       std::make_unique<QuickAnswerText>(secondary_answer));
   quick_answer->first_answer_row.push_back(

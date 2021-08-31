@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
@@ -32,7 +33,7 @@ StringType UTF8ToNative(base::StringPiece src) {
 #if defined(OS_WIN)
   return base::UTF8ToWide(src);
 #elif defined(OS_POSIX)
-  return src.as_string();
+  return std::string(src);
 #else
 #error "Invalid platform for browser_switcher"
 #endif
@@ -120,15 +121,16 @@ TEST_F(AlternativeBrowserDriverTest, GetBrowserName) {
   actual = driver()->GetBrowserName();
   EXPECT_EQ("Internet Explorer", actual);
 
-  SetBrowserPath("${edge}");
-  actual = driver()->GetBrowserName();
-  EXPECT_EQ("Microsoft Edge", actual);
 #endif
 
 #if defined(OS_WIN) || defined(OS_MAC)
   SetBrowserPath("${safari}");
   actual = driver()->GetBrowserName();
   EXPECT_EQ("Safari", actual);
+
+  SetBrowserPath("${edge}");
+  actual = driver()->GetBrowserName();
+  EXPECT_EQ("Microsoft Edge", actual);
 #endif
 
   SetBrowserPath("${firefox}");
@@ -177,16 +179,16 @@ TEST_F(AlternativeBrowserDriverTest, GetBrowserType) {
       "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe");
   actual = driver()->GetBrowserType();
   EXPECT_EQ(BrowserType::kChrome, actual);
-
-  SetBrowserPath("${edge}");
-  actual = driver()->GetBrowserType();
-  EXPECT_EQ(BrowserType::kEdge, actual);
 #endif
 
 #if defined(OS_WIN) || defined(OS_MAC)
   SetBrowserPath("${safari}");
   actual = driver()->GetBrowserType();
   EXPECT_EQ(BrowserType::kSafari, actual);
+
+  SetBrowserPath("${edge}");
+  actual = driver()->GetBrowserType();
+  EXPECT_EQ(BrowserType::kEdge, actual);
 #endif
 
   SetBrowserPath("${firefox}");

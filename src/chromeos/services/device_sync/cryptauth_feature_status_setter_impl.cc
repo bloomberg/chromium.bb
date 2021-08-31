@@ -81,14 +81,14 @@ CryptAuthFeatureStatusSetterImpl::CryptAuthFeatureStatusSetterImpl(
 CryptAuthFeatureStatusSetterImpl::~CryptAuthFeatureStatusSetterImpl() = default;
 
 // static
-base::Optional<base::TimeDelta>
+absl::optional<base::TimeDelta>
 CryptAuthFeatureStatusSetterImpl::GetTimeoutForState(State state) {
   switch (state) {
     case State::kWaitingForBatchSetFeatureStatusesResponse:
       return kWaitingForBatchSetFeatureStatusesResponseTimeout;
     default:
       // Signifies that there should not be a timeout.
-      return base::nullopt;
+      return absl::nullopt;
   }
 }
 
@@ -134,7 +134,7 @@ void CryptAuthFeatureStatusSetterImpl::SetState(State state) {
   state_ = state;
   last_state_change_timestamp_ = base::TimeTicks::Now();
 
-  base::Optional<base::TimeDelta> timeout_for_state = GetTimeoutForState(state);
+  absl::optional<base::TimeDelta> timeout_for_state = GetTimeoutForState(state);
   if (!timeout_for_state)
     return;
 
@@ -178,21 +178,26 @@ void CryptAuthFeatureStatusSetterImpl::ProcessRequestQueue() {
       CryptAuthFeatureTypeToString(CryptAuthFeatureTypeFromSoftwareFeature(
           pending_requests_.front().feature)));
 
+  std::string status;
   switch (pending_requests_.front().status_change) {
     case FeatureStatusChange::kEnableExclusively:
+      status = "exclusively enable";
       feature_status->set_enabled(true);
       feature_status->set_enable_exclusively(true);
       break;
     case FeatureStatusChange::kEnableNonExclusively:
+      status = "enable";
       feature_status->set_enabled(true);
       feature_status->set_enable_exclusively(false);
       break;
     case FeatureStatusChange::kDisable:
+      status = "disable";
       feature_status->set_enabled(false);
       feature_status->set_enable_exclusively(false);
       break;
   }
-
+  PA_LOG(INFO) << "Attempting to " << status << " feature "
+               << pending_requests_.front().feature;
   SetState(State::kWaitingForBatchSetFeatureStatusesResponse);
   cryptauth_client_ = client_factory_->CreateInstance();
   cryptauth_client_->BatchSetFeatureStatuses(
@@ -208,7 +213,11 @@ void CryptAuthFeatureStatusSetterImpl::ProcessRequestQueue() {
 void CryptAuthFeatureStatusSetterImpl::OnBatchSetFeatureStatusesSuccess(
     const cryptauthv2::BatchSetFeatureStatusesResponse& response) {
   DCHECK_EQ(State::kWaitingForBatchSetFeatureStatusesResponse, state_);
-  FinishAttempt(base::nullopt /* error */);
+  PA_LOG(VERBOSE) << "SetFeatureStatus attempt succeeded.";
+  RecordBatchSetFeatureStatusesMetrics(
+      base::TimeTicks::Now() - last_state_change_timestamp_,
+      CryptAuthApiCallResult::kSuccess);
+  FinishAttempt(absl::nullopt /* error */);
 }
 
 void CryptAuthFeatureStatusSetterImpl::OnBatchSetFeatureStatusesFailure(
@@ -216,11 +225,14 @@ void CryptAuthFeatureStatusSetterImpl::OnBatchSetFeatureStatusesFailure(
   DCHECK_EQ(State::kWaitingForBatchSetFeatureStatusesResponse, state_);
   PA_LOG(ERROR) << "BatchSetFeatureStatuses call failed with error " << error
                 << ".";
+  RecordBatchSetFeatureStatusesMetrics(
+      base::TimeTicks::Now() - last_state_change_timestamp_,
+      CryptAuthApiCallResultFromNetworkRequestError(error));
   FinishAttempt(error);
 }
 
 void CryptAuthFeatureStatusSetterImpl::FinishAttempt(
-    base::Optional<NetworkRequestError> error) {
+    absl::optional<NetworkRequestError> error) {
   cryptauth_client_.reset();
   SetState(State::kIdle);
 
@@ -231,7 +243,6 @@ void CryptAuthFeatureStatusSetterImpl::FinishAttempt(
   if (error) {
     std::move(current_request.error_callback).Run(*error);
   } else {
-    PA_LOG(VERBOSE) << "SetFeatureStatus attempt succeeded.";
     std::move(current_request.success_callback).Run();
   }
 

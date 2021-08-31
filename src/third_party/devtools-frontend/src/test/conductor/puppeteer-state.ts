@@ -3,33 +3,29 @@
 // found in the LICENSE file.
 
 import * as puppeteer from 'puppeteer';
-declare module 'puppeteer' {
-  interface CustomQueryHandler {
-    queryOne?: (element: Element|Document, selector: string) => Element | null;
-    queryAll?: (element: Element|Document, selector: string) => Element[] | NodeListOf<Element>;
-  }
-
-  function registerCustomQueryHandler(name: string, queryHandler: CustomQueryHandler): void;
-  function unregisterCustomQueryHandler(name: string): void;
-  function customQueryHandlerNames(): string[];
-  function clearCustomQueryHandlers(): void;
-}
 
 import {querySelectorShadowTextAll, querySelectorShadowTextOne} from './custom-query-handlers.js';
 
-let target: puppeteer.Page;
-let frontend: puppeteer.Page;
-let browser: puppeteer.Browser;
+let target: puppeteer.Page|null;
+let frontend: puppeteer.Page|null;
+let browser: puppeteer.Browser|null;
 
-// Set when we launch the hosted mode server. It will be different for each
+// Set when we launch the server. It will be different for each
 // sub-process runner when running in parallel.
-let hostedModeServerPort: number;
+let testServerPort: number|null;
 
 export interface BrowserAndPages {
   target: puppeteer.Page;
   frontend: puppeteer.Page;
   browser: puppeteer.Browser;
 }
+
+export const clearPuppeteerState = () => {
+  target = null;
+  frontend = null;
+  browser = null;
+  testServerPort = null;
+};
 
 export const setBrowserAndPages = (newValues: BrowserAndPages) => {
   if (target || frontend || browser) {
@@ -59,26 +55,31 @@ export const getBrowserAndPages = (): BrowserAndPages => {
   };
 };
 
-export const setHostedModeServerPort = (port: number) => {
-  if (hostedModeServerPort) {
-    throw new Error('Can\'t set the hosted mode server port twice.');
+export const setTestServerPort = (port: number) => {
+  if (testServerPort) {
+    throw new Error('Can\'t set the test server port twice.');
   }
-  hostedModeServerPort = port;
+  testServerPort = port;
 };
 
-export const getHostedModeServerPort = () => {
-  if (!hostedModeServerPort) {
+export const getTestServerPort = () => {
+  if (!testServerPort) {
     throw new Error(
-        'Unable to locate hosted mode server port. Was it stored first?' +
+        'Unable to locate test server port. Was it stored first?' +
         '\nYou might be calling this function at module instantiation time, instead of ' +
         'at runtime when the port is available.');
   }
-  return hostedModeServerPort;
+  return testServerPort;
 };
 
+let handlerRegistered = false;
 export const registerHandlers = () => {
+  if (handlerRegistered) {
+    return;
+  }
   puppeteer.registerCustomQueryHandler('pierceShadowText', {
     queryOne: querySelectorShadowTextOne,
     queryAll: querySelectorShadowTextAll,
   });
+  handlerRegistered = true;
 };

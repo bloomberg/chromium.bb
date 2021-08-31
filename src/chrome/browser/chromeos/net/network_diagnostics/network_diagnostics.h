@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_NET_NETWORK_DIAGNOSTICS_NETWORK_DIAGNOSTICS_H_
 #define CHROME_BROWSER_CHROMEOS_NET_NETWORK_DIAGNOSTICS_NETWORK_DIAGNOSTICS_H_
 
+#include <string>
+
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 class DebugDaemonClient;
@@ -39,6 +42,8 @@ class NetworkDiagnostics : public mojom::NetworkDiagnosticsRoutines {
   void DnsResolution(DnsResolutionCallback callback) override;
   void CaptivePortal(CaptivePortalCallback callback) override;
   void HttpsLatency(HttpsLatencyCallback callback) override;
+  void VideoConferencing(const absl::optional<std::string>& stun_server_name,
+                         VideoConferencingCallback callback) override;
 
  private:
   // An unowned pointer to the DebugDaemonClient instance.

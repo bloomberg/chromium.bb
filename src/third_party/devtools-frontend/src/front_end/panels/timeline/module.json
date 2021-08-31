@@ -1,0 +1,21 @@
+{
+  "dependencies": [
+    "ui/legacy/components/utils",
+    "panels/coverage",
+    "panels/layer_viewer",
+    "ui/legacy/components/perf_ui",
+    "models/extensions",
+    "ui/legacy/components/data_grid",
+    "panels/profiler",
+    "panels/mobile_throttling"
+  ],
+    "resources": [
+    "historyToolbarButton.css",
+    "invalidationsTree.css",
+    "timelineFlamechartPopover.css",
+    "timelineHistoryManager.css",
+    "timelinePanel.css",
+    "timelinePaintProfiler.css",
+    "timelineStatusDialog.css"
+  ]
+}

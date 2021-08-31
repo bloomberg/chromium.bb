@@ -5,13 +5,26 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_AUTO_SCREEN_BRIGHTNESS_ALS_READER_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_AUTO_SCREEN_BRIGHTNESS_ALS_READER_H_
 
-#include "base/observer_list_types.h"
+#include <memory>
+
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
 
 namespace chromeos {
 namespace power {
 namespace auto_screen_brightness {
 
-// Interface to ambient light reader.
+class AlsFileReader;
+class AlsReaderTest;
+class FakeLightProvider;
+class LightProviderInterface;
+class LightProviderMojo;
+class LightSamplesObserver;
+
+// If IIO Service is present, it uses LightProviderMojo as the implementation of
+// LightProviderInterface; otherwise, it uses AlsFileReader.
 class AlsReader {
  public:
   // Status of AlsReader initialization.
@@ -28,25 +41,64 @@ class AlsReader {
 
   // Frequency in hertz at which we read ALS samples.
   // TODO(jiameng): currently set frequency to 1hz. May revise.
-  static constexpr int kAlsPollFrequency = 1;
+  static constexpr double kAlsPollFrequency = 1.0;
 
   // AlsReader must outlive the observers.
   class Observer : public base::CheckedObserver {
    public:
     Observer() = default;
+    Observer(const Observer&) = delete;
+    Observer& operator=(const Observer&) = delete;
     ~Observer() override = default;
     virtual void OnAmbientLightUpdated(int lux) = 0;
     virtual void OnAlsReaderInitialized(AlsInitStatus status) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
-  virtual ~AlsReader() = default;
+  AlsReader();
+  ~AlsReader();
+
+  void Init();
 
   // Adds or removes an observer.
-  virtual void AddObserver(Observer* observer) = 0;
-  virtual void RemoveObserver(Observer* observer) = 0;
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+ private:
+  friend AlsFileReader;
+  friend AlsReaderTest;
+  friend FakeLightProvider;
+  friend LightProviderMojo;
+  friend LightSamplesObserver;
+
+  // Called when we've retrieved the number of ALS present.
+  void OnNumAlsRetrieved(int num_als);
+
+  void SetLux(int lux);
+  void SetAlsInitStatus(AlsInitStatus status);
+  void SetAlsInitStatusForTesting(AlsInitStatus status);
+
+  // Background task runner for checking ALS status and reading ALS values.
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+
+  base::ObserverList<Observer> observers_;
+  AlsInitStatus status_ = AlsInitStatus::kInProgress;
+  std::unique_ptr<LightProviderInterface> provider_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<AlsReader> weak_ptr_factory_{this};
+};
+
+class LightProviderInterface {
+ public:
+  LightProviderInterface(const LightProviderInterface&) = delete;
+  LightProviderInterface& operator=(const LightProviderInterface&) = delete;
+  virtual ~LightProviderInterface();
+
+ protected:
+  explicit LightProviderInterface(AlsReader* als_reader);
+
+  AlsReader* als_reader_;
 };
 
 }  // namespace auto_screen_brightness

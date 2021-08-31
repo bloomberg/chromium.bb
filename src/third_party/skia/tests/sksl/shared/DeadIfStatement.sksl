@@ -1,5 +1,0 @@
-void main() {
-    bool x = true;
-    if (x) return;
-    if (!x) return;
-}

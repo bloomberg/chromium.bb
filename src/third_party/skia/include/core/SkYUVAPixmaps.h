@@ -18,8 +18,6 @@
 #include <bitset>
 
 class GrImageContext;
-struct SkYUVASizeInfo;
-struct SkYUVAIndex;
 
 /**
  * SkYUVAInfo combined with per-plane SkColorTypes and row bytes. Fully specifies the SkPixmaps
@@ -31,7 +29,6 @@ public:
 
     using PlaneConfig  = SkYUVAInfo::PlaneConfig;
     using Subsampling  = SkYUVAInfo::Subsampling;
-    using PlanarConfig = SkYUVAInfo::PlanarConfig;
 
     /**
      * Data type for Y, U, V, and possibly A channels independent of how values are packed into
@@ -63,9 +60,6 @@ public:
          * as indicated by PlaneConfig with channel data types as indicated by DataType.
          */
         constexpr bool supported(PlaneConfig, DataType) const;
-
-        /** Deprecated. Use PlaneConfig version. */
-        constexpr bool supported(PlanarConfig, DataType) const;
 
         /**
          * Update to add support for pixmaps with numChannel channels where each channel is
@@ -245,18 +239,13 @@ public:
     const SkPixmap& plane(int i) const { return fPlanes[SkToSizeT(i)]; }
 
     /**
-     * Computes a SkYUVAIndex representation of the planar layout. Returns true on success and
-     * false on failure. Will succeed whenever this->isValid() is true.
+     * Computes a YUVALocations representation of the planar layout. The result is guaranteed to be
+     * valid if this->isValid().
      */
-    bool toYUVAIndices(SkYUVAIndex[SkYUVAIndex::kIndexCount]) const;
+    SkYUVAInfo::YUVALocations toYUVALocations() const;
 
     /** Does this SkPixmaps own the backing store of the planes? */
     bool ownsStorage() const { return SkToBool(fData); }
-
-    /**
-     * Conversion to legacy SkYUVA data structures.
-     */
-    bool toLegacy(SkYUVASizeInfo*, SkYUVAIndex[SkYUVAIndex::kIndexCount]) const;
 
 private:
     SkYUVAPixmaps(const SkYUVAPixmapInfo&, sk_sp<SkData>);
@@ -298,12 +287,6 @@ constexpr bool SkYUVAPixmapInfo::SupportedDataTypes::supported(PlaneConfig confi
         }
     }
     return true;
-}
-
-constexpr bool SkYUVAPixmapInfo::SupportedDataTypes::supported(PlanarConfig planarConfig,
-                                                               DataType type) const {
-    auto pc = std::get<0>(SkYUVAInfo::PlanarConfigToPlaneConfigAndSubsampling(planarConfig));
-    return this->supported(pc, type);
 }
 
 constexpr SkColorType SkYUVAPixmapInfo::DefaultColorTypeForDataType(DataType dataType,

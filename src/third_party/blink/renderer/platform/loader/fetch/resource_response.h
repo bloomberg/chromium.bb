@@ -31,12 +31,13 @@
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "net/base/ip_endpoint.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
@@ -242,11 +243,11 @@ class PLATFORM_EXPORT ResourceResponse final {
   bool CacheControlContainsNoStore() const;
   bool CacheControlContainsMustRevalidate() const;
   bool HasCacheValidatorFields() const;
-  base::Optional<base::TimeDelta> CacheControlMaxAge() const;
-  base::Optional<base::Time> Date() const;
-  base::Optional<base::TimeDelta> Age() const;
-  base::Optional<base::Time> Expires() const;
-  base::Optional<base::Time> LastModified() const;
+  absl::optional<base::TimeDelta> CacheControlMaxAge() const;
+  absl::optional<base::Time> Date() const;
+  absl::optional<base::TimeDelta> Age() const;
+  absl::optional<base::Time> Expires() const;
+  absl::optional<base::Time> LastModified() const;
   // Will always return values >= 0.
   base::TimeDelta CacheControlStaleWhileRevalidate() const;
 
@@ -297,7 +298,7 @@ class PLATFORM_EXPORT ResourceResponse final {
     security_style_ = security_style;
   }
 
-  const base::Optional<SecurityDetails>& GetSecurityDetails() const {
+  const absl::optional<SecurityDetails>& GetSecurityDetails() const {
     return security_details_;
   }
   void SetSecurityDetails(const String& protocol,
@@ -321,10 +322,13 @@ class PLATFORM_EXPORT ResourceResponse final {
     app_cache_manifest_url_ = url;
   }
 
+  const KURL& WebBundleURL() const { return web_bundle_url_; }
+  void SetWebBundleURL(const KURL& url) { web_bundle_url_ = url; }
+
   bool WasFetchedViaSPDY() const { return was_fetched_via_spdy_; }
   void SetWasFetchedViaSPDY(bool value) { was_fetched_via_spdy_ = value; }
 
-  // See network::ResourceResponseInfo::was_fetched_via_service_worker.
+  // See network.mojom.URLResponseHead.was_fetched_via_service_worker.
   bool WasFetchedViaServiceWorker() const {
     return was_fetched_via_service_worker_;
   }
@@ -341,14 +345,6 @@ class PLATFORM_EXPORT ResourceResponse final {
     service_worker_response_source_ = value;
   }
 
-  // See network::ResourceResponseInfo::was_fallback_required_by_service_worker.
-  bool WasFallbackRequiredByServiceWorker() const {
-    return was_fallback_required_by_service_worker_;
-  }
-  void SetWasFallbackRequiredByServiceWorker(bool value) {
-    was_fallback_required_by_service_worker_ = value;
-  }
-
   network::mojom::FetchResponseType GetType() const { return response_type_; }
   void SetType(network::mojom::FetchResponseType value) {
     response_type_ = value;
@@ -358,7 +354,10 @@ class PLATFORM_EXPORT ResourceResponse final {
   // https://html.spec.whatwg.org/C/#cors-cross-origin
   bool IsCorsCrossOrigin() const;
 
-  // See network::ResourceResponseInfo::url_list_via_service_worker.
+  int64_t GetPadding() const { return padding_; }
+  void SetPadding(int64_t padding) { padding_ = padding; }
+
+  // See network.mojom.URLResponseHead.url_list_via_service_worker.
   const Vector<KURL>& UrlListViaServiceWorker() const {
     return url_list_via_service_worker_;
   }
@@ -409,6 +408,13 @@ class PLATFORM_EXPORT ResourceResponse final {
     was_alpn_negotiated_ = was_alpn_negotiated;
   }
 
+  bool HasAuthorizationCoveredByWildcardOnPreflight() const {
+    return has_authorization_covered_by_wildcard_on_preflight_;
+  }
+  void SetHasAuthorizationCoveredByWildcardOnPreflight(bool b) {
+    has_authorization_covered_by_wildcard_on_preflight_ = b;
+  }
+
   const AtomicString& AlpnNegotiatedProtocol() const {
     return alpn_negotiated_protocol_;
   }
@@ -425,6 +431,9 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   AtomicString ConnectionInfoString() const;
 
+  mojom::blink::CacheState CacheState() const;
+  void SetIsValidated(bool is_validated);
+
   int64_t EncodedDataLength() const { return encoded_data_length_; }
   void SetEncodedDataLength(int64_t value);
 
@@ -434,11 +443,11 @@ class PLATFORM_EXPORT ResourceResponse final {
   int64_t DecodedBodyLength() const { return decoded_body_length_; }
   void SetDecodedBodyLength(int64_t value);
 
-  const base::Optional<base::UnguessableToken>& RecursivePrefetchToken() const {
+  const absl::optional<base::UnguessableToken>& RecursivePrefetchToken() const {
     return recursive_prefetch_token_;
   }
   void SetRecursivePrefetchToken(
-      const base::Optional<base::UnguessableToken>& token) {
+      const absl::optional<base::UnguessableToken>& token) {
     recursive_prefetch_token_ = token;
   }
 
@@ -494,8 +503,22 @@ class PLATFORM_EXPORT ResourceResponse final {
     was_cookie_in_request_ = was_cookie_in_request;
   }
 
+  const Vector<String>& DnsAliases() const { return dns_aliases_; }
+
+  void SetDnsAliases(Vector<String> aliases) {
+    dns_aliases_ = std::move(aliases);
+  }
+
   network::mojom::CrossOriginEmbedderPolicyValue GetCrossOriginEmbedderPolicy()
       const;
+
+  const absl::optional<net::AuthChallengeInfo>& AuthChallengeInfo() const {
+    return auth_challenge_info_;
+  }
+  void SetAuthChallengeInfo(
+      const absl::optional<net::AuthChallengeInfo>& value) {
+    auth_challenge_info_ = value;
+  }
 
  private:
   void UpdateHeaderParsedState(const AtomicString& name);
@@ -560,9 +583,6 @@ class PLATFORM_EXPORT ResourceResponse final {
   network::mojom::FetchResponseSource service_worker_response_source_ =
       network::mojom::FetchResponseSource::kUnspecified;
 
-  // Was the fallback request with skip service worker flag required.
-  bool was_fallback_required_by_service_worker_ = false;
-
   // True if service worker navigation preload was performed due to
   // the request for this resource.
   bool did_service_worker_navigation_preload_ = false;
@@ -593,9 +613,19 @@ class PLATFORM_EXPORT ResourceResponse final {
   // True if the response was delivered after ALPN is negotiated.
   bool was_alpn_negotiated_ = false;
 
+  // True when there is an "authorization" header on the request and it is
+  // covered by the wildcard in the preflight response.
+  // TODO(crbug.com/1176753): Remove this once the investigation is done.
+  bool has_authorization_covered_by_wildcard_on_preflight_ = false;
+
   // https://fetch.spec.whatwg.org/#concept-response-type
   network::mojom::FetchResponseType response_type_ =
       network::mojom::FetchResponseType::kDefault;
+
+  // Pre-computed padding.  This should only be non-zero if |response_type| is
+  // set to kOpaque.  In addition, it is only set if the response was provided
+  // by a service worker FetchEvent handler.
+  int64_t padding_ = 0;
 
   // HTTP version used in the response, if known.
   HTTPVersion http_version_ = kHTTPVersionUnknown;
@@ -609,17 +639,17 @@ class PLATFORM_EXPORT ResourceResponse final {
   SecurityStyle security_style_ = SecurityStyle::kUnknown;
 
   // Security details of this request's connection.
-  base::Optional<SecurityDetails> security_details_;
+  absl::optional<SecurityDetails> security_details_;
 
   scoped_refptr<ResourceLoadTiming> resource_load_timing_;
   scoped_refptr<ResourceLoadInfo> resource_load_info_;
 
   mutable CacheControlHeader cache_control_header_;
 
-  mutable base::Optional<base::TimeDelta> age_;
-  mutable base::Optional<base::Time> date_;
-  mutable base::Optional<base::Time> expires_;
-  mutable base::Optional<base::Time> last_modified_;
+  mutable absl::optional<base::TimeDelta> age_;
+  mutable absl::optional<base::Time> date_;
+  mutable absl::optional<base::Time> expires_;
+  mutable absl::optional<base::Time> last_modified_;
 
   // The id of the appcache this response was retrieved from, or zero if
   // the response was not retrieved from an appcache.
@@ -652,6 +682,9 @@ class PLATFORM_EXPORT ResourceResponse final {
   net::HttpResponseInfo::ConnectionInfo connection_info_ =
       net::HttpResponseInfo::ConnectionInfo::CONNECTION_INFO_UNKNOWN;
 
+  // Whether the resource came from the cache and validated over the network.
+  bool is_validated_ = false;
+
   // Size of the response in bytes prior to decompression.
   int64_t encoded_data_length_ = 0;
 
@@ -665,7 +698,18 @@ class PLATFORM_EXPORT ResourceResponse final {
   // This is propagated from the browser process's PrefetchURLLoader on
   // cross-origin prefetch responses. It is used to pass the token along to
   // preload header requests from these responses.
-  base::Optional<base::UnguessableToken> recursive_prefetch_token_;
+  absl::optional<base::UnguessableToken> recursive_prefetch_token_;
+
+  // Any DNS aliases for the requested URL, as read from CNAME records.
+  // The alias chain order is preserved in reverse, from canonical name (i.e.
+  // address record name) through to query name.
+  Vector<String> dns_aliases_;
+
+  // The URL of WebBundle this response was loaded from. This value is only
+  // populated for resources loaded from a WebBundle.
+  KURL web_bundle_url_;
+
+  absl::optional<net::AuthChallengeInfo> auth_challenge_info_;
 };
 
 }  // namespace blink

@@ -444,16 +444,6 @@ void ServiceWorkerMetrics::RecordFetchEventStatus(
 
 void ServiceWorkerMetrics::RecordStartWorkerTiming(const StartTimes& times,
                                                    StartSituation situation) {
-  if (!ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
-    // This is in-process timing, so process consistency doesn't matter.
-    constexpr base::TimeDelta kMinTime = base::TimeDelta::FromMicroseconds(1);
-    constexpr base::TimeDelta kMaxTime = base::TimeDelta::FromMilliseconds(100);
-    constexpr int kBuckets = 50;
-    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-        "ServiceWorker.StartTiming.BrowserThreadHopTime", times.thread_hop_time,
-        kMinTime, kMaxTime, kBuckets);
-  }
-
   // Bail if the timings across processes weren't consistent.
   if (!base::TimeTicks::IsHighResolution() ||
       !base::TimeTicks::IsConsistentAcrossProcesses()) {
@@ -579,8 +569,25 @@ void ServiceWorkerMetrics::RecordLookupRegistrationTime(
   }
 }
 
-void ServiceWorkerMetrics::RecordGetAllOriginsInfoTime(base::TimeDelta time) {
-  base::UmaHistogramMediumTimes("ServiceWorker.GetAllOriginsInfoTime", time);
+void ServiceWorkerMetrics::RecordOfflineCapableReason(
+    blink::ServiceWorkerStatusCode status,
+    int status_code) {
+  if (status == blink::ServiceWorkerStatusCode::kErrorTimeout) {
+    base::UmaHistogramEnumeration("ServiceWorker.OfflineCapable.Reason",
+                                  OfflineCapableReason::kTimeout);
+    return;
+  } else if (status == blink::ServiceWorkerStatusCode::kOk) {
+    if (200 <= status_code && status_code <= 299) {
+      base::UmaHistogramEnumeration("ServiceWorker.OfflineCapable.Reason",
+                                    OfflineCapableReason::kSuccess);
+      return;
+    } else if (300 <= status_code && status_code <= 399) {
+      base::UmaHistogramEnumeration("ServiceWorker.OfflineCapable.Reason",
+                                    OfflineCapableReason::kRedirect);
+      return;
+    }
+  }
+  NOTREACHED();
 }
 
 }  // namespace content

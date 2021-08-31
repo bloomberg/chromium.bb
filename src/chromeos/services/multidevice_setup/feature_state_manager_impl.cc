@@ -7,18 +7,18 @@
 #include <array>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
-#include "base/stl_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/services/multidevice_setup/wifi_sync_feature_manager.h"
 #include "components/prefs/pref_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 
@@ -42,7 +42,8 @@ GenerateFeatureToEnabledPrefNameMap() {
       {mojom::Feature::kPhoneHubNotifications,
        kPhoneHubNotificationsEnabledPrefName},
       {mojom::Feature::kPhoneHubTaskContinuation,
-       kPhoneHubTaskContinuationEnabledPrefName}};
+       kPhoneHubTaskContinuationEnabledPrefName},
+      {mojom::Feature::kEche, kEcheEnabledPrefName}};
 }
 
 base::flat_map<mojom::Feature, std::string>
@@ -56,7 +57,8 @@ GenerateFeatureToAllowedPrefNameMap() {
        kPhoneHubNotificationsAllowedPrefName},
       {mojom::Feature::kPhoneHubTaskContinuation,
        kPhoneHubTaskContinuationAllowedPrefName},
-      {mojom::Feature::kWifiSync, kWifiSyncAllowedPrefName}};
+      {mojom::Feature::kWifiSync, kWifiSyncAllowedPrefName},
+      {mojom::Feature::kEche, kEcheAllowedPrefName}};
 }
 
 // Each feature's default value is kUnavailableNoVerifiedHost until proven
@@ -80,6 +82,7 @@ GenerateInitialDefaultCachedStateMap() {
        mojom::FeatureState::kUnavailableNoVerifiedHost},
       {mojom::Feature::kWifiSync,
        mojom::FeatureState::kUnavailableNoVerifiedHost},
+      {mojom::Feature::kEche, mojom::FeatureState::kUnavailableNoVerifiedHost},
   };
 }
 
@@ -164,10 +167,20 @@ void ProcessSuiteEdgeCases(
       }
     }
   }
+
+  // If the top level Phone Hub feature is not supported by the phone, the
+  // sub-features should also be not supported by the phone.
+  if (feature_states_map[mojom::Feature::kPhoneHub] ==
+      mojom::FeatureState::kNotSupportedByPhone) {
+    for (const auto& phone_hub_sub_feature : kPhoneHubSubFeatures) {
+      feature_states_map[phone_hub_sub_feature] =
+          mojom::FeatureState::kNotSupportedByPhone;
+    }
+  }
 }
 
 bool HasFeatureStateChanged(
-    const base::Optional<FeatureStateManager::FeatureStatesMap>&
+    const absl::optional<FeatureStateManager::FeatureStatesMap>&
         previous_states,
     const FeatureStateManager::FeatureStatesMap& new_states,
     mojom::Feature feature) {
@@ -178,7 +191,7 @@ bool HasFeatureStateChanged(
 }
 
 void LogFeatureStates(
-    const base::Optional<FeatureStateManager::FeatureStatesMap>&
+    const absl::optional<FeatureStateManager::FeatureStatesMap>&
         previous_states,
     const FeatureStateManager::FeatureStatesMap& new_states) {
   if (HasFeatureStateChanged(previous_states, new_states,
@@ -219,14 +232,14 @@ void LogFeatureStates(
   if (HasFeatureStateChanged(previous_states, new_states,
                              mojom::Feature::kPhoneHubNotifications)) {
     UMA_HISTOGRAM_ENUMERATION(
-        "PhoneHub.MultiDeviceFeatureState.NotificationsFeature",
+        "PhoneHub.MultiDeviceFeatureState.Notifications",
         new_states.find(mojom::Feature::kPhoneHubNotifications)->second);
   }
 
   if (HasFeatureStateChanged(previous_states, new_states,
                              mojom::Feature::kPhoneHubTaskContinuation)) {
     UMA_HISTOGRAM_ENUMERATION(
-        "PhoneHub.MultiDeviceFeatureState.TaskContinuationFeature",
+        "PhoneHub.MultiDeviceFeatureState.TaskContinuation",
         new_states.find(mojom::Feature::kPhoneHubTaskContinuation)->second);
   }
 
@@ -235,6 +248,13 @@ void LogFeatureStates(
     base::UmaHistogramEnumeration(
         "WifiSync.MultiDeviceFeatureState",
         new_states.find(mojom::Feature::kWifiSync)->second);
+  }
+
+  if (HasFeatureStateChanged(previous_states, new_states,
+                             mojom::Feature::kEche)) {
+    base::UmaHistogramEnumeration(
+        "Eche.MultiDeviceFeatureState",
+        new_states.find(mojom::Feature::kEche)->second);
   }
 }
 
@@ -250,16 +270,19 @@ std::unique_ptr<FeatureStateManager> FeatureStateManagerImpl::Factory::Create(
     HostStatusProvider* host_status_provider,
     device_sync::DeviceSyncClient* device_sync_client,
     AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
-    WifiSyncFeatureManager* wifi_sync_feature_manager) {
+    WifiSyncFeatureManager* wifi_sync_feature_manager,
+    bool is_secondary_user) {
   if (test_factory_) {
     return test_factory_->CreateInstance(
         pref_service, host_status_provider, device_sync_client,
-        android_sms_pairing_state_tracker, wifi_sync_feature_manager);
+        android_sms_pairing_state_tracker, wifi_sync_feature_manager,
+        is_secondary_user);
   }
 
   return base::WrapUnique(new FeatureStateManagerImpl(
       pref_service, host_status_provider, device_sync_client,
-      android_sms_pairing_state_tracker, wifi_sync_feature_manager));
+      android_sms_pairing_state_tracker, wifi_sync_feature_manager,
+      is_secondary_user));
 }
 
 // static
@@ -275,12 +298,14 @@ FeatureStateManagerImpl::FeatureStateManagerImpl(
     HostStatusProvider* host_status_provider,
     device_sync::DeviceSyncClient* device_sync_client,
     AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
-    WifiSyncFeatureManager* wifi_sync_feature_manager)
+    WifiSyncFeatureManager* wifi_sync_feature_manager,
+    bool is_secondary_user)
     : pref_service_(pref_service),
       host_status_provider_(host_status_provider),
       device_sync_client_(device_sync_client),
       android_sms_pairing_state_tracker_(android_sms_pairing_state_tracker),
       wifi_sync_feature_manager_(wifi_sync_feature_manager),
+      is_secondary_user_(is_secondary_user),
       feature_to_enabled_pref_name_map_(GenerateFeatureToEnabledPrefNameMap()),
       feature_to_allowed_pref_name_map_(GenerateFeatureToAllowedPrefNameMap()),
       cached_feature_state_map_(GenerateInitialDefaultCachedStateMap()) {
@@ -312,7 +337,7 @@ FeatureStateManagerImpl::FeatureStateManagerImpl(
   // notified.
   UpdateFeatureStateCache(false /* notify_observers_of_changes */);
 
-  LogFeatureStates(base::nullopt /* previous_states */,
+  LogFeatureStates(absl::nullopt /* previous_states */,
                    cached_feature_state_map_ /* new_states */);
 }
 
@@ -446,14 +471,27 @@ bool FeatureStateManagerImpl::IsSupportedByChromebook(mojom::Feature feature) {
           {mojom::Feature::kPhoneHubTaskContinuation,
            multidevice::SoftwareFeature::kPhoneHubClient},
           {mojom::Feature::kWifiSync,
-           multidevice::SoftwareFeature::kWifiSyncClient}};
+           multidevice::SoftwareFeature::kWifiSyncClient},
+          {mojom::Feature::kEche, multidevice::SoftwareFeature::kEcheClient}};
+
+  absl::optional<multidevice::RemoteDeviceRef> local_device =
+      device_sync_client_->GetLocalDeviceMetadata();
+  if (!local_device) {
+    PA_LOG(ERROR) << "FeatureStateManagerImpl::" << __func__
+                  << ": Local device unexpectedly null.";
+    return false;
+  }
 
   for (const auto& pair : kFeatureAndClientSoftwareFeaturePairs) {
     if (pair.first != feature)
       continue;
 
-    return device_sync_client_->GetLocalDeviceMetadata()
-               ->GetSoftwareFeatureState(pair.second) !=
+    if (pair.second == multidevice::SoftwareFeature::kPhoneHubClient &&
+        is_secondary_user_) {
+      return false;
+    }
+
+    return local_device->GetSoftwareFeatureState(pair.second) !=
            multidevice::SoftwareFeatureState::kNotSupported;
   }
 
@@ -496,11 +534,19 @@ bool FeatureStateManagerImpl::HasBeenActivatedByPhone(
           {mojom::Feature::kPhoneHubTaskContinuation,
            multidevice::SoftwareFeature::kPhoneHubHost},
           {mojom::Feature::kWifiSync,
-           multidevice::SoftwareFeature::kWifiSyncHost}};
+           multidevice::SoftwareFeature::kWifiSyncHost},
+          {mojom::Feature::kEche, multidevice::SoftwareFeature::kEcheHost}};
 
   for (const auto& pair : kFeatureAndHostSoftwareFeaturePairs) {
     if (pair.first != feature)
       continue;
+
+    // The bluetooth public address is required in order to use PhoneHub and its
+    // sub-features.
+    if (pair.second == multidevice::SoftwareFeature::kPhoneHubHost &&
+        host_device.bluetooth_public_address().empty()) {
+      return false;
+    }
 
     multidevice::SoftwareFeatureState feature_state =
         host_device.GetSoftwareFeatureState(pair.second);

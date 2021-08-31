@@ -2,18 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/tls_handshaker.h"
+#include "quic/core/tls_handshaker.h"
 
 #include "absl/base/macros.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_stream.h"
-#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "quic/core/quic_crypto_stream.h"
+#include "quic/core/tls_client_handshaker.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_stack_trace.h"
 
 namespace quic {
+
+#define ENDPOINT (SSL_is_server(ssl()) ? "TlsServer: " : "TlsClient: ")
 
 TlsHandshaker::ProofVerifierCallbackImpl::ProofVerifierCallbackImpl(
     TlsHandshaker* parent)
@@ -93,8 +96,46 @@ void TlsHandshaker::AdvanceHandshake() {
     return;
   }
 
-  QUIC_VLOG(1) << "TlsHandshaker: continuing handshake";
+  QUICHE_BUG_IF(quic_tls_server_async_done_no_flusher,
+                SSL_is_server(ssl()) && add_packet_flusher_on_async_op_done_ &&
+                    !handshaker_delegate_->PacketFlusherAttached())
+      << "is_server:" << SSL_is_server(ssl())
+      << ", add_packet_flusher_on_async_op_done_:"
+      << add_packet_flusher_on_async_op_done_;
+
+  QUIC_VLOG(1) << ENDPOINT << "Continuing handshake";
   int rv = SSL_do_handshake(ssl());
+
+  // If SSL_do_handshake return success(1) and we are in early data, it is
+  // possible that we have provided ServerHello to BoringSSL but it hasn't been
+  // processed. Retry SSL_do_handshake once will advance the handshake more in
+  // that case. If there are no unprocessed ServerHello, the retry will return a
+  // non-positive number.
+  if (retry_handshake_on_early_data_ && rv == 1 && SSL_in_early_data(ssl())) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_tls_retry_handshake_on_early_data, 1, 2);
+    OnEnterEarlyData();
+    rv = SSL_do_handshake(ssl());
+    QUIC_VLOG(1) << ENDPOINT
+                 << "SSL_do_handshake returned when entering early data. After "
+                 << "retry, rv=" << rv
+                 << ", SSL_in_early_data=" << SSL_in_early_data(ssl());
+    // The retry should either
+    // - Return <= 0 if the handshake is still pending, likely still in early
+    //   data.
+    // - Return 1 if the handshake has _actually_ finished. i.e.
+    //   SSL_in_early_data should be false.
+    //
+    // In either case, it should not both return 1 and stay in early data.
+    if (rv == 1 && SSL_in_early_data(ssl()) && !is_connection_closed_) {
+      QUIC_BUG(quic_handshaker_stay_in_early_data)
+          << "The original and the retry of SSL_do_handshake both returned "
+             "success and in early data";
+      CloseConnection(QUIC_HANDSHAKE_FAILED,
+                      "TLS handshake failed: Still in early data after retry");
+      return;
+    }
+  }
+
   if (rv == 1) {
     FinishHandshake();
     return;
@@ -114,8 +155,16 @@ void TlsHandshaker::AdvanceHandshake() {
 
 void TlsHandshaker::CloseConnection(QuicErrorCode error,
                                     const std::string& reason_phrase) {
-  DCHECK(!reason_phrase.empty());
+  QUICHE_DCHECK(!reason_phrase.empty());
   stream()->OnUnrecoverableError(error, reason_phrase);
+  is_connection_closed_ = true;
+}
+
+void TlsHandshaker::CloseConnection(QuicErrorCode error,
+                                    QuicIetfTransportErrorCodes ietf_error,
+                                    const std::string& reason_phrase) {
+  QUICHE_DCHECK(!reason_phrase.empty());
+  stream()->OnUnrecoverableError(error, ietf_error, reason_phrase);
   is_connection_closed_ = true;
 }
 
@@ -192,7 +241,7 @@ enum ssl_verify_result_t TlsHandshaker::VerifyCert(uint8_t* out_alert) {
 void TlsHandshaker::SetWriteSecret(EncryptionLevel level,
                                    const SSL_CIPHER* cipher,
                                    const std::vector<uint8_t>& write_secret) {
-  QUIC_DVLOG(1) << "SetWriteSecret level=" << level;
+  QUIC_DVLOG(1) << ENDPOINT << "SetWriteSecret level=" << level;
   std::unique_ptr<QuicEncrypter> encrypter =
       QuicEncrypter::CreateFromCipherSuite(SSL_CIPHER_get_id(cipher));
   const EVP_MD* prf = Prf(cipher);
@@ -204,7 +253,7 @@ void TlsHandshaker::SetWriteSecret(EncryptionLevel level,
       absl::string_view(reinterpret_cast<char*>(header_protection_key.data()),
                         header_protection_key.size()));
   if (level == ENCRYPTION_FORWARD_SECURE) {
-    DCHECK(latest_write_secret_.empty());
+    QUICHE_DCHECK(latest_write_secret_.empty());
     latest_write_secret_ = write_secret;
     one_rtt_write_header_protection_key_ = header_protection_key;
   }
@@ -215,7 +264,7 @@ void TlsHandshaker::SetWriteSecret(EncryptionLevel level,
 bool TlsHandshaker::SetReadSecret(EncryptionLevel level,
                                   const SSL_CIPHER* cipher,
                                   const std::vector<uint8_t>& read_secret) {
-  QUIC_DVLOG(1) << "SetReadSecret level=" << level;
+  QUIC_DVLOG(1) << ENDPOINT << "SetReadSecret level=" << level;
   std::unique_ptr<QuicDecrypter> decrypter =
       QuicDecrypter::CreateFromCipherSuite(SSL_CIPHER_get_id(cipher));
   const EVP_MD* prf = Prf(cipher);
@@ -227,7 +276,7 @@ bool TlsHandshaker::SetReadSecret(EncryptionLevel level,
       absl::string_view(reinterpret_cast<char*>(header_protection_key.data()),
                         header_protection_key.size()));
   if (level == ENCRYPTION_FORWARD_SECURE) {
-    DCHECK(latest_read_secret_.empty());
+    QUICHE_DCHECK(latest_read_secret_.empty());
     latest_read_secret_ = read_secret;
     one_rtt_read_header_protection_key_ = header_protection_key;
   }
@@ -243,7 +292,7 @@ TlsHandshaker::AdvanceKeysAndCreateCurrentOneRttDecrypter() {
       one_rtt_read_header_protection_key_.empty() ||
       one_rtt_write_header_protection_key_.empty()) {
     std::string error_details = "1-RTT secret(s) not set yet.";
-    QUIC_BUG << error_details;
+    QUIC_BUG(quic_bug_10312_1) << error_details;
     CloseConnection(QUIC_INTERNAL_ERROR, error_details);
     return nullptr;
   }
@@ -268,7 +317,7 @@ std::unique_ptr<QuicEncrypter> TlsHandshaker::CreateCurrentOneRttEncrypter() {
   if (latest_write_secret_.empty() ||
       one_rtt_write_header_protection_key_.empty()) {
     std::string error_details = "1-RTT write secret not set yet.";
-    QUIC_BUG << error_details;
+    QUIC_BUG(quic_bug_10312_2) << error_details;
     CloseConnection(QUIC_INTERNAL_ERROR, error_details);
     return nullptr;
   }
@@ -290,17 +339,14 @@ void TlsHandshaker::WriteMessage(EncryptionLevel level,
 void TlsHandshaker::FlushFlight() {}
 
 void TlsHandshaker::SendAlert(EncryptionLevel level, uint8_t desc) {
-  // TODO(b/151676147): Alerts should be sent on the wire as a varint QUIC error
-  // code computed to be 0x100 | desc (draft-ietf-quic-tls-27, section 4.9).
-  // This puts it in the range reserved for CRYPTO_ERROR
-  // (draft-ietf-quic-transport-27, section 20). However, according to
-  // quic_error_codes.h, this QUIC implementation only sends 1-byte error codes
-  // right now.
-  std::string error_details = quiche::QuicheStrCat(
+  std::string error_details = absl::StrCat(
       "TLS handshake failure (", EncryptionLevelToString(level), ") ",
       static_cast<int>(desc), ": ", SSL_alert_desc_string_long(desc));
   QUIC_DLOG(ERROR) << error_details;
-  CloseConnection(QUIC_HANDSHAKE_FAILED, error_details);
+  CloseConnection(
+      TlsAlertToQuicErrorCode(desc),
+      static_cast<QuicIetfTransportErrorCodes>(CRYPTO_ERROR_FIRST + desc),
+      error_details);
 }
 
 }  // namespace quic

@@ -53,8 +53,7 @@ void TreeScopeStyleSheetCollection::AddStyleSheetCandidateNode(Node& node) {
 void TreeScopeStyleSheetCollection::ApplyActiveStyleSheetChanges(
     StyleSheetCollection& new_collection) {
   GetDocument().GetStyleEngine().ApplyRuleSetChanges(
-      GetTreeScope(), ActiveAuthorStyleSheets(),
-      new_collection.ActiveAuthorStyleSheets());
+      GetTreeScope(), ActiveStyleSheets(), new_collection.ActiveStyleSheets());
   new_collection.Swap(*this);
 }
 
@@ -66,8 +65,6 @@ void TreeScopeStyleSheetCollection::UpdateStyleSheetList() {
   for (Node* node : style_sheet_candidate_nodes_) {
     StyleSheetCandidate candidate(*node);
     DCHECK(!candidate.IsXSL());
-    if (candidate.IsImport())
-      continue;
     if (candidate.IsEnabledAndLoading())
       continue;
     if (StyleSheet* sheet = candidate.Sheet())

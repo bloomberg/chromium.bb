@@ -13,13 +13,13 @@
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_auth_controller.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
@@ -31,6 +31,7 @@
 #include "net/socket/socket_tag.h"
 #include "net/ssl/ssl_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
 
@@ -284,10 +285,10 @@ int ProxyResolvingClientSocket::DoInitConnection() {
 
   next_state_ = STATE_INIT_CONNECTION_COMPLETE;
 
-  base::Optional<net::NetworkTrafficAnnotationTag> proxy_annotation_tag =
+  absl::optional<net::NetworkTrafficAnnotationTag> proxy_annotation_tag =
       proxy_info_.is_direct()
-          ? base::nullopt
-          : base::Optional<net::NetworkTrafficAnnotationTag>(
+          ? absl::nullopt
+          : absl::optional<net::NetworkTrafficAnnotationTag>(
                 proxy_info_.traffic_annotation());
 
   // Now that the proxy is resolved, create and start a ConnectJob. Using an
@@ -302,7 +303,7 @@ int ProxyResolvingClientSocket::DoInitConnection() {
       proxy_annotation_tag, &ssl_config, &ssl_config, true /* force_tunnel */,
       net::PRIVACY_MODE_DISABLED, net::OnHostResolutionCallback(),
       net::MAXIMUM_PRIORITY, net::SocketTag(), network_isolation_key_,
-      false /* disable_secure_dns */, common_connect_job_params_, this);
+      net::SecureDnsPolicy::kAllow, common_connect_job_params_, this);
   return connect_job_->Connect();
 }
 

@@ -4,25 +4,33 @@
 
 #include "ash/hud_display/hud_settings_view.h"
 
+#include <string>
+
+#include "ash/hud_display/ash_tracing_handler.h"
+#include "ash/hud_display/hud_display.h"
 #include "ash/hud_display/hud_properties.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
 #include "cc/debug/layer_tree_debug_state.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/paint_throbber.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/slider.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 namespace hud_display {
@@ -117,8 +125,10 @@ class SettingsCheckbox : public views::Checkbox {
  public:
   METADATA_HEADER(SettingsCheckbox);
 
-  explicit SettingsCheckbox(const base::string16& label)
-      : views::Checkbox(label, views::Button::PressedCallback()) {}
+  SettingsCheckbox(const std::u16string& label, const std::u16string& tooltip)
+      : views::Checkbox(label, views::Button::PressedCallback()) {
+    SetTooltipText(tooltip);
+  }
   SettingsCheckbox(const SettingsCheckbox& other) = delete;
   SettingsCheckbox operator=(const SettingsCheckbox& other) = delete;
 
@@ -225,7 +235,7 @@ AnimationSpeedControl::AnimationSpeedControl() {
       ->set_cross_axis_alignment(views::BoxLayout::CrossAxisAlignment::kCenter);
 
   views::Label* title = AddChildView(std::make_unique<views::Label>(
-      base::ASCIIToUTF16("Animation speed:"), views::style::CONTEXT_LABEL));
+      u"Animation speed:", views::style::CONTEXT_LABEL));
   title->SetAutoColorReadabilityEnabled(false);
   title->SetEnabledColor(kHUDDefaultColor);
 
@@ -237,7 +247,7 @@ AnimationSpeedControl::AnimationSpeedControl() {
 
   auto add_speed_point = [](AnimationSpeedControl* self, views::View* container,
                             std::vector<float>& multipliers, float multiplier,
-                            const base::string16& text) {
+                            const std::u16string& text) {
     const int kLabelBorderWidth = 3;
     views::Label* label = container->AddChildView(
         std::make_unique<views::Label>(text, views::style::CONTEXT_LABEL));
@@ -249,18 +259,12 @@ AnimationSpeedControl::AnimationSpeedControl() {
     multipliers.push_back(multiplier);
   };
 
-  add_speed_point(this, hints_container_, multipliers, 0,
-                  base::ASCIIToUTF16("0"));
-  add_speed_point(this, hints_container_, multipliers, 0.5,
-                  base::ASCIIToUTF16("0.5"));
-  add_speed_point(this, hints_container_, multipliers, 1,
-                  base::ASCIIToUTF16("1"));
-  add_speed_point(this, hints_container_, multipliers, 2,
-                  base::ASCIIToUTF16("2"));
-  add_speed_point(this, hints_container_, multipliers, 4,
-                  base::ASCIIToUTF16("4"));
-  add_speed_point(this, hints_container_, multipliers, 10,
-                  base::ASCIIToUTF16("10"));
+  add_speed_point(this, hints_container_, multipliers, 0, u"0");
+  add_speed_point(this, hints_container_, multipliers, 0.5, u"0.5");
+  add_speed_point(this, hints_container_, multipliers, 1, u"1");
+  add_speed_point(this, hints_container_, multipliers, 2, u"2");
+  add_speed_point(this, hints_container_, multipliers, 4, u"4");
+  add_speed_point(this, hints_container_, multipliers, 10, u"10");
 
   // Now we need to calculate discrete values for the slider and active slider
   // value.
@@ -332,12 +336,79 @@ void AnimationSpeedControl::Layout() {
   views::View::Layout();
 }
 
+class HUDActionButton : public views::LabelButton {
+ public:
+  HUDActionButton(views::Button::PressedCallback::Callback callback,
+                  const std::u16string& text)
+      : LabelButton(callback, text) {
+    SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    SetEnabledTextColors(kHUDBackground);
+    SetProperty(kHUDClickHandler, HTCLIENT);
+    constexpr float kActionButtonCournerRadius = 2;
+    SetBackground(views::CreateRoundedRectBackground(
+        kHUDDefaultColor, kActionButtonCournerRadius));
+    SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
+    on_enabled_changed_subscription_ =
+        AddEnabledChangedCallback(base::BindRepeating(
+            &HUDActionButton::OnEnabedChanged, base::Unretained(this)));
+  }
+
+  HUDActionButton(const HUDActionButton&) = delete;
+  HUDActionButton& operator=(const HUDActionButton&) = delete;
+
+  ~HUDActionButton() override = default;
+
+  void PaintButtonContents(gfx::Canvas* canvas) override {
+    views::LabelButton::PaintButtonContents(canvas);
+    if (spinner_refresh_timer_.IsRunning()) {
+      base::Time now = base::Time::Now();
+      gfx::Rect spinner = GetContentsBounds();
+      int spinner_width = std::min(spinner.width(), spinner.height());
+      spinner.ClampToCenteredSize(gfx::Size(spinner_width, spinner_width));
+      gfx::PaintThrobberSpinning(canvas, spinner,
+                                 SkColorSetA(SK_ColorWHITE, 0xFF * (.5)),
+                                 (now - spinner_created_) / 8);
+    }
+  }
+
+  void DisableWithSpinner() {
+    DCHECK(!spinner_refresh_timer_.IsRunning());
+    SetEnabled(false);
+    constexpr base::TimeDelta interval = base::TimeDelta::FromSecondsD(0.5);
+    spinner_created_ = base::Time::Now();
+    spinner_refresh_timer_.Start(
+        FROM_HERE, interval,
+        base::BindRepeating(
+            [](views::View* button) { button->SchedulePaint(); },
+            base::Unretained(this)));
+    SchedulePaint();
+  }
+
+  void UpdateBackgroundColor() override {
+    if (GetVisualState() == STATE_DISABLED) {
+      GetBackground()->SetNativeControlColor(kHUDDisabledButtonColor);
+    } else {
+      GetBackground()->SetNativeControlColor(kHUDDefaultColor);
+    }
+  }
+
+ private:
+  void OnEnabedChanged() {
+    if (GetEnabled())
+      spinner_refresh_timer_.Stop();
+  }
+
+  base::CallbackListSubscription on_enabled_changed_subscription_;
+  base::Time spinner_created_;
+  base::RepeatingTimer spinner_refresh_timer_;
+};
+
 }  // anonymous namespace
 
 BEGIN_METADATA(HUDSettingsView, views::View)
 END_METADATA
 
-HUDSettingsView::HUDSettingsView() {
+HUDSettingsView::HUDSettingsView(HUDDisplayView* hud_display) {
   SetVisible(false);
 
   // We want AnimationSpeedControl to be stretched horizontally so we turn
@@ -362,10 +433,10 @@ HUDSettingsView::HUDSettingsView() {
 
   auto add_checkbox =
       [](HUDSettingsView* self, views::View* container,
-         const base::string16& text,
+         const std::u16string& text, const std::u16string& tooltip,
          base::RepeatingCallback<void(views::Checkbox*)> callback) {
-        views::Checkbox* checkbox =
-            container->AddChildView(std::make_unique<SettingsCheckbox>(text));
+        views::Checkbox* checkbox = container->AddChildView(
+            std::make_unique<SettingsCheckbox>(text, tooltip));
         checkbox->SetCallback(
             base::BindRepeating(std::move(callback), checkbox));
         checkbox->SetEnabledTextColors(kHUDDefaultColor);
@@ -374,37 +445,140 @@ HUDSettingsView::HUDSettingsView() {
       };
 
   checkbox_handlers_.push_back(std::make_unique<HUDCheckboxHandler>(
-      add_checkbox(this, checkbox_container,
-                   base::ASCIIToUTF16("Tint composited content"),
-                   GetVisDebugHandleClickCallback(
-                       &viz::DebugRendererSettings::tint_composited_content)),
+      add_checkbox(
+          this, checkbox_container, u"Tint composited content",
+          u"Equivalent to --tint-composited-content command-line option.",
+          GetVisDebugHandleClickCallback(
+              &viz::DebugRendererSettings::tint_composited_content)),
       GetVisDebugUpdateStateCallback(
           &viz::DebugRendererSettings::tint_composited_content)));
   checkbox_handlers_.push_back(std::make_unique<HUDCheckboxHandler>(
-      add_checkbox(this, checkbox_container,
-                   base::ASCIIToUTF16("Show overdraw feedback"),
-                   GetVisDebugHandleClickCallback(
-                       &viz::DebugRendererSettings::show_overdraw_feedback)),
+      add_checkbox(
+          this, checkbox_container, u"Show overdraw feedback",
+          u"Equivalent to --show-overdraw-feedback command-line option.",
+          GetVisDebugHandleClickCallback(
+              &viz::DebugRendererSettings::show_overdraw_feedback)),
       GetVisDebugUpdateStateCallback(
           &viz::DebugRendererSettings::show_overdraw_feedback)));
   checkbox_handlers_.push_back(std::make_unique<HUDCheckboxHandler>(
-      add_checkbox(this, checkbox_container,
-                   base::ASCIIToUTF16("Show aggregated damage"),
-                   GetVisDebugHandleClickCallback(
-                       &viz::DebugRendererSettings::show_aggregated_damage)),
+      add_checkbox(
+          this, checkbox_container, u"Show aggregated damage",
+          u"Equivalent to --show-aggregated-damage command-line option.",
+          GetVisDebugHandleClickCallback(
+              &viz::DebugRendererSettings::show_aggregated_damage)),
       GetVisDebugUpdateStateCallback(
           &viz::DebugRendererSettings::show_aggregated_damage)));
   checkbox_handlers_.push_back(std::make_unique<HUDCheckboxHandler>(
-      add_checkbox(this, checkbox_container,
-                   base::ASCIIToUTF16("Show paint rect."),
+      add_checkbox(this, checkbox_container, u"Show paint rect.",
+                   u"Equivalent to --ui-show-paint-rects command-line option.",
                    GetCCDebugHandleClickCallback(
                        &cc::LayerTreeDebugState::show_paint_rects)),
       GetCCDebugUpdateStateCallback(
           &cc::LayerTreeDebugState::show_paint_rects)));
+  checkbox_handlers_.push_back(std::make_unique<HUDCheckboxHandler>(
+      add_checkbox(this, checkbox_container, u"HUD is overlay.",
+                   u"Flips HUD overlay mode flag.",
+                   base::BindRepeating(
+                       [](HUDDisplayView* hud_display, views::Checkbox*) {
+                         hud_display->ToggleOverlay();
+                       },
+                       base::Unretained(hud_display))),
+      base::BindRepeating(
+          [](HUDDisplayView* hud_display, views::Checkbox* checkbox) {
+            checkbox->SetChecked(hud_display->IsOverlay());
+          },
+          base::Unretained(hud_display))));
   AddChildView(std::make_unique<AnimationSpeedControl>());
+
+  // Ui Dev Tools controls.
+  constexpr int kUiDevToolsControlButtonMargin = 6;
+  views::View* ui_devtools_controls =
+      AddChildView(std::make_unique<views::View>());
+  ui_devtools_controls
+      ->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical))
+      ->set_cross_axis_alignment(
+          views::BoxLayout::CrossAxisAlignment::kStretch);
+
+  // Tracing controls.
+  constexpr int kTracingControlButtonMargin = 6;
+  views::View* tracing_controls = AddChildView(std::make_unique<views::View>());
+  tracing_controls
+      ->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical))
+      ->set_cross_axis_alignment(
+          views::BoxLayout::CrossAxisAlignment::kStretch);
+
+  ui_devtools_controls->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(kUiDevToolsControlButtonMargin)));
+  ui_dev_tools_control_button_ =
+      ui_devtools_controls->AddChildView(std::make_unique<HUDActionButton>(
+          base::BindRepeating(&HUDSettingsView::OnEnableUiDevToolsButtonPressed,
+                              base::Unretained(this)),
+          std::u16string()));
+  UpdateDevToolsControlButtonLabel();
+
+  tracing_controls->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(kTracingControlButtonMargin)));
+  tracing_control_button_ =
+      tracing_controls->AddChildView(std::make_unique<HUDActionButton>(
+          base::BindRepeating(&HUDSettingsView::OnEnableTracingButtonPressed,
+                              base::Unretained(this)),
+          std::u16string()));
+
+  const int kLabelBorderWidth = 3;
+  tracing_status_message_ =
+      tracing_controls->AddChildView(std::make_unique<views::Label>(
+          std::u16string(), views::style::CONTEXT_LABEL));
+  tracing_status_message_->SetAutoColorReadabilityEnabled(false);
+  tracing_status_message_->SetEnabledColor(kHUDDefaultColor);
+  tracing_status_message_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(/*vertical=*/0, /*horizontal=*/kLabelBorderWidth)));
+  tracing_status_message_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+  views::Label* pii_label = tracing_controls->AddChildView(std::make_unique<
+                                                           views::Label>(
+      u"WARNING: Trace files may contain Personally Identifiable Information. "
+      u"You should use discretion when sharing your trace files.",
+      views::style::CONTEXT_LABEL));
+  pii_label->SetMultiLine(true);
+  pii_label->SetAutoColorReadabilityEnabled(false);
+  pii_label->SetEnabledColor(kHUDDefaultColor);
+  pii_label->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(/*vertical=*/0, /*horizontal=*/kLabelBorderWidth)));
+  pii_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+  UpdateTracingControlButton();
+
+  AshTracingManager::Get().AddObserver(this);
 }
 
-HUDSettingsView::~HUDSettingsView() = default;
+HUDSettingsView::~HUDSettingsView() {
+  AshTracingManager::Get().RemoveObserver(this);
+}
+
+void HUDSettingsView::OnTracingStatusChange() {
+  UpdateTracingControlButton();
+}
+
+void HUDSettingsView::OnEnableUiDevToolsButtonPressed(const ui::Event& event) {
+  if (Shell::Get()->shell_delegate()->IsUiDevToolsStarted()) {
+    Shell::Get()->shell_delegate()->StopUiDevTools();
+  } else {
+    Shell::Get()->shell_delegate()->StartUiDevTools();
+  }
+  UpdateDevToolsControlButtonLabel();
+}
+
+void HUDSettingsView::UpdateDevToolsControlButtonLabel() {
+  if (!Shell::Get()->shell_delegate()->IsUiDevToolsStarted()) {
+    ui_dev_tools_control_button_->SetText(u"Create Ui Dev Tools");
+  } else {
+    const int port = Shell::Get()->shell_delegate()->GetUiDevToolsPort();
+    ui_dev_tools_control_button_->SetText(base::ASCIIToUTF16(
+        base::StringPrintf("Ui Dev Tools: ON, port %d", port).c_str()));
+  }
+}
 
 void HUDSettingsView::ToggleVisibility() {
   const bool is_shown = !GetVisible();
@@ -414,6 +588,38 @@ void HUDSettingsView::ToggleVisibility() {
     }
   }
   SetVisible(is_shown);
+}
+
+void HUDSettingsView::OnEnableTracingButtonPressed(const ui::Event& event) {
+  ToggleTracing();
+}
+
+void HUDSettingsView::ToggleTracingForTesting() {
+  ToggleTracing();
+}
+
+void HUDSettingsView::ToggleTracing() {
+  AshTracingManager& manager = AshTracingManager::Get();
+  tracing_control_button_->DisableWithSpinner();
+  if (manager.IsTracingStarted()) {
+    manager.Stop();
+  } else {
+    manager.Start();
+  }
+}
+
+void HUDSettingsView::UpdateTracingControlButton() {
+  AshTracingManager& manager = AshTracingManager::Get();
+  if (!manager.IsBusy())
+    tracing_control_button_->SetEnabled(true);
+
+  tracing_status_message_->SetText(
+      base::ASCIIToUTF16(manager.GetStatusMessage()));
+  if (manager.IsTracingStarted()) {
+    tracing_control_button_->SetText(u"Stop tracing.");
+  } else {
+    tracing_control_button_->SetText(u"Start tracing.");
+  }
 }
 
 }  // namespace hud_display

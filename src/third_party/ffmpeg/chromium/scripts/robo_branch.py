@@ -15,14 +15,13 @@ from datetime import datetime
 import find_patches
 import os
 import re
-from robo_lib import UserInstructions
-from robo_lib import log
-from subprocess import check_output
+from robo_lib.errors import UserInstructions
+from robo_lib import shell
 
 def IsWorkingDirectoryClean():
   """Return true if and only if the working directory is clean."""
-  return not check_output(["git", "status", "--untracked-files=no",
-          "--porcelain"]).strip()
+  return not shell.output_or_error(
+    ["git", "status", "--untracked-files=no", "--porcelain"])
 
 def RequiresCleanWorkingDirectory(fn):
   def wrapper(*args, **kwargs):
@@ -36,7 +35,7 @@ def CreateAndCheckoutDatedSushiBranch(cfg):
   """Create a dated branch from origin/master and check it out."""
   now = datetime.now()
   branch_name=cfg.sushi_branch_prefix() + now.strftime("%Y-%m-%d-%H-%M-%S")
-  log("Creating dated branch %s" % branch_name)
+  shell.log("Creating dated branch %s" % branch_name)
   # Fetch the latest from origin
   if cfg.Call(["git", "fetch", "origin"]):
     raise Exception("Could not fetch from origin")
@@ -52,11 +51,7 @@ def CreateAndCheckoutDatedSushiBranch(cfg):
   #
   # We don't want to push anything to origin yet, though, just to keep from
   # making a bunch of sushi branches.  We can do it later just as easily.
-  if cfg.Call(["git",
-                             "branch",
-                             "--no-track",
-                             branch_name,
-                             cfg.origin_merge_base()]):
+  if cfg.Call(["git", "branch", "--no-track", branch_name, cfg.origin_merge_base()]):
     raise Exception("Could not create branch")
 
   # NOTE: we could push the remote branch back to origin and start tracking it
@@ -70,35 +65,38 @@ def CreateAndCheckoutDatedSushiBranch(cfg):
 
   cfg.SetBranchName(branch_name)
 
+
 def CreateAndCheckoutDatedSushiBranchIfNeeded(cfg):
   """Create a dated branch from origin/master if we're not already on one."""
   if cfg.sushi_branch_name():
-    log("Already on sushi branch %s" % cfg.sushi_branch_name())
+    shell.log(f"Already on sushi branch {cfg.sushi_branch_name()}")
     return
-
   CreateAndCheckoutDatedSushiBranch(cfg)
+
 
 @RequiresCleanWorkingDirectory
 def MergeUpstreamToSushiBranch(cfg):
-  log("Merging upstream/master to local branch")
+  shell.log("Merging upstream/master to local branch")
   if not cfg.sushi_branch_name():
     raise Exception("Refusing to do a merge on a branch I didn't create")
   if cfg.Call(["git", "fetch", "upstream"]):
     raise Exception("Could not fetch from upstream")
   if cfg.Call(["git", "merge", "upstream/master"]):
     raise UserInstructions("Merge failed -- resolve conflicts manually.")
-  log("Merge has completed successfully")
+  shell.log("Merge has completed successfully")
+
 
 def GetMergeParentsIfAny(cfg):
   """Return the set of commit sha-1s of the merge commit, if one exists, between
   HEAD and where it joins up with origin/master.  Otherwise, return []."""
   # Get all sha1s between us and origin/master
-  sha1s = check_output(["git", "log", "--format=%H",
-          "%s..%s" % (cfg.origin_merge_base(), cfg.branch_name())]).split()
+  sha1s = shell.output_or_error(
+    ["git", "log", "--format=%H",
+     f'{cfg.origin_merge_base()}..{cfg.branch_name()}']).split()
   for sha1 in sha1s:
     # Does |sha1| have more than one parent commit?
-    parents = check_output(["git", "show", "--no-patch", "--format=%P",
-         sha1]).split()
+    parents = shell.output_or_error(
+      ["git", "show", "--no-patch", "--format=%P", sha1]).split()
     if len(parents) > 1:
       return parents
   return []
@@ -113,8 +111,8 @@ def FindUpstreamMergeParent(cfg):
   sha1s = GetMergeParentsIfAny(cfg)
   for sha1 in sha1s:
     # 'not' is correct -- it returns zero if it is an ancestor => upstream.
-    if not cfg.Call(["git", "merge-base", "--is-ancestor", sha1,
-                     "upstream/master"]):
+    cmd = ["git", "merge-base", "--is-ancestor", sha1, "upstream/master"]
+    if not shell.stdout_fail_ok(cmd):
       return sha1
   raise Exception("No upstream merge parent found.  Is the merge committed?")
 
@@ -122,7 +120,7 @@ def MergeUpstreamToSushiBranchIfNeeded(cfg):
   """Start a merge if we've not started one before, or do nothing successfully
   if the merge is complete.  If it's half done, then get mad and exit."""
   if IsMergeCommitOnThisBranch(cfg):
-    log("Merge commit already marked as complete")
+    shell.log("Merge commit already marked as complete")
     return
   # See if a merge is in progress.  "git merge HEAD" will do nothing if it
   # succeeds, but will fail if a merge is in progress.
@@ -136,13 +134,13 @@ def CheckMerge(cfg):
   """Verify that the merge config looks good."""
   # If we haven't built all configs, then we might not be checking everything.
   # The check might look at config for each platform, etc.
-  log("Checking merge for common failures")
+  shell.log("Checking merge for common failures")
   cfg.chdir_to_ffmpeg_home();
   check_merge.main([])
 
 def WritePatchesReadme(cfg):
   """Write the chromium patches file."""
-  log("Generating CHROMIUM.patches file")
+  shell.log("Generating CHROMIUM.patches file")
   cfg.chdir_to_ffmpeg_home();
   with open(os.path.join("chromium", "patches", "README"), "w+") as f:
     find_patches.write_patches_file("HEAD", f)
@@ -159,10 +157,10 @@ def WriteConfigChangesFile(cfg):
 
 def AddAndCommit(cfg, commit_title):
   """Add everything, and commit locally with |commit_title|"""
-  log("Creating local commit %s" % commit_title)
+  shell.log("Creating local commit %s" % commit_title)
   cfg.chdir_to_ffmpeg_home();
   if IsWorkingDirectoryClean():
-    log("No files to commit to %s" % commit_title)
+    shell.log("No files to commit to %s" % commit_title)
     return
   # TODO: Ignore this file, for the "comment out autorename exception" thing.
   if cfg.Call(["git", "add", "-u"]):
@@ -174,8 +172,8 @@ def IsTrackingBranchSet(cfg):
   """Check if the local branch is tracking upstream."""
   # git branch -vv --list ffmpeg_roll
   # ffmpeg_roll 28e7fbe889 [origin/master: behind 8859] Merge branch 'merge-m57'
-  output = check_output(["git", "branch", "-vv", "--list",
-                         cfg.sushi_branch_name()])
+  output = shell.output_or_error(
+    ["git", "branch", "-vv", "--list", cfg.sushi_branch_name()])
   # Note that it might have ": behind" or other things.
   return "[origin/%s" % cfg.sushi_branch_name() in output
 
@@ -184,11 +182,11 @@ def PushToOriginWithoutReviewAndTrackIfNeeded(cfg):
   cfg.chdir_to_ffmpeg_home();
   # If the tracking branch is unset, then assume that we haven't done this yet.
   if IsTrackingBranchSet(cfg):
-    log("Already have local tracking branch")
+    shell.log("Already have local tracking branch")
     return
-  log("Pushing merge to origin without review")
+  shell.log("Pushing merge to origin without review")
   cfg.Call(["git", "push", "origin", cfg.sushi_branch_name()])
-  log("Setting tracking branch")
+  shell.log("Setting tracking branch")
   cfg.Call(["git", "branch", "--set-upstream-to=origin/%s" %
          cfg.sushi_branch_name()])
   # Sanity check.  We don't want to start pushing other commits without review.
@@ -198,7 +196,7 @@ def PushToOriginWithoutReviewAndTrackIfNeeded(cfg):
 def HandleAutorename(cfg):
   # We assume that there is a script written by generate_gn.py that adds /
   # removes files needed for autorenames.  Run it.
-  log("Updating git for any autorename changes")
+  shell.log("Updating git for any autorename changes")
   cfg.chdir_to_ffmpeg_home();
   if cfg.Call(["chmod", "+x", cfg.autorename_git_file()]):
     raise Exception("Unable to chmod %s" % cfg.autorename_git_file())
@@ -208,7 +206,7 @@ def HandleAutorename(cfg):
 def IsCommitOnThisBranch(robo_configuration, commit_title):
   """Detect if we've already committed the |commit_title| locally."""
   # Get all commit titles between us and origin/master
-  titles = check_output(["git", "log", "--format=%s",
+  titles = shell.output_or_error(["git", "log", "--format=%s",
           "origin/master..%s" % robo_configuration.branch_name()])
   return commit_title in titles
 
@@ -217,7 +215,7 @@ def IsPatchesFileDone(robo_configuration):
   if IsCommitOnThisBranch(
                           robo_configuration,
                           robo_configuration.patches_commit_title()):
-    log("Skipping patches file since already committed")
+    shell.log("Skipping patches file since already committed")
     return True
   return False
 
@@ -233,20 +231,20 @@ def IsChromiumReadmeDone(robo_configuration):
   if IsCommitOnThisBranch(
                           robo_configuration,
                           robo_configuration.readme_chromium_commit_title()):
-    log("Skipping README.chromium file since already committed")
+    shell.log("Skipping README.chromium file since already committed")
     return True
   return False
 
 @RequiresCleanWorkingDirectory
 def UpdateChromiumReadmeWithUpstream(robo_configuration):
   """Update the upstream info in README.chromium and commit the result."""
-  log("Updating merge info in README.chromium")
+  shell.log("Updating merge info in README.chromium")
   merge_sha1 = FindUpstreamMergeParent(robo_configuration)
   robo_configuration.chdir_to_ffmpeg_home();
   with open("README.chromium", "r+") as f:
     readme = f.read()
   last_upstream_merge = "Last Upstream Merge:"
-  merge_date = check_output(["git", "log", "-1","--date=format:%b %d %Y",
+  merge_date = shell.output_or_error(["git", "log", "-1","--date=format:%b %d %Y",
                             "--format=%cd", merge_sha1])
   readme = re.sub(r"(Last Upstream Merge:).*\n",
                   r"\1 %s, %s" % (merge_sha1, merge_date),
@@ -266,11 +264,11 @@ def IsUploadedForReview(robo_configuration):
   """Check if the local branch is already uploaded."""
   robo_configuration.chdir_to_ffmpeg_home();
   if not HasGerritIssueNumber(robo_configuration):
-    log("No Gerrit issue number exsts.")
+    shell.log("No Gerrit issue number exsts.")
     return False
 
   if not IsWorkingDirectoryClean():
-    log("Working directory is not clean -- commit changes and update CL");
+    shell.log("Working directory is not clean -- commit changes and update CL");
     return False
 
   # Has been uploaded for review.  Might or might not have been landed yet.
@@ -281,13 +279,13 @@ def IsUploadedForReviewAndLanded(robo_configuration):
   been landed."""
   robo_configuration.chdir_to_ffmpeg_home();
   if not IsUploadedForReview(robo_configuration):
-    log("Is not uploaded for review")
+    shell.log("Is not uploaded for review")
     return False
   # See if origin/sushi and local/sushi are the same.  This check by itself
   # isn't sufficient, since it would return true any time the two are in sync.
-  diff = check_output(["git", "diff",
+  diff = shell.output_or_error(["git", "diff",
                "origin/" + robo_configuration.sushi_branch_name(),
-               robo_configuration.sushi_branch_name()]).strip()
+               robo_configuration.sushi_branch_name()])
   return not diff
 
 @RequiresCleanWorkingDirectory
@@ -297,13 +295,13 @@ def UploadForReview(robo_configuration):
   if IsUploadedForReview(robo_configuration):
     raise Exception(
             "Sushi branch is already uploaded for review!  (try git cl web)")
-  log("Uploading sushi branch for review.")
+  shell.log("Uploading sushi branch for review.")
   os.system("git cl upload")
 
 @RequiresCleanWorkingDirectory
 def TryFakeDepsRoll(robo_configuration):
   """Start a deps roll against the sushi branch, and -1 it."""
-  log("Considering starting a fake deps roll")
+  shell.log("Considering starting a fake deps roll")
 
   # Make sure that we've landed the sushi commits.  Note that this can happen if
   # somebody re-runs robosushi after we upload the commits to Gerrit, but before
@@ -312,7 +310,7 @@ def TryFakeDepsRoll(robo_configuration):
     raise Exception("Cannot start a fake deps roll until gerrit review lands!")
 
   robo_configuration.chdir_to_ffmpeg_home();
-  sha1 = check_output("git", "show", "-1", "--format=%P").strip()
+  sha1 = shell.output_or_error("git", "show", "-1", "--format=%P")
   if not sha1:
     raise Exception("Cannot get sha1 of HEAD for fakes dep roll")
 
@@ -320,5 +318,5 @@ def TryFakeDepsRoll(robo_configuration):
   # TODO: make sure that there's not a deps roll in progress, else we'll keep
   # doing this every time we're run.
   # TODO: get mad otherwise.
-  check_output(["roll-deps.py", "third_party/ffmpeg", sha1])
+  shell.output_or_error(["roll-deps.py", "third_party/ffmpeg", sha1])
   # TODO: -1 it.

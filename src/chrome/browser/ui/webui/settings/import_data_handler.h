@@ -62,6 +62,7 @@ class ImportDataHandler : public SettingsPageUIHandler,
   void FileSelected(const base::FilePath& path,
                     int index,
                     void* params) override;
+  void FileSelectionCanceled(void* params) override;
 
   std::unique_ptr<ImporterList> importer_list_;
 
@@ -69,7 +70,8 @@ class ImportDataHandler : public SettingsPageUIHandler,
   // of deleting itself when import is complete.
   ExternalProcessImporterHost* importer_host_;  // weak
 
-  bool import_did_succeed_;
+  bool import_did_succeed_{false};
+  bool importer_list_loaded_{false};
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 

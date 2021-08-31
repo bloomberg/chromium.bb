@@ -25,6 +25,10 @@
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-test-utils.h"
 
+#if defined(OS_ANDROID)
+#include "ui/android/view_android.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -221,13 +225,9 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, FindInPage_Issue615291) {
 bool ExecuteScriptAndExtractRect(FrameTreeNode* frame,
                                  const std::string& script,
                                  gfx::Rect* out) {
-  std::string result;
   std::string script_and_extract =
-      script +
-      "window.domAutomationController.send(rect.x + ',' + rect.y + ','" +
-      "+ rect.width + ',' + rect.height);";
-  if (!ExecuteScriptAndExtractString(frame, script_and_extract, &result))
-    return false;
+      script + "rect.x + ',' + rect.y + ',' + rect.width + ',' + rect.height;";
+  std::string result = EvalJs(frame, script_and_extract).ExtractString();
 
   std::vector<std::string> tokens = base::SplitString(
       result, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
@@ -271,7 +271,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, ScrollAndZoomIntoView) {
 
   // Start off at a non-origin scroll offset to ensure coordinate conversisons
   // work correctly.
-  ASSERT_TRUE(ExecuteScript(root, "window.scrollTo(3500, 1500);"));
+  ASSERT_TRUE(ExecJs(root, "window.scrollTo(3500, 1500);"));
 
   // Search for a result further down in the iframe.
   auto options = blink::mojom::FindOptions::New();
@@ -458,7 +458,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, DISABLED_AddFrame) {
       "frame.src = '" + url + "';" +
       "document.body.appendChild(frame);";
   delegate()->MarkNextReply();
-  ASSERT_TRUE(ExecuteScript(shell(), script));
+  ASSERT_TRUE(ExecJs(shell(), script));
   delegate()->WaitForNextReply();
 
   // The number of matches should update automatically to include the matches
@@ -494,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(AddFrameAfterNoMatches)) {
       "frame.src = '" + url + "';" +
       "document.body.appendChild(frame);";
   delegate()->MarkNextReply();
-  ASSERT_TRUE(ExecuteScript(shell(), script));
+  ASSERT_TRUE(ExecJs(shell(), script));
   delegate()->WaitForNextReply();
 
   // The matches from the new frame should be found automatically, and the first
@@ -588,7 +588,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(FindNewMatches)) {
 
   // Dynamically add new text to the page. This text contains 5 new matches for
   // "result".
-  ASSERT_TRUE(ExecuteScript(contents()->GetMainFrame(), "addNewText()"));
+  ASSERT_TRUE(ExecJs(contents()->GetMainFrame(), "addNewText()"));
 
   Find("result", options.Clone());
   delegate()->WaitForFinalReply();
@@ -652,9 +652,9 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, DetachFrameWithMatch) {
   EXPECT_EQ(last_request_id(), results.request_id);
   EXPECT_EQ(6, results.number_of_matches);
   EXPECT_EQ(1, results.active_match_ordinal);
-  EXPECT_TRUE(ExecuteScript(shell(),
-                            "document.body.removeChild("
-                            "document.querySelectorAll('iframe')[0])"));
+  EXPECT_TRUE(ExecJs(shell(),
+                     "document.body.removeChild("
+                     "document.querySelectorAll('iframe')[0])"));
 
   Find("result", options.Clone());
   delegate()->WaitForFinalReply();
@@ -723,6 +723,84 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, EmptyActiveMatchRect) {
 
   // The active match rect should be empty.
   EXPECT_EQ(gfx::RectF(), delegate()->active_match_rect());
+}
+
+class MainFrameSizeChangedWaiter : public WebContentsObserver {
+ public:
+  MainFrameSizeChangedWaiter(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  void FrameSizeChanged(RenderFrameHost* render_frame_host,
+                        const gfx::Size& frame_size) override {
+    if (render_frame_host == web_contents()->GetMainFrame())
+      run_loop_.Quit();
+  }
+
+  base::RunLoop run_loop_;
+};
+
+// Tests match rects in the iframe are updated with the size of the main frame,
+// and the active match rect should be in it.
+IN_PROC_BROWSER_TEST_F(FindRequestManagerTest,
+                       RectsUpdateWhenMainFrameSizeChanged) {
+  LoadAndWait("/find_in_page.html");
+
+  // Make a initial size for native view.
+  const int kWidth = 1080;
+  const int kHeight = 1286;
+  gfx::Size size(kWidth, kHeight);
+  contents()->GetNativeView()->OnSizeChanged(kWidth, kHeight);
+  contents()->GetNativeView()->OnPhysicalBackingSizeChanged(size);
+
+  // Make a FindRequest for "result".
+  auto options = blink::mojom::FindOptions::New();
+  options->run_synchronously_for_testing = true;
+  Find("result", options->Clone());
+  delegate()->WaitForFinalReply();
+  FindResults results = delegate()->GetFindResults();
+  EXPECT_EQ(19, results.number_of_matches);
+
+  contents()->RequestFindMatchRects(-1);
+  delegate()->WaitForMatchRects();
+
+  // Change the size of native view.
+  const int kNewHeight = 2121;
+  size = gfx::Size(kWidth, kNewHeight);
+  contents()->GetNativeView()->OnSizeChanged(kWidth, kNewHeight);
+  contents()->GetNativeView()->OnPhysicalBackingSizeChanged(size);
+
+  // Wait for the size of the mainframe to change, and then the position
+  // of match rects should change as expected.
+  MainFrameSizeChangedWaiter(contents()).Wait();
+
+  contents()->RequestFindMatchRects(-1);
+  delegate()->WaitForMatchRects();
+  std::vector<gfx::RectF> new_rects = delegate()->find_match_rects();
+
+  // The first match should be active.
+  EXPECT_EQ(new_rects[0], delegate()->active_match_rect());
+
+  // Check that all active rects (including iframe) matches with corresponding
+  // match rect.
+  for (int i = 1; i < 19; i++) {
+    options->new_session = false;
+    options->forward = true;
+    Find("result", options->Clone());
+    delegate()->WaitForFinalReply();
+
+    FindResults results = delegate()->GetFindResults();
+    EXPECT_EQ(19, results.number_of_matches);
+
+    // Request the find match rects.
+    contents()->RequestFindMatchRects(-1);
+    delegate()->WaitForMatchRects();
+    new_rects = delegate()->find_match_rects();
+
+    // The active rect should be equal to the corresponding match rect.
+    EXPECT_EQ(new_rects[i], delegate()->active_match_rect());
+  }
 }
 
 // TODO(wjmaclean): This test, if re-enabled, may require work to make it

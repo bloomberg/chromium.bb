@@ -6,10 +6,11 @@
 
 #include <utility>
 
-#include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -26,6 +27,35 @@
 
 namespace device {
 
+// TransportAvailabilityCallbackReadiness stores state that tracks whether
+// |FidoRequestHandlerBase| is ready to call
+// |OnTransportAvailabilityEnumerated|.
+struct TransportAvailabilityCallbackReadiness {
+  // callback_made is true if the |OnTransportAvailabilityEnumerated| callback
+  // has been made.
+  bool callback_made = false;
+
+  // ble_information_pending is true if the |OnTransportAvailabilityEnumerated|
+  // callback is pending BLE status information.
+  bool ble_information_pending = false;
+
+  // platform_credential_check_pending is true if the
+  // |OnTransportAvailabilityEnumerated| callback is pending
+  // |OnHasRecognizedPlatformCredentialFilled| being called after the platform
+  // authenticator has decided if it has credentials that are responsive to the
+  // request.
+  bool platform_credential_check_pending = false;
+
+  // num_discoveries_pending is the number of discoveries that are still yet to
+  // signal that they have started.
+  unsigned num_discoveries_pending = 0;
+
+  bool CanMakeCallback() const {
+    return !callback_made && !ble_information_pending &&
+           !platform_credential_check_pending && num_discoveries_pending == 0;
+  }
+};
+
 // FidoRequestHandlerBase::TransportAvailabilityInfo --------------------------
 
 FidoRequestHandlerBase::TransportAvailabilityInfo::TransportAvailabilityInfo() =
@@ -41,25 +71,58 @@ FidoRequestHandlerBase::TransportAvailabilityInfo::operator=(
 FidoRequestHandlerBase::TransportAvailabilityInfo::
     ~TransportAvailabilityInfo() = default;
 
-// FidoRequestHandlerBase::Observer ----------------------
+// FidoRequestHandlerBase::Observer -------------------------------------------
 
 FidoRequestHandlerBase::Observer::~Observer() = default;
 
 // FidoRequestHandlerBase -----------------------------------------------------
 
+FidoRequestHandlerBase::FidoRequestHandlerBase()
+    : transport_availability_callback_readiness_(
+          new TransportAvailabilityCallbackReadiness) {}
+
 FidoRequestHandlerBase::FidoRequestHandlerBase(
     FidoDiscoveryFactory* fido_discovery_factory,
-    const base::flat_set<FidoTransportProtocol>& available_transports) {
-#if defined(OS_WIN)
-  InitDiscoveriesWin(fido_discovery_factory, available_transports);
-#else
+    const base::flat_set<FidoTransportProtocol>& available_transports)
+    : FidoRequestHandlerBase() {
   InitDiscoveries(fido_discovery_factory, available_transports);
-#endif  // !defined(OS_WIN)
 }
 
 void FidoRequestHandlerBase::InitDiscoveries(
     FidoDiscoveryFactory* fido_discovery_factory,
-    const base::flat_set<FidoTransportProtocol>& available_transports) {
+    base::flat_set<FidoTransportProtocol> available_transports) {
+#if defined(OS_WIN)
+  // Try to instantiate the discovery for proxying requests to the native
+  // Windows WebAuthn API; or fall back to using the regular device transport
+  // discoveries if the API is unavailable.
+  auto win_discovery =
+      fido_discovery_factory->MaybeCreateWinWebAuthnApiDiscovery();
+  if (win_discovery) {
+    // The Windows WebAuthn API is available. On this platform, communicating
+    // with authenticator devices directly is blocked by the OS, so we need to
+    // go through the native API instead. No device discoveries may be
+    // instantiated.
+    win_discovery->set_observer(this);
+    discoveries_.push_back(std::move(win_discovery));
+
+    //  Setting |has_win_native_api_authenticator| ensures
+    //  NotifyObserverTransportAvailability() will not be invoked before
+    //  Windows Authenticator has been added. The embedder will be
+    //  responsible for dispatch of the authenticator and whether they
+    //  display any UI in addition to the one provided by the OS.
+    transport_availability_info_.has_win_native_api_authenticator = true;
+
+    // Allow caBLE as a potential additional transport if requested by
+    // the implementing class because it is not subject to the OS'
+    // device communication block (only GetAssertionRequestHandler uses
+    // caBLE). Otherwise, do not instantiate any other transports.
+    base::EraseIf(available_transports, [](auto transport) {
+      return transport !=
+             FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy;
+    });
+  }
+#endif  // defined(OS_WIN)
+
   transport_availability_info_.available_transports = available_transports;
   for (const auto transport : available_transports) {
     std::vector<std::unique_ptr<FidoDiscoveryBase>> discoveries =
@@ -78,80 +141,26 @@ void FidoRequestHandlerBase::InitDiscoveries(
     }
   }
 
+  transport_availability_callback_readiness_->num_discoveries_pending =
+      discoveries_.size();
+
   // Check if the platform supports BLE before trying to get a power manager.
   // CaBLE might be in |available_transports| without actual BLE support under
   // the virtual environment.
   // TODO(nsatragno): Move the BLE power manager logic to CableDiscoveryFactory
   // so we don't need this additional check.
-  bool has_ble = false;
   if (device::BluetoothAdapterFactory::Get()->IsLowEnergySupported() &&
       base::Contains(transport_availability_info_.available_transports,
                      FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)) {
-    has_ble = true;
+    transport_availability_callback_readiness_->ble_information_pending = true;
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&FidoRequestHandlerBase::ConstructBleAdapterPowerManager,
                        weak_factory_.GetWeakPtr()));
   }
 
-  // Initialize |notify_observer_callback_| with the number of times it has to
-  // be invoked before Observer::OnTransportAvailabilityEnumerated is
-  // dispatched.
-  // Essentially this is used to wait until the parts
-  // |transport_availability_info_| are filled out; the
-  // |notify_observer_callback_| is invoked once for each discovery once it is
-  // ready, and additionally:
-  //
-  // 1) [If BLE or caBLE are enabled] once BLE adapters have been enumerated
-  // 2) When |observer_| is set, so that OnTransportAvailabilityEnumerated is
-  // never called before it is set.
-  notify_observer_callback_ = base::BarrierClosure(
-      discoveries_.size() + has_ble + 1,
-      base::BindOnce(
-          &FidoRequestHandlerBase::NotifyObserverTransportAvailability,
-          weak_factory_.GetWeakPtr()));
+  MaybeSignalTransportsEnumerated();
 }
-
-#if defined(OS_WIN)
-void FidoRequestHandlerBase::InitDiscoveriesWin(
-    FidoDiscoveryFactory* fido_discovery_factory,
-    const base::flat_set<FidoTransportProtocol>& available_transports) {
-  // Try to instantiate the discovery for proxying requests to the native
-  // Windows WebAuthn API; or fall back to using the regular device transport
-  // discoveries if the API is unavailable.
-  auto discovery = fido_discovery_factory->MaybeCreateWinWebAuthnApiDiscovery();
-  if (!discovery) {
-    InitDiscoveries(fido_discovery_factory, available_transports);
-    return;
-  }
-
-  // The Windows WebAuthn API is available. On this platform, communicating
-  // with authenticator devices directly is blocked by the OS, so we need to go
-  // through the native API instead. No device discoveries may be instantiated.
-  discovery->set_observer(this);
-  discoveries_.push_back(std::move(discovery));
-
-  //  Setting |has_win_native_api_authenticator| ensures
-  //  NotifyObserverTransportAvailability() will not be invoked before
-  //  Windows Authenticator has been added. The embedder will be
-  //  responsible for dispatch of the authenticator and whether they
-  //  display any UI in addition to the one provided by the OS.
-  transport_availability_info_.has_win_native_api_authenticator = true;
-
-  // Allow caBLE as a potential additional transport if requested by
-  // the implementing class because it is not subject to the OS'
-  // device communication block (only GetAssertionRequestHandler uses
-  // caBLE). Otherwise, do not instantiate any other transports.
-  base::flat_set<FidoTransportProtocol> other_transports = {};
-  if (base::Contains(available_transports,
-                     FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)) {
-    other_transports = {
-        FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
-  }
-
-  InitDiscoveries(fido_discovery_factory, other_transports);
-}
-#endif  // defined(OS_WIN)
 
 FidoRequestHandlerBase::~FidoRequestHandlerBase() {
   CancelActiveAuthenticators();
@@ -191,9 +200,10 @@ void FidoRequestHandlerBase::OnBluetoothAdapterEnumerated(
         FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
   }
 
+  transport_availability_callback_readiness_->ble_information_pending = false;
   transport_availability_info_.is_ble_powered = is_powered_on;
   transport_availability_info_.can_power_on_ble_adapter = can_power_on;
-  notify_observer_callback_.Run();
+  MaybeSignalTransportsEnumerated();
 }
 
 void FidoRequestHandlerBase::OnBluetoothAdapterPowerChanged(
@@ -213,6 +223,14 @@ void FidoRequestHandlerBase::PowerOnBluetoothAdapter() {
 
 base::WeakPtr<FidoRequestHandlerBase> FidoRequestHandlerBase::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+void FidoRequestHandlerBase::set_observer(
+    FidoRequestHandlerBase::Observer* observer) {
+  DCHECK(!observer_) << "Only one observer is supported.";
+  observer_ = observer;
+
+  MaybeSignalTransportsEnumerated();
 }
 
 void FidoRequestHandlerBase::Start() {
@@ -246,6 +264,8 @@ void FidoRequestHandlerBase::DiscoveryStarted(
     FidoDiscoveryBase* discovery,
     bool success,
     std::vector<FidoAuthenticator*> authenticators) {
+  transport_availability_callback_readiness_->num_discoveries_pending--;
+
   if (!success) {
     transport_availability_info_.available_transports.erase(
         discovery->transport());
@@ -253,9 +273,24 @@ void FidoRequestHandlerBase::DiscoveryStarted(
     for (auto* authenticator : authenticators) {
       AuthenticatorAdded(discovery, authenticator);
     }
+
+    // Allow GetAssertionRequestHandler to asynchronously check for known
+    // platform credentials and defer |OnTransportAvailabilityEnumerated| until
+    // that check is done.
+    if (discovery->transport() == FidoTransportProtocol::kInternal &&
+        // |authenticators| can be empty in tests.
+        !authenticators.empty()) {
+      DCHECK(!internal_authenticator_found_);
+      internal_authenticator_found_ = true;
+
+      DCHECK_EQ(authenticators.size(), 1u);
+      transport_availability_callback_readiness_
+          ->platform_credential_check_pending = true;
+      GetPlatformCredentialStatus(authenticators[0]);
+    }
   }
-  DCHECK(notify_observer_callback_);
-  notify_observer_callback_.Run();
+
+  MaybeSignalTransportsEnumerated();
 }
 
 void FidoRequestHandlerBase::AuthenticatorAdded(
@@ -310,13 +345,40 @@ void FidoRequestHandlerBase::AuthenticatorAdded(
 #endif  // defined(OS_WIN)
 }
 
+void FidoRequestHandlerBase::GetPlatformCredentialStatus(
+    FidoAuthenticator* platform_authenticator) {
+  transport_availability_callback_readiness_
+      ->platform_credential_check_pending = false;
+}
+
+void FidoRequestHandlerBase::OnHavePlatformCredentialStatus(
+    std::vector<PublicKeyCredentialUserEntity> user_entities,
+    bool have_credential) {
+  DCHECK(!transport_availability_info_
+              .has_recognized_platform_authenticator_credential.has_value());
+
+  transport_availability_info_
+      .has_recognized_platform_authenticator_credential = have_credential;
+  transport_availability_info_.recognized_platform_authenticator_credentials =
+      std::move(user_entities);
+
+  transport_availability_callback_readiness_
+      ->platform_credential_check_pending = false;
+  MaybeSignalTransportsEnumerated();
+}
+
 bool FidoRequestHandlerBase::HasAuthenticator(
     const std::string& authenticator_id) const {
   return base::Contains(active_authenticators_, authenticator_id);
 }
 
-void FidoRequestHandlerBase::NotifyObserverTransportAvailability() {
-  DCHECK(observer_);
+void FidoRequestHandlerBase::MaybeSignalTransportsEnumerated() {
+  if (!observer_ ||
+      !transport_availability_callback_readiness_->CanMakeCallback()) {
+    return;
+  }
+
+  transport_availability_callback_readiness_->callback_made = true;
   observer_->OnTransportAvailabilityEnumerated(transport_availability_info_);
 }
 

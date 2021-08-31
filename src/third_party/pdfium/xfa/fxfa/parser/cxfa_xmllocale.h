@@ -38,7 +38,7 @@ class CXFA_XMLLocale final : public GCedLocaleIface {
   WideString GetMonthName(int32_t nMonth, bool bAbbr) const override;
   WideString GetDayName(int32_t nWeek, bool bAbbr) const override;
   WideString GetMeridiemName(bool bAM) const override;
-  FX_TIMEZONE GetTimeZone() const override;
+  int GetTimeZoneInMinutes() const override;
   WideString GetEraName(bool bAD) const override;
 
   WideString GetDatePattern(DateTimeSubcategory eType) const override;
@@ -46,7 +46,8 @@ class CXFA_XMLLocale final : public GCedLocaleIface {
   WideString GetNumPattern(NumSubcategory eType) const override;
 
  private:
-  CXFA_XMLLocale(std::unique_ptr<CFX_XMLDocument> root, CFX_XMLElement* locale);
+  CXFA_XMLLocale(std::unique_ptr<CFX_XMLDocument> root,
+                 const CFX_XMLElement* locale);
 
   WideString GetPattern(CFX_XMLElement* pElement,
                         WideStringView bsTag,
@@ -56,7 +57,7 @@ class CXFA_XMLLocale final : public GCedLocaleIface {
                                bool bAbbr) const;
 
   std::unique_ptr<CFX_XMLDocument> xml_doc_;
-  UnownedPtr<CFX_XMLElement> locale_;
+  UnownedPtr<const CFX_XMLElement> locale_;
 };
 
 #endif  // XFA_FXFA_PARSER_CXFA_XMLLOCALE_H_

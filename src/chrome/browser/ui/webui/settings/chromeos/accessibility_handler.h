@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "components/soda/soda_installer.h"
 
 namespace base {
 class ListValue;
@@ -18,7 +19,8 @@ class Profile;
 namespace chromeos {
 namespace settings {
 
-class AccessibilityHandler : public ::settings::SettingsPageUIHandler {
+class AccessibilityHandler : public ::settings::SettingsPageUIHandler,
+                             public speech::SodaInstaller::Observer {
  public:
   explicit AccessibilityHandler(Profile* profile);
   ~AccessibilityHandler() override;
@@ -32,6 +34,8 @@ class AccessibilityHandler : public ::settings::SettingsPageUIHandler {
   void HandleManageA11yPageReady(const base::ListValue* args);
 
  private:
+  friend class AccessibilityHandlerTest;
+
   // Callback for the messages to show settings for ChromeVox or
   // Select To Speak.
   void HandleShowChromeVoxSettings(const base::ListValue* args);
@@ -39,8 +43,22 @@ class AccessibilityHandler : public ::settings::SettingsPageUIHandler {
   void HandleSetStartupSoundEnabled(const base::ListValue* args);
   void HandleRecordSelectedShowShelfNavigationButtonsValue(
       const base::ListValue* args);
+  void HandleShowChromeVoxTutorial(const base::ListValue* args);
 
   void OpenExtensionOptionsPage(const char extension_id[]);
+
+  void MaybeAddSodaInstallerObserver();
+
+  // SodaInstaller::Observer:
+  void OnSodaInstalled() override;
+  void OnSodaLanguagePackInstalled(
+      speech::LanguageCode language_code) override {}
+  void OnSodaProgress(int progress) override;
+  void OnSodaLanguagePackProgress(int language_progress,
+                                  speech::LanguageCode language_code) override {
+  }
+  void OnSodaError() override;
+  void OnSodaLanguagePackError(speech::LanguageCode language_code) override {}
 
   Profile* profile_;  // Weak pointer.
 

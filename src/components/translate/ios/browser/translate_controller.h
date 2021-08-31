@@ -47,7 +47,7 @@ class TranslateController : public web::WebStateObserver {
     // Called when the translation is complete.
     // |error_type| Indicates error code.
     virtual void OnTranslateComplete(TranslateErrors::Type error_type,
-                                     const std::string& original_language,
+                                     const std::string& source_language,
                                      double translation_time) = 0;
   };
 
@@ -127,7 +127,7 @@ class TranslateController : public web::WebStateObserver {
   std::unique_ptr<network::SimpleURLLoader> script_fetcher_;
 
   // Subscription for JS message.
-  std::unique_ptr<web::WebState::ScriptCommandSubscription> subscription_;
+  base::CallbackListSubscription subscription_;
 
   Observer* observer_;
   __strong JsTranslateManager* js_manager_;

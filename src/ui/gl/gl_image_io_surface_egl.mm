@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/scoped_binders.h"
@@ -211,7 +212,7 @@ bool GLImageIOSurfaceEGL::BindTexImageImpl(unsigned target,
     const EGLint attribs[] = {
       EGL_WIDTH,                         size_.width(),
       EGL_HEIGHT,                        size_.height(),
-      EGL_IOSURFACE_PLANE_ANGLE,         0,
+      EGL_IOSURFACE_PLANE_ANGLE,         io_surface_plane_,
       EGL_TEXTURE_TARGET,                texture_target_,
       EGL_TEXTURE_INTERNAL_FORMAT_ANGLE, formatType.format,
       EGL_TEXTURE_FORMAT,                EGL_TEXTURE_RGBA,

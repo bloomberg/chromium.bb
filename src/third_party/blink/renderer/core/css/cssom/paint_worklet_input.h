@@ -31,6 +31,8 @@ class CORE_EXPORT PaintWorkletInput : public cc::PaintWorkletInput {
   const FloatSize& ContainerSize() const { return container_size_; }
 
  protected:
+  PaintWorkletInput(const FloatSize& container_size, int worklet_id)
+      : container_size_(container_size), worklet_id_(worklet_id) {}
   PaintWorkletInput(const FloatSize& container_size,
                     int worklet_id,
                     cc::PaintWorkletInput::PropertyKeys property_keys)
@@ -46,14 +48,7 @@ class CORE_EXPORT PaintWorkletInput : public cc::PaintWorkletInput {
 
   // List of properties associated with this PaintWorkletInput.
   // Kept and initialized here, but used in CC, so using C++ std library types.
-  // TODO(xidachen): make this structure account for native property.
-  // Instead of pair<string, CompositorElementId>, define
-  // struct PropertyKey {
-  //   std::string custom_property_name;
-  //   enum native_property_type;
-  //   CompositorElementId element_id;
-  // }
-  // PropId uniquely identifies a property value, potentially being animated by
+  // PropertyKey uniquely identifies a property, potentially being animated by
   // the compositor, used by this PaintWorklet as an input at paint time. The
   // worklet provides a list of the properties that it uses as inputs.
   cc::PaintWorkletInput::PropertyKeys property_keys_;

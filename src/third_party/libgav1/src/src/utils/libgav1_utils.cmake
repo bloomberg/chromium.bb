@@ -39,8 +39,6 @@ list(APPEND libgav1_utils_sources
             "${libgav1_source}/utils/logging.cc"
             "${libgav1_source}/utils/logging.h"
             "${libgav1_source}/utils/memory.h"
-            "${libgav1_source}/utils/parameter_tree.cc"
-            "${libgav1_source}/utils/parameter_tree.h"
             "${libgav1_source}/utils/queue.h"
             "${libgav1_source}/utils/raw_bit_reader.cc"
             "${libgav1_source}/utils/raw_bit_reader.h"

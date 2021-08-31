@@ -61,7 +61,9 @@ ALWAYS_INLINE void* PartitionTlsGet(PartitionTlsKey key) {
   // when it succeeds."
   DWORD saved_error = GetLastError();
   void* ret = TlsGetValue(key);
-  SetLastError(saved_error);
+  // Only non-zero errors need to be restored.
+  if (UNLIKELY(saved_error))
+    SetLastError(saved_error);
   return ret;
 }
 
@@ -69,6 +71,10 @@ ALWAYS_INLINE void PartitionTlsSet(PartitionTlsKey key, void* value) {
   BOOL ret = TlsSetValue(key, value);
   PA_DCHECK(ret);
 }
+
+// Registers a callback for DLL_PROCESS_DETACH events.
+void PartitionTlsSetOnDllProcessDetach(void (*callback)());
+
 #else
 // Not supported.
 typedef int PartitionTlsKey;

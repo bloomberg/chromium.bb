@@ -12,11 +12,11 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
+#include "extensions/browser/api/declarative_net_request/file_backed_ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/common/extension_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace extensions {
 
@@ -28,16 +28,17 @@ struct Rule;
 
 namespace declarative_net_request {
 enum class DynamicRuleUpdateAction;
+struct RulesCountPair;
 
 // Holds the data relating to the loading of a single ruleset.
 class RulesetInfo {
  public:
-  explicit RulesetInfo(RulesetSource source);
+  explicit RulesetInfo(FileBackedRulesetSource source);
   ~RulesetInfo();
   RulesetInfo(RulesetInfo&&);
   RulesetInfo& operator=(RulesetInfo&&);
 
-  const RulesetSource& source() const { return source_; }
+  const FileBackedRulesetSource& source() const { return source_; }
 
   // Returns the ownership of the ruleset matcher to the caller. Must only be
   // called for a successful load.
@@ -46,21 +47,21 @@ class RulesetInfo {
   // Clients should set a new checksum if the checksum stored in prefs should
   // be updated.
   void set_new_checksum(int new_checksum) { new_checksum_ = new_checksum; }
-  base::Optional<int> new_checksum() const { return new_checksum_; }
+  absl::optional<int> new_checksum() const { return new_checksum_; }
 
   // The expected checksum for the indexed ruleset.
   void set_expected_checksum(int checksum) { expected_checksum_ = checksum; }
-  base::Optional<int> expected_checksum() const { return expected_checksum_; }
+  absl::optional<int> expected_checksum() const { return expected_checksum_; }
 
   // Whether re-indexing of the ruleset was successful.
   void set_reindexing_successful(bool val) { reindexing_successful_ = val; }
-  base::Optional<bool> reindexing_successful() const {
+  absl::optional<bool> reindexing_successful() const {
     return reindexing_successful_;
   }
 
   // Returns the result of loading the ruleset. The return value is valid (not
-  // equal to base::nullopt) iff CreateVerifiedMatcher() has been called.
-  const base::Optional<LoadRulesetResult>& load_ruleset_result() const;
+  // equal to absl::nullopt) iff CreateVerifiedMatcher() has been called.
+  const absl::optional<LoadRulesetResult>& load_ruleset_result() const;
 
   // Whether the ruleset loaded successfully.
   bool did_load_successfully() const {
@@ -72,21 +73,21 @@ class RulesetInfo {
   void CreateVerifiedMatcher();
 
  private:
-  RulesetSource source_;
+  FileBackedRulesetSource source_;
 
   // The expected checksum of the indexed ruleset.
-  base::Optional<int> expected_checksum_;
+  absl::optional<int> expected_checksum_;
 
   // Stores the result of creating a verified matcher from the |source_|.
   std::unique_ptr<RulesetMatcher> matcher_;
-  base::Optional<LoadRulesetResult> load_ruleset_result_;
+  absl::optional<LoadRulesetResult> load_ruleset_result_;
 
   // The new checksum to be persisted to prefs. A new checksum should only be
   // set in case of flatbuffer version mismatch.
-  base::Optional<int> new_checksum_;
+  absl::optional<int> new_checksum_;
 
   // Whether the reindexing of this ruleset was successful.
-  base::Optional<bool> reindexing_successful_;
+  absl::optional<bool> reindexing_successful_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesetInfo);
 };
@@ -124,11 +125,12 @@ class FileSequenceHelper {
   // thread once loading is done with the LoadRequestData and an optional error
   // string.
   using UpdateDynamicRulesUICallback =
-      base::OnceCallback<void(LoadRequestData, base::Optional<std::string>)>;
+      base::OnceCallback<void(LoadRequestData, absl::optional<std::string>)>;
   void UpdateDynamicRules(
       LoadRequestData load_data,
       std::vector<int> rule_ids_to_remove,
       std::vector<api::declarative_net_request::Rule> rules_to_add,
+      const RulesCountPair& rule_limit,
       UpdateDynamicRulesUICallback ui_callback) const;
 
  private:

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/http/quic_send_control_stream.h"
+#include "quic/core/http/quic_send_control_stream.h"
 
 #include <utility>
 
 #include "absl/strings/escaping.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_config_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "quic/core/crypto/null_encrypter.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/test_tools/quic_config_peer.h"
+#include "quic/test_tools/quic_spdy_session_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "common/test_tools/quiche_test_utils.h"
 
 namespace quic {
 namespace test {
@@ -48,7 +48,7 @@ struct TestParams {
 
 // Used by ::testing::PrintToStringParamName().
 std::string PrintToString(const TestParams& tp) {
-  return quiche::QuicheStrCat(
+  return absl::StrCat(
       ParsedQuicVersionToString(tp.version), "_",
       (tp.perspective == Perspective::IS_CLIENT ? "client" : "server"));
 }
@@ -133,6 +133,25 @@ TEST_P(QuicSendControlStreamTest, WriteSettings) {
       "4040"  // 0x40 as the reserved frame type
       "01"    // 1 byte frame length
       "61");  //  payload "a"
+  if (GetQuicReloadableFlag(quic_h3_datagram)) {
+    expected_write_data = absl::HexStringToBytes(
+        "00"    // stream type: control stream
+        "04"    // frame type: SETTINGS frame
+        "0e"    // frame length
+        "01"    // SETTINGS_QPACK_MAX_TABLE_CAPACITY
+        "40ff"  // 255
+        "06"    // SETTINGS_MAX_HEADER_LIST_SIZE
+        "4400"  // 1024
+        "07"    // SETTINGS_QPACK_BLOCKED_STREAMS
+        "10"    // 16
+        "4040"  // 0x40 as the reserved settings id
+        "14"    // 20
+        "4276"  // SETTINGS_H3_DATAGRAM
+        "01"    // 1
+        "4040"  // 0x40 as the reserved frame type
+        "01"    // 1 byte frame length
+        "61");  //  payload "a"
+  }
 
   auto buffer = std::make_unique<char[]>(expected_write_data.size());
   QuicDataWriter writer(expected_write_data.size(), buffer.get());
@@ -158,8 +177,9 @@ TEST_P(QuicSendControlStreamTest, WriteSettings) {
       .WillOnce(Invoke(save_write_data));
 
   send_control_stream_->MaybeSendSettingsFrame();
-  EXPECT_EQ(expected_write_data,
-            absl::string_view(writer.data(), writer.length()));
+  quiche::test::CompareCharArraysWithHexError(
+      "settings", writer.data(), writer.length(), expected_write_data.data(),
+      expected_write_data.length());
 }
 
 TEST_P(QuicSendControlStreamTest, WriteSettingsOnlyOnce) {

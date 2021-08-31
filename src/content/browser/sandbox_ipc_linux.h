@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://chromium.googlesource.com/chromium/src/+/master/docs/linux/sandbox_ipc.md
+// https://chromium.googlesource.com/chromium/src/+/main/docs/linux/sandbox_ipc.md
 
 #ifndef CONTENT_BROWSER_SANDBOX_IPC_LINUX_H_
 #define CONTENT_BROWSER_SANDBOX_IPC_LINUX_H_
@@ -49,4 +49,4 @@ class SandboxIPCHandler : public base::DelegateSimpleThread::Delegate {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_SANDBOX_IPC_LINUX_H_
+#endif  // CONTENT_BROWSER_SANDBOX_IPC_LINUX_H_

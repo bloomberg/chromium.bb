@@ -25,6 +25,7 @@
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/gestures/gesture_recognizer_impl_mac.h"
@@ -383,7 +384,7 @@ void NativeWidgetMac::GetWindowPlacement(
     *show_state = ui::SHOW_STATE_NORMAL;
 }
 
-bool NativeWidgetMac::SetWindowTitle(const base::string16& title) {
+bool NativeWidgetMac::SetWindowTitle(const std::u16string& title) {
   if (!ns_window_host_)
     return false;
   return ns_window_host_->SetWindowTitle(title);
@@ -552,10 +553,15 @@ void NativeWidgetMac::Show(ui::WindowShowState show_state,
       break;
   }
   auto window_state = WindowVisibilityState::kShowAndActivateWindow;
-  if (show_state == ui::SHOW_STATE_INACTIVE)
+  if (show_state == ui::SHOW_STATE_INACTIVE) {
     window_state = WindowVisibilityState::kShowInactive;
-  else if (show_state == ui::SHOW_STATE_MINIMIZED)
+  } else if (show_state == ui::SHOW_STATE_MINIMIZED) {
     window_state = WindowVisibilityState::kHideWindow;
+  } else if (show_state == ui::SHOW_STATE_DEFAULT) {
+    window_state = delegate_->CanActivate()
+                       ? window_state
+                       : WindowVisibilityState::kShowInactive;
+  }
   GetNSWindowMojo()->SetVisibilityState(window_state);
 
   // Ignore the SetInitialFocus() result. BridgedContentView should get
@@ -665,7 +671,7 @@ void NativeWidgetMac::SetOpacity(float opacity) {
 void NativeWidgetMac::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
   if (!GetNSWindowMojo())
     return;
-  GetNSWindowMojo()->SetContentAspectRatio(aspect_ratio);
+  GetNSWindowMojo()->SetAspectRatio(aspect_ratio);
 }
 
 void NativeWidgetMac::FlashFrame(bool flash_frame) {
@@ -743,12 +749,12 @@ Widget::MoveLoopResult NativeWidgetMac::RunMoveLoop(
     Widget::MoveLoopSource source,
     Widget::MoveLoopEscapeBehavior escape_behavior) {
   if (!GetInProcessNSWindowBridge())
-    return Widget::MOVE_LOOP_CANCELED;
+    return Widget::MoveLoopResult::kCanceled;
 
   ReleaseCapture();
   return GetInProcessNSWindowBridge()->RunMoveLoop(drag_offset)
-             ? Widget::MOVE_LOOP_SUCCESSFUL
-             : Widget::MOVE_LOOP_CANCELED;
+             ? Widget::MoveLoopResult::kSuccessful
+             : Widget::MoveLoopResult::kCanceled;
 }
 
 void NativeWidgetMac::EndMoveLoop() {
@@ -795,6 +801,11 @@ bool NativeWidgetMac::IsTranslucentWindowOpacitySupported() const {
 ui::GestureRecognizer* NativeWidgetMac::GetGestureRecognizer() {
   static base::NoDestructor<ui::GestureRecognizerImplMac> recognizer;
   return recognizer.get();
+}
+
+ui::GestureConsumer* NativeWidgetMac::GetGestureConsumer() {
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 void NativeWidgetMac::OnSizeConstraintsChanged() {
@@ -937,10 +948,6 @@ void Widget::CloseAllSecondaryWidgets() {
   }
 }
 
-const ui::NativeTheme* Widget::GetNativeTheme() const {
-  return ui::NativeTheme::GetInstanceForNativeUi();
-}
-
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -975,8 +982,11 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
       NativeWidgetMacNSWindowHost::GetFromNativeView(native_view);
   if (!window_host)
     return nullptr;
-  while (window_host->parent())
+  while (window_host->parent()) {
+    if (window_host->native_widget_mac()->GetWidget()->is_top_level())
+      break;
     window_host = window_host->parent();
+  }
   return window_host->native_widget_mac();
 }
 

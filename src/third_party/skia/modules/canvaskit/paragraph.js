@@ -69,10 +69,11 @@
 
       s['heightMultiplier'] = s['heightMultiplier'] || 0;
       s['maxLines'] = s['maxLines'] || 0;
+      s['strutStyle'] = strutStyle(s['strutStyle']);
       s['textAlign'] = s['textAlign'] || CanvasKit.TextAlign.Start;
       s['textDirection'] = s['textDirection'] || CanvasKit.TextDirection.LTR;
+      s['textHeightBehavior'] = s['textHeightBehavior'] || CanvasKit.TextHeightBehavior.All;
       s['textStyle'] = CanvasKit.TextStyle(s['textStyle']);
-      s['strutStyle'] = strutStyle(s['strutStyle']);
       return s;
     };
 
@@ -101,6 +102,7 @@
         s['fontStyle'] = fontStyle(s['fontStyle']);
         s['fontSize'] = s['fontSize'] || 0;
         s['heightMultiplier'] = s['heightMultiplier'] || 0;
+        s['halfLeading'] = s['halfLeading'] || false;
         s['leading'] = s['leading'] || 0;
         s['forceStrutHeight'] = s['forceStrutHeight'] || false;
         return s;
@@ -120,6 +122,7 @@
       s['letterSpacing'] = s['letterSpacing'] || 0;
       s['wordSpacing'] = s['wordSpacing'] || 0;
       s['heightMultiplier'] = s['heightMultiplier'] || 0;
+      s['halfLeading'] = s['halfLeading'] || false;
       if (s['locale']) {
         var str = s['locale'];
         s['_localePtr'] = cacheOrCopyString(str);
@@ -132,11 +135,18 @@
       if (s['shadows']) {
         var shadows = s['shadows'];
         var shadowColors = shadows.map(function(s) { return s['color'] || CanvasKit.BLACK; });
-        var shadowOffsets = shadows.map(function(s) { return s['offset'] || [0, 0]; });
         var shadowBlurRadii = shadows.map(function(s) { return s['blurRadius'] || 0.0; });
         s['_shadowLen'] = shadows.length;
+        var ptr = CanvasKit._malloc(shadows.length * 2, 'HEAPF32');
+        var adjustedPtr = ptr / 4;  // 4 bytes per float
+        for (var i = 0; i < shadows.length; i++) {
+          var offset = shadows[i]['offset'] || [0, 0];
+          CanvasKit.HEAPF32[adjustedPtr] = offset[0];
+          CanvasKit.HEAPF32[adjustedPtr + 1] = offset[1];
+          adjustedPtr += 2;
+        }
         s['_shadowColorsPtr'] = copyFlexibleColorArray(shadowColors).colorPtr;
-        s['_shadowOffsetsPtr'] = copy2dArray(shadowOffsets, 'HEAPF32');
+        s['_shadowOffsetsPtr'] = ptr;
         s['_shadowBlurRadiiPtr'] = copy1dArray(shadowBlurRadii, 'HEAPF32');
       } else {
         s['_shadowLen'] = 0;
@@ -252,6 +262,17 @@
         var result =  CanvasKit.ParagraphBuilder._MakeFromFontProvider(paragraphStyle, fontProvider);
         freeArrays(paragraphStyle['textStyle']);
         return result;
+    };
+
+    CanvasKit.ParagraphBuilder.ShapeText = function(text, blocks, width) {
+        let length = 0;
+        for (const b of blocks) {
+            length += b.length;
+        }
+        if (length !== text.length) {
+            throw "Accumulated block lengths must equal text.length";
+        }
+        return CanvasKit.ParagraphBuilder._ShapeText(text, blocks, width);
     };
 
     CanvasKit.ParagraphBuilder.prototype.pushStyle = function(textStyle) {

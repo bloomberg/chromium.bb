@@ -14,17 +14,11 @@
 
 #include "dawn_native/d3d12/CommandBufferD3D12.h"
 
-#include "common/Assert.h"
 #include "dawn_native/BindGroupTracker.h"
-#include "dawn_native/CommandEncoder.h"
 #include "dawn_native/CommandValidation.h"
-#include "dawn_native/Commands.h"
-#include "dawn_native/EnumMaskIterator.h"
 #include "dawn_native/RenderBundle.h"
 #include "dawn_native/d3d12/BindGroupD3D12.h"
 #include "dawn_native/d3d12/BindGroupLayoutD3D12.h"
-#include "dawn_native/d3d12/BufferD3D12.h"
-#include "dawn_native/d3d12/CommandRecordingContext.h"
 #include "dawn_native/d3d12/ComputePipelineD3D12.h"
 #include "dawn_native/d3d12/DeviceD3D12.h"
 #include "dawn_native/d3d12/PipelineLayoutD3D12.h"
@@ -32,15 +26,9 @@
 #include "dawn_native/d3d12/QuerySetD3D12.h"
 #include "dawn_native/d3d12/RenderPassBuilderD3D12.h"
 #include "dawn_native/d3d12/RenderPipelineD3D12.h"
-#include "dawn_native/d3d12/SamplerD3D12.h"
-#include "dawn_native/d3d12/SamplerHeapCacheD3D12.h"
 #include "dawn_native/d3d12/ShaderVisibleDescriptorAllocatorD3D12.h"
 #include "dawn_native/d3d12/StagingDescriptorAllocatorD3D12.h"
-#include "dawn_native/d3d12/TextureCopySplitter.h"
-#include "dawn_native/d3d12/TextureD3D12.h"
 #include "dawn_native/d3d12/UtilsD3D12.h"
-
-#include <deque>
 
 namespace dawn_native { namespace d3d12 {
 
@@ -60,7 +48,7 @@ namespace dawn_native { namespace d3d12 {
         D3D12_QUERY_TYPE D3D12QueryType(wgpu::QueryType type) {
             switch (type) {
                 case wgpu::QueryType::Occlusion:
-                    return D3D12_QUERY_TYPE_OCCLUSION;
+                    return D3D12_QUERY_TYPE_BINARY_OCCLUSION;
                 case wgpu::QueryType::PipelineStatistics:
                     return D3D12_QUERY_TYPE_PIPELINE_STATISTICS;
                 case wgpu::QueryType::Timestamp:
@@ -93,41 +81,8 @@ namespace dawn_native { namespace d3d12 {
                    copySize.width == srcSize.width &&      //
                    copySize.height == dstSize.height &&    //
                    copySize.height == srcSize.height &&    //
-                   copySize.depth == dstSize.depth &&      //
-                   copySize.depth == srcSize.depth;
-        }
-
-        void RecordCopyTextureToBufferFromTextureCopySplit(ID3D12GraphicsCommandList* commandList,
-                                                           const Texture2DCopySplit& baseCopySplit,
-                                                           Buffer* buffer,
-                                                           uint64_t baseOffset,
-                                                           uint64_t bufferBytesPerRow,
-                                                           Texture* texture,
-                                                           uint32_t textureMiplevel,
-                                                           uint32_t textureSlice,
-                                                           Aspect aspect) {
-            const D3D12_TEXTURE_COPY_LOCATION textureLocation =
-                ComputeTextureCopyLocationForTexture(texture, textureMiplevel, textureSlice,
-                                                     aspect);
-
-            const uint64_t offset = baseCopySplit.offset + baseOffset;
-
-            for (uint32_t i = 0; i < baseCopySplit.count; ++i) {
-                const Texture2DCopySplit::CopyInfo& info = baseCopySplit.copies[i];
-
-                // TODO(jiawei.shao@intel.com): pre-compute bufferLocation and sourceRegion as
-                // members in Texture2DCopySplit::CopyInfo.
-                const D3D12_TEXTURE_COPY_LOCATION bufferLocation =
-                    ComputeBufferLocationForCopyTextureRegion(texture, buffer->GetD3D12Resource(),
-                                                              info.bufferSize, offset,
-                                                              bufferBytesPerRow, aspect);
-                const D3D12_BOX sourceRegion =
-                    ComputeD3D12BoxFromOffsetAndSize(info.textureOffset, info.copySize);
-
-                commandList->CopyTextureRegion(&bufferLocation, info.bufferOffset.x,
-                                               info.bufferOffset.y, info.bufferOffset.z,
-                                               &textureLocation, &sourceRegion);
-            }
+                   copySize.depthOrArrayLayers == dstSize.depthOrArrayLayers &&  //
+                   copySize.depthOrArrayLayers == srcSize.depthOrArrayLayers;
         }
 
         void RecordWriteTimestampCmd(ID3D12GraphicsCommandList* commandList,
@@ -137,6 +92,163 @@ namespace dawn_native { namespace d3d12 {
             commandList->EndQuery(querySet->GetQueryHeap(), D3D12_QUERY_TYPE_TIMESTAMP,
                                   cmd->queryIndex);
         }
+
+        void RecordFirstIndexOffset(ID3D12GraphicsCommandList* commandList,
+                                    RenderPipeline* pipeline,
+                                    uint32_t firstVertex,
+                                    uint32_t firstInstance) {
+            const FirstOffsetInfo& firstOffsetInfo = pipeline->GetFirstOffsetInfo();
+            if (!firstOffsetInfo.usesVertexIndex && !firstOffsetInfo.usesInstanceIndex) {
+                return;
+            }
+            std::array<uint32_t, 2> offsets{};
+            uint32_t count = 0;
+            if (firstOffsetInfo.usesVertexIndex) {
+                offsets[firstOffsetInfo.vertexIndexOffset / sizeof(uint32_t)] = firstVertex;
+                ++count;
+            }
+            if (firstOffsetInfo.usesInstanceIndex) {
+                offsets[firstOffsetInfo.instanceIndexOffset / sizeof(uint32_t)] = firstInstance;
+                ++count;
+            }
+            PipelineLayout* layout = ToBackend(pipeline->GetLayout());
+            commandList->SetGraphicsRoot32BitConstants(layout->GetFirstIndexOffsetParameterIndex(),
+                                                       count, offsets.data(), 0);
+        }
+
+        bool ShouldCopyUsingTemporaryBuffer(DeviceBase* device,
+                                            const TextureCopy& srcCopy,
+                                            const TextureCopy& dstCopy) {
+            // Currently we only need the workaround for an Intel D3D12 driver issue.
+            if (device->IsToggleEnabled(
+                    Toggle::
+                        UseTempBufferInSmallFormatTextureToTextureCopyFromGreaterToLessMipLevel)) {
+                bool copyToLesserLevel = srcCopy.mipLevel > dstCopy.mipLevel;
+                ASSERT(srcCopy.texture->GetFormat().format == dstCopy.texture->GetFormat().format);
+
+                // GetAspectInfo(aspect) requires HasOneBit(aspect) == true, plus the texel block
+                // sizes of depth stencil formats are always no less than 4 bytes.
+                bool isSmallColorFormat =
+                    HasOneBit(srcCopy.aspect) &&
+                    srcCopy.texture->GetFormat().GetAspectInfo(srcCopy.aspect).block.byteSize < 4u;
+                if (copyToLesserLevel && isSmallColorFormat) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        MaybeError RecordCopyTextureWithTemporaryBuffer(CommandRecordingContext* recordingContext,
+                                                        const TextureCopy& srcCopy,
+                                                        const TextureCopy& dstCopy,
+                                                        const Extent3D& copySize) {
+            ASSERT(srcCopy.texture->GetFormat().format == dstCopy.texture->GetFormat().format);
+            ASSERT(srcCopy.aspect == dstCopy.aspect);
+            dawn_native::Format format = srcCopy.texture->GetFormat();
+            const TexelBlockInfo& blockInfo = format.GetAspectInfo(srcCopy.aspect).block;
+            ASSERT(copySize.width % blockInfo.width == 0);
+            uint32_t widthInBlocks = copySize.width / blockInfo.width;
+            ASSERT(copySize.height % blockInfo.height == 0);
+            uint32_t heightInBlocks = copySize.height / blockInfo.height;
+
+            // Create tempBuffer
+            uint32_t bytesPerRow =
+                Align(blockInfo.byteSize * widthInBlocks, kTextureBytesPerRowAlignment);
+            uint32_t rowsPerImage = heightInBlocks;
+
+            // The size of temporary buffer isn't needed to be a multiple of 4 because we don't
+            // need to set mappedAtCreation to be true.
+            auto tempBufferSize =
+                ComputeRequiredBytesInCopy(blockInfo, copySize, bytesPerRow, rowsPerImage);
+
+            BufferDescriptor tempBufferDescriptor;
+            tempBufferDescriptor.usage = wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
+            tempBufferDescriptor.size = tempBufferSize.AcquireSuccess();
+            Device* device = ToBackend(srcCopy.texture->GetDevice());
+            Ref<BufferBase> tempBufferBase;
+            DAWN_TRY_ASSIGN(tempBufferBase, device->CreateBuffer(&tempBufferDescriptor));
+            Ref<Buffer> tempBuffer = ToBackend(std::move(tempBufferBase));
+
+            // Copy from source texture into tempBuffer
+            Texture* srcTexture = ToBackend(srcCopy.texture).Get();
+            tempBuffer->TrackUsageAndTransitionNow(recordingContext, wgpu::BufferUsage::CopyDst);
+            BufferCopy bufferCopy;
+            bufferCopy.buffer = tempBuffer;
+            bufferCopy.offset = 0;
+            bufferCopy.bytesPerRow = bytesPerRow;
+            bufferCopy.rowsPerImage = rowsPerImage;
+            RecordCopyTextureToBuffer(recordingContext->GetCommandList(), srcCopy, bufferCopy,
+                                      srcTexture, tempBuffer.Get(), copySize);
+
+            // Copy from tempBuffer into destination texture
+            tempBuffer->TrackUsageAndTransitionNow(recordingContext, wgpu::BufferUsage::CopySrc);
+            Texture* dstTexture = ToBackend(dstCopy.texture).Get();
+            RecordCopyBufferToTexture(recordingContext, dstCopy, tempBuffer->GetD3D12Resource(), 0,
+                                      bytesPerRow, rowsPerImage, copySize, dstTexture,
+                                      dstCopy.aspect);
+
+            // Save tempBuffer into recordingContext
+            recordingContext->AddToTempBuffers(std::move(tempBuffer));
+
+            return {};
+        }
+
+        // Records the necessary barriers for a synchronization scope using the resource usage
+        // data pre-computed in the frontend. Also performs lazy initialization if required.
+        // Returns whether any UAV are used in the synchronization scope.
+        bool TransitionAndClearForSyncScope(CommandRecordingContext* commandContext,
+                                            const SyncScopeResourceUsage& usages) {
+            std::vector<D3D12_RESOURCE_BARRIER> barriers;
+
+            ID3D12GraphicsCommandList* commandList = commandContext->GetCommandList();
+
+            wgpu::BufferUsage bufferUsages = wgpu::BufferUsage::None;
+
+            for (size_t i = 0; i < usages.buffers.size(); ++i) {
+                Buffer* buffer = ToBackend(usages.buffers[i]);
+
+                // TODO(jiawei.shao@intel.com): clear storage buffers with
+                // ClearUnorderedAccessView*().
+                buffer->GetDevice()->ConsumedError(buffer->EnsureDataInitialized(commandContext));
+
+                D3D12_RESOURCE_BARRIER barrier;
+                if (buffer->TrackUsageAndGetResourceBarrier(commandContext, &barrier,
+                                                            usages.bufferUsages[i])) {
+                    barriers.push_back(barrier);
+                }
+                bufferUsages |= usages.bufferUsages[i];
+            }
+
+            wgpu::TextureUsage textureUsages = wgpu::TextureUsage::None;
+
+            for (size_t i = 0; i < usages.textures.size(); ++i) {
+                Texture* texture = ToBackend(usages.textures[i]);
+
+                // Clear subresources that are not render attachments. Render attachments will be
+                // cleared in RecordBeginRenderPass by setting the loadop to clear when the texture
+                // subresource has not been initialized before the render pass.
+                usages.textureUsages[i].Iterate(
+                    [&](const SubresourceRange& range, wgpu::TextureUsage usage) {
+                        if (usage & ~wgpu::TextureUsage::RenderAttachment) {
+                            texture->EnsureSubresourceContentInitialized(commandContext, range);
+                        }
+                        textureUsages |= usage;
+                    });
+
+                ToBackend(usages.textures[i])
+                    ->TrackUsageAndGetResourceBarrierForPass(commandContext, &barriers,
+                                                             usages.textureUsages[i]);
+            }
+
+            if (barriers.size()) {
+                commandList->ResourceBarrier(barriers.size(), barriers.data());
+            }
+
+            return (bufferUsages & wgpu::BufferUsage::Storage ||
+                    textureUsages & wgpu::TextureUsage::Storage);
+        }
+
     }  // anonymous namespace
 
     class BindGroupStateTracker : public BindGroupTrackerBase<false, uint64_t> {
@@ -218,87 +330,6 @@ namespace dawn_native { namespace d3d12 {
                                mDynamicOffsetCounts[index], mDynamicOffsets[index].data());
             }
 
-            if (mInCompute) {
-                std::vector<D3D12_RESOURCE_BARRIER> barriers;
-                for (BindGroupIndex index : IterateBitSet(mBindGroupLayoutsMask)) {
-                    BindGroupLayoutBase* layout = mBindGroups[index]->GetLayout();
-                    for (BindingIndex binding{0}; binding < layout->GetBindingCount(); ++binding) {
-                        switch (layout->GetBindingInfo(binding).type) {
-                            case wgpu::BindingType::StorageBuffer: {
-                                D3D12_RESOURCE_BARRIER barrier;
-                                if (ToBackend(mBindGroups[index]
-                                                  ->GetBindingAsBufferBinding(binding)
-                                                  .buffer)
-                                        ->TrackUsageAndGetResourceBarrier(
-                                            commandContext, &barrier, wgpu::BufferUsage::Storage)) {
-                                    barriers.push_back(barrier);
-                                }
-                                break;
-                            }
-
-                            case wgpu::BindingType::ReadonlyStorageTexture: {
-                                TextureViewBase* view =
-                                    mBindGroups[index]->GetBindingAsTextureView(binding);
-                                ToBackend(view->GetTexture())
-                                    ->TransitionUsageAndGetResourceBarrier(
-                                        commandContext, &barriers, kReadonlyStorageTexture,
-                                        view->GetSubresourceRange());
-                                break;
-                            }
-                            case wgpu::BindingType::WriteonlyStorageTexture: {
-                                TextureViewBase* view =
-                                    mBindGroups[index]->GetBindingAsTextureView(binding);
-                                ToBackend(view->GetTexture())
-                                    ->TransitionUsageAndGetResourceBarrier(
-                                        commandContext, &barriers, wgpu::TextureUsage::Storage,
-                                        view->GetSubresourceRange());
-                                break;
-                            }
-                            case wgpu::BindingType::ReadonlyStorageBuffer: {
-                                D3D12_RESOURCE_BARRIER barrier;
-                                if (ToBackend(mBindGroups[index]
-                                                  ->GetBindingAsBufferBinding(binding)
-                                                  .buffer)
-                                        ->TrackUsageAndGetResourceBarrier(commandContext, &barrier,
-                                                                          kReadOnlyStorageBuffer)) {
-                                    barriers.push_back(barrier);
-                                }
-                                break;
-                            }
-                            case wgpu::BindingType::SampledTexture:
-                            case wgpu::BindingType::MultisampledTexture: {
-                                    TextureViewBase* view =
-                                    mBindGroups[index]->GetBindingAsTextureView(binding);
-                                ToBackend(view->GetTexture())
-                                    ->TransitionUsageAndGetResourceBarrier(
-                                        commandContext, &barriers, wgpu::TextureUsage::Sampled,
-                                        view->GetSubresourceRange());
-                                break;
-                            }
-                            case wgpu::BindingType::UniformBuffer: {
-                                D3D12_RESOURCE_BARRIER barrier;
-                                if (ToBackend(mBindGroups[index]
-                                                  ->GetBindingAsBufferBinding(binding)
-                                                  .buffer)
-                                        ->TrackUsageAndGetResourceBarrier(
-                                            commandContext, &barrier, wgpu::BufferUsage::Uniform)) {
-                                    barriers.push_back(barrier);
-                                }
-                                break;
-                            }
-
-                            case wgpu::BindingType::Sampler:
-                            case wgpu::BindingType::ComparisonSampler:
-                                // Don't require barriers.
-                                break;
-                        }
-                    }
-                }
-
-                if (!barriers.empty()) {
-                    commandList->ResourceBarrier(barriers.size(), barriers.data());
-                }
-            }
             DidApply();
 
             return {};
@@ -350,8 +381,9 @@ namespace dawn_native { namespace d3d12 {
                     D3D12_GPU_VIRTUAL_ADDRESS bufferLocation =
                         ToBackend(binding.buffer)->GetVA() + offset;
 
-                    switch (bindingInfo.type) {
-                        case wgpu::BindingType::UniformBuffer:
+                    ASSERT(bindingInfo.bindingType == BindingInfoType::Buffer);
+                    switch (bindingInfo.buffer.type) {
+                        case wgpu::BufferBindingType::Uniform:
                             if (mInCompute) {
                                 commandList->SetComputeRootConstantBufferView(parameterIndex,
                                                                               bufferLocation);
@@ -360,7 +392,7 @@ namespace dawn_native { namespace d3d12 {
                                                                                bufferLocation);
                             }
                             break;
-                        case wgpu::BindingType::StorageBuffer:
+                        case wgpu::BufferBindingType::Storage:
                             if (mInCompute) {
                                 commandList->SetComputeRootUnorderedAccessView(parameterIndex,
                                                                                bufferLocation);
@@ -369,7 +401,7 @@ namespace dawn_native { namespace d3d12 {
                                                                                 bufferLocation);
                             }
                             break;
-                        case wgpu::BindingType::ReadonlyStorageBuffer:
+                        case wgpu::BufferBindingType::ReadOnlyStorage:
                             if (mInCompute) {
                                 commandList->SetComputeRootShaderResourceView(parameterIndex,
                                                                               bufferLocation);
@@ -378,12 +410,7 @@ namespace dawn_native { namespace d3d12 {
                                                                                bufferLocation);
                             }
                             break;
-                        case wgpu::BindingType::SampledTexture:
-                        case wgpu::BindingType::MultisampledTexture:
-                        case wgpu::BindingType::Sampler:
-                        case wgpu::BindingType::ComparisonSampler:
-                        case wgpu::BindingType::ReadonlyStorageTexture:
-                        case wgpu::BindingType::WriteonlyStorageTexture:
+                        case wgpu::BufferBindingType::Undefined:
                             UNREACHABLE();
                     }
                 }
@@ -505,46 +532,6 @@ namespace dawn_native { namespace d3d12 {
                 mD3D12BufferViews = {};
         };
 
-        class IndexBufferTracker {
-          public:
-            void OnSetIndexBuffer(Buffer* buffer,
-                                  wgpu::IndexFormat format,
-                                  uint64_t offset,
-                                  uint64_t size) {
-                mD3D12BufferView.BufferLocation = buffer->GetVA() + offset;
-                mD3D12BufferView.SizeInBytes = size;
-                mBufferIndexFormat = DXGIIndexFormat(format);
-
-                // We don't need to dirty the state unless BufferLocation or SizeInBytes
-                // change, but most of the time this will always be the case.
-                mLastAppliedIndexFormat = DXGI_FORMAT_UNKNOWN;
-            }
-
-            void OnSetPipeline(const RenderPipelineBase* pipeline) {
-                mPipelineIndexFormat =
-                    DXGIIndexFormat(pipeline->GetVertexStateDescriptor()->indexFormat);
-            }
-
-            void Apply(ID3D12GraphicsCommandList* commandList) {
-                DXGI_FORMAT newIndexFormat = mBufferIndexFormat;
-                if (newIndexFormat == DXGI_FORMAT_UNKNOWN) {
-                    newIndexFormat = mPipelineIndexFormat;
-                }
-
-                if (newIndexFormat != mLastAppliedIndexFormat) {
-                    mD3D12BufferView.Format = newIndexFormat;
-                    commandList->IASetIndexBuffer(&mD3D12BufferView);
-                    mLastAppliedIndexFormat = newIndexFormat;
-                }
-            }
-
-          private:
-            DXGI_FORMAT mBufferIndexFormat = DXGI_FORMAT_UNKNOWN;
-            DXGI_FORMAT mPipelineIndexFormat = DXGI_FORMAT_UNKNOWN;
-            DXGI_FORMAT mLastAppliedIndexFormat = DXGI_FORMAT_UNKNOWN;
-            D3D12_INDEX_BUFFER_VIEW mD3D12BufferView = {};
-        };
-
         void ResolveMultisampledRenderPass(CommandRecordingContext* commandContext,
                                            BeginRenderPassCmd* renderPass) {
             ASSERT(renderPass != nullptr);
@@ -584,6 +571,12 @@ namespace dawn_native { namespace d3d12 {
 
     }  // anonymous namespace
 
+    // static
+    Ref<CommandBuffer> CommandBuffer::Create(CommandEncoder* encoder,
+                                             const CommandBufferDescriptor* descriptor) {
+        return AcquireRef(new CommandBuffer(encoder, descriptor));
+    }
+
     CommandBuffer::CommandBuffer(CommandEncoder* encoder, const CommandBufferDescriptor* descriptor)
         : CommandBufferBase(encoder, descriptor) {
     }
@@ -598,77 +591,8 @@ namespace dawn_native { namespace d3d12 {
         // actual command list but here is ok because there should be few command buffers.
         bindingTracker.SetID3D12DescriptorHeaps(commandList);
 
-        // Records the necessary barriers for the resource usage pre-computed by the frontend
-        auto PrepareResourcesForRenderPass = [](CommandRecordingContext* commandContext,
-                                                const PassResourceUsage& usages) -> bool {
-            std::vector<D3D12_RESOURCE_BARRIER> barriers;
-
-            ID3D12GraphicsCommandList* commandList = commandContext->GetCommandList();
-
-            wgpu::BufferUsage bufferUsages = wgpu::BufferUsage::None;
-
-            for (size_t i = 0; i < usages.buffers.size(); ++i) {
-                Buffer* buffer = ToBackend(usages.buffers[i]);
-
-                // TODO(jiawei.shao@intel.com): clear storage buffers with
-                // ClearUnorderedAccessView*().
-                buffer->GetDevice()->ConsumedError(buffer->EnsureDataInitialized(commandContext));
-
-                D3D12_RESOURCE_BARRIER barrier;
-                if (buffer->TrackUsageAndGetResourceBarrier(commandContext, &barrier,
-                                                            usages.bufferUsages[i])) {
-                    barriers.push_back(barrier);
-                }
-                bufferUsages |= usages.bufferUsages[i];
-            }
-
-            wgpu::TextureUsage textureUsages = wgpu::TextureUsage::None;
-
-            for (size_t i = 0; i < usages.textures.size(); ++i) {
-                Texture* texture = ToBackend(usages.textures[i]);
-                // Clear textures that are not output attachments. Output attachments will be
-                // cleared during record render pass if the texture subresource has not been
-                // initialized before the render pass.
-                if (!(usages.textureUsages[i].usage & wgpu::TextureUsage::RenderAttachment)) {
-                    texture->EnsureSubresourceContentInitialized(commandContext,
-                                                                 texture->GetAllSubresources());
-                }
-
-                ToBackend(usages.textures[i])
-                    ->TrackUsageAndGetResourceBarrierForPass(commandContext, &barriers,
-                                                             usages.textureUsages[i]);
-                textureUsages |= usages.textureUsages[i].usage;
-            }
-
-            if (barriers.size()) {
-                commandList->ResourceBarrier(barriers.size(), barriers.data());
-            }
-
-            return (bufferUsages & wgpu::BufferUsage::Storage ||
-                    textureUsages & wgpu::TextureUsage::Storage);
-        };
-
-        // TODO(jiawei.shao@intel.com): move the resource lazy clearing inside the barrier tracking
-        // for compute passes.
-        auto PrepareResourcesForComputePass = [](CommandRecordingContext* commandContext,
-                                                 const PassResourceUsage& usages) -> void {
-            for (size_t i = 0; i < usages.buffers.size(); ++i) {
-                Buffer* buffer = ToBackend(usages.buffers[i]);
-
-                // TODO(jiawei.shao@intel.com): clear storage buffers with
-                // ClearUnorderedAccessView*().
-                buffer->GetDevice()->ConsumedError(buffer->EnsureDataInitialized(commandContext));
-            }
-
-            for (size_t i = 0; i < usages.textures.size(); ++i) {
-                Texture* texture = ToBackend(usages.textures[i]);
-                texture->EnsureSubresourceContentInitialized(commandContext,
-                                                             texture->GetAllSubresources());
-            }
-        };
-
-        const std::vector<PassResourceUsage>& passResourceUsages = GetResourceUsages().perPass;
-        uint32_t nextPassNumber = 0;
+        size_t nextComputePassNumber = 0;
+        size_t nextRenderPassNumber = 0;
 
         Command type;
         while (mCommands.NextCommandId(&type)) {
@@ -676,12 +600,12 @@ namespace dawn_native { namespace d3d12 {
                 case Command::BeginComputePass: {
                     mCommands.NextCommand<BeginComputePassCmd>();
 
-                    PrepareResourcesForComputePass(commandContext,
-                                                   passResourceUsages[nextPassNumber]);
                     bindingTracker.SetInComputePass(true);
-                    DAWN_TRY(RecordComputePass(commandContext, &bindingTracker));
+                    DAWN_TRY(RecordComputePass(
+                        commandContext, &bindingTracker,
+                        GetResourceUsages().computePasses[nextComputePassNumber]));
 
-                    nextPassNumber++;
+                    nextComputePassNumber++;
                     break;
                 }
 
@@ -689,15 +613,15 @@ namespace dawn_native { namespace d3d12 {
                     BeginRenderPassCmd* beginRenderPassCmd =
                         mCommands.NextCommand<BeginRenderPassCmd>();
 
-                    const bool passHasUAV = PrepareResourcesForRenderPass(
-                        commandContext, passResourceUsages[nextPassNumber]);
+                    const bool passHasUAV = TransitionAndClearForSyncScope(
+                        commandContext, GetResourceUsages().renderPasses[nextRenderPassNumber]);
                     bindingTracker.SetInComputePass(false);
 
                     LazyClearRenderPassAttachments(beginRenderPassCmd);
                     DAWN_TRY(RecordRenderPass(commandContext, &bindingTracker, beginRenderPassCmd,
                                               passHasUAV));
 
-                    nextPassNumber++;
+                    nextRenderPassNumber++;
                     break;
                 }
 
@@ -728,7 +652,7 @@ namespace dawn_native { namespace d3d12 {
 
                     DAWN_TRY(buffer->EnsureDataInitialized(commandContext));
 
-                    ASSERT(texture->GetDimension() == wgpu::TextureDimension::e2D);
+                    ASSERT(texture->GetDimension() != wgpu::TextureDimension::e1D);
                     SubresourceRange subresources =
                         GetSubresourcesAffectedByCopy(copy->destination, copy->copySize);
 
@@ -743,11 +667,10 @@ namespace dawn_native { namespace d3d12 {
                     texture->TrackUsageAndTransitionNow(commandContext, wgpu::TextureUsage::CopyDst,
                                                         subresources);
 
-                    // compute the copySplits and record the CopyTextureRegion commands
-                    CopyBufferToTextureWithCopySplit(
-                        commandContext, copy->destination, copy->copySize, texture,
-                        buffer->GetD3D12Resource(), copy->source.offset, copy->source.bytesPerRow,
-                        copy->source.rowsPerImage, subresources.aspects);
+                    RecordCopyBufferToTexture(commandContext, copy->destination,
+                                              buffer->GetD3D12Resource(), copy->source.offset,
+                                              copy->source.bytesPerRow, copy->source.rowsPerImage,
+                                              copy->copySize, texture, subresources.aspects);
 
                     break;
                 }
@@ -759,7 +682,7 @@ namespace dawn_native { namespace d3d12 {
 
                     DAWN_TRY(buffer->EnsureDataInitializedAsDestination(commandContext, copy));
 
-                    ASSERT(texture->GetDimension() == wgpu::TextureDimension::e2D);
+                    ASSERT(texture->GetDimension() != wgpu::TextureDimension::e1D);
                     SubresourceRange subresources =
                         GetSubresourcesAffectedByCopy(copy->source, copy->copySize);
 
@@ -769,43 +692,8 @@ namespace dawn_native { namespace d3d12 {
                                                         subresources);
                     buffer->TrackUsageAndTransitionNow(commandContext, wgpu::BufferUsage::CopyDst);
 
-                    const TexelBlockInfo& blockInfo =
-                        texture->GetFormat().GetAspectInfo(copy->source.aspect).block;
-
-                    // See comments around ComputeTextureCopySplits() for more details.
-                    const TextureCopySplits copySplits = ComputeTextureCopySplits(
-                        copy->source.origin, copy->copySize, blockInfo, copy->destination.offset,
-                        copy->destination.bytesPerRow, copy->destination.rowsPerImage);
-
-                    const uint64_t bytesPerSlice =
-                        copy->destination.bytesPerRow * copy->destination.rowsPerImage;
-
-                    // copySplits.copies2D[1] is always calculated for the second copy slice with
-                    // extra "bytesPerSlice" copy offset compared with the first copy slice. So
-                    // here we use an array bufferOffsetsForNextSlice to record the extra offsets
-                    // for each copy slice: bufferOffsetsForNextSlice[0] is the extra offset for
-                    // the next copy slice that uses copySplits.copies2D[0], and
-                    // bufferOffsetsForNextSlice[1] is the extra offset for the next copy slice
-                    // that uses copySplits.copies2D[1].
-                    std::array<uint64_t, TextureCopySplits::kMaxTextureCopySplits>
-                        bufferOffsetsForNextSlice = {{0u, 0u}};
-                    for (uint32_t copySlice = 0; copySlice < copy->copySize.depth; ++copySlice) {
-                        const uint32_t splitIndex = copySlice % copySplits.copies2D.size();
-
-                        const Texture2DCopySplit& copySplitPerLayerBase =
-                            copySplits.copies2D[splitIndex];
-                        const uint64_t bufferOffsetForNextSlice =
-                            bufferOffsetsForNextSlice[splitIndex];
-                        const uint32_t copyTextureLayer = copySlice + copy->source.origin.z;
-
-                        RecordCopyTextureToBufferFromTextureCopySplit(
-                            commandList, copySplitPerLayerBase, buffer, bufferOffsetForNextSlice,
-                            copy->destination.bytesPerRow, texture, copy->source.mipLevel,
-                            copyTextureLayer, subresources.aspects);
-
-                        bufferOffsetsForNextSlice[splitIndex] +=
-                            bytesPerSlice * copySplits.copies2D.size();
-                    }
+                    RecordCopyTextureToBuffer(commandList, copy->source, copy->destination, texture,
+                                              buffer, copy->copySize);
 
                     break;
                 }
@@ -837,7 +725,7 @@ namespace dawn_native { namespace d3d12 {
                         // it is not allowed to copy with overlapped subresources, but we still
                         // add the ASSERT here as a reminder for this possible misuse.
                         ASSERT(!IsRangeOverlapped(copy->source.origin.z, copy->destination.origin.z,
-                                                  copy->copySize.depth));
+                                                  copy->copySize.depthOrArrayLayers));
                     }
                     source->TrackUsageAndTransitionNow(commandContext, wgpu::TextureUsage::CopySrc,
                                                        srcRange);
@@ -845,6 +733,13 @@ namespace dawn_native { namespace d3d12 {
                                                             wgpu::TextureUsage::CopyDst, dstRange);
 
                     ASSERT(srcRange.aspects == dstRange.aspects);
+                    if (ShouldCopyUsingTemporaryBuffer(GetDevice(), copy->source,
+                                                       copy->destination)) {
+                        DAWN_TRY(RecordCopyTextureWithTemporaryBuffer(
+                            commandContext, copy->source, copy->destination, copy->copySize));
+                        break;
+                    }
+
                     if (CanUseCopyResource(copy->source, copy->destination, copy->copySize)) {
                         commandList->CopyResource(destination->GetD3D12Resource(),
                                                   source->GetD3D12Resource());
@@ -856,16 +751,17 @@ namespace dawn_native { namespace d3d12 {
                             copy->copySize.width, copy->copySize.height, 1u};
 
                         for (Aspect aspect : IterateEnumMask(srcRange.aspects)) {
-                            for (uint32_t slice = 0; slice < copy->copySize.depth; ++slice) {
+                            for (uint32_t layer = 0; layer < copy->copySize.depthOrArrayLayers;
+                                 ++layer) {
                                 D3D12_TEXTURE_COPY_LOCATION srcLocation =
                                     ComputeTextureCopyLocationForTexture(
                                         source, copy->source.mipLevel,
-                                        copy->source.origin.z + slice, aspect);
+                                        copy->source.origin.z + layer, aspect);
 
                                 D3D12_TEXTURE_COPY_LOCATION dstLocation =
                                     ComputeTextureCopyLocationForTexture(
                                         destination, copy->destination.mipLevel,
-                                        copy->destination.origin.z + slice, aspect);
+                                        copy->destination.origin.z + layer, aspect);
 
                                 Origin3D sourceOriginInSubresource = copy->source.origin;
                                 sourceOriginInSubresource.z = 0;
@@ -958,7 +854,9 @@ namespace dawn_native { namespace d3d12 {
     }
 
     MaybeError CommandBuffer::RecordComputePass(CommandRecordingContext* commandContext,
-                                                BindGroupStateTracker* bindingTracker) {
+                                                BindGroupStateTracker* bindingTracker,
+                                                const ComputePassResourceUsage& resourceUsages) {
+        uint64_t currentDispatch = 0;
         PipelineLayout* lastLayout = nullptr;
         ID3D12GraphicsCommandList* commandList = commandContext->GetCommandList();
 
@@ -968,21 +866,28 @@ namespace dawn_native { namespace d3d12 {
                 case Command::Dispatch: {
                     DispatchCmd* dispatch = mCommands.NextCommand<DispatchCmd>();
 
+                    TransitionAndClearForSyncScope(commandContext,
+                                                   resourceUsages.dispatchUsages[currentDispatch]);
                     DAWN_TRY(bindingTracker->Apply(commandContext));
+
                     commandList->Dispatch(dispatch->x, dispatch->y, dispatch->z);
+                    currentDispatch++;
                     break;
                 }
 
                 case Command::DispatchIndirect: {
                     DispatchIndirectCmd* dispatch = mCommands.NextCommand<DispatchIndirectCmd>();
-
-                    DAWN_TRY(bindingTracker->Apply(commandContext));
                     Buffer* buffer = ToBackend(dispatch->indirectBuffer.Get());
-                    buffer->TrackUsageAndTransitionNow(commandContext, wgpu::BufferUsage::Indirect);
+
+                    TransitionAndClearForSyncScope(commandContext,
+                                                   resourceUsages.dispatchUsages[currentDispatch]);
+                    DAWN_TRY(bindingTracker->Apply(commandContext));
+
                     ComPtr<ID3D12CommandSignature> signature =
                         ToBackend(GetDevice())->GetDispatchIndirectSignature();
                     commandList->ExecuteIndirect(signature.Get(), 1, buffer->GetD3D12Resource(),
                                                  dispatch->indirectOffset, nullptr, 0);
+                    currentDispatch++;
                     break;
                 }
 
@@ -1102,7 +1007,7 @@ namespace dawn_native { namespace d3d12 {
                 i, attachmentInfo.loadOp, attachmentInfo.clearColor, view->GetD3D12Format());
 
             // Set color store operation.
-            if (attachmentInfo.resolveTarget.Get() != nullptr) {
+            if (attachmentInfo.resolveTarget != nullptr) {
                 TextureView* resolveDestinationView = ToBackend(attachmentInfo.resolveTarget.Get());
                 Texture* resolveDestinationTexture =
                     ToBackend(resolveDestinationView->GetTexture());
@@ -1269,7 +1174,6 @@ namespace dawn_native { namespace d3d12 {
         RenderPipeline* lastPipeline = nullptr;
         PipelineLayout* lastLayout = nullptr;
         VertexBufferTracker vertexBufferTracker = {};
-        IndexBufferTracker indexBufferTracker = {};
 
         auto EncodeRenderBundleCommand = [&](CommandIterator* iter, Command type) -> MaybeError {
             switch (type) {
@@ -1278,6 +1182,8 @@ namespace dawn_native { namespace d3d12 {
 
                     DAWN_TRY(bindingTracker->Apply(commandContext));
                     vertexBufferTracker.Apply(commandList, lastPipeline);
+                    RecordFirstIndexOffset(commandList, lastPipeline, draw->firstVertex,
+                                           draw->firstInstance);
                     commandList->DrawInstanced(draw->vertexCount, draw->instanceCount,
                                                draw->firstVertex, draw->firstInstance);
                     break;
@@ -1287,8 +1193,9 @@ namespace dawn_native { namespace d3d12 {
                     DrawIndexedCmd* draw = iter->NextCommand<DrawIndexedCmd>();
 
                     DAWN_TRY(bindingTracker->Apply(commandContext));
-                    indexBufferTracker.Apply(commandList);
                     vertexBufferTracker.Apply(commandList, lastPipeline);
+                    RecordFirstIndexOffset(commandList, lastPipeline, draw->baseVertex,
+                                           draw->firstInstance);
                     commandList->DrawIndexedInstanced(draw->indexCount, draw->instanceCount,
                                                       draw->firstIndex, draw->baseVertex,
                                                       draw->firstInstance);
@@ -1312,7 +1219,6 @@ namespace dawn_native { namespace d3d12 {
                     DrawIndexedIndirectCmd* draw = iter->NextCommand<DrawIndexedIndirectCmd>();
 
                     DAWN_TRY(bindingTracker->Apply(commandContext));
-                    indexBufferTracker.Apply(commandList);
                     vertexBufferTracker.Apply(commandList, lastPipeline);
                     Buffer* buffer = ToBackend(draw->indirectBuffer.Get());
                     ComPtr<ID3D12CommandSignature> signature =
@@ -1371,7 +1277,6 @@ namespace dawn_native { namespace d3d12 {
                     commandList->IASetPrimitiveTopology(pipeline->GetD3D12PrimitiveTopology());
 
                     bindingTracker->OnSetPipeline(pipeline);
-                    indexBufferTracker.OnSetPipeline(pipeline);
 
                     lastPipeline = pipeline;
                     lastLayout = layout;
@@ -1395,8 +1300,12 @@ namespace dawn_native { namespace d3d12 {
                 case Command::SetIndexBuffer: {
                     SetIndexBufferCmd* cmd = iter->NextCommand<SetIndexBufferCmd>();
 
-                    indexBufferTracker.OnSetIndexBuffer(ToBackend(cmd->buffer.Get()), cmd->format,
-                                                        cmd->offset, cmd->size);
+                    D3D12_INDEX_BUFFER_VIEW bufferView;
+                    bufferView.Format = DXGIIndexFormat(cmd->format);
+                    bufferView.BufferLocation = ToBackend(cmd->buffer)->GetVA() + cmd->offset;
+                    bufferView.SizeInBytes = cmd->size;
+
+                    commandList->IASetIndexBuffer(&bufferView);
                     break;
                 }
 
@@ -1461,8 +1370,8 @@ namespace dawn_native { namespace d3d12 {
                     break;
                 }
 
-                case Command::SetBlendColor: {
-                    SetBlendColorCmd* cmd = mCommands.NextCommand<SetBlendColorCmd>();
+                case Command::SetBlendConstant: {
+                    SetBlendConstantCmd* cmd = mCommands.NextCommand<SetBlendConstantCmd>();
                     const std::array<float, 4> color = ConvertToFloatColor(cmd->color);
                     commandList->OMSetBlendFactor(color.data());
                     break;
@@ -1479,6 +1388,26 @@ namespace dawn_native { namespace d3d12 {
                             DAWN_TRY(EncodeRenderBundleCommand(iter, type));
                         }
                     }
+                    break;
+                }
+
+                case Command::BeginOcclusionQuery: {
+                    BeginOcclusionQueryCmd* cmd = mCommands.NextCommand<BeginOcclusionQueryCmd>();
+                    QuerySet* querySet = ToBackend(cmd->querySet.Get());
+                    ASSERT(D3D12QueryType(querySet->GetQueryType()) ==
+                           D3D12_QUERY_TYPE_BINARY_OCCLUSION);
+                    commandList->BeginQuery(querySet->GetQueryHeap(),
+                                            D3D12_QUERY_TYPE_BINARY_OCCLUSION, cmd->queryIndex);
+                    break;
+                }
+
+                case Command::EndOcclusionQuery: {
+                    EndOcclusionQueryCmd* cmd = mCommands.NextCommand<EndOcclusionQueryCmd>();
+                    QuerySet* querySet = ToBackend(cmd->querySet.Get());
+                    ASSERT(D3D12QueryType(querySet->GetQueryType()) ==
+                           D3D12_QUERY_TYPE_BINARY_OCCLUSION);
+                    commandList->EndQuery(querySet->GetQueryHeap(),
+                                          D3D12_QUERY_TYPE_BINARY_OCCLUSION, cmd->queryIndex);
                     break;
                 }
 

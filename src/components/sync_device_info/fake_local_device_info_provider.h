@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_SYNC_DEVICE_INFO_FAKE_LOCAL_DEVICE_INFO_PROVIDER_H_
 #define COMPONENTS_SYNC_DEVICE_INFO_FAKE_LOCAL_DEVICE_INFO_PROVIDER_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/local_device_info_provider.h"
@@ -21,7 +19,7 @@ class FakeLocalDeviceInfoProvider : public LocalDeviceInfoProvider {
   // Overrides for LocalDeviceInfoProvider.
   version_info::Channel GetChannel() const override;
   const DeviceInfo* GetLocalDeviceInfo() const override;
-  std::unique_ptr<Subscription> RegisterOnInitializedCallback(
+  base::CallbackListSubscription RegisterOnInitializedCallback(
       const base::RepeatingClosure& callback) override;
 
   void SetReady(bool ready);
@@ -30,7 +28,7 @@ class FakeLocalDeviceInfoProvider : public LocalDeviceInfoProvider {
  private:
   DeviceInfo device_info_;
   bool ready_ = true;
-  base::CallbackList<void(void)> callback_list_;
+  base::RepeatingClosureList closure_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeLocalDeviceInfoProvider);
 };

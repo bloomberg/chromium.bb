@@ -5,9 +5,6 @@
 #ifndef CONTENT_BROWSER_APPCACHE_CHROME_APPCACHE_SERVICE_H_
 #define CONTENT_BROWSER_APPCACHE_CHROME_APPCACHE_SERVICE_H_
 
-#include <map>
-#include <memory>
-
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -67,11 +64,11 @@ class CONTENT_EXPORT ChromeAppCacheService
   bool CanLoadAppCache(
       const GURL& manifest_url,
       const GURL& site_for_cookies,
-      const base::Optional<url::Origin>& top_frame_origin) override;
+      const absl::optional<url::Origin>& top_frame_origin) override;
   bool CanCreateAppCache(
       const GURL& manifest_url,
       const GURL& site_for_cookies,
-      const base::Optional<url::Origin>& top_frame_origin) override;
+      const absl::optional<url::Origin>& top_frame_origin) override;
   bool IsOriginTrialRequiredForAppCache() override;
 
  protected:

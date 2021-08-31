@@ -7,18 +7,15 @@
 #include <atlcomcli.h>
 #include <windows.h>
 
+#include "base/bind.h"
 #include "base/guid.h"
-#include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/task_environment.h"
-#include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread.h"
-#include "chrome/credential_provider/extension/extension_strings.h"
+#include "chrome/credential_provider/extension/extension_utils.h"
 #include "chrome/credential_provider/extension/task.h"
 #include "chrome/credential_provider/extension/task_manager.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
-#include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/test/gcp_fakes.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,8 +38,6 @@ class TaskManagerTest : public ::testing::Test {
     registry_override.OverrideRegistry(HKEY_LOCAL_MACHINE);
   }
 
-  void TearDown() override { fake_task_manager_.Quit(); }
-
   FakeTaskManager* fake_task_manager() { return &fake_task_manager_; }
   FakeOSUserManager* fake_os_user_manager() { return &fake_os_user_manager_; }
 
@@ -59,29 +54,10 @@ class TaskManagerTest : public ::testing::Test {
       base::test::SingleThreadTaskEnvironment::TimeSource::MOCK_TIME};
 };
 
-TEST_F(TaskManagerTest, PeriodicExecution) {
-  ASSERT_EQ(
-      GetGlobalFlagOrDefault(
-          credential_provider::extension::kLastPeriodicSyncTimeRegKey, L""),
-      L"");
-
-  RunTasks();
-
-  task_environment()->FastForwardBy(base::TimeDelta::FromHours(5));
-
-  ASSERT_EQ(fake_task_manager()->NumOfTimesExecuted(), 5);
-
-  ASSERT_NE(
-      GetGlobalFlagOrDefault(
-          credential_provider::extension::kLastPeriodicSyncTimeRegKey, L""),
-      L"");
-  task_environment()->FastForwardBy(base::TimeDelta::FromHours(2));
-
-  ASSERT_EQ(fake_task_manager()->NumOfTimesExecuted(), 7);
-}
-
 class FakeTask : public extension::Task {
  public:
+  explicit FakeTask(base::TimeDelta period);
+
   ~FakeTask() override;
 
   extension::Config GetConfig() override;
@@ -91,17 +67,25 @@ class FakeTask : public extension::Task {
 
   HRESULT Execute() override;
 
-  static int number_of_times_executed_;
   static std::vector<extension::UserDeviceContext> user_device_context_;
+  static int num_fails_;
+
+ private:
+  base::TimeDelta period_;
 };
 
-int FakeTask::number_of_times_executed_ = 0;
 std::vector<extension::UserDeviceContext> FakeTask::user_device_context_;
+
+int FakeTask::num_fails_ = 0;
+
+FakeTask::FakeTask(base::TimeDelta period) : period_(period) {}
 
 FakeTask::~FakeTask() {}
 
 extension::Config FakeTask::GetConfig() {
-  return {};
+  extension::Config config;
+  config.execution_period = period_;
+  return config;
 }
 
 HRESULT FakeTask::SetContext(
@@ -111,86 +95,240 @@ HRESULT FakeTask::SetContext(
 }
 
 HRESULT FakeTask::Execute() {
-  ++number_of_times_executed_;
+  if (num_fails_ != 0) {
+    num_fails_--;
+    return E_FAIL;
+  }
   return S_OK;
 }
 
-std::unique_ptr<extension::Task> FakeTaskCreator() {
-  auto task = std::make_unique<FakeTask>();
+std::unique_ptr<extension::Task> AuxTaskCreator(base::TimeDelta period) {
+  auto task = std::make_unique<FakeTask>(period);
   return std::move(task);
 }
 
-TEST_F(TaskManagerTest, TaskExecuted) {
-  base::string16 serial_number = L"1234";
-  GoogleRegistrationDataForTesting g_registration_data(serial_number);
-  base::string16 machine_guid = L"machine_guid";
-  SetMachineGuidForTesting(machine_guid);
+extension::TaskCreator GenerateTaskCreator(base::TimeDelta period) {
+  return base::BindRepeating(&AuxTaskCreator, period);
+}
 
-  FakeTokenGenerator fake_token_generator;
-  fake_token_generator.SetTokensForTesting(
-      {base::GenerateGUID(), base::GenerateGUID()});
+TEST_F(TaskManagerTest, PeriodicDelay) {
+  std::string fake_task_name = "fake_task";
+
+  // Registers a task which has a config to run every 3 hours.
+  fake_task_manager()->RegisterTask(
+      fake_task_name, GenerateTaskCreator(base::TimeDelta::FromHours(3)));
+
+  // Starts running registered tasks for all associated GCPW users.
+  RunTasks();
+
+  task_environment()->FastForwardBy(base::TimeDelta::FromHours(5));
+  ASSERT_EQ(fake_task_manager()->NumOfTimesExecuted(fake_task_name), 2);
+
+  std::wstring fake_task_reg_name =
+      extension::GetLastSyncRegNameForTask(base::UTF8ToWide(fake_task_name));
+  ASSERT_NE(GetGlobalFlagOrDefault(fake_task_reg_name, L""), L"");
+
+  task_environment()->FastForwardBy(base::TimeDelta::FromHours(2));
+  ASSERT_EQ(fake_task_manager()->NumOfTimesExecuted(fake_task_name), 3);
+}
+
+TEST_F(TaskManagerTest, PreviouslyExecuted) {
+  std::string fake_task_name = "fake_task";
+
+  std::wstring fake_task_reg_name =
+      extension::GetLastSyncRegNameForTask(base::UTF8ToWide(fake_task_name));
+
+  const base::Time sync_time = base::Time::Now();
+  const std::wstring sync_time_millis = base::NumberToWString(
+      (sync_time.ToDeltaSinceWindowsEpoch() - base::TimeDelta::FromHours(1))
+          .InMilliseconds());
+
+  SetGlobalFlag(fake_task_reg_name, sync_time_millis);
+
+  // Registers a task which has a config to run every 3 hours.
+  fake_task_manager()->RegisterTask(
+      fake_task_name, GenerateTaskCreator(base::TimeDelta::FromHours(5)));
+
+  // Starts running registered tasks for all associated GCPW users.
+  RunTasks();
+
+  // First execution should happen after 4 hours as the registry says it was
+  // executed an hour ago.
+  task_environment()->FastForwardBy(base::TimeDelta::FromHours(3) +
+                                    base::TimeDelta::FromMinutes(59));
+  ASSERT_EQ(fake_task_manager()->NumOfTimesExecuted(fake_task_name), 0);
+
+  task_environment()->FastForwardBy(base::TimeDelta::FromMinutes(1));
+  ASSERT_EQ(fake_task_manager()->NumOfTimesExecuted(fake_task_name), 1);
+
+  ASSERT_NE(GetGlobalFlagOrDefault(fake_task_reg_name, L""), L"");
+
+  task_environment()->FastForwardBy(base::TimeDelta::FromHours(5));
+  ASSERT_EQ(fake_task_manager()->NumOfTimesExecuted(fake_task_name), 2);
+}
+
+TEST_F(TaskManagerTest, TaskExecuted) {
+  std::wstring serial_number = L"1234";
+  GoogleRegistrationDataForTesting g_registration_data(serial_number);
+  std::wstring machine_guid = L"machine_guid";
+  SetMachineGuidForTesting(machine_guid);
 
   // Create a fake user associated to a gaia id.
   CComBSTR sid1;
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       L"foo@gmail.com", L"password", L"Full Name", L"comment",
-                      L"test-gaia-id", base::string16(), L"domain", &sid1));
+                      L"test-gaia-id", std::wstring(), L"domain", &sid1));
 
-  base::string16 device_resource_id1 = L"foo_resource_id";
+  std::wstring device_resource_id1 = L"foo_resource_id";
   ASSERT_EQ(S_OK, SetUserProperty(OLE2W(sid1), L"device_resource_id",
                                   device_resource_id1));
 
+  FakeTokenGenerator fake_token_generator;
+  fake_token_generator.SetTokensForTesting(
+      {base::GenerateGUID(), base::GenerateGUID()});
+
   ASSERT_EQ(S_OK, GenerateGCPWDmToken((BSTR)sid1));
 
-  base::string16 dm_token1;
+  std::wstring dm_token1;
   ASSERT_EQ(S_OK, GetGCPWDmToken((BSTR)sid1, &dm_token1));
 
-  ASSERT_EQ(
-      GetGlobalFlagOrDefault(
-          credential_provider::extension::kLastPeriodicSyncTimeRegKey, L""),
-      L"");
+  std::string fake_task_name = "fake_task";
 
-  fake_task_manager()->RegisterTask("fake_task",
-                                    base::BindRepeating(&FakeTaskCreator));
+  fake_task_manager()->RegisterTask(
+      fake_task_name, GenerateTaskCreator(base::TimeDelta::FromHours(3)));
 
   RunTasks();
 
   task_environment()->FastForwardBy(base::TimeDelta::FromHours(5));
+  ASSERT_EQ(fake_task_manager()->NumOfTimesExecuted(fake_task_name), 2);
 
-  ASSERT_EQ(FakeTask::number_of_times_executed_, 5);
   ASSERT_EQ(FakeTask::user_device_context_.size(), (size_t)1);
   extension::UserDeviceContext c1 = {device_resource_id1, serial_number,
                                      machine_guid, OLE2W(sid1), dm_token1};
   ASSERT_TRUE(FakeTask::user_device_context_[0] == c1);
 
-  ASSERT_NE(
-      GetGlobalFlagOrDefault(
-          credential_provider::extension::kLastPeriodicSyncTimeRegKey, L""),
-      L"");
+  std::wstring fake_task_reg_name =
+      extension::GetLastSyncRegNameForTask(base::UTF8ToWide(fake_task_name));
+  ASSERT_NE(GetGlobalFlagOrDefault(fake_task_reg_name, L""), L"");
 
   // Create another user associated to a gaia id.
   CComBSTR sid2;
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       L"bar@gmail.com", L"password", L"Full Name", L"comment",
-                      L"test-gaia-id2", base::string16(), L"domain", &sid2));
-  base::string16 device_resource_id2 = L"foo_resource_id";
+                      L"test-gaia-id2", std::wstring(), L"domain", &sid2));
+  std::wstring device_resource_id2 = L"foo_resource_id";
   ASSERT_EQ(S_OK, SetUserProperty(OLE2W(sid2), L"device_resource_id",
                                   device_resource_id2));
 
   ASSERT_EQ(S_OK, GenerateGCPWDmToken((BSTR)sid2));
 
-  base::string16 dm_token2;
+  std::wstring dm_token2;
   ASSERT_EQ(S_OK, GetGCPWDmToken((BSTR)sid2, &dm_token2));
 
   task_environment()->FastForwardBy(base::TimeDelta::FromHours(2));
 
-  ASSERT_EQ(FakeTask::number_of_times_executed_, 7);
+  ASSERT_EQ(fake_task_manager()->NumOfTimesExecuted(fake_task_name), 3);
   ASSERT_EQ(FakeTask::user_device_context_.size(), (size_t)2);
 
   extension::UserDeviceContext c2 = {device_resource_id2, serial_number,
                                      machine_guid, OLE2W(sid2), dm_token2};
   ASSERT_TRUE(FakeTask::user_device_context_[0] == c1);
   ASSERT_TRUE(FakeTask::user_device_context_[1] == c2);
+}
+
+TEST_F(TaskManagerTest, TasksWithDifferentPeriods) {
+  std::string fake_task_name = "fake_task";
+  std::string another_fake_task_name = "another_fake_task";
+
+  fake_task_manager()->RegisterTask(
+      fake_task_name, GenerateTaskCreator(base::TimeDelta::FromHours(3)));
+
+  fake_task_manager()->RegisterTask(
+      another_fake_task_name,
+      GenerateTaskCreator(base::TimeDelta::FromHours(1)));
+
+  // Starts running registered tasks for all associated GCPW users.
+  RunTasks();
+
+  task_environment()->FastForwardBy(base::TimeDelta::FromHours(5));
+  ASSERT_EQ(fake_task_manager()->NumOfTimesExecuted(fake_task_name), 2);
+  ASSERT_EQ(fake_task_manager()->NumOfTimesExecuted(another_fake_task_name), 5);
+
+  std::wstring fake_task_reg_name =
+      extension::GetLastSyncRegNameForTask(base::UTF8ToWide(fake_task_name));
+  ASSERT_NE(GetGlobalFlagOrDefault(fake_task_reg_name, L""), L"");
+
+  std::wstring another_fake_task_reg_name =
+      extension::GetLastSyncRegNameForTask(
+          base::UTF8ToWide(another_fake_task_name));
+  ASSERT_NE(GetGlobalFlagOrDefault(another_fake_task_reg_name, L""), L"");
+
+  task_environment()->FastForwardBy(base::TimeDelta::FromHours(2));
+  ASSERT_EQ(fake_task_manager()->NumOfTimesExecuted(fake_task_name), 3);
+  ASSERT_EQ(fake_task_manager()->NumOfTimesExecuted(another_fake_task_name), 7);
+}
+
+TEST_F(TaskManagerTest, BackOff) {
+  std::wstring serial_number = L"1234";
+  GoogleRegistrationDataForTesting g_registration_data(serial_number);
+  std::wstring machine_guid = L"machine_guid";
+  SetMachineGuidForTesting(machine_guid);
+
+  // Create a fake user associated to a gaia id.
+  CComBSTR sid1;
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      L"foo@gmail.com", L"password", L"Full Name", L"comment",
+                      L"test-gaia-id", std::wstring(), L"domain", &sid1));
+
+  std::wstring device_resource_id1 = L"foo_resource_id";
+  ASSERT_EQ(S_OK, SetUserProperty(OLE2W(sid1), L"device_resource_id",
+                                  device_resource_id1));
+
+  FakeTokenGenerator fake_token_generator;
+  fake_token_generator.SetTokensForTesting(
+      {base::GenerateGUID(), base::GenerateGUID()});
+
+  ASSERT_EQ(S_OK, GenerateGCPWDmToken((BSTR)sid1));
+
+  std::string fake_task_name = "fake_task";
+
+  // Task::Execute returns failure 3 times and backoff mechanism kicks in.
+  // 1st backoff is 1 min. 2nd backoff ins 3 mins. 3rd backoff is 6 mins.
+  FakeTask::num_fails_ = 3;
+
+  fake_task_manager()->RegisterTask(
+      fake_task_name, GenerateTaskCreator(base::TimeDelta::FromMinutes(30)));
+
+  // Starts running registered tasks for all associated GCPW users.
+  RunTasks();
+
+  std::wstring fake_task_reg_name =
+      extension::GetLastSyncRegNameForTask(base::UTF8ToWide(fake_task_name));
+
+  // Seconds 10 - 1st execution failure
+  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(10));
+  ASSERT_EQ(fake_task_manager()->NumOfTimesExecuted(fake_task_name), 1);
+  ASSERT_EQ(GetGlobalFlagOrDefault(fake_task_reg_name, L""), L"");
+
+  // Minutes 2:10 - 2nd execution failure
+  task_environment()->FastForwardBy(base::TimeDelta::FromMinutes(2));
+  ASSERT_EQ(fake_task_manager()->NumOfTimesExecuted(fake_task_name), 2);
+  ASSERT_EQ(GetGlobalFlagOrDefault(fake_task_reg_name, L""), L"");
+
+  // Minutes 6:10 - 3rd execution failure
+  task_environment()->FastForwardBy(base::TimeDelta::FromMinutes(4));
+  ASSERT_EQ(fake_task_manager()->NumOfTimesExecuted(fake_task_name), 3);
+  ASSERT_EQ(GetGlobalFlagOrDefault(fake_task_reg_name, L""), L"");
+
+  // Minutes 14:10 - success
+  task_environment()->FastForwardBy(base::TimeDelta::FromMinutes(8));
+  ASSERT_EQ(fake_task_manager()->NumOfTimesExecuted(fake_task_name), 4);
+  ASSERT_NE(GetGlobalFlagOrDefault(fake_task_reg_name, L""), L"");
+
+  // Minutes 13:10 - 3 more success
+  task_environment()->FastForwardBy(base::TimeDelta::FromHours(2));
+  ASSERT_EQ(fake_task_manager()->NumOfTimesExecuted(fake_task_name), 8);
+  ASSERT_NE(GetGlobalFlagOrDefault(fake_task_reg_name, L""), L"");
 }
 
 }  // namespace testing

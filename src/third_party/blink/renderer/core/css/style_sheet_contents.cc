@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/core/css/style_rule_counter_style.h"
 #include "third_party/blink/renderer/core/css/style_rule_import.h"
 #include "third_party/blink/renderer/core/css/style_rule_namespace.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -320,9 +321,11 @@ const AtomicString& StyleSheetContents::NamespaceURIFromPrefix(
 
 void StyleSheetContents::ParseAuthorStyleSheet(
     const CSSStyleSheetResource* cached_style_sheet) {
-  TRACE_EVENT1(
-      "blink,devtools.timeline", "ParseAuthorStyleSheet", "data",
-      inspector_parse_author_style_sheet_event::Data(cached_style_sheet));
+  TRACE_EVENT1("blink,devtools.timeline", "ParseAuthorStyleSheet", "data",
+               [&](perfetto::TracedValue context) {
+                 inspector_parse_author_style_sheet_event::Data(
+                     std::move(context), cached_style_sheet);
+               });
 
   const ResourceResponse& response = cached_style_sheet->GetResponse();
   CSSStyleSheetResource::MIMETypeCheck mime_type_check =
@@ -347,14 +350,6 @@ void StyleSheetContents::ParseAuthorStyleSheet(
 
 ParseSheetResult StyleSheetContents::ParseString(const String& sheet_text,
                                                  bool allow_import_rules) {
-  return ParseStringAtPosition(sheet_text, TextPosition::MinimumPosition(),
-                               allow_import_rules);
-}
-
-ParseSheetResult StyleSheetContents::ParseStringAtPosition(
-    const String& sheet_text,
-    const TextPosition& start_position,
-    bool allow_import_rules) {
   const auto* context =
       MakeGarbageCollected<CSSParserContext>(ParserContext(), this);
   return CSSParser::ParseSheet(context, this, sheet_text,
@@ -490,9 +485,10 @@ static bool ChildRulesHaveFailedOrCanceledSubresources(
                 .HasFailedOrCanceledSubresources())
           return true;
         break;
+      case StyleRuleBase::kContainer:
       case StyleRuleBase::kMedia:
         if (ChildRulesHaveFailedOrCanceledSubresources(
-                To<StyleRuleMedia>(rule)->ChildRules()))
+                To<StyleRuleGroup>(rule)->ChildRules()))
           return true;
         break;
       case StyleRuleBase::kCharset:

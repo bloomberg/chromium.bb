@@ -121,7 +121,7 @@ bool BuildCustomValues(
 }  // namespace
 
 // static
-base::Optional<PaintWorkletStylePropertyMap::CrossThreadData>
+absl::optional<PaintWorkletStylePropertyMap::CrossThreadData>
 PaintWorkletStylePropertyMap::BuildCrossThreadData(
     const Document& document,
     UniqueObjectId unique_object_id,
@@ -134,10 +134,10 @@ PaintWorkletStylePropertyMap::BuildCrossThreadData(
   data.ReserveCapacityForSize(native_properties.size() +
                               custom_properties.size());
   if (!BuildNativeValues(style, native_properties, data))
-    return base::nullopt;
+    return absl::nullopt;
   if (!BuildCustomValues(document, unique_object_id, style, custom_properties,
                          data, input_property_keys))
-    return base::nullopt;
+    return absl::nullopt;
   return data;
 }
 
@@ -172,13 +172,13 @@ CSSStyleValueVector PaintWorkletStylePropertyMap::getAll(
     const ExecutionContext* execution_context,
     const String& property_name,
     ExceptionState& exception_state) const {
-  CSSPropertyID property_id = cssPropertyID(execution_context, property_name);
+  CSSPropertyID property_id = CssPropertyID(execution_context, property_name);
   if (property_id == CSSPropertyID::kInvalid) {
     exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
     return CSSStyleValueVector();
   }
 
-  DCHECK(isValidCSSPropertyID(property_id));
+  DCHECK(IsValidCSSPropertyID(property_id));
 
   CSSStyleValueVector values;
   auto value = data_.find(property_name);

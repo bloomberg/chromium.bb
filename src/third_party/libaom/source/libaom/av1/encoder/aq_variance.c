@@ -52,7 +52,7 @@ void av1_vaq_frame_setup(AV1_COMP *cpi) {
   int resolution_change =
       cm->prev_frame && (cm->width != cm->prev_frame->width ||
                          cm->height != cm->prev_frame->height);
-  int avg_energy = (int)(cpi->twopass.mb_av_energy - 2);
+  int avg_energy = (int)(cpi->ppi->twopass.mb_av_energy - 2);
   double avg_ratio;
   if (avg_energy > 7) avg_energy = 7;
   if (avg_energy < 0) avg_energy = 0;
@@ -81,7 +81,7 @@ void av1_vaq_frame_setup(AV1_COMP *cpi) {
       int qindex_delta = av1_compute_qdelta_by_rate(
           &cpi->rc, cm->current_frame.frame_type, base_qindex,
           rate_ratio[i] / avg_ratio, cpi->is_screen_content_type,
-          cm->seq_params.bit_depth);
+          cm->seq_params->bit_depth);
 
       // We don't allow qindex 0 in a segment if the base value is not 0.
       // Q index 0 (lossless) implies 4x4 encoding only and in AQ mode a segment
@@ -126,14 +126,14 @@ int av1_log_block_var(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs) {
     for (j = 0; j < bw; j += 4) {
       if (is_cur_buf_hbd(xd)) {
         var +=
-            log(1.0 + cpi->fn_ptr[BLOCK_4X4].vf(
+            log(1.0 + cpi->ppi->fn_ptr[BLOCK_4X4].vf(
                           x->plane[0].src.buf + i * x->plane[0].src.stride + j,
                           x->plane[0].src.stride,
                           CONVERT_TO_BYTEPTR(av1_highbd_all_zeros), 0, &sse) /
                           16);
       } else {
         var +=
-            log(1.0 + cpi->fn_ptr[BLOCK_4X4].vf(
+            log(1.0 + cpi->ppi->fn_ptr[BLOCK_4X4].vf(
                           x->plane[0].src.buf + i * x->plane[0].src.stride + j,
                           x->plane[0].src.stride, av1_all_zeros, 0, &sse) /
                           16);
@@ -178,7 +178,7 @@ int av1_block_wavelet_energy_level(const AV1_COMP *cpi, MACROBLOCK *x,
   double energy, energy_midpoint;
   aom_clear_system_state();
   energy_midpoint = (is_stat_consumption_stage_twopass(cpi))
-                        ? cpi->twopass.frame_avg_haar_energy
+                        ? cpi->ppi->twopass.frame_avg_haar_energy
                         : DEFAULT_E_MIDPOINT;
   energy = av1_log_block_wavelet_energy(x, bs) - energy_midpoint;
   return clamp((int)round(energy), ENERGY_MIN, ENERGY_MAX);
@@ -199,7 +199,7 @@ int av1_compute_q_from_energy_level_deltaq_mode(const AV1_COMP *const cpi,
   int qindex_delta = av1_compute_qdelta_by_rate(
       &cpi->rc, cm->current_frame.frame_type, base_qindex,
       deltaq_rate_ratio[rate_level], cpi->is_screen_content_type,
-      cm->seq_params.bit_depth);
+      cm->seq_params->bit_depth);
 
   if ((base_qindex != 0) && ((base_qindex + qindex_delta) == 0)) {
     qindex_delta = -base_qindex + 1;

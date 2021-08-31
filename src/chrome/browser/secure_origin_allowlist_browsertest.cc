@@ -141,8 +141,8 @@ IN_PROC_BROWSER_TEST_P(SecureOriginAllowlistBrowsertest, Simple) {
       "example.com", "/secure_origin_allowlist_browsertest.html");
   ui_test_utils::NavigateToURL(browser(), url);
 
-  base::string16 secure(base::ASCIIToUTF16("secure context"));
-  base::string16 insecure(base::ASCIIToUTF16("insecure context"));
+  std::u16string secure(u"secure context");
+  std::u16string insecure(u"insecure context");
 
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(), secure);
@@ -166,40 +166,7 @@ IN_PROC_BROWSER_TEST_P(SecureOriginAllowlistBrowsertest, Simple) {
   }
 }
 
-class SecureOriginAllowlistBrowsertestWithMarkHttpDangerous
-    : public SecureOriginAllowlistBrowsertest {
- public:
-  SecureOriginAllowlistBrowsertestWithMarkHttpDangerous() {
-    // TODO(crbug.com/917693): Remove this forced feature/param when the feature
-    // fully launches.
-    feature_list_.InitAndEnableFeatureWithParameters(
-        security_state::features::kMarkHttpAsFeature,
-        {{security_state::features::kMarkHttpAsFeatureParameterName,
-          security_state::features::kMarkHttpAsParameterDangerous}});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         SecureOriginAllowlistBrowsertestWithMarkHttpDangerous,
-                         testing::Values(TestVariant::kNone,
-                                         TestVariant::kCommandline,
-// The legacy policy isn't defined on ChromeOS or Android, so skip tests that
-// use it on those platforms.
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-                                         TestVariant::kPolicyOld,
-                                         TestVariant::kPolicyOldAndNew,
-#endif
-                                         TestVariant::kPolicy,
-                                         TestVariant::kPolicy2,
-                                         TestVariant::kPolicy3));
-
-// Tests that allowlisted insecure origins are correctly set as security level
-// NONE instead of the default level DANGEROUS.
-IN_PROC_BROWSER_TEST_P(SecureOriginAllowlistBrowsertestWithMarkHttpDangerous,
-                       SecurityIndicators) {
+IN_PROC_BROWSER_TEST_P(SecureOriginAllowlistBrowsertest, SecurityIndicators) {
   ui_test_utils::NavigateToURL(
       browser(),
       embedded_test_server()->GetURL(
@@ -210,15 +177,15 @@ IN_PROC_BROWSER_TEST_P(SecureOriginAllowlistBrowsertestWithMarkHttpDangerous,
 
   if (GetParam() == TestVariant::kPolicyOldAndNew) {
     // When both policies are set, the new policy overrides the old policy.
-    EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
+    EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
     ui_test_utils::NavigateToURL(
         browser(),
         embedded_test_server()->GetURL(
             "otherexample.com", "/secure_origin_allowlist_browsertest.html"));
     EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
   } else {
-    EXPECT_EQ(ExpectSecureContext() ? security_state::NONE
-                                    : security_state::DANGEROUS,
-              helper->GetSecurityLevel());
+    EXPECT_EQ(
+        ExpectSecureContext() ? security_state::NONE : security_state::WARNING,
+        helper->GetSecurityLevel());
   }
 }

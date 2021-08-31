@@ -115,7 +115,7 @@ DomainName::DomainName(std::vector<std::string> labels, size_t max_wire_size)
 
 DomainName::DomainName(const DomainName& other) = default;
 
-DomainName::DomainName(DomainName&& other) = default;
+DomainName::DomainName(DomainName&& other) noexcept = default;
 
 DomainName& DomainName::operator=(const DomainName& rhs) = default;
 
@@ -196,7 +196,7 @@ RawRecordRdata::RawRecordRdata(const uint8_t* begin, size_t size)
 
 RawRecordRdata::RawRecordRdata(const RawRecordRdata& other) = default;
 
-RawRecordRdata::RawRecordRdata(RawRecordRdata&& other) = default;
+RawRecordRdata::RawRecordRdata(RawRecordRdata&& other) noexcept = default;
 
 RawRecordRdata& RawRecordRdata::operator=(const RawRecordRdata& rhs) = default;
 
@@ -228,7 +228,7 @@ SrvRecordRdata::SrvRecordRdata(uint16_t priority,
 
 SrvRecordRdata::SrvRecordRdata(const SrvRecordRdata& other) = default;
 
-SrvRecordRdata::SrvRecordRdata(SrvRecordRdata&& other) = default;
+SrvRecordRdata::SrvRecordRdata(SrvRecordRdata&& other) noexcept = default;
 
 SrvRecordRdata& SrvRecordRdata::operator=(const SrvRecordRdata& rhs) = default;
 
@@ -260,7 +260,7 @@ ARecordRdata::ARecordRdata(IPAddress ipv4_address,
 
 ARecordRdata::ARecordRdata(const ARecordRdata& other) = default;
 
-ARecordRdata::ARecordRdata(ARecordRdata&& other) = default;
+ARecordRdata::ARecordRdata(ARecordRdata&& other) noexcept = default;
 
 ARecordRdata& ARecordRdata::operator=(const ARecordRdata& rhs) = default;
 
@@ -291,7 +291,7 @@ AAAARecordRdata::AAAARecordRdata(IPAddress ipv6_address,
 
 AAAARecordRdata::AAAARecordRdata(const AAAARecordRdata& other) = default;
 
-AAAARecordRdata::AAAARecordRdata(AAAARecordRdata&& other) = default;
+AAAARecordRdata::AAAARecordRdata(AAAARecordRdata&& other) noexcept = default;
 
 AAAARecordRdata& AAAARecordRdata::operator=(const AAAARecordRdata& rhs) =
     default;
@@ -319,7 +319,7 @@ PtrRecordRdata::PtrRecordRdata(DomainName ptr_domain)
 
 PtrRecordRdata::PtrRecordRdata(const PtrRecordRdata& other) = default;
 
-PtrRecordRdata::PtrRecordRdata(PtrRecordRdata&& other) = default;
+PtrRecordRdata::PtrRecordRdata(PtrRecordRdata&& other) noexcept = default;
 
 PtrRecordRdata& PtrRecordRdata::operator=(const PtrRecordRdata& rhs) = default;
 
@@ -363,7 +363,6 @@ TxtRecordRdata::TxtRecordRdata() = default;
 
 TxtRecordRdata::TxtRecordRdata(std::vector<Entry> texts) {
   ErrorOr<TxtRecordRdata> rdata = TxtRecordRdata::TryCreate(std::move(texts));
-  OSP_DCHECK(rdata.is_value());
   *this = std::move(rdata.value());
 }
 
@@ -373,7 +372,7 @@ TxtRecordRdata::TxtRecordRdata(std::vector<std::string> texts,
 
 TxtRecordRdata::TxtRecordRdata(const TxtRecordRdata& other) = default;
 
-TxtRecordRdata::TxtRecordRdata(TxtRecordRdata&& other) = default;
+TxtRecordRdata::TxtRecordRdata(TxtRecordRdata&& other) noexcept = default;
 
 TxtRecordRdata& TxtRecordRdata::operator=(const TxtRecordRdata& rhs) = default;
 
@@ -442,7 +441,7 @@ NsecRecordRdata::NsecRecordRdata(DomainName next_domain_name,
 
 NsecRecordRdata::NsecRecordRdata(const NsecRecordRdata& other) = default;
 
-NsecRecordRdata::NsecRecordRdata(NsecRecordRdata&& other) = default;
+NsecRecordRdata::NsecRecordRdata(NsecRecordRdata&& other) noexcept = default;
 
 NsecRecordRdata& NsecRecordRdata::operator=(const NsecRecordRdata& rhs) =
     default;
@@ -524,7 +523,7 @@ OptRecordRdata::OptRecordRdata(std::vector<Option> options)
 
 OptRecordRdata::OptRecordRdata(const OptRecordRdata& other) = default;
 
-OptRecordRdata::OptRecordRdata(OptRecordRdata&& other) = default;
+OptRecordRdata::OptRecordRdata(OptRecordRdata&& other) noexcept = default;
 
 OptRecordRdata& OptRecordRdata::operator=(const OptRecordRdata& rhs) = default;
 
@@ -572,7 +571,7 @@ MdnsRecord::MdnsRecord(DomainName name,
 
 MdnsRecord::MdnsRecord(const MdnsRecord& other) = default;
 
-MdnsRecord::MdnsRecord(MdnsRecord&& other) = default;
+MdnsRecord::MdnsRecord(MdnsRecord&& other) noexcept = default;
 
 MdnsRecord& MdnsRecord::operator=(const MdnsRecord& rhs) = default;
 
@@ -607,9 +606,7 @@ bool MdnsRecord::IsValidConfig(const DomainName& name,
 }
 
 bool MdnsRecord::operator==(const MdnsRecord& rhs) const {
-  return dns_type_ == rhs.dns_type_ && dns_class_ == rhs.dns_class_ &&
-         record_type_ == rhs.record_type_ && ttl_ == rhs.ttl_ &&
-         name_ == rhs.name_ && rdata_ == rhs.rdata_;
+  return IsReannouncementOf(rhs) && ttl_ == rhs.ttl_;
 }
 
 bool MdnsRecord::operator!=(const MdnsRecord& rhs) const {
@@ -653,6 +650,12 @@ bool MdnsRecord::operator<=(const MdnsRecord& rhs) const {
 
 bool MdnsRecord::operator>=(const MdnsRecord& rhs) const {
   return !(*this < rhs);
+}
+
+bool MdnsRecord::IsReannouncementOf(const MdnsRecord& rhs) const {
+  return dns_type_ == rhs.dns_type_ && dns_class_ == rhs.dns_class_ &&
+         record_type_ == rhs.record_type_ && name_ == rhs.name_ &&
+         rdata_ == rhs.rdata_;
 }
 
 size_t MdnsRecord::MaxWireSize() const {

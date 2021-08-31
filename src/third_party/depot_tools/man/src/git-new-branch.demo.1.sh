@@ -15,3 +15,6 @@ run git map-branches -v
 run git checkout cool_feature 2>&1
 run git new-branch --upstream_current cl_depends_on_cool_feature
 run git map-branches -v
+run git checkout subfeature
+run git new-branch --inject_current injected_cl
+run git map-branches -v

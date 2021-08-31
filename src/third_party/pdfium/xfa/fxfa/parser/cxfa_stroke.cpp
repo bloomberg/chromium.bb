@@ -167,8 +167,8 @@ bool CXFA_Stroke::SameStyles(CXFA_Stroke* stroke, uint32_t dwFlags) {
   return true;
 }
 
-void CXFA_Stroke::Stroke(CFGAS_GEPath* pPath,
-                         CFGAS_GEGraphics* pGS,
+void CXFA_Stroke::Stroke(CFGAS_GEGraphics* pGS,
+                         const CFGAS_GEPath& pPath,
                          const CFX_Matrix& matrix) {
   if (!IsVisible())
     return;
@@ -186,6 +186,6 @@ void CXFA_Stroke::Stroke(CFGAS_GEPath* pPath,
   pGS->SetLineCap(CFX_GraphStateData::LineCapButt);
   XFA_StrokeTypeSetLineDash(pGS, GetStrokeType(), XFA_AttributeValue::Butt);
   pGS->SetStrokeColor(CFGAS_GEColor(GetColor()));
-  pGS->StrokePath(pPath, &matrix);
+  pGS->StrokePath(pPath, matrix);
   pGS->RestoreGraphState();
 }

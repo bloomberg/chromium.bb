@@ -9,10 +9,10 @@
 
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/installable/installable_logging.h"
+#include "components/webapps/browser/installable/installable_data.h"
 #include "content/public/browser/web_contents.h"
 
-namespace banners {
+namespace webapps {
 
 TestAppBannerManagerDesktop::TestAppBannerManagerDesktop(
     content::WebContents* web_contents)
@@ -83,13 +83,13 @@ void TestAppBannerManagerDesktop::OnDidGetManifest(
   // AppBannerManagerDesktop does not call |OnDidPerformInstallableCheck| to
   // complete the installability check in this case, instead it early exits
   // with failure.
-  if (!result.errors.empty())
+  if (!result.NoBlockingErrors())
     SetInstallable(false);
 }
 void TestAppBannerManagerDesktop::OnDidPerformInstallableWebAppCheck(
     const InstallableData& result) {
   AppBannerManagerDesktop::OnDidPerformInstallableWebAppCheck(result);
-  SetInstallable(result.errors.empty());
+  SetInstallable(result.NoBlockingErrors());
 }
 
 void TestAppBannerManagerDesktop::ResetCurrentPageData() {
@@ -117,6 +117,17 @@ void TestAppBannerManagerDesktop::DidFinishCreatingWebApp(
   OnFinished();
 }
 
+void TestAppBannerManagerDesktop::DidFinishLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url) {
+  if (ShouldIgnore(render_frame_host, validated_url)) {
+    SetInstallable(false);
+    return;
+  }
+
+  AppBannerManagerDesktop::DidFinishLoad(render_frame_host, validated_url);
+}
+
 void TestAppBannerManagerDesktop::UpdateState(AppBannerManager::State state) {
   AppBannerManager::UpdateState(state);
 
@@ -128,7 +139,7 @@ void TestAppBannerManagerDesktop::UpdateState(AppBannerManager::State state) {
 }
 
 void TestAppBannerManagerDesktop::SetInstallable(bool installable) {
-  DCHECK(!installable_.has_value());
+  DCHECK(!installable_.has_value() || installable_ == installable);
   installable_ = installable;
   if (installable_quit_closure_)
     std::move(installable_quit_closure_).Run();
@@ -141,4 +152,4 @@ void TestAppBannerManagerDesktop::OnFinished() {
   }
 }
 
-}  // namespace banners
+}  // namespace webapps

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/webrtc/tab_desktop_media_list.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -13,10 +15,12 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/test/base/fake_profile_manager.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -31,10 +35,10 @@
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
-#endif  // defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
+#include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using content::WebContents;
 using content::WebContentsTester;
@@ -43,20 +47,6 @@ namespace {
 
 constexpr int kDefaultSourceCount = 2;
 constexpr int kThumbnailSize = 50;
-
-class UnittestProfileManager : public ::ProfileManagerWithoutInit {
- public:
-  explicit UnittestProfileManager(const base::FilePath& user_data_dir)
-      : ::ProfileManagerWithoutInit(user_data_dir) {}
-
- protected:
-  std::unique_ptr<Profile> CreateProfileHelper(
-      const base::FilePath& path) override {
-    if (!base::PathExists(path) && !base::CreateDirectory(path))
-      return nullptr;
-    return std::make_unique<TestingProfile>(path);
-  }
-};
 
 // Create a greyscale image with certain size and grayscale value.
 gfx::Image CreateGrayscaleImage(gfx::Size size, uint8_t greyscale_value) {
@@ -134,7 +124,7 @@ class TabDesktopMediaListTest : public testing::Test {
       entry = contents->GetController().GetLastCommittedEntry();
     }
 
-    contents->UpdateTitleForEntry(entry, base::ASCIIToUTF16("Test tab"));
+    contents->UpdateTitleForEntry(entry, u"Test tab");
 
     content::FaviconStatus favicon_info;
     favicon_info.image =
@@ -146,13 +136,13 @@ class TabDesktopMediaListTest : public testing::Test {
   }
 
   void SetUp() override {
-    rvh_test_enabler_.reset(new content::RenderViewHostTestEnabler());
+    rvh_test_enabler_ = std::make_unique<content::RenderViewHostTestEnabler>();
     // Create a new temporary directory, and store the path.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingBrowserProcess::GetGlobal()->SetProfileManager(
-        new UnittestProfileManager(temp_dir_.GetPath()));
+        std::make_unique<FakeProfileManager>(temp_dir_.GetPath()));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
     cl->AppendSwitch(switches::kTestType);
 #endif
@@ -185,13 +175,13 @@ class TabDesktopMediaListTest : public testing::Test {
     manually_added_web_contents_.clear();
 
     browser_.reset();
-    TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
+    TestingBrowserProcess::GetGlobal()->SetProfileManager(nullptr);
     base::RunLoop().RunUntilIdle();
     rvh_test_enabler_.reset();
   }
 
   void CreateDefaultList() {
-    list_.reset(new TabDesktopMediaList());
+    list_ = std::make_unique<TabDesktopMediaList>();
     list_->SetThumbnailSize(gfx::Size(kThumbnailSize, kThumbnailSize));
 
     // Set update period to reduce the time it takes to run tests.
@@ -247,9 +237,9 @@ class TabDesktopMediaListTest : public testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
 
-#if defined(OS_CHROMEOS)
-  chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
-  chromeos::ScopedTestUserManager test_user_manager_;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ash::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
+  ash::ScopedTestUserManager test_user_manager_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(TabDesktopMediaListTest);
@@ -326,14 +316,14 @@ TEST_F(TabDesktopMediaListTest, UpdateTitle) {
   ASSERT_TRUE(contents);
   content::NavigationController& controller = contents->GetController();
   contents->UpdateTitleForEntry(controller.GetLastCommittedEntry(),
-                                base::ASCIIToUTF16("New test tab"));
+                                u"New test tab");
 
   EXPECT_CALL(observer_, OnSourceNameChanged(list_.get(), 0))
       .WillOnce(QuitMessageLoop());
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(list_->GetSource(0).name, base::UTF8ToUTF16("New test tab"));
+  EXPECT_EQ(list_->GetSource(0).name, u"New test tab");
 
   list_.reset();
 }

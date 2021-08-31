@@ -9,7 +9,9 @@
 #ifndef COMPONENTS_STORAGE_MONITOR_STORAGE_MONITOR_CHROMEOS_H_
 #define COMPONENTS_STORAGE_MONITOR_STORAGE_MONITOR_CHROMEOS_H_
 
-#if !defined(OS_CHROMEOS)
+#include "build/chromeos_buildflags.h"
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 #error "Should only be used on ChromeOS."
 #endif
 
@@ -21,6 +23,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"

@@ -5,8 +5,8 @@
 #include "chrome/browser/webshare/win/share_operation.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/post_async_results.h"
 #include "base/win/scoped_hstring.h"
@@ -15,6 +15,7 @@
 #include "chrome/browser/webshare/share_service_impl.h"
 #include "chrome/browser/webshare/win/show_share_ui_for_window_operation.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -154,8 +155,8 @@ class DataWriterFileStreamWriter final : public storage::FileStreamWriter {
       return net::ERR_UNEXPECTED;
 
     flush_callback_ = std::move(callback);
-    base::win::PostAsyncResults(
-        flush_operation_,
+    base::win::PostAsyncHandlers(
+        flush_operation_.Get(),
         base::BindOnce(&DataWriterFileStreamWriter::OnFlushCompleted,
                        weak_factory_.GetWeakPtr()));
     return net::ERR_IO_PENDING;
@@ -188,8 +189,8 @@ class DataWriterFileStreamWriter final : public storage::FileStreamWriter {
       return net::ERR_UNEXPECTED;
 
     write_callback_ = std::move(callback);
-    base::win::PostAsyncResults(
-        write_operation_,
+    base::win::PostAsyncHandlers(
+        write_operation_.Get(),
         base::BindOnce(&DataWriterFileStreamWriter::OnWriteCompleted,
                        weak_factory_.GetWeakPtr()));
     return net::ERR_IO_PENDING;
@@ -249,8 +250,8 @@ class OutputStreamWriteOperation
                    base::OnceCallback<void()> on_complete) {
     stream_ = ComPtr<IOutputStream>(stream);
     on_complete_ = std::move(on_complete);
-    if (!base::PostTask(
-            FROM_HERE, {content::BrowserThread::IO},
+    if (!content::GetIOThreadTaskRunner({})->PostTask(
+            FROM_HERE,
             base::BindOnce(&OutputStreamWriteOperation::WriteStreamOnIOThread,
                            weak_factory_.GetWeakPtr())))
       Complete();
@@ -387,11 +388,10 @@ void ShareOperation::Run(blink::mojom::ShareService::ShareCallback callback) {
     // or is longer than the max length supported by the IAttachmentExecute
     // service, use a generic value that reliably maps to the Internet zone.
     GURL source_url = web_contents()->GetLastCommittedURL();
-    base::string16 source =
-        (source_url.is_valid() &&
-         source_url.spec().size() <= INTERNET_MAX_URL_LENGTH)
-            ? base::UTF8ToUTF16(source_url.spec())
-            : L"about:internet";
+    std::wstring source = (source_url.is_valid() &&
+                           source_url.spec().size() <= INTERNET_MAX_URL_LENGTH)
+                              ? base::UTF8ToWide(source_url.spec())
+                              : L"about:internet";
 
     // For each "file", check against the OS that it is allowed
     // The same instance cannot be used to check multiple files, so this
@@ -535,8 +535,7 @@ bool ShareOperation::PutShareContentInDataPackage(IDataRequest* data_request) {
       // target app has finished fully processing the shared content this could
       // be updated to be owned/maintained by this ShareOperation instance.
       auto operation = base::MakeRefCounted<OutputStreamWriteOperation>(
-          content::BrowserContext::GetBlobStorageContext(
-              web_contents()->GetBrowserContext()),
+          web_contents()->GetBrowserContext()->GetBlobStorageContext(),
           file_bytes_shared, file->blob->uuid);
       auto name_h = base::win::ScopedHString::Create(file->name);
       auto raw_data_requested_callback =
@@ -563,11 +562,14 @@ bool ShareOperation::PutShareContentInDataPackage(IDataRequest* data_request) {
         return false;
       }
 
-      if (FAILED(base::win::PostAsyncResults(
-              async_operation,
+      async_operations_.push_back(async_operation);
+
+      if (FAILED(base::win::PostAsyncHandlers(
+              async_operation.Get(),
               base::BindOnce(&ShareOperation::OnStreamedFileCreated,
-                             weak_factory_.GetWeakPtr()))))
+                             weak_factory_.GetWeakPtr())))) {
         return false;
+      }
     }
   }
 

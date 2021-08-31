@@ -9,11 +9,11 @@
 
 #include "base/test/task_environment.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
-#include "chromeos/components/phonehub/fake_connection_manager.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
+#include "chromeos/services/secure_channel/public/cpp/client/fake_connection_manager.h"
 #include "components/session_manager/core/session_manager.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -116,8 +116,8 @@ class FeatureStatusProviderImplTest : public testing::Test {
   }
 
   void SetSyncedDevices(
-      const base::Optional<multidevice::RemoteDeviceRef>& local_device,
-      const std::vector<base::Optional<multidevice::RemoteDeviceRef>>
+      const absl::optional<multidevice::RemoteDeviceRef>& local_device,
+      const std::vector<absl::optional<multidevice::RemoteDeviceRef>>
           phone_devices) {
     fake_device_sync_client_.set_local_device_metadata(local_device);
 
@@ -156,7 +156,7 @@ class FeatureStatusProviderImplTest : public testing::Test {
 
   void SetHostStatusWithDevice(
       HostStatus host_status,
-      const base::Optional<multidevice::RemoteDeviceRef>& host_device) {
+      const absl::optional<multidevice::RemoteDeviceRef>& host_device) {
     fake_multidevice_setup_client_.SetHostStatusWithDevice(
         std::make_pair(host_status, host_device));
   }
@@ -183,7 +183,7 @@ class FeatureStatusProviderImplTest : public testing::Test {
     impl->AdapterPoweredChanged(mock_adapter_.get(), powered);
   }
 
-  void SetConnectionStatus(ConnectionManager::Status status) {
+  void SetConnectionStatus(secure_channel::ConnectionManager::Status status) {
     fake_connection_manager_.SetStatus(status);
   }
 
@@ -208,7 +208,7 @@ class FeatureStatusProviderImplTest : public testing::Test {
 
   device_sync::FakeDeviceSyncClient fake_device_sync_client_;
   multidevice_setup::FakeMultiDeviceSetupClient fake_multidevice_setup_client_;
-  FakeConnectionManager fake_connection_manager_;
+  secure_channel::FakeConnectionManager fake_connection_manager_;
 
   scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
 
@@ -224,28 +224,28 @@ class FeatureStatusProviderImplTest : public testing::Test {
 // Tests conditions for kNotEligibleForFeature status, including missing local
 // device and/or phone and various missing properties of these devices.
 TEST_F(FeatureStatusProviderImplTest, NotEligibleForFeature) {
-  SetSyncedDevices(/*local_device=*/base::nullopt,
-                   /*phone_devices=*/{base::nullopt});
+  SetSyncedDevices(/*local_device=*/absl::nullopt,
+                   /*phone_devices=*/{absl::nullopt});
   EXPECT_EQ(FeatureStatus::kNotEligibleForFeature, GetStatus());
 
   SetSyncedDevices(CreateLocalDevice(/*supports_phone_hub_client=*/false,
                                      /*has_bluetooth_address=*/false),
-                   /*phone_devices=*/{base::nullopt});
+                   /*phone_devices=*/{absl::nullopt});
   EXPECT_EQ(FeatureStatus::kNotEligibleForFeature, GetStatus());
 
   SetSyncedDevices(CreateLocalDevice(/*supports_phone_hub_client=*/true,
                                      /*has_bluetooth_address=*/false),
-                   /*phone_devices=*/{base::nullopt});
+                   /*phone_devices=*/{absl::nullopt});
   EXPECT_EQ(FeatureStatus::kNotEligibleForFeature, GetStatus());
 
   SetSyncedDevices(CreateLocalDevice(/*supports_phone_hub_client=*/false,
                                      /*has_bluetooth_address=*/true),
-                   /*phone_devices=*/{base::nullopt});
+                   /*phone_devices=*/{absl::nullopt});
   EXPECT_EQ(FeatureStatus::kNotEligibleForFeature, GetStatus());
 
   SetSyncedDevices(CreateLocalDevice(/*supports_phone_hub_client=*/true,
                                      /*has_bluetooth_address=*/true),
-                   /*phone_device=*/{base::nullopt});
+                   /*phone_device=*/{absl::nullopt});
   EXPECT_EQ(FeatureStatus::kNotEligibleForFeature, GetStatus());
 
   SetSyncedDevices(CreateLocalDevice(/*supports_phone_hub_client=*/true,
@@ -313,7 +313,7 @@ TEST_F(FeatureStatusProviderImplTest, NotEligibleForFeature) {
   // eligible, expect that we return kNotEligibleForFeature.
   SetFeatureState(FeatureState::kEnabledByUser);
   SetHostStatusWithDevice(HostStatus::kEligibleHostExistsButNoHostSet,
-                          /*host_device=*/base::nullopt);
+                          /*host_device=*/absl::nullopt);
   SetSyncedDevices(CreateLocalDevice(/*supports_phone_hub_client=*/true,
                                      /*has_bluetooth_address=*/true),
                    {CreatePhoneDevice(/*supports_better_together_host=*/false,
@@ -378,7 +378,7 @@ TEST_F(FeatureStatusProviderImplTest, MultiPhoneEligibility) {
 
   // Simulate no host device connected and expect to detect one eligible host.
   SetHostStatusWithDevice(HostStatus::kEligibleHostExistsButNoHostSet,
-                          /*host_device=*/base::nullopt);
+                          /*host_device=*/absl::nullopt);
   EXPECT_EQ(FeatureStatus::kEligiblePhoneButNotSetUp, GetStatus());
 }
 
@@ -498,15 +498,15 @@ TEST_F(FeatureStatusProviderImplTest, TransitionBetweenAllStatuses) {
   EXPECT_EQ(FeatureStatus::kEnabledButDisconnected, GetStatus());
   EXPECT_EQ(5u, GetNumObserverCalls());
 
-  SetConnectionStatus(ConnectionManager::Status::kConnecting);
+  SetConnectionStatus(secure_channel::ConnectionManager::Status::kConnecting);
   EXPECT_EQ(FeatureStatus::kEnabledAndConnecting, GetStatus());
   EXPECT_EQ(6u, GetNumObserverCalls());
 
-  SetConnectionStatus(ConnectionManager::Status::kConnected);
+  SetConnectionStatus(secure_channel::ConnectionManager::Status::kConnected);
   EXPECT_EQ(FeatureStatus::kEnabledAndConnected, GetStatus());
   EXPECT_EQ(7u, GetNumObserverCalls());
 
-  SetConnectionStatus(ConnectionManager::Status::kDisconnected);
+  SetConnectionStatus(secure_channel::ConnectionManager::Status::kDisconnected);
   EXPECT_EQ(FeatureStatus::kEnabledButDisconnected, GetStatus());
   EXPECT_EQ(8u, GetNumObserverCalls());
 
@@ -530,7 +530,7 @@ TEST_F(FeatureStatusProviderImplTest, AttemptingConnection) {
   EXPECT_EQ(FeatureStatus::kEnabledButDisconnected, GetStatus());
   EXPECT_EQ(1u, GetNumObserverCalls());
 
-  SetConnectionStatus(ConnectionManager::Status::kConnecting);
+  SetConnectionStatus(secure_channel::ConnectionManager::Status::kConnecting);
   EXPECT_EQ(FeatureStatus::kEnabledAndConnecting, GetStatus());
   EXPECT_EQ(2u, GetNumObserverCalls());
 }
@@ -544,11 +544,11 @@ TEST_F(FeatureStatusProviderImplTest, AttemptedConnectionSuccessful) {
   EXPECT_EQ(FeatureStatus::kEnabledButDisconnected, GetStatus());
   EXPECT_EQ(1u, GetNumObserverCalls());
 
-  SetConnectionStatus(ConnectionManager::Status::kConnecting);
+  SetConnectionStatus(secure_channel::ConnectionManager::Status::kConnecting);
   EXPECT_EQ(FeatureStatus::kEnabledAndConnecting, GetStatus());
   EXPECT_EQ(2u, GetNumObserverCalls());
 
-  SetConnectionStatus(ConnectionManager::Status::kConnected);
+  SetConnectionStatus(secure_channel::ConnectionManager::Status::kConnected);
   EXPECT_EQ(FeatureStatus::kEnabledAndConnected, GetStatus());
   EXPECT_EQ(3u, GetNumObserverCalls());
 }
@@ -562,11 +562,11 @@ TEST_F(FeatureStatusProviderImplTest, AttemptedConnectionFailed) {
   EXPECT_EQ(FeatureStatus::kEnabledButDisconnected, GetStatus());
   EXPECT_EQ(1u, GetNumObserverCalls());
 
-  SetConnectionStatus(ConnectionManager::Status::kConnecting);
+  SetConnectionStatus(secure_channel::ConnectionManager::Status::kConnecting);
   EXPECT_EQ(FeatureStatus::kEnabledAndConnecting, GetStatus());
   EXPECT_EQ(2u, GetNumObserverCalls());
 
-  SetConnectionStatus(ConnectionManager::Status::kDisconnected);
+  SetConnectionStatus(secure_channel::ConnectionManager::Status::kDisconnected);
   EXPECT_EQ(FeatureStatus::kEnabledButDisconnected, GetStatus());
   EXPECT_EQ(3u, GetNumObserverCalls());
 }

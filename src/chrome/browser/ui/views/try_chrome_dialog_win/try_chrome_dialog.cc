@@ -8,6 +8,7 @@
 
 #include <shellapi.h>
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -17,7 +18,6 @@
 #include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -34,6 +34,8 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/win/screen_win.h"
@@ -171,7 +173,7 @@ enum class TryChromeButtonType { OPEN_CHROME, NO_THANKS };
 // the browser.
 std::unique_ptr<views::LabelButton> CreateWin10StyleButton(
     views::Button::PressedCallback callback,
-    const base::string16& text,
+    const std::u16string& text,
     TryChromeButtonType button_type) {
   auto button = std::make_unique<views::LabelButton>(std::move(callback), text,
                                                      CONTEXT_WINDOWS10_NATIVE);
@@ -195,18 +197,21 @@ std::unique_ptr<views::LabelButton> CreateWin10StyleButton(
 // the background of the widget.
 class ClickableView : public views::View {
  public:
+  METADATA_HEADER(ClickableView);
   ClickableView() = default;
+  ClickableView(const ClickableView&) = delete;
+  ClickableView& operator=(const ClickableView&) = delete;
 
   // views::View:
   bool OnMousePressed(const ui::MouseEvent& event) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ClickableView);
 };
 
 bool ClickableView::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
+
+BEGIN_METADATA(ClickableView, views::View)
+END_METADATA
 
 }  // namespace
 
@@ -216,6 +221,8 @@ bool ClickableView::OnMousePressed(const ui::MouseEvent& event) {
 class TryChromeDialog::Context {
  public:
   Context();
+  Context(const Context&) = delete;
+  Context& operator=(const Context&) = delete;
 
   // Begins asynchronous initialization of the context (i.e., runs a search for
   // the taskbar icon), running |closure| when done.
@@ -249,6 +256,8 @@ class TryChromeDialog::Context {
   // popup over the notification area or "over" the taskbar in any orientation.
   class DialogCalculator {
    public:
+    DialogCalculator(const DialogCalculator&) = delete;
+    DialogCalculator& operator=(const DialogCalculator&) = delete;
     virtual ~DialogCalculator() {}
 
     // Returns the ToastLocation metric to be reported when this calculator is
@@ -278,8 +287,6 @@ class TryChromeDialog::Context {
    private:
     // The ToastLocation metric to be reported when this calculator is used.
     const installer::ExperimentMetrics::ToastLocation toast_location_;
-
-    DISALLOW_COPY_AND_ASSIGN(DialogCalculator);
   };
 
   // A calculator for positioning the popup over the notification area.
@@ -288,6 +295,9 @@ class TryChromeDialog::Context {
     NotificationAreaCalculator()
         : DialogCalculator(
               installer::ExperimentMetrics::kOverNotificationArea) {}
+    NotificationAreaCalculator(const NotificationAreaCalculator&) = delete;
+    NotificationAreaCalculator& operator=(const NotificationAreaCalculator&) =
+        delete;
 
     // DialogCalculator:
     void AddBorderToContents(views::Widget* popup,
@@ -295,9 +305,6 @@ class TryChromeDialog::Context {
     gfx::Rect ComputeBounds(const Context& context,
                             views::Widget* popup,
                             const gfx::Size& size) override;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(NotificationAreaCalculator);
   };
 
   // A calculator for positioning the popup "over" Chrome's icon in the taskbar,
@@ -311,6 +318,8 @@ class TryChromeDialog::Context {
 
     static std::unique_ptr<TaskbarCalculator> Create(Location location);
 
+    TaskbarCalculator(const TaskbarCalculator&) = delete;
+    TaskbarCalculator& operator=(const TaskbarCalculator&) = delete;
     ~TaskbarCalculator() override { CHECK(!IsInObserverList()); }
 
     // DialogCalculator:
@@ -413,8 +422,6 @@ class TryChromeDialog::Context {
     // The last size, in pixels, for the popup's window for which its region was
     // calculated.
     gfx::Size window_size_;
-
-    DISALLOW_COPY_AND_ASSIGN(TaskbarCalculator);
   };
 
   enum class TaskbarLocation { kUnknown, kTop, kLeft, kBottom, kRight };
@@ -463,8 +470,6 @@ class TryChromeDialog::Context {
   // A dialog calculator to position and draw the popup based on the presence
   // and location of the taskbar icon.
   std::unique_ptr<DialogCalculator> calculator_;
-
-  DISALLOW_COPY_AND_ASSIGN(Context);
 };
 
 // TryChromeDialog::Context::Context -------------------------------------------
@@ -918,8 +923,10 @@ class TryChromeDialog::ModalShowDelegate : public TryChromeDialog::Delegate {
  public:
   // Constructs the updater with a closure to be run after the dialog is closed
   // to break out of the modal run loop.
-  explicit ModalShowDelegate(base::Closure quit_closure)
+  explicit ModalShowDelegate(base::RepeatingClosure quit_closure)
       : quit_closure_(std::move(quit_closure)) {}
+  ModalShowDelegate(const ModalShowDelegate&) = delete;
+  ModalShowDelegate& operator=(const ModalShowDelegate&) = delete;
   ~ModalShowDelegate() override = default;
 
  protected:
@@ -930,13 +937,11 @@ class TryChromeDialog::ModalShowDelegate : public TryChromeDialog::Delegate {
   void InteractionComplete() override;
 
  private:
-  base::Closure quit_closure_;
+  base::RepeatingClosure quit_closure_;
   installer::ExperimentStorage storage_;
 
   // The time at which the toast was shown; used for computing the action delay.
   base::TimeTicks time_shown_;
-
-  DISALLOW_COPY_AND_ASSIGN(ModalShowDelegate);
 };
 
 void TryChromeDialog::ModalShowDelegate::SetToastLocation(
@@ -1014,8 +1019,9 @@ TryChromeDialog::~TryChromeDialog() {
 void TryChromeDialog::ShowDialogAsync() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
 
-  endsession_observer_ = std::make_unique<gfx::SingletonHwndObserver>(
-      base::Bind(&TryChromeDialog::OnWindowMessage, base::Unretained(this)));
+  endsession_observer_ =
+      std::make_unique<gfx::SingletonHwndObserver>(base::BindRepeating(
+          &TryChromeDialog::OnWindowMessage, base::Unretained(this)));
 
   context_->Initialize(base::BindOnce(&TryChromeDialog::OnContextInitialized,
                                       base::Unretained(this)));
@@ -1043,7 +1049,7 @@ void TryChromeDialog::OnContextInitialized() {
   const gfx::Size logo_size = logo->GetPreferredSize();
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
+  params.activatable = views::Widget::InitParams::Activatable::kYes;
   // An approximate window size. Layout() can adjust.
   params.bounds = gfx::Rect(kToastWidth, 120);
   params.name = "TryChromeDialog";

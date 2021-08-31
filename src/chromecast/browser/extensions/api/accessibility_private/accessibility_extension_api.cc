@@ -4,6 +4,7 @@
 
 #include "chromecast/browser/extensions/api/accessibility_private/accessibility_extension_api.h"
 
+#include "base/logging.h"
 #include "chromecast/browser/accessibility/accessibility_manager.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/common/extensions_api/accessibility_private.h"
@@ -125,6 +126,13 @@ ExtensionFunction::ResponseAction
 AccessibilityPrivateSendSyntheticKeyEventFunction::Run() {
   LOG(ERROR) << "AccessibilityPrivateSendSyntheticKeyEventFunction";
   return RespondNow(Error(kErrorNotSupported));
+}
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
+  // Chromecast's touch exploration controller still generates synthetic
+  // mouse events on its own. Do nothing.
+  return RespondNow(NoArguments());
 }
 
 }  // namespace api

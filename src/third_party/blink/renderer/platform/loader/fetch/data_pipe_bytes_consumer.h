@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_DATA_PIPE_BYTES_CONSUMER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_DATA_PIPE_BYTES_CONSUMER_H_
 
-#include <memory>
-
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -87,7 +85,7 @@ class PLATFORM_EXPORT DataPipeBytesConsumer final : public BytesConsumer {
   InternalState state_ = InternalState::kWaiting;
   Error error_;
   uint64_t num_read_bytes_ = 0;
-  base::Optional<uint64_t> total_size_;
+  absl::optional<uint64_t> total_size_;
   bool is_in_two_phase_read_ = false;
   bool has_pending_notification_ = false;
   bool has_pending_complete_ = false;

@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/win/conflicts/module_blacklist_cache_util.h"
+#include "chrome/browser/win/conflicts/module_blocklist_cache_util.h"
 #include "chrome/browser/win/conflicts/module_database.h"
 #include "chrome/browser/win/conflicts/third_party_conflicts_manager.h"
 
@@ -139,11 +139,6 @@ void ThirdPartyModuleListComponentInstallerPolicy::GetHash(
 
 std::string ThirdPartyModuleListComponentInstallerPolicy::GetName() const {
   return kThirdPartyModuleListName;
-}
-
-std::vector<std::string>
-ThirdPartyModuleListComponentInstallerPolicy::GetMimeTypes() const {
-  return std::vector<std::string>();
 }
 
 update_client::InstallerAttributes

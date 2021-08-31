@@ -99,9 +99,8 @@ std::unique_ptr<PermissionRequestCreator>
 PermissionRequestCreatorApiary::CreateWithProfile(Profile* profile) {
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   return std::make_unique<PermissionRequestCreatorApiary>(
-      identity_manager,
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetURLLoaderFactoryForBrowserProcess());
+      identity_manager, profile->GetDefaultStoragePartition()
+                            ->GetURLLoaderFactoryForBrowserProcess());
 }
 
 bool PermissionRequestCreatorApiary::IsEnabled() const {
@@ -161,7 +160,7 @@ void PermissionRequestCreatorApiary::StartFetching(Request* request) {
               base::Unretained(this), request),
           signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate,
           // This class doesn't care about browser sync consent.
-          signin::ConsentLevel::kNotRequired);
+          signin::ConsentLevel::kSignin);
 }
 
 void PermissionRequestCreatorApiary::OnAccessTokenFetchComplete(
@@ -236,7 +235,8 @@ void PermissionRequestCreatorApiary::OnAccessTokenFetchComplete(
         kNumPermissionRequestRetries,
         network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
   }
-  (*it)->simple_url_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+  auto* const simple_url_loader_ptr = (*it)->simple_url_loader.get();
+  simple_url_loader_ptr->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
       base::BindOnce(&PermissionRequestCreatorApiary::OnSimpleLoaderComplete,
                      base::Unretained(this), std::move(it)));
@@ -262,8 +262,7 @@ void PermissionRequestCreatorApiary::OnSimpleLoaderComplete(
     scopes.insert(GetApiScope());
     // "Unconsented" because this class doesn't care about browser sync consent.
     identity_manager_->RemoveAccessTokenFromCache(
-        identity_manager_->GetPrimaryAccountId(
-            signin::ConsentLevel::kNotRequired),
+        identity_manager_->GetPrimaryAccountId(signin::ConsentLevel::kSignin),
         scopes, request->access_token);
     StartFetching(request);
     return;

@@ -3,7 +3,7 @@
 
 Aamir Anis <aanis@google.com>
 Aaron Watry <awatry@gmail.com>
-Aasaipriya <aasaipriya.c@ittiam.com>
+Aasaipriya Chandran <aasaipriya.c@ittiam.com>
 Abo Talib Mahfoodh <ab.mahfoodh@gmail.com>
 Adrian Grange <agrange@google.com>
 Ahmad Sharif <asharif@google.com>
@@ -12,6 +12,7 @@ Alexander Bokov <alexanderbokov@google.com>
 Alexander Voronov <avoronov@graphics.cs.msu.ru>
 Aℓex Converse <aconverse@google.com>
 Alexis Ballier <aballier@gentoo.org>
+Alex Peterson <petersonab@google.com>
 Alok Ahuja <waveletcoeff@gmail.com>
 Alpha Lam <hclam@google.com>
 A.Mahfoodh <ab.mahfoodh@gmail.com>
@@ -22,6 +23,7 @@ Andrew Russell <anrussell@google.com>
 Andrey Norkin <anorkin@netflix.com>
 Angie Chiang <angiebird@google.com>
 Aniket Dhok <aniket.dhok@ittiam.com>
+Aniket Wanare <Aniket.wanare@ittiam.com>
 Ankur Saxena <ankurs@nvidia.com>
 Arild Fuldseth <arilfuld@cisco.com>
 Aron Rosenberg <arosenberg@logitech.com>
@@ -37,6 +39,7 @@ Cherma Rajan A <cherma.rajan@ittiam.com>
 Chi Yo Tsai <chiyotsai@google.com>
 Chm <chm@rock-chips.com>
 Christian Duvivier <cduvivier@google.com>
+Christopher Degawa <christopher.degawa@intel.com>
 Cyril Concolato <cconcolato@netflix.com>
 Dake He <dkhe@google.com>
 Damon Shen <yjshen@google.com>
@@ -51,7 +54,6 @@ David Michael Barr <b@rr-dav.id.au>
 David Turner <david.turner@argondesign.com>
 Deb Mukherjee <debargha@google.com>
 Deepa K G <deepa.kg@ittiam.com>
-Deng <zhipin.deng@intel.com>
 Di Chen <chendixi@google.com>
 Dim Temp <dimtemp0@gmail.com>
 Dmitry Kovalev <dkovalev@google.com>
@@ -90,7 +92,7 @@ Hui Su <huisu@google.com>
 Ilie Halip <ilie.halip@gmail.com>
 Ilya Brailovskiy <brailovs@lab126.com>
 Imdad Sardharwalla <imdad.sardharwalla@argondesign.com>
-iole moccagatta <iole.moccagatta@gmail.com>
+Iole Moccagatta <iole.moccagatta@gmail.com>
 Ivan Krasin <krasin@chromium.org>
 Ivan Maltz <ivanmaltz@google.com>
 Jacek Caban <cjacek@gmail.com>
@@ -103,7 +105,7 @@ Jan Gerber <j@mailb.org>
 Jan Kratochvil <jan.kratochvil@redhat.com>
 Janne Salonen <jsalonen@google.com>
 Jayasanker J <jayasanker.j@ittiam.com>
-Jean-Marc Valin <jmvalin@mozilla.com>
+Jean-Marc Valin <jmvalin@jmvalin.ca>
 Jean-Yves Avenard <jyavenard@mozilla.com>
 Jeff Faust <jfaust@google.com>
 Jeff Muizelaar <jmuizelaar@mozilla.com>
@@ -122,6 +124,7 @@ John Stark <jhnstrk@gmail.com>
 Jonathan Matthews <jonathan.matthews@argondesign.com>
 Joshua Bleecher Snyder <josh@treelinelabs.com>
 Joshua Litt <joshualitt@google.com>
+Josh Verdejo <joverdejo@google.com>
 Julia Robson <juliamrobson@gmail.com>
 Justin Clift <justin@salasaga.org>
 Justin Lebar <justin.lebar@gmail.com>
@@ -130,14 +133,17 @@ KO Myung-Hun <komh@chollian.net>
 Krishna Malladi <kmalladi@google.com>
 Kyle Siefring <kylesiefring@gmail.com>
 Larisa Markeeva <lmarkeeva@google.com>
+Lauren Partin <lpartin@google.com>
 Lawrence Velázquez <larryv@macports.org>
 Lester Lu <kslu@google.com>
+liang zhao <leolzhao@tencent.com>
 Linfeng Zhang <linfengz@google.com>
 Logan Goldberg <logangw@google.com>
 Lokeshwar Reddy B <lokeshwar.reddy@ittiam.com>
 Lou Quillio <louquillio@google.com>
 Luca Barbato <lu_zero@gentoo.org>
-Luc Trudeau <ltrudeau@mozilla.com>
+Luc Trudeau <luc@trud.ca>
+Madhu Peringassery Krishnan <mpkrishnan@tencent.com>
 Makoto Kato <makoto.kt@gmail.com>
 Mans Rullgard <mans@mansr.com>
 Marco Paniconi <marpan@google.com>
@@ -148,7 +154,7 @@ Matthew Heaney <matthewjheaney@chromium.org>
 Matthieu Vaudano <matthieu.vaudano@allegrodvt.com>
 Mattias Hansson <mattias.hansson@arm.com>
 Maxym Dmytrychenko <maxim.d33@gmail.com>
-Michael Bebenita <mbebenita@mozilla.com>
+Michael Bebenita <mbebenita@gmail.com>
 Michael Horowitz <mhoro@webrtc.org>
 Michael Kohler <michaelkohler@live.com>
 Michelle Findlay-Olynyk <mfo@google.com>
@@ -189,14 +195,14 @@ Remya Prakasan <remya.prakasan@ittiam.com>
 Remy Foray <remy.foray@allegrodvt.com>
 Rob Bradford <rob@linux.intel.com>
 Robert-André Mauchin <zebob.m@gmail.com>
-RogerZhou <youzhou@microsoft.com>
+Roger Zhou <youzhou@microsoft.com>
 Rohit Athavale <rathaval@xilinx.com>
 Ronald S. Bultje <rsbultje@gmail.com>
 Rostislav Pehlivanov <rpehlivanov@mozilla.com>
 Ruiling Song <ruiling.song@intel.com>
 Rui Ueyama <ruiu@google.com>
 Rupert Swarbrick <rupert.swarbrick@argondesign.com>
-Ryan Lei <ryan.lei@intel.com>
+Ryan Lei <ryan.z.lei@intel.com>
 Ryan Overbeck <rover@google.com>
 Sachin Kumar Garg <sachin.kumargarg@ittiam.com>
 Sai Deng <sdeng@google.com>
@@ -220,6 +226,7 @@ Stanislav Vitvitskyy <vitvitskyy@google.com>
 Stefan Holmer <holmer@google.com>
 Steinar Midtskogen <stemidts@cisco.com>
 Suman Sunkara <sunkaras@google.com>
+susannad <susannad@google.com>
 Taekhyun Kim <takim@nvidia.com>
 Takanori MATSUURA <t.matsuu@gmail.com>
 Tamar Levy <tamar.levy@intel.com>
@@ -242,12 +249,14 @@ Venkat Sanampudi <sanampudi.venkatarao@ittiam.com>
 Victoria Zhislina <niva213@gmail.com>
 Vignesh Venkatasubramanian <vigneshv@google.com>
 Vishesh <vishesh.garg@ittiam.com>
+Vitalii Dziumenko <vdziumenko@luxoft.com>
+Vitalii Dziumenko <vdziumenko@luxoft.corp-partner.google.com>
 Wan-Teh Chang <wtc@google.com>
 Wei-Ting Lin <weitinglin@google.com>
 Wenyao Liu <wenyao.liu@cidana.com>
+Will Bresnahan <bill.wresnahan@gmail.com>
 Xing Jin <ddvfinite@gmail.com>
 Xin Zhao <xinzzhao@tencent.com>
-Yaowu Xu <yaowu.google.com>
 Yaowu Xu <yaowu@google.com>
 Yi Luo <luoyi@google.com>
 Yongzhe Wang <yongzhe@google.com>
@@ -256,5 +265,5 @@ Yunqing Wang <yunqingwang@google.com>
 Yury Gitman <yuryg@google.com>
 Yushin Cho <ycho@mozilla.com>
 Zhijie Yang <zhijie.yang@broadcom.com>
-zhipin deng <zhipin.deng@intel.com>
+Zhipin Deng <zhipin.deng@intel.com>
 Zoe Liu <zoeliu@gmail.com>

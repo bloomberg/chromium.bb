@@ -2,11 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {VolumeInfo} from '../../externs/volume_info.m.js';
+// #import {VolumeManager} from '../../externs/volume_manager.m.js';
+// #import {Crostini} from '../../externs/background/crostini.m.js';
+// #import {FileBrowserBackgroundFull} from '../../externs/background/file_browser_background_full.m.js';
+// #import {mediaImportInterfaces} from '../../externs/background/media_import_handler.m.js';
+// #import {mediaScannerInterfaces} from '../../externs/background/media_scanner.m.js';
+// #import {duplicateFinderInterfaces} from '../../externs/background/duplicate_finder.m.js';
+// #import {DriveSyncHandler} from '../../externs/background/drive_sync_handler.m.js';
+// #import {importerHistoryInterfaces} from '../../externs/background/import_history.m.js';
+// #import {FileOperationManager} from '../../externs/background/file_operation_manager.m.js';
+// #import {ProgressCenter} from '../../externs/background/progress_center.m.js';
+// #import {util, str} from '../../common/js/util.m.js';
+// #import {metrics} from '../../common/js/metrics.m.js';
+// #import {fileOperationUtil} from './file_operation_util.m.js';
+// #import {launcher, LaunchType, nextFileManagerWindowID, FILES_ID_PATTERN} from './launcher.m.js';
+// #import {FileOperationHandler} from './file_operation_handler.m.js';
+// #import {FileOperationManagerImpl} from './file_operation_manager.m.js';
+// #import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
+// #import {volumeManagerFactory} from './volume_manager_factory.m.js';
+// #import {MountMetrics} from './mount_metrics.m.js';
+// #import {CrostiniImpl} from './crostini.m.js';
+// #import {mediaImport} from './media_import_handler.m.js';
+// #import {mediaScanner} from './media_scanner.m.js';
+// #import {duplicateFinder} from './duplicate_finder.m.js';
+// #import {DriveSyncHandlerImpl} from './drive_sync_handler.m.js';
+// #import {DeviceHandler} from './device_handler.m.js';
+// #import {importer} from '../../common/js/importer_common.m.js';
+// #import {importerHistory} from './import_history.m.js';
+// #import {ProgressCenterImpl} from './progress_center.m.js';
+// #import {BackgroundBaseImpl} from './background_base.m.js';
+// #import {xfm} from '../../common/js/xfm.m.js';
+// clang-format on
+
 /**
  * Root class of the background page.
  * @implements {FileBrowserBackgroundFull}
  */
-class FileBrowserBackgroundImpl extends BackgroundBase {
+class FileBrowserBackgroundImpl extends BackgroundBaseImpl {
   constructor() {
     super();
     this.setLaunchHandler(this.launch_);
@@ -27,10 +61,10 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
      * Class providing loading of import history, used in
      * cloud import.
      *
-     * @type {!importer.HistoryLoader}
+     * @type {!importerHistoryInterfaces.HistoryLoader}
      */
     this.historyLoader =
-        new importer.SynchronizedHistoryLoader(importer.getHistoryFiles);
+        new importerHistory.SynchronizedHistoryLoader(importer.getHistoryFiles);
 
     /**
      * Event handler for progress center.
@@ -56,25 +90,26 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
     this.driveSyncHandler = new DriveSyncHandlerImpl(this.progressCenter);
 
     /**
-     * @type {!importer.DispositionChecker.CheckerFunction}
+     * @type {!duplicateFinderInterfaces.DispositionChecker.CheckerFunction}
      */
     this.dispositionChecker_ =
-        importer.DispositionCheckerImpl.createChecker(this.historyLoader);
+        duplicateFinder.DispositionCheckerImpl.createChecker(
+            this.historyLoader);
 
     /**
      * Provides support for scanning media devices as part of Cloud Import.
-     * @type {!importer.MediaScanner}
+     * @type {!mediaScannerInterfaces.MediaScanner}
      */
-    this.mediaScanner = new importer.DefaultMediaScanner(
-        importer.createMetadataHashcode, this.dispositionChecker_,
-        importer.DefaultDirectoryWatcher.create);
+    this.mediaScanner = new mediaScanner.DefaultMediaScanner(
+        importerHistory.createMetadataHashcode, this.dispositionChecker_,
+        mediaScanner.DefaultDirectoryWatcher.create);
 
     /**
      * Handles importing of user media (e.g. photos, videos) from removable
      * devices.
-     * @type {!importer.MediaImportHandler}
+     * @type {!mediaImportInterfaces.MediaImportHandler}
      */
-    this.mediaImportHandler = new importer.MediaImportHandlerImpl(
+    this.mediaImportHandler = new mediaImport.MediaImportHandlerImpl(
         this.progressCenter, this.historyLoader, this.dispositionChecker_,
         this.driveSyncHandler);
 
@@ -90,17 +125,17 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
      */
     this.stringData = null;
 
-    /**
-     * Provides drive search to app launcher.
-     * @private {!LauncherSearch}
-     */
-    this.launcherSearch_ = new LauncherSearch();
-
-    // Initialize listeners.
-    chrome.runtime.onMessageExternal.addListener(
-        this.onExternalMessageReceived_.bind(this));
-    chrome.contextMenus.onClicked.addListener(
-        this.onContextMenuClicked_.bind(this));
+    if (!window.isSWA) {
+      // Initialize listener for importer.handlePhotosAppMessage messages to
+      // the files app back-end. FIXME: Files SWA needs to support photos
+      // import workflow.
+      chrome.runtime.onMessageExternal.addListener(
+          this.onExternalMessageReceived_.bind(this));
+      // FIXME: chrome.contextMenus not enabled for Files SWA yet. See service
+      // onContextMenuClicked_ for adding "New Window" item to the OS shelf.
+      chrome.contextMenus.onClicked.addListener(
+          this.onContextMenuClicked_.bind(this));
+    }
 
     // Initialize string and volume manager related stuffs.
     this.initializationPromise_.then(strings => {
@@ -138,6 +173,41 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
    */
   ready(callback) {
     this.initializationPromise_.then(callback);
+  }
+
+  /**
+   * Forces File Operation Util to return error for automated tests.
+   * @param {boolean} enable
+   */
+  forceFileOperationErrorForTest(enable) {
+    fileOperationUtil.forceErrorForTest = enable;
+  }
+
+  /**
+   * Registers dialog window to the background page.
+   *
+   * @param {!Window} dialogWindow Window of the dialog.
+   */
+  registerDialog(dialogWindow) {
+    const id = DIALOG_ID_PREFIX + (nextFileManagerDialogID++);
+    this.dialogs[id] = dialogWindow;
+    if (window.IN_TEST) {
+      dialogWindow.IN_TEST = true;
+    }
+    dialogWindow.addEventListener('pagehide', () => {
+      delete this.dialogs[id];
+    });
+  }
+
+  /**
+   * Launches a new File Manager window.
+   *
+   * @param {Object=} opt_appState App state.
+   * @return {!Promise<chrome.app.window.AppWindow|string>} Resolved with the
+   *     App ID.
+   */
+  async launchFileManager(opt_appState) {
+    return launcher.launchFileManager(opt_appState);
   }
 
   /**
@@ -306,7 +376,7 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
       this.launch_(undefined);
       return;
     }
-    BackgroundBase.prototype.onLaunched_.apply(this, [launchData]);
+    BackgroundBaseImpl.prototype.onLaunched_.apply(this, [launchData]);
   }
 
   /**
@@ -318,11 +388,11 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
     return this.initializationPromise_.then(() => {
       if (nextFileManagerWindowID == 0) {
         // The app just launched. Remove unneeded window state records.
-        chrome.storage.local.get(items => {
+        xfm.storage.local.get(null, items => {
           for (const key in items) {
             if (items.hasOwnProperty(key)) {
               if (key.match(FILES_ID_PATTERN)) {
-                chrome.storage.local.remove(key);
+                xfm.storage.local.remove(key);
               }
             }
           }
@@ -359,7 +429,7 @@ class FileBrowserBackgroundImpl extends BackgroundBase {
    */
   onRestarted_() {
     // Reopen file manager windows.
-    chrome.storage.local.get(items => {
+    xfm.storage.local.get(items => {
       for (const key in items) {
         if (items.hasOwnProperty(key)) {
           const match = key.match(FILES_ID_PATTERN);
@@ -510,21 +580,6 @@ const DIALOG_ID_PREFIX = 'dialog#';
  */
 let nextFileManagerDialogID = 0;
 
-/**
- * Registers dialog window to the background page.
- *
- * @param {!Window} dialogWindow Window of the dialog.
- */
-function registerDialog(dialogWindow) {
-  const id = DIALOG_ID_PREFIX + (nextFileManagerDialogID++);
-  window.background.dialogs[id] = dialogWindow;
-  if (window.IN_TEST) {
-    dialogWindow.IN_TEST = true;
-  }
-  dialogWindow.addEventListener('pagehide', () => {
-    delete window.background.dialogs[id];
-  });
-}
 
 /** @const {!string} */
 const GPLUS_PHOTOS_APP_ORIGIN =
@@ -532,9 +587,10 @@ const GPLUS_PHOTOS_APP_ORIGIN =
 
 /**
  * Singleton instance of Background object.
- * @type {!FileBrowserBackgroundImpl}
+ * @type {!FileBrowserBackgroundFull}
  */
-window.background = new FileBrowserBackgroundImpl();
+/* #export */ const background = new FileBrowserBackgroundImpl();
+window.background = background;
 
 /**
  * Lastly, end recording of the background page Load.BackgroundScript metric.

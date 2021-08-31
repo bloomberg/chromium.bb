@@ -63,9 +63,9 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfacePtrStateBase {
     return endpoint_client_ && endpoint_client_->has_pending_responders();
   }
 
-  void force_outgoing_messages_async(bool force) {
-    DCHECK(endpoint_client_);
-    endpoint_client_->force_outgoing_messages_async(force);
+  scoped_refptr<ThreadSafeProxy> CreateThreadSafeProxy(
+      scoped_refptr<ThreadSafeProxy::Target> target) {
+    return endpoint_client_->CreateThreadSafeProxy(std::move(target));
   }
 
 #if DCHECK_IS_ON()
@@ -96,6 +96,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfacePtrStateBase {
   bool InitializeEndpointClient(
       bool passes_associated_kinds,
       bool has_sync_methods,
+      bool has_uninterruptable_methods,
       std::unique_ptr<MessageReceiver> payload_validator,
       const char* interface_name);
 
@@ -231,17 +232,6 @@ class InterfacePtrState : public InterfacePtrStateBase {
     router()->EnableTestingMode();
   }
 
-  void ForwardMessage(Message message) {
-    ConfigureProxyIfNecessary();
-    endpoint_client()->Accept(&message);
-  }
-
-  void ForwardMessageWithResponder(Message message,
-                                   std::unique_ptr<MessageReceiver> responder) {
-    ConfigureProxyIfNecessary();
-    endpoint_client()->AcceptWithResponder(&message, std::move(responder));
-  }
-
   void RaiseError() {
     ConfigureProxyIfNecessary();
     endpoint_client()->RaiseError();
@@ -258,6 +248,7 @@ class InterfacePtrState : public InterfacePtrStateBase {
 
     if (InitializeEndpointClient(
             Interface::PassesAssociatedKinds_, Interface::HasSyncMethods_,
+            Interface::HasUninterruptableMethods_,
             std::make_unique<typename Interface::ResponseValidator_>(),
             Interface::Name_)) {
       proxy_ = std::make_unique<Proxy>(endpoint_client());

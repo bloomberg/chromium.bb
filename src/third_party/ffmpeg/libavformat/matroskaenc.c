@@ -1147,7 +1147,7 @@ static int mkv_write_track(AVFormatContext *s, MatroskaMuxContext *mkv,
         put_ebml_string(pb, MATROSKA_ID_TRACKNAME, tag->value);
     tag = av_dict_get(st->metadata, "language", NULL, 0);
     put_ebml_string(pb, MATROSKA_ID_TRACKLANGUAGE,
-                    tag && tag->value ? tag->value : "und");
+                    tag && tag->value[0] ? tag->value : "und");
 
     // The default value for TRACKFLAGDEFAULT is 1, so add element
     // if we need to clear it.
@@ -1191,6 +1191,18 @@ static int mkv_write_track(AVFormatContext *s, MatroskaMuxContext *mkv,
 
         put_ebml_string(pb, MATROSKA_ID_CODECID, codec_id);
     } else {
+        if (st->disposition & AV_DISPOSITION_COMMENT)
+            put_ebml_uint(pb, MATROSKA_ID_TRACKFLAGCOMMENTARY, 1);
+        if (st->disposition & AV_DISPOSITION_HEARING_IMPAIRED)
+            put_ebml_uint(pb, MATROSKA_ID_TRACKFLAGHEARINGIMPAIRED, 1);
+        if (st->disposition & AV_DISPOSITION_VISUAL_IMPAIRED)
+            put_ebml_uint(pb, MATROSKA_ID_TRACKFLAGVISUALIMPAIRED,  1);
+        if (st->disposition & (AV_DISPOSITION_ORIGINAL | AV_DISPOSITION_DUB) &&
+            (st->disposition & (AV_DISPOSITION_ORIGINAL | AV_DISPOSITION_DUB))
+                            != (AV_DISPOSITION_ORIGINAL | AV_DISPOSITION_DUB))
+            put_ebml_uint(pb, MATROSKA_ID_TRACKFLAGORIGINAL,
+                          !!(st->disposition & AV_DISPOSITION_ORIGINAL));
+
         // look for a codec ID string specific to mkv to use,
         // if none are found, use AVI codes
         if (par->codec_id != AV_CODEC_ID_RAWVIDEO || par->codec_tag) {
@@ -1352,6 +1364,8 @@ static int mkv_write_track(AVFormatContext *s, MatroskaMuxContext *mkv,
             av_log(s, AV_LOG_ERROR, "Subtitle codec %d is not supported.\n", par->codec_id);
             return AVERROR(ENOSYS);
         }
+        if (mkv->mode != MODE_WEBM && st->disposition & AV_DISPOSITION_DESCRIPTIONS)
+            put_ebml_uint(pb, MATROSKA_ID_TRACKFLAGTEXTDESCRIPTIONS, 1);
 
         if (mkv->mode != MODE_WEBM || par->codec_id != AV_CODEC_ID_WEBVTT)
             native_id = MATROSKA_TRACK_TYPE_SUBTITLE;
@@ -2009,7 +2023,8 @@ static int mkv_write_block(AVFormatContext *s, AVIOContext *pb,
     AVCodecParameters *par = s->streams[pkt->stream_index]->codecpar;
     mkv_track *track = &mkv->tracks[pkt->stream_index];
     uint8_t *data = NULL, *side_data = NULL;
-    int err = 0, offset = 0, size = pkt->size, side_data_size;
+    buffer_size_t side_data_size;
+    int err = 0, offset = 0, size = pkt->size;
     int64_t ts = track->write_dts ? pkt->dts : pkt->pts;
     uint64_t additional_id;
     int64_t discard_padding = 0;
@@ -2119,7 +2134,8 @@ static int mkv_write_vtt_blocks(AVFormatContext *s, AVIOContext *pb, const AVPac
     MatroskaMuxContext *mkv = s->priv_data;
     mkv_track *track = &mkv->tracks[pkt->stream_index];
     ebml_master blockgroup;
-    int id_size, settings_size, size;
+    buffer_size_t id_size, settings_size;
+    int size;
     const char *id, *settings;
     int64_t ts = track->write_dts ? pkt->dts : pkt->pts;
     const int flags = 0;
@@ -2184,7 +2200,8 @@ static int mkv_check_new_extra_data(AVFormatContext *s, const AVPacket *pkt)
     mkv_track *track        = &mkv->tracks[pkt->stream_index];
     AVCodecParameters *par  = s->streams[pkt->stream_index]->codecpar;
     uint8_t *side_data;
-    int side_data_size, ret;
+    buffer_size_t side_data_size;
+    int ret;
 
     side_data = av_packet_get_side_data(pkt, AV_PKT_DATA_NEW_EXTRADATA,
                                         &side_data_size);

@@ -28,12 +28,12 @@
 #include <memory>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "third_party/blink/renderer/platform/text/icu_error.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator_internal_icu.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -120,11 +120,11 @@ enum TextContext { kNoContext, kPriorContext, kPrimaryContext };
 
 const int kTextBufferCapacity = 16;
 
-typedef struct {
+struct UTextWithBuffer {
   DISALLOW_NEW();
   UText text;
   UChar buffer[kTextBufferCapacity];
-} UTextWithBuffer;
+};
 
 static inline int64_t TextPinIndex(int64_t& index, int64_t limit) {
   if (index < 0)

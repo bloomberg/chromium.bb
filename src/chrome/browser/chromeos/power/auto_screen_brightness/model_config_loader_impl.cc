@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/files/file_util.h"
@@ -20,7 +21,6 @@
 #include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -144,8 +144,8 @@ void ModelConfigLoaderImpl::AddObserver(ModelConfigLoader::Observer* observer) {
   observers_.AddObserver(observer);
   if (is_initialized_) {
     observer->OnModelConfigLoaded(
-        is_model_config_valid_ ? base::Optional<ModelConfig>(model_config_)
-                               : base::nullopt);
+        is_model_config_valid_ ? absl::optional<ModelConfig>(model_config_)
+                               : absl::nullopt);
   }
 }
 
@@ -247,7 +247,7 @@ void ModelConfigLoaderImpl::OnModelParamsLoadedFromDisk(
     return;
   }
 
-  base::Optional<base::Value> value = base::JSONReader::Read(content);
+  absl::optional<base::Value> value = base::JSONReader::Read(content);
   if (!value) {
     InitFromParams();
     return;
@@ -291,8 +291,8 @@ void ModelConfigLoaderImpl::OnInitializationComplete() {
   is_initialized_ = true;
   for (auto& observer : observers_) {
     observer.OnModelConfigLoaded(
-        is_model_config_valid_ ? base::Optional<ModelConfig>(model_config_)
-                               : base::nullopt);
+        is_model_config_valid_ ? absl::optional<ModelConfig>(model_config_)
+                               : absl::nullopt);
   }
 }
 

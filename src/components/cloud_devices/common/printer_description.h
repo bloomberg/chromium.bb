@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/cloud_devices/common/description_items.h"
 
 // Defines printer options, CDD and CJT items.

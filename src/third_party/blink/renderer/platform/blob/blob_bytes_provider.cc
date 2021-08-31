@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/blob/blob_bytes_provider.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
@@ -133,7 +135,7 @@ BlobBytesProvider* BlobBytesProvider::CreateAndBind(
             mojo::MakeSelfOwnedReceiver(std::move(provider),
                                         std::move(receiver));
           },
-          WTF::Passed(std::move(provider)), WTF::Passed(std::move(receiver))));
+          std::move(provider), std::move(receiver)));
   return result;
 }
 
@@ -188,7 +190,7 @@ void BlobBytesProvider::RequestAsFile(uint64_t source_offset,
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   if (!file.IsValid()) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
     return;
   }
 
@@ -197,7 +199,7 @@ void BlobBytesProvider::RequestAsFile(uint64_t source_offset,
   bool seek_failed = seek_distance < 0;
   base::UmaHistogramBoolean("Storage.Blob.RendererFileSeekFailed", seek_failed);
   if (seek_failed) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
     return;
   }
 
@@ -232,7 +234,7 @@ void BlobBytesProvider::RequestAsFile(uint64_t source_offset,
       base::UmaHistogramBoolean("Storage.Blob.RendererFileWriteFailed",
                                 write_failed);
       if (write_failed) {
-        std::move(callback).Run(base::nullopt);
+        std::move(callback).Run(absl::nullopt);
         return;
       }
       written += actual_written;
@@ -242,12 +244,12 @@ void BlobBytesProvider::RequestAsFile(uint64_t source_offset,
   }
 
   if (!file.Flush()) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
     return;
   }
   base::File::Info info;
   if (!file.GetInfo(&info)) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
     return;
   }
   std::move(callback).Run(info.last_modified);

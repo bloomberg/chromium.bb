@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import os
+import six
 
 from telemetry.core import exceptions
 
@@ -22,9 +24,7 @@ class ServiceWorkerState(object):
 
 # TODO(achuith, dtu, nduca): Add unit tests specifically for WebContents,
 # independent of Tab.
-class WebContents(object):
-
-  __metaclass__ = trace_event.TracedMetaClass
+class WebContents(six.with_metaclass(trace_event.TracedMetaClass, object)):
 
   """Represents web contents in the browser"""
   def __init__(self, inspector_backend):
@@ -478,3 +478,26 @@ class WebContents(object):
       exceptions.DevtoolsTargetCrashException
     """
     return self._inspector_backend.StopCasting(sink_name, timeout=timeout)
+
+  def StartMobileDeviceEmulation(
+      self, width=360, height=640, dsr=2, timeout=60):
+    """Emulates a mobile device.
+
+    This method is intended for benchmarks used to gather non-performance
+    metrics only. Mobile emulation is not guaranteed to have the same
+    performance characteristics as real devices.
+
+    Example device parameters:
+    https://gist.github.com/devinmancuso/0c94410cb14c83ddad6f
+
+    Args:
+      width: Screen width.
+      height: Screen height.
+      dsr: Screen device scale factor.
+    """
+    return self._inspector_backend.StartMobileDeviceEmulation(
+        width=width, height=height, dsr=dsr, timeout=timeout)
+
+  def StopMobileDeviceEmulation(self, timeout=60):
+    """Stops emulation of a mobile device."""
+    return self._inspector_backend.StopMobileDeviceEmulation(timeout=timeout)

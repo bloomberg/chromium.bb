@@ -47,6 +47,7 @@
 #include <locale>
 
 #include "common/linux/symbol_upload.h"
+#include "common/path_helper.h"
 
 using google_breakpad::sym_upload::UploadProtocol;
 using google_breakpad::sym_upload::Options;
@@ -66,10 +67,11 @@ static void
 Usage(int argc, const char *argv[]) {
   fprintf(stderr, "Submit symbol information.\n");
   fprintf(stderr, "Usage: %s [options...] <symbol-file> <upload-URL>\n",
-      argv[0]);
+          google_breakpad::BaseName(argv[0]).c_str());
   fprintf(stderr, "Options:\n");
-  fprintf(stderr, "<symbol-file> should be created by using the dump_syms"
-      "tool.\n");
+  fprintf(stderr,
+          "<symbol-file> should be created by using the dump_syms "
+          "tool.\n");
   fprintf(stderr, "<upload-URL> is the destination for the upload\n");
   fprintf(stderr, "-p:\t <protocol> One of ['sym-upload-v1',"
     " 'sym-upload-v2'], defaults to 'sym-upload-v1'.\n");

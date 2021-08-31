@@ -9,6 +9,9 @@
 #include <windows.h>
 #endif
 
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -22,7 +25,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/egl_timestamps.h"
-#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_surface_overlay.h"
@@ -102,11 +104,14 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   static EGLDisplay GetHardwareDisplay();
   static EGLDisplay InitializeDisplay(EGLDisplayPlatform native_display);
   static EGLNativeDisplayType GetNativeDisplay();
+  static DisplayType GetDisplayType();
 
   // These aren't particularly tied to surfaces, but since we already
   // have the static InitializeOneOff here, it's easiest to reuse its
   // initialization guards.
+  static const char* GetEGLClientExtensions();
   static const char* GetEGLExtensions();
+  static bool HasEGLClientExtension(const char* name);
   static bool HasEGLExtension(const char* name);
   static bool IsCreateContextRobustnessSupported();
   static bool IsRobustnessVideoMemoryPurgeSupported();
@@ -123,6 +128,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   static bool IsPixelFormatFloatSupported();
   static bool IsANGLEFeatureControlSupported();
   static bool IsANGLEPowerPreferenceSupported();
+  static bool IsANGLEExternalContextAndSurfaceSupported();
 
  protected:
   ~GLSurfaceEGL() override;
@@ -183,6 +189,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
 
   bool GetFrameTimestampInfoIfAvailable(base::TimeTicks* presentation_time,
                                         base::TimeDelta* composite_interval,
+                                        base::TimeTicks* writes_done_time,
                                         uint32_t* presentation_flags,
                                         int frame_id) override;
 
@@ -233,6 +240,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
   // PresentationFeedback support.
   int presentation_feedback_index_ = -1;
   int composition_start_index_ = -1;
+  int writes_done_index_ = -1;
   uint32_t presentation_flags_ = 0;
 
   base::queue<SwapInfo> swap_info_queue_;

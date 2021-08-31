@@ -12,8 +12,6 @@
 #include "include/core/SkImage.h"
 #include "include/core/SkPixmap.h"
 #include "include/core/SkSurface.h"
-#include "include/core/SkYUVAIndex.h"
-#include "include/core/SkYUVASizeInfo.h"
 #include "include/encode/SkJpegEncoder.h"
 #include "include/gpu/GrRecordingContext.h"
 #include "include/utils/SkRandom.h"
@@ -37,7 +35,6 @@ static sk_sp<SkImage> make_image(GrRecordingContext* rContext) {
         }
     }
     bmp.notifyPixelsChanged();
-    SkImage::MakeFromBitmap(bmp);
     SkDynamicMemoryWStream stream;
     SkJpegEncoder::Options options;
     options.fDownsample = SkJpegEncoder::Downsample::k420;

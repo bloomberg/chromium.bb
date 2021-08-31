@@ -57,7 +57,7 @@ class TargetHandler : public DevToolsDomainHandler,
                    RenderFrameHostImpl* frame_host) override;
   Response Disable() override;
 
-  void DidFinishNavigation();
+  void DidFinishNavigation(NavigationHandle* navigation_handle);
   std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
       NavigationHandle* navigation_handle);
   void UpdatePortals();
@@ -158,7 +158,7 @@ class TargetHandler : public DevToolsDomainHandler,
   std::string owner_target_id_;
   DevToolsSession* root_session_;
   base::flat_set<Throttle*> throttles_;
-  base::Optional<net::ProxyConfig> pending_proxy_config_;
+  absl::optional<net::ProxyConfig> pending_proxy_config_;
   base::WeakPtrFactory<TargetHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TargetHandler);

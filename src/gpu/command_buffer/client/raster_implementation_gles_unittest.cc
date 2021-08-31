@@ -45,7 +45,6 @@ class RasterMockGLES2Interface : public gles2::GLES2InterfaceStub {
   // Command buffer Flush / Finish.
   MOCK_METHOD0(Finish, void());
   MOCK_METHOD0(Flush, void());
-  MOCK_METHOD0(ShallowFlushCHROMIUM, void());
   MOCK_METHOD0(OrderingBarrierCHROMIUM, void());
 
   // SyncTokens.
@@ -54,6 +53,7 @@ class RasterMockGLES2Interface : public gles2::GLES2InterfaceStub {
   MOCK_METHOD2(VerifySyncTokensCHROMIUM,
                void(GLbyte** sync_tokens, GLsizei count));
   MOCK_METHOD1(WaitSyncTokenCHROMIUM, void(const GLbyte* sync_token));
+  MOCK_METHOD0(ShallowFlushCHROMIUM, void());
 
   // Command buffer state.
   MOCK_METHOD0(GetError, GLenum());
@@ -144,19 +144,6 @@ class RasterMockGLES2Interface : public gles2::GLES2InterfaceStub {
                     GLenum bufferUsage,
                     GLsizei width,
                     GLsizei height));
-
-  // OOP-Raster
-  MOCK_METHOD6(BeginRasterCHROMIUM,
-               void(GLuint texture_id,
-                    GLuint sk_color,
-                    GLuint msaa_sample_count,
-                    GLboolean can_use_lcd_text,
-                    GLint color_type,
-                    GLuint color_space_id));
-  MOCK_METHOD2(RasterCHROMIUM, void(GLsizeiptr size, const void* list));
-  MOCK_METHOD1(MapRasterCHROMIUM, void*(GLsizeiptr size));
-  MOCK_METHOD1(UnmapRasterCHROMIUM, void(GLsizeiptr written));
-  MOCK_METHOD0(EndRasterCHROMIUM, void());
 
   MOCK_METHOD2(PixelStorei, void(GLenum pname, GLint param));
   MOCK_METHOD2(TraceBeginCHROMIUM,
