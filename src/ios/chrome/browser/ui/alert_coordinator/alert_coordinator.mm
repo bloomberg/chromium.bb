@@ -15,8 +15,6 @@
 @interface AlertCoordinator () {
   // Variable backing a property from Subclassing category.
   UIAlertController* _alertController;
-  // Title for the alert.
-  NSString* _title;
 }
 
 // Redefined to readwrite.
@@ -41,6 +39,7 @@
 @synthesize noInteractionAction = _noInteractionAction;
 @synthesize rawCancelAction = _rawCancelAction;
 @synthesize message = _message;
+@synthesize title = _title;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser
@@ -63,6 +62,13 @@
 - (void)addItemWithTitle:(NSString*)title
                   action:(ProceduralBlock)actionBlock
                    style:(UIAlertActionStyle)style {
+  [self addItemWithTitle:title action:actionBlock style:style enabled:YES];
+}
+
+- (void)addItemWithTitle:(NSString*)title
+                  action:(ProceduralBlock)actionBlock
+                   style:(UIAlertActionStyle)style
+                 enabled:(BOOL)enabled {
   if (self.visible ||
       (style == UIAlertActionStyleCancel && self.cancelButtonAdded)) {
     return;
@@ -82,6 +88,8 @@
                                  actionBlock();
                                [weakSelf alertDismissed];
                              }];
+
+  alertAction.enabled = enabled;
 
   [self.alertController addAction:alertAction];
 }

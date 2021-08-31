@@ -8,10 +8,9 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
-import android.content.Intent;
+import android.os.Bundle;
 import android.util.Pair;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -19,11 +18,12 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabIncognitoManager;
+import org.chromium.chrome.browser.profiles.OTRProfileID;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileKey;
 import org.chromium.chrome.browser.tab.TabStateFileManager;
 import org.chromium.chrome.browser.tabmodel.IncognitoTabHost;
 import org.chromium.chrome.browser.tabmodel.IncognitoTabHostRegistry;
@@ -51,16 +51,6 @@ public class IncognitoUtils {
      */
     @SuppressLint("NewApi")
     public static boolean shouldDestroyIncognitoProfileOnStartup(
-            boolean selectedTabModelIsIncognito) {
-        boolean result =
-                shouldDestroyIncognitoProfileOnStartupInternal(selectedTabModelIsIncognito);
-        RecordHistogram.recordBooleanHistogram(
-                "Android.ShouldDestroyIncognitoProfileOnStartup", result);
-        return result;
-    }
-
-    @SuppressLint("NewApi")
-    public static boolean shouldDestroyIncognitoProfileOnStartupInternal(
             boolean selectedTabModelIsIncognito) {
         if (!Profile.getLastUsedRegularProfile().hasPrimaryOTRProfile()) {
             return false;
@@ -116,6 +106,18 @@ public class IncognitoUtils {
     }
 
     /**
+     * Determine whether the incognito tab model is active.
+     */
+    public static boolean isIncognitoTabModelActive() {
+        for (IncognitoTabHost host : IncognitoTabHostRegistry.getInstance().getHosts()) {
+            if (host.isActiveModel()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Closes all incognito tabs.
      */
     public static void closeAllIncognitoTabs() {
@@ -163,16 +165,56 @@ public class IncognitoUtils {
     }
 
     /**
-     * Whether intent has any extra that indicates an incognito tab will be launched.
-     * @param intent A non-null intent
+     * Whether bundle has any extra that indicates an incognito tab will be launched.
+     * @param extras A bundle that carries extras
      * @return True if there is any incognito related extra, otherwise return false.
      */
-    public static boolean hasAnyIncognitoExtra(@NonNull Intent intent) {
-        return IntentUtils.safeGetBooleanExtra(intent, IntentHandler.EXTRA_INCOGNITO_MODE, false)
-                || IntentUtils.safeGetBooleanExtra(
-                        intent, IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false)
-                || IntentUtils.safeGetBooleanExtra(
-                        intent, IntentHandler.EXTRA_INVOKED_FROM_LAUNCH_NEW_INCOGNITO_TAB, false);
+    public static boolean hasAnyIncognitoExtra(@Nullable Bundle extras) {
+        if (extras == null) return false;
+        return IntentUtils.safeGetBoolean(extras, IntentHandler.EXTRA_INCOGNITO_MODE, false)
+                || IntentUtils.safeGetBoolean(
+                        extras, IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false)
+                || IntentUtils.safeGetBoolean(
+                        extras, IntentHandler.EXTRA_INVOKED_FROM_LAUNCH_NEW_INCOGNITO_TAB, false);
+    }
+
+    /**
+     * Returns either a regular profile or a (primary/non-primary) Incognito profile.
+     *
+     * <p>
+     * Note, {@link WindowAndroid} is keyed only to non-primary Incognito profile, in default cases
+     * primary Incognito profile would be returned.
+     * <p>
+     *
+     * @param windowAndroid {@link WindowAndroid} object.
+     * @param isIncognito A boolean to indicate if an Incognito profile should be fetched.
+     *
+     * @return A regular {@link Profile} object if |isIncognito| is false or an Incognito {@link
+     *         Profile} object otherwise.
+     */
+    public static Profile getProfileFromWindowAndroid(
+            WindowAndroid windowAndroid, boolean isIncognito) {
+        if (!isIncognito) return Profile.getLastUsedRegularProfile();
+        return getIncognitoProfileFromWindowAndroid(windowAndroid);
+    }
+
+    /**
+     * Returns either the non-primary OTR profile if any that is associated with a |windowAndroid|
+     * instance, otherwise the primary OTR profile.
+     * <p>
+     * A non primary OTR profile is associated only for the case of incognito CustomTabActivity.
+     * <p>
+     * @param windowAndroid The {@link WindowAndroid} instance for which the non primary OTR
+     *         profile is queried.
+     *
+     * @return A non-primary or a primary OTR {@link Profile}.
+     */
+    public static Profile getIncognitoProfileFromWindowAndroid(
+            @Nullable WindowAndroid windowAndroid) {
+        Profile incognitoProfile = getNonPrimaryOTRProfileFromWindowAndroid(windowAndroid);
+        return (incognitoProfile != null)
+                ? incognitoProfile
+                : Profile.getLastUsedRegularProfile().getPrimaryOTRProfile(/*createIfNeeded=*/true);
     }
 
     /**
@@ -193,6 +235,22 @@ public class IncognitoUtils {
 
         if (customTabIncognitoManager == null) return null;
         return customTabIncognitoManager.getProfile();
+    }
+
+    /**
+     * Returns the {@link ProfileKey} from given {@link OTRProfileID}. If OTRProfileID is null, it
+     * is the key of regular profile.
+     *
+     * @param otrProfileID The {@link OTRProfileID} of the profile. Null for regular profile.
+     * @return The {@link ProfileKey} of the key.
+     */
+    public static ProfileKey getProfileKeyFromOTRProfileID(OTRProfileID otrProfileID) {
+        // If off-the-record is not requested, the request might be before native initialization.
+        if (otrProfileID == null) return ProfileKey.getLastUsedRegularProfileKey();
+
+        return Profile.getLastUsedRegularProfile()
+                .getOffTheRecordProfile(otrProfileID, /*createIfNeeded=*/true)
+                .getProfileKey();
     }
 
     @VisibleForTesting

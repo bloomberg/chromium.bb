@@ -9,7 +9,7 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import 'chrome://resources/cr_elements/cr_tabs/cr_tabs.m.js';
+import 'chrome://resources/cr_elements/cr_tabs/cr_tabs.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
@@ -17,20 +17,34 @@ import './history_deletion_dialog.js';
 import './passwords_deletion_dialog.js';
 import './installed_app_checkbox.js';
 import '../controls/settings_checkbox.js';
-import '../icons.m.js';
-import '../settings_shared_css.m.js';
+import '../icons.js';
+import '../settings_shared_css.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {DropdownMenuOptionList} from '../controls/settings_dropdown_menu.m.js';
+import {DropdownMenuOptionList} from '../controls/settings_dropdown_menu.js';
 import {loadTimeData} from '../i18n_setup.js';
-import {StatusAction, SyncBrowserProxy, SyncBrowserProxyImpl, SyncStatus} from '../people_page/sync_browser_proxy.m.js';
+import {StatusAction, SyncBrowserProxy, SyncBrowserProxyImpl, SyncStatus} from '../people_page/sync_browser_proxy.js';
 import {routes} from '../route.js';
-import {Route, RouteObserverBehavior, Router} from '../router.m.js';
+import {Route, RouteObserverBehavior, Router} from '../router.js';
 
 import {ClearBrowsingDataBrowserProxy, ClearBrowsingDataBrowserProxyImpl, InstalledApp} from './clear_browsing_data_browser_proxy.js';
+
+/**
+ * InstalledAppsDialogActions enum.
+ * These values are persisted to logs and should not be renumbered or
+ * re-used.
+ * See tools/metrics/histograms/enums.xml.
+ * @enum {number}
+ */
+const InstalledAppsDialogActions = {
+  CLOSE: 0,
+  CANCEL_BUTTON: 1,
+  CLEAR_BUTTON: 2,
+};
 
 /**
  * @param {!CrDialogElement} dialog the dialog to close
@@ -59,6 +73,17 @@ function replaceDialog(oldDialog, newDialog) {
     newDialog.showModal();
   }
 }
+
+/**
+ * @typedef {{
+ *   signedIn: boolean,
+ *   syncConsented: boolean,
+ *   syncingHistory: boolean,
+ *   shouldShowCookieException: boolean,
+ * }}
+ */
+let UpdateSyncStateEvent;
+
 
 Polymer({
   is: 'settings-clear-browsing-data-dialog',
@@ -123,6 +148,12 @@ Polymer({
     },
 
     /** @private */
+    clearingDataAlertString_: {
+      type: String,
+      value: '',
+    },
+
+    /** @private */
     clearButtonDisabled_: {
       type: Boolean,
       value: false,
@@ -161,6 +192,12 @@ Polymer({
     },
 
     /** @private */
+    isSyncConsented_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
     isSyncingHistory_: {
       type: Boolean,
       value: false,
@@ -194,15 +231,6 @@ Polymer({
           'computeHasOtherError_(syncStatus, isSyncPaused_, hasPassphraseError_)',
     },
 
-    /**
-     * Time in ms, when the dialog was opened.
-     * @private
-     */
-    dialogOpenedTime_: {
-      type: Number,
-      value: 0,
-    },
-
     /** @private {Array<string>} */
     tabsNames_: {
       type: Array,
@@ -226,6 +254,19 @@ Polymer({
     installedAppsFlagEnabled_: {
       type: Boolean,
       value: () => loadTimeData.getBoolean('installedAppsInCbd'),
+    },
+
+    /** @private */
+    searchHistoryLinkFlagEnabled_: {
+      type: Boolean,
+      value: () => loadTimeData.getBoolean('searchHistoryLink'),
+    },
+
+    /** @private */
+    shouldShowSearchHistoryLabel_: {
+      type: Boolean,
+      value: false,
+      computed: 'computeShouldShowSearchHistoryLabel_(isSignedIn_)'
     },
   },
 
@@ -254,7 +295,6 @@ Polymer({
   /** @override */
   attached() {
     this.browserProxy_ = ClearBrowsingDataBrowserProxyImpl.getInstance();
-    this.dialogOpenedTime_ = Date.now();
     this.browserProxy_.initialize().then(() => {
       this.$.clearBrowsingDataDialog.showModal();
     });
@@ -304,7 +344,6 @@ Polymer({
   currentRouteChanged(currentRoute) {
     if (currentRoute === routes.CLEAR_BROWSER_DATA) {
       chrome.metricsPrivate.recordUserAction('ClearBrowsingData_DialogCreated');
-      this.dialogOpenedTime_ = Date.now();
     }
   },
 
@@ -312,38 +351,50 @@ Polymer({
    * Updates the history description to show the relevant information
    * depending on sync and signin state.
    *
-   * @param {boolean} signedIn Whether the user is signed in.
-   * @param {boolean} syncing Whether the user is syncing history.
-   * @param {boolean} shouldShowCookieException Whether the exception about not
-   *    being signed out of your Google account should be shown.
+   * @param {UpdateSyncStateEvent} event
    * @private
    */
-  updateSyncState_(signedIn, syncing, shouldShowCookieException) {
-    this.isSignedIn_ = signedIn;
-    this.isSyncingHistory_ = syncing;
-    this.shouldShowCookieException_ = shouldShowCookieException;
+  updateSyncState_(event) {
+    this.isSignedIn_ = event.signedIn;
+    this.isSyncConsented_ = event.syncConsented;
+    this.isSyncingHistory_ = event.syncingHistory;
+    this.shouldShowCookieException_ = event.shouldShowCookieException;
     this.$.clearBrowsingDataDialog.classList.add('fully-rendered');
   },
 
   /**
    * Choose a label for the history checkbox.
-   * @param {boolean} isSignedIn
+   * @param {boolean} isSyncConsented
    * @param {boolean} isSyncingHistory
    * @param {string} historySummary
    * @param {string} historySummarySignedIn
+   * @param {string} historySummarySignedInNoLink
    * @param {string} historySummarySynced
    * @return {string}
    * @private
    */
   browsingCheckboxLabel_(
-      isSignedIn, isSyncingHistory, hasSyncError, historySummary,
-      historySummarySignedIn, historySummarySynced) {
-    if (isSyncingHistory && !hasSyncError) {
+      isSyncConsented, isSyncingHistory, hasSyncError, historySummary,
+      historySummarySignedIn, historySummarySignedInNoLink,
+      historySummarySynced) {
+    if (this.searchHistoryLinkFlagEnabled_) {
+      return isSyncingHistory ? historySummarySignedInNoLink : historySummary;
+    } else if (isSyncingHistory && !hasSyncError) {
       return historySummarySynced;
-    } else if (isSignedIn && !this.isSyncPaused_) {
+    } else if (isSyncConsented && !this.isSyncPaused_) {
       return historySummarySignedIn;
     }
     return historySummary;
+  },
+
+  /**
+   * Whether the search history text box should be shown.
+   * @param {boolean} isSignedIn
+   * @return {boolean}
+   * @private
+   */
+  computeShouldShowSearchHistoryLabel_(isSignedIn) {
+    return this.searchHistoryLinkFlagEnabled_ && isSignedIn;
   },
 
   /**
@@ -446,6 +497,7 @@ Polymer({
    */
   clearBrowsingData_: async function() {
     this.clearingInProgress_ = true;
+    this.clearingDataAlertString_ = loadTimeData.getString('clearingData');
     const tab = this.$.tabs.selectedItem;
     const dataTypes = this.getSelectedDataTypes_(tab);
     const timePeriod = tab.querySelector('.time-range-select').pref.value;
@@ -459,11 +511,12 @@ Polymer({
     this.shadowRoot.querySelectorAll('settings-checkbox[no-set-pref]')
         .forEach(checkbox => checkbox.sendPrefChange());
 
-    this.recordInstalledAppsInteractions_();
     const {showHistoryNotice, showPasswordsNotice} =
         await this.browserProxy_.clearBrowsingData(
             dataTypes, timePeriod, this.installedApps_);
     this.clearingInProgress_ = false;
+    IronA11yAnnouncer.requestAvailability();
+    this.fire('iron-announce', {text: loadTimeData.getString('clearedData')});
     this.showHistoryDeletionDialog_ = showHistoryNotice;
     // If both the history notice and the passwords notice should be shown, show
     // the history notice first, and then show the passwords notice once the
@@ -472,9 +525,6 @@ Polymer({
         showPasswordsNotice && !showHistoryNotice;
     this.showPasswordsDeletionDialogLater_ =
         showPasswordsNotice && showHistoryNotice;
-    chrome.metricsPrivate.recordMediumTime(
-        'History.ClearBrowsingData.TimeSpentInDialog',
-        Date.now() - this.dialogOpenedTime_);
 
     // Close the clear browsing data or installed apps dialog if they are open.
     const isLastDialog = !showHistoryNotice && !showPasswordsNotice;
@@ -619,6 +669,21 @@ Polymer({
 
   /** @private */
   hideInstalledApps_() {
+    chrome.metricsPrivate.recordEnumerationValue(
+        'History.ClearBrowsingData.InstalledAppsDialogAction',
+        InstalledAppsDialogActions.CLOSE,
+        Object.keys(InstalledAppsDialogActions).length);
+    replaceDialog(
+        /** @type {!CrDialogElement} */ (this.$.installedAppsDialog),
+        /** @type {!CrDialogElement} */ (this.$.clearBrowsingDataDialog));
+  },
+
+  /** @private */
+  onCancelInstalledApps_() {
+    chrome.metricsPrivate.recordEnumerationValue(
+        'History.ClearBrowsingData.InstalledAppsDialogAction',
+        InstalledAppsDialogActions.CANCEL_BUTTON,
+        Object.keys(InstalledAppsDialogActions).length);
     replaceDialog(
         /** @type {!CrDialogElement} */ (this.$.installedAppsDialog),
         /** @type {!CrDialogElement} */ (this.$.clearBrowsingDataDialog));
@@ -629,6 +694,11 @@ Polymer({
    * @private
    */
   onInstalledAppsConfirmClick_: async function() {
+    chrome.metricsPrivate.recordEnumerationValue(
+        'History.ClearBrowsingData.InstalledAppsDialogAction',
+        InstalledAppsDialogActions.CLEAR_BUTTON,
+        Object.keys(InstalledAppsDialogActions).length);
+    this.recordInstalledAppsInteractions_();
     await this.clearBrowsingData_();
   }
 });

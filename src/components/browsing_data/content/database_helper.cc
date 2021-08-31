@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -34,8 +35,9 @@ using storage::DatabaseIdentifier;
 namespace browsing_data {
 
 DatabaseHelper::DatabaseHelper(content::BrowserContext* browser_context)
-    : tracker_(BrowserContext::GetDefaultStoragePartition(browser_context)
-                   ->GetDatabaseTracker()) {}
+    : tracker_(
+          browser_context->GetDefaultStoragePartition()->GetDatabaseTracker()) {
+}
 
 DatabaseHelper::~DatabaseHelper() {}
 
@@ -69,9 +71,8 @@ void DatabaseHelper::DeleteDatabase(const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   tracker_->task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          base::IgnoreResult(&storage::DatabaseTracker::DeleteDataForOrigin),
-          tracker_, origin, net::CompletionOnceCallback()));
+      base::BindOnce(&storage::DatabaseTracker::DeleteDataForOrigin, tracker_,
+                     origin, base::DoNothing::Once<int>()));
 }
 
 CannedDatabaseHelper::CannedDatabaseHelper(

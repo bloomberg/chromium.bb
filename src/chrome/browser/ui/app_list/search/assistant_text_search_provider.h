@@ -8,7 +8,7 @@
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 
 namespace app_list {
@@ -30,7 +30,7 @@ class AssistantTextSearchProvider : public SearchProvider,
   ~AssistantTextSearchProvider() override;
 
   // SearchProvider:
-  void Start(const base::string16& query) override;
+  void Start(const std::u16string& query) override;
 
  private:
   // SearchProvider:
@@ -47,13 +47,14 @@ class AssistantTextSearchProvider : public SearchProvider,
   // Invoke to update results based on current state.
   void UpdateResults();
 
-  base::string16 query_;
+  std::u16string query_;
 
-  ScopedObserver<ash::AssistantController, ash::AssistantControllerObserver>
-      assistant_controller_observer_{this};
+  base::ScopedObservation<ash::AssistantController,
+                          ash::AssistantControllerObserver>
+      assistant_controller_observation_{this};
 
-  ScopedObserver<ash::AssistantStateBase, ash::AssistantStateObserver>
-      assistant_state_observer_{this};
+  base::ScopedObservation<ash::AssistantStateBase, ash::AssistantStateObserver>
+      assistant_state_observation_{this};
 };
 
 }  // namespace app_list

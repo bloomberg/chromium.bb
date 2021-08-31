@@ -20,6 +20,7 @@
 
 using ::testing::_;
 using ::testing::SaveArg;
+using ::testing::Values;
 
 namespace ui {
 
@@ -28,7 +29,7 @@ class TestInputMethodContextDelegate : public LinuxInputMethodContextDelegate {
   TestInputMethodContextDelegate() {}
   ~TestInputMethodContextDelegate() override {}
 
-  void OnCommit(const base::string16& text) override {
+  void OnCommit(const std::u16string& text) override {
     was_on_commit_called_ = true;
   }
   void OnPreeditChanged(const ui::CompositionText& composition_text) override {
@@ -136,9 +137,11 @@ TEST_P(WaylandInputMethodContextTest, OnCommit) {
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandInputMethodContextTest,
-                         ::testing::Values(kXdgShellStable));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kStable}));
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
                          WaylandInputMethodContextTest,
-                         ::testing::Values(kXdgShellV6));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kV6}));
 
 }  // namespace ui

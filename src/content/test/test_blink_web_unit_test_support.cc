@@ -4,6 +4,8 @@
 
 #include "content/test/test_blink_web_unit_test_support.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -23,7 +25,6 @@
 #include "cc/trees/layer_tree_settings.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/child/child_process.h"
-#include "content/public/common/service_names.mojom.h"
 #include "media/base/media.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
@@ -128,8 +129,8 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
     // create their own thread bundles or message loops, and doing the same in
     // TestBlinkWebUnitTestSupport would introduce a conflict.
     dummy_task_runner = base::MakeRefCounted<base::NullTaskRunner>();
-    dummy_task_runner_handle.reset(
-        new base::ThreadTaskRunnerHandle(dummy_task_runner));
+    dummy_task_runner_handle =
+        std::make_unique<base::ThreadTaskRunnerHandle>(dummy_task_runner);
   } else {
     DCHECK_EQ(scheduler_type, SchedulerType::kRealScheduler);
     main_thread_scheduler_ =
@@ -245,6 +246,10 @@ TestBlinkWebUnitTestSupport::GetIOTaskRunner() const {
 
 bool TestBlinkWebUnitTestSupport::IsThreadedAnimationEnabled() {
   return threaded_animation_;
+}
+
+cc::TaskGraphRunner* TestBlinkWebUnitTestSupport::GetTaskGraphRunner() {
+  return &test_task_graph_runner_;
 }
 
 // static

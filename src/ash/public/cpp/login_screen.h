@@ -51,6 +51,9 @@ class ASH_PUBLIC_EXPORT LoginScreen {
   // Sets whether shutdown button is enabled in the login screen.
   virtual void EnableShutdownButton(bool enable) = 0;
 
+  // Sets whether shelf buttons are enabled.
+  virtual void EnableShelfButtons(bool enable) = 0;
+
   // Used to show or hide apps the guest and buttons on the login shelf during
   // OOBE.
   virtual void SetIsFirstSigninStep(bool is_first) = 0;
@@ -90,7 +93,7 @@ class ASH_PUBLIC_EXPORT LoginScreen {
   // is already set, this method will replace it (and the previous handler's
   // exit_callback will be run).
   virtual bool SetLoginShelfGestureHandler(
-      const base::string16& message,
+      const std::u16string& message,
       const base::RepeatingClosure& fling_callback,
       base::OnceClosure exit_callback) = 0;
 

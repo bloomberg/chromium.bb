@@ -4,11 +4,15 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_bottom_toolbar.h"
 
+#include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_new_tab_button.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_feature.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -20,8 +24,12 @@
   UIBarButtonItem* _spaceItem;
   NSArray<NSLayoutConstraint*>* _compactConstraints;
   NSArray<NSLayoutConstraint*>* _floatingConstraints;
+  NSLayoutConstraint* _largeNewTabButtonBottomAnchor;
   TabGridNewTabButton* _smallNewTabButton;
   TabGridNewTabButton* _largeNewTabButton;
+  UIBarButtonItem* _addToButton;
+  UIBarButtonItem* _closeTabsButton;
+  UIBarButtonItem* _shareButton;
 }
 
 #pragma mark - UIView
@@ -77,6 +85,16 @@
   [self updateLayout];
 }
 
+- (void)setMode:(TabGridMode)mode {
+  _mode = mode;
+  [self updateLayout];
+}
+
+- (void)setSelectedTabsCount:(int)count {
+  _selectedTabsCount = count;
+  [self updateSelectionButtonsTitle];
+}
+
 - (void)setNewTabButtonTarget:(id)target action:(SEL)action {
   [_smallNewTabButton addTarget:target
                          action:action
@@ -84,6 +102,17 @@
   [_largeNewTabButton addTarget:target
                          action:action
                forControlEvents:UIControlEventTouchUpInside];
+}
+
+- (void)setNewTabButtonEnabled:(BOOL)enabled {
+  _smallNewTabButton.enabled = enabled;
+  _largeNewTabButton.enabled = enabled;
+}
+
+- (void)setSelectionModeButtonsEnabled:(BOOL)enabled {
+  _addToButton.enabled = enabled;
+  _closeTabsButton.enabled = enabled;
+  _shareButton.enabled = enabled;
 }
 
 - (void)hide {
@@ -132,6 +161,24 @@
   _newTabButtonItem =
       [[UIBarButtonItem alloc] initWithCustomView:_smallNewTabButton];
 
+  // Create selection mode buttons
+  if (IsTabsBulkActionsEnabled()) {
+    _addToButton = [[UIBarButtonItem alloc] init];
+    _addToButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
+    _addToButton.title = l10n_util::GetNSString(IDS_IOS_TAB_GRID_ADD_TO_BUTTON);
+    _addToButton.accessibilityIdentifier = kTabGridAddToButtonIdentifier;
+    _shareButton = [[UIBarButtonItem alloc]
+        initWithBarButtonSystemItem:UIBarButtonSystemItemAction
+                             target:nil
+                             action:nil];
+    _shareButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
+    _shareButton.accessibilityIdentifier = kTabGridShareButtonIdentifier;
+    _closeTabsButton = [[UIBarButtonItem alloc] init];
+    _closeTabsButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
+    _closeTabsButton.accessibilityIdentifier = kTabGridCloseButtonIdentifier;
+    [self updateSelectionButtonsTitle];
+  }
+
   _compactConstraints = @[
     [_toolbar.topAnchor constraintEqualToAnchor:self.topAnchor],
     [_toolbar.bottomAnchor
@@ -150,14 +197,17 @@
   _largeNewTabButton.page = self.page;
 
   CGFloat floatingButtonVerticalInset = kTabGridFloatingButtonVerticalInset;
-  if (IsThumbStripEnabled())
+  if (ShowThumbStripInTraitCollection(self.traitCollection)) {
     floatingButtonVerticalInset += kBVCHeightTabGrid;
+  }
+
+  _largeNewTabButtonBottomAnchor = [_largeNewTabButton.bottomAnchor
+      constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor
+                     constant:-floatingButtonVerticalInset];
 
   _floatingConstraints = @[
     [_largeNewTabButton.topAnchor constraintEqualToAnchor:self.topAnchor],
-    [_largeNewTabButton.bottomAnchor
-        constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor
-                       constant:-floatingButtonVerticalInset],
+    _largeNewTabButtonBottomAnchor,
     [_largeNewTabButton.trailingAnchor
         constraintEqualToAnchor:self.trailingAnchor
                        constant:-kTabGridFloatingButtonHorizontalInset],
@@ -172,7 +222,27 @@
   _newTabButtonItem.title = _largeNewTabButton.accessibilityLabel;
 }
 
+- (void)updateSelectionButtonsTitle {
+  _closeTabsButton.title =
+      base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
+          IDS_IOS_TAB_GRID_CLOSE_TABS_BUTTON, _selectedTabsCount));
+}
+
 - (void)updateLayout {
+  _largeNewTabButtonBottomAnchor.constant =
+      -kTabGridFloatingButtonVerticalInset;
+
+  if (self.mode == TabGridModeSelection) {
+    [_toolbar setItems:@[
+      _closeTabsButton, _spaceItem, _shareButton, _spaceItem, _addToButton
+    ]];
+    [NSLayoutConstraint deactivateConstraints:_floatingConstraints];
+    [_largeNewTabButton removeFromSuperview];
+    [self addSubview:_toolbar];
+    [NSLayoutConstraint activateConstraints:_compactConstraints];
+    return;
+  }
+
   if ([self shouldUseCompactLayout]) {
     // For incognito/regular pages, display all 3 buttons;
     // For remote tabs page, only display new tab button.
@@ -193,7 +263,10 @@
     [NSLayoutConstraint deactivateConstraints:_compactConstraints];
     [_toolbar removeFromSuperview];
 
-    if (self.page == TabGridPageRemoteTabs) {
+    // When the thumb strip is enabled, there should be no new tab button on the
+    // bottom ever.
+    if (ShowThumbStripInTraitCollection(self.traitCollection) ||
+        self.page == TabGridPageRemoteTabs) {
       [NSLayoutConstraint deactivateConstraints:_floatingConstraints];
       [_largeNewTabButton removeFromSuperview];
     } else {

@@ -82,17 +82,20 @@ static_library("dawn_utils") {
     "Timer.h",
     "WGPUHelpers.cpp",
     "WGPUHelpers.h",
+    "WireHelper.cpp",
+    "WireHelper.h",
   ]
   deps = [
     "${dawn_root}/src/common",
-    "${dawn_root}/src/dawn_native",
+    "${dawn_root}/src/dawn:dawn_proc",
+    "${dawn_root}/src/dawn_native:dawn_native_headers",
     "${dawn_root}/src/dawn_wire",
-    "${dawn_shaderc_dir}:libshaderc",
+    "${dawn_spirv_tools_dir}:spvtools_opt",
   ]
   libs = []
   frameworks = []
 
-  if (is_win) {
+  if (is_win && !dawn_is_winuwp) {
     sources += [ "WindowsDebugLogger.cpp" ]
   } else {
     sources += [ "EmptyDebugLogger.cpp" ]

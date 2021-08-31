@@ -4,27 +4,24 @@
 
 #include "chrome/browser/ui/profile_picker.h"
 
+#include <algorithm>
 #include <string>
 
-#include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
-#include "build/build_config.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/ui_features.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 
-#if defined(OS_WIN)
-#include "chrome/browser/notifications/win/notification_launch_id.h"
-#endif
-
 namespace {
+
+constexpr base::TimeDelta kActiveTimeThreshold = base::TimeDelta::FromDays(28);
 
 ProfilePicker::AvailabilityOnStartup GetAvailabilityOnStartup() {
   int availability_on_startup = g_browser_process->local_state()->GetInteger(
@@ -44,64 +41,58 @@ ProfilePicker::AvailabilityOnStartup GetAvailabilityOnStartup() {
 
 }  // namespace
 
+const char ProfilePicker::kTaskManagerUrl[] =
+    "chrome://profile-picker/task-manager";
+
+const base::Feature kEnableProfilePickerOnStartupFeature{
+    "EnableProfilePickerOnStartup", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // static
-bool ProfilePicker::ShouldShowAtLaunch(
-    const base::CommandLine& command_line,
-    const std::vector<GURL>& urls_to_launch) {
+bool ProfilePicker::Shown() {
+  PrefService* prefs = g_browser_process->local_state();
+  DCHECK(prefs);
+  return prefs->GetBoolean(prefs::kBrowserProfilePickerShown);
+}
+
+// static
+bool ProfilePicker::ShouldShowAtLaunch() {
   AvailabilityOnStartup availability_on_startup = GetAvailabilityOnStartup();
-
-  // Don't show the picker if a certain profile (or an incognito window in the
-  // default profile) is explicitly requested.
-  if (profiles::IsGuestModeRequested(command_line,
-                                     g_browser_process->local_state(),
-                                     /*show_warning=*/false) ||
-      command_line.HasSwitch(switches::kIncognito) ||
-      command_line.HasSwitch(switches::kProfileDirectory)) {
-    return false;
-  }
-
-  // Don't show the picker if an app is explicitly requested to open. This URL
-  // param should be ideally paired with switches::kProfileDirectory but it's
-  // better to err on the side of opening the last profile than to err on the
-  // side of not opening the app directly.
-  if (command_line.HasSwitch(switches::kApp) ||
-      command_line.HasSwitch(switches::kAppId)) {
-    return false;
-  }
-
-// If the browser is launched due to activation on Windows native notification,
-// the profile id encoded in the notification launch id should be chosen over
-// the profile picker.
-#if defined(OS_WIN)
-  std::string profile_id =
-      NotificationLaunchId::GetNotificationLaunchProfileId(command_line);
-  if (!profile_id.empty()) {
-    return false;
-  }
-#endif  // defined(OS_WIN)
-
-  // Don't show the picker if a any URL is requested to launch via the
-  // command-line.
-  if (!urls_to_launch.empty()) {
-    return false;
-  }
-
-  if (signin_util::IsForceSigninEnabled())
-    return false;
 
   if (!base::FeatureList::IsEnabled(features::kNewProfilePicker))
     return false;
 
-  // TODO (crbug/1155158): Move this over the urls check once the
-  // profile picker can forward urls specified in command line.
+  if (!base::FeatureList::IsEnabled(kEnableProfilePickerOnStartupFeature))
+    return false;
+
+  if (availability_on_startup == AvailabilityOnStartup::kDisabled)
+    return false;
+
+  // TODO (crbug/1155158): Move this over the urls check (in
+  // startup_browser_creator.cc) once the profile picker can forward urls
+  // specified in command line.
   if (availability_on_startup == AvailabilityOnStartup::kForced)
     return true;
 
-  size_t number_of_profiles = g_browser_process->profile_manager()
-                                  ->GetProfileAttributesStorage()
-                                  .GetNumberOfProfiles();
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
 
-  if (number_of_profiles == 1)
+  size_t number_of_profiles = profile_manager->GetNumberOfProfiles();
+  // Need to consider 0 profiles as this is what happens in some browser-tests.
+  if (number_of_profiles <= 1)
+    return false;
+
+  std::vector<ProfileAttributesEntry*> profile_attributes =
+      profile_manager->GetProfileAttributesStorage().GetAllProfilesAttributes(
+          /*include_guest_profile=*/false);
+  int number_of_active_profiles =
+      std::count_if(profile_attributes.begin(), profile_attributes.end(),
+                    [](ProfileAttributesEntry* entry) {
+                      return (base::Time::Now() - entry->GetActiveTime() <
+                              kActiveTimeThreshold);
+                    });
+  // Don't show the profile picker at launch if the user has less than two
+  // active profiles. However, if the user has already seen the profile picker
+  // before, respect user's preference.
+  if (number_of_active_profiles < 2 && !Shown())
     return false;
 
   bool pref_enabled = g_browser_process->local_state()->GetBoolean(

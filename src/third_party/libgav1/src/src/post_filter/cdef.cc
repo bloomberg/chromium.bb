@@ -96,6 +96,7 @@ void PostFilter::SetupCdefBorder(int row4x4) {
     const int row_offset = DivideBy4(row4x4);
     const int num_pixels = SubsampledValue(
         MultiplyBy4(frame_header_.columns4x4), subsampling_x_[plane]);
+    const int row_width = num_pixels << pixel_size_log2_;
     const int plane_height = SubsampledValue(MultiplyBy4(frame_header_.rows4x4),
                                              subsampling_y_[plane]);
     for (int i = 0; i < 4; ++i) {
@@ -107,7 +108,7 @@ void PostFilter::SetupCdefBorder(int row4x4) {
           GetSourceBuffer(static_cast<Plane>(plane), row4x4, 0) +
           row * src_stride;
       uint8_t* dst = cdef_border_.data(plane) + dst_stride * (row_offset + i);
-      memcpy(dst, src, num_pixels * pixel_size_);
+      memcpy(dst, src, row_width);
     }
   } while (++plane < planes_);
 }
@@ -271,7 +272,7 @@ void PostFilter::ApplyCdefForOneUnit(uint16_t* cdef_block, const int index,
   const uint16_t* cdef_src_row_base[kMaxPlanes];
   int cdef_src_row_base_stride[kMaxPlanes];
   int column_step[kMaxPlanes];
-  assert(planes_ >= 1);
+  assert(planes_ == kMaxPlanesMonochrome || planes_ == kMaxPlanes);
   int plane = kPlaneY;
   do {
     cdef_buffer_row_base[plane] =
@@ -341,7 +342,7 @@ void PostFilter::ApplyCdefForOneUnit(uint16_t* cdef_block, const int index,
 
   // Stored direction used during the u/v pass.  If bit 3 is set, then block is
   // a skip.
-  int direction_y[8 * 8];
+  uint8_t direction_y[8 * 8];
   int y_index = 0;
 
   const uint8_t y_primary_strength =

@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+const TechnologyIcons = {
+  CELLULAR: 'cellular_0.svg',
+  ETHERNET: 'ethernet.svg',
+  VPN: 'vpn.svg',
+  WIFI: 'wifi_0.svg',
+};
+
 /**
  * @fileoverview Polymer element for displaying NetworkHealth properties.
  */
@@ -25,6 +32,13 @@ Polymer({
    * @type {?chromeos.networkHealth.mojom.NetworkHealthServiceRemote}
    */
   networkHealth_: null,
+
+  /**
+   * Expanded state per network type.
+   * @private
+   * @type {!Array<boolean>}
+   */
+  typeExpanded_: [],
 
   /** @override */
   created() {
@@ -83,6 +97,46 @@ Polymer({
   },
 
   /**
+   * Returns a boolean flag to show the PortalState attribute. The information
+   * is not meaningful in all cases and should be hidden to prevent confusion.
+   * @private
+   * @param {chromeos.networkHealth.mojom.Network} network
+   * @return {boolean}
+   */
+  showPortalState_(network) {
+    const NetworkState = chromeos.networkHealth.mojom.NetworkState;
+    const PortalState = chromeos.networkConfig.mojom.PortalState;
+
+    if (network.state === NetworkState.kOnline &&
+        network.portalState === PortalState.kOnline) {
+      return false;
+    }
+
+    const notApplicableStates = [
+      NetworkState.kUninitialized,
+      NetworkState.kDisabled,
+      NetworkState.kProhibited,
+      NetworkState.kConnecting,
+      NetworkState.kNotConnected,
+    ];
+    if (notApplicableStates.includes(network.state)) {
+      return false;
+    }
+
+    return true;
+  },
+
+  /**
+   * Returns a string for the given PortalState.
+   * @private
+   * @param {chromeos.networkConfig.mojom.PortalState} state
+   * @return {string}
+   */
+  getPortalStateString_(state) {
+    return this.i18n('OncPortalState' + OncMojo.getPortalStateString(state));
+  },
+
+  /**
    * Returns a string for the given NetworkType.
    * @private
    * @param {chromeos.networkConfig.mojom.NetworkType} type
@@ -93,6 +147,29 @@ Polymer({
   },
 
   /**
+   * Returns a icon for the given NetworkType.
+   * @private
+   * @param {chromeos.networkConfig.mojom.NetworkType} type
+   * @return {string}
+   */
+  getNetworkTypeIcon_(type) {
+    switch (type) {
+      case chromeos.networkConfig.mojom.NetworkType.kEthernet:
+        return TechnologyIcons.ETHERNET;
+      case chromeos.networkConfig.mojom.NetworkType.kWiFi:
+        return TechnologyIcons.WIFI;
+      case chromeos.networkConfig.mojom.NetworkType.kVPN:
+        return TechnologyIcons.VPN;
+      case chromeos.networkConfig.mojom.NetworkType.kTether:
+      case chromeos.networkConfig.mojom.NetworkType.kMobile:
+      case chromeos.networkConfig.mojom.NetworkType.kCellular:
+        return TechnologyIcons.CELLULAR;
+      default:
+        return '';
+    }
+  },
+
+  /**
    * Returns a string for the given signal strength.
    * @private
    * @param {?chromeos.networkHealth.mojom.UInt32Value} signalStrength
@@ -100,5 +177,66 @@ Polymer({
    */
   getSignalStrengthString_(signalStrength) {
     return signalStrength ? signalStrength.value.toString() : '';
+  },
+
+  /**
+   * Returns a boolean flag if the open to settings link should be shown.
+   * @private
+   * @param {chromeos.networkHealth.mojom.Network} network
+   * @return {boolean}
+   */
+  showSettingsLink_(network) {
+    const validStates = [
+      chromeos.networkHealth.mojom.NetworkState.kConnected,
+      chromeos.networkHealth.mojom.NetworkState.kConnecting,
+      chromeos.networkHealth.mojom.NetworkState.kPortal,
+      chromeos.networkHealth.mojom.NetworkState.kOnline
+    ];
+    return validStates.includes(network.state);
+  },
+
+  /**
+   * Returns a URL for the network's settings page.
+   * @private
+   * @param {chromeos.networkHealth.mojom.Network} network
+   * @return {string}
+   */
+  getNetworkUrl_(network) {
+    return 'chrome://os-settings/networkDetail?guid=' + network.guid;
+  },
+
+  /**
+   * Returns a concatenated list of strings.
+   * @private
+   * @param {!Array<string>} addresses
+   * @return {string}
+   */
+  joinAddresses_(addresses) {
+    return addresses.join(', ');
+  },
+
+  /**
+   * Returns a boolean flag if the routine type should be expanded.
+   * @param {chromeos.networkConfig.mojom.NetworkType} type
+   * @private
+   */
+  getTypeExpanded_(type) {
+    if (this.typeExpanded_[type] === undefined) {
+      this.set('typeExpanded_.' + type, false);
+      return false;
+    }
+
+    return this.typeExpanded_[type];
+  },
+
+  /**
+   * Helper function to toggle the expanded properties when the network
+   * container is toggled.
+   * @param {!Event} event
+   * @private
+   */
+  onToggleExpanded_(event) {
+    const type = event.model.network.type;
+    this.set('typeExpanded_.' + type, !this.typeExpanded_[type]);
   },
 });

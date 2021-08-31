@@ -11,6 +11,7 @@
 #include "ash/assistant/ui/logo_view/logo_view.h"
 #include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -32,17 +33,13 @@ MicView::MicView(AssistantButtonListener* listener, AssistantButtonId button_id)
     : AssistantButton(listener, button_id) {
   InitLayout();
 
-  assistant_controller_observer_.Add(AssistantController::Get());
+  assistant_controller_observation_.Observe(AssistantController::Get());
   AssistantInteractionController::Get()->GetModel()->AddObserver(this);
 }
 
 MicView::~MicView() {
   if (AssistantInteractionController::Get())
     AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
-}
-
-const char* MicView::GetClassName() const {
-  return "MicView";
 }
 
 gfx::Size MicView::CalculatePreferredSize() const {
@@ -55,7 +52,9 @@ int MicView::GetHeightForWidth(int width) const {
 
 void MicView::OnAssistantControllerDestroying() {
   AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
-  assistant_controller_observer_.Remove(AssistantController::Get());
+  DCHECK(assistant_controller_observation_.IsObservingSource(
+      AssistantController::Get()));
+  assistant_controller_observation_.Reset();
 }
 
 void MicView::OnMicStateChanged(MicState mic_state) {
@@ -126,5 +125,8 @@ void MicView::UpdateState(bool animate) {
   }
   logo_view_->SetState(mic_state, animate);
 }
+
+BEGIN_METADATA(MicView, AssistantButton)
+END_METADATA
 
 }  // namespace ash

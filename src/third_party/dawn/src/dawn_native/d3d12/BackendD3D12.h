@@ -30,8 +30,14 @@ namespace dawn_native { namespace d3d12 {
         MaybeError Initialize();
 
         ComPtr<IDXGIFactory4> GetFactory() const;
-        ResultOrError<IDxcLibrary*> GetOrCreateDxcLibrary();
-        ResultOrError<IDxcCompiler*> GetOrCreateDxcCompiler();
+
+        MaybeError EnsureDxcLibrary();
+        MaybeError EnsureDxcCompiler();
+        MaybeError EnsureDxcValidator();
+        ComPtr<IDxcLibrary> GetDxcLibrary() const;
+        ComPtr<IDxcCompiler> GetDxcCompiler() const;
+        ComPtr<IDxcValidator> GetDxcValidator() const;
+
         const PlatformFunctions* GetFunctions() const;
 
         std::vector<std::unique_ptr<AdapterBase>> DiscoverDefaultAdapters() override;
@@ -45,6 +51,7 @@ namespace dawn_native { namespace d3d12 {
         ComPtr<IDXGIFactory4> mFactory;
         ComPtr<IDxcLibrary> mDxcLibrary;
         ComPtr<IDxcCompiler> mDxcCompiler;
+        ComPtr<IDxcValidator> mDxcValidator;
     };
 
 }}  // namespace dawn_native::d3d12

@@ -15,9 +15,72 @@
 #include "tests/unittests/validation/ValidationTest.h"
 
 #include "common/Assert.h"
+#include "common/SystemUtils.h"
 #include "dawn/dawn_proc.h"
 #include "dawn/webgpu.h"
 #include "dawn_native/NullBackend.h"
+#include "tests/ToggleParser.h"
+#include "utils/WireHelper.h"
+
+#include <algorithm>
+
+namespace {
+
+    bool gUseWire = false;
+    std::string gWireTraceDir = "";
+    std::unique_ptr<ToggleParser> gToggleParser = nullptr;
+
+}  // namespace
+
+void InitDawnValidationTestEnvironment(int argc, char** argv) {
+    gToggleParser = std::make_unique<ToggleParser>();
+
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp("-w", argv[i]) == 0 || strcmp("--use-wire", argv[i]) == 0) {
+            gUseWire = true;
+            continue;
+        }
+
+        constexpr const char kWireTraceDirArg[] = "--wire-trace-dir=";
+        size_t argLen = sizeof(kWireTraceDirArg) - 1;
+        if (strncmp(argv[i], kWireTraceDirArg, argLen) == 0) {
+            gWireTraceDir = argv[i] + argLen;
+            continue;
+        }
+
+        if (gToggleParser->ParseEnabledToggles(argv[i])) {
+            continue;
+        }
+
+        if (gToggleParser->ParseDisabledToggles(argv[i])) {
+            continue;
+        }
+
+        if (strcmp("-h", argv[i]) == 0 || strcmp("--help", argv[i]) == 0) {
+            dawn::InfoLog()
+                << "\n\nUsage: " << argv[0]
+                << " [GTEST_FLAGS...] [-w]\n"
+                   "    [--enable-toggles=toggles] [--disable-toggles=toggles]\n"
+                   "  -w, --use-wire: Run the tests through the wire (defaults to no wire)\n"
+                   "  --enable-toggles: Comma-delimited list of Dawn toggles to enable.\n"
+                   "    ex.) skip_validation,use_tint_generator,disable_robustness,turn_off_vsync\n"
+                   "  --disable-toggles: Comma-delimited list of Dawn toggles to disable\n";
+            continue;
+        }
+
+        // Skip over args that look like they're for Googletest.
+        constexpr const char kGtestArgPrefix[] = "--gtest_";
+        if (strncmp(kGtestArgPrefix, argv[i], sizeof(kGtestArgPrefix) - 1) == 0) {
+            continue;
+        }
+
+        dawn::WarningLog() << " Unused argument: " << argv[i];
+    }
+}
+
+ValidationTest::ValidationTest()
+    : mWireHelper(utils::CreateWireHelper(gUseWire, gWireTraceDir.c_str())) {
+}
 
 void ValidationTest::SetUp() {
     instance = std::make_unique<dawn_native::Instance>();
@@ -40,25 +103,29 @@ void ValidationTest::SetUp() {
 
     ASSERT(foundNullAdapter);
 
-    dawnProcSetProcs(&dawn_native::GetProcs());
-
-    device = CreateTestDevice();
+    std::tie(device, backendDevice) = mWireHelper->RegisterDevice(CreateTestDevice());
     device.SetUncapturedErrorCallback(ValidationTest::OnDeviceError, this);
+
+    std::string traceName =
+        std::string(::testing::UnitTest::GetInstance()->current_test_info()->test_suite_name()) +
+        "_" + ::testing::UnitTest::GetInstance()->current_test_info()->name();
+    mWireHelper->BeginWireTrace(traceName.c_str());
 }
 
 ValidationTest::~ValidationTest() {
     // We need to destroy Dawn objects before setting the procs to null otherwise the dawn*Release
     // will call a nullptr
     device = wgpu::Device();
-    dawnProcSetProcs(nullptr);
+    mWireHelper.reset();
 }
 
 void ValidationTest::TearDown() {
+    FlushWire();
     ASSERT_FALSE(mExpectError);
 
     if (device) {
         EXPECT_EQ(mLastWarningCount,
-                  dawn_native::GetDeprecationWarningCountForTesting(device.Get()));
+                  dawn_native::GetDeprecationWarningCountForTesting(backendDevice));
     }
 }
 
@@ -74,31 +141,58 @@ std::string ValidationTest::GetLastDeviceErrorMessage() const {
     return mDeviceErrorMessage;
 }
 
-void ValidationTest::WaitForAllOperations(const wgpu::Device& device) const {
-    wgpu::Queue queue = device.GetDefaultQueue();
-    wgpu::Fence fence = queue.CreateFence();
+wgpu::Device ValidationTest::RegisterDevice(WGPUDevice backendDevice) {
+    return mWireHelper->RegisterDevice(backendDevice).first;
+}
+
+bool ValidationTest::UsesWire() const {
+    return gUseWire;
+}
+
+void ValidationTest::FlushWire() {
+    EXPECT_TRUE(mWireHelper->FlushClient());
+    EXPECT_TRUE(mWireHelper->FlushServer());
+}
+
+void ValidationTest::WaitForAllOperations(const wgpu::Device& device) {
+    bool done = false;
+    device.GetQueue().OnSubmittedWorkDone(
+        0u, [](WGPUQueueWorkDoneStatus, void* userdata) { *static_cast<bool*>(userdata) = true; },
+        &done);
 
     // Force the currently submitted operations to completed.
-    queue.Signal(fence, 1);
-    while (fence.GetCompletedValue() < 1) {
+    while (!done) {
         device.Tick();
+        FlushWire();
     }
 
     // TODO(cwallez@chromium.org): It's not clear why we need this additional tick. Investigate it
     // once WebGPU has defined the ordering of callbacks firing.
     device.Tick();
+    FlushWire();
 }
 
-bool ValidationTest::HasWGSL() const {
-#ifdef DAWN_ENABLE_WGSL
-    return true;
-#else
-    return false;
-#endif
+bool ValidationTest::HasToggleEnabled(const char* toggle) const {
+    auto toggles = dawn_native::GetTogglesUsed(backendDevice);
+    return std::find_if(toggles.begin(), toggles.end(), [toggle](const char* name) {
+               return strcmp(toggle, name) == 0;
+           }) != toggles.end();
 }
 
-wgpu::Device ValidationTest::CreateTestDevice() {
-    return wgpu::Device::Acquire(adapter.CreateDevice());
+WGPUDevice ValidationTest::CreateTestDevice() {
+    // Disabled disallowing unsafe APIs so we can test them.
+    dawn_native::DeviceDescriptor deviceDescriptor;
+    deviceDescriptor.forceDisabledToggles.push_back("disallow_unsafe_apis");
+
+    for (const std::string& toggle : gToggleParser->GetEnabledToggles()) {
+        deviceDescriptor.forceEnabledToggles.push_back(toggle.c_str());
+    }
+
+    for (const std::string& toggle : gToggleParser->GetDisabledToggles()) {
+        deviceDescriptor.forceDisabledToggles.push_back(toggle.c_str());
+    }
+
+    return adapter.CreateDevice(&deviceDescriptor);
 }
 
 // static
@@ -118,7 +212,7 @@ ValidationTest::DummyRenderPass::DummyRenderPass(const wgpu::Device& device)
     descriptor.dimension = wgpu::TextureDimension::e2D;
     descriptor.size.width = width;
     descriptor.size.height = height;
-    descriptor.size.depth = 1;
+    descriptor.size.depthOrArrayLayers = 1;
     descriptor.sampleCount = 1;
     descriptor.format = attachmentFormat;
     descriptor.mipLevelCount = 1;
@@ -126,7 +220,7 @@ ValidationTest::DummyRenderPass::DummyRenderPass(const wgpu::Device& device)
     attachment = device.CreateTexture(&descriptor);
 
     wgpu::TextureView view = attachment.CreateView();
-    mColorAttachment.attachment = view;
+    mColorAttachment.view = view;
     mColorAttachment.resolveTarget = nullptr;
     mColorAttachment.clearColor = {0.0f, 0.0f, 0.0f, 0.0f};
     mColorAttachment.loadOp = wgpu::LoadOp::Clear;

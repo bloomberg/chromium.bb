@@ -42,6 +42,7 @@ const std::string Converter::kPseudoLookupTable[] = {
     "-internal-list-box",
     "-internal-media-controls-overlay-cast-button",
     "-internal-multi-select-focus",
+    "-internal-popup-open",
     "-internal-shadow-host-has-appearance",
     "-internal-spatial-navigation-focus",
     "-internal-video-persistent",
@@ -64,7 +65,6 @@ const std::string Converter::kPseudoLookupTable[] = {
     "backdrop",
     "before",
     "checked",
-    "content",
     "corner-present",
     "cue",
     "decrement",
@@ -110,11 +110,9 @@ const std::string Converter::kPseudoLookupTable[] = {
     "root",
     "scope",
     "selection",
-    "shadow",
     "single-button",
     "start",
     "target",
-    "unresolved",
     "valid",
     "vertical",
     "visited",
@@ -1527,6 +1525,10 @@ const std::string Converter::kPropertyLookupTable[] = {
     "overscroll-behavior-y",
     "animation-timeline",
     "counter-set",
+    "border-start-start-radius",
+    "border-start-end-radius",
+    "border-end-start-radius",
+    "border-end-end-radius",
     "INVALID_PROPERTY",
 };
 
@@ -1721,25 +1723,30 @@ void Converter::Visit(const StyleSheet& style_sheet) {
 }
 
 void Converter::Visit(const ViewportValue& viewport_value) {
-  if (viewport_value.has_length())
+  if (viewport_value.has_length()) {
     Visit(viewport_value.length());
-  else if (viewport_value.has_num())
+  } else if (viewport_value.has_num()) {
     Visit(viewport_value.num());
-  else  // Default value.
-    AppendTableValue(viewport_value.value_id(), kViewportValueLookupTable);
+  } else {  // Default value.
+    AppendTableValue<ViewportValue_ValueId_ValueId_ARRAYSIZE>(
+        viewport_value.value_id(), kViewportValueLookupTable);
+  }
 }
 
 void Converter::Visit(const Viewport& viewport) {
   string_ += " @viewport {";
-  for (auto& property_and_value : viewport.properties_and_values())
-    AppendPropertyAndValue(property_and_value, kViewportPropertyLookupTable);
+  for (auto& property_and_value : viewport.properties_and_values()) {
+    AppendPropertyAndValue<ViewportProperty_PropertyId_PropertyId_ARRAYSIZE>(
+        property_and_value, kViewportPropertyLookupTable);
+  }
   string_ += " } ";
 }
 
 void Converter::Visit(const CharsetDeclaration& charset_declaration) {
   string_ += "@charset ";  // CHARSET_SYM
   string_ += "\"";
-  AppendTableValue(charset_declaration.encoding_id(), kEncodingLookupTable);
+  AppendTableValue<CharsetDeclaration_EncodingId_EncodingId_ARRAYSIZE>(
+      charset_declaration.encoding_id(), kEncodingLookupTable);
   string_ += "\"; ";
 }
 
@@ -1817,7 +1824,8 @@ void Converter::Visit(const SupportsCondition& supports_condition, int depth) {
 
 void Converter::Visit(const Import& import) {
   string_ += "@import ";
-  AppendTableValue(import.src_id(), kImportLookupTable);
+  AppendTableValue<Import_SrcId_SrcId_ARRAYSIZE>(import.src_id(),
+                                                 kImportLookupTable);
   string_ += " ";
   if (import.has_media_query_list())
     Visit(import.media_query_list());
@@ -1879,7 +1887,8 @@ void Converter::Visit(const MediaConditionWithoutOr& media_condition) {
 }
 
 void Converter::Visit(const MediaType& media_type) {
-  AppendTableValue(media_type.value_id(), kMediaTypeLookupTable);
+  AppendTableValue<MediaType_ValueId_ValueId_ARRAYSIZE>(media_type.value_id(),
+                                                        kMediaTypeLookupTable);
 }
 
 void Converter::Visit(const MediaNot& media_not) {
@@ -1922,7 +1931,8 @@ void Converter::Visit(const MediaFeature& media_feature) {
   if (media_feature.has_mf_bool()) {
     Visit(media_feature.mf_bool());
   } else if (media_feature.has_mf_plain()) {
-    AppendPropertyAndValue(media_feature.mf_plain(), kMfNameLookupTable, false);
+    AppendPropertyAndValue<MfName_ValueId_ValueId_ARRAYSIZE>(
+        media_feature.mf_plain(), kMfNameLookupTable, false);
   }
   string_ += ")";
 }
@@ -1932,7 +1942,8 @@ void Converter::Visit(const MfBool& mf_bool) {
 }
 
 void Converter::Visit(const MfName& mf_name) {
-  AppendTableValue(mf_name.id(), kMfNameLookupTable);
+  AppendTableValue<MfName_ValueId_ValueId_ARRAYSIZE>(mf_name.id(),
+                                                     kMfNameLookupTable);
 }
 
 void Converter::Visit(const MfValue& mf_value) {
@@ -2014,7 +2025,8 @@ void Converter::Visit(const UnaryOperator& unary_operator) {
 }
 
 void Converter::Visit(const Property& property) {
-  AppendTableValue(property.name_id(), kPropertyLookupTable);
+  AppendTableValue<Property_NameId_NameId_ARRAYSIZE>(property.name_id(),
+                                                     kPropertyLookupTable);
 }
 
 void Converter::Visit(const Ruleset& ruleset) {
@@ -2066,7 +2078,8 @@ void Converter::Visit(const Selector& selector, bool is_first) {
     string_ += ":";
     if (selector.pseudo_type() == PseudoType::ELEMENT)
       string_ += ":";
-    AppendTableValue(selector.pseudo_value_id(), kPseudoLookupTable);
+    AppendTableValue<Selector_PseudoValueId_PseudoValueId_ARRAYSIZE>(
+        selector.pseudo_value_id(), kPseudoLookupTable);
   }
 }
 
@@ -2088,10 +2101,12 @@ void Converter::Visit(const PropertyAndValue& property_and_value) {
 }
 
 void Converter::Visit(const Expr& expr, int declaration_value_id) {
-  if (!declaration_value_id)
+  if (!declaration_value_id) {
     Visit(expr.term());
-  else
-    AppendTableValue(declaration_value_id, kValueLookupTable);
+  } else {
+    AppendTableValue<PropertyAndValue_ValueId_ValueId_ARRAYSIZE>(
+        declaration_value_id, kValueLookupTable);
+  }
   for (auto& operator_term : expr.operator_terms())
     Visit(operator_term);
 }
@@ -2177,19 +2192,22 @@ void Converter::Reset() {
   string_.clear();
 }
 
-template <size_t TableSize>
+template <size_t EnumSize, size_t TableSize>
 void Converter::AppendTableValue(int id,
                                  const std::string (&lookup_table)[TableSize]) {
+  // If you hit this assert, you likely need to modify css/parser/css.proto.
+  static_assert(EnumSize == TableSize,
+                "Enum used as index should not overflow lookup table");
   CHECK(id > 0 && static_cast<size_t>(id) < TableSize);
   string_ += lookup_table[id];
 }
 
-template <class T, size_t TableSize>
+template <size_t EnumSize, class T, size_t TableSize>
 void Converter::AppendPropertyAndValue(
     T property_and_value,
     const std::string (&lookup_table)[TableSize],
     bool append_semicolon) {
-  AppendTableValue(property_and_value.property().id(), lookup_table);
+  AppendTableValue<EnumSize>(property_and_value.property().id(), lookup_table);
   string_ += " : ";
   Visit(property_and_value.value());
   if (append_semicolon)

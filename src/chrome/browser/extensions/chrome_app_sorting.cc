@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,7 +30,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
 #endif
@@ -37,10 +38,6 @@
 namespace extensions {
 
 namespace {
-
-bool AreWebAppsOffExtensions() {
-  return base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions);
-}
 
 template <typename Multimap, typename Key, typename Value>
 bool DoesMultimapContainKeyAndValue(const Multimap& map,
@@ -84,7 +81,14 @@ ChromeAppSorting::ChromeAppSorting(content::BrowserContext* browser_context)
     : browser_context_(browser_context),
       default_ordinals_created_(false) {
   ExtensionIdList extensions;
-  ExtensionPrefs::Get(browser_context_)->GetExtensions(&extensions);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context_);
+  std::unique_ptr<extensions::ExtensionPrefs::ExtensionsInfo> extensions_info =
+      prefs->GetInstalledExtensionsInfo();
+  for (size_t i = 0; i < extensions_info->size(); ++i) {
+    ExtensionInfo* info = extensions_info->at(i).get();
+    if (!prefs->IsFromBookmark(info->extension_id))
+      extensions.push_back(info->extension_id);
+  }
   InitializePageOrdinalMap(extensions);
   MigrateAppIndex(extensions);
 }
@@ -192,8 +196,6 @@ void ChromeAppSorting::MigrateAppIndex(
 }
 
 void ChromeAppSorting::InitializePageOrdinalMapFromWebApps() {
-  if (!AreWebAppsOffExtensions())
-    return;
   auto* profile = Profile::FromBrowserContext(browser_context_);
   DCHECK(profile);
   auto* web_app_provider =
@@ -202,8 +204,18 @@ void ChromeAppSorting::InitializePageOrdinalMapFromWebApps() {
   web_app_registrar_ = web_app_provider->registrar().AsWebAppRegistrar();
   web_app_sync_bridge_ =
       web_app_provider->registry_controller().AsWebAppSyncBridge();
-  app_registrar_observer_.Add(&web_app_provider->registrar());
+  app_registrar_observation_.Observe(&web_app_provider->registrar());
   InitializePageOrdinalMap(web_app_registrar_->GetAppIds());
+}
+
+void ChromeAppSorting::SetWebAppRegistrarForTesting(
+    const web_app::WebAppRegistrar* web_app_registrar) {
+  web_app_registrar_ = web_app_registrar;
+}
+
+void ChromeAppSorting::SetWebAppSyncBridgeForTesting(
+    web_app::WebAppSyncBridge* sync_bridge) {
+  web_app_sync_bridge_ = sync_bridge;
 }
 
 void ChromeAppSorting::FixNTPOrdinalCollisions() {
@@ -572,7 +584,7 @@ void ChromeAppSorting::OnWebAppsWillBeUpdatedFromSync(
 }
 
 void ChromeAppSorting::OnAppRegistrarDestroyed() {
-  app_registrar_observer_.RemoveAll();
+  app_registrar_observation_.Reset();
 }
 
 syncer::StringOrdinal ChromeAppSorting::GetMinOrMaxAppLaunchOrdinalsOnPage(
@@ -693,7 +705,7 @@ void ChromeAppSorting::CreateDefaultOrdinals() {
   default_ordinals_created_ = true;
 
   // The following defines the default order of apps.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::vector<std::string> app_ids;
   chromeos::default_app_order::Get(&app_ids);
 #else
@@ -713,7 +725,7 @@ void ChromeAppSorting::CreateDefaultOrdinals() {
     default_ordinals_[extension_id].page_ordinal = page_ordinal;
     default_ordinals_[extension_id].app_launch_ordinal = app_launch_ordinal;
     app_launch_ordinal = app_launch_ordinal.CreateAfter();
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     // Default page breaks are installed by default for first-time users so that
     // we can make default apps span multiple pages in the Launcher without
     // fully filling those pages. If |extension_id| is of a default page break,
@@ -721,7 +733,7 @@ void ChromeAppSorting::CreateDefaultOrdinals() {
     // ordinal.
     if (app_list::IsDefaultPageBreakItem(extension_id))
       page_ordinal = page_ordinal.CreateAfter();
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
 }
 

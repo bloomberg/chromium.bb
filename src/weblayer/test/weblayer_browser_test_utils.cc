@@ -4,9 +4,13 @@
 
 #include "weblayer/test/weblayer_browser_test_utils.h"
 
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
+#include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
 #include "url/gurl.h"
+#include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/public/navigation_controller.h"
 #include "weblayer/public/tab.h"
@@ -79,7 +83,7 @@ void ExecuteScriptWithUserGesture(Tab* tab, const std::string& script) {
   tab_impl->ExecuteScriptWithUserGestureForTests(base::ASCIIToUTF16(script));
 }
 
-const base::string16& GetTitle(Shell* shell) {
+const std::u16string& GetTitle(Shell* shell) {
   TabImpl* tab_impl = static_cast<TabImpl*>(shell->tab());
 
   return tab_impl->web_contents()->GetTitle();
@@ -90,9 +94,22 @@ void InitializeAutofillWithEventForwarding(
     const base::RepeatingCallback<void(const autofill::FormData&)>&
         on_received_form_data) {
   TabImpl* tab_impl = static_cast<TabImpl*>(shell->tab());
+  new StubAutofillProvider(tab_impl->web_contents(), on_received_form_data);
+  tab_impl->InitializeAutofillForTests();
+}
 
-  tab_impl->InitializeAutofillForTests(
-      std::make_unique<StubAutofillProvider>(on_received_form_data));
+void ActivateSubresourceFilterInWebContentsForURL(
+    content::WebContents* web_contents,
+    const GURL& url) {
+  scoped_refptr<FakeSafeBrowsingDatabaseManager> database_manager =
+      base::MakeRefCounted<FakeSafeBrowsingDatabaseManager>();
+  database_manager->AddBlocklistedUrl(
+      url, safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
+
+  auto* throttle_manager = subresource_filter::
+      ContentSubresourceFilterThrottleManager::FromWebContents(web_contents);
+  throttle_manager->set_database_manager_for_testing(
+      std::move(database_manager));
 }
 
 OneShotNavigationObserver::OneShotNavigationObserver(Shell* shell)

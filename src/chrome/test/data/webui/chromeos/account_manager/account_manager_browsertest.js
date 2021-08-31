@@ -15,14 +15,6 @@ var AccountMigrationWelcomeTest = class extends PolymerTest {
   get browsePreload() {
     return 'chrome://account-migration-welcome/test_loader.html?module=chromeos/account_manager/account_migration_welcome_test.js';
   }
-
-  /** @override */
-  get extraLibraries() {
-    return [
-      '//third_party/mocha/mocha.js',
-      '//chrome/test/data/webui/mocha_adapter.js',
-    ];
-  }
 };
 
 TEST_F('AccountMigrationWelcomeTest', 'CloseDialog', () => {

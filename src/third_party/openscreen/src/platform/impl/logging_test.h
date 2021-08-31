@@ -19,15 +19,6 @@ namespace openscreen {
 // in memory.
 void SetLogBufferForTest(std::vector<std::string>* messages);
 
-// Disables the mechanism to abort a process on an assertion failure.
-//
-// ***DANGEROUS!*** This will effectively disable assertion enforcement and
-// should only be called for assertion macro tests.
-//
-// *break_was_called will be set to true when Break() is called afterwards.
-// Calling with nullptr re-enables normal assertion behavior.
-void DisableBreakForTest(bool* break_was_called);
-
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_LOGGING_TEST_H_

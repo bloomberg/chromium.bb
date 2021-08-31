@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/printing/cloud_print/privet_http_asynchronous_factory.h"
@@ -287,7 +288,7 @@ TEST_F(PrivetNotificationsNotificationTest, AddToCloudPrint) {
   ASSERT_EQ(1U, notifications.size());
   display_service_->SimulateClick(NotificationHandler::Type::TRANSIENT,
                                   notifications[0].id(), 0 /* add */,
-                                  base::nullopt);
+                                  absl::nullopt);
 
   EXPECT_EQ("chrome://devices/", service.open_tab_url().spec());
   EXPECT_EQ(1U, service.open_tab_count());
@@ -309,7 +310,7 @@ TEST_F(PrivetNotificationsNotificationTest, DontShowAgain) {
   ASSERT_EQ(1U, notifications.size());
   display_service_->SimulateClick(NotificationHandler::Type::TRANSIENT,
                                   notifications[0].id(),
-                                  1 /* don't show again */, base::nullopt);
+                                  1 /* don't show again */, absl::nullopt);
 
   EXPECT_EQ("", service.open_tab_url().spec());
   EXPECT_EQ(0U, service.open_tab_count());
@@ -320,7 +321,7 @@ TEST_F(PrivetNotificationsNotificationTest, DontShowAgain) {
                     .size());
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST(PrivetNotificationServiceTest, NoNotificationsInGuestMode) {
   content::BrowserTaskEnvironment task_environment{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
@@ -336,7 +337,7 @@ TEST(PrivetNotificationServiceTest, NoNotificationsInGuestMode) {
   EXPECT_FALSE(service.device_lister_for_test());
   EXPECT_FALSE(service.traffic_detector_for_test());
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 

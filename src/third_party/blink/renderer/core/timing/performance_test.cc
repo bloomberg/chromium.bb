@@ -27,10 +27,15 @@ class TestPerformance : public Performance {
   explicit TestPerformance(ScriptState* script_state)
       : Performance(base::TimeTicks(),
                     ExecutionContext::From(script_state)
-                        ->GetTaskRunner(TaskType::kPerformanceTimeline)) {}
+                        ->CrossOriginIsolatedCapability(),
+                    ExecutionContext::From(script_state)
+                        ->GetTaskRunner(TaskType::kPerformanceTimeline)),
+        execution_context_(ExecutionContext::From(script_state)) {}
   ~TestPerformance() override = default;
 
-  ExecutionContext* GetExecutionContext() const override { return nullptr; }
+  ExecutionContext* GetExecutionContext() const override {
+    return execution_context_.Get();
+  }
 
   int NumActiveObservers() { return active_observers_.size(); }
 
@@ -40,11 +45,19 @@ class TestPerformance : public Performance {
     return HasObserverFor(entry_type);
   }
 
-  void Trace(Visitor* visitor) const override { Performance::Trace(visitor); }
+  void Trace(Visitor* visitor) const override {
+    Performance::Trace(visitor);
+    visitor->Trace(execution_context_);
+  }
+
+ private:
+  Member<ExecutionContext> execution_context_;
 };
 
 class PerformanceTest : public PageTestBase {
  protected:
+  ~PerformanceTest() override { execution_context_->NotifyContextDestroyed(); }
+
   void Initialize(ScriptState* script_state) {
     v8::Local<v8::Function> callback =
         v8::Function::New(script_state->GetContext(), nullptr).ToLocalChecked();
@@ -161,6 +174,7 @@ TEST_F(PerformanceTest, AllowsTimingRedirect) {
   EXPECT_FALSE(AllowsTimingRedirect(redirect_chain, empty_final_response,
                                     *security_origin.get(),
                                     GetExecutionContext()));
+  // Final response is same origin as requestor.
   ResourceResponse final_response(url);
   EXPECT_TRUE(AllowsTimingRedirect(redirect_chain, final_response,
                                    *security_origin.get(),
@@ -180,9 +194,16 @@ TEST_F(PerformanceTest, AllowsTimingRedirect) {
   EXPECT_FALSE(AllowsTimingRedirect(redirect_chain, final_response,
                                     *security_origin.get(),
                                     GetExecutionContext()));
-  // When cross-origin redirect opts in, and the final response has as well.
+  // When cross-origin redirect opts in and the final response has as well, but
+  // the tainted origin flag is set.
   final_response.SetHttpHeaderField(http_names::kTimingAllowOrigin,
                                     origin_domain);
+  EXPECT_FALSE(AllowsTimingRedirect(redirect_chain, final_response,
+                                    *security_origin.get(),
+                                    GetExecutionContext()));
+  // Change the opt ins to be '*' and then the check should pass.
+  redirect_chain.back().SetHttpHeaderField(http_names::kTimingAllowOrigin, "*");
+  final_response.SetHttpHeaderField(http_names::kTimingAllowOrigin, "*");
   EXPECT_TRUE(AllowsTimingRedirect(redirect_chain, final_response,
                                    *security_origin.get(),
                                    GetExecutionContext()));

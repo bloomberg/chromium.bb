@@ -19,6 +19,8 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
@@ -40,13 +42,13 @@ const int kScrollAreaHeight = 192;
 // This container has the right Layout() impl to use within a ScrollView.
 class ScrollableView : public views::View {
  public:
-  ScrollableView() {}
-  ~ScrollableView() override {}
+  METADATA_HEADER(ScrollableView);
+  ScrollableView() = default;
+  ScrollableView(const ScrollableView&) = delete;
+  ScrollableView& operator=(const ScrollableView&) = delete;
+  ~ScrollableView() override = default;
 
   void Layout() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScrollableView);
 };
 
 void ScrollableView::Layout() {
@@ -62,6 +64,9 @@ void ScrollableView::Layout() {
   views::View::Layout();
 }
 
+BEGIN_METADATA(ScrollableView, views::View)
+END_METADATA
+
 }  // namespace
 
 MediaGalleriesDialogViews::MediaGalleriesDialogViews(
@@ -75,10 +80,11 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
   SetAcceptCallback(base::BindOnce(
       [](MediaGalleriesDialogViews* dialog) { dialog->accepted_ = true; },
       base::Unretained(this)));
+  SetModalType(ui::MODAL_TYPE_CHILD);
   SetShowCloseButton(false);
   SetTitle(controller_->GetHeader());
 
-  base::string16 label = controller_->GetAuxiliaryButtonText();
+  std::u16string label = controller_->GetAuxiliaryButtonText();
   if (!label.empty()) {
     auxiliary_button_ = SetExtraView(std::make_unique<views::MdTextButton>(
         base::BindRepeating(
@@ -118,8 +124,10 @@ void MediaGalleriesDialogViews::InitChildViews() {
   checkbox_map_.clear();
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  contents_->SetBorder(views::CreateEmptyBorder(
-      provider->GetDialogInsetsForContentType(views::TEXT, views::CONTROL)));
+  contents_->SetBorder(
+      views::CreateEmptyBorder(provider->GetDialogInsetsForContentType(
+          views::DialogContentType::kText,
+          views::DialogContentType::kControl)));
 
   const int dialog_content_width = views::Widget::GetLocalizedContentsWidth(
       IDS_MEDIA_GALLERIES_DIALOG_CONTENT_WIDTH_CHARS);
@@ -157,7 +165,7 @@ void MediaGalleriesDialogViews::InitChildViews() {
   scroll_container->SetBorder(
       views::CreateEmptyBorder(vertical_padding, 0, vertical_padding, 0));
 
-  std::vector<base::string16> section_headers =
+  std::vector<std::u16string> section_headers =
       controller_->GetSectionHeaders();
   for (size_t i = 0; i < section_headers.size(); i++) {
     MediaGalleriesDialogController::Entries entries =
@@ -216,7 +224,7 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
     checkbox->SetChecked(gallery.selected);
     checkbox->SetText(gallery.pref_info.GetGalleryDisplayName());
     checkbox->SetTooltipText(gallery.pref_info.GetGalleryTooltip());
-    base::string16 details = gallery.pref_info.GetGalleryAdditionalDetails();
+    std::u16string details = gallery.pref_info.GetGalleryAdditionalDetails();
     iter->second->secondary_text()->SetText(details);
     iter->second->secondary_text()->SetVisible(details.length() > 0);
     return false;
@@ -257,10 +265,6 @@ views::View* MediaGalleriesDialogViews::GetContentsView() {
 bool MediaGalleriesDialogViews::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   return button != ui::DIALOG_BUTTON_OK || confirm_available_;
-}
-
-ui::ModalType MediaGalleriesDialogViews::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
 }
 
 void MediaGalleriesDialogViews::ShowContextMenuForViewImpl(

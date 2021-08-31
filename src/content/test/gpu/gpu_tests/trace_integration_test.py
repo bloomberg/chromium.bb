@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import os
 import sys
 
@@ -87,6 +89,8 @@ _SWAP_CHAIN_PRESENT_EVENT_NAME = 'SwapChain::Present'
 _PRESENT_TO_SWAP_CHAIN_EVENT_NAME = 'SwapChainPresenter::PresentToSwapChain'
 _PRESENT_MAIN_SWAP_CHAIN_EVENT_NAME =\
     'DirectCompositionChildSurfaceWin::PresentSwapChain'
+
+_SUPPORTED_WIN_AMD_GPUS_WITH_NV12_ROTATED_OVERLAYS = [0x7340]
 
 
 class _TraceTestArguments(object):
@@ -285,7 +289,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     expected.zero_copy = other_args.get('zero_copy', None)
     expected.pixel_format = other_args.get('pixel_format', None)
     expected.no_overlay = other_args.get('no_overlay', False)
-    expected.presentation_mode = other_args.get('presentation_mode', None)
+    video_is_rotated = other_args.get('video_is_rotated', False)
 
     if overlay_bot_config.get('supports_overlays', False):
       supports_hw_nv12_overlays = overlay_bot_config[
@@ -302,20 +306,30 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           expected.pixel_format = 'YUY2'
         else:
           assert supports_sw_nv12_overlays
-          expected.pixel_format = 'NV12'
+          expected.pixel_format = 'BGRA'
+      else:
+        if (not supports_hw_nv12_overlays and not supports_hw_yuy2_overlays):
+          expected.pixel_format = 'BGRA'
 
-      if expected.presentation_mode is None:
-        if supports_hw_nv12_overlays or supports_hw_yuy2_overlays:
-          expected.presentation_mode = 'OVERLAY'
-        else:
-          expected.presentation_mode = 'COMPOSED'
+      gpu = self.browser.GetSystemInfo().gpu.devices[0]
+      supports_rotated_video_overlays = (
+          gpu.vendor_id == 0x1002 and
+          gpu.device_id in _SUPPORTED_WIN_AMD_GPUS_WITH_NV12_ROTATED_OVERLAYS)
+
+      if (((supports_hw_nv12_overlays and expected.pixel_format == 'NV12')
+           or supports_hw_yuy2_overlays)
+          and (not video_is_rotated or supports_rotated_video_overlays)):
+        expected.presentation_mode = 'OVERLAY'
+      else:
+        expected.presentation_mode = 'COMPOSED'
 
       if expected.zero_copy is None:
         # TODO(sunnyps): Check for overlay scaling support after making the same
         # change in SwapChainPresenter.
         expected.zero_copy = (expected.presentation_mode == 'OVERLAY'
                               and expected.pixel_format == 'NV12'
-                              and supports_hw_nv12_overlays)
+                              and supports_hw_nv12_overlays
+                              and not video_is_rotated)
 
     return expected
 

@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/ptr_util.h"
@@ -19,11 +20,14 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/device_util_linux.h"
+#include "ui/events/devices/stylus_state.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/event_converter_evdev_impl.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/gamepad_event_converter_evdev.h"
+#include "ui/events/ozone/evdev/microphone_mute_switch_event_converter_evdev.h"
 #include "ui/events/ozone/evdev/stylus_button_event_converter_evdev.h"
+#include "ui/events/ozone/evdev/switches.h"
 #include "ui/events/ozone/evdev/tablet_event_converter_evdev.h"
 #include "ui/events/ozone/evdev/touch_event_converter_evdev.h"
 #include "ui/events/ozone/features.h"
@@ -128,6 +132,14 @@ std::unique_ptr<EventConverterEvdev> CreateConverter(
   if (devinfo.IsStylusButtonDevice()) {
     return base::WrapUnique<EventConverterEvdev>(
         new StylusButtonEventConverterEvdev(
+            std::move(fd), params.path, params.id, devinfo, params.dispatcher));
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kEnableMicrophoneMuteSwitchDeviceSwitch) &&
+      devinfo.IsMicrophoneMuteSwitchDevice()) {
+    return base::WrapUnique<EventConverterEvdev>(
+        new MicrophoneMuteSwitchEventConverterEvdev(
             std::move(fd), params.path, params.id, devinfo, params.dispatcher));
   }
 
@@ -275,6 +287,18 @@ void InputDeviceFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
   }
 }
 
+void InputDeviceFactoryEvdev::GetStylusSwitchState(
+    InputController::GetStylusSwitchStateReply reply) {
+  for (const auto& it : converters_) {
+    if (it.second->HasStylusSwitch()) {
+      auto result = it.second->GetStylusSwitchState();
+      std::move(reply).Run(result);
+      return;
+    }
+  }
+  std::move(reply).Run(ui::StylusState::REMOVED);
+}
+
 void InputDeviceFactoryEvdev::SetCapsLockLed(bool enabled) {
   caps_lock_led_enabled_ = enabled;
   ApplyCapsLockLed();
@@ -342,7 +366,16 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
   SetBoolPropertyForOneType(DT_MULTITOUCH, "Australian Scrolling",
                             input_device_settings_.natural_scroll_enabled);
 
+  SetIntPropertyForOneType(DT_MOUSE, "Pointer Sensitivity",
+                           input_device_settings_.mouse_sensitivity);
+  SetBoolPropertyForOneType(DT_MOUSE, "Pointer Acceleration",
+                            input_device_settings_.mouse_acceleration_enabled);
   ApplyRelativePointingDeviceSettings(DT_MOUSE);
+  SetIntPropertyForOneType(DT_POINTING_STICK, "Pointer Sensitivity",
+                           input_device_settings_.pointing_stick_sensitivity);
+  SetBoolPropertyForOneType(
+      DT_POINTING_STICK, "Pointer Acceleration",
+      input_device_settings_.pointing_stick_acceleration_enabled);
   ApplyRelativePointingDeviceSettings(DT_POINTING_STICK);
 
   SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Paused",
@@ -377,12 +410,8 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
 
 void InputDeviceFactoryEvdev::ApplyRelativePointingDeviceSettings(
     EventDeviceType type) {
-  SetIntPropertyForOneType(type, "Pointer Sensitivity",
-                           input_device_settings_.mouse_sensitivity);
   SetIntPropertyForOneType(type, "Mouse Scroll Sensitivity",
                            input_device_settings_.mouse_scroll_sensitivity);
-  SetBoolPropertyForOneType(type, "Pointer Acceleration",
-                            input_device_settings_.mouse_acceleration_enabled);
   SetBoolPropertyForOneType(
       type, "Mouse Scroll Acceleration",
       input_device_settings_.mouse_scroll_acceleration_enabled);
@@ -489,11 +518,27 @@ void InputDeviceFactoryEvdev::NotifyDevicesUpdated() {
 
 void InputDeviceFactoryEvdev::NotifyTouchscreensUpdated() {
   std::vector<TouchscreenDevice> touchscreens;
-  for (auto it = converters_.begin(); it != converters_.end(); ++it) {
-    if (it->second->HasTouchscreen()) {
+  bool has_stylus_switch = false;
+
+  // Check if there is a stylus garage/dock presence detection switch
+  // among the devices. The internal touchscreen controller is not currently
+  // responsible for exposing this device, it usually is a gpio-keys
+  // device only containing the single switch.
+
+  for (const auto& it : converters_) {
+    if (it.second->HasStylusSwitch()) {
+      has_stylus_switch = true;
+      break;
+    }
+  }
+
+  for (const auto& it : converters_) {
+    if (it.second->HasTouchscreen()) {
       touchscreens.emplace_back(
-          it->second->input_device(), it->second->GetTouchscreenSize(),
-          it->second->GetTouchPoints(), it->second->HasPen());
+          it.second->input_device(), it.second->GetTouchscreenSize(),
+          it.second->GetTouchPoints(), it.second->HasPen(),
+          it.second->type() == ui::InputDeviceType::INPUT_DEVICE_INTERNAL &&
+              has_stylus_switch);
     }
   }
 

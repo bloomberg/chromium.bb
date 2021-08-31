@@ -10,7 +10,6 @@
 #include "base/i18n/break_iterator.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "components/pdf/renderer/pdf_ax_action_target.h"
 #include "components/strings/grit/components_strings.h"
@@ -526,7 +525,7 @@ class PdfAccessibilityTreeBuilder {
 
  private:
   void AddWordStartsAndEnds(ui::AXNodeData* inline_text_box) {
-    base::string16 text = inline_text_box->GetString16Attribute(
+    std::u16string text = inline_text_box->GetString16Attribute(
         ax::mojom::StringAttribute::kName);
     base::i18n::BreakIterator iter(text, base::i18n::BreakIterator::BREAK_WORD);
     if (!iter.Init())
@@ -1136,6 +1135,8 @@ PdfAccessibilityTree::PdfAccessibilityTree(content::RendererPpapiHost* host,
     : host_(host), instance_(instance) {}
 
 PdfAccessibilityTree::~PdfAccessibilityTree() {
+  // Even if `render_accessibility` is disabled, still let it know `this` is
+  // being destroyed.
   content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
   if (render_accessibility)
     render_accessibility->SetPluginTreeSource(nullptr);
@@ -1285,7 +1286,8 @@ void PdfAccessibilityTree::SetAccessibilityViewportInfo(
   selection_end_page_index_ = viewport_info.selection_end_page_index;
   selection_end_char_index_ = viewport_info.selection_end_char_index;
 
-  content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
+  content::RenderAccessibility* render_accessibility =
+      GetRenderAccessibilityIfEnabled();
   if (render_accessibility && tree_.size() > 1) {
     ui::AXNode* root = tree_.root();
     ui::AXNodeData root_data = root->data();
@@ -1298,13 +1300,15 @@ void PdfAccessibilityTree::SetAccessibilityViewportInfo(
 
 void PdfAccessibilityTree::SetAccessibilityDocInfo(
     const PP_PrivateAccessibilityDocInfo& doc_info) {
-  content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
+  content::RenderAccessibility* render_accessibility =
+      GetRenderAccessibilityIfEnabled();
   if (!render_accessibility)
     return;
 
+  ClearAccessibilityNodes();
   doc_info_ = doc_info;
   doc_node_ =
-      CreateNode(ax::mojom::Role::kDocument, ax::mojom::Restriction::kReadOnly,
+      CreateNode(ax::mojom::Role::kPdfRoot, ax::mojom::Restriction::kReadOnly,
                  render_accessibility, &nodes_);
   doc_node_->AddStringAttribute(
       ax::mojom::StringAttribute::kName,
@@ -1323,7 +1327,13 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
     const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
     const ppapi::PdfAccessibilityPageObjects& page_objects) {
-  content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
+  // Outdated calls are ignored.
+  uint32_t page_index = page_info.page_index;
+  if (page_index != next_page_index_)
+    return;
+
+  content::RenderAccessibility* render_accessibility =
+      GetRenderAccessibilityIfEnabled();
   if (!render_accessibility)
     return;
 
@@ -1336,9 +1346,9 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
   if (invalid_plugin_message_received_)
     return;
 
-  uint32_t page_index = page_info.page_index;
   CHECK_GE(page_index, 0U);
   CHECK_LT(page_index, doc_info_.page_count);
+  ++next_page_index_;
 
   ui::AXNodeData* page_node =
       CreateNode(ax::mojom::Role::kRegion, ax::mojom::Restriction::kReadOnly,
@@ -1390,7 +1400,8 @@ void PdfAccessibilityTree::Finish() {
 
   UpdateAXTreeDataFromSelection();
 
-  content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
+  content::RenderAccessibility* render_accessibility =
+      GetRenderAccessibilityIfEnabled();
   if (render_accessibility)
     render_accessibility->SetPluginTreeSource(this);
 }
@@ -1460,13 +1471,22 @@ bool PdfAccessibilityTree::FindCharacterOffset(
   return true;
 }
 
+void PdfAccessibilityTree::ClearAccessibilityNodes() {
+  next_page_index_ = 0;
+  nodes_.clear();
+  node_id_to_page_char_index_.clear();
+  node_id_to_annotation_info_.clear();
+}
+
 content::RenderAccessibility* PdfAccessibilityTree::GetRenderAccessibility() {
   content::RenderFrame* render_frame =
       host_->GetRenderFrameForInstance(instance_);
-  if (!render_frame)
-    return nullptr;
-  content::RenderAccessibility* render_accessibility =
-      render_frame->GetRenderAccessibility();
+  return render_frame ? render_frame->GetRenderAccessibility() : nullptr;
+}
+
+content::RenderAccessibility*
+PdfAccessibilityTree::GetRenderAccessibilityIfEnabled() {
+  content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
   if (!render_accessibility)
     return nullptr;
 
@@ -1567,7 +1587,8 @@ std::unique_ptr<ui::AXActionTarget> PdfAccessibilityTree::CreateActionTarget(
 }
 
 bool PdfAccessibilityTree::ShowContextMenu() {
-  content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
+  content::RenderAccessibility* render_accessibility =
+      GetRenderAccessibilityIfEnabled();
   if (!render_accessibility)
     return false;
 
@@ -1584,11 +1605,11 @@ void PdfAccessibilityTree::HandleAction(
   }
 }
 
-base::Optional<PdfAccessibilityTree::AnnotationInfo>
+absl::optional<PdfAccessibilityTree::AnnotationInfo>
 PdfAccessibilityTree::GetPdfAnnotationInfoFromAXNode(int32_t ax_node_id) const {
   auto iter = node_id_to_annotation_info_.find(ax_node_id);
   if (iter == node_id_to_annotation_info_.end())
-    return base::nullopt;
+    return absl::nullopt;
 
   return AnnotationInfo(iter->second.page_index, iter->second.annotation_index);
 }

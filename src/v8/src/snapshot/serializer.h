@@ -124,10 +124,12 @@ class CodeAddressMap : public CodeEventLogger {
     address_to_name_map_.Insert(code->address(), name, length);
   }
 
+#if V8_ENABLE_WEBASSEMBLY
   void LogRecordedBuffer(const wasm::WasmCode* code, const char* name,
                          int length) override {
     UNREACHABLE();
   }
+#endif  // V8_ENABLE_WEBASSEMBLY
 
   NameMap address_to_name_map_;
 };
@@ -150,9 +152,18 @@ class ObjectCacheIndexMap {
     return find_result.already_exists;
   }
 
- private:
-  DisallowHeapAllocation no_allocation_;
+  bool Lookup(Handle<HeapObject> obj, int* index_out) const {
+    int* index = map_.Find(obj);
+    if (index == nullptr) {
+      return false;
+    }
+    *index_out = *index;
+    return true;
+  }
 
+  int size() const { return next_index_; }
+
+ private:
   IdentityMap<int, base::DefaultAllocationPolicy> map_;
   int next_index_;
 };
@@ -178,7 +189,7 @@ class Serializer : public SerializerDeserializer {
   using PendingObjectReferences = std::vector<int>*;
 
   class ObjectSerializer;
-  class RecursionScope {
+  class V8_NODISCARD RecursionScope {
    public:
     explicit RecursionScope(Serializer* serializer) : serializer_(serializer) {
       serializer_->recursion_depth_++;
@@ -287,6 +298,10 @@ class Serializer : public SerializerDeserializer {
     return (flags_ & Snapshot::kAllowActiveIsolateForTesting) != 0;
   }
 
+  bool reconstruct_read_only_object_cache_for_testing() const {
+    return (flags_ & Snapshot::kReconstructReadOnlyObjectCacheForTesting) != 0;
+  }
+
  private:
   // A circular queue of hot objects. This is added to in the same order as in
   // Deserializer::HotObjectsList, but this stores the objects as an array of
@@ -332,7 +347,7 @@ class Serializer : public SerializerDeserializer {
 
   // Disallow GC during serialization.
   // TODO(leszeks, v8:10815): Remove this constraint.
-  DISALLOW_HEAP_ALLOCATION(no_gc)
+  DISALLOW_GARBAGE_COLLECTION(no_gc)
 
   Isolate* isolate_;
   HotObjectsList hot_objects_;

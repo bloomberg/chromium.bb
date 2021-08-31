@@ -10,6 +10,7 @@ option java_multiple_files = true;
 
 package autofill_assistant;
 
+import "action_value.proto";
 import "model.proto";
 import "view_layout.proto";
 
@@ -136,6 +137,8 @@ message ComputeValueProto {
     CreateCreditCardResponseProto create_credit_card_response = 8;
     // Writes safe-to-transmit parts of the input login option to the result.
     CreateLoginOptionResponseProto create_login_option_response = 9;
+    // Check if a string value is empty.
+    StringEmptyProto string_empty = 10;
   }
 
   // The model identifier to write the result to.
@@ -201,13 +204,15 @@ message AutofillFormatProto {
     ADDRESS_HOME_STATE_NAME = -6;
     CREDIT_CARD_NON_PADDED_EXP_MONTH = -7;
   }
-  // The format string to use. May contain one or multiple "${key}"
+  // The format string to use. May contain one or multiple key
   // placeholders, where the key is an integer corresponding to
   // entries from field_types.h or AutofillAssistantCustomField.
-  optional string pattern = 1;
+  optional ValueExpression value_expression = 3;
   // The locale to use when stringifying data. Invalid locales will
   // automatically default to "en-US".
   optional string locale = 2;
+
+  reserved 1;
 }
 
 // A comparison of two values in the form |value_a| <mode> |value_b|. EQUAL and
@@ -251,6 +256,12 @@ message CreateCreditCardResponseProto {
 // Creates a safe-to-transmit LoginOptionResponseProto for the input |value|.
 message CreateLoginOptionResponseProto {
   // The input LoginOptionProto.
+  optional ValueReferenceProto value = 1;
+}
+
+// Checks whether or not a string value is empty.
+message StringEmptyProto {
+  // The input string.
   optional ValueReferenceProto value = 1;
 }
 

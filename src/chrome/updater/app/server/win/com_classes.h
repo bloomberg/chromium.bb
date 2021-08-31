@@ -8,8 +8,10 @@
 #include <windows.h>
 #include <wrl/implements.h>
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "chrome/updater/app/server/win/updater_idl.h"
+#include "chrome/updater/app/server/win/updater_internal_idl.h"
 #include "chrome/updater/update_service.h"
 
 // Definitions for native COM updater classes.
@@ -59,7 +61,7 @@ class CompleteStatusImpl
           Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
           ICompleteStatus> {
  public:
-  CompleteStatusImpl(int code, const base::string16& message)
+  CompleteStatusImpl(int code, const std::wstring& message)
       : code_(code), message_(message) {}
   CompleteStatusImpl(const CompleteStatusImpl&) = delete;
   CompleteStatusImpl& operator=(const CompleteStatusImpl&) = delete;
@@ -72,7 +74,7 @@ class CompleteStatusImpl
   ~CompleteStatusImpl() override = default;
 
   const int code_;
-  const base::string16 message_;
+  const std::wstring message_;
 };
 
 // This class implements the IUpdater interface and exposes it as a COM object.
@@ -87,13 +89,15 @@ class UpdaterImpl
 
   // Overrides for IUpdater.
   IFACEMETHODIMP GetVersion(BSTR* version) override;
-  IFACEMETHODIMP CheckForUpdate(const base::char16* app_id) override;
-  IFACEMETHODIMP Register(const base::char16* app_id,
-                          const base::char16* brand_code,
-                          const base::char16* tag,
-                          const base::char16* version,
-                          const base::char16* existence_checker_path) override;
-  IFACEMETHODIMP Update(const base::char16* app_id,
+  IFACEMETHODIMP CheckForUpdate(const wchar_t* app_id) override;
+  IFACEMETHODIMP RegisterApp(const wchar_t* app_id,
+                             const wchar_t* brand_code,
+                             const wchar_t* tag,
+                             const wchar_t* version,
+                             const wchar_t* existence_checker_path,
+                             IUpdaterRegisterAppCallback* callback) override;
+  IFACEMETHODIMP RunPeriodicTasks(IUpdaterCallback* callback) override;
+  IFACEMETHODIMP Update(const wchar_t* app_id,
                         IUpdaterObserver* observer) override;
   IFACEMETHODIMP UpdateAll(IUpdaterObserver* observer) override;
 
@@ -101,24 +105,24 @@ class UpdaterImpl
   ~UpdaterImpl() override = default;
 };
 
-// This class implements the IUpdaterControl interface and exposes it as a COM
+// This class implements the IUpdaterInternal interface and exposes it as a COM
 // object.
-class UpdaterControlImpl
+class UpdaterInternalImpl
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
-          IUpdaterControl> {
+          IUpdaterInternal> {
  public:
-  UpdaterControlImpl() = default;
-  UpdaterControlImpl(const UpdaterControlImpl&) = delete;
-  UpdaterControlImpl& operator=(const UpdaterControlImpl&) = delete;
+  UpdaterInternalImpl() = default;
+  UpdaterInternalImpl(const UpdaterInternalImpl&) = delete;
+  UpdaterInternalImpl& operator=(const UpdaterInternalImpl&) = delete;
 
-  // Overrides for IUpdaterControl.
-  IFACEMETHODIMP Run(IUpdaterControlCallback* callback) override;
+  // Overrides for IUpdaterInternal.
+  IFACEMETHODIMP Run(IUpdaterInternalCallback* callback) override;
   IFACEMETHODIMP InitializeUpdateService(
-      IUpdaterControlCallback* callback) override;
+      IUpdaterInternalCallback* callback) override;
 
  private:
-  ~UpdaterControlImpl() override = default;
+  ~UpdaterInternalImpl() override = default;
 };
 
 }  // namespace updater

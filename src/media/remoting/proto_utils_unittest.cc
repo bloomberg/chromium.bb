@@ -17,9 +17,9 @@
 #include "media/base/encryption_scheme.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_decoder_config.h"
-#include "media/remoting/media_remoting_rpc.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/openscreen/src/cast/streaming/remoting.pb.h"
 
 using testing::_;
 using testing::Invoke;
@@ -104,7 +104,7 @@ TEST_F(ProtoUtilsTest, AudioDecoderConfigConversionTest) {
       EncryptionScheme::kUnencrypted);
   ASSERT_TRUE(audio_config.IsValidConfig());
 
-  pb::AudioDecoderConfig audio_message;
+  openscreen::cast::AudioDecoderConfig audio_message;
   ConvertAudioDecoderConfigToProto(audio_config, &audio_message);
 
   AudioDecoderConfig audio_output_config;
@@ -126,14 +126,16 @@ TEST_F(ProtoUtilsTest, PipelineStatisticsConversion) {
   original.video_memory_usage = 43;
   original.video_keyframe_distance_average = base::TimeDelta::Max();
   original.video_frame_duration_average = base::TimeDelta::Max();
-  original.audio_decoder_info = {false, false, "TestAudioDecoder"};
-  original.video_decoder_info = {false, false, "TestVideoDecoder"};
+  original.audio_decoder_info = {false, false,
+                                 media::AudioDecoderType::kUnknown};
+  original.video_decoder_info = {false, false,
+                                 media::VideoDecoderType::kUnknown};
 
   // There is no convert-to-proto function, so just do that here.
-  pb::PipelineStatistics pb_stats;
-  pb::PipelineDecoderInfo* pb_video_info =
+  openscreen::cast::PipelineStatistics pb_stats;
+  openscreen::cast::VideoDecoderInfo* pb_video_info =
       pb_stats.mutable_video_decoder_info();
-  pb::PipelineDecoderInfo* pb_audio_info =
+  openscreen::cast::AudioDecoderInfo* pb_audio_info =
       pb_stats.mutable_audio_decoder_info();
   pb_stats.set_audio_bytes_decoded(original.audio_bytes_decoded);
   pb_stats.set_video_bytes_decoded(original.video_bytes_decoded);
@@ -144,11 +146,13 @@ TEST_F(ProtoUtilsTest, PipelineStatisticsConversion) {
   pb_stats.set_video_frame_duration_average_usec(
       original.video_frame_duration_average.InMicroseconds());
 
-  pb_video_info->set_decoder_name(original.video_decoder_info.decoder_name);
+  pb_video_info->set_decoder_type(
+      static_cast<int64_t>(original.video_decoder_info.decoder_type));
   pb_video_info->set_is_platform_decoder(
       original.video_decoder_info.is_platform_decoder);
 
-  pb_audio_info->set_decoder_name(original.audio_decoder_info.decoder_name);
+  pb_audio_info->set_decoder_type(
+      static_cast<int64_t>(original.audio_decoder_info.decoder_type));
   pb_audio_info->set_is_platform_decoder(
       original.audio_decoder_info.is_platform_decoder);
 
@@ -157,11 +161,11 @@ TEST_F(ProtoUtilsTest, PipelineStatisticsConversion) {
   // NOTE: fields will all be initialized with 0xcd. Forcing the conversion to
   // properly assigned them. Since nested structs have strings, memsetting must
   // be done infividually for them.
-  memset(&converted, 0xcd, sizeof(converted) - sizeof(PipelineDecoderInfo) * 2);
-  memset(&converted.audio_decoder_info, 0xcd,
-         sizeof(PipelineDecoderInfo) - sizeof(std::string));
-  memset(&converted.video_decoder_info, 0xcd,
-         sizeof(PipelineDecoderInfo) - sizeof(std::string));
+  memset(
+      &converted, 0xcd,
+      sizeof(converted) - sizeof(AudioDecoderInfo) - sizeof(VideoDecoderInfo));
+  memset(&converted.audio_decoder_info, 0xcd, sizeof(AudioDecoderInfo));
+  memset(&converted.video_decoder_info, 0xcd, sizeof(VideoDecoderInfo));
 
   ConvertProtoToPipelineStatistics(pb_stats, &converted);
 
@@ -173,7 +177,7 @@ TEST_F(ProtoUtilsTest, PipelineStatisticsConversion) {
 TEST_F(ProtoUtilsTest, VideoDecoderConfigConversionTest) {
   const VideoDecoderConfig video_config = TestVideoConfig::Normal();
   ASSERT_TRUE(video_config.IsValidConfig());
-  pb::VideoDecoderConfig message;
+  openscreen::cast::VideoDecoderConfig message;
   ConvertVideoDecoderConfigToProto(video_config, &message);
   VideoDecoderConfig converted;
   ASSERT_TRUE(ConvertProtoToVideoDecoderConfig(message, &converted));

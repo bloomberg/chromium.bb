@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/http/quic_header_list.h"
+#include "quic/core/http/quic_header_list.h"
 
 #include <limits>
 #include <string>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_header_table.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
+#include "quic/core/qpack/qpack_header_table.h"
+#include "quic/core/quic_packets.h"
+#include "quic/platform/api/quic_flags.h"
 
 namespace quic {
 
@@ -32,7 +32,7 @@ QuicHeaderList& QuicHeaderList::operator=(QuicHeaderList&& other) = default;
 QuicHeaderList::~QuicHeaderList() {}
 
 void QuicHeaderList::OnHeaderBlockStart() {
-  QUIC_BUG_IF(current_header_list_size_ != 0)
+  QUIC_BUG_IF(quic_bug_12518_1, current_header_list_size_ != 0)
       << "OnHeaderBlockStart called more than once!";
 }
 
@@ -42,7 +42,7 @@ void QuicHeaderList::OnHeader(absl::string_view name, absl::string_view value) {
   if (current_header_list_size_ < max_header_list_size_) {
     current_header_list_size_ += name.size();
     current_header_list_size_ += value.size();
-    current_header_list_size_ += QpackEntry::kSizeOverhead;
+    current_header_list_size_ += kQpackEntrySizeOverhead;
     header_list_.emplace_back(std::string(name), std::string(value));
   }
 }

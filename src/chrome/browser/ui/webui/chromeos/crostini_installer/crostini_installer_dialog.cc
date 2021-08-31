@@ -8,9 +8,9 @@
 #include "ash/public/cpp/window_properties.h"
 #include "base/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/crostini/crostini_features.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
+#include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/crostini/crostini_manager.h"
+#include "chrome/browser/ash/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_ui.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -34,7 +34,10 @@ namespace chromeos {
 
 void CrostiniInstallerDialog::Show(Profile* profile,
                                    OnLoadedCallback on_loaded_callback) {
-  DCHECK(crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
+  if (!crostini::CrostiniFeatures::Get()->IsAllowedNow(profile)) {
+    return;
+  }
+
   auto* instance = SystemWebDialogDelegate::FindInstance(GetUrl().spec());
   if (instance) {
     instance->Focus();
@@ -109,8 +112,8 @@ void CrostiniInstallerDialog::OnCloseContents(content::WebContents* source,
 
 void CrostiniInstallerDialog::OnWebContentsFinishedLoad() {
   DCHECK(dialog_window());
-  dialog_window()->SetTitle(l10n_util::GetStringFUTF16(
-      IDS_CROSTINI_INSTALLER_TITLE, ui::GetChromeOSDeviceName()));
+  dialog_window()->SetTitle(
+      l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_TITLE));
   if (!on_loaded_callback_.is_null()) {
     DCHECK(installer_ui_);
     std::move(on_loaded_callback_).Run(installer_ui_);

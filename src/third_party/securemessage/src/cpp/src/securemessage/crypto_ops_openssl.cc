@@ -16,7 +16,6 @@
 
 #include <openssl/aes.h>
 #include <openssl/bn.h>
-#include <openssl/crypto.h>
 #include <openssl/ec.h>
 #include <openssl/ecdsa.h>
 #include <openssl/evp.h>
@@ -25,6 +24,7 @@
 #include <openssl/ossl_typ.h>
 #include <openssl/rand.h>
 #include <openssl/rsa.h>
+#include <openssl/sha.h>
 #include <openssl/x509.h>
 
 #include <stddef.h>
@@ -37,6 +37,11 @@
 #include "securemessage/byte_buffer.h"
 #include "securemessage/crypto_ops.h"
 #include "securemessage/util.h"
+
+#if defined(OPENSSL_IS_BORINGSSL)
+#include <openssl/bytestring.h>
+#include <openssl/mem.h>
+#endif
 
 using std::unique_ptr;
 
@@ -72,11 +77,18 @@ static unique_ptr<ByteBuffer> PublicKeyToBytes(EC_KEY *eckey) {
 // Create an EVP_PKEY structure using exported data for a private key.
 static EvpKeyPtr CreateEvpPrivateKey(const CryptoOps::PrivateKey& key) {
   // Extract key from storage.
+#if defined(OPENSSL_IS_BORINGSSL)
+  // Use EVP_parse_private_key in BoringSSL to avoid a dependency on the legacy
+  // ASN.1 stack and the large objects table.
+  CBS cbs;
+  CBS_init(&cbs, key.data().ImmutableUInt8(), key.data().size());
+  EvpKeyPtr extracted_evpkey(EVP_parse_private_key(&cbs));
+#else
   const unsigned char *stored_priv_key = key.data().ImmutableUChar();
   PKCS8_PRIV_KEY_INFO *extracted_pkcs8 =
       d2i_PKCS8_PRIV_KEY_INFO(NULL, &stored_priv_key, key.data().size());
   if (extracted_pkcs8 == NULL) {
-    Util::LogError("could not extract pkcs8 key");
+    Util::LogError("could not decode pkcs8 structure");
     return EvpKeyPtr(NULL);
   }
 
@@ -84,9 +96,10 @@ static EvpKeyPtr CreateEvpPrivateKey(const CryptoOps::PrivateKey& key) {
   EvpKeyPtr extracted_evpkey(EVP_PKCS82PKEY(extracted_pkcs8));
   // Careful to free this before we return null anywhere.
   PKCS8_PRIV_KEY_INFO_free(extracted_pkcs8);
+#endif
 
   if (extracted_evpkey.get() == NULL) {
-    Util::LogError("could not stuff extracted key into evp structure");
+    Util::LogError("could not extract key from pkcs8 structure");
     return EvpKeyPtr(NULL);
   }
 
@@ -115,37 +128,10 @@ unique_ptr<ByteBuffer> CryptoOps::Sha256(const ByteBuffer& message) {
 
   // Create an empty digest with enough space. OpenSSL will tell us how much it
   // actually wrote.
-  uint8_t md_value[EVP_MAX_MD_SIZE];
-  unsigned int md_length = 0;
-  int return_code;
+  uint8_t digest[SHA256_DIGEST_LENGTH];
+  SHA256(message.ImmutableUInt8(), message.size(), digest);
 
-  // Create a new message digest context and initialize it
-  unique_ptr<EVP_MD_CTX, void (*)(EVP_MD_CTX *)> mdctx(EVP_MD_CTX_create(),
-                                                       EVP_MD_CTX_free);
-
-  // Initialize the digest context
-  return_code = EVP_DigestInit_ex(mdctx.get(), EVP_sha256(), NULL);
-  if (return_code != 1) {
-    Util::LogErrorAndAbort("Could not initialize SHA256");
-    return nullptr;
-  }
-
-  // Set the message
-  return_code = EVP_DigestUpdate(mdctx.get(), message.ImmutableUInt8(),
-                                 message.size());
-  if (return_code != 1) {
-    Util::LogErrorAndAbort("Could not set message to hash in SHA256");
-    return nullptr;
-  }
-
-  // Execute the digest
-  return_code = EVP_DigestFinal_ex(mdctx.get(), md_value, &md_length);
-  if (return_code != 1) {
-    Util::LogErrorAndAbort("Could not set execute SHA256");
-    return nullptr;
-  }
-
-  return unique_ptr<ByteBuffer>(new ByteBuffer(md_value, md_length));
+  return unique_ptr<ByteBuffer>(new ByteBuffer(digest, sizeof(digest)));
 }
 
 unique_ptr<ByteBuffer> CryptoOps::Sha512(const ByteBuffer &message) {
@@ -154,39 +140,10 @@ unique_ptr<ByteBuffer> CryptoOps::Sha512(const ByteBuffer &message) {
     return nullptr;
   }
 
-  // Create an empty digest with enough space. OpenSSL will tell us how much it
-  // actually wrote.
-  uint8_t md_value[EVP_MAX_MD_SIZE];
-  unsigned int md_length = 0;
-  int return_code;
+  uint8_t digest[SHA512_DIGEST_LENGTH];
+  SHA512(message.ImmutableUInt8(), message.size(), digest);
 
-  // Create a new message digest context and initialize it
-  unique_ptr<EVP_MD_CTX, void (*)(EVP_MD_CTX *)> mdctx(EVP_MD_CTX_create(),
-                                                       EVP_MD_CTX_free);
-
-  // Initialize the digest context
-  return_code = EVP_DigestInit_ex(mdctx.get(), EVP_sha512(), NULL);
-  if (return_code != 1) {
-    Util::LogErrorAndAbort("Could not initialize SHA512");
-    return nullptr;
-  }
-
-  // Set the message
-  return_code =
-      EVP_DigestUpdate(mdctx.get(), message.ImmutableUInt8(), message.size());
-  if (return_code != 1) {
-    Util::LogErrorAndAbort("Could not set message to hash in SHA512");
-    return nullptr;
-  }
-
-  // Execute the digest
-  return_code = EVP_DigestFinal_ex(mdctx.get(), md_value, &md_length);
-  if (return_code != 1) {
-    Util::LogErrorAndAbort("Could not set execute SHA512");
-    return nullptr;
-  }
-
-  return unique_ptr<ByteBuffer>(new ByteBuffer(md_value, md_length));
+  return unique_ptr<ByteBuffer>(new ByteBuffer(digest, sizeof(digest)));
 }
 
 unique_ptr<ByteBuffer> CryptoOps::Sha256hmac(const ByteBuffer& key,
@@ -418,12 +375,6 @@ unique_ptr<ByteBuffer> CryptoOps::EcdsaP256Sha256Sign(
     return nullptr;
   }
 
-  // Make sure we don't overflow EVP_SignUpdate
-  if (data.size() > UINT_MAX) {
-    Util::LogError("Data too big to sign");
-    return nullptr;
-  }
-
   EvpKeyPtr extracted_evpkey = CreateEvpPrivateKey(private_key);
   if (extracted_evpkey == nullptr) {
     return nullptr;
@@ -438,36 +389,36 @@ unique_ptr<ByteBuffer> CryptoOps::EcdsaP256Sha256Sign(
   }
 
   ByteBuffer signature_buffer(maximum_size);
-  unsigned int signature_length = 0;
+  size_t signature_length = signature_buffer.size();
 
   // Create a new message digest context and initialize it.
-  unique_ptr<EVP_MD_CTX, void (*)(EVP_MD_CTX *)> mdctx(EVP_MD_CTX_create(),
+  unique_ptr<EVP_MD_CTX, void (*)(EVP_MD_CTX *)> mdctx(EVP_MD_CTX_new(),
                                                        EVP_MD_CTX_free);
-  EVP_MD_CTX_init(mdctx.get());
-  int return_code = EVP_SignInit_ex(mdctx.get(), EVP_sha256(), NULL);
+  int return_code = EVP_DigestSignInit(mdctx.get(), nullptr, EVP_sha256(),
+                                       nullptr, extracted_evpkey.get());
   if (return_code != 1) {
     Util::LogErrorAndAbort("could not initialize digest context");
     return nullptr;
   }
 
   // On public signature types, we add salt.
-  return_code = EVP_SignUpdate(mdctx.get(), kSalt, sizeof(kSalt));
+  return_code = EVP_DigestSignUpdate(mdctx.get(), kSalt, sizeof(kSalt));
   if (return_code != 1) {
     Util::LogErrorAndAbort("could not add salt");
     return nullptr;
   }
 
   // Set the message to sign.
-  return_code = EVP_SignUpdate(mdctx.get(), data.ImmutableUChar(),
-                               data.size());
+  return_code =
+      EVP_DigestSignUpdate(mdctx.get(), data.ImmutableUChar(), data.size());
   if (return_code != 1) {
     Util::LogErrorAndAbort("could not set data to sign");
     return nullptr;
   }
 
   // Compute the signature.
-  return_code = EVP_SignFinal(mdctx.get(), signature_buffer.MutableUChar(),
-                              &signature_length, extracted_evpkey.get());
+  return_code = EVP_DigestSignFinal(
+      mdctx.get(), signature_buffer.MutableUChar(), &signature_length);
   if (return_code != 1) {
     Util::LogErrorAndAbort("could not execute signature");
     return nullptr;
@@ -480,7 +431,7 @@ unique_ptr<ByteBuffer> CryptoOps::EcdsaP256Sha256Sign(
   }
 
   // Verify the signature fits in the buffer.
-  if (signature_length > static_cast<unsigned int>(maximum_size)) {
+  if (signature_length > maximum_size) {
     Util::LogErrorAndAbort("signature buffer is too small");
     return nullptr;
   }
@@ -497,47 +448,40 @@ bool CryptoOps::EcdsaP256Sha256Verify(const PublicKey& public_key,
     return false;
   }
 
-  // Make sure we don't overflow EVP_VerifyUpdate
-  if (data.size() > UINT_MAX) {
-    Util::LogError("Data too big to verify");
-    return false;
-  }
-
   EvpKeyPtr extracted_public_evpkey = CreateEvpPublicKey(public_key);
   if (extracted_public_evpkey == nullptr) {
     return false;
   }
 
   // Create a verify digest context and initialize it
-  unique_ptr<EVP_MD_CTX, void (*)(EVP_MD_CTX *)> verifyctx(EVP_MD_CTX_create(),
+  unique_ptr<EVP_MD_CTX, void (*)(EVP_MD_CTX *)> verifyctx(EVP_MD_CTX_new(),
                                                            EVP_MD_CTX_free);
-  EVP_MD_CTX_init(verifyctx.get());
-  int return_code = EVP_VerifyInit_ex(verifyctx.get(), EVP_sha256(), NULL);
+  int return_code =
+      EVP_DigestVerifyInit(verifyctx.get(), nullptr, EVP_sha256(), nullptr,
+                           extracted_public_evpkey.get());
   if (return_code != 1) {
     Util::LogErrorAndAbort("could not initialize verify digest context");
     return false;
   }
 
   // On public signatures, we added salt to the signature.
-  return_code = EVP_VerifyUpdate(verifyctx.get(), kSalt, sizeof(kSalt));
+  return_code = EVP_DigestVerifyUpdate(verifyctx.get(), kSalt, sizeof(kSalt));
   if (return_code != 1) {
     Util::LogErrorAndAbort("could not add salt to verify");
     return false;
   }
 
   // Set the message to verify
-  return_code =
-      EVP_VerifyUpdate(verifyctx.get(), data.ImmutableUChar(), data.size());
+  return_code = EVP_DigestVerifyUpdate(verifyctx.get(), data.ImmutableUChar(),
+                                       data.size());
   if (return_code != 1) {
     Util::LogErrorAndAbort("could not set data to verify");
     return false;
   }
 
   // Verify the signature
-  return_code =
-      EVP_VerifyFinal(verifyctx.get(), signature.ImmutableUChar(),
-                      static_cast<unsigned int>(signature.size()),
-                      extracted_public_evpkey.get());
+  return_code = EVP_DigestVerifyFinal(
+      verifyctx.get(), signature.ImmutableUChar(), signature.size());
 
   if (return_code != 1) {
     Util::LogError("could not verify signature");
@@ -616,12 +560,6 @@ unique_ptr<ByteBuffer> CryptoOps::Rsa2048Sha256Sign(
     return nullptr;
   }
 
-  // Overflow check to make sure we don't overflow EVP_SignUpdate
-  if (data.size() > UINT_MAX) {
-    Util::LogError("Data too large to sign");
-    return nullptr;
-  }
-
   int return_code;
   const uint8_t *key_data = private_key.data().ImmutableUInt8();
 
@@ -649,7 +587,7 @@ unique_ptr<ByteBuffer> CryptoOps::Rsa2048Sha256Sign(
   }
 
   // Set up a new signature context
-  unique_ptr<EVP_MD_CTX, void (*)(EVP_MD_CTX *)> ctx(EVP_MD_CTX_create(),
+  unique_ptr<EVP_MD_CTX, void (*)(EVP_MD_CTX *)> ctx(EVP_MD_CTX_new(),
                                                      EVP_MD_CTX_free);
   if (ctx.get() == NULL) {
     Util::LogErrorAndAbort("Could not create signature context");
@@ -657,22 +595,23 @@ unique_ptr<ByteBuffer> CryptoOps::Rsa2048Sha256Sign(
   }
 
   // Initialize it
-  return_code = EVP_SignInit(ctx.get(), EVP_sha256());
+  return_code = EVP_DigestSignInit(ctx.get(), nullptr, EVP_sha256(), nullptr,
+                                   rsa_pkey.get());
   if (return_code != 1) {
     Util::LogErrorAndAbort("Could not initialize context");
     return nullptr;
   }
 
   // On public signature types, we add salt.
-  return_code = EVP_SignUpdate(ctx.get(), kSalt, sizeof(kSalt));
+  return_code = EVP_DigestSignUpdate(ctx.get(), kSalt, sizeof(kSalt));
   if (return_code != 1) {
     Util::LogErrorAndAbort("could not add salt");
     return nullptr;
   }
 
   // Set the message to sign
-  return_code = EVP_SignUpdate(ctx.get(), data.ImmutableUChar(),
-                               data.size());
+  return_code =
+      EVP_DigestSignUpdate(ctx.get(), data.ImmutableUChar(), data.size());
   if (return_code != 1) {
     Util::LogErrorAndAbort("could not set data to sign");
     return nullptr;
@@ -687,16 +626,15 @@ unique_ptr<ByteBuffer> CryptoOps::Rsa2048Sha256Sign(
   ByteBuffer signature(signature_size);
 
   // Perform the signature
-  unsigned int bytes_written = 0;
-  return_code = EVP_SignFinal(ctx.get(), signature.MutableUInt8(),
-                              &bytes_written, rsa_pkey.get());
+  return_code =
+      EVP_DigestSignFinal(ctx.get(), signature.MutableUInt8(), &signature_size);
   if (return_code != 1) {
     Util::LogErrorAndAbort("Error while signing");
     return nullptr;
   }
 
   return unique_ptr<ByteBuffer>(
-      new ByteBuffer(signature.ImmutableUInt8(), bytes_written));
+      new ByteBuffer(signature.ImmutableUInt8(), signature_size));
 }
 
 bool CryptoOps::Rsa2048Sha256Verify(const PublicKey& public_key,
@@ -704,12 +642,6 @@ bool CryptoOps::Rsa2048Sha256Verify(const PublicKey& public_key,
                                     const ByteBuffer& data) {
   if (public_key.algorithm() != KeyAlgorithm::RSA_KEY ||
       public_key.data().size() == 0 || data.size() == 0) {
-    return false;
-  }
-
-  // Make sure we don't overflow EVP_VerifyUpdate
-  if (data.size() > UINT_MAX) {
-    Util::LogError("Data too big to verify");
     return false;
   }
 
@@ -741,36 +673,35 @@ bool CryptoOps::Rsa2048Sha256Verify(const PublicKey& public_key,
   }
 
   // Create verification context
-  unique_ptr<EVP_MD_CTX, void (*)(EVP_MD_CTX *)> verifyctx(EVP_MD_CTX_create(),
+  unique_ptr<EVP_MD_CTX, void (*)(EVP_MD_CTX *)> verifyctx(EVP_MD_CTX_new(),
                                                            EVP_MD_CTX_free);
-  EVP_MD_CTX_init(verifyctx.get());
 
   // Initialize it
-  return_code = EVP_VerifyInit_ex(verifyctx.get(), EVP_sha256(), NULL);
+  return_code = EVP_DigestVerifyInit(verifyctx.get(), nullptr, EVP_sha256(),
+                                     nullptr, rsa_public_pkey.get());
   if (return_code != 1) {
     Util::LogErrorAndAbort("could not initialize verify digest context");
     return false;
   }
 
   // On public signatures, we added salt to the signature.
-  return_code = EVP_VerifyUpdate(verifyctx.get(), kSalt, sizeof(kSalt));
+  return_code = EVP_DigestVerifyUpdate(verifyctx.get(), kSalt, sizeof(kSalt));
   if (return_code != 1) {
     Util::LogErrorAndAbort("could not add salt to verify");
     return false;
   }
 
   // Set the message to verify
-  return_code =
-      EVP_VerifyUpdate(verifyctx.get(), data.ImmutableUChar(), data.size());
+  return_code = EVP_DigestVerifyUpdate(verifyctx.get(), data.ImmutableUChar(),
+                                       data.size());
   if (return_code != 1) {
     Util::LogErrorAndAbort("could not set data to verify");
     return false;
   }
 
   // Verify the signature
-  return_code = EVP_VerifyFinal(verifyctx.get(), signature.ImmutableUChar(),
-                                static_cast<unsigned int>(signature.size()),
-                                rsa_public_pkey.get());
+  return_code = EVP_DigestVerifyFinal(
+      verifyctx.get(), signature.ImmutableUChar(), signature.size());
 
   if (return_code != 1) {
     Util::LogError("could not verify signature");
@@ -1056,6 +987,17 @@ unique_ptr<CryptoOps::KeyPair> CryptoOps::GenerateEcP256KeyPair() {
   }
 
   // Convert private key to bytes
+#if defined(OPENSSL_IS_BORINGSSL)
+  // Use EVP_marshal_private_key in BoringSSL to avoid a dependency on the
+  // legacy ASN.1 stack and the large objects table.
+  bssl::ScopedCBB cbb;
+  if (!CBB_init(cbb.get(), /*initial_capacity=*/128) ||
+      !EVP_marshal_private_key(cbb.get(), ecpkey.get())) {
+    Util::LogError("could not serialize private key");
+    return nullptr;
+  }
+  ByteBuffer private_key_bytes(CBB_data(cbb.get()), CBB_len(cbb.get()));
+#else
   unique_ptr<PKCS8_PRIV_KEY_INFO, void (*)(PKCS8_PRIV_KEY_INFO *)> pkcs8(
       EVP_PKEY2PKCS8(ecpkey.get()), PKCS8_PRIV_KEY_INFO_free);
 
@@ -1076,6 +1018,7 @@ unique_ptr<CryptoOps::KeyPair> CryptoOps::GenerateEcP256KeyPair() {
   }
   ByteBuffer private_key_bytes(priv_key_buffer, priv_key_len);
   OPENSSL_free(priv_key_buffer);
+#endif
 
   return unique_ptr<KeyPair>(
       new KeyPair(unique_ptr<PublicKey>(new PublicKey(

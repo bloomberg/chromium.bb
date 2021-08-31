@@ -10,13 +10,11 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "build/buildflag.h"
 #include "ui/base/glib/glib_signal.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gtk/gtk_ui_delegate.h"
+#include "ui/gtk/gtk_ui_platform.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/window/frame_buttons.h"
 
@@ -24,25 +22,24 @@ typedef struct _GParamSpec GParamSpec;
 typedef struct _GtkParamSpec GtkParamSpec;
 typedef struct _GtkSettings GtkSettings;
 typedef struct _GtkStyle GtkStyle;
-typedef struct _GtkWidget GtkWidget;
 
 namespace gtk {
 using ColorMap = std::map<int, SkColor>;
 
-class GtkKeyBindingsHandler;
 class DeviceScaleFactorObserver;
+class GtkKeyBindingsHandler;
 class NativeThemeGtk;
 class SettingsProvider;
 
 // Interface to GTK desktop features.
 class GtkUi : public views::LinuxUI {
  public:
-  explicit GtkUi(ui::GtkUiDelegate* delegate);
+  GtkUi();
   ~GtkUi() override;
 
   // Static delegate getter, used by different objects (created by GtkUi), e.g:
   // Dialogs, IME Context, when platform-specific functionality is required.
-  static ui::GtkUiDelegate* GetDelegate();
+  static GtkUiPlatform* GetPlatform();
 
   // Setters used by SettingsProvider:
   void SetWindowButtonOrdering(
@@ -148,13 +145,9 @@ class GtkUi : public views::LinuxUI {
 
   float GetRawDeviceScaleFactor();
 
-  // Not owned by GtkUi.
-  ui::GtkUiDelegate* const delegate_;
+  std::unique_ptr<GtkUiPlatform> platform_;
 
   NativeThemeGtk* native_theme_;
-
-  // A regular GtkWindow.
-  GtkWidget* fake_window_;
 
   // Colors calculated by LoadGtkValues() that are given to the
   // caller while |use_gtk_| is true.
@@ -192,6 +185,7 @@ class GtkUi : public views::LinuxUI {
   std::vector<views::FrameButton> leading_buttons_;
   std::vector<views::FrameButton> trailing_buttons_;
 
+  // This is only used on GTK3.
   std::unique_ptr<GtkKeyBindingsHandler> key_bindings_handler_;
 
   // Objects to notify when the window frame button order changes.
@@ -217,9 +211,5 @@ class GtkUi : public views::LinuxUI {
 };
 
 }  // namespace gtk
-
-// Access point to the GTK desktop system.
-COMPONENT_EXPORT(GTK)
-views::LinuxUI* BuildGtkUi(ui::GtkUiDelegate* delegate);
 
 #endif  // UI_GTK_GTK_UI_H_

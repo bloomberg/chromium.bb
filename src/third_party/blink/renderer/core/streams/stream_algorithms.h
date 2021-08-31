@@ -5,16 +5,16 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_STREAM_ALGORITHMS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_STREAM_ALGORITHMS_H_
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 
 class ExceptionState;
 class ScriptState;
-class Visitor;
 
 // Base class for algorithms that calculate the size of a given chunk as part of
 // the stream's queuing strategy. This is the type for the
@@ -26,7 +26,7 @@ class StrategySizeAlgorithm : public GarbageCollected<StrategySizeAlgorithm> {
  public:
   virtual ~StrategySizeAlgorithm() = default;
 
-  virtual base::Optional<double> Run(ScriptState*,
+  virtual absl::optional<double> Run(ScriptState*,
                                      v8::Local<v8::Value> chunk,
                                      ExceptionState&) = 0;
 

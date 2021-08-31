@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/base64.h"
-#include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -44,7 +43,8 @@ bool VariationsHeaderKey::operator<(const VariationsHeaderKey& other) const {
 
 // static
 VariationsIdsProvider* VariationsIdsProvider::GetInstance() {
-  return base::Singleton<VariationsIdsProvider>::get();
+  static base::NoDestructor<VariationsIdsProvider> instance;
+  return instance.get();
 }
 
 variations::mojom::VariationsHeadersPtr
@@ -116,7 +116,7 @@ VariationsIdsProvider::GetVariationsVectorForWebPropertiesKeys() {
 }
 
 void VariationsIdsProvider::SetLowEntropySourceValue(
-    base::Optional<int> low_entropy_source_value) {
+    absl::optional<int> low_entropy_source_value) {
   // The low entropy source value is an integer that is between 0 and 7999,
   // inclusive. See components/metrics/metrics_state_manager.cc for the logic to
   // generate it.
@@ -359,10 +359,10 @@ std::string VariationsIdsProvider::GenerateBase64EncodedProto(
   // This is the bottleneck for the creation of the header, so validate the size
   // here. Force a hard maximum on the ID count in case the Variations server
   // returns too many IDs and DOSs receiving servers with large requests.
-  DCHECK_LE(total_id_count, 35U);
+  DCHECK_LE(total_id_count, 50U);
   UMA_HISTOGRAM_COUNTS_100("Variations.Headers.ExperimentCount",
                            total_id_count);
-  if (total_id_count > 50)
+  if (total_id_count > 75)
     return std::string();
 
   std::string serialized;

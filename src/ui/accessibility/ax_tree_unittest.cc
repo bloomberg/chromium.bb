@@ -9,9 +9,10 @@
 
 #include <memory>
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_node.h"
@@ -78,7 +79,7 @@ bool IsNodeOffscreen(const AXTree& tree, int32_t id) {
 
 class TestAXTreeObserver : public AXTreeObserver {
  public:
-  TestAXTreeObserver(AXTree* tree)
+  explicit TestAXTreeObserver(AXTree* tree)
       : tree_(tree), tree_data_changed_(false), root_changed_(false) {
     tree_->AddObserver(this);
   }
@@ -96,7 +97,7 @@ class TestAXTreeObserver : public AXTreeObserver {
     tree_data_changed_ = true;
   }
 
-  base::Optional<AXNode::AXID> unignored_parent_id_before_node_deleted;
+  absl::optional<AXNodeID> unignored_parent_id_before_node_deleted;
   void OnNodeWillBeDeleted(AXTree* tree, AXNode* node) override {
     // When this observer function is called in an update, the actual node
     // deletion has not happened yet. Verify that node still exists in the tree.
@@ -294,7 +295,7 @@ class TestAXTreeObserver : public AXTreeObserver {
 
 }  // namespace
 
-// A macro for testing that a base::Optional has both a value and that its value
+// A macro for testing that a absl::optional has both a value and that its value
 // is set to a particular expectation.
 #define EXPECT_OPTIONAL_EQ(expected, actual) \
   EXPECT_TRUE(actual.has_value());           \
@@ -330,10 +331,9 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   initial_state.tree_data.title = "Title";
   AXSerializableTree src_tree(initial_state);
 
-  std::unique_ptr<AXTreeSource<const AXNode*, AXNodeData, AXTreeData>>
-      tree_source(src_tree.CreateTreeSource());
-  AXTreeSerializer<const AXNode*, AXNodeData, AXTreeData> serializer(
-      tree_source.get());
+  std::unique_ptr<AXTreeSource<const AXNode*>> tree_source(
+      src_tree.CreateTreeSource());
+  AXTreeSerializer<const AXNode*> serializer(tree_source.get());
   AXTreeUpdate update;
   serializer.SerializeChanges(src_tree.root(), &update);
 
@@ -400,6 +400,7 @@ TEST(AXTreeTest, SerializeAXTreeUpdate) {
 }
 
 TEST(AXTreeTest, LeaveOrphanedDeletedSubtreeFails) {
+  base::HistogramTester histogram_tester;
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
   initial_state.nodes.resize(3);
@@ -410,6 +411,9 @@ TEST(AXTreeTest, LeaveOrphanedDeletedSubtreeFails) {
   initial_state.nodes[2].id = 3;
   AXTree tree(initial_state);
 
+  histogram_tester.ExpectTotalCount(
+      "Accessibility.Performance.Tree.Unserialize", 1);
+
   // This should fail because we delete a subtree rooted at id=2
   // but never update it.
   AXTreeUpdate update;
@@ -418,14 +422,23 @@ TEST(AXTreeTest, LeaveOrphanedDeletedSubtreeFails) {
   update.nodes[0].id = 3;
   EXPECT_FALSE(tree.Unserialize(update));
   ASSERT_EQ("Nodes left pending by the update: 2", tree.error());
+  histogram_tester.ExpectUniqueSample(
+      "Accessibility.Reliability.Tree.UnserializeError",
+      AXTreeUnserializeError::kPendingNodes, 1);
+  histogram_tester.ExpectTotalCount(
+      "Accessibility.Performance.Tree.Unserialize", 2);
 }
 
 TEST(AXTreeTest, LeaveOrphanedNewChildFails) {
+  base::HistogramTester histogram_tester;
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
   initial_state.nodes.resize(1);
   initial_state.nodes[0].id = 1;
   AXTree tree(initial_state);
+
+  histogram_tester.ExpectTotalCount(
+      "Accessibility.Performance.Tree.Unserialize", 1);
 
   // This should fail because we add a new child to the root node
   // but never update it.
@@ -435,14 +448,23 @@ TEST(AXTreeTest, LeaveOrphanedNewChildFails) {
   update.nodes[0].child_ids.push_back(2);
   EXPECT_FALSE(tree.Unserialize(update));
   ASSERT_EQ("Nodes left pending by the update: 2", tree.error());
+  histogram_tester.ExpectUniqueSample(
+      "Accessibility.Reliability.Tree.UnserializeError",
+      AXTreeUnserializeError::kPendingNodes, 1);
+  histogram_tester.ExpectTotalCount(
+      "Accessibility.Performance.Tree.Unserialize", 2);
 }
 
 TEST(AXTreeTest, DuplicateChildIdFails) {
+  base::HistogramTester histogram_tester;
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
   initial_state.nodes.resize(1);
   initial_state.nodes[0].id = 1;
   AXTree tree(initial_state);
+
+  histogram_tester.ExpectTotalCount(
+      "Accessibility.Performance.Tree.Unserialize", 1);
 
   // This should fail because a child id appears twice.
   AXTreeUpdate update;
@@ -453,9 +475,15 @@ TEST(AXTreeTest, DuplicateChildIdFails) {
   update.nodes[1].id = 2;
   EXPECT_FALSE(tree.Unserialize(update));
   ASSERT_EQ("Node 1 has duplicate child id 2", tree.error());
+  histogram_tester.ExpectUniqueSample(
+      "Accessibility.Reliability.Tree.UnserializeError",
+      AXTreeUnserializeError::kDuplicateChild, 1);
+  histogram_tester.ExpectTotalCount(
+      "Accessibility.Performance.Tree.Unserialize", 1);
 }
 
 TEST(AXTreeTest, InvalidReparentingFails) {
+  base::HistogramTester histogram_tester;
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
   initial_state.nodes.resize(3);
@@ -466,6 +494,9 @@ TEST(AXTreeTest, InvalidReparentingFails) {
   initial_state.nodes[2].id = 3;
 
   AXTree tree(initial_state);
+
+  histogram_tester.ExpectTotalCount(
+      "Accessibility.Performance.Tree.Unserialize", 1);
 
   // This should fail because node 3 is reparented from node 2 to node 1
   // without deleting node 1's subtree first.
@@ -479,6 +510,11 @@ TEST(AXTreeTest, InvalidReparentingFails) {
   EXPECT_FALSE(tree.Unserialize(update));
   ASSERT_EQ("Node 3 is not marked for destruction, would be reparented to 1",
             tree.error());
+  histogram_tester.ExpectUniqueSample(
+      "Accessibility.Reliability.Tree.UnserializeError",
+      AXTreeUnserializeError::kReparent, 1);
+  histogram_tester.ExpectTotalCount(
+      "Accessibility.Performance.Tree.Unserialize", 1);
 }
 
 TEST(AXTreeTest, NoReparentingOfRootIfNoNewRoot) {
@@ -2056,7 +2092,7 @@ TEST(AXTreeTest, UnignoredChildIteratorIncrementDecrementPastEnd) {
   tree_update.nodes.resize(2);
 
   tree_update.nodes[0].id = 1;
-  tree_update.nodes[0].role = ax::mojom::Role::kWebArea;
+  tree_update.nodes[0].role = ax::mojom::Role::kRootWebArea;
   tree_update.nodes[0].child_ids = {2};
 
   tree_update.nodes[1].id = 2;
@@ -2131,7 +2167,7 @@ TEST(AXTreeTest, UnignoredChildIteratorIgnoredContainerSiblings) {
   tree_update.nodes.resize(7);
 
   tree_update.nodes[0].id = 1;
-  tree_update.nodes[0].role = ax::mojom::Role::kWebArea;
+  tree_update.nodes[0].role = ax::mojom::Role::kRootWebArea;
   tree_update.nodes[0].child_ids = {2, 4, 6};
 
   tree_update.nodes[1].id = 2;
@@ -2961,9 +2997,9 @@ TEST(AXTreeTest, UnignoredSelection) {
   AXTree::Selection unignored_selection =
       test_ax_tree_manager.GetTree()->GetUnignoredSelection();
 
-  EXPECT_EQ(AXNode::kInvalidAXID, unignored_selection.anchor_object_id);
+  EXPECT_EQ(kInvalidAXNodeID, unignored_selection.anchor_object_id);
   EXPECT_EQ(-1, unignored_selection.anchor_offset);
-  EXPECT_EQ(AXNode::kInvalidAXID, unignored_selection.focus_object_id);
+  EXPECT_EQ(kInvalidAXNodeID, unignored_selection.focus_object_id);
   EXPECT_EQ(-1, unignored_selection.focus_offset);
   struct SelectionData {
     int32_t anchor_id;
@@ -3098,14 +3134,11 @@ TEST(AXTreeTest, ChildTreeIds) {
   initial_state.nodes[0].child_ids.push_back(3);
   initial_state.nodes[0].child_ids.push_back(4);
   initial_state.nodes[1].id = 2;
-  initial_state.nodes[1].AddStringAttribute(
-      ax::mojom::StringAttribute::kChildTreeId, tree_id_2.ToString());
+  initial_state.nodes[1].AddChildTreeId(tree_id_2);
   initial_state.nodes[2].id = 3;
-  initial_state.nodes[2].AddStringAttribute(
-      ax::mojom::StringAttribute::kChildTreeId, tree_id_3.ToString());
+  initial_state.nodes[2].AddChildTreeId(tree_id_3);
   initial_state.nodes[3].id = 4;
-  initial_state.nodes[3].AddStringAttribute(
-      ax::mojom::StringAttribute::kChildTreeId, tree_id_3.ToString());
+  initial_state.nodes[3].AddChildTreeId(tree_id_3);
   AXTree tree(initial_state);
 
   auto child_tree_1_nodes = tree.GetNodeIdsForChildTreeId(tree_id_1);
@@ -3122,8 +3155,7 @@ TEST(AXTreeTest, ChildTreeIds) {
 
   AXTreeUpdate update = initial_state;
   update.nodes[2].string_attributes.clear();
-  update.nodes[2].AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
-                                     tree_id_2.ToString());
+  update.nodes[2].AddChildTreeId(tree_id_2);
   update.nodes[3].string_attributes.clear();
 
   EXPECT_TRUE(tree.Unserialize(update));
@@ -3491,7 +3523,7 @@ TEST(AXTreeTest, SetSizePosInSetNestedContainer) {
   tree_update.nodes[3].id = 4;
   tree_update.nodes[3].role = ax::mojom::Role::kListItem;  // 2 of 4
   tree_update.nodes[4].id = 5;
-  tree_update.nodes[4].role = ax::mojom::Role::kIgnored;
+  tree_update.nodes[4].role = ax::mojom::Role::kNone;
   tree_update.nodes[4].child_ids = {6};
   tree_update.nodes[5].id = 6;
   tree_update.nodes[5].role = ax::mojom::Role::kListItem;  // 3 of 4
@@ -4551,7 +4583,7 @@ TEST(AXTreeTest, OnNodeHasBeenDeleted) {
   // Verify that the nodes we intend to delete in the update are actually
   // absent from the tree.
   for (auto id : test_observer.deleted_ids()) {
-    SCOPED_TRACE(testing::Message()
+    SCOPED_TRACE(::testing::Message()
                  << "Node with id=" << id << ", should not exist in the tree");
     EXPECT_EQ(nullptr, tree.GetFromId(id));
   }
@@ -4841,6 +4873,57 @@ TEST(AXTreeTest, TestIsInListMarker) {
 
   AXNode* inline_node2 = tree.GetFromId(8);
   ASSERT_EQ(false, inline_node2->IsInListMarker());
+}
+
+TEST(AXTreeTest, UpdateFromOutOfSyncTree) {
+  ui::AXNodeData empty_document;
+  empty_document.id = 1;
+  empty_document.role = ax::mojom::Role::kRootWebArea;
+  ui::AXTreeUpdate empty_document_initial_update;
+  empty_document_initial_update.root_id = empty_document.id;
+  empty_document_initial_update.nodes.push_back(empty_document);
+
+  AXTree tree;
+  EXPECT_TRUE(tree.Unserialize(empty_document_initial_update));
+
+  ui::AXNodeData root;
+  root.id = 3;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {1};
+
+  ui::AXNodeData div;
+  div.id = 1;
+  div.role = ax::mojom::Role::kGenericContainer;
+
+  ui::AXTreeUpdate first_update;
+  first_update.root_id = root.id;
+  first_update.node_id_to_clear = root.id;
+  first_update.nodes = {root, div};
+
+  EXPECT_TRUE(tree.Unserialize(first_update));
+}
+
+TEST(AXTreeTest, UnserializeErrors) {
+  base::HistogramTester histogram_tester;
+  ui::AXNodeData empty_document;
+  empty_document.id = 1;
+  empty_document.role = ax::mojom::Role::kRootWebArea;
+  ui::AXTreeUpdate tree_update;
+  tree_update.root_id = empty_document.id;
+  tree_update.nodes.push_back(empty_document);
+
+  AXTree tree;
+  EXPECT_TRUE(tree.Unserialize(tree_update));
+
+  ui::AXTreeUpdate tree_update_3;
+  tree_update_3.root_id = empty_document.id;
+  ui::AXNodeData disconnected_node;
+  disconnected_node.id = 2;
+  tree_update_3.nodes.push_back(disconnected_node);
+  EXPECT_FALSE(tree.Unserialize(tree_update_3));
+  histogram_tester.ExpectUniqueSample(
+      "Accessibility.Reliability.Tree.UnserializeError",
+      AXTreeUnserializeError::kNotInTree, 1);
 }
 
 }  // namespace ui

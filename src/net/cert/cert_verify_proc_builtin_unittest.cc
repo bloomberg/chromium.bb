@@ -6,6 +6,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
@@ -34,13 +35,6 @@ using net::test::IsOk;
 namespace net {
 
 namespace {
-
-class DummySystemTrustStoreProvider : public SystemTrustStoreProvider {
- public:
-  std::unique_ptr<SystemTrustStore> CreateSystemTrustStore() override {
-    return CreateEmptySystemTrustStore();
-  }
-};
 
 std::unique_ptr<test_server::HttpResponse> HangRequestAndCallback(
     base::OnceClosure callback,
@@ -92,8 +86,8 @@ class CertVerifyProcBuiltinTest : public ::testing::Test {
 
   void SetUp() override {
     cert_net_fetcher_ = base::MakeRefCounted<CertNetFetcherURLRequest>();
-    verify_proc_ = CreateCertVerifyProcBuiltin(
-        cert_net_fetcher_, std::make_unique<DummySystemTrustStoreProvider>());
+    verify_proc_ = CreateCertVerifyProcBuiltin(cert_net_fetcher_,
+                                               CreateEmptySystemTrustStore());
 
     context_ = std::make_unique<net::TestURLRequestContext>();
 
@@ -424,7 +418,7 @@ TEST_F(CertVerifyProcBuiltinTest, EVRevocationCheckDeadline) {
   ASSERT_NE(event, events.end());
   EXPECT_EQ(net::NetLogEventPhase::BEGIN, event->phase);
   ASSERT_TRUE(event->params.is_dict());
-  EXPECT_EQ(base::nullopt, event->params.FindBoolKey("is_ev_attempt"));
+  EXPECT_EQ(absl::nullopt, event->params.FindBoolKey("is_ev_attempt"));
 
   event = std::find_if(++event, events.end(), [](const auto& e) {
     return e.type == NetLogEventType::CERT_VERIFY_PROC_PATH_BUILT;

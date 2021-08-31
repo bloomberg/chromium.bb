@@ -260,6 +260,13 @@ void MediaEngagementContentsObserver::MediaResized(
   UpdatePlayerTimer(id);
 }
 
+void MediaEngagementContentsObserver::MediaDestroyed(
+    const content::MediaPlayerId& id) {
+  player_states_.erase(id);
+  audible_players_.erase(id);
+  significant_players_.erase(id);
+}
+
 void MediaEngagementContentsObserver::MediaStoppedPlaying(
     const MediaPlayerInfo& media_player_info,
     const content::MediaPlayerId& media_player_id,
@@ -642,7 +649,7 @@ MediaEngagementContentsObserver::GetOrCreateSession(
   }
 
   MediaEngagementSession::RestoreType restore_type =
-      navigation_handle->GetRestoreType() == content::RestoreType::NONE
+      navigation_handle->GetRestoreType() == content::RestoreType::kNotRestored
           ? MediaEngagementSession::RestoreType::kNotRestored
           : MediaEngagementSession::RestoreType::kRestored;
 

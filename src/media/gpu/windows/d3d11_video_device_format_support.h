@@ -6,12 +6,11 @@
 #define MEDIA_GPU_WINDOWS_D3D11_VIDEO_DEVICE_FORMAT_SUPPORT_H_
 
 #include <d3d11_1.h>
-#include <vector>
 
-#include "base/optional.h"
 #include "media/base/media_log.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/windows/d3d11_com_defs.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 

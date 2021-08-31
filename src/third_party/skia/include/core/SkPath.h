@@ -1518,17 +1518,7 @@ public:
         bool            fForceClose;
         bool            fNeedClose;
         bool            fCloseLine;
-        enum SegmentState : uint8_t {
-            /** The current contour is empty. Starting processing or have just closed a contour. */
-            kEmptyContour_SegmentState,
-            /** Have seen a move, but nothing else. */
-            kAfterMove_SegmentState,
-            /** Have seen a primitive but not yet closed the path. Also the initial state. */
-            kAfterPrimitive_SegmentState
-        };
-        SegmentState    fSegmentState;
 
-        inline const SkPoint& cons_moveTo();
         Verb autoClose(SkPoint pts[2]);
     };
 
@@ -1596,7 +1586,7 @@ private:
                 case SkPathVerb::kQuad: return -1;
                 case SkPathVerb::kConic: return -1;
                 case SkPathVerb::kCubic: return -1;
-                case SkPathVerb::kClose: return 0;
+                case SkPathVerb::kClose: return -1;
             }
             SkUNREACHABLE;
         }
@@ -1684,37 +1674,22 @@ public:
     bool contains(SkScalar x, SkScalar y) const;
 
     /** Writes text representation of SkPath to stream. If stream is nullptr, writes to
-        standard output. Set forceClose to true to get edges used to fill SkPath.
-        Set dumpAsHex true to generate exact binary representations
+        standard output. Set dumpAsHex true to generate exact binary representations
         of floating point numbers used in SkPoint array and conic weights.
 
         @param stream      writable SkWStream receiving SkPath text representation; may be nullptr
-        @param forceClose  true if missing kClose_Verb is output
         @param dumpAsHex   true if SkScalar values are written as hexadecimal
 
         example: https://fiddle.skia.org/c/@Path_dump
     */
-    void dump(SkWStream* stream, bool forceClose, bool dumpAsHex) const;
+    void dump(SkWStream* stream, bool dumpAsHex) const;
 
-    /** Writes text representation of SkPath to standard output. The representation may be
-        directly compiled as C++ code. Floating point values are written
-        with limited precision; it may not be possible to reconstruct original SkPath
-        from output.
+    void dump() const { this->dump(nullptr, false); }
+    void dumpHex() const { this->dump(nullptr, true); }
 
-        example: https://fiddle.skia.org/c/@Path_dump_2
-    */
-    void dump() const;
-
-    /** Writes text representation of SkPath to standard output. The representation may be
-        directly compiled as C++ code. Floating point values are written
-        in hexadecimal to preserve their exact bit pattern. The output reconstructs the
-        original SkPath.
-
-        Use instead of dump() when submitting
-
-        example: https://fiddle.skia.org/c/@Path_dumpHex
-    */
-    void dumpHex() const;
+    // Like dump(), but outputs for the SkPath::Make() factory
+    void dumpArrays(SkWStream* stream, bool dumpAsHex) const;
+    void dumpArrays() const { this->dumpArrays(nullptr, false); }
 
     /** Writes SkPath to buffer, returning the number of bytes written.
         Pass nullptr to obtain the storage size.
@@ -1875,17 +1850,15 @@ private:
     /** Returns the comvexity type, computing if needed. Never returns kUnknown.
         @return  path's convexity type (convex or concave)
     */
-    SkPathConvexity getConvexity() const {
-        SkPathConvexity convexity = this->getConvexityOrUnknown();
-        if (convexity == SkPathConvexity::kUnknown) {
-            convexity = this->computeConvexity();
-        }
-        SkASSERT(convexity != SkPathConvexity::kUnknown);
-        return convexity;
-    }
+    SkPathConvexity getConvexity() const;
+
     SkPathConvexity getConvexityOrUnknown() const {
         return (SkPathConvexity)fConvexity.load(std::memory_order_relaxed);
     }
+
+    // Compares the cached value with a freshly computed one (computeConvexity())
+    bool isConvexityAccurate() const;
+
     /** Stores a convexity type for this path. This is what will be returned if
      *  getConvexityOrUnknown() is called. If you pass kUnknown, then if getContexityType()
      *  is called, the real convexity will be computed.

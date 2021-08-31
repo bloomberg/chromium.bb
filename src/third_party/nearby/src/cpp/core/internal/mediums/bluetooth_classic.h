@@ -21,6 +21,7 @@
 #include "core/internal/mediums/bluetooth_radio.h"
 #include "core/listeners.h"
 #include "platform/base/byte_array.h"
+#include "platform/base/cancellation_flag.h"
 #include "platform/public/bluetooth_adapter.h"
 #include "platform/public/bluetooth_classic.h"
 #include "platform/public/multi_thread_executor.h"
@@ -105,13 +106,14 @@ class BluetoothClassic {
     return adapter_.IsValid();
   }
 
-  // Establishes connection to BT service that was might be started on another
-  // device with StartAcceptingConnections() using the same service_name.
+  // Establishes connection to BT service with internal retry for maximum
+  // attempts of kConnectAttemptsLimit.
   // Blocks until connection is established, or server-side is terminated.
   // Returns socket instance. On success, BluetoothSocket.IsValid() return true.
   // Called by client.
   BluetoothSocket Connect(BluetoothDevice& bluetooth_device,
-                          const std::string& service_name)
+                          const std::string& service_name,
+                          CancellationFlag* cancellation_flag)
       ABSL_LOCKS_EXCLUDED(mutex_);
 
   std::string GetMacAddress() const ABSL_LOCKS_EXCLUDED(mutex_);
@@ -125,6 +127,8 @@ class BluetoothClassic {
   };
 
   static constexpr int kMaxConcurrentAcceptLoops = 5;
+
+  static constexpr int kConnectAttemptsLimit = 3;
 
   // Constructs UUID object from arbitrary string, using MD5 hash, and then
   // converts UUID to a readable UUID string and returns it.
@@ -159,6 +163,15 @@ class BluetoothClassic {
 
   // Returns true if device is currently in discovery mode.
   bool IsDiscovering() const ABSL_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+
+  // Establishes connection to BT service that was might be started on another
+  // device with StartAcceptingConnections() using the same service_name.
+  // Blocks until connection is established, or server-side is terminated.
+  // Returns socket instance. On success, BluetoothSocket.IsValid() return true.
+  // Called by client.
+  BluetoothSocket AttemptToConnect(BluetoothDevice& bluetooth_device,
+                                   const std::string& service_name,
+                                   CancellationFlag* cancellation_flag);
 
   mutable Mutex mutex_;
   BluetoothRadio& radio_ ABSL_GUARDED_BY(mutex_);

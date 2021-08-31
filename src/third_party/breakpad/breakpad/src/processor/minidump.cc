@@ -3603,8 +3603,8 @@ void MinidumpSystemInfo::Print() {
   }
 
   printf("MDRawSystemInfo\n");
-  printf("  processor_architecture                     = 0x%x\n",
-         system_info_.processor_architecture);
+  printf("  processor_architecture                     = 0x%x (%s)\n",
+         system_info_.processor_architecture, GetCPU().c_str());
   printf("  processor_level                            = %d\n",
          system_info_.processor_level);
   printf("  processor_revision                         = 0x%x\n",
@@ -3619,8 +3619,8 @@ void MinidumpSystemInfo::Print() {
          system_info_.minor_version);
   printf("  build_number                               = %d\n",
          system_info_.build_number);
-  printf("  platform_id                                = 0x%x\n",
-         system_info_.platform_id);
+  printf("  platform_id                                = 0x%x (%s)\n",
+         system_info_.platform_id, GetOS().c_str());
   printf("  csd_version_rva                            = 0x%x\n",
          system_info_.csd_version_rva);
   printf("  suite_mask                                 = 0x%x\n",

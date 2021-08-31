@@ -39,7 +39,7 @@ void ProcessRestoreCommands(
     scoped_refptr<content::SessionStorageNamespace> session_storage_namespace;
     if (!session_tab.session_storage_persistent_id.empty()) {
       session_storage_namespace =
-          content::BrowserContext::GetDefaultStoragePartition(browser_context)
+          browser_context->GetDefaultStoragePartition()
               ->GetDOMStorageContext()
               ->RecreateSessionStorage(
                   session_tab.session_storage_persistent_id);
@@ -50,8 +50,9 @@ void ProcessRestoreCommands(
 
     GURL restore_url =
         session_tab.navigations[selected_navigation_index].virtual_url();
-    content::SessionStorageNamespaceMap session_storage_namespace_map;
-    session_storage_namespace_map[std::string()] = session_storage_namespace;
+    content::SessionStorageNamespaceMap session_storage_namespace_map =
+        content::CreateMapWithDefaultSessionStorageNamespace(
+            browser_context, session_storage_namespace);
     content::BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
         &restore_url, browser_context);
     content::WebContents::CreateParams create_params(
@@ -76,11 +77,8 @@ void ProcessRestoreCommands(
     ua_override.ua_metadata_override = blink::UserAgentMetadata::Demarshal(
         session_tab.user_agent_override.opaque_ua_metadata_override);
     web_contents->SetUserAgentOverride(ua_override, false);
-    // CURRENT_SESSION matches what clank does. On the desktop, we should
-    // use a different type.
-    web_contents->GetController().Restore(selected_navigation_index,
-                                          content::RestoreType::CURRENT_SESSION,
-                                          &entries);
+    web_contents->GetController().Restore(
+        selected_navigation_index, content::RestoreType::kRestored, &entries);
     DCHECK(entries.empty());
     TabImpl* tab = browser->CreateTabForSessionRestore(std::move(web_contents),
                                                        session_tab.guid);

@@ -67,8 +67,8 @@ class TestPageActionIconView : public PageActionIconView {
   }
 
   views::BubbleDialogDelegate* GetBubble() const override { return nullptr; }
-  base::string16 GetTextForTooltipAndAccessibleName() const override {
-    return base::ASCIIToUTF16("TestTooltip");
+  std::u16string GetTextForTooltipAndAccessibleName() const override {
+    return u"TestTooltip";
   }
 
   bool IsLabelVisible() const { return label()->GetVisible(); }
@@ -113,7 +113,7 @@ class PageActionIconViewTest : public ChromeViewsTestBase {
 };
 
 TEST_F(PageActionIconViewTest, ShouldResetSlideAnimationWhenHideIcons) {
-  view()->AnimateIn(base::nullopt);
+  view()->AnimateIn(absl::nullopt);
   EXPECT_TRUE(view()->IsLabelVisible());
   EXPECT_TRUE(view()->is_animating_label());
 
@@ -126,7 +126,7 @@ TEST_F(PageActionIconViewTest, ShouldResetSlideAnimationWhenHideIcons) {
 
 TEST_F(PageActionIconViewTest, ShouldNotResetSlideAnimationWhenShowIcons) {
   delegate()->set_should_hide_page_action_icons(true);
-  view()->AnimateIn(base::nullopt);
+  view()->AnimateIn(absl::nullopt);
   EXPECT_TRUE(view()->IsLabelVisible());
   EXPECT_TRUE(view()->is_animating_label());
 

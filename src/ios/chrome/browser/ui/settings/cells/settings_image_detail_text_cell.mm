@@ -15,13 +15,23 @@
 
 @interface SettingsImageDetailTextCell ()
 
-// Width constraint for the image view.
-@property(nonatomic, weak, readonly) NSLayoutConstraint* imageWidthConstraint;
-// Height constraint for the image view.
-@property(nonatomic, weak, readonly) NSLayoutConstraint* imageHeightConstraint;
 // Image view for the cell.
 @property(nonatomic, strong) UIImageView* imageView;
 
+// Constraint used for leading text constraint without |imageView|.
+@property(nonatomic, strong) NSLayoutConstraint* textNoImageConstraint;
+
+// Constraint used for leading text constraint with |imageView| showing.
+@property(nonatomic, strong) NSLayoutConstraint* textWithImageConstraint;
+
+// Constraint used for aligning the image with the content view centerYAnchor.
+@property(nonatomic, strong)
+    NSLayoutConstraint* alignImageWithContentViewCenterYConstraint;
+
+// Constraint used for aligning the image with the content view
+// firstBaselineAnchor.
+@property(nonatomic, strong)
+    NSLayoutConstraint* alignImageWithContentViewFirstBaselineAnchorConstraint;
 @end
 
 @implementation SettingsImageDetailTextCell
@@ -47,6 +57,7 @@
 
   _imageView = [[UIImageView alloc] init];
   _imageView.translatesAutoresizingMaskIntoConstraints = NO;
+  _imageView.contentMode = UIViewContentModeCenter;
   _imageView.tintColor = UIColor.cr_labelColor;
   [contentView addSubview:_imageView];
 
@@ -73,29 +84,34 @@
   textStackView.translatesAutoresizingMaskIntoConstraints = NO;
   [contentView addSubview:textStackView];
 
-  _imageWidthConstraint = [_imageView.widthAnchor constraintEqualToConstant:0];
-  _imageHeightConstraint =
-      [_imageView.heightAnchor constraintEqualToConstant:0];
+  _textNoImageConstraint = [textStackView.leadingAnchor
+      constraintEqualToAnchor:contentView.leadingAnchor
+                     constant:kTableViewHorizontalSpacing];
+
+  _textWithImageConstraint = [textStackView.leadingAnchor
+      constraintEqualToAnchor:_imageView.trailingAnchor
+                     constant:kTableViewImagePadding];
+
+  _alignImageWithContentViewCenterYConstraint = [_imageView.centerYAnchor
+      constraintEqualToAnchor:contentView.centerYAnchor];
+
+  _alignImageWithContentViewFirstBaselineAnchorConstraint =
+      [_imageView.centerYAnchor
+          constraintEqualToAnchor:contentView.firstBaselineAnchor];
 
   [NSLayoutConstraint activateConstraints:@[
-    // Horizontal contraints for |_imageView| and |textStackView|.
-    _imageWidthConstraint,
+    [_imageView.widthAnchor constraintEqualToConstant:kTableViewIconImageSize],
+    [_imageView.heightAnchor constraintEqualToAnchor:_imageView.widthAnchor],
     [_imageView.leadingAnchor
         constraintEqualToAnchor:contentView.leadingAnchor
                        constant:kTableViewHorizontalSpacing],
-    [textStackView.leadingAnchor
-        constraintEqualToAnchor:_imageView.trailingAnchor
-                       constant:kTableViewHorizontalSpacing],
-    [contentView.trailingAnchor
-        constraintEqualToAnchor:textStackView.trailingAnchor
-                       constant:kTableViewHorizontalSpacing],
-    // Vertical contraints for |_imageView| and |textStackView|.
-    _imageHeightConstraint,
-    [_imageView.centerYAnchor
-        constraintEqualToAnchor:contentView.centerYAnchor],
+    _alignImageWithContentViewCenterYConstraint,
     [_imageView.topAnchor
         constraintGreaterThanOrEqualToAnchor:contentView.topAnchor
                                     constant:kTableViewVerticalSpacing],
+    [contentView.trailingAnchor
+        constraintEqualToAnchor:textStackView.trailingAnchor
+                       constant:kTableViewHorizontalSpacing],
     [contentView.bottomAnchor
         constraintGreaterThanOrEqualToAnchor:_imageView.bottomAnchor
                                     constant:kTableViewVerticalSpacing],
@@ -117,14 +133,44 @@
 }
 
 - (void)setImage:(UIImage*)image {
-  DCHECK(image);
+  BOOL hidden = !image;
   self.imageView.image = image;
-  self.imageWidthConstraint.constant = image.size.width;
-  self.imageHeightConstraint.constant = image.size.height;
+  self.imageView.hidden = hidden;
+  // Update the leading text constraint based on |image| being provided.
+  if (hidden) {
+    self.textWithImageConstraint.active = NO;
+    self.textNoImageConstraint.active = YES;
+  } else {
+    self.textNoImageConstraint.active = NO;
+    self.textWithImageConstraint.active = YES;
+  }
 }
 
 - (UIImage*)image {
   return self.imageView.image;
+}
+
+- (void)setImageViewTintColor:(UIColor*)color {
+  _imageView.tintColor = color;
+}
+
+- (void)alignImageWithFirstLineOfText:(BOOL)alignImageWithFirstBaseline {
+  self.alignImageWithContentViewCenterYConstraint.active =
+      !alignImageWithFirstBaseline;
+  self.alignImageWithContentViewFirstBaselineAnchorConstraint.active =
+      alignImageWithFirstBaseline;
+}
+
+- (void)setImageViewContentMode:(UIViewContentMode)contentMode {
+  self.imageView.contentMode = contentMode;
+}
+
+#pragma mark - UITableViewCell
+
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  [self alignImageWithFirstLineOfText:NO];
+  self.imageView.contentMode = UIViewContentModeCenter;
 }
 
 #pragma mark - UIAccessibility

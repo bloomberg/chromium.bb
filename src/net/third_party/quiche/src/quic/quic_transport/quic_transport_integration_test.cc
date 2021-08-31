@@ -11,27 +11,27 @@
 #include "absl/strings/string_view.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_server_config.h"
-#include "net/third_party/quiche/src/quic/core/quic_buffer_allocator.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection.h"
-#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/quic_transport/quic_transport_client_session.h"
-#include "net/third_party/quiche/src/quic/quic_transport/quic_transport_server_session.h"
-#include "net/third_party/quiche/src/quic/quic_transport/quic_transport_stream.h"
-#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_session_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_transport_test_tools.h"
-#include "net/third_party/quiche/src/quic/test_tools/simulator/link.h"
-#include "net/third_party/quiche/src/quic/test_tools/simulator/quic_endpoint_base.h"
-#include "net/third_party/quiche/src/quic/test_tools/simulator/simulator.h"
-#include "net/third_party/quiche/src/quic/test_tools/simulator/switch.h"
-#include "net/third_party/quiche/src/quic/tools/quic_transport_simple_server_session.h"
+#include "quic/core/crypto/quic_crypto_client_config.h"
+#include "quic/core/crypto/quic_crypto_server_config.h"
+#include "quic/core/quic_buffer_allocator.h"
+#include "quic/core/quic_connection.h"
+#include "quic/core/quic_error_codes.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/quic_transport/quic_transport_client_session.h"
+#include "quic/quic_transport/quic_transport_server_session.h"
+#include "quic/quic_transport/quic_transport_stream.h"
+#include "quic/test_tools/crypto_test_utils.h"
+#include "quic/test_tools/quic_session_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "quic/test_tools/quic_transport_test_tools.h"
+#include "quic/test_tools/simulator/link.h"
+#include "quic/test_tools/simulator/quic_endpoint_base.h"
+#include "quic/test_tools/simulator/simulator.h"
+#include "quic/test_tools/simulator/switch.h"
+#include "quic/tools/quic_transport_simple_server_session.h"
 
 namespace quic {
 namespace test {
@@ -90,7 +90,8 @@ class QuicTransportClientEndpoint : public QuicTransportEndpointBase {
                  GURL("quic-transport://test.example.com:50000" + path),
                  &crypto_config_,
                  origin,
-                 &visitor_) {
+                 &visitor_,
+                 /*datagram_observer=*/nullptr) {
     session_.Initialize();
   }
 
@@ -138,12 +139,6 @@ class QuicTransportServerEndpoint : public QuicTransportEndpointBase {
   QuicCompressedCertsCache compressed_certs_cache_;
   QuicTransportSimpleServerSession session_;
 };
-
-std::unique_ptr<MockStreamVisitor> VisitorExpectingFin() {
-  auto visitor = std::make_unique<MockStreamVisitor>();
-  EXPECT_CALL(*visitor, OnFinRead());
-  return visitor;
-}
 
 constexpr QuicBandwidth kClientBandwidth =
     QuicBandwidth::FromKBitsPerSecond(10000);
@@ -285,7 +280,9 @@ TEST_F(QuicTransportIntegrationTest, EchoBidirectionalStreams) {
       [stream]() { return stream->ReadableBytes() == strlen("Hello!"); },
       kDefaultTimeout));
   std::string received;
-  EXPECT_EQ(stream->Read(&received), strlen("Hello!"));
+  WebTransportStream::ReadResult result = stream->Read(&received);
+  EXPECT_EQ(result.bytes_read, strlen("Hello!"));
+  EXPECT_FALSE(result.fin);
   EXPECT_EQ(received, "Hello!");
 
   EXPECT_TRUE(stream->SendFin());
@@ -324,8 +321,9 @@ TEST_F(QuicTransportIntegrationTest, EchoUnidirectionalStreams) {
       client_->session()->AcceptIncomingUnidirectionalStream();
   ASSERT_TRUE(reply != nullptr);
   std::string buffer;
-  reply->set_visitor(VisitorExpectingFin());
-  EXPECT_GT(reply->Read(&buffer), 0u);
+  WebTransportStream::ReadResult result = reply->Read(&buffer);
+  EXPECT_GT(result.bytes_read, 0u);
+  EXPECT_TRUE(result.fin);
   EXPECT_EQ(buffer, "Stream Two");
 
   // Reset reply-related variables.
@@ -338,8 +336,9 @@ TEST_F(QuicTransportIntegrationTest, EchoUnidirectionalStreams) {
       [&stream_received]() { return stream_received; }, kDefaultTimeout));
   reply = client_->session()->AcceptIncomingUnidirectionalStream();
   ASSERT_TRUE(reply != nullptr);
-  reply->set_visitor(VisitorExpectingFin());
-  EXPECT_GT(reply->Read(&buffer), 0u);
+  result = reply->Read(&buffer);
+  EXPECT_GT(result.bytes_read, 0u);
+  EXPECT_TRUE(result.fin);
   EXPECT_EQ(buffer, "Stream One");
 }
 
@@ -348,8 +347,7 @@ TEST_F(QuicTransportIntegrationTest, EchoDatagram) {
   WireUpEndpoints();
   RunHandshake();
 
-  client_->session()->datagram_queue()->SendOrQueueDatagram(
-      MemSliceFromString("test"));
+  client_->session()->SendOrQueueDatagram(MemSliceFromString("test"));
 
   bool datagram_received = false;
   EXPECT_CALL(*client_->visitor(), OnDatagramReceived(Eq("test")))
@@ -367,11 +365,10 @@ TEST_F(QuicTransportIntegrationTest, EchoALotOfDatagrams) {
   RunHandshake();
 
   // Set the datagrams to effectively never expire.
-  client_->session()->datagram_queue()->SetMaxTimeInQueue(10000 * kRtt);
+  client_->session()->SetDatagramMaxTimeInQueue(10000 * kRtt);
   for (int i = 0; i < 1000; i++) {
-    client_->session()->datagram_queue()->SendOrQueueDatagram(
-        MemSliceFromString(std::string(
-            client_->session()->GetGuaranteedLargestMessagePayload(), 'a')));
+    client_->session()->SendOrQueueDatagram(MemSliceFromString(std::string(
+        client_->session()->GetGuaranteedLargestMessagePayload(), 'a')));
   }
 
   size_t received = 0;

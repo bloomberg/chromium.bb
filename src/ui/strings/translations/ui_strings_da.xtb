@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">Indbygget skærm</translation>
 <translation id="335581015389089642">Tale</translation>
 <translation id="3389286852084373014">Teksten er for lang</translation>
+<translation id="3406306243914553062">HTML-indhold</translation>
 <translation id="348799646910989694">Hylden skjules automatisk</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> blev fastgjort</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dag tilbage}one{# dage tilbage}other{# dage tilbage}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">Nummer</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/sek.</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />, <ph name="TYPE_2" />.</translation>
 <translation id="3842239759367498783">Fortsæt med at læse via din mobilenhed <ph name="TITLE" /></translation>
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="3889424535448813030">Højrepil</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{For 1 måned siden}one{For # måned siden}other{For # måneder siden}}</translation>
 <translation id="4289300219472526559">Start indtaling</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> blev flyttet til mappen <ph name="FOLDER_NAME" />.</translation>
+<translation id="4306392492252714209">Fjern fra udklipsholder.</translation>
 <translation id="4316910396681052118">ALLE APPS</translation>
 <translation id="4491109536499578614">Billede</translation>
 <translation id="4588090240171750605">Scroll til højre</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">Vil du slette denne søgning fra historikken?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
+<translation id="7620655452534002301">Fjernet.</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7781829728241885113">I går</translation>
 <translation id="7814458197256864873">&amp;Kopier</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{for 1 time siden}one{for # time siden}other{for # timer siden}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sek. tilbage}one{# sek. tilbage}other{# sek. tilbage}}</translation>
 <translation id="8134065097954893699">Genindlæs siden</translation>
-<translation id="8144660977431427332">Dine søgninger leveres af Google Assistent. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, autofuldfør</translation>
 <translation id="815598010540052116">Scroll Down</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Side ned</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">Tab</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, app</translation>
 <translation id="8259556432390118667">Hex-farveværdi</translation>

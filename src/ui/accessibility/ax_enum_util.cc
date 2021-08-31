@@ -338,10 +338,6 @@ const char* ToString(ax::mojom::Role role) {
       return "iframe";
     case ax::mojom::Role::kIframePresentational:
       return "iframePresentational";
-    case ax::mojom::Role::kIgnored:
-      return "ignored";
-    case ax::mojom::Role::kImageMap:
-      return "imageMap";
     case ax::mojom::Role::kImage:
       return "image";
     case ax::mojom::Role::kImeCandidate:
@@ -414,6 +410,8 @@ const char* ToString(ax::mojom::Role role) {
       return "paragraph";
     case ax::mojom::Role::kPdfActionableHighlight:
       return "pdfActionableHighlight";
+    case ax::mojom::Role::kPdfRoot:
+      return "pdfRoot";
     case ax::mojom::Role::kPluginObject:
       return "pluginObject";
     case ax::mojom::Role::kPopUpButton:
@@ -422,8 +420,6 @@ const char* ToString(ax::mojom::Role role) {
       return "portal";
     case ax::mojom::Role::kPre:
       return "pre";
-    case ax::mojom::Role::kPresentational:
-      return "presentational";
     case ax::mojom::Role::kProgressIndicator:
       return "progressIndicator";
     case ax::mojom::Role::kRadioButton:
@@ -462,8 +458,6 @@ const char* ToString(ax::mojom::Role role) {
       return "searchBox";
     case ax::mojom::Role::kSlider:
       return "slider";
-    case ax::mojom::Role::kSliderThumb:
-      return "sliderThumb";
     case ax::mojom::Role::kSpinButton:
       return "spinButton";
     case ax::mojom::Role::kSplitter:
@@ -512,8 +506,6 @@ const char* ToString(ax::mojom::Role role) {
       return "tooltip";
     case ax::mojom::Role::kVideo:
       return "video";
-    case ax::mojom::Role::kWebArea:
-      return "webArea";
     case ax::mojom::Role::kWebView:
       return "webView";
     case ax::mojom::Role::kWindow:
@@ -762,6 +754,8 @@ const char* ToString(ax::mojom::StringAttribute string_attribute) {
       return "checkedStateDescription";
     case ax::mojom::StringAttribute::kChildTreeId:
       return "childTreeId";
+    case ax::mojom::StringAttribute::kChildTreeNodeAppId:
+      return "childTreeNodeAppId";
     case ax::mojom::StringAttribute::kClassName:
       return "className";
     case ax::mojom::StringAttribute::kContainerLiveRelevant:
@@ -794,6 +788,8 @@ const char* ToString(ax::mojom::StringAttribute string_attribute) {
       return "liveRelevant";
     case ax::mojom::StringAttribute::kLiveStatus:
       return "liveStatus";
+    case ax::mojom::StringAttribute::kAppId:
+      return "appId";
     case ax::mojom::StringAttribute::kPlaceholder:
       return "placeholder";
     case ax::mojom::StringAttribute::kRole:
@@ -806,6 +802,8 @@ const char* ToString(ax::mojom::StringAttribute string_attribute) {
       return "url";
     case ax::mojom::StringAttribute::kValue:
       return "value";
+    case ax::mojom::StringAttribute::kVirtualContent:
+      return "virtualContent";
   }
 
   return "";
@@ -969,8 +967,8 @@ const char* ToString(ax::mojom::BoolAttribute bool_attribute) {
       return "none";
     case ax::mojom::BoolAttribute::kBusy:
       return "busy";
-    case ax::mojom::BoolAttribute::kEditableRoot:
-      return "editableRoot";
+    case ax::mojom::BoolAttribute::kContentEditableRoot:
+      return "contentEditableRoot";
     case ax::mojom::BoolAttribute::kContainerLiveAtomic:
       return "containerLiveAtomic";
     case ax::mojom::BoolAttribute::kContainerLiveBusy:
@@ -1005,6 +1003,8 @@ const char* ToString(ax::mojom::BoolAttribute bool_attribute) {
       return "isPageBreakingObject";
     case ax::mojom::BoolAttribute::kHasAriaAttribute:
       return "hasAriaAttribute";
+    case ax::mojom::BoolAttribute::kTouchPassthrough:
+      return "touchPassthrough";
   }
 
   return "";
@@ -1373,8 +1373,6 @@ const char* ToString(ax::mojom::AriaCurrentState aria_current_state) {
       return "step";
     case ax::mojom::AriaCurrentState::kLocation:
       return "location";
-    case ax::mojom::AriaCurrentState::kUnclippedLocation:
-      return "unclippedLocation";
     case ax::mojom::AriaCurrentState::kDate:
       return "date";
     case ax::mojom::AriaCurrentState::kTime:
@@ -1496,14 +1494,18 @@ const char* ToString(ax::mojom::DescriptionFrom description_from) {
   switch (description_from) {
     case ax::mojom::DescriptionFrom::kNone:
       return "none";
-    case ax::mojom::DescriptionFrom::kUninitialized:
-      return "uninitialized";
-    case ax::mojom::DescriptionFrom::kAttribute:
-      return "attribute";
-    case ax::mojom::DescriptionFrom::kContents:
-      return "contents";
+    case ax::mojom::DescriptionFrom::kAriaDescription:
+      return "ariaDescription";
+    case ax::mojom::DescriptionFrom::kButtonLabel:
+      return "buttonLabel";
     case ax::mojom::DescriptionFrom::kRelatedElement:
       return "relatedElement";
+    case ax::mojom::DescriptionFrom::kRubyAnnotation:
+      return "rubyAnnotation";
+    case ax::mojom::DescriptionFrom::kSummary:
+      return "summary";
+    case ax::mojom::DescriptionFrom::kTableCaption:
+      return "tableCaption";
     case ax::mojom::DescriptionFrom::kTitle:
       return "title";
   }

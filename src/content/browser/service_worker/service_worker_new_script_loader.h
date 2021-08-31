@@ -19,6 +19,12 @@
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/gurl.h"
 
+namespace blink {
+
+class ThrottlingURLLoader;
+
+}  // namespace blink
+
 namespace content {
 
 class ServiceWorkerVersion;
@@ -66,8 +72,20 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
 
   enum class WriterState { kNotStarted, kWriting, kCompleted };
 
+  // If |is_throttle_needed| is true, the load will go through
+  // URLLoaderThrottles. Generally, all network requests need to go through
+  // throttles. It should be set to false only if this loader is being created
+  // after a request already went through throttles. Currently, this function
+  // has two callsites:
+  //
+  // - ServiceWorkerScriptLoaderFactory: in response to a request from the
+  // renderer. |is_throttle_needed| is false because the renderer is assumed to
+  // have already throttled the request. More precisely throttles should be set
+  // by ServiceWorkerFetchContextImpl::WillSendRequest.
+  // - ServiceWorkerNewScriptFetcher: directly in the browser process.
+  // |is_throttle_needed| is true because the request has not gone through
+  // throttles.
   static std::unique_ptr<ServiceWorkerNewScriptLoader> CreateAndStart(
-      int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& original_request,
@@ -75,7 +93,8 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
       scoped_refptr<ServiceWorkerVersion> version,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      int64_t cache_resource_id);
+      int64_t cache_resource_id,
+      bool is_throttle_needed);
 
   ~ServiceWorkerNewScriptLoader() override;
 
@@ -84,13 +103,14 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
       const std::vector<std::string>& removed_headers,
       const net::HttpRequestHeaders& modified_headers,
       const net::HttpRequestHeaders& modified_cors_exempt_headers,
-      const base::Optional<GURL>& new_url) override;
+      const absl::optional<GURL>& new_url) override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
   void PauseReadingBodyFromNet() override;
   void ResumeReadingBodyFromNet() override;
 
   // network::mojom::URLLoaderClient for the network load:
+  void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override;
   void OnReceiveResponse(
       network::mojom::URLResponseHeadPtr response_head) override;
   void OnReceiveRedirect(
@@ -112,7 +132,6 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
   class WrappedIOBuffer;
 
   ServiceWorkerNewScriptLoader(
-      int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& original_request,
@@ -120,7 +139,8 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
       scoped_refptr<ServiceWorkerVersion> version,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      int64_t cache_resource_id);
+      int64_t cache_resource_id,
+      bool is_throttle_needed);
 
   // Writes the given headers into the service worker script storage.
   void WriteHeaders(network::mojom::URLResponseHeadPtr response_head);
@@ -160,10 +180,7 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
 
   const GURL request_url_;
 
-  // This is network::mojom::RequestDestination::kServiceWorker for the
-  // main script or network::mojom::RequestDestination::kScript for
-  // an imported script.
-  const network::mojom::RequestDestination resource_destination_;
+  const bool is_main_script_;
 
   // Load options originally passed to this loader. The options passed to the
   // network loader might be different from this.
@@ -173,12 +190,13 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
 
   std::unique_ptr<ServiceWorkerCacheWriter> cache_writer_;
 
-  // Used for fetching the script from network (or other loaders like extensions
-  // sometimes).
-  mojo::Remote<network::mojom::URLLoader> network_loader_;
+  // Used for fetching the script from the network (or other sources like
+  // extensions for example). Depending on where the
+  // ServiceWorkerNewScriptLoader is started from, and depending on the
+  // constructor's |is_throttle_needed| parameter, this might or might not
+  // have throttles. See CreateAndStart() for details.
+  std::unique_ptr<blink::ThrottlingURLLoader> network_loader_;
 
-  mojo::Receiver<network::mojom::URLLoaderClient> network_client_receiver_{
-      this};
   mojo::ScopedDataPipeConsumerHandle network_consumer_;
   mojo::SimpleWatcher network_watcher_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;

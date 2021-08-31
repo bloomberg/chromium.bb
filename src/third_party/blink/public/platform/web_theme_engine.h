@@ -31,9 +31,9 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_THEME_ENGINE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_THEME_ENGINE_H_
 
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/css/forced_colors.h"
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-shared.h"
 #include "third_party/blink/public/platform/web_scrollbar_overlay_color_theme.h"
@@ -127,6 +127,7 @@ class WebThemeEngine {
     SkColor background_color;
     bool has_border;
     bool auto_complete_active;
+    float zoom;
   };
 
   // Extra parameters for PartMenuList
@@ -139,6 +140,7 @@ class WebThemeEngine {
     SkColor arrow_color;
     SkColor background_color;
     bool fill_content_area;
+    float zoom;
   };
 
   // Extra parameters for PartSliderTrack and PartSliderThumb
@@ -164,6 +166,7 @@ class WebThemeEngine {
     int value_rect_y;
     int value_rect_width;
     int value_rect_height;
+    float zoom;
   };
 
   // Extra parameters for scrollbar thumb. Used only for overlay scrollbars.
@@ -223,6 +226,8 @@ class WebThemeEngine {
   struct ScrollbarStyle {
     int thumb_thickness;
     int scrollbar_margin;
+    int thumb_thickness_thin;
+    int scrollbar_margin_thin;
     SkColor color;
     base::TimeDelta fade_out_delay;
     base::TimeDelta fade_out_duration;
@@ -241,16 +246,18 @@ class WebThemeEngine {
   }
 
   // Paint the given the given theme part.
-  virtual void Paint(cc::PaintCanvas*,
-                     Part,
-                     State,
-                     const gfx::Rect&,
-                     const ExtraParams*,
-                     blink::mojom::ColorScheme) {}
+  virtual void Paint(
+      cc::PaintCanvas*,
+      Part,
+      State,
+      const gfx::Rect&,
+      const ExtraParams*,
+      blink::mojom::ColorScheme,
+      const absl::optional<SkColor>& accent_color = absl::nullopt) {}
 
-  virtual base::Optional<SkColor> GetSystemColor(
+  virtual absl::optional<SkColor> GetSystemColor(
       SystemThemeColor system_theme) const {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   virtual ForcedColors GetForcedColors() const { return ForcedColors::kNone; }
@@ -259,4 +266,4 @@ class WebThemeEngine {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_THEME_ENGINE_H_

@@ -38,7 +38,7 @@ struct VIEWS_EXPORT MenuConfig {
   // Returns whether |item_view| should show accelerator text. If so, returns
   // the text to show.
   bool ShouldShowAcceleratorText(const MenuItemView* item_view,
-                                 base::string16* text) const;
+                                 std::u16string* text) const;
 
   // Font list used by menus.
   gfx::FontList font_list;
@@ -167,16 +167,16 @@ struct VIEWS_EXPORT MenuConfig {
 
   // Radius of the rounded corners of the menu border. Must be >= 0.
   int corner_radius =
-      LayoutProvider::Get()->GetCornerRadiusMetric(EMPHASIS_NONE);
+      LayoutProvider::Get()->GetCornerRadiusMetric(Emphasis::kNone);
 
   // Radius of "auxiliary" rounded corners - comboboxes and context menus.
   // Must be >= 0.
   int auxiliary_corner_radius =
-      LayoutProvider::Get()->GetCornerRadiusMetric(EMPHASIS_NONE);
+      LayoutProvider::Get()->GetCornerRadiusMetric(Emphasis::kNone);
 
   // Radius of the rounded corners of the touchable menu border
   int touchable_corner_radius =
-      LayoutProvider::Get()->GetCornerRadiusMetric(EMPHASIS_HIGH);
+      LayoutProvider::Get()->GetCornerRadiusMetric(Emphasis::kHigh);
 
   // Anchor offset for touchable menus created by a touch event.
   int touchable_anchor_offset = 8;
@@ -184,8 +184,11 @@ struct VIEWS_EXPORT MenuConfig {
   // Height of child MenuItemViews for touchable menus.
   int touchable_menu_height = 36;
 
-  // Width of touchable menus.
-  int touchable_menu_width = 256;
+  // Minimum width of touchable menus.
+  int touchable_menu_min_width = 256;
+
+  // Maximum width of touchable menus.
+  int touchable_menu_max_width = 352;
 
   // Shadow elevation of touchable menus.
   int touchable_menu_shadow_elevation = 12;

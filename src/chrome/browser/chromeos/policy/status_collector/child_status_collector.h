@@ -16,14 +16,14 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_report_interface.h"
-#include "chrome/browser/chromeos/child_accounts/usage_time_state_notifier.h"
+#include "chrome/browser/ash/child_accounts/time_limits/app_activity_report_interface.h"
+#include "chrome/browser/ash/child_accounts/usage_time_state_notifier.h"
 #include "chrome/browser/chromeos/policy/status_collector/status_collector.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -45,19 +45,8 @@ class ChildStatusCollectorState;
 // itself (e.g. OS version). Doesn't include anything related to other users on
 // the device.
 class ChildStatusCollector : public StatusCollector,
-                             public chromeos::UsageTimeStateNotifier::Observer {
+                             public ash::UsageTimeStateNotifier::Observer {
  public:
-  // Passed into asynchronous mojo interface for communicating with Android.
-  using AndroidStatusReceiver =
-      base::Callback<void(const std::string&, const std::string&)>;
-
-  // Calls the reporting mojo interface, passing over the AndroidStatusReceiver.
-  // Returns false if the mojo interface isn't available, in which case no
-  // asynchronous query is emitted and the android status query fails
-  // synchronously. The |AndroidStatusReceiver| is not called in this case.
-  using AndroidStatusFetcher =
-      base::Callback<bool(const AndroidStatusReceiver&)>;
-
   // Constructor. Callers can inject their own *Fetcher callbacks, e.g. for unit
   // testing. A null callback can be passed for any *Fetcher parameter, to use
   // the default implementation. These callbacks are always executed on Blocking
@@ -73,7 +62,7 @@ class ChildStatusCollector : public StatusCollector,
   ~ChildStatusCollector() override;
 
   // StatusCollector:
-  void GetStatusAsync(const StatusCollectorCallback& response) override;
+  void GetStatusAsync(StatusCollectorCallback response) override;
   void OnSubmittedSuccessfully() override;
   bool ShouldReportActivityTimes() const override;
   bool ShouldReportNetworkInterfaces() const override;
@@ -86,10 +75,13 @@ class ChildStatusCollector : public StatusCollector,
   // user logged in, it returns 0.
   base::TimeDelta GetActiveChildScreenTime();
 
+  static const char* GetReportSizeHistogramNameForTest();
+  static const char* GetTimeSinceLastReportHistogramNameForTest();
+
  protected:
-  // chromeos::UsageTimeStateNotifier::Observer:
+  // ash::UsageTimeStateNotifier::Observer:
   void OnUsageTimeStateChange(
-      chromeos::UsageTimeStateNotifier::UsageTimeState state) override;
+      ash::UsageTimeStateNotifier::UsageTimeState state) override;
 
   // Updates the child's active time.
   void UpdateChildUsageTime();
@@ -145,7 +137,7 @@ class ChildStatusCollector : public StatusCollector,
   int64_t last_reported_end_timestamp_ = 0;
 
   // The parameters associated with last app activity report.
-  base::Optional<chromeos::app_time::AppActivityReportInterface::ReportParams>
+  absl::optional<ash::app_time::AppActivityReportInterface::ReportParams>
       last_report_params_;
 
   base::RepeatingTimer update_child_usage_timer_;

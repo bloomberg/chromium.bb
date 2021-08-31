@@ -8,8 +8,10 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
+#include <vector>
 
-#include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "ui/display/display.h"
 #include "ui/events/base_event_utils.h"
@@ -47,12 +49,20 @@ constexpr char kPropertyKeyboardGroup[] = "_keyevent_kbd_group_";
 // Key used to store 'hardware key code' values in Event::Properties
 constexpr char kPropertyKeyboardHwKeyCode[] = "_keyevent_kbd_hw_keycode_";
 
-// IBus specific Event::Properties constants. ibus-gtk in async mode uses
-// gtk-specific XKeyEvent::state bits 24 and 25 for its key events.
+// Event::Properties constants for IBus-GTK and fcitx-GTK.
+// Both of them in async mode use gtk-specific XKeyEvent::state bits 24 and 25.
+// 24 is handled and 25 is ignored.
+// Note that they use more bits, but Chrome does not handle it now.
+// cf)
+// https://github.com/ibus/ibus/blob/dd4cc5b028c35f9bb8fa9d3bdc8f26bcdfc43d40/src/ibustypes.h#L88
+// https://github.com/fcitx/fcitx/blob/289b2f674d95651d4e0d0c77a48e3a2f0da40efe/src/lib/fcitx-utils/keysym.h#L47
 // https://mail.gnome.org/archives/gtk-devel-list/2013-June/msg00003.html
-constexpr char kPropertyKeyboardIBusFlag[] = "_keyevent_kbd_ibus_ime_flags_";
-constexpr unsigned int kPropertyKeyboardIBusFlagOffset = 24;
-constexpr unsigned int kPropertyKeyboardIBusFlagMask = 0x03;
+constexpr char kPropertyKeyboardImeFlag[] = "_keyevent_kbd_ime_flags_";
+constexpr unsigned int kPropertyKeyboardImeFlagOffset = 24;
+constexpr unsigned int kPropertyKeyboardImeFlagMask = 0x03;
+// Ignored is the 25-th bit.
+constexpr unsigned int kPropertyKeyboardImeIgnoredFlag =
+    1 << (25 - kPropertyKeyboardImeFlagOffset);
 
 // Key used to store mouse event flag telling ET_MOUSE_EXITED must actually be
 // interpreted as "crossing intermediate window" in blink context.
@@ -75,6 +85,15 @@ EVENTS_EXPORT int EventFlagsFromNative(const PlatformEvent& native_event);
 // same native event may return different values.
 EVENTS_EXPORT base::TimeTicks EventTimeFromNative(
     const PlatformEvent& native_event);
+
+// Get the timestamp to use for latency metrics from |native_event|.
+// |current_time| is a timestamp returned by EventTimeForNow which will be
+// compared to the |native_event| timestamp to calculate latency. This is
+// different from EventTimeFromNative because on some platforms (eg. Windows)
+// EventTimeFromNative returns a synthesized timestamp.
+EVENTS_EXPORT base::TimeTicks EventLatencyTimeFromNative(
+    const PlatformEvent& native_event,
+    base::TimeTicks current_time);
 
 // Get the location from a native event.  The coordinate system of the resultant
 // |Point| has the origin at top-left of the "root window".  The nature of
@@ -158,7 +177,25 @@ EVENTS_EXPORT display::Display::TouchSupport GetInternalDisplayTouchSupport();
 
 EVENTS_EXPORT void ComputeEventLatencyOS(const PlatformEvent& native_event);
 
+EVENTS_EXPORT void ComputeEventLatencyOS(ui::EventType type,
+                                         base::TimeTicks time_stamp,
+                                         base::TimeTicks current_time);
+
 #if defined(OS_WIN)
+// Like ComputeEventLatencyOS, but for events whose timestamp comes from a
+// TOUCHINPUT structure instead of PlatformEvent.
+EVENTS_EXPORT void ComputeEventLatencyOSFromTOUCHINPUT(
+    ui::EventType event_type,
+    TOUCHINPUT touch_input,
+    base::TimeTicks current_time);
+
+// Like ComputeEventLatencyOS, but for events whose timestamp comes from a
+// POINTER_INFO structure instead of PlatformEvent.
+EVENTS_EXPORT void ComputeEventLatencyOSFromPOINTER_INFO(
+    ui::EventType event_type,
+    POINTER_INFO pointer_info,
+    base::TimeTicks current_time);
+
 EVENTS_EXPORT int GetModifiersFromKeyState();
 
 // Returns true if |message| identifies a mouse event that was generated as the
@@ -189,9 +226,21 @@ EVENTS_EXPORT void ConvertEventLocationToTargetWindowLocation(
     const gfx::Point& current_window_origin,
     ui::LocatedEvent* located_event);
 
-// Returns a string description of an event type. Useful for debugging.
-EVENTS_EXPORT const char* EventTypeName(EventType type);
+// The following utilities are useful for debugging and tracing.
 
+// Returns a string description of an event type.
+EVENTS_EXPORT base::StringPiece EventTypeName(EventType type);
+
+// Returns a vector of string representations of EventFlags.
+EVENTS_EXPORT std::vector<base::StringPiece> EventFlagsNames(int event_flags);
+
+// Returns a a vector of string representations of KeyEventFlags.
+EVENTS_EXPORT std::vector<base::StringPiece> KeyEventFlagsNames(
+    int event_flags);
+
+// Returns a a vector of string representations of MouseEventFlags.
+EVENTS_EXPORT std::vector<base::StringPiece> MouseEventFlagsNames(
+    int event_flags);
 }  // namespace ui
 
 #endif  // UI_EVENTS_EVENT_UTILS_H_

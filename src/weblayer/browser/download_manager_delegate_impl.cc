@@ -5,7 +5,6 @@
 #include "weblayer/browser/download_manager_delegate_impl.h"
 
 #include "base/files/file_util.h"
-#include "base/optional.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
@@ -16,10 +15,11 @@
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "net/base/filename_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/browser_process.h"
-#include "weblayer/browser/download_impl.h"
 #include "weblayer/browser/download_manager_delegate_impl.h"
+#include "weblayer/browser/persistent_download.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/public/download_delegate.h"
@@ -90,7 +90,7 @@ bool DownloadManagerDelegateImpl::DetermineDownloadTarget(
         download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
         download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
         download::DownloadItem::MixedContentStatus::UNKNOWN,
-        item->GetForcedFilePath(), base::nullopt /*download_schedule*/,
+        item->GetForcedFilePath(), absl::nullopt /*download_schedule*/,
         download::DOWNLOAD_INTERRUPT_REASON_NONE);
     return true;
   }
@@ -123,6 +123,10 @@ bool DownloadManagerDelegateImpl::InterceptDownloadIfApplicable(
     int64_t content_length,
     bool is_transient,
     content::WebContents* web_contents) {
+  // Don't intercept transient downloads (such as Background Fetches).
+  if (is_transient)
+    return false;
+
   // If there's no DownloadDelegate, the download is simply dropped.
   auto* delegate = GetDelegate(web_contents);
   if (!delegate)
@@ -147,7 +151,7 @@ void DownloadManagerDelegateImpl::CheckDownloadAllowed(
     const content::WebContents::Getter& web_contents_getter,
     const GURL& url,
     const std::string& request_method,
-    base::Optional<url::Origin> request_initiator,
+    absl::optional<url::Origin> request_initiator,
     bool from_download_cross_origin_redirect,
     bool content_initiated,
     content::CheckDownloadAllowedCallback check_download_allowed_cb) {
@@ -167,10 +171,6 @@ void DownloadManagerDelegateImpl::CheckDownloadAllowed(
 void DownloadManagerDelegateImpl::OnDownloadCreated(
     content::DownloadManager* manager,
     download::DownloadItem* item) {
-  item->AddObserver(this);
-  // Create a DownloadImpl which will be owned by |item|.
-  DownloadImpl::Create(item);
-
   auto* local_state = BrowserProcess::GetInstance()->GetLocalState();
   int next_id = local_state->GetInteger(kDownloadNextIDPref);
   if (item->GetId() >= static_cast<uint32_t>(next_id)) {
@@ -182,16 +182,26 @@ void DownloadManagerDelegateImpl::OnDownloadCreated(
     local_state->SetInteger(kDownloadNextIDPref, next_id);
   }
 
+  if (item->IsTransient())
+    return;
+
+  // As per the documentation in DownloadItem, transient items should not
+  // be shown in the UI. (Note that they may be surface by other means,
+  // such as through the BackgroundFetch system.)
+  item->AddObserver(this);
+  // Create a PersistentDownload which will be owned by |item|.
+  PersistentDownload::Create(item);
+
   if (item->GetLastReason() == download::DOWNLOAD_INTERRUPT_REASON_CRASH &&
       item->CanResume() &&
       // Don't automatically resume downloads which were previously paused.
       !item->IsPaused()) {
-    DownloadImpl::Get(item)->Resume();
+    PersistentDownload::Get(item)->Resume();
   }
 
   auto* delegate = GetDelegate(item);
   if (delegate)
-    delegate->DownloadStarted(DownloadImpl::Get(item));
+    delegate->DownloadStarted(PersistentDownload::Get(item));
 }
 
 void DownloadManagerDelegateImpl::OnDownloadDropped(
@@ -227,9 +237,9 @@ void DownloadManagerDelegateImpl::OnDownloadUpdated(
     item->RemoveObserver(this);
 
     if (item->GetState() == download::DownloadItem::COMPLETE)
-      delegate->DownloadCompleted(DownloadImpl::Get(item));
+      delegate->DownloadCompleted(PersistentDownload::Get(item));
     else
-      delegate->DownloadFailed(DownloadImpl::Get(item));
+      delegate->DownloadFailed(PersistentDownload::Get(item));
 
     // Needs to happen asynchronously to avoid nested observer calls.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
@@ -240,7 +250,7 @@ void DownloadManagerDelegateImpl::OnDownloadUpdated(
   }
 
   if (delegate)
-    delegate->DownloadProgressChanged(DownloadImpl::Get(item));
+    delegate->DownloadProgressChanged(PersistentDownload::Get(item));
 }
 
 void DownloadManagerDelegateImpl::OnDownloadPathGenerated(
@@ -252,7 +262,7 @@ void DownloadManagerDelegateImpl::OnDownloadPathGenerated(
       download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
       download::DownloadItem::MixedContentStatus::UNKNOWN,
       suggested_path.AddExtension(FILE_PATH_LITERAL(".crdownload")),
-      base::nullopt /*download_schedule*/,
+      absl::nullopt /*download_schedule*/,
       download::DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 

@@ -47,7 +47,7 @@ same specification, which will cause the remainder of systems to update.
 ### Bundles
 
 Git and Python bundle construction is documented in
-[infra packaging](https://chromium.googlesource.com/infra/infra/+/master/doc/packaging/).
+[infra packaging](https://chromium.googlesource.com/infra/infra/+/HEAD/doc/packaging/).
 
 Note that in order for the update to take effect, `gclient` currently needs to
 run twice. The first time it will update the `depot_tools` repo, and the second

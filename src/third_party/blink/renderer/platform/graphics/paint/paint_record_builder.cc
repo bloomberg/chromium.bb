@@ -4,38 +4,23 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
-
 namespace blink {
 
-PaintRecordBuilder::PaintRecordBuilder(
-    printing::MetafileSkia* metafile,
-    GraphicsContext* containing_context,
-    PaintController* paint_controller,
-    paint_preview::PaintPreviewTracker* tracker)
-    : paint_controller_(nullptr) {
-  if (paint_controller) {
-    paint_controller_ = paint_controller;
-  } else {
-    own_paint_controller_ =
-        std::make_unique<PaintController>(PaintController::kTransient);
-    paint_controller_ = own_paint_controller_.get();
-  }
-
+PaintRecordBuilder::PaintRecordBuilder()
+    : own_paint_controller_(absl::in_place, PaintController::kTransient),
+      paint_controller_(&own_paint_controller_.value()),
+      context_(*paint_controller_) {
   paint_controller_->UpdateCurrentPaintChunkProperties(
       nullptr, PropertyTreeState::Root());
-
-  context_ =
-      std::make_unique<GraphicsContext>(*paint_controller_, metafile, tracker);
-  if (containing_context) {
-    context_->SetDarkModeEnabled(containing_context->IsDarkModeEnabled());
-    context_->SetDeviceScaleFactor(containing_context->DeviceScaleFactor());
-    context_->SetPrinting(containing_context->Printing());
-    context_->SetIsPaintingPreview(containing_context->IsPaintingPreview());
-  }
 }
+
+PaintRecordBuilder::PaintRecordBuilder(GraphicsContext& containing_context)
+    : PaintRecordBuilder() {
+  context_.CopyConfigFrom(containing_context);
+}
+
+PaintRecordBuilder::PaintRecordBuilder(PaintController& paint_controller)
+    : paint_controller_(&paint_controller), context_(*paint_controller_) {}
 
 PaintRecordBuilder::~PaintRecordBuilder() = default;
 

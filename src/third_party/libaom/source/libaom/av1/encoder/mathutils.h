@@ -114,7 +114,7 @@ static INLINE void multiply_mat(const double *m1, const double *m2, double *res,
 // svdcmp
 // Adopted from Numerical Recipes in C
 
-static INLINE double sign(double a, double b) {
+static INLINE double apply_sign(double a, double b) {
   return ((b) >= 0 ? fabs(a) : -fabs(a));
 }
 
@@ -150,7 +150,7 @@ static INLINE int svdcmp(double **u, int m, int n, double w[], double **v) {
           s += u[k][i] * u[k][i];
         }
         f = u[i][i];
-        g = -sign(sqrt(s), f);
+        g = -apply_sign(sqrt(s), f);
         h = f * g - s;
         u[i][i] = f - g;
         for (j = l; j < n; j++) {
@@ -171,7 +171,7 @@ static INLINE int svdcmp(double **u, int m, int n, double w[], double **v) {
           s += u[i][k] * u[i][k];
         }
         f = u[i][l];
-        g = -sign(sqrt(s), f);
+        g = -apply_sign(sqrt(s), f);
         h = f * g - s;
         u[i][l] = f - g;
         for (k = l; k < n; k++) rv1[k] = u[i][k] / h;
@@ -269,7 +269,7 @@ static INLINE int svdcmp(double **u, int m, int n, double w[], double **v) {
       h = rv1[k];
       f = ((y - z) * (y + z) + (g - h) * (g + h)) / (2.0 * h * y);
       g = pythag(f, 1.0);
-      f = ((x - z) * (x + z) + h * ((y / (f + sign(g, f))) - h)) / x;
+      f = ((x - z) * (x + z) + h * ((y / (f + apply_sign(g, f))) - h)) / x;
       c = s = 1.0;
       for (j = l; j <= nm; j++) {
         i = j + 1;
