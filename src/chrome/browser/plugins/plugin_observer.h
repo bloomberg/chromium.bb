@@ -11,16 +11,16 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/plugin.mojom.h"
-#include "components/component_updater/component_updater_service.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
-class InfoBarService;
+namespace infobars {
+class ContentInfoBarManager;
+}
 
 namespace content {
 class WebContents;
@@ -37,11 +37,11 @@ class PluginObserver : public content::WebContentsObserver,
                      base::ProcessId plugin_pid) override;
 
   // Public for tests only.
-  static void CreatePluginObserverInfoBar(InfoBarService* infobar_service,
-                                          const base::string16& plugin_name);
+  static void CreatePluginObserverInfoBar(
+      infobars::ContentInfoBarManager* infobar_manager,
+      const std::u16string& plugin_name);
 
  private:
-  class ComponentObserver;
   class PluginPlaceholderHost;
   friend class content::WebContentsUserData<PluginObserver>;
 
@@ -51,23 +51,15 @@ class PluginObserver : public content::WebContentsObserver,
   void BlockedOutdatedPlugin(
       mojo::PendingRemote<chrome::mojom::PluginRenderer> plugin_renderer,
       const std::string& identifier) override;
-  void BlockedComponentUpdatedPlugin(
-      mojo::PendingRemote<chrome::mojom::PluginRenderer> plugin_renderer,
-      const std::string& identifier) override;
   void ShowFlashPermissionBubble() override;
   void CouldNotLoadPlugin(const base::FilePath& plugin_path) override;
   void OpenPDF(const GURL& url) override;
 
   void RemovePluginPlaceholderHost(PluginPlaceholderHost* placeholder);
-  void RemoveComponentObserver(ComponentObserver* component_observer);
 
   // Stores all PluginPlaceholderHosts, keyed by memory address.
   std::map<PluginPlaceholderHost*, std::unique_ptr<PluginPlaceholderHost>>
       plugin_placeholders_;
-
-  // Stores all ComponentObservers, keyed by memory address.
-  std::map<ComponentObserver*, std::unique_ptr<ComponentObserver>>
-      component_observers_;
 
   content::WebContentsFrameReceiverSet<chrome::mojom::PluginHost>
       plugin_host_receivers_;

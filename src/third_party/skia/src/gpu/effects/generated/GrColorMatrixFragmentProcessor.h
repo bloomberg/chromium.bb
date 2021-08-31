@@ -49,9 +49,22 @@ public:
                                                      bool unpremulInput,
                                                      bool clampRGBOutput,
                                                      bool premulOutput) {
-        SkM44 m44(matrix[0], matrix[1], matrix[2], matrix[3], matrix[5], matrix[6], matrix[7],
-                  matrix[8], matrix[10], matrix[11], matrix[12], matrix[13], matrix[15], matrix[16],
-                  matrix[17], matrix[18]);
+        SkM44 m44(matrix[0],
+                  matrix[1],
+                  matrix[2],
+                  matrix[3],
+                  matrix[5],
+                  matrix[6],
+                  matrix[7],
+                  matrix[8],
+                  matrix[10],
+                  matrix[11],
+                  matrix[12],
+                  matrix[13],
+                  matrix[15],
+                  matrix[16],
+                  matrix[17],
+                  matrix[18]);
         SkV4 v4 = {matrix[4], matrix[9], matrix[14], matrix[19]};
         return std::unique_ptr<GrFragmentProcessor>(new GrColorMatrixFragmentProcessor(
                 std::move(inputFP), m44, v4, unpremulInput, clampRGBOutput, premulOutput));
@@ -59,7 +72,6 @@ public:
     GrColorMatrixFragmentProcessor(const GrColorMatrixFragmentProcessor& src);
     std::unique_ptr<GrFragmentProcessor> clone() const override;
     const char* name() const override { return "ColorMatrixFragmentProcessor"; }
-    bool usesExplicitReturn() const override;
     SkM44 m;
     SkV4 v;
     bool unpremulInput;
@@ -74,8 +86,7 @@ private:
                                    bool clampRGBOutput,
                                    bool premulOutput)
             : INHERITED(kGrColorMatrixFragmentProcessor_ClassID,
-                        (OptimizationFlags)(inputFP ? ProcessorOptimizationFlags(inputFP.get())
-                                                    : kAll_OptimizationFlags) &
+                        (OptimizationFlags)ProcessorOptimizationFlags(inputFP.get()) &
                                 kConstantOutputForConstantInput_OptimizationFlag)
             , m(m)
             , v(v)
@@ -84,7 +95,7 @@ private:
             , premulOutput(premulOutput) {
         this->registerChild(std::move(inputFP), SkSL::SampleUsage::PassThrough());
     }
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
     void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
     bool onIsEqual(const GrFragmentProcessor&) const override;
 #if GR_TEST_UTILS

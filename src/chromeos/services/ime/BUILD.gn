@@ -26,7 +26,6 @@ source_set("decoder") {
   deps = [
     ":constants",
     "//base",
-    "//chromeos/constants",
     "//chromeos/services/ime/public/cpp:buildflags",
     "//chromeos/services/ime/public/cpp/shared_lib:interfaces",
   ]
@@ -36,8 +35,6 @@ source_set("lib") {
   sources = [
     "decoder/decoder_engine.cc",
     "decoder/decoder_engine.h",
-    "decoder/downloader_impl.cc",
-    "decoder/downloader_impl.h",
     "decoder/proto_conversion.cc",
     "decoder/proto_conversion.h",
     "decoder/system_engine.cc",
@@ -51,8 +48,8 @@ source_set("lib") {
   deps = [
     ":constants",
     ":decoder",
+    "//ash/constants",
     "//base",
-    "//chromeos/constants",
     "//chromeos/services/ime/public/cpp:buildflags",
     "//chromeos/services/ime/public/cpp:rulebased",
     "//chromeos/services/ime/public/cpp/shared_lib:interfaces",
@@ -86,9 +83,10 @@ source_set("services_unittests") {
   testonly = true
   deps = [
     ":lib",
+    ":test_support",
+    "//ash/constants",
     "//base",
     "//base/test:test_support",
-    "//chromeos/constants:constants",
     "//chromeos/services/ime/public/mojom",
     "//chromeos/services/ime/public/proto:messages_proto",
     "//mojo/public/cpp/bindings",
@@ -100,7 +98,17 @@ source_set("services_unittests") {
     "decoder/proto_conversion_unittest.cc",
     "decoder/system_engine_unittest.cc",
     "ime_service_unittest.cc",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+  sources = [
     "mock_input_channel.cc",
     "mock_input_channel.h",
+  ]
+  deps = [
+    "//chromeos/services/ime/public/mojom",
+    "//testing/gmock",
   ]
 }

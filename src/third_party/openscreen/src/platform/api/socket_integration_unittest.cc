@@ -19,12 +19,12 @@ TEST(SocketIntegrationTest, ResolvesLocalEndpoint_IPv4) {
   const uint8_t kIpV4AddrAny[4] = {};
   FakeClock clock(Clock::now());
   FakeTaskRunner task_runner(&clock);
-  FakeUdpSocket::MockClient client;
+  testing::StrictMock<FakeUdpSocket::MockClient> client;
   ErrorOr<std::unique_ptr<UdpSocket>> create_result = UdpSocket::Create(
       &task_runner, &client, IPEndpoint{IPAddress(kIpV4AddrAny), 0});
   ASSERT_TRUE(create_result) << create_result.error();
   const auto socket = std::move(create_result.value());
-  EXPECT_CALL(client, OnError(_, _)).Times(0);
+  EXPECT_CALL(client, OnBound(_)).Times(1);
   socket->Bind();
   const IPEndpoint local_endpoint = socket->GetLocalEndpoint();
   EXPECT_NE(local_endpoint.port, 0) << local_endpoint;
@@ -37,12 +37,12 @@ TEST(SocketIntegrationTest, ResolvesLocalEndpoint_IPv6) {
   const uint16_t kIpV6AddrAny[8] = {};
   FakeClock clock(Clock::now());
   FakeTaskRunner task_runner(&clock);
-  FakeUdpSocket::MockClient client;
+  testing::StrictMock<FakeUdpSocket::MockClient> client;
   ErrorOr<std::unique_ptr<UdpSocket>> create_result = UdpSocket::Create(
       &task_runner, &client, IPEndpoint{IPAddress(kIpV6AddrAny), 0});
   ASSERT_TRUE(create_result) << create_result.error();
   const auto socket = std::move(create_result.value());
-  EXPECT_CALL(client, OnError(_, _)).Times(0);
+  EXPECT_CALL(client, OnBound(_)).Times(1);
   socket->Bind();
   const IPEndpoint local_endpoint = socket->GetLocalEndpoint();
   EXPECT_NE(local_endpoint.port, 0) << local_endpoint;

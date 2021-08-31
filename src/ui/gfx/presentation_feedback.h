@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_PRESENTAION_FEEDBACK_H_
-#define UI_GFX_PRESENTAION_FEEDBACK_H_
+#ifndef UI_GFX_PRESENTATION_FEEDBACK_H_
+#define UI_GFX_PRESENTATION_FEEDBACK_H_
 
 #include <stdint.h>
 
@@ -82,6 +82,10 @@ struct PresentationFeedback {
   // next rendering update. On Android this corresponds to the SurfaceFlinger
   // latch time.
   base::TimeTicks latch_timestamp;
+
+  // The time when write operations have completed, corresponding to the time
+  // when rendering on the GPU finished.
+  base::TimeTicks writes_done_timestamp;
 };
 
 inline bool operator==(const PresentationFeedback& lhs,
@@ -90,7 +94,8 @@ inline bool operator==(const PresentationFeedback& lhs,
          lhs.flags == rhs.flags &&
          lhs.available_timestamp == rhs.available_timestamp &&
          lhs.ready_timestamp == rhs.ready_timestamp &&
-         lhs.latch_timestamp == rhs.latch_timestamp;
+         lhs.latch_timestamp == rhs.latch_timestamp &&
+         lhs.writes_done_timestamp == rhs.writes_done_timestamp;
 }
 
 inline bool operator!=(const PresentationFeedback& lhs,
@@ -100,4 +105,4 @@ inline bool operator!=(const PresentationFeedback& lhs,
 
 }  // namespace gfx
 
-#endif  // UI_GFX_PRESENTAION_FEEDBACK_H_
+#endif  // UI_GFX_PRESENTATION_FEEDBACK_H_

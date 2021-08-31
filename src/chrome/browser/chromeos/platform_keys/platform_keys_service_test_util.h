@@ -13,10 +13,10 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace platform_keys {
@@ -38,11 +38,11 @@ class ExecutionWaiter {
 
   // Returns the callback to be passed to the PlatformKeysService operation
   // invocation.
-  base::RepeatingCallback<void(ResultCallbackArgs... result_callback_args,
-                               Status status)>
+  base::OnceCallback<void(ResultCallbackArgs... result_callback_args,
+                          Status status)>
   GetCallback() {
-    return base::BindRepeating(&ExecutionWaiter::OnExecutionDone,
-                               weak_ptr_factory_.GetWeakPtr());
+    return base::BindOnce(&ExecutionWaiter::OnExecutionDone,
+                          weak_ptr_factory_.GetWeakPtr());
   }
 
   // Waits until the callback returned by GetCallback() has been called.
@@ -144,12 +144,12 @@ class SetAttributeForKeyExecutionWaiter : public ExecutionWaiter<> {
 // Supports waiting for the result of the
 // PlatformKeysService::GetAttributeForKey.
 class GetAttributeForKeyExecutionWaiter
-    : public ExecutionWaiter<const base::Optional<std::string>&> {
+    : public ExecutionWaiter<const absl::optional<std::string>&> {
  public:
   GetAttributeForKeyExecutionWaiter();
   ~GetAttributeForKeyExecutionWaiter();
 
-  const base::Optional<std::string>& attribute_value() const {
+  const absl::optional<std::string>& attribute_value() const {
     return std::get<0>(result_callback_args());
   }
 };
@@ -173,12 +173,12 @@ class GetAllKeysExecutionWaiter
 };
 
 class IsKeyOnTokenExecutionWaiter
-    : public ExecutionWaiter<base::Optional<bool>> {
+    : public ExecutionWaiter<absl::optional<bool>> {
  public:
   IsKeyOnTokenExecutionWaiter();
   ~IsKeyOnTokenExecutionWaiter();
 
-  base::Optional<bool> on_slot() const {
+  absl::optional<bool> on_slot() const {
     return std::get<0>(result_callback_args());
   }
 };

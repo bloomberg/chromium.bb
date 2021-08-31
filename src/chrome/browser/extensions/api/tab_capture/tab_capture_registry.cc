@@ -122,7 +122,8 @@ class TabCaptureRegistry::LiveRequest : public content::WebContentsObserver {
 TabCaptureRegistry::TabCaptureRegistry(content::BrowserContext* context)
     : browser_context_(context) {
   MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
-  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
+  extension_registry_observation_.Observe(
+      ExtensionRegistry::Get(browser_context_));
 }
 
 TabCaptureRegistry::~TabCaptureRegistry() {
@@ -296,7 +297,7 @@ void TabCaptureRegistry::DispatchStatusChangeEvent(
   args->Append(info.ToValue());
   auto event = std::make_unique<Event>(events::TAB_CAPTURE_ON_STATUS_CHANGED,
                                        tab_capture::OnStatusChanged::kEventName,
-                                       std::move(args), browser_context_);
+                                       args->TakeList(), browser_context_);
 
   router->DispatchEventToExtension(request->extension_id(), std::move(event));
 }

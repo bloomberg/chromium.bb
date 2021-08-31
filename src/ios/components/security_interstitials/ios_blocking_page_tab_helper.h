@@ -5,7 +5,7 @@
 #ifndef IOS_COMPONENTS_SECURITY_INTERSTITIALS_IOS_BLOCKING_PAGE_TAB_HELPER_H_
 #define IOS_COMPONENTS_SECURITY_INTERSTITIALS_IOS_BLOCKING_PAGE_TAB_HELPER_H_
 
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "ios/components/security_interstitials/ios_security_interstitial_page.h"
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
@@ -74,7 +74,8 @@ class IOSBlockingPageTabHelper
     void WebStateDestroyed(web::WebState* web_state) override;
 
     IOSBlockingPageTabHelper* tab_helper_ = nullptr;
-    ScopedObserver<web::WebState, web::WebStateObserver> scoped_observer_{this};
+    base::ScopedObservation<web::WebState, web::WebStateObserver>
+        scoped_observation_{this};
   };
 
   // The navigation ID of the last committed navigation.  Used to associate
@@ -94,7 +95,7 @@ class IOSBlockingPageTabHelper
       blocking_page_for_currently_committed_navigation_;
 
   // Subscription for JS messages.
-  std::unique_ptr<web::WebState::ScriptCommandSubscription> subscription_;
+  base::CallbackListSubscription subscription_;
 
   // Helper object that notifies the tab helper of committed navigation IDs.
   CommittedNavigationIDListener navigation_id_listener_;

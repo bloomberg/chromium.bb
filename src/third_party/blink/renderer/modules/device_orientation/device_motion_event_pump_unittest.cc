@@ -10,8 +10,10 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/cpp/test/fake_sensor_and_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/platform_event_controller.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_data.h"
@@ -84,9 +86,7 @@ class DeviceMotionEventPumpTest : public testing::Test {
     auto* motion_pump =
         MakeGarbageCollected<DeviceMotionEventPump>(page_holder_->GetFrame());
     motion_pump->SetSensorProviderForTesting(
-        mojo::PendingRemote<device::mojom::blink::SensorProvider>(
-            sensor_provider.PassPipe(),
-            device::mojom::SensorProvider::Version_));
+        ToCrossVariantMojoType(std::move(sensor_provider)));
 
     controller_ = MakeGarbageCollected<MockDeviceMotionController>(
         motion_pump, *page_holder_->GetFrame().DomWindow());

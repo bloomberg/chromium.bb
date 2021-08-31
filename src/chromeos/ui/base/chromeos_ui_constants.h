@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_UI_BASE_CHROMEOS_UI_CONSTANTS_H_
 #define CHROMEOS_UI_BASE_CHROMEOS_UI_CONSTANTS_H_
 
+#include "build/chromeos_buildflags.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace chromeos {
@@ -22,6 +23,7 @@ constexpr int kResizeAreaCornerSize = 16;
 // "non-client" area and use it for resizing.
 constexpr int kResizeOutsideBoundsSize = 6;
 constexpr int kResizeOutsideBoundsScaleForTouch = 5;
+
 constexpr int kResizeInsideBoundsSize = 1;
 
 // The default frame color.

@@ -5,8 +5,8 @@
 #ifndef QUICHE_QUIC_QBONE_PLATFORM_IP_RANGE_H_
 #define QUICHE_QUIC_QBONE_PLATFORM_IP_RANGE_H_
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_ip_address.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "absl/strings/str_cat.h"
+#include "quic/platform/api/quic_ip_address.h"
 
 namespace quic {
 
@@ -29,7 +29,7 @@ class IpRange {
   // Returns the string representation of this object.
   std::string ToString() const {
     if (IsInitialized()) {
-      return quiche::QuicheStrCat(prefix_.ToString(), "/", prefix_length_);
+      return absl::StrCat(prefix_.ToString(), "/", prefix_length_);
     }
     return "(uninitialized)";
   }
@@ -39,7 +39,7 @@ class IpRange {
 
   // Returns the first available IP address in this IpRange. The resulting
   // address will be uninitialized if there is no available address.
-  QuicIpAddress FirstAddressInRange();
+  QuicIpAddress FirstAddressInRange() const;
 
   // The address family of this IpRange.
   IpAddressFamily address_family() const { return prefix_.address_family(); }

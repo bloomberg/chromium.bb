@@ -10,6 +10,11 @@ namespace permissions {
 
 PermissionRequest::PermissionRequest() {}
 
+bool PermissionRequest::IsDuplicateOf(PermissionRequest* other_request) const {
+  return GetRequestType() == other_request->GetRequestType() &&
+         GetOrigin() == other_request->GetOrigin();
+}
+
 PermissionRequestGestureType PermissionRequest::GetGestureType() const {
   return PermissionRequestGestureType::UNKNOWN;
 }
@@ -19,18 +24,8 @@ ContentSettingsType PermissionRequest::GetContentSettingsType() const {
 }
 
 #if !defined(OS_ANDROID)
-base::Optional<base::string16> PermissionRequest::GetChipText() const {
-  return base::nullopt;
-}
-#endif
-
-#if defined(OS_ANDROID)
-base::string16 PermissionRequest::GetQuietTitleText() const {
-  return base::string16();
-}
-
-base::string16 PermissionRequest::GetQuietMessageText() const {
-  return GetMessageText();
+absl::optional<std::u16string> PermissionRequest::GetChipText() const {
+  return absl::nullopt;
 }
 #endif
 

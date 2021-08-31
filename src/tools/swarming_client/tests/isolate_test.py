@@ -630,6 +630,7 @@ class IsolateLoad(IsolateBase):
     self.assertEqual(expected_saved_state, actual_saved_state)
     self.assertEqual([], os.listdir(self.isolated_dir))
 
+  @unittest.skipIf(sys.platform == 'win32', 'crbug.com/1148174')
   def test_root_dir_because_of_variable(self):
     # Ensures that load_isolate() works even when path variables have deep root
     # dirs. The end result is similar to touch_root.isolate, except that

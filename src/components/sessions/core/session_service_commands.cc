@@ -17,12 +17,7 @@
 #include "base/pickle.h"
 #include "base/token.h"
 #include "components/sessions/core/base_session_service_commands.h"
-#include "components/sessions/core/command_storage_manager_delegate.h"
-#include "components/sessions/core/session_command.h"
-#include "components/sessions/core/session_types.h"
 #include "components/tab_groups/tab_group_color.h"
-#include "components/tab_groups/tab_group_id.h"
-#include "components/tab_groups/tab_group_visual_data.h"
 
 namespace sessions {
 
@@ -72,6 +67,9 @@ static const SessionCommand::id_type kCommandSetTabGuid = 28;
 static const SessionCommand::id_type kCommandSetTabUserAgentOverride2 = 29;
 static const SessionCommand::id_type kCommandSetTabData = 30;
 static const SessionCommand::id_type kCommandSetWindowUserTitle = 31;
+static const SessionCommand::id_type kCommandSetWindowVisibleOnAllWorkspaces =
+    32;
+// ID 255 is used by CommandStorageBackend.
 
 namespace {
 
@@ -146,6 +144,11 @@ struct PinnedStatePayload {
 struct LastActiveTimePayload {
   SessionID::id_type tab_id;
   int64_t last_active_time;
+};
+
+struct VisibleOnAllWorkspacesPayload {
+  SessionID::id_type window_id;
+  bool visible_on_all_workspaces;
 };
 
 // Persisted versions of ui::WindowShowState that are written to disk and can
@@ -630,9 +633,9 @@ bool CreateTabsAndWindows(
         const base::Token token(payload.maybe_group.id_high,
                                 payload.maybe_group.id_low);
         session_tab->group =
-            payload.has_group ? base::make_optional(
+            payload.has_group ? absl::make_optional(
                                     tab_groups::TabGroupId::FromRawToken(token))
-                              : base::nullopt;
+                              : absl::nullopt;
         break;
       }
 
@@ -640,7 +643,7 @@ bool CreateTabsAndWindows(
         std::unique_ptr<base::Pickle> pickle = command->PayloadAsPickle();
         base::PickleIterator iter(*pickle);
 
-        base::Optional<base::Token> group_token = ReadTokenFromPickle(&iter);
+        absl::optional<base::Token> group_token = ReadTokenFromPickle(&iter);
         if (!group_token.has_value())
           return true;
 
@@ -648,7 +651,7 @@ bool CreateTabsAndWindows(
             tab_groups::TabGroupId::FromRawToken(group_token.value()),
             tab_groups);
 
-        base::string16 title;
+        std::u16string title;
         if (!iter.ReadString16(&title))
           return true;
 
@@ -712,14 +715,14 @@ bool CreateTabsAndWindows(
 
         SessionTab* tab = GetTab(tab_id, tabs);
         tab->user_agent_override.ua_string_override.swap(user_agent_override);
-        tab->user_agent_override.opaque_ua_metadata_override = base::nullopt;
+        tab->user_agent_override.opaque_ua_metadata_override = absl::nullopt;
         break;
       }
 
       case kCommandSetTabUserAgentOverride2: {
         SessionID tab_id = SessionID::InvalidValue();
         std::string user_agent_override;
-        base::Optional<std::string> opaque_ua_metadata_override;
+        absl::optional<std::string> opaque_ua_metadata_override;
         if (!RestoreSetTabUserAgentOverrideCommand2(
                 *command, &tab_id, &user_agent_override,
                 &opaque_ua_metadata_override)) {
@@ -782,6 +785,17 @@ bool CreateTabsAndWindows(
         }
         GetWindow(SessionID::FromSerializedValue(window_id), windows)
             ->workspace = workspace;
+        break;
+      }
+
+      case kCommandSetWindowVisibleOnAllWorkspaces: {
+        VisibleOnAllWorkspacesPayload payload;
+        if (!command->GetPayload(&payload, sizeof(payload))) {
+          DVLOG(1) << "Failed reading command " << command->id();
+          return true;
+        }
+        GetWindow(SessionID::FromSerializedValue(payload.window_id), windows)
+            ->visible_on_all_workspaces = payload.visible_on_all_workspaces;
         break;
       }
 
@@ -933,7 +947,7 @@ std::unique_ptr<SessionCommand> CreateSetWindowTypeCommand(
 
 std::unique_ptr<SessionCommand> CreateTabGroupCommand(
     const SessionID& tab_id,
-    base::Optional<tab_groups::TabGroupId> group) {
+    absl::optional<tab_groups::TabGroupId> group) {
   TabGroupPayload payload = {0};
   payload.tab_id = tab_id.id();
   if (group.has_value()) {
@@ -1000,6 +1014,16 @@ std::unique_ptr<SessionCommand> CreateSetWindowWorkspaceCommand(
   pickle.WriteInt(window_id.id());
   pickle.WriteString(workspace);
   return std::make_unique<SessionCommand>(kCommandSetWindowWorkspace2, pickle);
+}
+
+std::unique_ptr<SessionCommand> CreateSetWindowVisibleOnAllWorkspacesCommand(
+    const SessionID& window_id,
+    bool visible_on_all_workspaces) {
+  VisibleOnAllWorkspacesPayload payload = {0};
+  payload.window_id = window_id.id();
+  payload.visible_on_all_workspaces = visible_on_all_workspaces;
+  return CreateSessionCommandForPayload(kCommandSetWindowVisibleOnAllWorkspaces,
+                                        payload);
 }
 
 std::unique_ptr<SessionCommand> CreateTabNavigationPathPrunedCommand(

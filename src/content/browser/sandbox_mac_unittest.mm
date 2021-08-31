@@ -19,6 +19,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/kill.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -60,8 +61,7 @@ class SandboxMacTest : public base::MultiProcessTest {
   void ExecuteWithParams(const std::string& procname,
                          sandbox::policy::SandboxType sandbox_type) {
     std::string profile =
-        sandbox::policy::SandboxMac::GetSandboxProfile(sandbox_type) +
-        kTempDirSuffix;
+        sandbox::policy::GetSandboxProfile(sandbox_type) + kTempDirSuffix;
     sandbox::SeatbeltExecClient client;
     client.SetProfile(profile);
     SetupSandboxParameters(sandbox_type,
@@ -91,6 +91,7 @@ class SandboxMacTest : public base::MultiProcessTest {
         sandbox::policy::SandboxType::kGpu,
         sandbox::policy::SandboxType::kNaClLoader,
         sandbox::policy::SandboxType::kPpapi,
+        sandbox::policy::SandboxType::kPrintBackend,
         sandbox::policy::SandboxType::kPrintCompositor,
         sandbox::policy::SandboxType::kRenderer,
         sandbox::policy::SandboxType::kUtility,
@@ -239,7 +240,7 @@ TEST_F(SandboxMacTest, FontLoadingTest) {
   ASSERT_TRUE(temp_file);
 
   std::unique_ptr<FontLoader::ResultInternal> result =
-      FontLoader::LoadFontForTesting(base::ASCIIToUTF16("Geeza Pro"), 16);
+      FontLoader::LoadFontForTesting(u"Geeza Pro", 16);
   ASSERT_TRUE(result);
   ASSERT_TRUE(result->font_data.is_valid());
   uint64_t font_data_size = result->font_data->GetSize();
@@ -250,9 +251,10 @@ TEST_F(SandboxMacTest, FontLoadingTest) {
       result->font_data->Map(font_data_size);
   ASSERT_TRUE(mapping);
 
-  base::WriteFileDescriptor(fileno(temp_file.get()),
-                            static_cast<const char*>(mapping.get()),
-                            font_data_size);
+  base::WriteFileDescriptor(
+      fileno(temp_file.get()),
+      base::StringPiece(static_cast<const char*>(mapping.get()),
+                        font_data_size));
 
   extra_data_ = temp_file_path.value();
   ExecuteWithParams("FontLoadingProcess",
@@ -264,10 +266,10 @@ TEST_F(SandboxMacTest, FontLoadingTest) {
 MULTIPROCESS_TEST_MAIN(BuiltinAvailable) {
   CheckCreateSeatbeltServer();
 
-  if (__builtin_available(macOS 10.10, *)) {
+  if (__builtin_available(macOS 10.11, *)) {
     // Can't negate a __builtin_available condition. But success!
   } else {
-    return 10;
+    return 11;
   }
 
   if (base::mac::IsAtLeastOS10_13()) {

@@ -11,9 +11,13 @@ import org.junit.runners.model.Statement;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
+import org.chromium.chrome.browser.incognito.IncognitoUtils;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -39,6 +43,7 @@ public class BlankCTATabInitialStateRule implements TestRule {
         super();
         mActivityTestRule = activityTestRule;
         mClearAllTabState = clearAllTabState;
+        mActivityTestRule.setFinishActivity(false);
     }
 
     @Override
@@ -51,26 +56,51 @@ public class BlankCTATabInitialStateRule implements TestRule {
                             () -> { FirstRunStatus.setFirstRunFlowComplete(true); });
                     mActivityTestRule.startMainActivityOnBlankPage();
                     sActivity = mActivityTestRule.getActivity();
+
+                    // Previous tests may have left tabs open and finished the Activity.
+                    if (regularTabCount() > 1) resetTabStateFast();
                 } else {
                     mActivityTestRule.setActivity(sActivity);
-                    if (mClearAllTabState) {
-                        resetTabStateThorough();
-                    } else {
+                    if (shouldPerformFastReset()) {
                         resetTabStateFast();
+                    } else {
+                        resetTabStateThorough();
                     }
                 }
-                base.evaluate();
+                try {
+                    base.evaluate();
+                } finally {
+                    // If the activity was relaunched during the test, update the reference to use
+                    // the most up to date Activity.
+                    sActivity = mActivityTestRule.getActivity();
+                    if (sActivity.isActivityFinishingOrDestroyed()) {
+                        sActivity = null;
+                    }
+                }
             }
         };
+    }
+
+    private int regularTabCount() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> { return sActivity.getTabModelSelector().getModel(false).getCount(); });
+    }
+
+    private boolean shouldPerformFastReset() {
+        if (mClearAllTabState) return false;
+        return regularTabCount() > 0;
     }
 
     // Avoids closing the primary tab (and killing the renderer) in order to reset tab state
     // quickly, at the cost of thoroughness. This should be adequate for most tests.
     private void resetTabStateFast() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Close all but the first tab as these tests expect to start with a single
+            IncognitoUtils.closeAllIncognitoTabs();
+            // Close all but the first regular tab as these tests expect to start with a single
             // tab.
-            while (TabModelUtils.closeTabByIndex(sActivity.getCurrentTabModel(), 1)) {
+            TabModel regularTabModel =
+                    sActivity.getTabModelSelector().getModel(/*incognito=*/false);
+            while (TabModelUtils.closeTabByIndex(regularTabModel, 1)) {
             }
         });
         mActivityTestRule.loadUrl("about:blank");
@@ -82,9 +112,21 @@ public class BlankCTATabInitialStateRule implements TestRule {
     // Thoroughly resets tab state by closing all tabs before restoring the primary tab to
     // about:blank state.
     private void resetTabStateThorough() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            sActivity.getTabModelSelector().closeAllTabs();
-            sActivity.getTabCreator(false).launchUrl("about:blank", TabLaunchType.FROM_CHROME_UI);
+        Tab createdTab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            // We have to avoid closing all tabs and triggering CTA's self-finish logic when all
+            // tabs are closed.
+            Tab newTab = sActivity.getTabCreator(false).launchUrl(
+                    "about:blank", TabLaunchType.FROM_CHROME_UI);
+            IncognitoUtils.closeAllIncognitoTabs();
+
+            TabModel regularTabModel =
+                    sActivity.getTabModelSelector().getModel(/*incognito=*/false);
+            for (int i = regularTabModel.getCount() - 1; i >= 0; i--) {
+                Tab tab = regularTabModel.getTabAt(i);
+                if (tab != newTab) regularTabModel.closeTab(tab);
+            }
+            return newTab;
         });
+        ChromeTabUtils.waitForTabPageLoaded(createdTab, "about:blank");
     }
 }

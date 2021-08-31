@@ -82,6 +82,29 @@ constexpr char kInvalidTypeMessage[] = R"({
   "seqNum": 1
 })";
 
+constexpr char kInvalidTypeMessageWithNoSeqNum[] = R"({
+  "type": 39
+})";
+
+constexpr char kErrorAnswerMessage[] = R"({
+  "seqNum": 1,
+  "type": "ANSWER",
+  "result": "error",
+  "error": {
+    "code": 123,
+    "description": "something bad happened"
+  }
+})";
+
+constexpr char kCapabilitiesResponse[] = R"({
+  "seqNum": 2,
+  "result": "ok",
+  "type": "CAPABILITIES_RESPONSE",
+  "capabilities": {
+    "mediaCaps": ["video", "vp8", "audio", "aac"]
+  }
+})";
+
 const AudioCaptureConfig kAudioCaptureConfigInvalidChannels{
     AudioCodec::kAac, -1 /* channels */, 44000 /* bit_rate */,
     96000 /* sample_rate */
@@ -93,22 +116,28 @@ const AudioCaptureConfig kAudioCaptureConfigValid{
 };
 
 const VideoCaptureConfig kVideoCaptureConfigMissingResolutions{
-    VideoCodec::kHevc, FrameRate{60, 1}, 300000 /* max_bit_rate */,
-    std::vector<DisplayResolution>{}};
+    VideoCodec::kHevc,
+    {60, 1},
+    300000 /* max_bit_rate */,
+    std::vector<Resolution>{}};
 
 const VideoCaptureConfig kVideoCaptureConfigInvalid{
-    VideoCodec::kHevc, FrameRate{60, 1}, -300000 /* max_bit_rate */,
-    std::vector<DisplayResolution>{DisplayResolution{1920, 1080},
-                                   DisplayResolution{1280, 720}}};
+    VideoCodec::kHevc,
+    {60, 1},
+    -300000 /* max_bit_rate */,
+    std::vector<Resolution>{Resolution{1920, 1080}, Resolution{1280, 720}}};
 
 const VideoCaptureConfig kVideoCaptureConfigValid{
-    VideoCodec::kHevc, FrameRate{60, 1}, 300000 /* max_bit_rate */,
-    std::vector<DisplayResolution>{DisplayResolution{1280, 720},
-                                   DisplayResolution{1920, 1080}}};
+    VideoCodec::kHevc,
+    {60, 1},
+    300000 /* max_bit_rate */,
+    std::vector<Resolution>{Resolution{1280, 720}, Resolution{1920, 1080}}};
 
 const VideoCaptureConfig kVideoCaptureConfigValidSimplest{
-    VideoCodec::kHevc, FrameRate{60, 1}, 300000 /* max_bit_rate */,
-    std::vector<DisplayResolution>{DisplayResolution{1920, 1080}}};
+    VideoCodec::kHevc,
+    {60, 1},
+    300000 /* max_bit_rate */,
+    std::vector<Resolution>{Resolution{1920, 1080}}};
 
 class FakeClient : public SenderSession::Client {
  public:
@@ -117,6 +146,10 @@ class FakeClient : public SenderSession::Client {
               (const SenderSession*,
                SenderSession::ConfiguredSenders,
                capture_recommendations::Recommendations),
+              (override));
+  MOCK_METHOD(void,
+              OnRemotingNegotiated,
+              (const SenderSession*, SenderSession::RemotingNegotiation),
               (override));
   MOCK_METHOD(void, OnError, (const SenderSession*, Error error), (override));
 };
@@ -137,21 +170,34 @@ class SenderSessionTest : public ::testing::Test {
   }
 
   void SetUp() {
-    message_port_ = std::make_unique<SimpleMessagePort>();
+    message_port_ = std::make_unique<SimpleMessagePort>("receiver-12345");
     environment_ = MakeEnvironment();
-    session_ = std::make_unique<SenderSession>(IPAddress::kV4LoopbackAddress(),
-                                               &client_, environment_.get(),
-                                               message_port_.get());
+
+    SenderSession::Configuration config{IPAddress::kV4LoopbackAddress(),
+                                        &client_,
+                                        environment_.get(),
+                                        message_port_.get(),
+                                        "sender-12345",
+                                        "receiver-12345",
+                                        /* use_android_rtp_hack */ true};
+    session_ = std::make_unique<SenderSession>(std::move(config));
   }
 
-  std::string NegotiateOfferAndConstructAnswer() {
+  void NegotiateMirroringWithValidConfigs() {
     const Error error = session_->Negotiate(
         std::vector<AudioCaptureConfig>{kAudioCaptureConfigValid},
         std::vector<VideoCaptureConfig>{kVideoCaptureConfigValid});
-    if (!error.ok()) {
-      return {};
-    }
+    ASSERT_TRUE(error.ok());
+  }
 
+  void NegotiateRemotingWithValidConfigs() {
+    const Error error = session_->NegotiateRemoting(kAudioCaptureConfigValid,
+                                                    kVideoCaptureConfigValid);
+    ASSERT_TRUE(error.ok());
+  }
+
+  // Answers require specific fields from the original offer to be valid.
+  std::string ConstructAnswerFromOffer(CastMode mode) {
     const auto& messages = message_port_->posted_messages();
     if (messages.size() != 1) {
       return {};
@@ -184,15 +230,18 @@ class SenderSessionTest : public ::testing::Test {
     constexpr char kAnswerTemplate[] = R"({
         "type": "ANSWER",
         "seqNum": %d,
+        "result": "ok",
         "answer": {
-          "castMode": "mirroring",
+          "castMode": "%s",
           "udpPort": 1234,
           "sendIndexes": [%d, %d],
           "ssrcs": [%d, %d]
         }
         })";
-    return StringPrintf(kAnswerTemplate, offer["seqNum"].asInt(), audio_index,
-                        video_index, audio_ssrc + 1, video_ssrc + 1);
+    return StringPrintf(kAnswerTemplate, offer["seqNum"].asInt(),
+                        mode == CastMode::kMirroring ? "mirroring" : "remoting",
+                        audio_index, video_index, audio_ssrc + 1,
+                        video_ssrc + 1);
   }
 
  protected:
@@ -303,7 +352,6 @@ TEST_F(SenderSessionTest, SendsOfferMessage) {
   ASSERT_FALSE(offer_body.isNull());
   ASSERT_TRUE(offer_body.isObject());
   EXPECT_EQ("mirroring", offer_body["castMode"].asString());
-  EXPECT_EQ(false, offer_body["receiverGetStatus"].asBool());
 
   const Json::Value& streams = offer_body["supportedStreams"];
   EXPECT_TRUE(streams.isArray());
@@ -329,14 +377,16 @@ TEST_F(SenderSessionTest, SendsOfferMessage) {
 }
 
 TEST_F(SenderSessionTest, HandlesValidAnswer) {
-  std::string answer = NegotiateOfferAndConstructAnswer();
+  NegotiateMirroringWithValidConfigs();
+  std::string answer = ConstructAnswerFromOffer(CastMode::kMirroring);
 
   EXPECT_CALL(client_, OnNegotiated(session_.get(), _, _));
   message_port_->ReceiveMessage(answer);
 }
 
 TEST_F(SenderSessionTest, HandlesInvalidNamespace) {
-  std::string answer = NegotiateOfferAndConstructAnswer();
+  NegotiateMirroringWithValidConfigs();
+  std::string answer = ConstructAnswerFromOffer(CastMode::kMirroring);
   message_port_->ReceiveMessage("random-namespace", answer);
 }
 
@@ -389,13 +439,26 @@ TEST_F(SenderSessionTest, HandlesInvalidSequenceNumber) {
   message_port_->ReceiveMessage(kInvalidSequenceNumberMessage);
 }
 
-TEST_F(SenderSessionTest, HandlesUnknownTypeMessage) {
+TEST_F(SenderSessionTest, HandlesUnknownTypeMessageWithValidSeqNum) {
   session_->Negotiate(
       std::vector<AudioCaptureConfig>{kAudioCaptureConfigValid},
       std::vector<VideoCaptureConfig>{kVideoCaptureConfigValid});
 
-  // We should just discard messages with an unknown message type.
+  // If a message is of unknown type but has an expected seqnum, it's
+  // probably a malformed response.
+  EXPECT_CALL(client_, OnError(session_.get(), _));
   message_port_->ReceiveMessage(kUnknownTypeMessage);
+}
+
+TEST_F(SenderSessionTest, HandlesInvalidTypeMessageWithValidSeqNum) {
+  session_->Negotiate(
+      std::vector<AudioCaptureConfig>{kAudioCaptureConfigValid},
+      std::vector<VideoCaptureConfig>{kVideoCaptureConfigValid});
+
+  // If a message is of unknown type but has an expected seqnum, it's
+  // probably a malformed response.
+  EXPECT_CALL(client_, OnError(session_.get(), _));
+  message_port_->ReceiveMessage(kInvalidTypeMessage);
 }
 
 TEST_F(SenderSessionTest, HandlesInvalidTypeMessage) {
@@ -403,16 +466,88 @@ TEST_F(SenderSessionTest, HandlesInvalidTypeMessage) {
       std::vector<AudioCaptureConfig>{kAudioCaptureConfigValid},
       std::vector<VideoCaptureConfig>{kVideoCaptureConfigValid});
 
-  // We should just discard messages with an invalid message type.
-  message_port_->ReceiveMessage(kInvalidTypeMessage);
+  // We should just discard messages with an invalid message type and
+  // no sequence number.
+  message_port_->ReceiveMessage(kInvalidTypeMessageWithNoSeqNum);
 }
 
-TEST_F(SenderSessionTest, DoesntCrashOnMessagePortError) {
+TEST_F(SenderSessionTest, HandlesErrorMessage) {
+  session_->Negotiate(
+      std::vector<AudioCaptureConfig>{kAudioCaptureConfigValid},
+      std::vector<VideoCaptureConfig>{kVideoCaptureConfigValid});
+
+  // We should report error answers.
+  EXPECT_CALL(client_, OnError(session_.get(), _));
+  message_port_->ReceiveMessage(kErrorAnswerMessage);
+}
+
+TEST_F(SenderSessionTest, DoesNotCrashOnMessagePortError) {
   session_->Negotiate(
       std::vector<AudioCaptureConfig>{kAudioCaptureConfigValid},
       std::vector<VideoCaptureConfig>{kVideoCaptureConfigValid});
 
   message_port_->ReceiveError(Error(Error::Code::kUnknownError));
+}
+
+TEST_F(SenderSessionTest, ReportsZeroBandwidthWhenNoPacketsSent) {
+  // TODO(issuetracker.google.com/183996645): As part of end to end testing,
+  // we need to ensure that we are providing reasonable network bandwidth
+  // measurements.
+  EXPECT_EQ(0, session_->GetEstimatedNetworkBandwidth());
+}
+
+TEST_F(SenderSessionTest, ComplainsIfInvalidAudioCaptureConfigRemoting) {
+  const Error error = session_->NegotiateRemoting(
+      kAudioCaptureConfigInvalidChannels, kVideoCaptureConfigValid);
+
+  EXPECT_EQ(error.code(), Error::Code::kParameterInvalid);
+}
+
+TEST_F(SenderSessionTest, ComplainsIfInvalidVideoCaptureConfigRemoting) {
+  const Error error = session_->NegotiateRemoting(kAudioCaptureConfigValid,
+                                                  kVideoCaptureConfigInvalid);
+  EXPECT_EQ(error.code(), Error::Code::kParameterInvalid);
+}
+
+TEST_F(SenderSessionTest, ComplainsIfMissingResolutionsRemoting) {
+  const Error error = session_->NegotiateRemoting(
+      kAudioCaptureConfigValid, kVideoCaptureConfigMissingResolutions);
+  EXPECT_EQ(error.code(), Error::Code::kParameterInvalid);
+}
+
+TEST_F(SenderSessionTest, HandlesValidAnswerRemoting) {
+  NegotiateRemotingWithValidConfigs();
+  std::string answer = ConstructAnswerFromOffer(CastMode::kRemoting);
+
+  EXPECT_CALL(client_, OnRemotingNegotiated(session_.get(), _));
+  message_port_->ReceiveMessage(answer);
+  message_port_->ReceiveMessage(kCapabilitiesResponse);
+}
+
+TEST_F(SenderSessionTest, SuccessfulRemotingNegotiationYieldsValidObject) {
+  NegotiateRemotingWithValidConfigs();
+  std::string answer = ConstructAnswerFromOffer(CastMode::kRemoting);
+
+  SenderSession::RemotingNegotiation negotiation;
+  EXPECT_CALL(client_, OnRemotingNegotiated(session_.get(), _))
+      .WillOnce(testing::SaveArg<1>(&negotiation));
+  message_port_->ReceiveMessage(answer);
+  message_port_->ReceiveMessage(kCapabilitiesResponse);
+
+  // The capabilities should match the values in |kCapabilitiesResponse|.
+  EXPECT_THAT(negotiation.capabilities.audio,
+              testing::ElementsAre(AudioCapability::kBaselineSet,
+                                   AudioCapability::kAac));
+
+  // The "video" capability is ignored since it means nothing.
+  EXPECT_THAT(negotiation.capabilities.video,
+              testing::ElementsAre(VideoCapability::kVp8));
+
+  // The broker is tested elsewhere, but we can sanity check that we got a valid
+  // one here.
+  EXPECT_TRUE(negotiation.broker);
+  const RpcBroker::Handle handle = negotiation.broker->GetUniqueHandle();
+  EXPECT_NE(RpcBroker::kInvalidHandle, handle);
 }
 
 }  // namespace cast

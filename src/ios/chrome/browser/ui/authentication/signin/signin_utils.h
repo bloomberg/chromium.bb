@@ -8,22 +8,33 @@
 #import <UIKit/UIKit.h>
 
 class ChromeBrowserState;
+class PrefService;
 
 namespace base {
 class Version;
 }
 
+namespace signin {
+
 // Returns true if this user sign-in upgrade should be shown for |browserState|.
-bool SigninShouldPresentUserSigninUpgrade(ChromeBrowserState* browserState);
+bool ShouldPresentUserSigninUpgrade(ChromeBrowserState* browser_state,
+                                    const base::Version& current_version);
 
 // Records in user defaults:
 //   + the Chromium current version.
 //   + increases the sign-in promo display count.
 //   + Gaia ids list.
 // Separated out into a discrete function to allow overriding when testing.
-void SigninRecordVersionSeen();
+void RecordVersionSeen(PrefService* pref_service,
+                       const base::Version& current_version);
 
-// Set the Chromium current version for sign-in. Used for tests only.
-void SetSigninCurrentVersionForTesting(base::Version* version);
+// Returns a boolean indicating whether browser sign-in is allowed across the
+// app.
+bool IsSigninAllowed(const PrefService* prefs);
+
+// Returns a boolean indicating whether policy allows browser sign-in.
+bool IsSigninAllowedByPolicy(const PrefService* prefs);
+
+}  // namespace signin
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_SIGNIN_UTILS_H_

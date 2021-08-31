@@ -55,7 +55,8 @@ Element* ComputeScrollSource(Document& document, const CSSValue* value) {
   if (IsNone(value))
     return nullptr;
   DCHECK(!value || IsAuto(value));
-  return document.scrollingElement();
+  // TODO(crbug.com/1189101): Respond when the scrolling element changes.
+  return document.ScrollingElementNoLayout();
 }
 
 Element* ComputeElementOffsetTarget(Document& document, const CSSValue* value) {
@@ -82,8 +83,10 @@ double ComputeElementOffsetThreshold(const CSSValue* value) {
 ScrollTimelineElementBasedOffset* ComputeElementBasedOffset(
     Document& document,
     const cssvalue::CSSElementOffsetValue* value) {
-  auto* offset = MakeGarbageCollected<ScrollTimelineElementBasedOffset>();
-  offset->setTarget(ComputeElementOffsetTarget(document, value->Target()));
+  auto* offset = ScrollTimelineElementBasedOffset::Create();
+  Element* target = ComputeElementOffsetTarget(document, value->Target());
+  if (target)
+    offset->setTarget(target);
   offset->setEdge(ComputeElementOffsetEdge(value->Edge()));
   offset->setThreshold(ComputeElementOffsetThreshold(value->Threshold()));
   return offset;
@@ -121,32 +124,31 @@ ScrollTimelineOffset* ComputeScrollOffset(Document& document,
   return MakeGarbageCollected<ScrollTimelineOffset>();
 }
 
-HeapVector<Member<ScrollTimelineOffset>>* ComputeScrollOffsets(
+HeapVector<Member<ScrollTimelineOffset>> ComputeScrollOffsets(
     Document& document,
     const CSSValue* start,
     const CSSValue* end) {
-  auto* offsets =
-      MakeGarbageCollected<HeapVector<Member<ScrollTimelineOffset>>>();
+  HeapVector<Member<ScrollTimelineOffset>> offsets;
 
-  bool start_is_auto = IsAuto(start) || !start;
-  bool end_is_auto = IsAuto(end) || !end;
+  const bool start_is_auto = !start || IsAuto(start);
+  const bool end_is_auto = !end || IsAuto(end);
 
   // TODO(crbug.com/1094014): scroll_offsets will replace start and end
   // offsets once spec decision on multiple scroll offsets is finalized.
   // https://github.com/w3c/csswg-drafts/issues/4912
   if (!start_is_auto)
-    offsets->push_back(ComputeScrollOffset(document, start));
+    offsets.push_back(ComputeScrollOffset(document, start));
   if (!end_is_auto || !start_is_auto)
-    offsets->push_back(ComputeScrollOffset(document, end));
+    offsets.push_back(ComputeScrollOffset(document, end));
 
   return offsets;
 }
 
-base::Optional<double> ComputeTimeRange(const CSSValue* value) {
+absl::optional<double> ComputeTimeRange(const CSSValue* value) {
   if (auto* primitive = DynamicTo<CSSPrimitiveValue>(value))
     return primitive->ComputeSeconds() * 1000.0;
   // TODO(crbug.com/1097041): Support 'auto' value.
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 class ElementReferenceObserver : public IdTargetObserver {
@@ -202,26 +204,23 @@ HeapVector<Member<IdTargetObserver>> CreateElementReferenceObservers(
 
 }  // anonymous namespace
 
-CSSScrollTimeline::Options::Options(Element* element,
+CSSScrollTimeline::Options::Options(Document& document,
                                     StyleRuleScrollTimeline& rule)
-    : source_(ComputeScrollSource(element->GetDocument(), rule.GetSource())),
+    : source_(ComputeScrollSource(document, rule.GetSource())),
       direction_(ComputeScrollDirection(rule.GetOrientation())),
-      offsets_(ComputeScrollOffsets(element->GetDocument(),
-                                    rule.GetStart(),
-                                    rule.GetEnd())),
+      offsets_(ComputeScrollOffsets(document, rule.GetStart(), rule.GetEnd())),
       time_range_(ComputeTimeRange(rule.GetTimeRange())),
       rule_(&rule) {}
 
-CSSScrollTimeline::CSSScrollTimeline(Document* document, const Options& options)
+CSSScrollTimeline::CSSScrollTimeline(Document* document, Options&& options)
     : ScrollTimeline(document,
                      options.source_,
                      options.direction_,
-                     options.offsets_,
+                     std::move(options.offsets_),
                      *options.time_range_),
       rule_(options.rule_) {
   DCHECK(options.IsValid());
   DCHECK(rule_);
-  document->GetDocumentAnimations().CacheCSSScrollTimeline(*this);
 }
 
 const AtomicString& CSSScrollTimeline::Name() const {
@@ -229,22 +228,21 @@ const AtomicString& CSSScrollTimeline::Name() const {
 }
 
 bool CSSScrollTimeline::Matches(const Options& options) const {
-  DCHECK(options.offsets_);
   return (scrollSource() == options.source_) &&
          (GetOrientation() == options.direction_) &&
-         (ScrollOffsetsEqual(*options.offsets_)) &&
+         (ScrollOffsetsEqual(options.offsets_)) &&
          (GetTimeRange() == options.time_range_) && (rule_ == options.rule_);
 }
 
 void CSSScrollTimeline::AnimationAttached(Animation* animation) {
-  ScrollTimeline::AnimationAttached(animation);
-  if (AttachedAnimationsCount() == 1)
+  if (!HasAnimations())
     SetObservers(CreateElementReferenceObservers(GetDocument(), rule_, this));
+  ScrollTimeline::AnimationAttached(animation);
 }
 
 void CSSScrollTimeline::AnimationDetached(Animation* animation) {
   ScrollTimeline::AnimationDetached(animation);
-  if (AttachedAnimationsCount() == 0)
+  if (!HasAnimations())
     SetObservers(HeapVector<Member<IdTargetObserver>>());
 }
 

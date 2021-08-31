@@ -11,7 +11,7 @@
 #include "ash/public/cpp/in_session_auth_dialog_controller.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window_tracker.h"
 
 class AccountId;
@@ -47,6 +47,7 @@ class InSessionAuthDialogControllerImpl : public InSessionAuthDialogController {
       base::OnceCallback<void(bool, FingerprintState)> callback) override;
   void OpenInSessionAuthHelpPage() override;
   void Cancel() override;
+  void CheckAvailability(FinishCallback on_availability_checked) const override;
 
  private:
   bool IsFingerprintAvailable(const AccountId& account_id);

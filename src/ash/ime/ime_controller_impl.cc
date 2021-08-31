@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -190,7 +191,7 @@ void ImeControllerImpl::SetExtraInputOptionsEnabledState(
 
 void ImeControllerImpl::ShowModeIndicator(
     const gfx::Rect& anchor_bounds,
-    const base::string16& ime_short_name) {
+    const std::u16string& ime_short_name) {
   ImeModeIndicatorView* mi_view =
       new ImeModeIndicatorView(anchor_bounds, ime_short_name);
   views::BubbleDialogDelegateView::CreateBubble(mi_view);

@@ -54,7 +54,7 @@ CXFA_Color* CXFA_Radial::GetColorIfExists() {
 }
 
 void CXFA_Radial::Draw(CFGAS_GEGraphics* pGS,
-                       CFGAS_GEPath* fillPath,
+                       const CFGAS_GEPath& fillPath,
                        FX_ARGB crStart,
                        const CFX_RectF& rtFill,
                        const CFX_Matrix& matrix) {
@@ -71,6 +71,6 @@ void CXFA_Radial::Draw(CFGAS_GEGraphics* pGS,
 
   pGS->SaveGraphState();
   pGS->SetFillColor(CFGAS_GEColor(&shading));
-  pGS->FillPath(fillPath, CFX_FillRenderOptions::FillType::kWinding, &matrix);
+  pGS->FillPath(fillPath, CFX_FillRenderOptions::FillType::kWinding, matrix);
   pGS->RestoreGraphState();
 }

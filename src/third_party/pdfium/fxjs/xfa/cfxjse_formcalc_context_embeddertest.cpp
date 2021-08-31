@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cmath>
+
 #include "fxjs/fxv8.h"
 #include "fxjs/xfa/cfxjse_engine.h"
 #include "fxjs/xfa/cfxjse_isolatetracker.h"
 #include "fxjs/xfa/cfxjse_value.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/scoped_set_tz.h"
 #include "testing/xfa_js_embedder_test.h"
 #include "third_party/base/stl_util.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
@@ -17,6 +20,10 @@ class CFXJSE_FormCalcContextEmbedderTest : public XFAJSEmbedderTest {
   ~CFXJSE_FormCalcContextEmbedderTest() override = default;
 
  protected:
+  CFXJSE_Context* GetJseContext() {
+    return GetScriptContext()->GetJseContext();
+  }
+
   void ExecuteExpectError(ByteStringView input) {
     EXPECT_FALSE(Execute(input)) << "Program: " << input;
   }
@@ -24,14 +31,14 @@ class CFXJSE_FormCalcContextEmbedderTest : public XFAJSEmbedderTest {
   void ExecuteExpectNull(ByteStringView input) {
     EXPECT_TRUE(Execute(input)) << "Program: " << input;
 
-    CFXJSE_ScopeUtil_IsolateHandleContext scope(GetScriptContext());
+    CFXJSE_ScopeUtil_IsolateHandleContext scope(GetJseContext());
     EXPECT_TRUE(fxv8::IsNull(GetValue())) << "Program: " << input;
   }
 
   void ExecuteExpectBool(ByteStringView input, bool expected) {
     EXPECT_TRUE(Execute(input)) << "Program: " << input;
 
-    CFXJSE_ScopeUtil_IsolateHandleContext scope(GetScriptContext());
+    CFXJSE_ScopeUtil_IsolateHandleContext scope(GetJseContext());
     v8::Local<v8::Value> value = GetValue();
 
     // Yes, bools might be integers, somehow.
@@ -44,7 +51,7 @@ class CFXJSE_FormCalcContextEmbedderTest : public XFAJSEmbedderTest {
   void ExecuteExpectInt32(ByteStringView input, int32_t expected) {
     EXPECT_TRUE(Execute(input)) << "Program: " << input;
 
-    CFXJSE_ScopeUtil_IsolateHandleContext scope(GetScriptContext());
+    CFXJSE_ScopeUtil_IsolateHandleContext scope(GetJseContext());
     v8::Local<v8::Value> value = GetValue();
     EXPECT_TRUE(fxv8::IsInteger(value)) << "Program: " << input;
     EXPECT_EQ(expected, fxv8::ReentrantToInt32Helper(isolate(), value))
@@ -54,7 +61,7 @@ class CFXJSE_FormCalcContextEmbedderTest : public XFAJSEmbedderTest {
   void ExecuteExpectFloat(ByteStringView input, float expected) {
     EXPECT_TRUE(Execute(input)) << "Program: " << input;
 
-    CFXJSE_ScopeUtil_IsolateHandleContext scope(GetScriptContext());
+    CFXJSE_ScopeUtil_IsolateHandleContext scope(GetJseContext());
     v8::Local<v8::Value> value = GetValue();
     EXPECT_TRUE(fxv8::IsNumber(value));
     EXPECT_FLOAT_EQ(expected, fxv8::ReentrantToFloatHelper(isolate(), value))
@@ -66,7 +73,7 @@ class CFXJSE_FormCalcContextEmbedderTest : public XFAJSEmbedderTest {
                               float precision) {
     EXPECT_TRUE(Execute(input)) << "Program: " << input;
 
-    CFXJSE_ScopeUtil_IsolateHandleContext scope(GetScriptContext());
+    CFXJSE_ScopeUtil_IsolateHandleContext scope(GetJseContext());
     v8::Local<v8::Value> value = GetValue();
     EXPECT_TRUE(fxv8::IsNumber(value));
     EXPECT_NEAR(expected, fxv8::ReentrantToFloatHelper(isolate(), value),
@@ -74,10 +81,19 @@ class CFXJSE_FormCalcContextEmbedderTest : public XFAJSEmbedderTest {
         << "Program: " << input;
   }
 
+  void ExecuteExpectNaN(ByteStringView input) {
+    EXPECT_TRUE(Execute(input)) << "Program: " << input;
+
+    CFXJSE_ScopeUtil_IsolateHandleContext scope(GetJseContext());
+    v8::Local<v8::Value> value = GetValue();
+    EXPECT_TRUE(fxv8::IsNumber(value));
+    EXPECT_TRUE(std::isnan(fxv8::ReentrantToDoubleHelper(isolate(), value)));
+  }
+
   void ExecuteExpectString(ByteStringView input, const char* expected) {
     EXPECT_TRUE(Execute(input)) << "Program: " << input;
 
-    CFXJSE_ScopeUtil_IsolateHandleContext scope(GetScriptContext());
+    CFXJSE_ScopeUtil_IsolateHandleContext scope(GetJseContext());
     v8::Local<v8::Value> value = GetValue();
     EXPECT_TRUE(fxv8::IsString(value));
     EXPECT_STREQ(expected,
@@ -288,6 +304,9 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, Mod) {
 
   for (size_t i = 0; i < pdfium::size(tests); ++i)
     ExecuteExpectInt32(tests[i].program, tests[i].result);
+
+  ExecuteExpectNaN("Mod(10, NaN)");
+  ExecuteExpectNaN("Mod(10, Infinity)");
 }
 
 TEST_F(CFXJSE_FormCalcContextEmbedderTest, Round) {
@@ -496,11 +515,40 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, Time2Num) {
     const char* program;
     int result;
   } tests[] = {
-      // {"Time2Num(\"00:00:00 GMT\", \"HH:MM:SS Z\")", 1},
-      {"Time2Num(\"13:13:13 GMT\", \"HH:MM:SS Z\", \"fr_FR\")", 47593001}};
+      {"Time2Num(\"00:00:00 GMT\", \"HH:MM:SS Z\")", 1},
+      {"Time2Num(\"00:00:01 GMT\", \"HH:MM:SS Z\")", 1001},
+      {"Time2Num(\"00:01:00 GMT\", \"HH:MM:SS Z\")", 60001},
+      {"Time2Num(\"01:00:00 GMT\", \"HH:MM:SS Z\")", 3600001},
+      {"Time2Num(\"23:59:59 GMT\", \"HH:MM:SS Z\")", 86399001},
+      {"Time2Num(\"\", \"\", 1)", 0},  // https://crbug.com/pdfium/1257
+      {"Time2Num(\"13:13:13 GMT\", \"HH:MM:SS Z\", \"fr_FR\")", 47593001},
+  };
 
   for (size_t i = 0; i < pdfium::size(tests); ++i)
     ExecuteExpectInt32(tests[i].program, tests[i].result);
+}
+
+TEST_F(CFXJSE_FormCalcContextEmbedderTest, Time2NumWithTZ) {
+  ASSERT_TRUE(OpenDocument("simple_xfa.pdf"));
+
+  static constexpr const char* kTimeZones[] = {
+      "UTC+14",   "UTC-14",   "UTC+9:30", "UTC-0:30",
+      "UTC+0:30", "UTC-0:01", "UTC+0:01"};
+  for (const char* tz : kTimeZones) {
+    ScopedSetTZ scoped_set_tz(tz);
+    ExecuteExpectInt32("Time2Num(\"00:00:00 GMT\", \"HH:MM:SS Z\")", 1);
+    ExecuteExpectInt32("Time2Num(\"11:59:59 GMT\", \"HH:MM:SS Z\")", 43199001);
+    ExecuteExpectInt32("Time2Num(\"12:00:00 GMT\", \"HH:MM:SS Z\")", 43200001);
+    ExecuteExpectInt32("Time2Num(\"23:59:59 GMT\", \"HH:MM:SS Z\")", 86399001);
+  }
+  {
+    ScopedSetTZ scoped_set_tz("UTC-3:00");
+    ExecuteExpectInt32("Time2Num(\"1:13:13 PM\")", 36793001);
+    ExecuteExpectInt32(
+        "Time2Num(\"13:13:13 GMT\", \"HH:MM:SS Z\") - "
+        "Time2Num(\"13:13:13\", \"HH:MM:SS\")",
+        10800000);
+  }
 }
 
 TEST_F(CFXJSE_FormCalcContextEmbedderTest, TimeFmt) {
@@ -1114,7 +1162,7 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, Uuid) {
   ASSERT_TRUE(OpenDocument("simple_xfa.pdf"));
   EXPECT_TRUE(Execute("Uuid()"));
 
-  CFXJSE_ScopeUtil_IsolateHandleContext scope(GetScriptContext());
+  CFXJSE_ScopeUtil_IsolateHandleContext scope(GetJseContext());
   v8::Local<v8::Value> value = GetValue();
   EXPECT_TRUE(fxv8::IsString(value));
 }

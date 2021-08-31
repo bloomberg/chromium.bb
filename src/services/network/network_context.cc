@@ -19,7 +19,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -33,6 +32,7 @@
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
 #include "components/cookie_config/cookie_store_util.h"
+#include "components/domain_reliability/features.h"
 #include "components/domain_reliability/monitor.h"
 #include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -42,10 +42,12 @@
 #include "components/prefs/pref_service_factory.h"
 #include "crypto/sha2.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "net/base/features.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
 #include "net/base/network_isolation_key.h"
+#include "net/base/port_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cert/caching_cert_verifier.h"
 #include "net/cert/cert_verifier.h"
@@ -81,12 +83,10 @@
 #include "services/network/network_service.h"
 #include "services/network/network_service_network_delegate.h"
 #include "services/network/network_service_proxy_delegate.h"
-#include "services/network/network_usage_accumulator.h"
 #include "services/network/p2p/socket_manager.h"
 #include "services/network/proxy_config_service_mojo.h"
 #include "services/network/proxy_lookup_request.h"
 #include "services/network/proxy_resolving_socket_factory_mojo.h"
-#include "services/network/public/cpp/cert_verifier/cert_verifier_creation.h"
 #include "services/network/public/cpp/cert_verifier/mojo_cert_verifier.h"
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/features.h"
@@ -94,8 +94,8 @@
 #include "services/network/public/cpp/parsed_headers.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/trust_tokens.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "services/network/quic_transport.h"
 #include "services/network/resolve_host_request.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/restricted_cookie_manager.h"
@@ -114,24 +114,27 @@
 #include "services/network/trust_tokens/trust_token_store.h"
 #include "services/network/url_loader.h"
 #include "services/network/url_request_context_builder_mojo.h"
+#include "services/network/web_transport.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
 #include "components/certificate_transparency/chrome_ct_policy_enforcer.h"
 #include "components/certificate_transparency/chrome_require_ct_delegate.h"
 #include "components/certificate_transparency/ct_known_logs.h"
+#include "net/cert/cert_and_ct_verifier.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "services/network/expect_ct_reporter.h"
-#include "services/network/sct_auditing_cache.h"
+#include "services/network/sct_auditing/sct_auditing_cache.h"
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
 #include "net/ftp/ftp_auth_cache.h"
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "services/network/cert_verifier_with_trust_anchors.h"
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !defined(OS_IOS)
 #include "services/network/websocket_factory.h"
@@ -408,7 +411,7 @@ NetworkContext::NetworkContext(
                             session_cleanup_cookie_store);
   url_request_context_ = url_request_context_owner_.url_request_context.get();
   cookie_manager_ = std::make_unique<CookieManager>(
-      url_request_context_, network_service_->preloaded_first_party_sets(),
+      url_request_context_, network_service_->first_party_sets(),
       std::move(session_cleanup_cookie_store),
       std::move(params_->cookie_manager_params));
 
@@ -465,11 +468,11 @@ NetworkContext::NetworkContext(
           std::make_unique<NetworkContextApplicationStatusListener>()),
 #endif
       receiver_(this, std::move(receiver)),
-      cookie_manager_(std::make_unique<CookieManager>(
-          url_request_context,
-          nullptr,
-          nullptr /* preloaded_first_party_sets */,
-          nullptr)),
+      cookie_manager_(
+          std::make_unique<CookieManager>(url_request_context,
+                                          nullptr,
+                                          nullptr /* first_party_sets */,
+                                          nullptr)),
       socket_factory_(
           std::make_unique<SocketFactory>(url_request_context_->net_log(),
                                           url_request_context)),
@@ -574,11 +577,11 @@ void NetworkContext::SetClient(
 void NetworkContext::CreateURLLoaderFactory(
     mojo::PendingReceiver<mojom::URLLoaderFactory> receiver,
     mojom::URLLoaderFactoryParamsPtr params) {
-  scoped_refptr<ResourceSchedulerClient> resource_scheduler_client;
-  resource_scheduler_client = base::MakeRefCounted<ResourceSchedulerClient>(
-      params->process_id, ++current_resource_scheduler_client_id_,
-      resource_scheduler_.get(),
-      url_request_context_->network_quality_estimator());
+  scoped_refptr<ResourceSchedulerClient> resource_scheduler_client =
+      base::MakeRefCounted<ResourceSchedulerClient>(
+          params->process_id, ++current_resource_scheduler_client_id_,
+          resource_scheduler_.get(),
+          url_request_context_->network_quality_estimator());
   CreateURLLoaderFactory(std::move(receiver), std::move(params),
                          std::move(resource_scheduler_client));
 }
@@ -603,18 +606,13 @@ void NetworkContext::GetRestrictedCookieManager(
     mojo::PendingReceiver<mojom::RestrictedCookieManager> receiver,
     mojom::RestrictedCookieManagerRole role,
     const url::Origin& origin,
-    const net::SiteForCookies& site_for_cookies,
-    const url::Origin& top_frame_origin,
+    const net::IsolationInfo& isolation_info,
     mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer) {
-  mojom::NetworkServiceClient* network_service_client = nullptr;
-  if (network_service())
-    network_service_client = network_service()->client();
-
   restricted_cookie_manager_receivers_.Add(
       std::make_unique<RestrictedCookieManager>(
           role, url_request_context_->cookie_store(),
-          &cookie_manager_->cookie_settings(), origin, site_for_cookies,
-          top_frame_origin, std::move(cookie_observer)),
+          &cookie_manager_->cookie_settings(), origin, isolation_info,
+          std::move(cookie_observer)),
       std::move(receiver));
 }
 
@@ -625,7 +623,7 @@ void NetworkContext::GetHasTrustTokensAnswerer(
   // non-null.
   DCHECK(trust_token_store_);
 
-  base::Optional<SuitableTrustTokenOrigin> suitable_top_frame_origin =
+  absl::optional<SuitableTrustTokenOrigin> suitable_top_frame_origin =
       SuitableTrustTokenOrigin::Create(top_frame_origin);
 
   // It's safe to dereference |suitable_top_frame_origin| here as, during the
@@ -635,6 +633,59 @@ void NetworkContext::GetHasTrustTokensAnswerer(
       std::move(*suitable_top_frame_origin), trust_token_store_.get());
 
   has_trust_tokens_answerers_.Add(std::move(answerer), std::move(receiver));
+}
+
+void NetworkContext::GetStoredTrustTokenCounts(
+    GetStoredTrustTokenCountsCallback callback) {
+  if (trust_token_store_) {
+    auto get_trust_token_counts_from_store =
+        [](NetworkContext::GetStoredTrustTokenCountsCallback callback,
+           TrustTokenStore* trust_token_store) {
+          std::vector<mojom::StoredTrustTokensForIssuerPtr> result;
+          for (auto& issuer_count_pair :
+               trust_token_store->GetStoredTrustTokenCounts()) {
+            result.push_back(mojom::StoredTrustTokensForIssuer::New(
+                std::move(issuer_count_pair.first), issuer_count_pair.second));
+          }
+          std::move(callback).Run(std::move(result));
+        };
+    trust_token_store_->ExecuteOrEnqueue(
+        base::BindOnce(get_trust_token_counts_from_store, std::move(callback)));
+  } else {
+    // The Trust Tokens feature is disabled, return immediately with an empty
+    // vector.
+    std::move(callback).Run({});
+  }
+}
+
+void NetworkContext::DeleteStoredTrustTokens(
+    const url::Origin& issuer,
+    DeleteStoredTrustTokensCallback callback) {
+  if (!trust_token_store_) {
+    std::move(callback).Run(
+        mojom::DeleteStoredTrustTokensStatus::kFailureFeatureDisabled);
+    return;
+  }
+
+  absl::optional<SuitableTrustTokenOrigin> suitable_issuer_origin =
+      SuitableTrustTokenOrigin::Create(issuer);
+  if (!suitable_issuer_origin) {
+    std::move(callback).Run(
+        mojom::DeleteStoredTrustTokensStatus::kFailureInvalidOrigin);
+    return;
+  }
+
+  trust_token_store_->ExecuteOrEnqueue(base::BindOnce(
+      [](SuitableTrustTokenOrigin issuer,
+         DeleteStoredTrustTokensCallback callback, TrustTokenStore* store) {
+        const bool did_delete_tokens = store->DeleteStoredTrustTokens(issuer);
+        const auto status =
+            did_delete_tokens
+                ? mojom::DeleteStoredTrustTokensStatus::kSuccessTokensDeleted
+                : mojom::DeleteStoredTrustTokensStatus::kSuccessNoTokensDeleted;
+        std::move(callback).Run(status);
+      },
+      std::move(*suitable_issuer_origin), std::move(callback)));
 }
 
 void NetworkContext::OnProxyLookupComplete(
@@ -650,29 +701,15 @@ void NetworkContext::DisableQuic() {
 
 void NetworkContext::DestroyURLLoaderFactory(
     cors::CorsURLLoaderFactory* url_loader_factory) {
-  const int32_t process_id = url_loader_factory->process_id();
-
   auto it = url_loader_factories_.find(url_loader_factory);
   DCHECK(it != url_loader_factories_.end());
   url_loader_factories_.erase(it);
-
-  // Reset bytes transferred for the process if |url_loader_factory| is the
-  // last factory associated with the process.
-  if (network_service() &&
-      std::none_of(url_loader_factories_.cbegin(), url_loader_factories_.cend(),
-                   [process_id](const auto& factory) {
-                     return factory->process_id() == process_id;
-                   })) {
-    network_service()
-        ->network_usage_accumulator()
-        ->ClearBytesTransferredForProcess(process_id);
-  }
 }
 
-void NetworkContext::Remove(QuicTransport* transport) {
-  auto it = quic_transports_.find(transport);
-  if (it != quic_transports_.end()) {
-    quic_transports_.erase(it);
+void NetworkContext::Remove(WebTransport* transport) {
+  auto it = web_transports_.find(transport);
+  if (it != web_transports_.end()) {
+    web_transports_.erase(it);
   }
 }
 
@@ -850,11 +887,11 @@ void NetworkContext::QueueReport(
     const std::string& group,
     const GURL& url,
     const net::NetworkIsolationKey& network_isolation_key,
-    const base::Optional<std::string>& user_agent,
+    const absl::optional<std::string>& user_agent,
     base::Value body) {
-  // TODO(mmenke): Once all callers have been updated to send a
-  // NetworkIsolationKey, DCHECK network_isolation_key() is not null, when
-  // require_network_isolation_key() is set on the URLRequestContext.
+  if (require_network_isolation_key_)
+    DCHECK(!network_isolation_key.IsEmpty());
+
   DCHECK(body.is_dict());
   if (!body.is_dict())
     return;
@@ -884,18 +921,17 @@ void NetworkContext::QueueReport(
 void NetworkContext::QueueSignedExchangeReport(
     mojom::SignedExchangeReportPtr report,
     const net::NetworkIsolationKey& network_isolation_key) {
-  // TODO(mmenke): Once all callers have been updated to send a
-  // NetworkIsolationKey, DCHECK network_isolation_key() is not null, when
-  // require_network_isolation_key() is set on the URLRequestContext.
+  if (require_network_isolation_key_)
+    DCHECK(!network_isolation_key.IsEmpty());
 
-  net::URLRequestContext* request_context = url_request_context();
   net::NetworkErrorLoggingService* logging_service =
-      request_context->network_error_logging_service();
+      url_request_context_->network_error_logging_service();
   if (!logging_service)
     return;
   std::string user_agent;
-  if (request_context->http_user_agent_settings() != nullptr) {
-    user_agent = request_context->http_user_agent_settings()->GetUserAgent();
+  if (url_request_context_->http_user_agent_settings() != nullptr) {
+    user_agent =
+        url_request_context_->http_user_agent_settings()->GetUserAgent();
   }
   net::NetworkErrorLoggingService::SignedExchangeReportDetails details;
   details.network_isolation_key = network_isolation_key;
@@ -938,7 +974,7 @@ void NetworkContext::QueueReport(
     const std::string& group,
     const GURL& url,
     const net::NetworkIsolationKey& network_isolation_key,
-    const base::Optional<std::string>& user_agent,
+    const absl::optional<std::string>& user_agent,
     base::Value body) {
   NOTREACHED();
 }
@@ -1011,9 +1047,9 @@ void NetworkContext::SetNetworkConditions(
     mojom::NetworkConditionsPtr conditions) {
   std::unique_ptr<NetworkConditions> network_conditions;
   if (conditions) {
-    network_conditions.reset(new NetworkConditions(
+    network_conditions = std::make_unique<NetworkConditions>(
         conditions->offline, conditions->latency.InMillisecondsF(),
-        conditions->download_throughput, conditions->upload_throughput));
+        conditions->download_throughput, conditions->upload_throughput);
   }
   ThrottlingController::SetConditions(throttling_profile_id,
                                       std::move(network_conditions));
@@ -1033,7 +1069,7 @@ void NetworkContext::SetEnableReferrers(bool enable_referrers) {
   network_delegate_->set_enable_referrers(enable_referrers);
 }
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void NetworkContext::UpdateAdditionalCertificates(
     mojom::AdditionalCertificatesPtr additional_certificates) {
   if (!cert_verifier_with_trust_anchors_) {
@@ -1050,7 +1086,7 @@ void NetworkContext::UpdateAdditionalCertificates(
       additional_certificates->trust_anchors,
       additional_certificates->all_certificates);
 }
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
 void NetworkContext::SetCTPolicy(mojom::CTPolicyPtr ct_policy) {
@@ -1085,7 +1121,8 @@ void NetworkContext::SetExpectCTTestReport(
     const GURL& report_uri,
     SetExpectCTTestReportCallback callback) {
   std::string decoded_dummy_cert;
-  DCHECK(base::Base64Decode(kTestReportCert, &decoded_dummy_cert));
+  bool decoded = base::Base64Decode(kTestReportCert, &decoded_dummy_cert);
+  DCHECK(decoded);
   scoped_refptr<net::X509Certificate> dummy_cert =
       net::X509Certificate::CreateFromBytes(decoded_dummy_cert.data(),
                                             decoded_dummy_cert.size());
@@ -1181,8 +1218,10 @@ void NetworkContext::MaybeEnqueueSCTReport(
     const net::X509Certificate* validated_certificate_chain,
     const net::SignedCertificateTimestampAndStatusList&
         signed_certificate_timestamps) {
+  if (!this->is_sct_auditing_enabled())
+    return;
   network_service()->sct_auditing_cache()->MaybeEnqueueReport(
-      this, host_port_pair, validated_certificate_chain,
+      host_port_pair, validated_certificate_chain,
       signed_certificate_timestamps);
 }
 
@@ -1210,7 +1249,7 @@ void NetworkContext::CreateTCPServerSocket(
 }
 
 void NetworkContext::CreateTCPConnectedSocket(
-    const base::Optional<net::IPEndPoint>& local_addr,
+    const absl::optional<net::IPEndPoint>& local_addr,
     const net::AddressList& remote_addr_list,
     mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
@@ -1284,42 +1323,39 @@ void NetworkContext::CreateWebSocket(
     const net::IsolationInfo& isolation_info,
     std::vector<mojom::HttpHeaderPtr> additional_headers,
     int32_t process_id,
-    int32_t render_frame_id,
     const url::Origin& origin,
     uint32_t options,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
-    mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
+    mojo::PendingRemote<mojom::URLLoaderNetworkServiceObserver>
+        url_loader_network_observer,
+    mojo::PendingRemote<mojom::WebSocketAuthenticationHandler> auth_handler,
     mojo::PendingRemote<mojom::TrustedHeaderClient> header_client) {
 #if !defined(OS_IOS)
   if (!websocket_factory_)
     websocket_factory_ = std::make_unique<WebSocketFactory>(this);
 
   DCHECK_GE(process_id, 0);
-  if (process_id == mojom::kBrowserProcessId) {
-    DCHECK_EQ(render_frame_id, 0);
-  }
 
   websocket_factory_->CreateWebSocket(
       url, requested_protocols, site_for_cookies, isolation_info,
-      std::move(additional_headers), process_id, render_frame_id, origin,
-      options,
+      std::move(additional_headers), process_id, origin, options,
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-      std::move(handshake_client), std::move(auth_handler),
-      std::move(header_client));
+      std::move(handshake_client), std::move(url_loader_network_observer),
+      std::move(auth_handler), std::move(header_client));
 #endif  // !defined(OS_IOS)
 }
 
-void NetworkContext::CreateQuicTransport(
+void NetworkContext::CreateWebTransport(
     const GURL& url,
     const url::Origin& origin,
     const net::NetworkIsolationKey& key,
-    std::vector<mojom::QuicTransportCertificateFingerprintPtr> fingerprints,
-    mojo::PendingRemote<mojom::QuicTransportHandshakeClient>
+    std::vector<mojom::WebTransportCertificateFingerprintPtr> fingerprints,
+    mojo::PendingRemote<mojom::WebTransportHandshakeClient>
         pending_handshake_client) {
-  quic_transports_.insert(
-      std::make_unique<QuicTransport>(url, origin, key, fingerprints, this,
-                                      std::move(pending_handshake_client)));
+  web_transports_.insert(
+      std::make_unique<WebTransport>(url, origin, key, fingerprints, this,
+                                     std::move(pending_handshake_client)));
 }
 
 void NetworkContext::CreateNetLogExporter(
@@ -1344,7 +1380,7 @@ void NetworkContext::ResolveHost(
 }
 
 void NetworkContext::CreateHostResolver(
-    const base::Optional<net::DnsConfigOverrides>& config_overrides,
+    const absl::optional<net::DnsConfigOverrides>& config_overrides,
     mojo::PendingReceiver<mojom::HostResolver> receiver) {
   net::HostResolver* internal_resolver = url_request_context_->host_resolver();
   std::unique_ptr<net::HostResolver> private_internal_resolver;
@@ -1361,6 +1397,8 @@ void NetworkContext::CreateHostResolver(
     // now, much easier to create entirely separate net::HostResolver instances.
     net::HostResolver::ManagerOptions options;
     options.insecure_dns_client_enabled = true;
+    // Assume additional types are unnecessary for these special cases.
+    options.additional_types_via_insecure_dns_enabled = false;
     options.dns_config_overrides = config_overrides.value();
     private_internal_resolver =
         network_service_->host_resolver_factory()->CreateStandaloneResolver(
@@ -1386,9 +1424,8 @@ void NetworkContext::VerifyCertForSignedExchange(
     const std::string& ocsp_result,
     const std::string& sct_list,
     VerifyCertForSignedExchangeCallback callback) {
-  // TODO(https://crbug.com/1087091): DCHECK that |network_isolation_key| is
-  // populated when |require_network_isolation_key| is true, once all consumers
-  // are passing in a NetworkIsolationKey.
+  if (require_network_isolation_key_)
+    DCHECK(!network_isolation_key.IsEmpty());
 
   int cert_verify_id = ++next_cert_verify_id_;
   auto pending_cert_verify = std::make_unique<PendingCertVerify>();
@@ -1422,7 +1459,7 @@ void NetworkContext::ParseHeaders(
     const GURL& url,
     const scoped_refptr<net::HttpResponseHeaders>& headers,
     ParseHeadersCallback callback) {
-  std::move(callback).Run(PopulateParsedHeaders(headers, url));
+  std::move(callback).Run(PopulateParsedHeaders(headers.get(), url));
 }
 
 void NetworkContext::NotifyExternalCacheHit(
@@ -1753,10 +1790,10 @@ void NetworkContext::LookupServerBasicAuthCredentials(
   if (entry && entry->scheme() == net::HttpAuth::AUTH_SCHEME_BASIC)
     std::move(callback).Run(entry->credentials());
   else
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
 }
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void NetworkContext::LookupProxyAuthCredentials(
     const net::ProxyServer& proxy_server,
     const std::string& auth_scheme,
@@ -1765,7 +1802,7 @@ void NetworkContext::LookupProxyAuthCredentials(
   net::HttpAuth::Scheme net_scheme =
       net::HttpAuth::StringToScheme(base::ToLowerASCII(auth_scheme));
   if (net_scheme == net::HttpAuth::Scheme::AUTH_SCHEME_MAX) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
     return;
   }
   net::HttpAuthCache* http_auth_cache =
@@ -1778,7 +1815,7 @@ void NetworkContext::LookupProxyAuthCredentials(
       proxy_server.is_secure_http_like() ? "https://" : "http://";
   GURL proxy_url(scheme + proxy_server.host_port_pair().ToString());
   if (!proxy_url.is_valid()) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
     return;
   }
 
@@ -1790,7 +1827,7 @@ void NetworkContext::LookupProxyAuthCredentials(
   if (entry)
     std::move(callback).Run(entry->credentials());
   else
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
 }
 #endif
 
@@ -1798,9 +1835,9 @@ const net::HttpAuthPreferences* NetworkContext::GetHttpAuthPreferences() const {
   return &http_auth_merged_preferences_;
 }
 
-size_t NetworkContext::NumOpenQuicTransports() const {
-  return std::count_if(quic_transports_.begin(), quic_transports_.end(),
-                       [](const std::unique_ptr<QuicTransport>& transport) {
+size_t NetworkContext::NumOpenWebTransports() const {
+  return std::count_if(web_transports_.begin(), web_transports_.end(),
+                       [](const std::unique_ptr<WebTransport>& transport) {
                          return !transport->torn_down();
                        });
 }
@@ -1830,7 +1867,7 @@ void NetworkContext::OnHttpAuthDynamicParamsChanged(
       http_auth_dynamic_network_service_params->android_negotiate_account_type);
 #endif
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   http_auth_merged_preferences_.set_allow_gssapi_library_load(
       http_auth_dynamic_network_service_params->allow_gssapi_library_load);
 #endif
@@ -1844,46 +1881,41 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
 
-  DCHECK(
-      g_cert_verifier_for_testing ||
-      !base::FeatureList::IsEnabled(network::features::kCertVerifierService) ||
-      (params_->cert_verifier_params &&
-       params_->cert_verifier_params->is_remote_params()))
-      << "If cert verification service is on, the creator of the "
-         "NetworkContext should pass CertVerifierServiceRemoteParams.";
-
   std::unique_ptr<net::CertVerifier> cert_verifier;
   if (g_cert_verifier_for_testing) {
     cert_verifier = std::make_unique<WrappedTestingCertVerifier>();
   } else {
-    if (params_->cert_verifier_params &&
-        params_->cert_verifier_params->is_remote_params()) {
-      // base::Unretained() is safe below because |this| will own
-      // |cert_verifier|.
-      // TODO(https://crbug.com/1085233): this cert verifier should deal with
-      // disconnections if the CertVerifierService is run outside of the browser
-      // process.
-      cert_verifier = std::make_unique<cert_verifier::MojoCertVerifier>(
-          std::move(params_->cert_verifier_params->get_remote_params()
-                        ->cert_verifier_service),
-          std::move(url_loader_factory_for_cert_net_fetcher),
-          base::BindRepeating(
-              &NetworkContext::CreateURLLoaderFactoryForCertNetFetcher,
-              base::Unretained(this)));
-    } else {
-      mojom::CertVerifierCreationParams* creation_params = nullptr;
-      if (params_->cert_verifier_params &&
-          params_->cert_verifier_params->is_creation_params()) {
-        creation_params =
-            params_->cert_verifier_params->get_creation_params().get();
+    DCHECK(params_->cert_verifier_params);
+    // base::Unretained() is safe below because |this| will own
+    // |cert_verifier|.
+    // TODO(https://crbug.com/1085233): this cert verifier should deal with
+    // disconnections if the CertVerifierService is run outside of the browser
+    // process.
+    cert_verifier = std::make_unique<cert_verifier::MojoCertVerifier>(
+        std::move(params_->cert_verifier_params->cert_verifier_service),
+        std::move(url_loader_factory_for_cert_net_fetcher),
+        base::BindRepeating(
+            &NetworkContext::CreateURLLoaderFactoryForCertNetFetcher,
+            base::Unretained(this)));
+
+#if BUILDFLAG(IS_CT_SUPPORTED)
+    std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs;
+    if (!params_->ct_logs.empty()) {
+      for (const auto& log : params_->ct_logs) {
+        scoped_refptr<const net::CTLogVerifier> log_verifier =
+            net::CTLogVerifier::Create(log->public_key, log->name);
+        if (!log_verifier) {
+          // TODO: Signal bad configuration (such as bad key).
+          continue;
+        }
+        ct_logs.push_back(std::move(log_verifier));
       }
-
-      if (IsUsingCertNetFetcher())
-        cert_net_fetcher_ =
-            base::MakeRefCounted<net::CertNetFetcherURLRequest>();
-
-      cert_verifier = CreateCertVerifier(creation_params, cert_net_fetcher_);
+      auto ct_verifier = std::make_unique<net::MultiLogCTVerifier>();
+      ct_verifier->AddLogs(ct_logs);
+      cert_verifier = std::make_unique<net::CertAndCTVerifier>(
+          std::move(cert_verifier), std::move(ct_verifier));
     }
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
     // Whether the cert verifier is remote or in-process, we should wrap it in
     // caching and coalescing layers to avoid extra verifications and IPCs.
@@ -1891,7 +1923,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
         std::make_unique<net::CoalescingCertVerifier>(
             std::move(cert_verifier)));
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     cert_verifier_with_trust_anchors_ =
         new CertVerifierWithTrustAnchors(base::BindRepeating(
             &NetworkContext::TrustAnchorUsed, base::Unretained(this)));
@@ -1900,11 +1932,43 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
     cert_verifier_with_trust_anchors_->InitializeOnIOThread(
         std::move(cert_verifier));
     cert_verifier = base::WrapUnique(cert_verifier_with_trust_anchors_);
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
 
   builder.SetCertVerifier(IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
       *command_line, nullptr, std::move(cert_verifier)));
+
+#if BUILDFLAG(IS_CT_SUPPORTED)
+  if (params_->enforce_chrome_ct_policy) {
+    std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs;
+    std::vector<std::string> operated_by_google_logs;
+    if (!params_->ct_logs.empty()) {
+      for (const auto& log : params_->ct_logs) {
+        if (log->operated_by_google || log->disqualified_at) {
+          std::string log_id = crypto::SHA256HashString(log->public_key);
+          if (log->operated_by_google)
+            operated_by_google_logs.push_back(log_id);
+          if (log->disqualified_at) {
+            disqualified_logs.push_back(
+                std::make_pair(log_id, log->disqualified_at.value()));
+          }
+        }
+      }
+    }
+
+    std::sort(std::begin(operated_by_google_logs),
+              std::end(operated_by_google_logs));
+    std::sort(std::begin(disqualified_logs), std::end(disqualified_logs));
+
+    builder.set_ct_policy_enforcer(
+        std::make_unique<certificate_transparency::ChromeCTPolicyEnforcer>(
+            params_->ct_log_update_time, disqualified_logs,
+            operated_by_google_logs));
+  }
+
+  builder.set_sct_auditing_delegate(
+      std::make_unique<SCTAuditingDelegate>(weak_factory_.GetWeakPtr()));
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
   std::unique_ptr<NetworkServiceNetworkDelegate> network_delegate =
       std::make_unique<NetworkServiceNetworkDelegate>(
@@ -1919,7 +1983,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
     std::unique_ptr<NetworkServiceProxyDelegate> proxy_delegate =
         std::make_unique<NetworkServiceProxyDelegate>(
             std::move(params_->initial_custom_proxy_config),
-            std::move(params_->custom_proxy_config_client_receiver));
+            std::move(params_->custom_proxy_config_client_receiver),
+            std::move(params_->custom_proxy_connection_observer_remote));
     proxy_delegate_ = proxy_delegate.get();
     builder.set_proxy_delegate(std::move(proxy_delegate));
   }
@@ -1983,11 +2048,11 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
         std::move(params_->proxy_resolver_factory));
   }
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (params_->dhcp_wpad_url_client) {
     builder.SetDhcpWpadUrlClient(std::move(params_->dhcp_wpad_url_client));
   }
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   if (!params_->http_cache_enabled) {
     builder.DisableHttpCache();
@@ -2013,8 +2078,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
       std::make_unique<SSLConfigServiceMojo>(
           std::move(params_->initial_ssl_config),
           std::move(params_->ssl_config_client_receiver),
-          network_service_->crl_set_distributor(),
-          network_service_->legacy_tls_config_distributor());
+          network_service_->crl_set_distributor());
   SSLConfigServiceMojo* ssl_config_service_raw = ssl_config_service.get();
   builder.set_ssl_config_service(std::move(ssl_config_service));
 
@@ -2135,58 +2199,35 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
         return std::make_unique<ThrottlingNetworkTransactionFactory>(session);
       }));
 
-#if BUILDFLAG(IS_CT_SUPPORTED)
-  std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs;
-  std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs;
-  std::vector<std::string> operated_by_google_logs;
-
-  if (!params_->ct_logs.empty()) {
-    for (const auto& log : params_->ct_logs) {
-      if (log->operated_by_google || log->disqualified_at) {
-        std::string log_id = crypto::SHA256HashString(log->public_key);
-        if (log->operated_by_google)
-          operated_by_google_logs.push_back(log_id);
-        if (log->disqualified_at) {
-          disqualified_logs.push_back(
-              std::make_pair(log_id, log->disqualified_at.value()));
-        }
-      }
-      scoped_refptr<const net::CTLogVerifier> log_verifier =
-          net::CTLogVerifier::Create(log->public_key, log->name);
-      if (!log_verifier) {
-        // TODO: Signal bad configuration (such as bad key).
-        continue;
-      }
-      ct_logs.push_back(std::move(log_verifier));
-    }
-    auto ct_verifier = std::make_unique<net::MultiLogCTVerifier>();
-    ct_verifier->AddLogs(ct_logs);
-    builder.set_ct_verifier(std::move(ct_verifier));
-  }
-
-  if (params_->enforce_chrome_ct_policy) {
-    std::sort(std::begin(operated_by_google_logs),
-              std::end(operated_by_google_logs));
-    std::sort(std::begin(disqualified_logs), std::end(disqualified_logs));
-
-    builder.set_ct_policy_enforcer(
-        std::make_unique<certificate_transparency::ChromeCTPolicyEnforcer>(
-            params_->ct_log_update_time, disqualified_logs,
-            operated_by_google_logs));
-  }
-
-  builder.set_sct_auditing_delegate(
-      std::make_unique<SCTAuditingDelegate>(weak_factory_.GetWeakPtr()));
-#endif  // BUILDFLAG(IS_CT_SUPPORTED)
-
   builder.set_host_mapping_rules(
       command_line->GetSwitchValueASCII(switches::kHostResolverRules));
 
   auto result =
       URLRequestContextOwner(std::move(pref_service), builder.Build());
 
-  result.url_request_context->set_require_network_isolation_key(
-      params_->require_network_isolation_key);
+  require_network_isolation_key_ = params_->require_network_isolation_key;
+
+  // If `require_network_isolation_key_` is true, but the features that can
+  // trigger another URLRequest are not set to respect NetworkIsolationKeys,
+  // the URLRequests that they create might not have a NIK, so only set the
+  // corresponding value in the URLRequestContext to true at the URLRequest
+  // layer if all those features are set to respect NIK.
+  if (require_network_isolation_key_ &&
+      base::FeatureList::IsEnabled(
+          net::features::kPartitionConnectionsByNetworkIsolationKey) &&
+      base::FeatureList::IsEnabled(
+          net::features::kPartitionExpectCTStateByNetworkIsolationKey) &&
+      base::FeatureList::IsEnabled(
+          net::features::kPartitionHttpServerPropertiesByNetworkIsolationKey) &&
+      base::FeatureList::IsEnabled(
+          net::features::kPartitionNelAndReportingByNetworkIsolationKey) &&
+      base::FeatureList::IsEnabled(
+          net::features::kPartitionSSLSessionsByNetworkIsolationKey) &&
+      base::FeatureList::IsEnabled(
+          domain_reliability::features::
+              kPartitionDomainReliabilityByNetworkIsolationKey)) {
+    result.url_request_context->set_require_network_isolation_key(true);
+  }
 
   // Subscribe the CertVerifier to configuration changes that are exposed via
   // the mojom::SSLConfig, but which are not part of the
@@ -2292,7 +2333,8 @@ NetworkContext::MakeSessionCleanupCookieStore() const {
 
   net::CookieCryptoDelegate* crypto_delegate = nullptr;
   if (params_->enable_encrypted_cookies) {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !BUILDFLAG(IS_CHROMECAST)
+#if (defined(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
+    !BUILDFLAG(IS_CHROMECAST)
     DCHECK(network_service_->os_crypt_config_set())
         << "NetworkService::SetCryptConfig must be called before creating a "
            "NetworkContext with encrypted cookies.";
@@ -2388,13 +2430,6 @@ void NetworkContext::OnVerifyCertForSignedExchangeComplete(int cert_verify_id,
   if (result == net::OK) {
     net::X509Certificate* verified_cert =
         pending_cert_verify->result->verified_cert.get();
-    url_request_context_->cert_transparency_verifier()->Verify(
-        pending_cert_verify->url.host(), verified_cert,
-        pending_cert_verify->ocsp_result, pending_cert_verify->sct_list,
-        &pending_cert_verify->result->scts,
-        net::NetLogWithSource::Make(
-            network_service_ ? url_request_context_->net_log() : nullptr,
-            net::NetLogSourceType::CERT_VERIFIER_JOB));
 
     net::ct::SCTList verified_scts;
     for (const auto& sct_and_status : pending_cert_verify->result->scts) {
@@ -2432,8 +2467,7 @@ void NetworkContext::OnVerifyCertForSignedExchangeComplete(int cert_verify_id,
             pending_cert_verify->network_isolation_key);
 
     if (url_request_context_->sct_auditing_delegate() &&
-        url_request_context_->sct_auditing_delegate()->IsSCTAuditingEnabled() &&
-        pending_cert_verify->result->is_issued_by_known_root) {
+        url_request_context_->sct_auditing_delegate()->IsSCTAuditingEnabled()) {
       url_request_context_->sct_auditing_delegate()->MaybeEnqueueReport(
           net::HostPortPair::FromURL(pending_cert_verify->url), verified_cert,
           pending_cert_verify->result->scts);
@@ -2473,7 +2507,7 @@ void NetworkContext::OnVerifyCertForSignedExchangeComplete(int cert_verify_id,
       .Run(result, *pending_cert_verify->result.get());
 }
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void NetworkContext::TrustAnchorUsed() {
   client_->OnTrustAnchorUsed();
 }

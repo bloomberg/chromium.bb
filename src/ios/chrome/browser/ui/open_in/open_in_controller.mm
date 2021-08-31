@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
@@ -26,7 +27,6 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state.h"
@@ -44,7 +44,7 @@
 namespace {
 // The path in the temp directory containing documents that are to be opened in
 // other applications.
-static NSString* const kDocumentsTempPath = @"OpenIn";
+static NSString* const kDocumentsTemporaryPath = @"OpenIn";
 
 // Duration of the show/hide animation for the |openInToolbar_|.
 const NSTimeInterval kOpenInToolbarAnimationDuration = 0.2;
@@ -71,7 +71,7 @@ void LogOpenInDownloadResult(const OpenInDownloadResult result) {
 }
 
 // Returns true if the file located at |url| is file.
-bool HasValidFileAtUrl(NSURL* _Nullable url) {
+bool HasValidFileAtUrl(NSURL* url) {
   if (!url)
     return false;
 
@@ -83,6 +83,87 @@ bool HasValidFileAtUrl(NSURL* _Nullable url) {
   }
 
   return [QLPreviewController canPreviewItem:url];
+}
+
+// Returns the temporary path where documents are stored.
+NSString* GetTemporaryDocumentDirectory() {
+  return [NSTemporaryDirectory()
+      stringByAppendingPathComponent:kDocumentsTemporaryPath];
+}
+
+// Removes the file at |file_url|.
+void RemoveDocumentAtPath(NSURL* file_url) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
+
+  if (!file_url.path)
+    return;
+
+  NSError* error = nil;
+  if (![[NSFileManager defaultManager] removeItemAtPath:file_url.path
+                                                  error:&error]) {
+    DLOG(ERROR) << "Failed to remove file: "
+                << base::SysNSStringToUTF8([error description]);
+  }
+}
+
+// Removes all the stored files at |path|.
+void RemoveAllStoredDocumentsAtPath(NSString* path) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
+
+  NSFileManager* file_manager = [NSFileManager defaultManager];
+
+  NSError* error = nil;
+  NSArray<NSString*>* document_files =
+      [file_manager contentsOfDirectoryAtPath:path error:&error];
+  if (!document_files) {
+    DLOG(ERROR) << "Failed to get content of directory at path: "
+                << base::SysNSStringToUTF8([error description]);
+    return;
+  }
+
+  for (NSString* filename in document_files) {
+    NSString* file_path = [path stringByAppendingPathComponent:filename];
+    if (![file_manager removeItemAtPath:file_path error:&error]) {
+      DLOG(ERROR) << "Failed to remove file: "
+                  << base::SysNSStringToUTF8([error description]);
+    }
+  }
+}
+
+// Ensures the destination directory is created and any contained obsolete files
+// are deleted. Returns YES if the directory is created successfully.
+BOOL CreateDestinationDirectoryAndRemoveObsoleteFiles() {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
+
+  NSString* temporary_directory_path = GetTemporaryDocumentDirectory();
+  NSFileManager* file_manager = [NSFileManager defaultManager];
+
+  NSError* error = nil;
+  BOOL is_directory = NO;
+  if (![file_manager fileExistsAtPath:temporary_directory_path
+                          isDirectory:&is_directory]) {
+    BOOL created = [file_manager createDirectoryAtPath:temporary_directory_path
+                           withIntermediateDirectories:YES
+                                            attributes:nil
+                                                 error:&error];
+    DCHECK(created);
+    if (!created) {
+      DLOG(ERROR) << "Error creating destination dir: "
+                  << base::SysNSStringToUTF8([error description]);
+      return NO;
+    }
+  } else {
+    if (!is_directory) {
+      DLOG(ERROR) << "Destination Directory already exists and is a file.";
+      return NO;
+    }
+    // Remove all documents that might be still on temporary storage.
+    RemoveAllStoredDocumentsAtPath(temporary_directory_path);
+  }
+  return YES;
 }
 
 }  // anonymous namespace
@@ -97,12 +178,16 @@ bool HasValidFileAtUrl(NSURL* _Nullable url) {
 // updated. Used to know in which direction the scroll view is scrolling.
 @property(nonatomic, assign) CGFloat previousScrollViewOffset;
 
+// The base view controller from which to present UI.
+@property(nonatomic, assign) UIViewController* baseViewController;
+
+// Task runner on which file operations should happen.
+@property(nonatomic, assign) scoped_refptr<base::SequencedTaskRunner>
+    sequencedTaskRunner;
+
 // SimpleURLLoader completion callback, when |urlLoader_| completes a request.
 - (void)urlLoadDidComplete:(const base::FilePath&)file_path;
-// Ensures the destination directory is created and any contained obsolete files
-// are deleted. Returns YES if the directory is created successfully.
-+ (BOOL)createDestinationDirectoryAndRemoveObsoleteFiles;
-// Starts downloading the file at path |kDocumentsTempPath| with the name
+// Starts downloading the file at path |kDocumentsTemporaryPath| with the name
 // |suggestedFilename_|.
 - (void)startDownload;
 // Shows the overlayed toolbar |openInToolbar_|. If |withTimer| is YES, it would
@@ -126,10 +211,6 @@ bool HasValidFileAtUrl(NSURL* _Nullable url) {
 - (void)showErrorWithMessage:(NSString*)message;
 // Presents the OpenIn menu for the file at |fileURL|.
 - (void)presentOpenInMenuForFileAtURL:(NSURL*)fileURL;
-// Removes the file at path |path|.
-- (void)removeDocumentAtPath:(NSString*)path;
-// Removes all the stored files at path |path|.
-+ (void)removeAllStoredDocumentsAtPath:(NSString*)path;
 // Shows an overlayed spinner on the top view to indicate that a file download
 // is in progress.
 - (void)showDownloadOverlayView;
@@ -138,54 +219,15 @@ bool HasValidFileAtUrl(NSURL* _Nullable url) {
 - (OpenInToolbar*)openInToolbar;
 @end
 
-// Bridge to deliver method calls from C++ to the |OpenInController| class.
-class OpenInControllerBridge
-    : public base::RefCountedThreadSafe<OpenInControllerBridge> {
- public:
-  explicit OpenInControllerBridge(OpenInController* owner) : owner_(owner) {}
-
-  BOOL CreateDestinationDirectoryAndRemoveObsoleteFiles(void) {
-    return [OpenInController createDestinationDirectoryAndRemoveObsoleteFiles];
-  }
-
-  void OnDestinationDirectoryCreated(BOOL success) {
-    DCHECK_CURRENTLY_ON(web::WebThread::UI);
-    if (!success)
-      [owner_ hideOpenInToolbar];
-    else
-      [owner_ startDownload];
-  }
-
-  void OnOwnerDisabled() {
-    // When the owner is disabled:
-    // - if there is a task in flight posted via |PostTaskAndReplyWithResult|
-    // then dereferencing |bridge_| will not release it as |bridge_| is also
-    // referenced by the task posting; setting |owner_| to nil makes sure that
-    // no methods are called on it, and it works since |owner_| is only used on
-    // the main thread.
-    // - if there is a task in flight posted by the URLFetcher then
-    // |OpenInController| destroys the fetcher and cancels the callback. This is
-    // why |OnURLFetchComplete| will neved be called after |owner_| is disabled.
-    owner_ = nil;
-  }
-
- protected:
-  friend base::RefCountedThreadSafe<OpenInControllerBridge>;
-  virtual ~OpenInControllerBridge() {}
-
- private:
-  __weak OpenInController* owner_;
-};
-
 @implementation OpenInController {
-  // Bridge from C++ to Obj-C class.
-  scoped_refptr<OpenInControllerBridge> _bridge;
+  // To check that callbacks are executed on the correct sequence.
+  SEQUENCE_CHECKER(_sequenceChecker);
 
   // URL of the document.
   GURL _documentURL;
 
   // Controller for opening documents in other applications.
-  UIDocumentInteractionController* _documentController;
+  UIActivityViewController* activityViewController;
 
   // Toolbar overlay to be displayed on tap.
   OpenInToolbar* _openInToolbar;
@@ -206,6 +248,9 @@ class OpenInControllerBridge
   // |openInToolbar_| should be displayed.
   web::WebState* _webState;
 
+  // Browser used to display errors.
+  Browser* _browser;
+
   // URLLoaderFactory instance needed for URLLoader.
   scoped_refptr<network::SharedURLLoaderFactory> _urlLoaderFactory;
 
@@ -218,25 +263,25 @@ class OpenInControllerBridge
   // YES if the file download was canceled.
   BOOL _downloadCanceled;
 
-  // YES if the OpenIn menu is displayed.
-  BOOL _isOpenInMenuDisplayed;
-
   // YES if the toolbar is displayed.
   BOOL _isOpenInToolbarDisplayed;
 
-  // Task runner on which file operations should happen.
-  scoped_refptr<base::SequencedTaskRunner> _sequencedTaskRunner;
+  // YES if the workflow has been canceled.
+  BOOL _disabled;
 }
 
 @synthesize baseView = _baseView;
-@synthesize browser = _browser;
 @synthesize previousScrollViewOffset = _previousScrollViewOffset;
 
-- (id)initWithURLLoaderFactory:
-          (scoped_refptr<network::SharedURLLoaderFactory>)urlLoaderFactory
-                      webState:(web::WebState*)webState {
+- (instancetype)initWithBaseViewController:(UIViewController*)baseViewController
+                          URLLoaderFactory:
+                              (scoped_refptr<network::SharedURLLoaderFactory>)
+                                  urlLoaderFactory
+                                  webState:(web::WebState*)webState
+                                   browser:(Browser*)browser {
   self = [super init];
   if (self) {
+    _baseViewController = baseViewController;
     _urlLoaderFactory = std::move(urlLoaderFactory);
     _webState = webState;
     _tapRecognizer = [[UITapGestureRecognizer alloc]
@@ -245,14 +290,15 @@ class OpenInControllerBridge
     [_tapRecognizer setDelegate:self];
     _sequencedTaskRunner = base::ThreadPool::CreateSequencedTaskRunner(
         {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
-    _isOpenInMenuDisplayed = NO;
     _previousScrollViewOffset = 0;
+    _browser = browser;
   }
   return self;
 }
 
 - (void)enableWithDocumentURL:(const GURL&)documentURL
             suggestedFilename:(NSString*)suggestedFilename {
+  _disabled = NO;
   _documentURL = GURL(documentURL);
   _suggestedFilename = suggestedFilename;
   [self.baseView addGestureRecognizer:_tapRecognizer];
@@ -265,18 +311,14 @@ class OpenInControllerBridge
 }
 
 - (void)disable {
+  _disabled = YES;
   [self openInToolbar].alpha = 0.0f;
   [_openInTimer invalidate];
-  if (_bridge.get())
-    _bridge->OnOwnerDisabled();
-  _bridge = nil;
   [self.baseView removeGestureRecognizer:_tapRecognizer];
   if (_webState)
     [[_webState->GetWebViewProxy() scrollViewProxy] removeObserver:self];
   self.previousScrollViewOffset = 0;
   [[self openInToolbar] removeFromSuperview];
-  [_documentController dismissMenuAnimated:NO];
-  [_documentController setDelegate:nil];
   _documentURL = GURL();
   _suggestedFilename = nil;
   _urlLoader.reset();
@@ -284,9 +326,10 @@ class OpenInControllerBridge
 
 - (void)detachFromWebState {
   [self disable];
-  // Animation blocks may be keeping this object alive; don't extend the
-  // lifetime of WebState.
+  // Animation blocks may be keeping this object alive; don't keep a
+  // potentially dangling pointer to WebState and Browser.
   _webState = nullptr;
+  _browser = nullptr;
 }
 
 - (void)dealloc {
@@ -343,8 +386,8 @@ class OpenInControllerBridge
 }
 
 - (void)exportFileWithOpenInMenuAnchoredAt:(UIView*)view {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
   DCHECK([view isKindOfClass:[UIView class]]);
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
   base::RecordAction(base::UserMetricsAction("IOS.OpenIn.Tapped"));
 
@@ -354,25 +397,32 @@ class OpenInControllerBridge
   _anchorLocation = [[self openInToolbar] convertRect:view.frame
                                                toView:self.baseView];
   [_openInTimer invalidate];
-  if (!_bridge.get())
-    _bridge = new OpenInControllerBridge(self);
 
-  // This needs to be done in two steps, on two separate threads. The
-  // first task needs to be done on the worker pool and returns a BOOL which is
-  // then used in the second function, |OnDestinationDirectoryCreated|, which
-  // runs on the UI thread.
-  base::OnceCallback<BOOL(void)> task = base::BindOnce(
-      &OpenInControllerBridge::CreateDestinationDirectoryAndRemoveObsoleteFiles,
-      _bridge);
-  base::OnceCallback<void(BOOL)> reply = base::BindOnce(
-      &OpenInControllerBridge::OnDestinationDirectoryCreated, _bridge);
-  base::PostTaskAndReplyWithResult(_sequencedTaskRunner.get(), FROM_HERE,
-                                   std::move(task), std::move(reply));
+  // Creating the directory can block the main thread, so perform it on a
+  // background sequence, then on current sequence complete the workflow.
+  __weak OpenInController* weakSelf = self;
+  _sequencedTaskRunner->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&CreateDestinationDirectoryAndRemoveObsoleteFiles),
+      base::BindOnce(^(BOOL directoryCreated) {
+        [weakSelf onDestinationDirectoryCreated:directoryCreated];
+      }));
+}
+
+- (void)onDestinationDirectoryCreated:(BOOL)directoryCreated {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
+  if (_disabled)
+    return;
+
+  if (!directoryCreated) {
+    [self hideOpenInToolbar];
+  } else {
+    [self startDownload];
+  }
 }
 
 - (void)startDownload {
-  NSString* tempDirPath = [NSTemporaryDirectory()
-      stringByAppendingPathComponent:kDocumentsTempPath];
+  NSString* tempDirPath = GetTemporaryDocumentDirectory();
   NSString* filePath =
       [tempDirPath stringByAppendingPathComponent:_suggestedFilename];
 
@@ -384,10 +434,6 @@ class OpenInControllerBridge
   // view can be dismissed and the download canceled.
   [self showDownloadOverlayView];
   _downloadCanceled = NO;
-
-  // Ensure |bridge_| is set in case this function is called from a unittest.
-  if (!_bridge.get())
-    _bridge = new OpenInControllerBridge(self);
 
   // Download the document and save it at |filePath|.
   auto resourceRequest = std::make_unique<network::ResourceRequest>();
@@ -429,8 +475,7 @@ class OpenInControllerBridge
 }
 
 - (void)showErrorWithMessage:(NSString*)message {
-  UIViewController* topViewController =
-      [[[UIApplication sharedApplication] keyWindow] rootViewController];
+  UIViewController* topViewController = [GetAnyKeyWindow() rootViewController];
 
   _alertCoordinator =
       [[AlertCoordinator alloc] initWithBaseViewController:topViewController
@@ -449,25 +494,44 @@ class OpenInControllerBridge
   if (!_webState)
     return;
 
-  _documentController =
-      [UIDocumentInteractionController interactionControllerWithURL:fileURL];
+  NSArray* customActions = @[ fileURL ];
+  NSArray* activities = nil;
 
-  // TODO(cgrigoruta): The UTI is hardcoded for now, change this when we add
-  // support for other file types as well.
-  [_documentController setUTI:@"com.adobe.pdf"];
-  [_documentController setDelegate:self];
-  BOOL success = [_documentController presentOpenInMenuFromRect:_anchorLocation
-                                                         inView:self.baseView
-                                                       animated:YES];
+  activityViewController =
+      [[UIActivityViewController alloc] initWithActivityItems:customActions
+                                        applicationActivities:activities];
+
+  // Set completion callback.
+  __weak OpenInController* weakSelf = self;
+  activityViewController.completionWithItemsHandler =
+      ^(NSString*, BOOL, NSArray*, NSError*) {
+        [weakSelf completedPresentOpenInMenuForFileAtURL:fileURL];
+      };
+
+  // UIActivityViewController is presented in a popover on iPad.
+  activityViewController.popoverPresentationController.sourceView =
+      self.baseView;
+  activityViewController.popoverPresentationController.sourceRect =
+      _anchorLocation;
+
   [self removeOverlayedView];
-  if (!success) {
-    if (IsIPadIdiom())
-      [self hideOpenInToolbar];
-    NSString* errorMessage =
-        l10n_util::GetNSStringWithFixup(IDS_IOS_OPEN_IN_NO_APPS_REGISTERED);
-    [self showErrorWithMessage:errorMessage];
-  } else {
-    _isOpenInMenuDisplayed = YES;
+  [self.baseViewController presentViewController:activityViewController
+                                        animated:YES
+                                      completion:nil];
+}
+
+- (void)completedPresentOpenInMenuForFileAtURL:(NSURL*)fileURL {
+  _sequencedTaskRunner->PostTask(FROM_HERE, base::BindOnce(^{
+                                   RemoveDocumentAtPath(fileURL);
+                                 }));
+
+  if (IsIPadIdiom()) {
+    _openInTimer =
+        [NSTimer scheduledTimerWithTimeInterval:kOpenInToolbarDisplayDuration
+                                         target:self
+                                       selector:@selector(hideOpenInToolbar)
+                                       userInfo:nil
+                                        repeats:NO];
   }
 }
 
@@ -483,8 +547,7 @@ class OpenInControllerBridge
                                            UIViewAutoresizingFlexibleHeight)];
   [_overlayedView addSubview:grayBackgroundView];
 
-  UIActivityIndicatorView* spinner = [[UIActivityIndicatorView alloc]
-      initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+  UIActivityIndicatorView* spinner = GetLargeUIActivityIndicatorView();
   [spinner setFrame:[_overlayedView frame]];
   [spinner setHidesWhenStopped:YES];
   [spinner setUserInteractionEnabled:NO];
@@ -542,72 +605,6 @@ class OpenInControllerBridge
 #pragma mark -
 #pragma mark File management
 
-- (void)removeDocumentAtPath:(nullable NSString*)path {
-  if (!path)
-    return;
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::WILL_BLOCK);
-  NSFileManager* fileManager = [NSFileManager defaultManager];
-  NSError* error = nil;
-  if (![fileManager removeItemAtPath:path error:&error]) {
-    DLOG(ERROR) << "Failed to remove file: "
-                << base::SysNSStringToUTF8([error description]);
-  }
-}
-
-+ (void)removeAllStoredDocumentsAtPath:(NSString*)tempDirPath {
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::WILL_BLOCK);
-  NSFileManager* fileManager = [NSFileManager defaultManager];
-  NSError* error = nil;
-  NSArray* documentFiles = [fileManager contentsOfDirectoryAtPath:tempDirPath
-                                                            error:&error];
-  if (!documentFiles) {
-    DLOG(ERROR) << "Failed to get content of directory at path: "
-                << base::SysNSStringToUTF8([error description]);
-    return;
-  }
-
-  for (NSString* filename in documentFiles) {
-    NSString* filePath = [tempDirPath stringByAppendingPathComponent:filename];
-    if (![fileManager removeItemAtPath:filePath error:&error]) {
-      DLOG(ERROR) << "Failed to remove file: "
-                  << base::SysNSStringToUTF8([error description]);
-    }
-  }
-}
-
-+ (BOOL)createDestinationDirectoryAndRemoveObsoleteFiles {
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::WILL_BLOCK);
-  NSString* tempDirPath = [NSTemporaryDirectory()
-      stringByAppendingPathComponent:kDocumentsTempPath];
-  NSFileManager* fileManager = [NSFileManager defaultManager];
-  BOOL isDirectory;
-  NSError* error = nil;
-  if (![fileManager fileExistsAtPath:tempDirPath isDirectory:&isDirectory]) {
-    BOOL created = [fileManager createDirectoryAtPath:tempDirPath
-                          withIntermediateDirectories:YES
-                                           attributes:nil
-                                                error:&error];
-    DCHECK(created);
-    if (!created) {
-      DLOG(ERROR) << "Error creating destination dir: "
-                  << base::SysNSStringToUTF8([error description]);
-      return NO;
-    }
-  } else {
-    DCHECK(isDirectory);
-    if (!isDirectory) {
-      DLOG(ERROR) << "Destination Directory already exists and is a file.";
-      return NO;
-    }
-    // Remove all documents that might be still on temporary storage.
-    [self removeAllStoredDocumentsAtPath:(NSString*)tempDirPath];
-  }
-  return YES;
-}
-
 - (void)urlLoadDidComplete:(const base::FilePath&)filePath {
   NSURL* fileURL = nil;
   if (!filePath.empty())
@@ -618,7 +615,7 @@ class OpenInControllerBridge
     return;
   }
   _sequencedTaskRunner->PostTask(FROM_HERE, base::BindOnce(^{
-                                   [self removeDocumentAtPath:fileURL.path];
+                                   RemoveDocumentAtPath(fileURL);
                                  }));
   OpenInDownloadResult download_result = OpenInDownloadResult::kCanceled;
   if (!_downloadCanceled) {
@@ -630,46 +627,6 @@ class OpenInControllerBridge
                                    IDS_IOS_OPEN_IN_FILE_DOWNLOAD_FAILED)];
   }
   LogOpenInDownloadResult(download_result);
-}
-
-#pragma mark -
-#pragma mark UIDocumentInteractionControllerDelegate Methods
-
-- (void)documentInteractionController:(UIDocumentInteractionController*)contr
-           didEndSendingToApplication:(NSString*)application {
-  _sequencedTaskRunner->PostTask(FROM_HERE, base::BindOnce(^{
-                                   [self
-                                       removeDocumentAtPath:[[contr URL] path]];
-                                 }));
-  if (IsIPadIdiom()) {
-    // Call the |documentInteractionControllerDidDismissOpenInMenu:| method
-    // as this is not called on the iPad after the document has been opened
-    // in another application.
-    [self documentInteractionControllerDidDismissOpenInMenu:contr];
-  }
-}
-
-- (void)documentInteractionControllerDidDismissOpenInMenu:
-    (UIDocumentInteractionController*)controller {
-  if (!IsIPadIdiom()) {
-    _isOpenInMenuDisplayed = NO;
-    // On the iPhone the |openInToolber_| is hidden already.
-    return;
-  }
-
-  // On iPad this method is called whenever the device changes orientation,
-  // even thought the OpenIn menu is not displayed. To distinguish the cases
-  // when this method is called after the OpenIn menu is dismissed, we
-  // check the BOOL |isOpenInMenuDisplayed|.
-  if (_isOpenInMenuDisplayed) {
-    _openInTimer =
-        [NSTimer scheduledTimerWithTimeInterval:kOpenInToolbarDisplayDuration
-                                         target:self
-                                       selector:@selector(hideOpenInToolbar)
-                                       userInfo:nil
-                                        repeats:NO];
-  }
-  _isOpenInMenuDisplayed = NO;
 }
 
 #pragma mark - UIGestureRecognizerDelegate Methods

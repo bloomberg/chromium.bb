@@ -15,12 +15,10 @@
 #include "include/private/SkTo.h"
 #include "include/private/SkVx.h"
 #include "src/core/SkMask.h"
+#include "src/core/SkMathPriv.h"
 
 class SkArenaAlloc;
 class SkScalerContext;
-
-// needs to be != to any valid SkMask::Format
-#define MASK_FORMAT_UNKNOWN         (0xFF)
 
 // A combination of SkGlyphID and sub-pixel position information.
 struct SkPackedGlyphID {
@@ -64,7 +62,6 @@ struct SkPackedGlyphID {
         : fID{PackIDSkPoint(glyphID, pt, mask)} { }
 
     constexpr explicit SkPackedGlyphID(uint32_t v) : fID{v & kMaskAll} { }
-
     constexpr SkPackedGlyphID() : fID{kImpossibleID} {}
 
     bool operator==(const SkPackedGlyphID& that) const {
@@ -233,7 +230,7 @@ struct SkGlyphPrototype;
 class SkGlyph {
 public:
     // SkGlyph() is used for testing.
-    constexpr SkGlyph() : fID{SkPackedGlyphID()} { }
+    constexpr SkGlyph() : SkGlyph{SkPackedGlyphID()} { }
     constexpr explicit SkGlyph(SkPackedGlyphID id) : fID{id} { }
 
     SkVector advanceVector() const { return SkVector{fAdvanceX, fAdvanceY}; }
@@ -304,7 +301,7 @@ public:
 
     // Format
     bool isColor() const { return fMaskFormat == SkMask::kARGB32_Format; }
-    SkMask::Format maskFormat() const { return static_cast<SkMask::Format>(fMaskFormat); }
+    SkMask::Format maskFormat() const { return fMaskFormat; }
     size_t formatAlignment() const;
 
     // Bounds
@@ -400,15 +397,12 @@ private:
     float     fAdvanceX = 0,
               fAdvanceY = 0;
 
-    // This is a combination of SkMask::Format and SkGlyph state. The SkGlyph can be in one of two
-    // states, just the advances have been calculated, and all the metrics are available. The
-    // illegal mask format is used to signal that only the advances are available.
-    uint8_t   fMaskFormat = MASK_FORMAT_UNKNOWN;
+    SkMask::Format fMaskFormat{SkMask::kBW_Format};
 
     // Used by the DirectWrite scaler to track state.
     int8_t    fForceBW = 0;
 
-    const SkPackedGlyphID fID;
+    SkPackedGlyphID fID;
 };
 
 #endif

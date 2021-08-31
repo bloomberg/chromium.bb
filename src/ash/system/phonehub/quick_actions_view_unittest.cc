@@ -4,11 +4,11 @@
 
 #include "ash/system/phonehub/quick_actions_view.h"
 
+#include "ash/constants/ash_features.h"
 #include "ash/system/phonehub/quick_action_item.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/components/phonehub/fake_phone_hub_manager.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "ui/views/test/button_test_api.h"
 
 namespace ash {
@@ -112,13 +112,9 @@ TEST_F(QuickActionsViewTest, SilencePhoneToggle) {
   test_api.NotifyClick(DummyEvent());
   EXPECT_TRUE(dnd_controller()->IsDndEnabled());
 
-  // Locate phone should be disabled when do not disturb is enabled.
-  EXPECT_FALSE(actions_view()->locate_phone_for_testing()->GetEnabled());
-
   // Toggle again to disable.
   test_api.NotifyClick(DummyEvent());
   EXPECT_FALSE(dnd_controller()->IsDndEnabled());
-  EXPECT_TRUE(actions_view()->locate_phone_for_testing()->GetEnabled());
 
   // Test the error state.
   dnd_controller()->SetShouldRequestFail(true);

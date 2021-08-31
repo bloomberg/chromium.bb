@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,29 +21,28 @@ namespace views {
 class TestToggleButton : public ToggleButton {
  public:
   explicit TestToggleButton(int* counter) : counter_(counter) {}
+
   ~TestToggleButton() override {
-    // Calling SetInkDropMode() in this subclass allows this class's
-    // implementation of RemoveInkDropLayer() to be called. The same
+    // Calling ink_drop()->SetMode() in this subclass allows this class's
+    // implementation of RemoveLayerBeneathView() to be called. The same
     // call is made in ~ToggleButton() so this is testing the general technique.
-    SetInkDropMode(InkDropMode::OFF);
+    ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
+  }
+
+  void AddLayerBeneathView(ui::Layer* layer) override {
+    ++(*counter_);
+    ToggleButton::AddLayerBeneathView(layer);
+  }
+
+  void RemoveLayerBeneathView(ui::Layer* layer) override {
+    --(*counter_);
+    ToggleButton::RemoveLayerBeneathView(layer);
   }
 
   using View::Focus;
 
- protected:
-  // ToggleButton:
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override {
-    ++(*counter_);
-    ToggleButton::AddInkDropLayer(ink_drop_layer);
-  }
-
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override {
-    ToggleButton::RemoveInkDropLayer(ink_drop_layer);
-    --(*counter_);
-  }
-
  private:
-  int* counter_;
+  int* const counter_;
 
   DISALLOW_COPY_AND_ASSIGN(TestToggleButton);
 };
@@ -112,6 +112,7 @@ TEST_F(ToggleButtonTest, ShutdownWithFocus) {
 TEST_F(ToggleButtonTest, AcceptEvents) {
   EXPECT_FALSE(button()->GetIsOn());
   ui::test::EventGenerator generator(GetRootWindow(widget()));
+  generator.MoveMouseTo(widget()->GetClientAreaBoundsInScreen().CenterPoint());
 
   // Clicking toggles.
   generator.ClickLeftButton();

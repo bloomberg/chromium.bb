@@ -98,9 +98,11 @@
 #include "vktImagelessFramebufferTests.hpp"
 #include "vktFragmentShaderInterlockTests.hpp"
 #include "vktShaderClockTests.hpp"
-#include "vktShaderClockTests.hpp"
 #include "vktModifiersTests.hpp"
+#include "vktRayTracingTests.hpp"
+#include "vktRayQueryTests.hpp"
 #include "vktPostmortemTests.hpp"
+#include "vktFragmentShadingRateTests.hpp"
 
 #include <vector>
 #include <sstream>
@@ -178,19 +180,6 @@ using de::UniquePtr;
 using de::MovePtr;
 using tcu::TestLog;
 
-namespace
-{
-
-MovePtr<vk::DebugReportRecorder> createDebugReportRecorder (const vk::PlatformInterface& vkp, const vk::InstanceInterface& vki, vk::VkInstance instance, bool printValidationErrors)
-{
-	if (isDebugReportSupported(vkp))
-		return MovePtr<vk::DebugReportRecorder>(new vk::DebugReportRecorder(vki, instance, printValidationErrors));
-	else
-		TCU_THROW(NotSupportedError, "VK_EXT_debug_report is not supported");
-}
-
-} // anonymous
-
 // TestCaseExecutor
 
 class TestCaseExecutor : public tcu::TestCaseExecutor
@@ -205,6 +194,8 @@ public:
 	virtual tcu::TestNode::IterateResult		iterate				(tcu::TestCase* testCase);
 
 private:
+	void										logUnusedShaders	(tcu::TestCase* testCase);
+
 	bool										spirvVersionSupported(vk::SpirvVersion);
 	vk::BinaryCollection						m_progCollection;
 	vk::BinaryRegistryReader					m_prebuiltBinRegistry;
@@ -212,7 +203,6 @@ private:
 	const UniquePtr<vk::Library>				m_library;
 	Context										m_context;
 
-	const UniquePtr<vk::DebugReportRecorder>	m_debugReportRecorder;
 	const UniquePtr<vk::RenderDocUtil>			m_renderDoc;
 	vk::VkPhysicalDeviceProperties				m_deviceProperties;
 	tcu::WaiverUtil								m_waiverMechanism;
@@ -239,12 +229,6 @@ TestCaseExecutor::TestCaseExecutor (tcu::TestContext& testCtx)
 	: m_prebuiltBinRegistry	(testCtx.getArchive(), "vulkan/prebuilt")
 	, m_library				(createLibrary(testCtx))
 	, m_context				(testCtx, m_library->getPlatformInterface(), m_progCollection)
-	, m_debugReportRecorder	(testCtx.getCommandLine().isValidationEnabled()
-							 ? createDebugReportRecorder(m_library->getPlatformInterface(),
-														 m_context.getInstanceInterface(),
-														 m_context.getInstance(),
-														 testCtx.getCommandLine().printValidationErrors())
-							 : MovePtr<vk::DebugReportRecorder>(DE_NULL))
 	, m_renderDoc			(testCtx.getCommandLine().isRenderDocEnabled()
 							 ? MovePtr<vk::RenderDocUtil>(new vk::RenderDocUtil())
 							 : MovePtr<vk::RenderDocUtil>(DE_NULL))
@@ -277,10 +261,8 @@ void TestCaseExecutor::init (tcu::TestCase* testCase, const std::string& casePat
 	vk::ShaderBuildOptions		defaultHlslBuildOptions		(usedVulkanVersion, baselineSpirvVersion, 0u);
 	vk::SpirVAsmBuildOptions	defaultSpirvAsmBuildOptions	(usedVulkanVersion, baselineSpirvVersion);
 	vk::SourceCollections		sourceProgs					(usedVulkanVersion, defaultGlslBuildOptions, defaultHlslBuildOptions, defaultSpirvAsmBuildOptions);
-	const bool					doShaderLog					= log.isShaderLoggingEnabled();
 	const tcu::CommandLine&		commandLine					= m_context.getTestContext().getCommandLine();
-
-	DE_UNREF(casePath); // \todo [2015-03-13 pyry] Use this to identify ProgramCollection storage path
+	const bool					doShaderLog					= commandLine.isLogDecompiledSpirvEnabled() && log.isShaderLoggingEnabled();
 
 	if (!vktCase)
 		TCU_THROW(InternalError, "Test node not an instance of vkt::TestCase");
@@ -358,7 +340,7 @@ void TestCaseExecutor::init (tcu::TestCase* testCase, const std::string& casePat
 	m_context.resultSetOnValidation(false);
 }
 
-void TestCaseExecutor::deinit (tcu::TestCase*)
+void TestCaseExecutor::deinit (tcu::TestCase* testCase)
 {
 	delete m_instance;
 	m_instance = DE_NULL;
@@ -366,8 +348,48 @@ void TestCaseExecutor::deinit (tcu::TestCase*)
 	if (m_renderDoc) m_renderDoc->endFrame(m_context.getInstance());
 
 	// Collect and report any debug messages
-	if (m_debugReportRecorder)
-		collectAndReportDebugMessages(*m_debugReportRecorder, m_context);
+	if (m_context.hasDebugReportRecorder())
+		collectAndReportDebugMessages(m_context.getDebugReportRecorder(), m_context);
+
+	if (testCase != DE_NULL)
+		logUnusedShaders(testCase);
+}
+
+void TestCaseExecutor::logUnusedShaders (tcu::TestCase* testCase)
+{
+	const qpTestResult	testResult	= testCase->getTestContext().getTestResult();
+
+	if (testResult == QP_TEST_RESULT_PASS || testResult == QP_TEST_RESULT_QUALITY_WARNING || testResult == QP_TEST_RESULT_COMPATIBILITY_WARNING)
+	{
+		bool	unusedShaders	= false;
+
+		for (vk::BinaryCollection::Iterator it = m_progCollection.begin(); it != m_progCollection.end(); ++it)
+		{
+			if (!it.getProgram().getUsed())
+			{
+				unusedShaders = true;
+
+				break;
+			}
+		}
+
+		if (unusedShaders)
+		{
+			std::string message;
+
+			for (vk::BinaryCollection::Iterator it = m_progCollection.begin(); it != m_progCollection.end(); ++it)
+			{
+				if (!it.getProgram().getUsed())
+					message += it.getName() + ",";
+			}
+
+			message.resize(message.size() - 1);
+
+			message = std::string("Unused shaders: ") + message;
+
+			m_context.getTestContext().getLog() << TestLog::Message << message << TestLog::EndMessage;
+		}
+	}
 }
 
 tcu::TestNode::IterateResult TestCaseExecutor::iterate (tcu::TestCase*)
@@ -530,7 +552,8 @@ void TestPackage::init (void)
 	addChild(compute::createTests				(m_testCtx));
 	addChild(image::createTests					(m_testCtx));
 	addChild(wsi::createTests					(m_testCtx));
-	addChild(synchronization::createTests		(m_testCtx));
+	addChild(createSynchronizationTests			(m_testCtx));
+	addChild(createSynchronization2Tests		(m_testCtx));
 	addChild(sparse::createTests				(m_testCtx));
 	addChild(tessellation::createTests			(m_testCtx));
 	addChild(rasterization::createTests			(m_testCtx));
@@ -552,6 +575,9 @@ void TestPackage::init (void)
 	addChild(DescriptorIndexing::createTests	(m_testCtx));
 	addChild(FragmentShaderInterlock::createTests(m_testCtx));
 	addChild(modifiers::createTests				(m_testCtx));
+	addChild(RayTracing::createTests			(m_testCtx));
+	addChild(RayQuery::createTests				(m_testCtx));
+	addChild(FragmentShadingRate::createTests	(m_testCtx));
 }
 
 void ExperimentalTestPackage::init (void)

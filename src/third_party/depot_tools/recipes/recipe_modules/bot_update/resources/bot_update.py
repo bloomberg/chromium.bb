@@ -13,6 +13,7 @@ from contextlib import contextmanager
 import copy
 import ctypes
 from datetime import datetime
+import functools
 import json
 import optparse
 import os
@@ -113,68 +114,49 @@ OK = object()
 FAIL = object()
 
 
-class ProcessObservers(object):
-  """ProcessObservers allows monitoring of child process."""
-
-  def poke(self):
-    """poke is called when child process sent `BUF_SIZE` data to stdout."""
-    pass
-
-  def cancel(self):
-    """cancel is called once proc exists successfully."""
-    pass
-
-
-class PsPrinter(ProcessObservers):
-  def __init__(self, interval=300):
+class RepeatingTimer(threading.Thread):
+  """Call a function every n seconds, unless reset."""
+  def __init__(self, interval, function, args=None, kwargs=None):
+    threading.Thread.__init__(self)
     self.interval = interval
-    self.active = sys.platform.startswith('linux2')
-    self.thread = None
+    self.function = function
+    self.args = args if args is not None else []
+    self.kwargs = kwargs if kwargs is not None else {}
+    self.cond = threading.Condition()
+    self.is_shutdown = False
 
-  def print_pstree(self):
-    """Debugging function used to print "ps auxwwf" for stuck processes."""
+  def reset(self):
+    """Resets timer interval."""
+    with self.cond:
+      self.is_reset = True
+      self.cond.notify_all()
+
+  def shutdown(self):
+    """Stops repeating timer."""
+    with self.cond:
+      self.is_shutdown = True
+      self.cond.notify_all()
+
+  def run(self):
+    with self.cond:
+      while not self.is_shutdown:
+        self.cond.wait(self.interval)
+        if not self.is_reset and not self.is_shutdown:
+          self.function(*self.args, **self.kwargs)
+        self.is_reset = False
+
+
+def _print_pstree():
+  """Debugging function used to print "ps auxwwf" for stuck processes."""
+  if sys.platform.startswith('linux2'):
     # Add new line for cleaner output
     print()
     subprocess.call(['ps', 'auxwwf'])
 
-    # Restart timer, we want to continue printing until the process is
-    # terminated.
-    self.poke()
 
-  def poke(self):
-    if self.active:
-      self.cancel()
-      self.thread = threading.Timer(self.interval, self.print_pstree)
-      self.thread.start()
-
-  def cancel(self):
-    if self.active and self.thread is not None:
-      self.thread.cancel()
-      self.thread = None
-
-
-class StaleProcess(ProcessObservers):
-  '''StaleProcess terminates process if there is no poke call in `interval`. '''
-
-  def __init__(self, interval, proc):
-    self.interval = interval
-    self.proc = proc
-    self.thread = None
-
-  def _terminate_process(self):
-    print('Terminating stale process...')
-    self.proc.terminate()
-
-  def poke(self):
-    self.cancel()
-    if self.interval > 0:
-      self.thread = threading.Timer(self.interval, self._terminate_process)
-      self.thread.start()
-
-  def cancel(self):
-    if self.thread is not None:
-      self.thread.cancel()
-      self.thread = None
+def _terminate_process(proc):
+  print('Terminating stale process...')
+  proc.terminate()
 
 
 def call(*args, **kwargs):  # pragma: no cover
@@ -205,13 +187,17 @@ def call(*args, **kwargs):  # pragma: no cover
     proc.stdin.close()
   stale_process_duration = env.get('STALE_PROCESS_DURATION',
                                    STALE_PROCESS_DURATION)
-  observers = [PsPrinter(), StaleProcess(int(stale_process_duration), proc)]
+  observers = [
+      RepeatingTimer(300, _print_pstree),
+      RepeatingTimer(int(stale_process_duration), _terminate_process, [proc])]
+  for observer in observers:
+    observer.start()
   # This is here because passing 'sys.stdout' into stdout for proc will
   # produce out of order output.
   hanging_cr = False
   while True:
     for observer in observers:
-      observer.poke()
+      observer.reset()
     buf = proc.stdout.read(BUF_SIZE)
     if not buf:
       break
@@ -227,7 +213,7 @@ def call(*args, **kwargs):  # pragma: no cover
     sys.stdout.write('\n')
     out.write('\n')
   for observer in observers:
-    observer.cancel()
+    observer.shutdown()
 
   code = proc.wait()
   elapsed_time = ((time.time() - start_time) / 60.0)
@@ -365,8 +351,6 @@ def call_gclient(*args, **kwargs):
   """
   cmd = [sys.executable, '-u', GCLIENT_PATH]
   cmd.extend(args)
-  # Disable metrics collection on bots, since it's not supported anyway.
-  kwargs.setdefault('env', {})['DEPOT_TOOLS_METRICS'] = '0'
   return call(*cmd, **kwargs)
 
 
@@ -417,7 +401,7 @@ def gclient_sync(
     args += ['--disable-syntax-validation']
   for name, revision in sorted(revisions.items()):
     if revision.upper() == 'HEAD':
-      revision = 'origin/master'
+      revision = 'refs/remotes/origin/master'
     args.extend(['--revision', '%s@%s' % (name, revision)])
 
   if patch_refs:
@@ -636,7 +620,8 @@ def _has_in_git_cache(revision_sha1, refs, git_cache_dir, url):
   try:
     mirror_dir = git(
         'cache', 'exists', '--quiet', '--cache-dir', git_cache_dir, url).strip()
-    git('cat-file', '-e', revision_sha1, cwd=mirror_dir)
+    if revision_sha1:
+      git('cat-file', '-e', revision_sha1, cwd=mirror_dir)
     for ref in refs:
       git('cat-file', '-e', ref, cwd=mirror_dir)
     return True
@@ -676,6 +661,15 @@ def _maybe_break_locks(checkout_path, tries=3):
       pass
 
 
+def _set_git_config(fn):
+  @functools.wraps(fn)
+  def wrapper(*args, **kwargs):
+    with git_config_if_not_set('user.name', 'chrome-bot'), \
+         git_config_if_not_set('user.email', 'chrome-bot@chromium.org'), \
+         git_config_if_not_set('fetch.uriprotocols', 'https'):
+        return fn(*args, **kwargs)
+  return wrapper
+
 
 def git_checkouts(solutions, revisions, refs, no_fetch_tags, git_cache_dir,
                   cleanup_dir, enforce_fetch):
@@ -697,10 +691,16 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
                   cleanup_dir, enforce_fetch):
   name = sln['name']
   url = sln['url']
+
+  branch, revision = get_target_branch_and_revision(name, url, revisions)
+  pin = revision if COMMIT_HASH_RE.match(revision) else None
+
   populate_cmd = (['cache', 'populate', '--ignore_locks', '-v',
                    '--cache-dir', git_cache_dir, url, '--reset-fetch-config'])
   if no_fetch_tags:
     populate_cmd.extend(['--no-fetch-tags'])
+  if pin:
+    populate_cmd.extend(['--commit', pin])
   for ref in refs:
     populate_cmd.extend(['--ref', ref])
 
@@ -710,51 +710,32 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
     env = {
         'GIT_TRACE': 'true',
         'GIT_TRACE_PERFORMANCE': 'true',
+        'GIT_TRACE_CURL': 'true',
+        'GIT_TRACE_CURL_NO_DATA': 'true',
+        'GIT_REDACT_COOKIES': 'o,SSO,GSSO_UberProxy,__Secure-GSSO_UberProxy',
     }
 
-  branch, revision = get_target_branch_and_revision(name, url, revisions)
-  pin = revision if COMMIT_HASH_RE.match(revision) else None
-
-  if enforce_fetch:
-    git(*populate_cmd, env=env)
-
   # Step 1: populate/refresh cache, if necessary.
-  if not pin:
-    # Refresh only once.
+  if enforce_fetch or not pin:
     git(*populate_cmd, env=env)
-  elif _has_in_git_cache(pin, refs, git_cache_dir, url):
-    # No need to fetch at all, because we already have needed revision.
-    pass
-  else:
-    # We may need to retry a bit due to eventual consinstency in replication of
-    # git servers.
-    soft_deadline = time.time() + 60
-    attempt = 0
-    while True:
-      attempt += 1
-      # TODO(tandrii): propagate the pin to git server per recommendation of
-      # maintainers of *.googlesource.com (workaround git server replication
-      # lag).
-      git(*populate_cmd, env=env)
+
+  # If cache still doesn't have required pin/refs, try again and fetch pin/refs
+  # directly.
+  if not _has_in_git_cache(pin, refs, git_cache_dir, url):
+    for attempt in range(3):
+      with git_config_if_not_set(
+          'http.extraheader', 'X-Return-Encrypted-Headers: all'):
+        git(*populate_cmd, env=env)
       if _has_in_git_cache(pin, refs, git_cache_dir, url):
         break
-      overrun = time.time() - soft_deadline
-      # Only kick in deadline after second attempt to ensure we retry at least
-      # once after initial fetch from not-yet-replicated server.
-      if attempt >= 2 and overrun > 0:
-        print('Ran %s seconds past deadline. Aborting.' % (overrun,))
-        # TODO(tandrii): raise exception immediately here, instead of doing
-        # useless step 2 trying to fetch something that we know doesn't exist
-        # in cache **after production data gives us confidence to do so**.
-        break
-
-      sleep_secs = min(60, 2**attempt)
-      print('waiting %s seconds and trying to fetch again...' % sleep_secs)
-      time.sleep(sleep_secs)
+      print('Some required refs/commits are still not present.')
+      print('Waiting 60s and trying again.')
+      time.sleep(60)
 
   # Step 2: populate a checkout from local cache. All operations are local.
   mirror_dir = git(
       'cache', 'exists', '--quiet', '--cache-dir', git_cache_dir, url).strip()
+  _set_remote_head(mirror_dir)
   first_try = True
   while True:
     try:
@@ -774,6 +755,9 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
         git('remote', 'set-url', 'origin', mirror_dir, cwd=sln_dir)
         git('fetch', 'origin', cwd=sln_dir)
       git('remote', 'set-url', '--push', 'origin', url, cwd=sln_dir)
+      _set_remote_head(sln_dir)
+      if pin:
+        git('fetch', 'origin', pin, cwd=sln_dir)
       for ref in refs:
         refspec = '%s:%s' % (ref, ref_to_remote_ref(ref.lstrip('+')))
         git('fetch', 'origin', refspec, cwd=sln_dir)
@@ -804,6 +788,19 @@ def _git_disable_gc(cwd):
   git('config', 'gc.auto', '0', cwd=cwd)
   git('config', 'gc.autodetach', '0', cwd=cwd)
   git('config', 'gc.autopacklimit', '0', cwd=cwd)
+
+
+def _set_remote_head(cwd):
+  if len(git('ls-remote', 'origin', 'HEAD', cwd=cwd)) > 0:
+    return
+  try:
+    git('remote', 'set-head', 'origin', '--auto', cwd=cwd)
+  except SubprocessFailed:
+    # If remote HEAD cannot be set automatically, prefer main over master.
+    try:
+      git('remote', 'set-head', 'origin', 'main', cwd=cwd)
+    except SubprocessFailed:
+      git('remote', 'set-head', 'origin', 'master', cwd=cwd)
 
 
 def get_commit_position(git_path, revision='HEAD'):
@@ -864,6 +861,7 @@ def emit_json(out_file, did_run, gclient_output=None, **kwargs):
     f.write(json.dumps(output, sort_keys=True))
 
 
+@_set_git_config
 def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                     target_cpu, patch_root, patch_refs, gerrit_rebase_patch_ref,
                     no_fetch_tags, refs, git_cache_dir, cleanup_dir,
@@ -894,20 +892,18 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   for solution_name in list(solution_dirs):
     gc_revisions[solution_name] = 'unmanaged'
 
-  with git_config_if_not_set('user.name', 'chrome-bot'), \
-       git_config_if_not_set('user.email', 'chrome-bot@chromium.org'):
-    # Let gclient do the DEPS syncing.
-    # The branch-head refspec is a special case because it's possible Chrome
-    # src, which contains the branch-head refspecs, is DEPSed in.
-    gclient_output = gclient_sync(
-        BRANCH_HEADS_REFSPEC in refs,
-        TAGS_REFSPEC in refs,
-        gc_revisions,
-        break_repo_locks,
-        disable_syntax_validation,
-        patch_refs,
-        gerrit_reset,
-        gerrit_rebase_patch_ref)
+  # Let gclient do the DEPS syncing.
+  # The branch-head refspec is a special case because it's possible Chrome
+  # src, which contains the branch-head refspecs, is DEPSed in.
+  gclient_output = gclient_sync(
+      BRANCH_HEADS_REFSPEC in refs,
+      TAGS_REFSPEC in refs,
+      gc_revisions,
+      break_repo_locks,
+      disable_syntax_validation,
+      patch_refs,
+      gerrit_reset,
+      gerrit_rebase_patch_ref)
 
   # Now that gclient_sync has finished, we should revert any .DEPS.git so that
   # presubmit doesn't complain about it being modified.

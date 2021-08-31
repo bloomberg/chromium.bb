@@ -12,7 +12,7 @@
 #include <memory>
 #include "stdlib.h"
 #include "string.h"
-#include "src/sksl/SkSLDefines.h"
+#include "include/private/SkSLDefines.h"
 #include "src/sksl/SkSLLexer.h"
 
 #ifndef SKSL_STANDALONE
@@ -144,11 +144,6 @@ public:
         return fMustEnableAdvBlendEqs;
     }
 
-    bool fMustEnableSpecificAdvBlendEqs = false;
-    bool mustEnableSpecificAdvBlendEqs() const {
-        return fMustEnableSpecificAdvBlendEqs;
-    }
-
     bool fCanUseAnyFunctionInShader = true;
     bool canUseAnyFunctionInShader() const {
         return fCanUseAnyFunctionInShader;
@@ -169,6 +164,11 @@ public:
         return fIntegerSupport;
     }
 
+    bool fNonsquareMatrixSupport = false;
+    bool nonsquareMatrixSupport() const {
+        return fNonsquareMatrixSupport;
+    }
+
     bool fBuiltinFMASupport = false;
     bool builtinFMASupport() const {
         return fBuiltinFMASupport;
@@ -185,6 +185,11 @@ public:
         // (which would then, being baked in, end up being used even in contexts where do loops are
         // not allowed)
         return fCanUseDoLoops;
+    }
+
+    bool fUseNodePools = true;
+    bool useNodePools() const {
+        return fUseNodePools;
     }
 
     const char* fShaderDerivativeExtensionString = nullptr;
@@ -271,6 +276,12 @@ public:
     const char* fbFetchColorName() const {
         return fFBFetchColorName;
     }
+
+    bool fRewriteMatrixVectorMultiply = false;
+    bool rewriteMatrixVectorMultiply() const {
+        return fRewriteMatrixVectorMultiply;
+    }
+
 };
 
 using ShaderCapsClass = StandaloneShaderCaps;
@@ -424,6 +435,13 @@ public:
         return result;
     }
 
+    static ShaderCapsPointer RewriteMatrixVectorMultiply() {
+        ShaderCapsPointer result = MakeShaderCaps();
+        result->fVersionDeclString = "#version 400";
+        result->fRewriteMatrixVectorMultiply = true;
+        return result;
+    }
+
     static ShaderCapsPointer SampleMaskSupport() {
         ShaderCapsPointer result = Default();
         result->fSampleMaskSupport = true;
@@ -475,8 +493,6 @@ bool type_to_grsltype(const Context& context, const Type& type, GrSLType* outTyp
 #endif
 
 void write_stringstream(const StringStream& d, OutputStream& out);
-
-NORETURN void sksl_abort();
 
 }  // namespace SkSL
 

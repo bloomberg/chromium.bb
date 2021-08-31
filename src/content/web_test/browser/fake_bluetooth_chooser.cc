@@ -27,8 +27,8 @@ FakeBluetoothChooser::~FakeBluetoothChooser() {
           IMMEDIATE_TIMEOUT);
 
   client_->OnEvent(mojom::FakeBluetoothChooserEvent::New(
-      mojom::ChooserEventType::CHOOSER_CLOSED, /*origin=*/base::nullopt,
-      /*peripheral_address=*/base::nullopt));
+      mojom::ChooserEventType::CHOOSER_CLOSED, /*origin=*/absl::nullopt,
+      /*peripheral_address=*/absl::nullopt));
 }
 
 void FakeBluetoothChooser::OnRunBluetoothChooser(
@@ -37,7 +37,7 @@ void FakeBluetoothChooser::OnRunBluetoothChooser(
   event_handler_ = event_handler;
   client_->OnEvent(mojom::FakeBluetoothChooserEvent::New(
       mojom::ChooserEventType::CHOOSER_OPENED, origin,
-      /*peripheral_address=*/base::nullopt));
+      /*peripheral_address=*/absl::nullopt));
 }
 
 // mojom::FakeBluetoothChooser overrides
@@ -51,16 +51,16 @@ void FakeBluetoothChooser::Cancel() {
   DCHECK(event_handler_);
   event_handler_.Run(BluetoothChooserEvent::CANCELLED, std::string());
   client_->OnEvent(mojom::FakeBluetoothChooserEvent::New(
-      mojom::ChooserEventType::CHOOSER_CLOSED, /*origin=*/base::nullopt,
-      /*peripheral_address=*/base::nullopt));
+      mojom::ChooserEventType::CHOOSER_CLOSED, /*origin=*/absl::nullopt,
+      /*peripheral_address=*/absl::nullopt));
 }
 
 void FakeBluetoothChooser::Rescan() {
   DCHECK(event_handler_);
   event_handler_.Run(BluetoothChooserEvent::RESCAN, std::string());
   client_->OnEvent(mojom::FakeBluetoothChooserEvent::New(
-      mojom::ChooserEventType::DISCOVERING, /*origin=*/base::nullopt,
-      /*peripheral_address=*/base::nullopt));
+      mojom::ChooserEventType::DISCOVERING, /*origin=*/absl::nullopt,
+      /*peripheral_address=*/absl::nullopt));
 }
 
 // BluetoothChooser overrides
@@ -77,6 +77,9 @@ void FakeBluetoothChooser::SetAdapterPresence(AdapterPresence presence) {
       break;
     case AdapterPresence::POWERED_ON:
       event_ptr->type = mojom::ChooserEventType::ADAPTER_ENABLED;
+      break;
+    case AdapterPresence::UNAUTHORIZED:
+      event_ptr->type = mojom::ChooserEventType::UNAUTHORIZED;
       break;
   }
   client_->OnEvent(std::move(event_ptr));
@@ -101,13 +104,13 @@ void FakeBluetoothChooser::ShowDiscoveryState(DiscoveryState state) {
 
 void FakeBluetoothChooser::AddOrUpdateDevice(const std::string& device_id,
                                              bool should_update_name,
-                                             const base::string16& device_name,
+                                             const std::u16string& device_name,
                                              bool is_gatt_connected,
                                              bool is_paired,
                                              int signal_strength_level) {
   client_->OnEvent(mojom::FakeBluetoothChooserEvent::New(
       mojom::ChooserEventType::ADD_OR_UPDATE_DEVICE,
-      /*origin=*/base::nullopt, /*peripheral_address=*/device_id));
+      /*origin=*/absl::nullopt, /*peripheral_address=*/device_id));
 }
 
 }  // namespace content

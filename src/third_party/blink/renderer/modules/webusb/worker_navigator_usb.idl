@@ -5,12 +5,9 @@
 // https://wicg.github.io/webusb/#enumeration
 
 [
-    // TODO(crbug.com/839117): Enable the following [Exposed] on the partial
-    // interface declaration once it's supported.
-    //
-    // Exposed(DedicatedWorker WebUSBOnDedicatedWorkers),
-    ImplementedAs=WorkerNavigatorUSB,
+    Exposed(DedicatedWorker WebUSBOnDedicatedWorkers),
+    ImplementedAs=USB,
     SecureContext
 ] partial interface WorkerNavigator {
-    [CallWith=ScriptState, SameObject] readonly attribute USB usb;
+    [SameObject] readonly attribute USB usb;
 };

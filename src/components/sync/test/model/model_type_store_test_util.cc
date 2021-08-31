@@ -11,9 +11,9 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/model_impl/blocking_model_type_store_impl.h"
-#include "components/sync/model_impl/model_type_store_backend.h"
-#include "components/sync/model_impl/model_type_store_impl.h"
+#include "components/sync/model/blocking_model_type_store_impl.h"
+#include "components/sync/model/model_type_store_backend.h"
+#include "components/sync/model/model_type_store_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -86,7 +86,7 @@ RepeatingModelTypeStoreFactory
 ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest() {
   return base::BindRepeating(
       [](ModelType type, ModelTypeStore::InitCallback callback) {
-        std::move(callback).Run(/*error=*/base::nullopt,
+        std::move(callback).Run(/*error=*/absl::nullopt,
                                 CreateInMemoryStoreForTest(type));
       });
 }
@@ -97,7 +97,7 @@ OnceModelTypeStoreFactory ModelTypeStoreTestUtil::MoveStoreToFactory(
   return base::BindOnce(
       [](std::unique_ptr<ModelTypeStore> store, ModelType type,
          ModelTypeStore::InitCallback callback) {
-        std::move(callback).Run(/*error=*/base::nullopt, std::move(store));
+        std::move(callback).Run(/*error=*/absl::nullopt, std::move(store));
       },
       std::move(store));
 }
@@ -109,7 +109,7 @@ ModelTypeStoreTestUtil::FactoryForForwardingStore(ModelTypeStore* target) {
       [](ModelTypeStore* target, ModelType,
          ModelTypeStore::InitCallback callback) {
         std::move(callback).Run(
-            /*error=*/base::nullopt,
+            /*error=*/absl::nullopt,
             std::make_unique<ForwardingModelTypeStore>(target));
       },
       base::Unretained(target));

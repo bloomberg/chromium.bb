@@ -48,8 +48,10 @@ struct WebAccessibleResourcesInfo : public Extension::ManifestData {
   };
 
   // Returns true if the specified resource is web accessible.
-  static bool IsResourceWebAccessible(const Extension* extension,
-                                      const std::string& relative_path);
+  static bool IsResourceWebAccessible(
+      const Extension* extension,
+      const std::string& relative_path,
+      const absl::optional<url::Origin>& initiator_origin);
 
   // Returns true when 'web_accessible_resources' are defined for the extension.
   static bool HasWebAccessibleResources(const Extension* extension);
@@ -64,7 +66,7 @@ class WebAccessibleResourcesHandler : public ManifestHandler {
   WebAccessibleResourcesHandler();
   ~WebAccessibleResourcesHandler() override;
 
-  bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, std::u16string* error) override;
 
  private:
   base::span<const char* const> Keys() const override;

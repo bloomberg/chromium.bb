@@ -24,6 +24,10 @@
 #include <malloc.h>
 #endif
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#include <features.h>
+#endif
+
 namespace base {
 
 int64_t TimeValToMicroseconds(const struct timeval& tv) {
@@ -101,18 +105,29 @@ void IncreaseFdLimitTo(unsigned int max_descriptors) {
 
 #endif  // !defined(OS_FUCHSIA)
 
-size_t GetPageSize() {
-  static const size_t pagesize = []() -> size_t {
-  // For more information see getpagesize(2). Portable applications should use
-  // sysconf(_SC_PAGESIZE) rather than getpagesize() if it's available.
-#if defined(_SC_PAGESIZE)
-    return sysconf(_SC_PAGESIZE);
-#else
-    return getpagesize();
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+namespace {
+
+size_t GetMallocUsageMallinfo() {
+#if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
+#if __GLIBC_PREREQ(2, 33)
+#define MALLINFO2_FOUND_IN_LIBC
+  struct mallinfo2 minfo = mallinfo2();
 #endif
-  }();
-  return pagesize;
+#endif  // defined(__GLIBC__) && defined(__GLIBC_PREREQ)
+#if !defined(MALLINFO2_FOUND_IN_LIBC)
+  struct mallinfo minfo = mallinfo();
+#endif
+#undef MALLINFO2_FOUND_IN_LIBC
+#if BUILDFLAG(USE_TCMALLOC)
+  return minfo.uordblks;
+#else
+  return minfo.hblkhd + minfo.arena;
+#endif
 }
+
+}  // namespace
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
 size_t ProcessMetrics::GetMallocUsage() {
 #if defined(OS_APPLE)
@@ -120,12 +135,7 @@ size_t ProcessMetrics::GetMallocUsage() {
   malloc_zone_statistics(nullptr, &stats);
   return stats.size_in_use;
 #elif defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
-  struct mallinfo minfo = mallinfo();
-#if BUILDFLAG(USE_TCMALLOC)
-  return minfo.uordblks;
-#else
-  return minfo.hblkhd + minfo.arena;
-#endif
+  return GetMallocUsageMallinfo();
 #elif defined(OS_FUCHSIA)
   // TODO(fuchsia): Not currently exposed. https://crbug.com/735087.
   return 0;

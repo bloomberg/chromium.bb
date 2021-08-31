@@ -72,6 +72,24 @@ class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
 
   @mock.patch.object(utils, 'IsValidSheriffUser',
                      mock.MagicMock(return_value=True))
+  def testPost_NoStoryFilter(self):
+    response = self.testapp.post(
+        '/pinpoint/new',
+        params={
+            'test_path':
+                'ChromiumPerf/android-webview-nexus5x/system_health/foo',
+            'start_commit':
+                'abcd1234',
+            'end_commit':
+                'efgh5678',
+            'extra_test_args':
+                '',
+        })
+    self.assertEqual({u'error': u'Story is required.'},
+                     json.loads(response.body))
+
+  @mock.patch.object(utils, 'IsValidSheriffUser',
+                     mock.MagicMock(return_value=True))
   @mock.patch.object(pinpoint_service, 'NewJob')
   @mock.patch.object(pinpoint_request, 'PinpointParamsFromPerfTryParams',
                      mock.MagicMock(return_value={'test': 'result'}))
@@ -107,7 +125,7 @@ class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
         'start_commit': 'abcd1234',
         'end_commit': 'efgh5678',
         'extra_test_args': '',
-        'story_filter': '',
+        'story_filter': 'required',
     }
     results = pinpoint_request.PinpointParamsFromPerfTryParams(params)
 
@@ -118,7 +136,7 @@ class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
   def testPinpointParams_InvalidSheriff_RaisesError(self):
     params = {
         'test_path': 'ChromiumPerf/foo/blah/foo',
-        'story_filter': '',
+        'story_filter': 'required',
     }
     with self.assertRaises(pinpoint_request.InvalidParamsError):
       pinpoint_request.PinpointParamsFromPerfTryParams(params)
@@ -131,7 +149,7 @@ class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
         'start_commit': 'abcd1234',
         'end_commit': 'efgh5678',
         'extra_test_args': json.dumps(['--extra-trace-args', 'abc,123,foo']),
-        'story_filter': '',
+        'story_filter': 'required',
     }
     results = pinpoint_request.PinpointParamsFromPerfTryParams(params)
 
@@ -145,7 +163,7 @@ class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
         'start_commit': 'abcd1234',
         'end_commit': 'efgh5678',
         'extra_test_args': json.dumps(['--extra-trace-args', 'abc,123,foo']),
-        'story_filter': '',
+        'story_filter': 'required',
     }
     results = pinpoint_request.PinpointParamsFromPerfTryParams(params)
 
@@ -171,13 +189,32 @@ class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
         'extra_test_args':
             '',
         'story_filter':
-            '',
+            'required',
     }
     results = pinpoint_request.PinpointParamsFromPerfTryParams(params)
 
     self.assertEqual('Android Nexus5X WebView Perf', results['configuration'])
     self.assertEqual('system_health', results['benchmark'])
     self.assertEqual('performance_webview_test_suite', results['target'])
+    self.assertEqual('foo@chromium.org', results['user'])
+    self.assertEqual('abcd1234', results['base_git_hash'])
+    self.assertEqual('efgh5678', results['end_git_hash'])
+
+  @mock.patch.object(utils, 'IsValidSheriffUser',
+                     mock.MagicMock(return_value=True))
+  def testPinpointParams_IsolateTarget_LacrosEve(self):
+    params = {
+        'test_path': 'ChromiumPerf/lacros-eve-perf/system_health/foo',
+        'start_commit': 'abcd1234',
+        'end_commit': 'efgh5678',
+        'extra_test_args': '',
+        'story_filter': 'required',
+    }
+    results = pinpoint_request.PinpointParamsFromPerfTryParams(params)
+
+    self.assertEqual('lacros-eve-perf', results['configuration'])
+    self.assertEqual('system_health', results['benchmark'])
+    self.assertEqual('performance_test_suite_eve', results['target'])
     self.assertEqual('foo@chromium.org', results['user'])
     self.assertEqual('abcd1234', results['base_git_hash'])
     self.assertEqual('efgh5678', results['end_git_hash'])
@@ -192,7 +229,7 @@ class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
         'start_commit': '1234',
         'end_commit': '5678',
         'extra_test_args': '',
-        'story_filter': '',
+        'story_filter': 'required',
     }
     results = pinpoint_request.PinpointParamsFromPerfTryParams(params)
 
@@ -208,7 +245,7 @@ class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
         'start_commit': 'abcd1234',
         'end_commit': 'efgh5678',
         'extra_test_args': '',
-        'story_filter': '',
+        'story_filter': 'required',
     }
     results = pinpoint_request.PinpointParamsFromPerfTryParams(params)
 
@@ -226,7 +263,7 @@ class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
         'start_commit': '1234',
         'end_commit': '5678',
         'extra_test_args': '',
-        'story_filter': '',
+        'story_filter': 'required',
     }
     results = pinpoint_request.PinpointParamsFromPerfTryParams(params)
 
@@ -380,7 +417,7 @@ class PinpointNewBisectRequestHandlerTest(testing_common.TestCase):
         'end_commit': 'efgh5678',
         'bug_id': 1,
         'bisect_mode': 'performance',
-        'story_filter': '',
+        'story_filter': 'required',
         'pin': '',
         'alerts': json.dumps([anomaly_entity.key.urlsafe()])
     }
@@ -403,7 +440,7 @@ class PinpointNewBisectRequestHandlerTest(testing_common.TestCase):
         'end_commit': 'efgh5678',
         'bug_id': 1,
         'bisect_mode': 'performance',
-        'story_filter': '',
+        'story_filter': 'required',
         'pin': '',
     }
     results = pinpoint_request.PinpointParamsFromBisectParams(params)
@@ -467,7 +504,7 @@ class PinpointNewBisectRequestHandlerTest(testing_common.TestCase):
         'bisect_mode':
             'performance',
         'story_filter':
-            '',
+            'required',
         'pin':
             '',
     }
@@ -477,6 +514,34 @@ class PinpointNewBisectRequestHandlerTest(testing_common.TestCase):
     self.assertEqual('system_health', results['benchmark'])
     self.assertEqual('foo', results['chart'])
     self.assertEqual('performance_webview_test_suite', results['target'])
+    self.assertEqual('foo@chromium.org', results['user'])
+    self.assertEqual('abcd1234', results['start_git_hash'])
+    self.assertEqual('efgh5678', results['end_git_hash'])
+    self.assertEqual('performance', results['comparison_mode'])
+    self.assertEqual(1, results['bug_id'])
+
+  @mock.patch.object(utils, 'IsValidSheriffUser',
+                     mock.MagicMock(return_value=True))
+  def testPinpointParams_IsolateTarget_LacrosEve(self):
+    testing_common.AddTests(['ChromiumPerf'], ['lacros-eve-perf'],
+                            {'system_health': {
+                                'foo': {}
+                            }})
+    params = {
+        'test_path': 'ChromiumPerf/lacros-eve-perf/system_health/foo',
+        'start_commit': 'abcd1234',
+        'end_commit': 'efgh5678',
+        'bug_id': 1,
+        'bisect_mode': 'performance',
+        'story_filter': 'required',
+        'pin': '',
+    }
+    results = pinpoint_request.PinpointParamsFromBisectParams(params)
+
+    self.assertEqual('lacros-eve-perf', results['configuration'])
+    self.assertEqual('system_health', results['benchmark'])
+    self.assertEqual('foo', results['chart'])
+    self.assertEqual('performance_test_suite_eve', results['target'])
     self.assertEqual('foo@chromium.org', results['user'])
     self.assertEqual('abcd1234', results['start_git_hash'])
     self.assertEqual('efgh5678', results['end_git_hash'])
@@ -496,7 +561,7 @@ class PinpointNewBisectRequestHandlerTest(testing_common.TestCase):
         'end_commit': 'efgh5678',
         'bug_id': 1,
         'bisect_mode': 'performance',
-        'story_filter': '',
+        'story_filter': 'required',
         'pin': '',
     }
     results = pinpoint_request.PinpointParamsFromBisectParams(params)
@@ -518,7 +583,7 @@ class PinpointNewBisectRequestHandlerTest(testing_common.TestCase):
         'end_commit': 'efgh5678',
         'bug_id': 1,
         'bisect_mode': 'performance',
-        'story_filter': '',
+        'story_filter': 'required',
         'pin': '',
     }
     t = graph_data.TestMetadata(
@@ -548,7 +613,7 @@ class PinpointNewBisectRequestHandlerTest(testing_common.TestCase):
         'end_commit': 'efgh5678',
         'bug_id': 1,
         'bisect_mode': 'performance',
-        'story_filter': '',
+        'story_filter': 'required',
         'pin': '',
     }
     t = graph_data.TestMetadata(id=params['test_path'],)
@@ -569,7 +634,7 @@ class PinpointNewBisectRequestHandlerTest(testing_common.TestCase):
         'end_commit': 'efgh5678',
         'bug_id': 1,
         'bisect_mode': 'foo',
-        'story_filter': '',
+        'story_filter': 'required',
         'pin': '',
     }
     t = graph_data.TestMetadata(id=params['test_path'],)
@@ -587,7 +652,7 @@ class PinpointNewBisectRequestHandlerTest(testing_common.TestCase):
         'end_commit': 'efgh5678',
         'bug_id': 1,
         'bisect_mode': 'functional',
-        'story_filter': '',
+        'story_filter': 'required',
         'pin': '',
     }
     t = graph_data.TestMetadata(id=params['test_path'],)
@@ -612,7 +677,7 @@ class PinpointNewBisectRequestHandlerTest(testing_common.TestCase):
         'end_commit': '5678',
         'bug_id': '',
         'bisect_mode': 'performance',
-        'story_filter': '',
+        'story_filter': 'required',
         'pin': '',
     }
     results = pinpoint_request.PinpointParamsFromBisectParams(params)
@@ -634,7 +699,7 @@ class PinpointNewBisectRequestHandlerTest(testing_common.TestCase):
         'end_commit': 'efgh5678',
         'bug_id': '',
         'bisect_mode': 'performance',
-        'story_filter': '',
+        'story_filter': 'required',
         'pin': '',
     }
     results = pinpoint_request.PinpointParamsFromBisectParams(params)
@@ -658,7 +723,7 @@ class PinpointNewBisectRequestHandlerTest(testing_common.TestCase):
           'start_commit': 'abcd1234',
           'end_commit': 'efgh5678',
           'bisect_mode': 'performance',
-          'story_filter': '',
+          'story_filter': 'required',
           'pin': '',
           'bug_id': -1,
       }
@@ -680,7 +745,7 @@ class PinpointNewBisectRequestHandlerTest(testing_common.TestCase):
         'end_commit': 'efgh5678',
         'bug_id': '',
         'bisect_mode': 'performance',
-        'story_filter': '',
+        'story_filter': 'required',
         'pin': 'https://path/to/patch',
     }
     results = pinpoint_request.PinpointParamsFromBisectParams(params)
@@ -706,7 +771,7 @@ class PinpointNewBisectRequestHandlerTest(testing_common.TestCase):
         'end_commit': '5678',
         'bug_id': 1,
         'bisect_mode': 'performance',
-        'story_filter': '',
+        'story_filter': 'required',
         'pin': 'https://path/to/patch',
     }
     results = pinpoint_request.PinpointParamsFromBisectParams(params)
@@ -760,7 +825,7 @@ class PinpointNewBisectComparisonMagnitude(testing_common.TestCase):
         'bisect_mode':
             'performance',
         'story_filter':
-            '',
+            'required',
         'pin':
             '',
     }
@@ -811,7 +876,7 @@ class PinpointNewBisectComparisonMagnitude(testing_common.TestCase):
         'bisect_mode':
             'performance',
         'story_filter':
-            '',
+            'required',
         'pin':
             '',
     }
@@ -853,7 +918,7 @@ class PinpointNewBisectComparisonMagnitude(testing_common.TestCase):
         'bisect_mode':
             'performance',
         'story_filter':
-            '',
+            'required',
         'pin':
             '',
     }
@@ -885,7 +950,7 @@ class PinpointNewBisectComparisonMagnitude(testing_common.TestCase):
         'bisect_mode':
             'performance',
         'story_filter':
-            '',
+            'required',
         'pin':
             '',
     }

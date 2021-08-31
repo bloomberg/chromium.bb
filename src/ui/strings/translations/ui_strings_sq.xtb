@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">Ekrani i integruar</translation>
 <translation id="335581015389089642">Ligjërimi</translation>
 <translation id="3389286852084373014">Teksti është tepër i madh</translation>
+<translation id="3406306243914553062">Përmbajtje HTML</translation>
 <translation id="348799646910989694">Rafti i fshehur automatikisht</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> u gozhdua</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 ditë e mbetur}other{# ditë të mbetura}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">Numri</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
 <translation id="3842239759367498783">Vazhdo të lexosh nga pajisja jote celulare <ph name="TITLE" /></translation>
 <translation id="385051799172605136">Prapa</translation>
 <translation id="3889424535448813030">Shigjeta djathtas</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 muaj më parë}other{# muaj më parë}}</translation>
 <translation id="4289300219472526559">Fillo të flasësh</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> u zhvendos te skedari <ph name="FOLDER_NAME" />.</translation>
+<translation id="4306392492252714209">Hiqe nga kujtesa e fragmenteve.</translation>
 <translation id="4316910396681052118">TË GJITHA APLIKACIONET</translation>
 <translation id="4491109536499578614">Imazh</translation>
 <translation id="4588090240171750605">Lëvize djathtas</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">Të fshihet ky kërkim nga historiku yt?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
+<translation id="7620655452534002301">U hoq.</translation>
 <translation id="7658239707568436148">Anulo</translation>
 <translation id="7781829728241885113">Dje</translation>
 <translation id="7814458197256864873">&amp;Kopjo</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{1 orë më parë}other{# orë më parë}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sek. e mbetur}other{# sek. të mbetura}}</translation>
 <translation id="8134065097954893699">Po ringarkon këtë faqe</translation>
-<translation id="8144660977431427332">Kërkimet e tua mundësohen nga "Asistenti i Google". <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, plotësimi automatik</translation>
 <translation id="815598010540052116">Lëviz poshtë</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Faqe poshtë</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">Skeda</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, aplikacion</translation>
 <translation id="8259556432390118667">Vlera heks e ngjyrës</translation>

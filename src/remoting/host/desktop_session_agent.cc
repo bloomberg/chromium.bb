@@ -4,6 +4,7 @@
 
 #include "remoting/host/desktop_session_agent.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -171,9 +172,8 @@ class SharedMemoryFactoryImpl : public webrtc::SharedMemoryFactory {
       size_t size) override {
     base::OnceClosure release_buffer_callback = base::BindOnce(
         send_message_callback_,
-        base::Passed(
-            std::make_unique<ChromotingDesktopNetworkMsg_ReleaseSharedBuffer>(
-                next_shared_buffer_id_)));
+        std::make_unique<ChromotingDesktopNetworkMsg_ReleaseSharedBuffer>(
+            next_shared_buffer_id_));
     std::unique_ptr<SharedMemoryImpl> buffer = SharedMemoryImpl::Create(
         size, next_shared_buffer_id_, std::move(release_buffer_callback));
     if (buffer) {
@@ -385,8 +385,10 @@ void DesktopSessionAgent::OnStartSessionAgent(
   action_executor_ = desktop_environment_->CreateActionExecutor();
 
   // Hook up the input filter.
-  input_tracker_.reset(new protocol::InputEventTracker(input_injector_.get()));
-  remote_input_filter_.reset(new RemoteInputFilter(input_tracker_.get()));
+  input_tracker_ =
+      std::make_unique<protocol::InputEventTracker>(input_injector_.get());
+  remote_input_filter_ =
+      std::make_unique<RemoteInputFilter>(input_tracker_.get());
 
 #if defined(OS_WIN)
   // LocalInputMonitorWin filters out an echo of the injected input before it

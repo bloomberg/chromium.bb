@@ -6,13 +6,13 @@ package org.chromium.chrome.browser.share.share_sheet;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
-import android.support.test.rule.ActivityTestRule;
 
 import androidx.test.filters.MediumTest;
 
@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -50,8 +51,8 @@ public final class ShareSheetCoordinatorTest {
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     @Rule
-    public ActivityTestRule<DummyUiActivity> mActivityTestRule =
-            new ActivityTestRule<>(DummyUiActivity.class);
+    public BaseActivityTestRule<DummyUiActivity> mActivityTestRule =
+            new BaseActivityTestRule<>(DummyUiActivity.class);
 
     @Rule
     public TestRule mFeatureProcessor = new Features.JUnitProcessor();
@@ -73,6 +74,7 @@ public final class ShareSheetCoordinatorTest {
 
     @Before
     public void setUp() {
+        mActivityTestRule.launchActivity(null);
         mActivity = mActivityTestRule.getActivity();
 
         MockitoAnnotations.initMocks(this);
@@ -90,11 +92,11 @@ public final class ShareSheetCoordinatorTest {
         ArrayList<PropertyModel> thirdPartyPropertyModels =
                 new ArrayList<>(Arrays.asList(testModel1, testModel2));
         when(mPropertyModelBuilder.selectThirdPartyApps(
-                     any(), anySet(), any(), anyBoolean(), any(), anyLong()))
+                     any(), anySet(), any(), anyBoolean(), any(), anyLong(), anyInt()))
                 .thenReturn(thirdPartyPropertyModels);
 
         mShareSheetCoordinator = new ShareSheetCoordinator(mController, mLifecycleDispatcher, null,
-                mPropertyModelBuilder, null, null, null, false, null);
+                mPropertyModelBuilder, null, null, null, false, null, null);
     }
 
     @Test
@@ -104,7 +106,7 @@ public final class ShareSheetCoordinatorTest {
 
         List<PropertyModel> propertyModels = mShareSheetCoordinator.createFirstPartyPropertyModels(
                 mActivity, mParams, /*chromeShareExtras=*/null,
-                ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES);
+                ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES_FOR_TEST);
         assertEquals("Property model list should be empty.", 0, propertyModels.size());
     }
 
@@ -112,7 +114,7 @@ public final class ShareSheetCoordinatorTest {
     @MediumTest
     public void testCreateThirdPartyPropertyModels() {
         List<PropertyModel> propertyModels = mShareSheetCoordinator.createThirdPartyPropertyModels(
-                mActivity, mParams, ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES,
+                mActivity, mParams, ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES_FOR_TEST,
                 /*saveLastUsed=*/false);
 
         assertEquals("Incorrect number of property models.", 3, propertyModels.size());

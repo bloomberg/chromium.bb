@@ -19,18 +19,6 @@ var kCellularGuid = 'stub_cellular1_guid';
 var kDefaultPin = '1111';
 var kDefaultPuk = '12345678';
 
-// Test properties for the verification API.
-var verificationProperties = {
-  certificate: 'certificate',
-  intermediateCertificates: ['ica1', 'ica2', 'ica3'],
-  publicKey: 'cHVibGljX2tleQ==',  // Base64('public_key')
-  nonce: 'nonce',
-  signedData: 'c2lnbmVkX2RhdGE=',  // Base64('signed_data')
-  deviceSerial: 'device_serial',
-  deviceSsid: 'Device 0123',
-  deviceBssid: '00:01:02:03:04:05'
-};
-
 var privateHelpers = {
   // Watches for the states |expectedStates| in reverse order. If all states
   // were observed in the right order, succeeds and calls |done|. If any
@@ -275,7 +263,6 @@ var availableTests = [
             Security: 'WEP-PSK',
             SignalStrength: 40,
             SSID: "wifi1",
-            TetheringState: "NotDetected"
           }
         }, {
           GUID: 'stub_wifi2_guid',
@@ -289,7 +276,6 @@ var availableTests = [
             HexSSID: "77696669325F50534B",
             Security: 'WPA-PSK',
             SSID: "wifi2_PSK",
-            TetheringState: "NotDetected"
           }
         }], result);
 
@@ -313,7 +299,6 @@ var availableTests = [
                 Security: 'WEP-PSK',
                 SignalStrength: 40,
                 SSID: "wifi1",
-                TetheringState: "NotDetected"
               }
             }], result);
 
@@ -369,7 +354,6 @@ var availableTests = [
             Security: 'WEP-PSK',
             SignalStrength: 40,
             SSID: "wifi1",
-            TetheringState: "NotDetected"
           }
         }, {
           ConnectionState: ConnectionStateType.CONNECTED,
@@ -409,7 +393,6 @@ var availableTests = [
             Security: 'WPA-PSK',
             SignalStrength: 80,
             SSID: "wifi2_PSK",
-            TetheringState: "NotDetected"
           }
         }], result);
       }));
@@ -433,7 +416,6 @@ var availableTests = [
             Security: 'WEP-PSK',
             SignalStrength: 40,
             SSID: "wifi1",
-            TetheringState: "NotDetected"
           }
         }, {
           Connectable: true,
@@ -450,7 +432,6 @@ var availableTests = [
             Security: 'WPA-PSK',
             SignalStrength: 80,
             SSID: "wifi2_PSK",
-            TetheringState: "NotDetected"
           }
         }], result);
       }));
@@ -558,7 +539,6 @@ var availableTests = [
             SSID: 'wifi1',
             Security: 'WEP-PSK',
             SignalStrength: 40,
-            TetheringState: "NotDetected"
           }
         }, result);
       }));
@@ -683,6 +663,11 @@ var availableTests = [
               Effective: 'UserPolicy',
               UserPolicy: '77696669325F50534B'
             },
+            HiddenSSID: {
+              Active: false,
+              Effective: 'UserPolicy',
+              UserPolicy: false,
+            },
             Frequency: 5000,
             FrequencyList: [2400, 5000],
             Passphrase: {
@@ -701,7 +686,6 @@ var availableTests = [
               UserPolicy: 'WPA-PSK'
             },
             SignalStrength: 80,
-            TetheringState: "NotDetected"
           }
         }, result);
       }));
@@ -822,7 +806,6 @@ var availableTests = [
             Security: 'WPA-PSK',
             SignalStrength: 80,
             SSID: "wifi2_PSK",
-            TetheringState: "NotDetected"
           }
         }, result);
       }));
@@ -896,21 +879,6 @@ var availableTests = [
     chrome.test.listenOnce(
         chrome.networkingPrivate.onCertificateListsChanged, function() {});
     chrome.test.sendMessage('eventListenerReady');
-  },
-  function verifyDestination() {
-    chrome.networkingPrivate.verifyDestination(
-      verificationProperties,
-      callbackPass(function(isValid) {
-        assertTrue(isValid);
-      }));
-  },
-  function verifyAndEncryptData() {
-    chrome.networkingPrivate.verifyAndEncryptData(
-      verificationProperties,
-      'data',
-      callbackPass(function(result) {
-        assertEq('encrypted_data', result);
-      }));
   },
   function getCaptivePortalStatus() {
     var networks = [['stub_ethernet_guid', 'Online'],

@@ -443,23 +443,32 @@ static int librav1e_receive_packet(AVCodecContext *avctx, AVPacket *pkt)
             return ret;
 
         if (frame->buf[0]) {
-        const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(frame->format);
+            const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(frame->format);
 
-        rframe = rav1e_frame_new(ctx->ctx);
-        if (!rframe) {
-            av_log(avctx, AV_LOG_ERROR, "Could not allocate new rav1e frame.\n");
+            int64_t *pts = av_malloc(sizeof(int64_t));
+            if (!pts) {
+                av_log(avctx, AV_LOG_ERROR, "Could not allocate PTS buffer.\n");
+                return AVERROR(ENOMEM);
+            }
+            *pts = frame->pts;
+
+            rframe = rav1e_frame_new(ctx->ctx);
+            if (!rframe) {
+                av_log(avctx, AV_LOG_ERROR, "Could not allocate new rav1e frame.\n");
+                av_frame_unref(frame);
+                av_freep(&pts);
+                return AVERROR(ENOMEM);
+            }
+
+            for (int i = 0; i < desc->nb_components; i++) {
+                int shift = i ? desc->log2_chroma_h : 0;
+                int bytes = desc->comp[0].depth == 8 ? 1 : 2;
+                rav1e_frame_fill_plane(rframe, i, frame->data[i],
+                                       (frame->height >> shift) * frame->linesize[i],
+                                       frame->linesize[i], bytes);
+            }
             av_frame_unref(frame);
-            return AVERROR(ENOMEM);
-        }
-
-        for (int i = 0; i < desc->nb_components; i++) {
-            int shift = i ? desc->log2_chroma_h : 0;
-            int bytes = desc->comp[0].depth == 8 ? 1 : 2;
-            rav1e_frame_fill_plane(rframe, i, frame->data[i],
-                                   (frame->height >> shift) * frame->linesize[i],
-                                   frame->linesize[i], bytes);
-        }
-        av_frame_unref(frame);
+            rav1e_frame_set_opaque(rframe, pts, av_free);
         }
     }
 
@@ -468,7 +477,7 @@ static int librav1e_receive_packet(AVCodecContext *avctx, AVPacket *pkt)
         if (ret == RA_ENCODER_STATUS_ENOUGH_DATA) {
             ctx->rframe = rframe; /* Queue is full. Store the RaFrame to retry next call */
         } else {
-         rav1e_frame_unref(rframe); /* No need to unref if flushing. */
+            rav1e_frame_unref(rframe); /* No need to unref if flushing. */
             ctx->rframe = NULL;
         }
 
@@ -535,7 +544,8 @@ retry:
     if (rpkt->frame_type == RA_FRAME_TYPE_KEY)
         pkt->flags |= AV_PKT_FLAG_KEY;
 
-    pkt->pts = pkt->dts = rpkt->input_frameno * avctx->ticks_per_frame;
+    pkt->pts = pkt->dts = *((int64_t *) rpkt->opaque);
+    av_free(rpkt->opaque);
     rav1e_packet_unref(rpkt);
 
     if (avctx->flags & AV_CODEC_FLAG_GLOBAL_HEADER) {

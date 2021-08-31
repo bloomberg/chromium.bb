@@ -6,7 +6,6 @@
 #define UI_OZONE_PUBLIC_PLATFORM_GL_EGL_UTILITY_H_
 
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/component_export.h"
@@ -18,7 +17,8 @@ namespace ui {
 // Provides platform specific EGL attributes/configs.
 class COMPONENT_EXPORT(OZONE_BASE) PlatformGLEGLUtility {
  public:
-  virtual ~PlatformGLEGLUtility() = default;
+  PlatformGLEGLUtility();
+  virtual ~PlatformGLEGLUtility();
 
   // Gets additional display attributes based on |platform_type|.
   virtual void GetAdditionalEGLAttributes(
@@ -41,6 +41,9 @@ class COMPONENT_EXPORT(OZONE_BASE) PlatformGLEGLUtility {
   // X11 specific; returns whether the test configuration supports alpha for
   // window visuals.
   virtual bool X11DoesVisualHaveAlphaForTest() const = 0;
+
+  // X11 specific; returns whether the platform supports visuals.
+  virtual bool HasVisualManager();
 };
 
 }  // namespace ui

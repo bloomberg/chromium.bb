@@ -16,7 +16,6 @@
 #include "base/metrics/sample_vector.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -77,7 +76,7 @@ class TestMetricsLog : public MetricsLog {
 
 // Returns the expected hardware class for a metrics log.
 std::string GetExpectedHardwareClass() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Currently, we are relying on base/ implementation for functionality on our
   // side which can be fragile if in the future someone decides to change that.
   // This replicates the logic to get the hardware class for ChromeOS and this
@@ -149,6 +148,14 @@ TEST_F(MetricsLogTest, BasicRecord) {
   client.set_version_string("bogus version");
   const std::string kClientId = "totally bogus client ID";
   TestingPrefServiceSimple prefs;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  // Clears existing command line flags and sets mock flags:
+  // "--mock-flag-1 --mock-flag-2=unused_value"
+  // Hashes of these flags should be populated on the system_profile field.
+  command_line->InitFromArgv(0, nullptr);
+  command_line->AppendSwitch("mock-flag-1");
+  command_line->AppendSwitchASCII("mock-flag-2", "unused_value");
+
   MetricsLog log(kClientId, 137, MetricsLog::ONGOING_LOG, &client);
   log.CloseLog();
 
@@ -172,34 +179,38 @@ TEST_F(MetricsLogTest, BasicRecord) {
   system_profile->set_channel(client.GetChannel());
   system_profile->set_application_locale(client.GetApplicationLocale());
   system_profile->set_brand_code(TestMetricsServiceClient::kBrandForTesting);
+  // Hashes of "mock-flag-1" and "mock-flag-2" from SetUpCommandLine.
+  system_profile->add_command_line_key_hash(2578836236);
+  system_profile->add_command_line_key_hash(2867288449);
 
 #if defined(ADDRESS_SANITIZER) || DCHECK_IS_ON()
   system_profile->set_is_instrumented_build(true);
 #endif
   metrics::SystemProfileProto::Hardware* hardware =
       system_profile->mutable_hardware();
-#if !defined(OS_IOS)
   hardware->set_cpu_architecture(base::SysInfo::OperatingSystemArchitecture());
-#endif
+  auto app_os_arch = base::SysInfo::ProcessCPUArchitecture();
+  if (!app_os_arch.empty())
+    hardware->set_app_cpu_architecture(app_os_arch);
   hardware->set_system_ram_mb(base::SysInfo::AmountOfPhysicalMemoryMB());
   hardware->set_hardware_class(GetExpectedHardwareClass());
 #if defined(OS_WIN)
   hardware->set_dll_base(reinterpret_cast<uint64_t>(CURRENT_MODULE()));
 #endif
 
-#if BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
   system_profile->mutable_os()->set_name("Lacros");
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
   system_profile->mutable_os()->set_name("CrOS");
 #else
   system_profile->mutable_os()->set_name(base::SysInfo::OperatingSystemName());
 #endif
   system_profile->mutable_os()->set_version(
       base::SysInfo::OperatingSystemVersion());
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   system_profile->mutable_os()->set_kernel_version(
       base::SysInfo::KernelVersion());
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   system_profile->mutable_os()->set_kernel_version(
       base::SysInfo::OperatingSystemVersion());
 #elif defined(OS_ANDROID)

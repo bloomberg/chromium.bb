@@ -26,7 +26,7 @@ const char kMetadataNotLoadedError[] =
 const char kVideoTrackNotAvailableError[] =
     "The video element has no video track.";
 const char kFeaturePolicyBlocked[] =
-    "Access to the feature \"picture-in-picture\" is disallowed by feature "
+    "Access to the feature \"picture-in-picture\" is disallowed by permissions "
     "policy.";
 const char kNotAvailable[] = "Picture-in-Picture is not available.";
 const char kUserGestureRequired[] =
@@ -81,7 +81,7 @@ void HTMLElementPictureInPicture::CheckIfPictureInPictureIsAllowed(
       exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                         kVideoTrackNotAvailableError);
       return;
-    case Status::kDisabledByFeaturePolicy:
+    case Status::kDisabledByPermissionsPolicy:
       exception_state.ThrowSecurityError(kFeaturePolicyBlocked);
       return;
     case Status::kDisabledByAttribute:

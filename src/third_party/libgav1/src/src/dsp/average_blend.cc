@@ -76,9 +76,7 @@ void Init10bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(10);
   assert(dsp != nullptr);
 #if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
-#ifndef LIBGAV1_Dsp10bpp_AverageBlend
   dsp->average_blend = AverageBlend_C<10, uint16_t>;
-#endif
 #else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
   static_cast<void>(dsp);
 #ifndef LIBGAV1_Dsp10bpp_AverageBlend

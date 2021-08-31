@@ -15,7 +15,7 @@
 #include "src/dsp/loop_filter.h"
 #include "src/utils/cpu.h"
 
-#if LIBGAV1_ENABLE_SSE4_1
+#if LIBGAV1_TARGETING_SSE4_1
 
 #include <smmintrin.h>
 
@@ -350,7 +350,7 @@ void Horizontal6(void* dest, ptrdiff_t stride, int outer_thresh,
   const __m128i v_mask =
       _mm_shuffle_epi32(_mm_and_si128(v_needs_mask, v_isflat3_mask), 0);
 
-  if (_mm_test_all_zeros(v_mask, _mm_cmpeq_epi8(v_mask, v_mask)) == 0) {
+  if (_mm_test_all_zeros(v_mask, v_mask) == 0) {
     __m128i oqp1_f6;
     __m128i oqp0_f6;
 
@@ -454,7 +454,7 @@ void Vertical6(void* dest, ptrdiff_t stride, int outer_thresh, int inner_thresh,
   const __m128i v_mask =
       _mm_shuffle_epi32(_mm_and_si128(v_needs_mask, v_isflat3_mask), 0);
 
-  if (_mm_test_all_zeros(v_mask, _mm_cmpeq_epi8(v_mask, v_mask)) == 0) {
+  if (_mm_test_all_zeros(v_mask, v_mask) == 0) {
     __m128i oqp1_f6;
     __m128i oqp0_f6;
 
@@ -595,7 +595,7 @@ void Horizontal8(void* dest, ptrdiff_t stride, int outer_thresh,
   const __m128i v_mask =
       _mm_shuffle_epi32(_mm_and_si128(v_needs_mask, v_isflat4_mask), 0);
 
-  if (_mm_test_all_zeros(v_mask, _mm_cmpeq_epi8(v_mask, v_mask)) == 0) {
+  if (_mm_test_all_zeros(v_mask, v_mask) == 0) {
     __m128i oqp2_f8;
     __m128i oqp1_f8;
     __m128i oqp0_f8;
@@ -697,7 +697,7 @@ void Vertical8(void* dest, ptrdiff_t stride, int outer_thresh, int inner_thresh,
   const __m128i v_mask =
       _mm_shuffle_epi32(_mm_and_si128(v_needs_mask, v_isflat4_mask), 0);
 
-  if (_mm_test_all_zeros(v_mask, _mm_cmpeq_epi8(v_mask, v_mask)) == 0) {
+  if (_mm_test_all_zeros(v_mask, v_mask) == 0) {
     __m128i oqp2_f8;
     __m128i oqp1_f8;
     __m128i oqp0_f8;
@@ -838,7 +838,7 @@ void Horizontal14(void* dest, ptrdiff_t stride, int outer_thresh,
   const __m128i v_mask =
       _mm_shuffle_epi32(_mm_and_si128(v_needs_mask, v_isflat4_mask), 0);
 
-  if (_mm_test_all_zeros(v_mask, _mm_cmpeq_epi8(v_mask, v_mask)) == 0) {
+  if (_mm_test_all_zeros(v_mask, v_mask) == 0) {
     const __m128i p6 = Load4(dst - 7 * stride);
     const __m128i p5 = Load4(dst - 6 * stride);
     const __m128i p4 = Load4(dst - 5 * stride);
@@ -864,8 +864,7 @@ void Horizontal14(void* dest, ptrdiff_t stride, int outer_thresh,
     oqp1 = _mm_blendv_epi8(oqp1, oqp1_f8, v_mask);
     oqp0 = _mm_blendv_epi8(oqp0, oqp0_f8, v_mask);
 
-    if (_mm_test_all_zeros(v_flat4_mask,
-                           _mm_cmpeq_epi8(v_flat4_mask, v_flat4_mask)) == 0) {
+    if (_mm_test_all_zeros(v_flat4_mask, v_flat4_mask) == 0) {
       __m128i oqp5_f14;
       __m128i oqp4_f14;
       __m128i oqp3_f14;
@@ -1050,7 +1049,7 @@ void Vertical14(void* dest, ptrdiff_t stride, int outer_thresh,
   const __m128i v_mask =
       _mm_shuffle_epi32(_mm_and_si128(v_needs_mask, v_isflat4_mask), 0);
 
-  if (_mm_test_all_zeros(v_mask, _mm_cmpeq_epi8(v_mask, v_mask)) == 0) {
+  if (_mm_test_all_zeros(v_mask, v_mask) == 0) {
     const __m128i v_isflatouter4_mask =
         IsFlat4(qp6, qp5, qp4, qp0, v_flat_thresh);
     const __m128i v_flat4_mask =
@@ -1066,8 +1065,7 @@ void Vertical14(void* dest, ptrdiff_t stride, int outer_thresh,
     oqp1 = _mm_blendv_epi8(oqp1, oqp1_f8, v_mask);
     oqp0 = _mm_blendv_epi8(oqp0, oqp0_f8, v_mask);
 
-    if (_mm_test_all_zeros(v_flat4_mask,
-                           _mm_cmpeq_epi8(v_flat4_mask, v_flat4_mask)) == 0) {
+    if (_mm_test_all_zeros(v_flat4_mask, v_flat4_mask) == 0) {
       __m128i oqp5_f14;
       __m128i oqp4_f14;
       __m128i oqp3_f14;
@@ -1458,7 +1456,7 @@ void LoopFilterFuncs_SSE4_1<bitdepth>::Horizontal6(void* dest,
   const __m128i v_mask_lo = _mm_and_si128(v_needs_mask, v_isflat3_mask);
   const __m128i v_mask = _mm_unpacklo_epi64(v_mask_lo, v_mask_lo);
 
-  if (_mm_test_all_zeros(v_mask, _mm_cmpeq_epi16(v_mask, v_mask)) == 0) {
+  if (_mm_test_all_zeros(v_mask, v_mask) == 0) {
     __m128i oqp1_f6;
     __m128i oqp0_f6;
 
@@ -1572,7 +1570,7 @@ void LoopFilterFuncs_SSE4_1<bitdepth>::Vertical6(void* dest, ptrdiff_t stride8,
   const __m128i v_mask_lo = _mm_and_si128(v_needs_mask, v_isflat3_mask);
   const __m128i v_mask = _mm_unpacklo_epi64(v_mask_lo, v_mask_lo);
 
-  if (_mm_test_all_zeros(v_mask, _mm_cmpeq_epi16(v_mask, v_mask)) == 0) {
+  if (_mm_test_all_zeros(v_mask, v_mask) == 0) {
     __m128i oqp1_f6;
     __m128i oqp0_f6;
 
@@ -1711,7 +1709,7 @@ void LoopFilterFuncs_SSE4_1<bitdepth>::Horizontal8(void* dest,
   const __m128i v_mask_lo = _mm_and_si128(v_needs_mask, v_isflat4_mask);
   const __m128i v_mask = _mm_unpacklo_epi64(v_mask_lo, v_mask_lo);
 
-  if (_mm_test_all_zeros(v_mask, _mm_cmpeq_epi16(v_mask, v_mask)) == 0) {
+  if (_mm_test_all_zeros(v_mask, v_mask) == 0) {
     __m128i oqp2_f8;
     __m128i oqp1_f8;
     __m128i oqp0_f8;
@@ -1821,7 +1819,7 @@ void LoopFilterFuncs_SSE4_1<bitdepth>::Vertical8(void* dest, ptrdiff_t stride8,
   const __m128i v_mask_lo = _mm_and_si128(v_needs_mask, v_isflat4_mask);
   const __m128i v_mask = _mm_unpacklo_epi64(v_mask_lo, v_mask_lo);
 
-  if (_mm_test_all_zeros(v_mask, _mm_cmpeq_epi16(v_mask, v_mask)) == 0) {
+  if (_mm_test_all_zeros(v_mask, v_mask) == 0) {
     __m128i oqp2_f8;
     __m128i oqp1_f8;
     __m128i oqp0_f8;
@@ -1957,7 +1955,7 @@ void LoopFilterFuncs_SSE4_1<bitdepth>::Horizontal14(void* dest,
   const __m128i v_mask_lo = _mm_and_si128(v_needs_mask, v_isflat4_mask);
   const __m128i v_mask = _mm_unpacklo_epi64(v_mask_lo, v_mask_lo);
 
-  if (_mm_test_all_zeros(v_mask, _mm_cmpeq_epi16(v_mask, v_mask)) == 0) {
+  if (_mm_test_all_zeros(v_mask, v_mask) == 0) {
     const __m128i p6 = LoadLo8(dst - 7 * stride);
     const __m128i p5 = LoadLo8(dst - 6 * stride);
     const __m128i p4 = LoadLo8(dst - 5 * stride);
@@ -1984,8 +1982,7 @@ void LoopFilterFuncs_SSE4_1<bitdepth>::Horizontal14(void* dest,
     oqp1 = _mm_blendv_epi8(oqp1, oqp1_f8, v_mask);
     oqp0 = _mm_blendv_epi8(oqp0, oqp0_f8, v_mask);
 
-    if (_mm_test_all_zeros(v_flat4_mask,
-                           _mm_cmpeq_epi16(v_flat4_mask, v_flat4_mask)) == 0) {
+    if (_mm_test_all_zeros(v_flat4_mask, v_flat4_mask) == 0) {
       __m128i oqp5_f14;
       __m128i oqp4_f14;
       __m128i oqp3_f14;
@@ -2133,7 +2130,7 @@ void LoopFilterFuncs_SSE4_1<bitdepth>::Vertical14(void* dest, ptrdiff_t stride8,
   const __m128i v_mask_lo = _mm_and_si128(v_needs_mask, v_isflat4_mask);
   const __m128i v_mask = _mm_unpacklo_epi64(v_mask_lo, v_mask_lo);
 
-  if (_mm_test_all_zeros(v_mask, _mm_cmpeq_epi16(v_mask, v_mask)) == 0) {
+  if (_mm_test_all_zeros(v_mask, v_mask) == 0) {
     const __m128i v_isflatouter4_mask =
         IsFlat4(qp6, qp5, qp4, qp0, v_flat_thresh);
     const __m128i v_flat4_mask_lo = _mm_and_si128(v_mask, v_isflatouter4_mask);
@@ -2150,8 +2147,7 @@ void LoopFilterFuncs_SSE4_1<bitdepth>::Vertical14(void* dest, ptrdiff_t stride8,
     oqp1 = _mm_blendv_epi8(oqp1, oqp1_f8, v_mask);
     oqp0 = _mm_blendv_epi8(oqp0, oqp0_f8, v_mask);
 
-    if (_mm_test_all_zeros(v_flat4_mask,
-                           _mm_cmpeq_epi16(v_flat4_mask, v_flat4_mask)) == 0) {
+    if (_mm_test_all_zeros(v_flat4_mask, v_flat4_mask) == 0) {
       __m128i oqp5_f14;
       __m128i oqp4_f14;
       __m128i oqp3_f14;
@@ -2245,7 +2241,7 @@ void LoopFilterInit_SSE4_1() {
 }  // namespace dsp
 }  // namespace libgav1
 
-#else  // !LIBGAV1_ENABLE_SSE4_1
+#else   // !LIBGAV1_TARGETING_SSE4_1
 namespace libgav1 {
 namespace dsp {
 
@@ -2253,4 +2249,4 @@ void LoopFilterInit_SSE4_1() {}
 
 }  // namespace dsp
 }  // namespace libgav1
-#endif  // LIBGAV1_ENABLE_SSE4_1
+#endif  // LIBGAV1_TARGETING_SSE4_1

@@ -36,6 +36,7 @@ from collections import OrderedDict
 
 from blinkpy.common.memoized import memoized
 from blinkpy.web_tests.models import typ_types
+from typ import expectations_parser
 
 ResultType = typ_types.ResultType
 
@@ -110,7 +111,9 @@ class TestExpectations(object):
             test_expectations = typ_types.TestExpectations(
                 tags=self._system_condition_tags)
             ret, errors = test_expectations.parse_tagged_list(
-                content, tags_conflict=self._tags_conflict)
+                content,
+                file_name=filesystem.abspath(path),
+                tags_conflict=self._tags_conflict)
             if ret:
                 expectation_errors.append(
                     'Parsing file %s produced following errors\n%s' % (path,
@@ -184,7 +187,7 @@ class TestExpectations(object):
         args:
             path: Absolute path of expectations file."""
         content = self._expectations_dict[path]
-        idx = self._expectations_dict.keys().index(path)
+        idx = list(self._expectations_dict.keys()).index(path)
         typ_expectations = self._expectations[idx]
         lines = []
 
@@ -315,6 +318,12 @@ class TestExpectations(object):
             # results will show an expected per test field with PASS and whatever the
             # expected results in the second file are.
             if not expected_results.is_default_pass:
+                if expected_results.conflict_resolution == \
+                        expectations_parser.ConflictResolutionTypes.OVERRIDE:
+                    results.clear()
+                    reasons.clear()
+                    is_slow_test = False
+                    trailing_comments = ''
                 results.update(expected_results.results)
             is_slow_test |= expected_results.is_slow_test
             reasons.update(expected_results.reason.split())

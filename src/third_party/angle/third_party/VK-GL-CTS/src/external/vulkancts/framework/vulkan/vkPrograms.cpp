@@ -60,6 +60,7 @@ using std::map;
 ProgramBinary::ProgramBinary (ProgramFormat format, size_t binarySize, const deUint8* binary)
 	: m_format	(format)
 	, m_binary	(binary, binary+binarySize)
+	, m_used	(false)
 {
 }
 
@@ -697,6 +698,8 @@ Move<VkShaderModule> createShaderModule (const DeviceInterface& deviceInterface,
 			(const deUint32*)binary.getBinary(),
 		};
 
+		binary.setUsed();
+
 		return createShaderModule(deviceInterface, device, &shaderModuleInfo);
 	}
 	else
@@ -751,7 +754,7 @@ vk::SpirvVersion getMaxSpirvVersionForVulkan (const deUint32 vulkanVersion)
 {
 	vk::SpirvVersion	result			= vk::SPIRV_VERSION_LAST;
 
-	deUint32 vulkanVersionMajorMinor = VK_MAKE_VERSION(VK_VERSION_MAJOR(vulkanVersion), VK_VERSION_MINOR(vulkanVersion), 0);
+	deUint32 vulkanVersionMajorMinor = VK_MAKE_VERSION(VK_API_VERSION_MAJOR(vulkanVersion), VK_API_VERSION_MINOR(vulkanVersion), 0);
 	if (vulkanVersionMajorMinor == VK_API_VERSION_1_0)
 		result = vk::SPIRV_VERSION_1_0;
 	else if (vulkanVersionMajorMinor == VK_API_VERSION_1_1)

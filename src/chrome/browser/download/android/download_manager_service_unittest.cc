@@ -4,6 +4,8 @@
 
 #include "chrome/browser/download/android/download_manager_service.h"
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
@@ -30,7 +32,6 @@ class DownloadManagerServiceTest : public testing::Test {
   DownloadManagerServiceTest()
       : service_(new DownloadManagerService()),
         coordinator_(base::NullCallback(), false),
-        finished_(false),
         success_(false) {
     ON_CALL(manager_, GetDownloadByGuid(_))
         .WillByDefault(::testing::Invoke(
@@ -40,13 +41,13 @@ class DownloadManagerServiceTest : public testing::Test {
   }
 
   void OnResumptionDone(bool success) {
-    finished_ = true;
     success_ = success;
+    run_loop_.Quit();
   }
 
   void StartDownload(const std::string& download_guid) {
     JNIEnv* env = base::android::AttachCurrentThread();
-    service_->set_resume_callback_for_testing(base::Bind(
+    service_->set_resume_callback_for_testing(base::BindOnce(
         &DownloadManagerServiceTest::OnResumptionDone, base::Unretained(this)));
     ProfileKeyAndroid profile_key_android(profile_.GetProfileKey());
 
@@ -60,12 +61,11 @@ class DownloadManagerServiceTest : public testing::Test {
         false);
     EXPECT_FALSE(success_);
     service_->OnDownloadsInitialized(&coordinator_, false);
-    while (!finished_)
-      base::RunLoop().RunUntilIdle();
+    run_loop_.Run();
   }
 
   void CreateDownloadItem(bool can_resume) {
-    download_.reset(new download::MockDownloadItem());
+    download_ = std::make_unique<download::MockDownloadItem>();
     ON_CALL(*download_, CanResume())
         .WillByDefault(::testing::Return(can_resume));
   }
@@ -81,8 +81,8 @@ class DownloadManagerServiceTest : public testing::Test {
   std::unique_ptr<download::MockDownloadItem> download_;
   content::MockDownloadManager manager_;
   TestingProfile profile_;
-  bool finished_;
   bool success_;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerServiceTest);
 };

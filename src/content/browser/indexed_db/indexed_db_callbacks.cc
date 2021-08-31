@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -135,20 +134,6 @@ void IndexedDBCallbacks::OnSuccess(
     return;
   }
   callbacks_->SuccessNamesAndVersionsList(std::move(names_and_versions));
-  complete_ = true;
-}
-
-void IndexedDBCallbacks::OnSuccess(const std::vector<base::string16>& value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!complete_);
-
-  if (!callbacks_)
-    return;
-  if (!dispatcher_host_) {
-    OnConnectionError();
-    return;
-  }
-  callbacks_->SuccessStringList(value);
   complete_ = true;
 }
 

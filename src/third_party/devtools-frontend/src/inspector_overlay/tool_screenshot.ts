@@ -7,12 +7,6 @@ import {Overlay} from './common.js';
 let anchor: {x: number, y: number}|null = null;
 let position: {x: number, y: number}|null = null;
 
-declare global {
-  interface Window {
-    InspectorOverlayHost: {send(data: string): void;}
-  }
-}
-
 export class ScreenshotOverlay extends Overlay {
   private zone!: HTMLElement;
 
@@ -107,11 +101,17 @@ export class ScreenshotOverlay extends Overlay {
 }
 
 function currentRect() {
+  if (!anchor) {
+    throw new Error('Error calculating currentRect: no anchor was defined.');
+  }
+  if (!position) {
+    throw new Error('Error calculating currentRect: no position was defined.');
+  }
   return {
-    x: Math.min(anchor!.x, position!.x),
-    y: Math.min(anchor!.y, position!.y),
-    width: Math.abs(anchor!.x - position!.x),
-    height: Math.abs(anchor!.y - position!.y),
+    x: Math.min(anchor.x, position.x),
+    y: Math.min(anchor.y, position.y),
+    width: Math.abs(anchor.x - position.x),
+    height: Math.abs(anchor.y - position.y),
   };
 }
 
