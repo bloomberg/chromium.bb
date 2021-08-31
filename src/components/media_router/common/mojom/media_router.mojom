@@ -15,16 +15,13 @@ import "third_party/blink/public/mojom/presentation/presentation.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
-// This must stay in sync with ash.mojom.SinkIconType.
+// This must stay in sync with media_router::SinkIconType and ash::SinkIconType.
 enum SinkIconType {
-  CAST,
-  CAST_AUDIO_GROUP,
-  CAST_AUDIO,
-  MEETING,
-  HANGOUT,
-  EDUCATION,
-  WIRED_DISPLAY,
-  GENERIC
+  CAST = 0,
+  CAST_AUDIO_GROUP = 1,
+  CAST_AUDIO = 2,
+  WIRED_DISPLAY = 6,
+  GENERIC = 7
 };
 
 // Represents an output sink to which media can be routed.
@@ -126,6 +123,9 @@ struct MediaRoute {
   bool is_off_the_record;
   // Set to true if this route corresponds to a local presentation.
   bool is_local_presentation;
+  // Set to true if this route has been created by the MRP but is waiting for
+  // the receiver's response.
+  bool is_connecting;
 };
 
 // Notifications or an actionable events to be shown to the user.
@@ -282,9 +282,12 @@ union ProviderState {
 // commands to the MediaRouteProvider, such as observing MediaSinks or creating
 // a MediaRoute. In return, the MediaRouteProvider notifies the MediaRouter when
 // there are changes related to sinks or routes.
-// A MediaRouteProvider may live in the Media Router component extension, or
-// the browser (e.g. DIAL and Cast MediaRouteProviders will soon move to the
-// browser).
+// Each MRP is used to manage one type of media sinks (e.g. the Cast MRP is used
+// for CAST sinks)
+// EXTENSION MRPs live in the Media Router component extension and will be
+// removed soon. WIRED_DISPLAY, CAST and DIAL MRPs live in the browser.
+// ANDROID_CAF is the Cast Application Framework based MRPs used on Android
+// only.
 interface MediaRouteProvider {
   // Each MediaRouteProvider is associated with a unique ID. This enum must be
   // kept in sync with MediaRouteProviderId in C++.
@@ -292,7 +295,9 @@ interface MediaRouteProvider {
     EXTENSION,
     WIRED_DISPLAY,
     CAST,
-    DIAL
+    DIAL,
+    ANDROID_CAF,
+    TEST,
   };
 
   // Creates a media route from |media_source| to the sink given by |sink_id|.
@@ -475,11 +480,6 @@ interface MediaRouteProvider {
   // TODO(https://crbug.com/698940): Rename this to OnUserGesture and remove the
   // |media_source| parameter.
   UpdateMediaSinks(string media_source);
-
-  // Called when the list of MediaSinks discovered by Media Router has been
-  // updated. The sinks are supplied to the MediaRouteProvider so that they can
-  // be used for other operations, such as route creation.
-  ProvideSinks(string provider_name, array<MediaSink> sinks);
 
   // Creates a controller for the media route with given |route_id| and binds it
   // to |media_controller| for receiving media commands. This method returns

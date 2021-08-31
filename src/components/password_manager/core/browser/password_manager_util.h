@@ -6,10 +6,10 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -44,10 +44,6 @@ void UpdateMetadataForUsage(password_manager::PasswordForm* credential);
 password_manager::SyncState GetPasswordSyncState(
     const syncer::SyncService* sync_service);
 
-// Reports whether passwords are synced with normal encryption, i.e. without a
-// custom passphrase.
-bool IsSyncingWithNormalEncryption(const syncer::SyncService* sync_service);
-
 // Removes Android username-only credentials from |android_credentials|.
 // Transforms federated credentials into non zero-click ones.
 void TrimUsernameOnlyCredentials(
@@ -77,11 +73,11 @@ void UserTriggeredManualGenerationFromContextMenu(
     password_manager::PasswordManagerClient* password_manager_client);
 
 // This function handles the following clean-ups of credentials:
-// (1) Removing blacklisted duplicates: if two blacklisted credentials have the
+// (1) Removing blocklisted duplicates: if two blocklisted credentials have the
 // same signon_realm, they are duplicates of each other. Deleting all but one
 // sharing the signon_realm does not affect Chrome's behaviour and hence
-// duplicates can be removed. Having duplicates makes un-blacklisting not work,
-// hence blacklisted duplicates need to be removed.
+// duplicates can be removed. Having duplicates makes un-blocklisting not work,
+// hence blocklisted duplicates need to be removed.
 // (2) Removing or fixing of HTTPS credentials with wrong signon_realm. See
 // https://crbug.com/881731 for details.
 // (3) Report metrics about HTTP to HTTPS migration process and remove obsolete
@@ -104,7 +100,7 @@ void RemoveUselessCredentials(
 base::StringPiece GetSignonRealmWithProtocolExcluded(
     const password_manager::PasswordForm& form);
 
-// Given all non-blacklisted |non_federated_matches|, finds and populates
+// Given all non-blocklisted |non_federated_matches|, finds and populates
 // |non_federated_same_scheme|, |best_matches|, and |preferred_match|
 // accordingly. For comparing credentials the following rule is used: non-psl
 // match is better than psl match, most recently used match is better than other
@@ -123,7 +119,7 @@ void FindBestMatches(
 // none exists. If multiple matches exist, returns the first one.
 const password_manager::PasswordForm* FindFormByUsername(
     const std::vector<const password_manager::PasswordForm*>& forms,
-    const base::string16& username_value);
+    const std::u16string& username_value);
 
 // If the user submits a form, they may have used existing credentials, new
 // credentials, or modified existing credentials that should be updated.
@@ -137,12 +133,12 @@ const password_manager::PasswordForm* GetMatchForUpdating(
     const password_manager::PasswordForm& submitted_form,
     const std::vector<const password_manager::PasswordForm*>& credentials);
 
-// This method creates a blacklisted form with |digests|'s scheme, signon_realm
+// This method creates a blocklisted form with |digests|'s scheme, signon_realm
 // and origin. This is done to avoid storing PII and to have a normalized unique
 // key. Furthermore it attempts to normalize the origin by stripping path
 // components. In case this fails (e.g. for non-standard origins like Android
 // credentials), the original origin is kept.
-password_manager::PasswordForm MakeNormalizedBlacklistedForm(
+password_manager::PasswordForm MakeNormalizedBlocklistedForm(
     password_manager::PasswordStore::FormDigest digest);
 
 }  // namespace password_manager_util

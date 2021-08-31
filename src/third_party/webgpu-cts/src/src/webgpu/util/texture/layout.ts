@@ -2,6 +2,8 @@ import { assert, unreachable } from '../../../common/framework/util/util.js';
 import { kSizedTextureFormatInfo, SizedTextureFormat } from '../../capability_info.js';
 import { align, isAligned } from '../math.js';
 
+import { bytesInACompleteRow } from './image_copy.js';
+
 export const kBytesPerRowAlignment = 256;
 export const kBufferCopyAlignment = 4;
 
@@ -15,7 +17,7 @@ const kDefaultLayoutOptions = { mipLevel: 0, bytesPerRow: undefined, rowsPerImag
 
 export function getMipSizePassthroughLayers(
   dimension: GPUTextureDimension,
-  size: [number, number, number],
+  size: readonly [number, number, number],
   mipLevel: number
 ): [number, number, number] {
   const shiftMinOne = (n: number) => Math.max(1, n >> mipLevel);
@@ -44,7 +46,7 @@ export interface TextureCopyLayout {
 export function getTextureCopyLayout(
   format: SizedTextureFormat,
   dimension: GPUTextureDimension,
-  size: [number, number, number],
+  size: readonly [number, number, number],
   options: LayoutOptions = kDefaultLayoutOptions
 ): TextureCopyLayout {
   const { mipLevel } = options;
@@ -58,7 +60,7 @@ export function getTextureCopyLayout(
   mipSize[0] = align(mipSize[0], blockWidth);
   mipSize[1] = align(mipSize[1], blockHeight);
 
-  const minBytesPerRow = (mipSize[0] / blockWidth) * bytesPerBlock;
+  const minBytesPerRow = bytesInACompleteRow(mipSize[0], format);
   const alignedMinBytesPerRow = align(minBytesPerRow, kBytesPerRowAlignment);
   if (bytesPerRow !== undefined) {
     assert(bytesPerRow >= alignedMinBytesPerRow);
@@ -73,8 +75,7 @@ export function getTextureCopyLayout(
     rowsPerImage = mipSize[1];
   }
 
-  assert(isAligned(rowsPerImage, blockHeight));
-  const bytesPerSlice = bytesPerRow * (rowsPerImage / blockHeight);
+  const bytesPerSlice = bytesPerRow * rowsPerImage;
   const sliceSize =
     bytesPerRow * (mipSize[1] / blockHeight - 1) + bytesPerBlock * (mipSize[0] / blockWidth);
   const byteLength = bytesPerSlice * (mipSize[2] - 1) + sliceSize;

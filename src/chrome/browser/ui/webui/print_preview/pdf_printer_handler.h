@@ -10,7 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
@@ -46,7 +46,7 @@ class PdfPrinterHandler : public PrinterHandler,
                         GetPrintersDoneCallback done_callback) override;
   void StartGetCapability(const std::string& destination_id,
                           GetCapabilityCallback callback) override;
-  void StartPrint(const base::string16& job_title,
+  void StartPrint(const std::u16string& job_title,
                   base::Value settings,
                   scoped_refptr<base::RefCountedMemory> print_data,
                   PrintCallback callback) override;
@@ -60,12 +60,15 @@ class PdfPrinterHandler : public PrinterHandler,
   // Sets |pdf_file_saved_closure_| to |closure|.
   void SetPdfSavedClosureForTesting(base::OnceClosure closure);
 
+  // Sets |print_to_pdf_path_| to |path|.
+  void SetPrintToPdfPathForTesting(const base::FilePath& path);
+
   // Exposed for testing.
   static base::FilePath GetFileNameForPrintJobTitle(
-      const base::string16& job_title);
+      const std::u16string& job_title);
   static base::FilePath GetFileNameForURL(const GURL& url);
   static base::FilePath GetFileName(const GURL& url,
-                                    const base::string16& job_title,
+                                    const std::u16string& job_title,
                                     bool is_savable);
 
  protected:
@@ -108,7 +111,7 @@ class PdfPrinterHandler : public PrinterHandler,
   // The callback to call when complete.
   PrintCallback print_callback_;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Determines if the local Drive mount is sent to the file picker as the
   // default save location. Set to true for Save to Drive print jobs.
   bool use_drive_mount_ = false;

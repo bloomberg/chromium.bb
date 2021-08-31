@@ -22,7 +22,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_rtp_header_extension_parameters.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
@@ -42,7 +41,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_encoded_audio_stream_transformer.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_encoded_video_stream_transformer.h"
@@ -355,9 +353,7 @@ webrtc::RtpEncodingParameters ToRtpEncodingParameters(
     } else if (encoding->scalabilityMode() == "L1T3") {
       webrtc_encoding.num_temporal_layers = 3;
     }
-  }
-  if (encoding->adaptivePtime()) {
-    UseCounter::Count(context, WebFeature::kRTCAdaptivePtime);
+    webrtc_encoding.scalability_mode = encoding->scalabilityMode().Utf8();
   }
   webrtc_encoding.adaptive_ptime = encoding->adaptivePtime();
   return webrtc_encoding;
@@ -727,6 +723,9 @@ void RTCRtpSender::Trace(Visitor* visitor) const {
 
 RTCRtpCapabilities* RTCRtpSender::getCapabilities(ScriptState* state,
                                                   const String& kind) {
+  if (!state->ContextIsValid())
+    return nullptr;
+
   if (kind != "audio" && kind != "video")
     return nullptr;
 
@@ -736,8 +735,8 @@ RTCRtpCapabilities* RTCRtpSender::getCapabilities(ScriptState* state,
       HeapVector<Member<RTCRtpHeaderExtensionCapability>>());
 
   std::unique_ptr<webrtc::RtpCapabilities> rtc_capabilities =
-      PeerConnectionDependencyFactory::GetInstance()->GetSenderCapabilities(
-          kind);
+      PeerConnectionDependencyFactory::From(*ExecutionContext::From(state))
+          .GetSenderCapabilities(kind);
 
   HeapVector<Member<RTCRtpCodecCapability>> codecs;
   codecs.ReserveInitialCapacity(
@@ -759,11 +758,35 @@ RTCRtpCapabilities* RTCRtpSender::getCapabilities(ScriptState* state,
       }
       codec->setSdpFmtpLine(sdp_fmtp_line.c_str());
     }
-    if (rtc_codec.mime_type() == "video/VP8" ||
-        rtc_codec.mime_type() == "video/VP9") {
+    if (rtc_codec.mime_type() == "video/VP8") {
       Vector<String> modes;
       modes.push_back("L1T2");
       modes.push_back("L1T3");
+      codec->setScalabilityModes(modes);
+    } else if (rtc_codec.mime_type() == "video/VP9") {
+      auto profile_id = rtc_codec.parameters.find("profile-id");
+      if (profile_id == rtc_codec.parameters.end() ||
+          profile_id->second != "2") {
+        Vector<String> modes;
+        modes.push_back("L1T2");
+        modes.push_back("L1T3");
+        codec->setScalabilityModes(modes);
+      }
+    } else if (rtc_codec.mime_type() == "video/AV1" ||
+               rtc_codec.mime_type() == "video/AV1X") {
+      Vector<String> modes;
+      modes.push_back("L1T2");
+      modes.push_back("L1T3");
+      modes.push_back("L2T1");
+      modes.push_back("L2T1h");
+      modes.push_back("L2T1_KEY");
+      modes.push_back("L2T2");
+      modes.push_back("L2T2_KEY");
+      modes.push_back("L2T2_KEY_SHIFT");
+      modes.push_back("L3T1");
+      modes.push_back("L3T3");
+      modes.push_back("L3T3_KEY");
+      modes.push_back("S2T1");
       codec->setScalabilityModes(modes);
     }
     codecs.push_back(codec);

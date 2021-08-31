@@ -19,6 +19,7 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_server_properties.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/gtest_util.h"
@@ -147,9 +148,9 @@ class CertNetFetcherURLLoaderTest : public PlatformTest {
 
   void StartNetworkThread() {
     // Start the network thread.
-    creation_thread_.reset(new base::Thread("network thread"));
+    creation_thread_ = std::make_unique<base::Thread>("network thread");
     base::Thread::Options options(base::MessagePumpType::IO, 0);
-    EXPECT_TRUE(creation_thread_->StartWithOptions(options));
+    EXPECT_TRUE(creation_thread_->StartWithOptions(std::move(options)));
   }
 
   void ResetTestUtilOnNetworkThread(base::WaitableEvent* done) {
@@ -229,7 +230,7 @@ class SecureDnsInterceptor : public net::URLRequestInterceptor {
   // URLRequestInterceptor implementation:
   std::unique_ptr<net::URLRequestJob> MaybeInterceptRequest(
       net::URLRequest* request) const override {
-    EXPECT_TRUE(request->disable_secure_dns());
+    EXPECT_EQ(net::SecureDnsPolicy::kDisable, request->secure_dns_policy());
     *invoked_interceptor_ = true;
     return nullptr;
   }
@@ -499,7 +500,7 @@ TEST_F(CertNetFetcherURLLoaderTest,
     request1->WaitForResult(&error, &body);
   }
 
-  EXPECT_GE(2, NumCreatedRequests());
+  EXPECT_LE(2, NumCreatedRequests());
 
   ResetTestURLLoaderFactory();
 

@@ -255,17 +255,17 @@ static void mp3_parse_info_tag(AVFormatContext *s, AVStream *st,
 
         mp3->start_pad = v>>12;
         mp3->  end_pad = v&4095;
-        st->start_skip_samples = mp3->start_pad + 528 + 1;
+        st->internal->start_skip_samples = mp3->start_pad + 528 + 1;
         if (mp3->frames) {
-            st->first_discard_sample = -mp3->end_pad + 528 + 1 + mp3->frames * (int64_t)spf;
-            st->last_discard_sample = mp3->frames * (int64_t)spf;
+            st->internal->first_discard_sample = -mp3->end_pad + 528 + 1 + mp3->frames * (int64_t)spf;
+            st->internal->last_discard_sample = mp3->frames * (int64_t)spf;
         }
         // TODO(dalecurtis): Chrome expects to handle this start time change
         // itself, instead of ffmpeg magically moving the start time into
         // the future.
         //
         // if (!st->start_time)
-        //     st->start_time = av_rescale_q(st->start_skip_samples,
+        //     st->start_time = av_rescale_q(st->internal->start_skip_samples,
         //                                     (AVRational){1, c->sample_rate},
         //                                     st->time_base);
         av_log(s, AV_LOG_DEBUG, "pad %d %d\n", mp3->start_pad, mp3->  end_pad);
@@ -440,8 +440,8 @@ static int mp3_read_header(AVFormatContext *s)
     }
 
     // the seek index is relative to the end of the xing vbr headers
-    for (i = 0; i < st->nb_index_entries; i++)
-        st->index_entries[i].pos += avio_tell(s->pb);
+    for (i = 0; i < st->internal->nb_index_entries; i++)
+        st->internal->index_entries[i].pos += avio_tell(s->pb);
 
     /* the parameters will be extracted from the compressed bitstream */
     return 0;
@@ -576,7 +576,7 @@ static int mp3_seek(AVFormatContext *s, int stream_index, int64_t timestamp,
         if (ret < 0)
             return ret;
 
-        ie = &st->index_entries[ret];
+        ie = &st->internal->index_entries[ret];
     } else if (fast_seek && st->duration > 0 && filesize > 0) {
         if (!mp3->is_cbr)
             av_log(s, AV_LOG_WARNING, "Using scaling to seek VBR MP3; may be imprecise.\n");

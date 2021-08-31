@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <memory>
 #include <sstream>
 #include <utility>
 
@@ -327,11 +328,14 @@ ClearKeyCdm::ClearKeyCdm(HostInterface* host, const std::string& key_system)
       cdm_host_proxy_(new CdmHostProxyImpl<HostInterface>(host)),
       cdm_(new ClearKeyPersistentSessionCdm(
           cdm_host_proxy_.get(),
-          base::Bind(&ClearKeyCdm::OnSessionMessage, base::Unretained(this)),
-          base::Bind(&ClearKeyCdm::OnSessionClosed, base::Unretained(this)),
-          base::Bind(&ClearKeyCdm::OnSessionKeysChange, base::Unretained(this)),
-          base::Bind(&ClearKeyCdm::OnSessionExpirationUpdate,
-                     base::Unretained(this)))),
+          base::BindRepeating(&ClearKeyCdm::OnSessionMessage,
+                              base::Unretained(this)),
+          base::BindRepeating(&ClearKeyCdm::OnSessionClosed,
+                              base::Unretained(this)),
+          base::BindRepeating(&ClearKeyCdm::OnSessionKeysChange,
+                              base::Unretained(this)),
+          base::BindRepeating(&ClearKeyCdm::OnSessionExpirationUpdate,
+                              base::Unretained(this)))),
       key_system_(key_system) {
   DCHECK(g_is_cdm_module_initialized);
 }
@@ -589,9 +593,10 @@ cdm::Status ClearKeyCdm::InitializeAudioDecoder(
     return cdm::kInitializationError;
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
-  if (!audio_decoder_)
-    audio_decoder_.reset(
-        new media::FFmpegCdmAudioDecoder(cdm_host_proxy_.get()));
+  if (!audio_decoder_) {
+    audio_decoder_ =
+        std::make_unique<media::FFmpegCdmAudioDecoder>(cdm_host_proxy_.get());
+  }
 
   if (!audio_decoder_->Initialize(audio_decoder_config))
     return cdm::kInitializationError;
@@ -925,8 +930,8 @@ void ClearKeyCdm::OnUnitTestComplete(bool success) {
 }
 
 void ClearKeyCdm::StartFileIOTest() {
-  file_io_test_runner_.reset(new FileIOTestRunner(base::BindRepeating(
-      &CdmHostProxy::CreateFileIO, base::Unretained(cdm_host_proxy_.get()))));
+  file_io_test_runner_ = std::make_unique<FileIOTestRunner>(base::BindRepeating(
+      &CdmHostProxy::CreateFileIO, base::Unretained(cdm_host_proxy_.get())));
   file_io_test_runner_->RunAllTests(base::BindOnce(
       &ClearKeyCdm::OnFileIOTestComplete, base::Unretained(this)));
 }

@@ -30,8 +30,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_PATH_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_PATH_H_
 
-#include "third_party/blink/renderer/bindings/modules/v8/double_or_dom_point.h"
+#include "third_party/blink/renderer/bindings/modules/v8/unrestricted_double_or_dom_point.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/no_alloc_direct_call_host.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -39,8 +40,9 @@
 namespace blink {
 
 class ExceptionState;
+class V8UnionDOMPointOrUnrestrictedDouble;
 
-class MODULES_EXPORT CanvasPath {
+class MODULES_EXPORT CanvasPath : public NoAllocDirectCallHost {
   DISALLOW_NEW();
 
  public:
@@ -85,12 +87,22 @@ class MODULES_EXPORT CanvasPath {
             double double_y,
             double double_width,
             double double_height);
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  void roundRect(
+      double double_x,
+      double double_y,
+      double double_width,
+      double double_height,
+      const HeapVector<Member<V8UnionDOMPointOrUnrestrictedDouble>>& radii,
+      ExceptionState& exception_state);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void roundRect(double double_x,
                  double double_y,
                  double double_width,
                  double double_height,
-                 const HeapVector<DoubleOrDOMPoint, 0> radii,
+                 const HeapVector<UnrestrictedDoubleOrDOMPoint, 0> radii,
                  ExceptionState&);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   virtual bool IsTransformInvertible() const { return true; }
   virtual TransformationMatrix GetTransform() const {
@@ -103,6 +115,7 @@ class MODULES_EXPORT CanvasPath {
   CanvasPath(const Path& path) : path_(path) { path_.SetIsVolatile(true); }
   Path path_;
 };
+
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_PATH_H_

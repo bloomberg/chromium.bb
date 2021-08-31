@@ -18,7 +18,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/usb/usb_policy_allowed_devices.h"
-#include "components/permissions/chooser_context_base.h"
+#include "components/permissions/object_permission_context_base.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -29,7 +29,7 @@
 
 class Profile;
 
-class UsbChooserContext : public permissions::ChooserContextBase,
+class UsbChooserContext : public permissions::ObjectPermissionContextBase,
                           public device::mojom::UsbDeviceManagerClient {
  public:
   explicit UsbChooserContext(Profile* profile);
@@ -47,27 +47,21 @@ class UsbChooserContext : public permissions::ChooserContextBase,
   static base::Value DeviceInfoToValue(
       const device::mojom::UsbDeviceInfo& device_info);
 
-  // ChooserContextBase:
-  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
-  GetGrantedObjects(const url::Origin& requesting_origin,
-                    const url::Origin& embedding_origin) override;
-  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
-  GetAllGrantedObjects() override;
-  void RevokeObjectPermission(const url::Origin& requesting_origin,
-                              const url::Origin& embedding_origin,
+  // ObjectPermissionContextBase:
+  std::vector<std::unique_ptr<Object>> GetGrantedObjects(
+      const url::Origin& origin) override;
+  std::vector<std::unique_ptr<Object>> GetAllGrantedObjects() override;
+  void RevokeObjectPermission(const url::Origin& origin,
                               const base::Value& object) override;
   bool IsValidObject(const base::Value& object) override;
-  base::string16 GetObjectDisplayName(const base::Value& object) override;
+  std::u16string GetObjectDisplayName(const base::Value& object) override;
 
-  // Grants |requesting_origin| access to the USB device.
-  void GrantDevicePermission(const url::Origin& requesting_origin,
-                             const url::Origin& embedding_origin,
+  // Grants |origin| access to the USB device.
+  void GrantDevicePermission(const url::Origin& origin,
                              const device::mojom::UsbDeviceInfo& device_info);
 
-  // Checks if |requesting_origin| (when embedded within |embedding_origin| has
-  // access to a device with |device_info|.
-  bool HasDevicePermission(const url::Origin& requesting_origin,
-                           const url::Origin& embedding_origin,
+  // Checks if |origin| has access to a device with |device_info|.
+  bool HasDevicePermission(const url::Origin& origin,
                            const device::mojom::UsbDeviceInfo& device_info);
 
   void AddObserver(DeviceObserver* observer);
@@ -77,6 +71,7 @@ class UsbChooserContext : public permissions::ChooserContextBase,
   void GetDevices(device::mojom::UsbDeviceManager::GetDevicesCallback callback);
   void GetDevice(
       const std::string& guid,
+      base::span<const uint8_t> blocked_interface_classes,
       mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver,
       mojo::PendingRemote<device::mojom::UsbDeviceClient> device_client);
 #if defined(OS_ANDROID)
@@ -115,8 +110,7 @@ class UsbChooserContext : public permissions::ChooserContextBase,
   base::queue<device::mojom::UsbDeviceManager::GetDevicesCallback>
       pending_get_devices_requests_;
 
-  std::map<std::pair<url::Origin, url::Origin>, std::set<std::string>>
-      ephemeral_devices_;
+  std::map<url::Origin, std::set<std::string>> ephemeral_devices_;
   std::map<std::string, device::mojom::UsbDeviceInfoPtr> devices_;
 
   std::unique_ptr<UsbPolicyAllowedDevices> usb_policy_allowed_devices_;

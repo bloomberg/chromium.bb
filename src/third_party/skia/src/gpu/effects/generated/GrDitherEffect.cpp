@@ -26,8 +26,8 @@ public:
         (void)_outer;
         auto range = _outer.range;
         (void)range;
-        rangeVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag, kHalf_GrSLType,
-                                                    "range");
+        rangeVar = args.fUniformHandler->addUniform(
+                &_outer, kFragment_GrShaderFlag, kHalf_GrSLType, "range");
         SkString _sample0 = this->invokeChild(0, args);
         fragBuilder->codeAppendf(
                 R"SkSL(half4 color = %s;
@@ -45,19 +45,20 @@ half value;
 }
 return half4(clamp(color.xyz + value * %s, 0.0, color.w), color.w);
 )SkSL",
-                _sample0.c_str(), args.fUniformHandler->getUniformCStr(rangeVar));
+                _sample0.c_str(),
+                args.fUniformHandler->getUniformCStr(rangeVar));
     }
 
 private:
     void onSetData(const GrGLSLProgramDataManager& pdman,
                    const GrFragmentProcessor& _proc) override {
         const GrDitherEffect& _outer = _proc.cast<GrDitherEffect>();
-        { pdman.set1f(rangeVar, (_outer.range)); }
+        { pdman.set1f(rangeVar, _outer.range); }
     }
     UniformHandle rangeVar;
 };
-GrGLSLFragmentProcessor* GrDitherEffect::onCreateGLSLInstance() const {
-    return new GrGLSLDitherEffect();
+std::unique_ptr<GrGLSLFragmentProcessor> GrDitherEffect::onMakeProgramImpl() const {
+    return std::make_unique<GrGLSLDitherEffect>();
 }
 void GrDitherEffect::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                            GrProcessorKeyBuilder* b) const {}
@@ -67,7 +68,6 @@ bool GrDitherEffect::onIsEqual(const GrFragmentProcessor& other) const {
     if (range != that.range) return false;
     return true;
 }
-bool GrDitherEffect::usesExplicitReturn() const { return true; }
 GrDitherEffect::GrDitherEffect(const GrDitherEffect& src)
         : INHERITED(kGrDitherEffect_ClassID, src.optimizationFlags()), range(src.range) {
     this->cloneAndRegisterAllChildProcessors(src);

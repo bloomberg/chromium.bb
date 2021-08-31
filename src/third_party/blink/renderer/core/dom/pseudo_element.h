@@ -41,7 +41,8 @@ class CORE_EXPORT PseudoElement : public Element {
 
   PseudoElement(Element*, PseudoId);
 
-  scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() override;
+  scoped_refptr<ComputedStyle> CustomStyleForLayoutObject(
+      const StyleRecalcContext&) override;
   void AttachLayoutTree(AttachContext&) override;
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
   bool CanGeneratePseudoElement(PseudoId) const override;
@@ -89,4 +90,4 @@ struct DowncastTraits<PseudoElement> {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PSEUDO_ELEMENT_H_

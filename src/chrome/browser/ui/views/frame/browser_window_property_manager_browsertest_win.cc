@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_propvariant.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
@@ -55,7 +54,7 @@ std::wstring AddIdToIconPath(const std::wstring& path) {
 // |browser| are correct.
 void ValidateBrowserWindowProperties(
     const Browser* browser,
-    const base::string16& expected_profile_name) {
+    const std::u16string& expected_profile_name) {
   // Let shortcut creation finish before we validate the results.
   content::RunAllTasksUntilIdle();
 
@@ -85,7 +84,7 @@ void ValidateBrowserWindowProperties(
   EXPECT_EQ(VT_LPWSTR, prop_var.get().vt);
   base::CommandLine cmd_line(
       base::CommandLine::FromString(prop_var.get().pwszVal));
-  EXPECT_EQ(browser->profile()->GetPath().BaseName().value(),
+  EXPECT_EQ(browser->profile()->GetBaseName().value(),
             cmd_line.GetSwitchValueNative(switches::kProfileDirectory));
   prop_var.Reset();
 
@@ -126,7 +125,7 @@ void ValidateHostedAppWindowProperties(const Browser* browser,
   EXPECT_EQ(VT_LPWSTR, prop_var.get().vt);
   base::CommandLine cmd_line(
       base::CommandLine::FromString(prop_var.get().pwszVal));
-  EXPECT_EQ(browser->profile()->GetPath().BaseName().value(),
+  EXPECT_EQ(browser->profile()->GetBaseName().value(),
             cmd_line.GetSwitchValueNative(switches::kProfileDirectory));
   EXPECT_EQ(base::UTF8ToWide(extension->id()),
             cmd_line.GetSwitchValueNative(switches::kAppId));
@@ -168,7 +167,7 @@ class BrowserTestWithProfileShortcutManager : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
                        DISABLED_WindowProperties) {
   // Single profile case. The profile name should not be shown.
-  ValidateBrowserWindowProperties(browser(), base::string16());
+  ValidateBrowserWindowProperties(browser(), std::u16string());
 
   // If multiprofile mode is not enabled, we can't test the behavior when there
   // are multiple profiles.
@@ -181,8 +180,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
   base::FilePath path_profile2 =
       profile_manager->GenerateNextProfileDirectoryPath();
   profile_manager->CreateProfileAsync(path_profile2,
-                                      ProfileManager::CreateCallback(),
-                                      base::string16(), std::string());
+                                      ProfileManager::CreateCallback());
   // The default profile's name should be part of the relaunch name.
   ValidateBrowserWindowProperties(
       browser(), base::UTF8ToUTF16(browser()->profile()->GetProfileUserName()));
@@ -190,9 +188,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
   // The second profile's name should be part of the relaunch name.
   Browser* profile2_browser =
       CreateBrowser(profile_manager->GetProfileByPath(path_profile2));
-  ProfileAttributesEntry* entry;
-  ASSERT_TRUE(profile_manager->GetProfileAttributesStorage().
-              GetProfileAttributesWithPath(path_profile2, &entry));
+  ProfileAttributesEntry* entry =
+      profile_manager->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(path_profile2);
+  ASSERT_NE(entry, nullptr);
   ValidateBrowserWindowProperties(profile2_browser, entry->GetName());
 }
 

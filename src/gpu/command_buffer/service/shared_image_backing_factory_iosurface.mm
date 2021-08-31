@@ -7,7 +7,6 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "components/viz/common/gpu/metal_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
@@ -17,6 +16,7 @@
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "ui/gfx/mac/io_surface.h"
 #include "ui/gl/buildflags.h"
@@ -35,11 +35,11 @@ namespace gpu {
 
 namespace {
 
-base::scoped_nsprotocol<id<MTLTexture>> API_AVAILABLE(macos(10.11))
-    CreateMetalTexture(id<MTLDevice> mtl_device,
-                       IOSurfaceRef io_surface,
-                       const gfx::Size& size,
-                       viz::ResourceFormat format) {
+base::scoped_nsprotocol<id<MTLTexture>> CreateMetalTexture(
+    id<MTLDevice> mtl_device,
+    IOSurfaceRef io_surface,
+    const gfx::Size& size,
+    viz::ResourceFormat format) {
   TRACE_EVENT0("gpu", "SharedImageBackingFactoryIOSurface::CreateMetalTexture");
   base::scoped_nsprotocol<id<MTLTexture>> mtl_texture;
   MTLPixelFormat mtl_pixel_format =
@@ -175,26 +175,23 @@ SharedImageBackingFactoryIOSurface::ProduceSkiaPromiseTextureMetal(
     SharedImageBacking* backing,
     scoped_refptr<SharedContextState> context_state,
     scoped_refptr<gl::GLImage> image) {
-  if (@available(macOS 10.11, *)) {
-    DCHECK(context_state->GrContextIsMetal());
+  DCHECK(context_state->GrContextIsMetal());
 
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface =
-        static_cast<gl::GLImageIOSurface*>(image.get())->io_surface();
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface =
+      static_cast<gl::GLImageIOSurface*>(image.get())->io_surface();
 
-    id<MTLDevice> mtl_device =
-        context_state->metal_context_provider()->GetMTLDevice();
-    auto mtl_texture = CreateMetalTexture(mtl_device, io_surface.get(),
-                                          backing->size(), backing->format());
-    DCHECK(mtl_texture);
+  id<MTLDevice> mtl_device =
+      context_state->metal_context_provider()->GetMTLDevice();
+  auto mtl_texture = CreateMetalTexture(mtl_device, io_surface.get(),
+                                        backing->size(), backing->format());
+  DCHECK(mtl_texture);
 
-    GrMtlTextureInfo info;
-    info.fTexture.retain(mtl_texture.get());
-    auto gr_backend_texture =
-        GrBackendTexture(backing->size().width(), backing->size().height(),
-                         GrMipMapped::kNo, info);
-    return SkPromiseImageTexture::Make(gr_backend_texture);
-  }
-  return nullptr;
+  GrMtlTextureInfo info;
+  info.fTexture.retain(mtl_texture.get());
+  auto gr_backend_texture =
+      GrBackendTexture(backing->size().width(), backing->size().height(),
+                       GrMipMapped::kNo, info);
+  return SkPromiseImageTexture::Make(gr_backend_texture);
 }
 
 // static
@@ -216,7 +213,7 @@ SharedImageBackingFactoryIOSurface::ProduceDawn(
   if (!io_surface)
     return nullptr;
 
-  base::Optional<WGPUTextureFormat> wgpu_format =
+  absl::optional<WGPUTextureFormat> wgpu_format =
       viz::ToWGPUFormat(actual_format);
   if (wgpu_format.value() == WGPUTextureFormat_Undefined)
     return nullptr;

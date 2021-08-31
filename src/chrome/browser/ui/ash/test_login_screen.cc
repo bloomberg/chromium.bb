@@ -43,6 +43,8 @@ void TestLoginScreen::EnableAddUserButton(bool enable) {}
 
 void TestLoginScreen::EnableShutdownButton(bool enable) {}
 
+void TestLoginScreen::EnableShelfButtons(bool enable) {}
+
 void TestLoginScreen::SetIsFirstSigninStep(bool is_first) {}
 
 void TestLoginScreen::ShowParentAccessButton(bool show) {}
@@ -60,7 +62,7 @@ void TestLoginScreen::RequestSecurityTokenPin(
 void TestLoginScreen::ClearSecurityTokenPinRequest() {}
 
 bool TestLoginScreen::SetLoginShelfGestureHandler(
-    const base::string16& nudge_text,
+    const std::u16string& nudge_text,
     const base::RepeatingClosure& fling_callback,
     base::OnceClosure exit_callback) {
   return false;

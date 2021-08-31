@@ -41,7 +41,7 @@ namespace blink {
 scoped_refptr<RealtimeAudioDestinationHandler>
 RealtimeAudioDestinationHandler::Create(AudioNode& node,
                                         const WebAudioLatencyHint& latency_hint,
-                                        base::Optional<float> sample_rate) {
+                                        absl::optional<float> sample_rate) {
   return base::AdoptRef(
       new RealtimeAudioDestinationHandler(node, latency_hint, sample_rate));
 }
@@ -49,7 +49,7 @@ RealtimeAudioDestinationHandler::Create(AudioNode& node,
 RealtimeAudioDestinationHandler::RealtimeAudioDestinationHandler(
     AudioNode& node,
     const WebAudioLatencyHint& latency_hint,
-    base::Optional<float> sample_rate)
+    absl::optional<float> sample_rate)
     : AudioDestinationHandler(node),
       latency_hint_(latency_hint),
       sample_rate_(sample_rate),
@@ -108,12 +108,11 @@ void RealtimeAudioDestinationHandler::SetChannelCount(
     return;
   }
 
-  uint32_t old_channel_count = this->ChannelCount();
+  uint32_t old_channel_count = ChannelCount();
   AudioHandler::SetChannelCount(channel_count, exception_state);
 
   // Stop, re-create and start the destination to apply the new channel count.
-  if (this->ChannelCount() != old_channel_count &&
-      !exception_state.HadException()) {
+  if (ChannelCount() != old_channel_count && !exception_state.HadException()) {
     StopPlatformDestination();
     CreatePlatformDestination();
     StartPlatformDestination();
@@ -274,8 +273,9 @@ int RealtimeAudioDestinationHandler::GetFramesPerBuffer() const {
 }
 
 void RealtimeAudioDestinationHandler::CreatePlatformDestination() {
-  platform_destination_ = AudioDestination::Create(*this, ChannelCount(),
-                                                   latency_hint_, sample_rate_);
+  platform_destination_ = AudioDestination::Create(
+      *this, ChannelCount(), latency_hint_, sample_rate_,
+      Context()->GetDeferredTaskHandler().RenderQuantumFrames());
 }
 
 void RealtimeAudioDestinationHandler::StartPlatformDestination() {
@@ -319,7 +319,7 @@ void RealtimeAudioDestinationHandler::StopPlatformDestination() {
 RealtimeAudioDestinationNode::RealtimeAudioDestinationNode(
     AudioContext& context,
     const WebAudioLatencyHint& latency_hint,
-    base::Optional<float> sample_rate)
+    absl::optional<float> sample_rate)
     : AudioDestinationNode(context) {
   SetHandler(RealtimeAudioDestinationHandler::Create(*this, latency_hint,
                                                      sample_rate));
@@ -328,7 +328,7 @@ RealtimeAudioDestinationNode::RealtimeAudioDestinationNode(
 RealtimeAudioDestinationNode* RealtimeAudioDestinationNode::Create(
     AudioContext* context,
     const WebAudioLatencyHint& latency_hint,
-    base::Optional<float> sample_rate) {
+    absl::optional<float> sample_rate) {
   return MakeGarbageCollected<RealtimeAudioDestinationNode>(
       *context, latency_hint, sample_rate);
 }

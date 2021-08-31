@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/views/layout/fill_layout.h"
 
 ViewStack::ViewStack()
@@ -60,11 +62,12 @@ void ViewStack::Push(std::unique_ptr<views::View> view, bool animate) {
 }
 
 void ViewStack::Pop(bool animate) {
-  DCHECK_LT(1u, size());  // There must be at least one view left after popping.
+  DCHECK_LT(1u,
+            GetSize());  // There must be at least one view left after popping.
 
   // Set the second-to-last view as visible, since it is about to be revealed
   // when the last view animates out.
-  stack_[size() - 2]->SetVisible(true);
+  stack_[GetSize() - 2]->SetVisible(true);
 
   if (animate) {
     gfx::Rect destination = bounds();
@@ -77,7 +80,8 @@ void ViewStack::Pop(bool animate) {
 }
 
 void ViewStack::PopMany(int n, bool animate) {
-  DCHECK_LT(static_cast<size_t>(n), size());  // The stack can never be empty.
+  DCHECK_LT(static_cast<size_t>(n),
+            GetSize());  // The stack can never be empty.
 
   size_t pre_size = stack_.size();
 
@@ -95,7 +99,7 @@ void ViewStack::PopMany(int n, bool animate) {
   Pop(animate);
 }
 
-size_t ViewStack::size() const {
+size_t ViewStack::GetSize() const {
   return stack_.size();
 }
 
@@ -114,12 +118,12 @@ void ViewStack::RequestFocus() {
 
 void ViewStack::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   UpdateAnimatorBounds(slide_in_animator_.get(), GetLocalBounds());
-  UpdateAnimatorBounds(slide_out_animator_.get(), {{width(), 0}, View::size()});
+  UpdateAnimatorBounds(slide_out_animator_.get(), {{width(), 0}, size()});
 }
 
 void ViewStack::HideCoveredViews() {
   // Iterate through all but the last (topmost) view.
-  for (size_t i = 0; i + 1 < size(); i++) {
+  for (size_t i = 0; i + 1 < GetSize(); i++) {
     stack_[i]->SetVisible(false);
   }
 }
@@ -149,3 +153,7 @@ void ViewStack::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
   }
   RequestFocus();
 }
+
+BEGIN_METADATA(ViewStack, views::View)
+ADD_READONLY_PROPERTY_METADATA(size_t, Size)
+END_METADATA

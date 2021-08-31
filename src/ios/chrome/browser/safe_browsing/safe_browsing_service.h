@@ -5,9 +5,12 @@
 #ifndef IOS_CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_SERVICE_H_
 #define IOS_CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_SERVICE_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "net/cookies/cookie_deletion_info.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -21,7 +24,7 @@ class SharedURLLoaderFactory;
 }
 
 namespace safe_browsing {
-enum class ResourceType;
+class SafeBrowsingDatabaseManager;
 class SafeBrowsingUrlCheckerImpl;
 }  // namespace safe_browsing
 
@@ -50,7 +53,7 @@ class SafeBrowsingService
   // Creates a SafeBrowsingUrlCheckerImpl that can be used to query the
   // SafeBrowsingDatabaseManager owned by this service.
   virtual std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl>
-  CreateUrlChecker(safe_browsing::ResourceType resource_type,
+  CreateUrlChecker(network::mojom::RequestDestination request_destination,
                    web::WebState* web_state) = 0;
 
   // Returns true if |url| has a scheme that is handled by Safe Browsing.
@@ -59,6 +62,10 @@ class SafeBrowsingService
   // Returns the SharedURLLoaderFactory used for Safe Browsing network requests.
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactory() = 0;
+
+  // Returns the SafeBrowsingDatabaseManager owned by this service.
+  virtual scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
+  GetDatabaseManager() = 0;
 
   // Clears cookies if the given deletion time range is for "all time". Calls
   // the given |callback| once deletion is complete.

@@ -128,9 +128,15 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Type the URL of the first page in the omnibox to trigger it as suggestion.
   [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(kPage1URL)];
 
-  // Switch to the first tab.
-  [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(firstPageURL)]
+  // Switch to the first tab, scrolling the popup if necessary.
+  [[[EarlGrey
+      selectElementWithMatcher:grey_allOf(SwitchTabElementForUrl(firstPageURL),
+                                          grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+      onElementWithMatcher:grey_accessibilityID(
+                               kOmniboxPopupTableViewAccessibilityIdentifier)]
       performAction:grey_tap()];
+
   [ChromeEarlGrey waitForWebStateContainingText:kPage1];
 
   // Check that both tabs are opened (and that we switched tab and not just
@@ -254,8 +260,12 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       assertWithMatcher:grey_nil()];
 }
 
-// TODO(crbug.com/1037651): Test fails.
-- (void)DISABLED_testCloseNTPWhenSwitching {
+- (void)testCloseNTPWhenSwitching {
+  // TODO(crbug.com/1156054): Test won't pass on iPad.
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"This test doesn't pass on iPad.");
+  }
+
   // Open the first page.
   GURL URL1 = self.testServer->GetURL(kPage1URL);
   [ChromeEarlGrey loadURL:URL1];
@@ -343,8 +353,14 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Start typing url of the first page.
   [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(kPage1URL)];
 
-  // Make sure that the "Switch to Open Tab" element is visible.
-  [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
+  // Make sure that the "Switch to Open Tab" element is visible, scrolling the
+  // popup if necessary.
+  [[[EarlGrey
+      selectElementWithMatcher:grey_allOf(SwitchTabElementForUrl(URL1),
+                                          grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+      onElementWithMatcher:grey_accessibilityID(
+                               kOmniboxPopupTableViewAccessibilityIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Close the first page.

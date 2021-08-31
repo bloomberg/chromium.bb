@@ -9,10 +9,11 @@
 #include <set>
 
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_collections.h"

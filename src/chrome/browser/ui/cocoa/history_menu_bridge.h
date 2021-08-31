@@ -7,12 +7,13 @@
 
 #import <Cocoa/Cocoa.h>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/task/cancelable_task_tracker.h"
 #import "chrome/browser/ui/cocoa/main_menu_item.h"
 #import "components/favicon/core/favicon_service.h"
@@ -69,7 +70,7 @@ class HistoryMenuBridge : public sessions::TabRestoreServiceObserver,
     ~HistoryItem();
 
     // The title for the menu item.
-    base::string16 title;
+    std::u16string title;
     // The URL that will be navigated to if the user selects this item.
     GURL url;
     // Favicon for the URL.
@@ -114,12 +115,15 @@ class HistoryMenuBridge : public sessions::TabRestoreServiceObserver,
   // to have the global IDC view tags.
   enum Tags {
     kRecentlyClosedSeparator = 400,  // Item before recently closed section.
-    kRecentlyClosedTitle = 401,  // Title of recently closed section.
-    kRecentlyClosed = 420,  // Used for items in the recently closed section.
-    kVisitedSeparator = 440,  // Separator before visited section.
-    kVisitedTitle = 441,  // Title of the visited section.
-    kVisited = 460,  // Used for all entries in the visited section.
-    kShowFullSeparator = 480  // Separator after the visited section.
+    kRecentlyClosedTitle = 401,      // Title of recently closed section.
+    kRecentlyClosed = 420,     // Used for items in the recently closed section.
+    kVisitedSeparator = 440,   // Separator before visited section.
+    kVisitedTitle = 441,       // Title of the visited section.
+    kVisited = 460,            // Used for all entries in the visited section.
+    kShowFullSeparator = 480,  // Separator after the visited section.
+    kIncognitoDisclaimerSeparator =
+        500,  // Separator before Incognito disclaimer text.
+    kIncognitoDisclaimerLabel = 501  // Label for Incognito disclaimer text.
   };
 
   explicit HistoryMenuBridge(Profile* profile);
@@ -162,10 +166,33 @@ class HistoryMenuBridge : public sessions::TabRestoreServiceObserver,
   // index. This will add |item| and the newly created menu item to the
   // |menu_item_map_|, which takes ownership. Items are deleted in
   // ClearMenuSection(). This returns the new menu item that was just added.
-  NSMenuItem* AddItemToMenu(HistoryItem* item,
+  NSMenuItem* AddItemToMenu(std::unique_ptr<HistoryItem> item,
                             NSMenu* menu,
                             NSInteger tag,
                             NSInteger index);
+
+  // Adds an item for the window entry with a submenu containing its tabs.
+  // Returns whether the item was successfully added.
+  bool AddWindowEntryToMenu(sessions::TabRestoreService::Window* window,
+                            NSMenu* menu,
+                            NSInteger tag,
+                            NSInteger index);
+
+  // Adds an item for the group entry with a submenu containing its tabs.
+  // Returns whether the item was successfully added.
+  bool AddGroupEntryToMenu(sessions::TabRestoreService::Group* group,
+                           NSMenu* menu,
+                           NSInteger tag,
+                           NSInteger index);
+
+  // Adds standard 'Restore All' items and an item for each tab in |tabs|,
+  // potentially filtering out tabs like the NTP. Returns the number of tabs
+  // successfully added and updates the HistoryItem with those tabs.
+  int AddTabsToSubmenu(
+      NSMenu* submenu,
+      HistoryItem* item,
+      const std::vector<std::unique_ptr<sessions::TabRestoreService::Tab>>&
+          tabs);
 
   // Called by the ctor if |service_| is ready at the time, or by a
   // notification receiver. Finishes initialization tasks by subscribing for
@@ -182,9 +209,9 @@ class HistoryMenuBridge : public sessions::TabRestoreServiceObserver,
   // most recently-visited sites.
   void OnVisitedHistoryResults(history::QueryResults results);
 
-  // Creates a HistoryItem* for the given tab entry. Caller takes ownership of
-  // the result and must delete it when finished.
-  HistoryItem* HistoryItemForTab(const sessions::TabRestoreService::Tab& entry);
+  // Creates a HistoryItem* for the given tab entry.
+  std::unique_ptr<HistoryItem> HistoryItemForTab(
+      const sessions::TabRestoreService::Tab& entry);
 
   // Helper function that sends an async request to the FaviconService to get
   // an icon. The callback will update the NSMenuItem directly.
@@ -216,6 +243,7 @@ class HistoryMenuBridge : public sessions::TabRestoreServiceObserver,
   void OnURLsDeleted(history::HistoryService* history_service,
                      const history::DeletionInfo& deletion_info) override;
   void OnHistoryServiceLoaded(history::HistoryService* service) override;
+  void HistoryServiceBeingDeleted(history::HistoryService* service) override;
 
   base::scoped_nsobject<HistoryMenuCocoaController> controller_;  // strong
 
@@ -225,9 +253,8 @@ class HistoryMenuBridge : public sessions::TabRestoreServiceObserver,
 
   base::CancelableTaskTracker cancelable_task_tracker_;
 
-  // Mapping of NSMenuItems to HistoryItems. This owns the HistoryItems until
-  // they are removed and deleted via ClearMenuSection().
-  std::map<NSMenuItem*, HistoryItem*> menu_item_map_;
+  // Mapping of NSMenuItems to HistoryItems.
+  std::map<NSMenuItem*, std::unique_ptr<HistoryItem>> menu_item_map_;
 
   // Requests to re-create the menu are coalesced. |create_in_progress_| is true
   // when either waiting for the history service to return query results, or
@@ -243,8 +270,16 @@ class HistoryMenuBridge : public sessions::TabRestoreServiceObserver,
   // The default favicon if a HistoryItem does not have one.
   base::scoped_nsobject<NSImage> default_favicon_;
 
-  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-      history_service_observer_;
+  base::ScopedObservation<history::HistoryService,
+                          history::HistoryServiceObserver>
+      history_service_observation_{this};
+
+  // Changes the visibility of the menu items depend on the current profile
+  // type.
+  void SetVisibilityOfMenuItems();
+
+  // Returns if the given menu item should be visible for the current profile.
+  bool ShouldMenuItemBeVisible(NSMenuItem* item);
 
   DISALLOW_COPY_AND_ASSIGN(HistoryMenuBridge);
 };

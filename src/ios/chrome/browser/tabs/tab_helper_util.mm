@@ -10,6 +10,7 @@
 
 #include "base/feature_list.h"
 #include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
+#include "components/breadcrumbs/core/features.h"
 #include "components/favicon/core/favicon_service.h"
 #import "components/favicon/ios/web_favicon_driver.h"
 #include "components/history/core/browser/top_sites.h"
@@ -26,11 +27,9 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/complex_tasks/ios_task_tab_helper.h"
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_tab_helper.h"
-#import "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
-#import "ios/chrome/browser/geolocation/omnibox_geolocation_tab_helper.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/history_tab_helper.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
@@ -43,7 +42,6 @@
 #import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
 #import "ios/chrome/browser/link_to_text/link_to_text_tab_helper.h"
 #import "ios/chrome/browser/metrics/pageload_foreground_duration_tab_helper.h"
-#import "ios/chrome/browser/network_activity/network_activity_indicator_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/open_in/open_in_tab_helper.h"
 #import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
@@ -67,15 +65,17 @@
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
+#include "ios/chrome/browser/web/error_page_controller_bridge.h"
 #import "ios/chrome/browser/web/features.h"
-#import "ios/chrome/browser/web/font_size_tab_helper.h"
-#import "ios/chrome/browser/web/image_fetch_tab_helper.h"
+#include "ios/chrome/browser/web/features.h"
+#import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
+#import "ios/chrome/browser/web/image_fetch/image_fetch_tab_helper.h"
 #import "ios/chrome/browser/web/invalid_url_tab_helper.h"
-#import "ios/chrome/browser/web/java_script_console/java_script_console_tab_helper.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
-#import "ios/chrome/browser/web/print_tab_helper.h"
+#import "ios/chrome/browser/web/print/print_tab_helper.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
+#import "ios/chrome/browser/web/session_state/web_session_state_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web/web_state_delegate_tab_helper.h"
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
@@ -101,7 +101,6 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   WebStateDelegateTabHelper::CreateForWebState(web_state);
 
   NSString* tab_id = TabIdTabHelper::FromWebState(web_state)->tab_id();
-  NetworkActivityIndicatorTabHelper::CreateForWebState(web_state, tab_id);
   VoiceSearchNavigationTabHelper::CreateForWebState(web_state);
   IOSChromeSyncedTabDelegate::CreateForWebState(web_state);
   InfoBarManagerImpl::CreateForWebState(web_state);
@@ -109,7 +108,6 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   FindTabHelper::CreateForWebState(web_state);
   U2FTabHelper::CreateForWebState(web_state);
   StoreKitTabHelper::CreateForWebState(web_state);
-  JavaScriptConsoleTabHelper::CreateForWebState(web_state);
   ITunesUrlsHandlerTabHelper::CreateForWebState(web_state);
   HistoryTabHelper::CreateForWebState(web_state);
   LoadTimingTabHelper::CreateForWebState(web_state);
@@ -120,6 +118,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
       web_state);
   password_manager::WellKnownChangePasswordTabHelper::CreateForWebState(
       web_state);
+  ErrorPageControllerBridge::CreateForWebState(web_state);
 
   if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)) {
     InvalidUrlTabHelper::CreateForWebState(web_state);
@@ -135,7 +134,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     FontSizeTabHelper::CreateForWebState(web_state);
   }
 
-  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
+  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
     BreadcrumbManagerTabHelper::CreateForWebState(web_state);
   }
 
@@ -186,12 +185,9 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
 
   PageloadForegroundDurationTabHelper::CreateForWebState(web_state);
 
-  if (base::FeatureList::IsEnabled(
-          web::features::kIOSLookalikeUrlNavigationSuggestionsUI)) {
-    LookalikeUrlTabHelper::CreateForWebState(web_state);
-    LookalikeUrlTabAllowList::CreateForWebState(web_state);
-    LookalikeUrlContainer::CreateForWebState(web_state);
-  }
+  LookalikeUrlTabHelper::CreateForWebState(web_state);
+  LookalikeUrlTabAllowList::CreateForWebState(web_state);
+  LookalikeUrlContainer::CreateForWebState(web_state);
 
   if (base::FeatureList::IsEnabled(web::features::kIOSLegacyTLSInterstitial)) {
     LegacyTLSTabAllowList::CreateForWebState(web_state);
@@ -210,12 +206,9 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     InfobarBadgeTabHelper::CreateForWebState(web_state);
   }
 
-  OmniboxGeolocationTabHelper::CreateForWebState(web_state);
-
-  // Allow the embedder to attach tab helpers.
-  ios::GetChromeBrowserProvider()->AttachTabHelpers(web_state);
-
   if (base::FeatureList::IsEnabled(kSharedHighlightingIOS)) {
     LinkToTextTabHelper::CreateForWebState(web_state);
   }
+
+  WebSessionStateTabHelper::CreateForWebState(web_state);
 }

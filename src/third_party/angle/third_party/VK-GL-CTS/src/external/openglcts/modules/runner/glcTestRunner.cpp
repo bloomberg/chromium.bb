@@ -779,7 +779,6 @@ void TestRunner::deinit(void)
 	writeRunSummary(m_summary, de::FilePath::join(m_logDirPath, "cts-run-summary.xml").getPath());
 
 	m_runSessions.clear();
-	m_summary.clear();
 }
 
 void TestRunner::initSession(const TestRunParams& runParams)
@@ -823,10 +822,9 @@ void TestRunner::deinitSession(void)
 	// Collect results.
 	// \note NotSupported is treated as pass.
 	const tcu::TestRunStatus& result = m_curSession->getResult();
-	bool					  isOk =
-		result.numExecuted == (result.numPassed + result.numNotSupported + result.numWarnings) && result.isComplete;
+	bool isOk = result.numFailed == 0 && result.isComplete;
 
-	DE_ASSERT(result.numExecuted == result.numPassed + result.numFailed + result.numNotSupported + result.numWarnings);
+	DE_ASSERT(result.numExecuted == result.numPassed + result.numFailed + result.numNotSupported + result.numWarnings + result.numWaived);
 
 	m_sessionsExecuted += 1;
 	(isOk ? m_sessionsPassed : m_sessionsFailed) += 1;

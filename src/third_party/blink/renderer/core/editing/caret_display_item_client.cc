@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_invalidator.h"
@@ -110,7 +111,8 @@ CaretDisplayItemClient::ComputeCaretRectAndPainterBlock(
   // (which is either the layoutObject we just found, or one of its containers).
   LayoutBlock* caret_block =
       CaretLayoutBlock(caret_position.AnchorNode(), caret_rect.layout_object);
-  return {MapCaretRectToCaretPainter(caret_block, caret_rect), caret_block};
+  return {MapCaretRectToCaretPainter(caret_block, caret_rect), caret_block,
+          caret_rect.root_box_fragment};
 }
 
 void CaretDisplayItemClient::LayoutBlockWillBeDestroyed(
@@ -119,6 +121,17 @@ void CaretDisplayItemClient::LayoutBlockWillBeDestroyed(
     layout_block_ = nullptr;
   if (block == previous_layout_block_)
     previous_layout_block_ = nullptr;
+}
+
+bool CaretDisplayItemClient::ShouldPaintCaret(
+    const NGPhysicalBoxFragment& box_fragment) const {
+  const auto* const block =
+      DynamicTo<LayoutBlock>(box_fragment.GetLayoutObject());
+  if (!block)
+    return false;
+  if (!ShouldPaintCaret(*block))
+    return false;
+  return !box_fragment_ || &box_fragment == box_fragment_;
 }
 
 void CaretDisplayItemClient::UpdateStyleAndLayoutIfNeeded(
@@ -147,6 +160,14 @@ void CaretDisplayItemClient::UpdateStyleAndLayoutIfNeeded(
     color_ = Color();
     local_rect_ = PhysicalRect();
     return;
+  }
+
+  const NGPhysicalBoxFragment* const new_box_fragment =
+      rect_and_block.box_fragment;
+  if (new_box_fragment != box_fragment_) {
+    if (new_box_fragment)
+      needs_paint_invalidation_ = true;
+    box_fragment_ = new_box_fragment;
   }
 
   Color new_color;
@@ -236,6 +257,23 @@ void CaretDisplayItemClient::PaintCaret(
   IntRect paint_rect = PixelSnappedIntRect(drawing_rect);
   context.FillRect(paint_rect, is_visible_if_active_ ? color_ : Color(),
                    DarkModeFilter::ElementRole::kText);
+}
+
+void CaretDisplayItemClient::RecordSelection(
+    GraphicsContext& context,
+    const PhysicalOffset& paint_offset) {
+  PhysicalRect drawing_rect = local_rect_;
+  drawing_rect.Move(paint_offset);
+  IntRect paint_rect = PixelSnappedIntRect(drawing_rect);
+
+  // For the caret, the start and selection selection bounds are recorded as
+  // the same edges, with the type marked as CENTER.
+  PaintedSelectionBound start = {gfx::SelectionBound::Type::CENTER,
+                                 paint_rect.MinXMinYCorner(),
+                                 paint_rect.MinXMaxYCorner(), false};
+  PaintedSelectionBound end = start;
+
+  context.GetPaintController().RecordSelection(start, end);
 }
 
 String CaretDisplayItemClient::DebugName() const {

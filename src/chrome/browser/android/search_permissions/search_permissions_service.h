@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_ANDROID_SEARCH_PERMISSIONS_SEARCH_PERMISSIONS_SERVICE_H_
 #define CHROME_BROWSER_ANDROID_SEARCH_PERMISSIONS_SEARCH_PERMISSIONS_SERVICE_H_
 
+#include <string>
+
 #include "base/callback_forward.h"
 #include "base/memory/singleton.h"
-#include "base/strings/string16.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -39,7 +40,7 @@ class SearchPermissionsService : public KeyedService {
     virtual ~SearchEngineDelegate() {}
 
     // Returns the name of the current DSE.
-    virtual base::string16 GetDSEName() = 0;
+    virtual std::u16string GetDSEName() = 0;
 
     // Returns the origin of the DSE. If the current DSE is Google this will
     // return the current CCTLD.
@@ -119,7 +120,8 @@ class SearchPermissionsService : public KeyedService {
   ContentSetting RestoreOldSettingAndReturnPrevious(
       const GURL& dse_origin,
       ContentSettingsType type,
-      ContentSetting setting_to_restore);
+      ContentSetting setting_to_restore,
+      bool preserve_block_setting);
 
   // Helper function for OnDSEChanged which transitions the DSE setting for a
   // specific permission. It returns the content setting to be restored later
@@ -146,6 +148,17 @@ class SearchPermissionsService : public KeyedService {
   void SetContentSetting(const GURL& origin,
                          ContentSettingsType type,
                          ContentSetting setting);
+
+  // Record how the content setting transitions when DSE permissions autogrant
+  // is disabled via feature.
+  void RecordAutoDSEPermissionReverted(ContentSettingsType permission_type,
+                                       ContentSetting backed_up_setting,
+                                       ContentSetting effective_setting,
+                                       const GURL& origin);
+
+  // Record the content settings for notifications and geolocation on the DSE
+  // origin. Called at initialization or when the DSE origin changes.
+  void RecordEffectiveDSEOriginPermissions();
 
   void SetSearchEngineDelegateForTest(
       std::unique_ptr<SearchEngineDelegate> delegate);

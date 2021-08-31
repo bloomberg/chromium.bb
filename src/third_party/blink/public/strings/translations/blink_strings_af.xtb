@@ -19,6 +19,7 @@
 <translation id="1359897965706325498">banier</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> items</translation>
 <translation id="1480676835519562650">kan meer as een kies; <ph name="SELECTED" /> van <ph name="COUNT" /> is gekies.</translation>
+<translation id="1588438908519853928">Normaal</translation>
 <translation id="1589122976691792535">streek</translation>
 <translation id="1591562245178063882">Vandeesmaand</translation>
 <translation id="1637811476055996098">Kies lêers</translation>
@@ -84,6 +85,7 @@
 <translation id="3175736971608411871">afteller</translation>
 <translation id="3199563858620722075">kombinasiekassie</translation>
 <translation id="3220661731597678625">huidige stap</translation>
+<translation id="3321030238473337787">Terugspeelspoed</translation>
 <translation id="3329013043687509092">Versadiging</translation>
 <translation id="3450233048674729344">Waarde moet minder as of gelyk aan <ph name="MAXIMUM" /> wees.</translation>
 <translation id="3486220673238053218">definisie</translation>
@@ -111,6 +113,7 @@
 <translation id="4248100235867064564">kieslysbalk</translation>
 <translation id="4293574643247337246">bladsykopreël</translation>
 <translation id="4360991593054037559">Voer asseblief 'n geldige waarde in. Die twee naaste geldige waardes is <ph name="VALID_VALUE_LOW" /> en <ph name="VALID_VALUE_HIGHER" />.</translation>
+<translation id="4371899966896349864">versteek terugspeelspoedkieslys</translation>
 <translation id="4384249794467006333">Hierdie prent is nie geëtiketteer nie. Maak die Meer Opsies-kieslys bo regs oop om prentbeskrywings te kry.</translation>
 <translation id="4384583879834880242">V&amp;A</translation>
 <translation id="4444765639179266822">Lyk of dit sê: <ph name="OCR_TEXT" /></translation>
@@ -147,15 +150,18 @@
 <translation id="512758898067543763">ryopskrif</translation>
 <translation id="5143125788380636750">epiloog</translation>
 <translation id="5164977714490026579">Waarde moet groter as of gelyk aan <ph name="MINIMUM" /> wees.</translation>
+<translation id="5196716972587102051">2</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Voer asseblief 'n deel gevolg deur "<ph name="ATSIGN" />" in. "<ph name="INVALIDADDRESS" />" is onvolledig.</translation>
 <translation id="5334352251556557839">Kan nie media speel nie.</translation>
 <translation id="537648784377940524">Minimum datum (<ph name="MIN_DATE_OR_TIME" />) moet voor maksimum datum (<ph name="MAX_DATE_OR_TIME" />) wees.</translation>
+<translation id="5378437566635403538">uitgevou, dialoog is oop.</translation>
 <translation id="5406322316791861025">figuur</translation>
 <translation id="5425179576310518467">huidige datum</translation>
 <translation id="5453733299334684579">boomitem</translation>
 <translation id="5466621249238537318">Kies asseblief een of meer lêers.</translation>
 <translation id="5468998798572797635">gaan by volskerm uit</translation>
+<translation id="5516235301412634559">0,75</translation>
 <translation id="5516424706154626233">datumkieser</translation>
 <translation id="5537725057119320332">Saai uit</translation>
 <translation id="5546461542133609677">ontdemp</translation>
@@ -167,6 +173,8 @@
 <translation id="5677946354068040947">nog opsies</translation>
 <translation id="576709008726043716">inleiding</translation>
 <translation id="57838592816432529">Demp</translation>
+<translation id="5786442179789148008">wys terugspeelspoedkieslys</translation>
+<translation id="5787939484346677755">uitgevou, outovoltooi-opsies beskikbaar.</translation>
 <translation id="5860033963881614850">Af</translation>
 <translation id="588258955323874662">Volskerm</translation>
 <translation id="5888666972993069672">Saai nou uit na <ph name="DEVICE_FRIENDLY_NAME" /></translation>
@@ -174,12 +182,14 @@
 <translation id="5916664084637901428">Aan</translation>
 <translation id="5939518447894949180">Stel terug</translation>
 <translation id="5966707198760109579">Week</translation>
+<translation id="5985507339671257014">0,5</translation>
 <translation id="5987525920412732405">tolknoppie</translation>
 <translation id="6011459053400940133">volumeglyer</translation>
 <translation id="6015796118275082299">Jaar</translation>
 <translation id="6023896073578205740">lyskassie</translation>
 <translation id="6150588977291308318">bibliografie</translation>
 <translation id="6164829606128959761">meter</translation>
+<translation id="6165053282446038410">uitgevou, <ph name="COUNT" /> outovoltooi-opsies beskikbaar.</translation>
 <translation id="6166809985690652833">nawoord</translation>
 <translation id="6209276755895393898">Dit lyk soos: <ph name="DESCRIPTION" /></translation>
 <translation id="6212595056017402527">huidige bladsy</translation>
@@ -200,6 +210,7 @@
 <translation id="6643016212128521049">Vee uit</translation>
 <translation id="668171684555832681">Ander …</translation>
 <translation id="6692633176391053278">stapper</translation>
+<translation id="6696580792574109116">maandkieser</translation>
 <translation id="6709093583001123835">Waarde moet <ph name="VALUE" /> wees.</translation>
 <translation id="6709570249143506788">Swak terugspeelgehalte</translation>
 <translation id="6755330956360078551">nutswenk</translation>
@@ -210,16 +221,19 @@
 <translation id="6843725295806269523">demp</translation>
 <translation id="6885760532393684712">gids</translation>
 <translation id="689129560213475294">eindtitel</translation>
+<translation id="6919891270253167948">1,5</translation>
 <translation id="6934078000481955284">blokaanhaling</translation>
 <translation id="693476918119313863">opskrif</translation>
 <translation id="6941933287844615239">laai media af</translation>
 <translation id="6981594929165378967">invoeging</translation>
+<translation id="698788488269350478">uitgevou.</translation>
 <translation id="6989848892321993519">Verleng asseblief hierdie teks na <ph name="MIN_CHARACTERS" /> karakters of meer (jy gebruik tans 1 karakter).</translation>
 <translation id="7034405885550056553">voorstel</translation>
 <translation id="709897737746224366">Kry passing vir versoekte formaat.</translation>
 <translation id="7102274145889307184">huidige ligging</translation>
 <translation id="7118469954320184356">Geen beskrywing is beskikbaar nie.</translation>
 <translation id="7139483182332611405">voorwoord</translation>
+<translation id="7198226213493847604">kieslysopspringerknoppie</translation>
 <translation id="7214187073215825913">inhoudinligting</translation>
 <translation id="7238347055216017155">beklemtoning</translation>
 <translation id="7263440858009898357">Kies asseblief 'n item uit die lys.</translation>
@@ -244,6 +258,7 @@
 <translation id="7745230546936012372">Maak die inhoudkieslys oop om ontbrekende prentbeskrywings te kry.</translation>
 <translation id="7750228210027921155">Prent-in-prent</translation>
 <translation id="775297008183122718">Ongeldige inskrywing</translation>
+<translation id="7782515065589691344">1.25</translation>
 <translation id="7789962463072032349">laat wag</translation>
 <translation id="7802800022689234070">openbaarmakingdriehoek</translation>
 <translation id="7852167693871241274">Skakeringglyer</translation>
@@ -257,6 +272,7 @@
 <translation id="8105797009065549151">notaverwysing</translation>
 <translation id="811583516810654505">Kry tans beskrywing …</translation>
 <translation id="8117451130807776954">Vandeesweek</translation>
+<translation id="8131955114056917397">0,25</translation>
 <translation id="8199524924445686405">jjjj</translation>
 <translation id="8208673686607688524">plaaslike datum- en tydkieser</translation>
 <translation id="8261464734335370856">Ongeldige spelling</translation>
@@ -281,11 +297,14 @@
 <translation id="8613126697340063924">beheer terugspeling van 'n afstand af</translation>
 <translation id="862370744433916922">subtitel</translation>
 <translation id="8634971699417195529">Wys maandkieser</translation>
+<translation id="8637593834423658414">1,75</translation>
+<translation id="8668988909814782445">Reëlomvouing</translation>
 <translation id="8711688047404765493">uitvoer</translation>
 <translation id="8750798805984357768">Kies asseblief een van hierdie opsies.</translation>
 <translation id="8808573423886751634">hoofstuk</translation>
 <translation id="8845239796550121995">Saai nou na jou TV uit</translation>
 <translation id="8851136666856101339">hoof</translation>
+<translation id="8861621546968757188">dialoogopspringerknoppie</translation>
 <translation id="8875657656876809964">Videoterugspeelfout</translation>
 <translation id="8889402386540077796">Skakering</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>

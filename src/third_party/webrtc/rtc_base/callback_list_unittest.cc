@@ -11,7 +11,6 @@
 #include <type_traits>
 
 #include "api/function_view.h"
-#include "rtc_base/bind.h"
 #include "rtc_base/callback_list.h"
 #include "test/gtest.h"
 
@@ -207,8 +206,51 @@ TEST(CallbackList, MemberFunctionTest) {
 
   EXPECT_EQ(index, 2);
 }
+
 // todo(glahiru): Add a test case to catch some error for Karl's first fix
-// todo(glahiru): Add a test for rtc::Bind
-// which used the following code in the Send
+
+TEST(CallbackList, RemoveOneReceiver) {
+  int removal_tag[2];
+  CallbackList<> c;
+  int accumulator = 0;
+  c.AddReceiver([&accumulator] { accumulator += 1; });
+  c.AddReceiver(&removal_tag[0], [&accumulator] { accumulator += 10; });
+  c.AddReceiver(&removal_tag[1], [&accumulator] { accumulator += 100; });
+  c.Send();
+  EXPECT_EQ(accumulator, 111);
+  c.RemoveReceivers(&removal_tag[0]);
+  c.Send();
+  EXPECT_EQ(accumulator, 212);
+}
+
+TEST(CallbackList, RemoveZeroReceivers) {
+  int removal_tag[3];
+  CallbackList<> c;
+  int accumulator = 0;
+  c.AddReceiver([&accumulator] { accumulator += 1; });
+  c.AddReceiver(&removal_tag[0], [&accumulator] { accumulator += 10; });
+  c.AddReceiver(&removal_tag[1], [&accumulator] { accumulator += 100; });
+  c.Send();
+  EXPECT_EQ(accumulator, 111);
+  c.RemoveReceivers(&removal_tag[2]);
+  c.Send();
+  EXPECT_EQ(accumulator, 222);
+}
+
+TEST(CallbackList, RemoveManyReceivers) {
+  int removal_tag;
+  CallbackList<> c;
+  int accumulator = 0;
+  c.AddReceiver([&accumulator] { accumulator += 1; });
+  c.AddReceiver(&removal_tag, [&accumulator] { accumulator += 10; });
+  c.AddReceiver([&accumulator] { accumulator += 100; });
+  c.AddReceiver(&removal_tag, [&accumulator] { accumulator += 1000; });
+  c.Send();
+  EXPECT_EQ(accumulator, 1111);
+  c.RemoveReceivers(&removal_tag);
+  c.Send();
+  EXPECT_EQ(accumulator, 1212);
+}
+
 }  // namespace
 }  // namespace webrtc

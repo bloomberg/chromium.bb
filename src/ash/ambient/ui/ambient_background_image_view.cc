@@ -7,21 +7,22 @@
 #include <memory>
 
 #include "ash/ambient/ambient_constants.h"
+#include "ash/ambient/ui/ambient_info_view.h"
+#include "ash/ambient/ui/ambient_shield_view.h"
 #include "ash/ambient/ui/ambient_view_ids.h"
-#include "ash/ambient/ui/glanceable_info_view.h"
 #include "ash/ambient/ui/media_string_view.h"
 #include "ash/ambient/util/ambient_util.h"
 #include "base/rand_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 
 namespace ash {
@@ -29,14 +30,7 @@ namespace ash {
 namespace {
 
 // Appearance.
-constexpr int kMarginDip = 16;
-constexpr int kSpacingDip = 8;
 constexpr int kMediaStringMarginDip = 32;
-
-// Typography.
-constexpr SkColor kTextColor = SK_ColorWHITE;
-constexpr int kDefaultFontSizeDip = 64;
-constexpr int kDetailsFontSizeDip = 13;
 
 // The dicretion to translate glanceable info views in the x/y coordinates.  `1`
 // means positive translate, `-1` negative.
@@ -125,11 +119,11 @@ void AmbientBackgroundImageView::UpdateImage(
 }
 
 void AmbientBackgroundImageView::UpdateImageDetails(
-    const base::string16& details) {
-  details_label_->SetText(details);
+    const std::u16string& details) {
+  ambient_info_view_->UpdateImageDetails(details);
 }
 
-const gfx::ImageSkia& AmbientBackgroundImageView::GetCurrentImage() {
+gfx::ImageSkia AmbientBackgroundImageView::GetCurrentImage() {
   return image_view_->GetImage();
 }
 
@@ -167,7 +161,7 @@ void AmbientBackgroundImageView::InitLayout() {
   // Set a place holder size for Flex layout to assign bounds.
   image_view_->SetPreferredSize(gfx::Size(1, 1));
   image_view_->SetProperty(views::kFlexBehaviorKey, kUnboundedScaleToZero);
-  observed_views_.Add(image_view_);
+  observed_views_.AddObservation(image_view_);
 
   related_image_view_ =
       image_container_->AddChildView(std::make_unique<views::ImageView>());
@@ -175,47 +169,19 @@ void AmbientBackgroundImageView::InitLayout() {
   related_image_view_->SetPreferredSize(gfx::Size(1, 1));
   related_image_view_->SetProperty(views::kFlexBehaviorKey,
                                    kUnboundedScaleToZero);
-  observed_views_.Add(related_image_view_);
+  observed_views_.AddObservation(related_image_view_);
 
   // Set spacing between two images.
   related_image_view_->SetProperty(
       views::kMarginsKey, gfx::Insets(0, kMarginLeftOfRelatedImageDip, 0, 0));
 
+  AddChildView(std::make_unique<AmbientShieldView>());
+
+  ambient_info_view_ =
+      AddChildView(std::make_unique<AmbientInfoView>(delegate_));
+
   gfx::Insets shadow_insets =
-      gfx::ShadowValue::GetMargin(ambient::util::GetTextShadowValues());
-
-  // Inits the attribution view. It also has a full-screen size and is
-  // responsible for layout the details label at its bottom left corner.
-  views::View* attribution_view = AddChildView(std::make_unique<views::View>());
-  views::BoxLayout* attribution_layout =
-      attribution_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kVertical));
-  attribution_layout->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::kEnd);
-  attribution_layout->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kStart);
-  attribution_layout->set_inside_border_insets(
-      gfx::Insets(0, kMarginDip + shadow_insets.left(),
-                  kMarginDip + shadow_insets.bottom(), 0));
-
-  attribution_layout->set_between_child_spacing(
-      kSpacingDip + shadow_insets.top() + shadow_insets.bottom());
-
-  glanceable_info_view_ = attribution_view->AddChildView(
-      std::make_unique<GlanceableInfoView>(delegate_));
-  glanceable_info_view_->SetPaintToLayer();
-
-  // Inits the details label.
-  details_label_ =
-      attribution_view->AddChildView(std::make_unique<views::Label>());
-  details_label_->SetAutoColorReadabilityEnabled(false);
-  details_label_->SetEnabledColor(kTextColor);
-  details_label_->SetFontList(
-      ambient::util::GetDefaultFontlist().DeriveWithSizeDelta(
-          kDetailsFontSizeDip - kDefaultFontSizeDip));
-  details_label_->SetShadows(ambient::util::GetTextShadowValues());
-  details_label_->SetPaintToLayer();
-  details_label_->layer()->SetFillsBoundsOpaquely(false);
+      gfx::ShadowValue::GetMargin(ambient::util::GetTextShadowValues(nullptr));
 
   // Inits the media string view. The media string view is positioned on the
   // right-top corner of the container.
@@ -267,8 +233,7 @@ void AmbientBackgroundImageView::UpdateGlanceableInfoPosition() {
 
   gfx::Transform transform;
   transform.Translate(current_x_translation, current_y_translation);
-  glanceable_info_view_->layer()->SetTransform(transform);
-  details_label_->layer()->SetTransform(transform);
+  ambient_info_view_->SetTextTransform(transform);
 
   if (media_string_view_->GetVisible()) {
     gfx::Transform media_string_transform;

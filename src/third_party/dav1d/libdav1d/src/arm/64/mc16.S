@@ -909,12 +909,11 @@ function blend_v_16bpc_neon, export=1
         b.gt            8b
         ret
 160:
-        ld1             {v16.8b, v17.8b}, [x5]
+        ld1             {v16.16b}, [x5]
         sub             x1,  x1,  #16
-        neg             v16.8b,  v16.8b           // -m
-        neg             v17.8b,  v17.8b
-        sxtl            v16.8h,  v16.8b
-        sxtl            v17.8h,  v17.8b
+        neg             v17.16b, v16.16b          // -m
+        sxtl            v16.8h,  v17.8b
+        sxtl2           v17.8h,  v17.16b
         shl             v16.8h,  v16.8h,  #9      // -m << 9
         shl             v17.4h,  v17.4h,  #9
 16:
@@ -3189,8 +3188,8 @@ filter_fn prep, x0, x8, x1, x2, w3, w4, w5, x5, w6, x6, w7, x9, x10
 
 .macro load_filter_row dst, src, inc
         asr             w13, \src, #10
-        ldr             \dst, [x11, w13, sxtw #3]
         add             \src, \src, \inc
+        ldr             \dst, [x11, w13, sxtw #3]
 .endm
 
 function warp_filter_horz_neon
@@ -3344,15 +3343,7 @@ function warp_affine_8x8\t\()_16bpc_neon, export=1
         load_filter_row d5, w14, w9
         load_filter_row d6, w14, w9
         load_filter_row d7, w14, w9
-        transpose_8x8b  v0, v1, v2, v3, v4, v5, v6, v7, v16, v17
-        sxtl            v0.8h,   v0.8b
-        sxtl            v1.8h,   v1.8b
-        sxtl            v2.8h,   v2.8b
-        sxtl            v3.8h,   v3.8b
-        sxtl            v4.8h,   v4.8b
-        sxtl            v5.8h,   v5.8b
-        sxtl            v6.8h,   v6.8b
-        sxtl            v7.8h,   v7.8b
+        transpose_8x8b_xtl v0, v1, v2, v3, v4, v5, v6, v7, sxtl
 
         // This ordering of smull/smlal/smull2/smlal2 is highly
         // beneficial for Cortex A53 here.

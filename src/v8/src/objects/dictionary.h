@@ -18,6 +18,13 @@
 namespace v8 {
 namespace internal {
 
+#ifdef V8_ENABLE_SWISS_NAME_DICTIONARY
+class SwissNameDictionary;
+using PropertyDictionary = SwissNameDictionary;
+#else
+using PropertyDictionary = NameDictionary;
+#endif
+
 template <typename T>
 class Handle;
 
@@ -32,7 +39,7 @@ class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE) Dictionary
   using Key = typename Shape::Key;
   // Returns the value at entry.
   inline Object ValueAt(InternalIndex entry);
-  inline Object ValueAt(IsolateRoot isolate, InternalIndex entry);
+  inline Object ValueAt(PtrComprCageBase cage_base, InternalIndex entry);
 
   // Set the value for entry.
   inline void ValueAtPut(InternalIndex entry, Object value);
@@ -42,6 +49,8 @@ class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE) Dictionary
 
   // Set the details for entry.
   inline void DetailsAtPut(InternalIndex entry, PropertyDetails value);
+
+  static const bool kIsOrderedDictionaryType = false;
 
   // Delete a property from the dictionary.
   V8_WARN_UNUSED_RESULT static Handle<Derived> DeleteEntry(
@@ -55,28 +64,26 @@ class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE) Dictionary
 
   int NumberOfEnumerableProperties();
 
-#ifdef OBJECT_PRINT
-  // For our gdb macros, we should perhaps change these in the future.
-  void Print();
-
-  void Print(std::ostream& os);  // NOLINT
-#endif
   // Returns the key (slow).
   Object SlowReverseLookup(Object value);
 
-  // Sets the entry to (key, value) pair.
   inline void ClearEntry(InternalIndex entry);
+
+  // Sets the entry to (key, value) pair.
   inline void SetEntry(InternalIndex entry, Object key, Object value,
                        PropertyDetails details);
 
   // Garbage collection support.
   inline ObjectSlot RawFieldOfValueAt(InternalIndex entry);
 
-  template <typename LocalIsolate>
+  template <typename IsolateT>
   V8_WARN_UNUSED_RESULT static Handle<Derived> Add(
-      LocalIsolate* isolate, Handle<Derived> dictionary, Key key,
+      IsolateT* isolate, Handle<Derived> dictionary, Key key,
       Handle<Object> value, PropertyDetails details,
       InternalIndex* entry_out = nullptr);
+
+  static Handle<Derived> ShallowCopy(Isolate* isolate,
+                                     Handle<Derived> dictionary);
 
  protected:
   // Generic at put operation.
@@ -131,15 +138,13 @@ class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE) BaseNameDictionary
   static const int kObjectHashIndex = kNextEnumerationIndexIndex + 1;
   static const int kEntryValueIndex = 1;
 
-  static const bool kIsOrderedDictionaryType = false;
-
   inline void SetHash(int hash);
   inline int Hash() const;
 
   // Creates a new dictionary.
-  template <typename LocalIsolate>
+  template <typename IsolateT>
   V8_WARN_UNUSED_RESULT static Handle<Derived> New(
-      LocalIsolate* isolate, int at_least_space_for,
+      IsolateT* isolate, int at_least_space_for,
       AllocationType allocation = AllocationType::kYoung,
       MinimumCapacity capacity_option = USE_DEFAULT_MINIMUM_CAPACITY);
 
@@ -154,9 +159,9 @@ class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE) BaseNameDictionary
   static Handle<FixedArray> IterationIndices(Isolate* isolate,
                                              Handle<Derived> dictionary);
 
-  template <typename LocalIsolate>
+  template <typename IsolateT>
   V8_WARN_UNUSED_RESULT static Handle<Derived> AddNoUpdateNextEnumerationIndex(
-      LocalIsolate* isolate, Handle<Derived> dictionary, Key key,
+      IsolateT* isolate, Handle<Derived> dictionary, Key key,
       Handle<Object> value, PropertyDetails details,
       InternalIndex* entry_out = nullptr);
 
@@ -181,13 +186,14 @@ class V8_EXPORT_PRIVATE NameDictionary
   static inline Handle<Map> GetMap(ReadOnlyRoots roots);
 
   DECL_CAST(NameDictionary)
+  DECL_PRINTER(NameDictionary)
 
   static const int kEntryValueIndex = 1;
   static const int kEntryDetailsIndex = 2;
   static const int kInitialCapacity = 2;
 
   inline Name NameAt(InternalIndex entry);
-  inline Name NameAt(IsolateRoot isolate, InternalIndex entry);
+  inline Name NameAt(PtrComprCageBase cage_base, InternalIndex entry);
 
   inline void set_hash(int hash);
   inline int hash() const;
@@ -222,16 +228,17 @@ class V8_EXPORT_PRIVATE GlobalDictionary
   static inline Handle<Map> GetMap(ReadOnlyRoots roots);
 
   DECL_CAST(GlobalDictionary)
+  DECL_PRINTER(GlobalDictionary)
 
   inline Object ValueAt(InternalIndex entry);
-  inline Object ValueAt(IsolateRoot isolate, InternalIndex entry);
+  inline Object ValueAt(PtrComprCageBase cage_base, InternalIndex entry);
   inline PropertyCell CellAt(InternalIndex entry);
-  inline PropertyCell CellAt(IsolateRoot isolate, InternalIndex entry);
+  inline PropertyCell CellAt(PtrComprCageBase cage_base, InternalIndex entry);
   inline void SetEntry(InternalIndex entry, Object key, Object value,
                        PropertyDetails details);
   inline void ClearEntry(InternalIndex entry);
   inline Name NameAt(InternalIndex entry);
-  inline Name NameAt(IsolateRoot isolate, InternalIndex entry);
+  inline Name NameAt(PtrComprCageBase cage_base, InternalIndex entry);
   inline void ValueAtPut(InternalIndex entry, Object value);
 
   OBJECT_CONSTRUCTORS(

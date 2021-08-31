@@ -5,17 +5,16 @@
 #ifndef COMPONENTS_SYNC_ENGINE_SYNC_ENGINE_H_
 #define COMPONENTS_SYNC_ENGINE_SYNC_ENGINE_H_
 
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
-#include "base/compiler_specific.h"
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/weak_handle.h"
@@ -59,23 +58,13 @@ class SyncEngine : public ModelTypeConfigurer {
     WeakHandle<JsEventHandler> event_handler;
     GURL service_url;
     SyncEngine::HttpPostProviderFactoryGetter http_factory_getter;
-    CoreAccountId authenticated_account_id;
+    CoreAccountInfo authenticated_account_info;
     std::string invalidator_client_id;
     std::unique_ptr<SyncManagerFactory> sync_manager_factory;
     bool enable_local_sync_backend = false;
     base::FilePath local_sync_backend_folder;
-    std::string restored_key_for_bootstrapping;
-    std::string restored_keystore_key_for_bootstrapping;
     std::unique_ptr<EngineComponentsFactory> engine_components_factory;
-    std::map<ModelType, int64_t> invalidation_versions;
-
-    // Initial authoritative values (usually read from prefs).
-    std::string cache_guid;
-    std::string birthday;
-    std::string bag_of_chips;
-
-    // Define the polling interval. Must not be zero.
-    base::TimeDelta poll_interval;
+    std::string encryption_bootstrap_token;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(InitParams);
@@ -105,6 +94,11 @@ class SyncEngine : public ModelTypeConfigurer {
   // Invalidates the SyncCredentials.
   virtual void InvalidateCredentials() = 0;
 
+  // Transport metadata getters.
+  virtual std::string GetCacheGuid() const = 0;
+  virtual std::string GetBirthday() const = 0;
+  virtual base::Time GetLastSyncedTimeForDebugging() const = 0;
+
   // Switches sync engine into configuration mode. In this mode only initial
   // data for newly enabled types is downloaded from server. No local changes
   // are committed to server.
@@ -126,6 +120,11 @@ class SyncEngine : public ModelTypeConfigurer {
   // may be triggered at a later time. It is an error to call this when there
   // are no pending keys.
   virtual void SetDecryptionPassphrase(const std::string& passphrase) = 0;
+
+  // Legacy bootstrap token stored in preferences.
+  // TODO(crbug.com/1010397): Delete this API together with the preferences.
+  virtual void SetKeystoreEncryptionBootstrapToken(
+      const std::string& token) = 0;
 
   // Analogous to SetDecryptionPassphrase but specifically for
   // TRUSTED_VAULT_PASSPHRASE: it provides new decryption keys that could
@@ -154,6 +153,9 @@ class SyncEngine : public ModelTypeConfigurer {
   virtual void HasUnsyncedItemsForTest(
       base::OnceCallback<void(bool)> cb) const = 0;
 
+  // Returns datatypes that are currently throttled.
+  virtual void GetThrottledDataTypesForTest(
+      base::OnceCallback<void(ModelTypeSet)> cb) const = 0;
 
   // Requests that the backend forward to the fronent any protocol events in
   // its buffer and begin forwarding automatically from now on.  Repeated calls
@@ -167,7 +169,6 @@ class SyncEngine : public ModelTypeConfigurer {
   // Notify the syncer that the cookie jar has changed.
   // See SyncManager::OnCookieJarChanged.
   virtual void OnCookieJarChanged(bool account_mismatch,
-                                  bool empty_jar,
                                   base::OnceClosure callback) = 0;
 
   // Enables/Disables invalidations for session sync related datatypes.

@@ -13,6 +13,7 @@
 #include "core/fxcrt/cfx_timer.h"
 #include "core/fxcrt/observed_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
+#include "core/fxcrt/widestring.h"
 #include "core/fxge/cfx_color.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "fpdfsdk/pwl/ipwl_systemhandler.h"
@@ -24,10 +25,8 @@ class IPVT_FontMap;
 struct PWL_SCROLL_INFO;
 
 // window styles
-#define PWS_CHILD 0x80000000L
 #define PWS_BORDER 0x40000000L
 #define PWS_BACKGROUND 0x20000000L
-#define PWS_HSCROLL 0x10000000L
 #define PWS_VSCROLL 0x08000000L
 #define PWS_VISIBLE 0x04000000L
 #define PWS_READONLY 0x01000000L
@@ -42,16 +41,13 @@ struct PWL_SCROLL_INFO;
 #define PES_RIGHT 0x0008L
 #define PES_MIDDLE 0x0010L
 #define PES_TOP 0x0020L
-#define PES_BOTTOM 0x0040L
 #define PES_CENTER 0x0080L
 #define PES_CHARARRAY 0x0100L
 #define PES_AUTOSCROLL 0x0200L
 #define PES_AUTORETURN 0x0400L
 #define PES_UNDO 0x0800L
 #define PES_RICH 0x1000L
-#define PES_SPELLCHECK 0x2000L
 #define PES_TEXTOVERFLOW 0x4000L
-#define PES_NOREAD 0x8000L
 
 // listbox styles
 #define PLBS_MULTIPLESEL 0x0001L
@@ -59,14 +55,6 @@ struct PWL_SCROLL_INFO;
 
 // combobox styles
 #define PCBS_ALLOWCUSTOMTEXT 0x0001L
-
-// Cursor style. These must match the values in public/fpdf_formfill.h
-#define FXCT_ARROW 0
-#define FXCT_NESW 1
-#define FXCT_NWSE 2
-#define FXCT_VBEAM 3
-#define FXCT_HBEAM 4
-#define FXCT_HAND 5
 
 struct CPWL_Dash {
   CPWL_Dash() : nDash(0), nGap(0), nPhase(0) {}
@@ -86,8 +74,8 @@ struct CPWL_Dash {
 
 #define PWL_SCROLLBAR_WIDTH 12.0f
 #define PWL_SCROLLBAR_TRANSPARENCY 150
-#define PWL_DEFAULT_BLACKCOLOR CFX_Color(CFX_Color::kGray, 0)
-#define PWL_DEFAULT_WHITECOLOR CFX_Color(CFX_Color::kGray, 1)
+#define PWL_DEFAULT_BLACKCOLOR CFX_Color(CFX_Color::Type::kGray, 0)
+#define PWL_DEFAULT_WHITECOLOR CFX_Color(CFX_Color::Type::kGray, 1)
 
 class CPWL_Wnd : public Observable {
  public:
@@ -106,6 +94,7 @@ class CPWL_Wnd : public Observable {
     virtual void OnSetFocus(CPWL_Edit* pEdit) = 0;
   };
 
+  // Caller-provided options for window creation.
   class CreateParams {
    public:
     CreateParams();
@@ -118,6 +107,7 @@ class CPWL_Wnd : public Observable {
     UnownedPtr<IPWL_SystemHandler> pSystemHandler;
     UnownedPtr<IPVT_FontMap> pFontMap;
     ObservedPtr<ProviderIface> pProvider;
+
     // Optional:
     UnownedPtr<FocusHandlerIface> pFocusHandler;
     uint32_t dwFlags = 0;
@@ -129,15 +119,20 @@ class CPWL_Wnd : public Observable {
     int32_t nTransparency = 255;
     float fFontSize;
     CPWL_Dash sDash;
-    // Ignore:
+
+    // Ignore, used internally only:
     CPWL_MsgControl* pMsgControl = nullptr;
-    int32_t eCursorType = FXCT_ARROW;
-    CFX_Matrix mtChild;
+    IPWL_SystemHandler::CursorStyle eCursorType =
+        IPWL_SystemHandler::CursorStyle::kArrow;
   };
 
   static bool IsSHIFTKeyDown(uint32_t nFlag);
   static bool IsCTRLKeyDown(uint32_t nFlag);
   static bool IsALTKeyDown(uint32_t nFlag);
+  static bool IsMETAKeyDown(uint32_t nFlag);
+
+  // Selects between IsCTRLKeyDown() and IsMETAKeyDown() depending on platform.
+  static bool IsPlatformShortcutKey(uint32_t nFlag);
 
   CPWL_Wnd(const CreateParams& cp,
            std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData);
@@ -205,8 +200,6 @@ class CPWL_Wnd : public Observable {
   void SetTextColor(const CFX_Color& color);
   CFX_Color GetBorderLeftTopColor(BorderStyle nBorderStyle) const;
   CFX_Color GetBorderRightBottomColor(BorderStyle nBorderStyle) const;
-
-  void SetBorderStyle(BorderStyle nBorderStyle);
   BorderStyle GetBorderStyle() const;
   const CPWL_Dash& GetBorderDash() const;
 
@@ -233,8 +226,6 @@ class CPWL_Wnd : public Observable {
   bool ClientHitTest(const CFX_PointF& point) const;
   bool IsCaptureMouse() const;
 
-  void EnableWindow(bool bEnable);
-  bool IsEnabled() const { return m_bEnabled; }
   const CPWL_Wnd* GetFocused() const;
   bool IsFocused() const;
   bool IsReadOnly() const;
@@ -251,9 +242,6 @@ class CPWL_Wnd : public Observable {
   int32_t GetTransparency();
   void SetTransparency(int32_t nTransparency);
 
-  CFX_Matrix GetChildToRoot() const;
-  CFX_Matrix GetChildMatrix() const;
-  void SetChildMatrix(const CFX_Matrix& mt);
   CFX_Matrix GetWindowMatrix() const;
 
   virtual void OnSetFocus();
@@ -299,9 +287,6 @@ class CPWL_Wnd : public Observable {
   }
 
  private:
-  CFX_PointF ParentToChild(const CFX_PointF& point) const;
-  CFX_FloatRect ParentToChild(const CFX_FloatRect& rect) const;
-
   void DrawChildAppearance(CFX_RenderDevice* pDevice,
                            const CFX_Matrix& mtUser2Device);
 
@@ -326,7 +311,6 @@ class CPWL_Wnd : public Observable {
   bool m_bCreated = false;
   bool m_bVisible = false;
   bool m_bNotifying = false;
-  bool m_bEnabled = true;
 };
 
 #endif  // FPDFSDK_PWL_CPWL_WND_H_

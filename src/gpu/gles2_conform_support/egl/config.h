@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_GLES2_CONFORM_TEST_CONFIG_H_
-#define GPU_GLES2_CONFORM_TEST_CONFIG_H_
+#ifndef GPU_GLES2_CONFORM_SUPPORT_EGL_CONFIG_H_
+#define GPU_GLES2_CONFORM_SUPPORT_EGL_CONFIG_H_
 
 #include <EGL/egl.h>
 
 #include "base/macros.h"
 
+namespace gles2_conform_support {
 namespace egl {
 
 class Config {
@@ -89,5 +90,6 @@ class Config {
 };
 
 }  // namespace egl
+}  // namespace gles2_conform_support
 
-#endif  // GPU_GLES2_CONFORM_TEST_CONFIG_H_
+#endif  // GPU_GLES2_CONFORM_SUPPORT_EGL_CONFIG_H_

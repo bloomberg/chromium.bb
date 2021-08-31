@@ -47,8 +47,8 @@ bool CursorManager::ShouldHideCursorOnKeyEvent(
     return false;
   }
 
-  // All alt and control key commands are ignored.
-  if (event.IsAltDown() || event.IsControlDown())
+  // All alt, control and command key commands are ignored.
+  if (event.IsAltDown() || event.IsControlDown() || event.IsCommandDown())
     return false;
 
   ui::KeyboardCode code = event.key_code();
@@ -70,6 +70,7 @@ bool CursorManager::ShouldHideCursorOnKeyEvent(
     case ui::VKEY_KBD_BRIGHTNESS_UP:
     case ui::VKEY_KBD_BRIGHTNESS_DOWN:
     case ui::VKEY_PRIVACY_SCREEN_TOGGLE:
+    case ui::VKEY_ZOOM:
       return false;
     default:
       return true;

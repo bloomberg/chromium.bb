@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_client.h"
+#include "quic/test_tools/quic_test_client.h"
 
 #include <memory>
 #include <utility>
@@ -11,25 +11,24 @@
 #include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/x509.h"
-#include "net/third_party/quiche/src/quic/core/crypto/proof_verifier.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_stream.h"
-#include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_epoll_connection_helper.h"
-#include "net/third_party/quiche/src/quic/core/quic_packet_writer_wrapper.h"
-#include "net/third_party/quiche/src/quic/core/quic_server_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_stack_trace.h"
-#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_client_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_spdy_stream_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/quic/tools/quic_url.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "quic/core/crypto/proof_verifier.h"
+#include "quic/core/http/quic_spdy_client_stream.h"
+#include "quic/core/http/spdy_utils.h"
+#include "quic/core/quic_epoll_connection_helper.h"
+#include "quic/core/quic_packet_writer_wrapper.h"
+#include "quic/core/quic_server_id.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_stack_trace.h"
+#include "quic/test_tools/crypto_test_utils.h"
+#include "quic/test_tools/quic_client_peer.h"
+#include "quic/test_tools/quic_connection_peer.h"
+#include "quic/test_tools/quic_spdy_session_peer.h"
+#include "quic/test_tools/quic_spdy_stream_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "quic/tools/quic_url.h"
+#include "common/quiche_text_utils.h"
 
 namespace quic {
 namespace test {
@@ -164,12 +163,12 @@ class MockableQuicClientEpollNetworkHelper
   }
 
   void UseWriter(QuicPacketWriterWrapper* writer) {
-    CHECK(test_writer_ == nullptr);
+    QUICHE_CHECK(test_writer_ == nullptr);
     test_writer_ = writer;
   }
 
   void set_peer_address(const QuicSocketAddress& address) {
-    CHECK(test_writer_ != nullptr);
+    QUICHE_CHECK(test_writer_ != nullptr);
     test_writer_->set_peer_address(address);
   }
 
@@ -236,7 +235,7 @@ MockableQuicClient::MockableQuicClient(
           epoll_server,
           std::make_unique<MockableQuicClientEpollNetworkHelper>(epoll_server,
                                                                  this),
-          QuicWrapUnique(new RecordingProofVerifier(std::move(proof_verifier))),
+          std::make_unique<RecordingProofVerifier>(std::move(proof_verifier)),
           std::move(session_cache)),
       override_server_connection_id_(EmptyQuicConnectionId()),
       server_connection_id_overridden_(false),
@@ -311,6 +310,9 @@ void MockableQuicClient::UseWriter(QuicPacketWriterWrapper* writer) {
 
 void MockableQuicClient::set_peer_address(const QuicSocketAddress& address) {
   mockable_network_helper()->set_peer_address(address);
+  if (client_session() != nullptr) {
+    client_session()->AddKnownServerAddress(address);
+  }
 }
 
 const QuicReceivedPacket* MockableQuicClient::last_incoming_packet() {
@@ -634,7 +636,7 @@ bool QuicTestClient::connected() const {
 
 void QuicTestClient::Connect() {
   if (connected()) {
-    QUIC_BUG << "Cannot connect already-connected client";
+    QUIC_BUG(quic_bug_10133_1) << "Cannot connect already-connected client";
     return;
   }
   if (!connect_attempted_) {
@@ -658,7 +660,9 @@ void QuicTestClient::ResetConnection() {
 
 void QuicTestClient::Disconnect() {
   ClearPerConnectionState();
-  client_->Disconnect();
+  if (client_->initialized()) {
+    client_->Disconnect();
+  }
   connect_attempted_ = false;
 }
 
@@ -794,7 +798,8 @@ void QuicTestClient::OnClose(QuicSpdyStream* stream) {
   closed_stream_states_.insert(std::make_pair(
       id,
       PerStreamState(
-          client_stream->stream_error(), true,
+          // Set response_complete to true iff stream is closed while connected.
+          client_stream->stream_error(), connected(),
           client_stream->headers_decompressed(),
           client_stream->response_headers(),
           client_stream->preliminary_headers(),
@@ -832,24 +837,24 @@ void QuicTestClient::UseWriter(QuicPacketWriterWrapper* writer) {
 }
 
 void QuicTestClient::UseConnectionId(QuicConnectionId server_connection_id) {
-  DCHECK(!connected());
+  QUICHE_DCHECK(!connected());
   client_->UseConnectionId(server_connection_id);
 }
 
 void QuicTestClient::UseConnectionIdLength(int server_connection_id_length) {
-  DCHECK(!connected());
+  QUICHE_DCHECK(!connected());
   client_->UseConnectionIdLength(server_connection_id_length);
 }
 
 void QuicTestClient::UseClientConnectionId(
     QuicConnectionId client_connection_id) {
-  DCHECK(!connected());
+  QUICHE_DCHECK(!connected());
   client_->UseClientConnectionId(client_connection_id);
 }
 
 void QuicTestClient::UseClientConnectionIdLength(
     int client_connection_id_length) {
-  DCHECK(!connected());
+  QUICHE_DCHECK(!connected());
   client_->UseClientConnectionIdLength(client_connection_id_length);
 }
 

@@ -561,15 +561,16 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
   }
 }
 
-void SVGSMILElement::SvgAttributeChanged(const QualifiedName& attr_name) {
-  if (SVGURIReference::IsKnownAttribute(attr_name)) {
+void SVGSMILElement::SvgAttributeChanged(
+    const SvgAttributeChangedParams& params) {
+  if (SVGURIReference::IsKnownAttribute(params.name)) {
     // TODO(fs): Could be smarter here when 'href' is specified and 'xlink:href'
     // is changed.
     SVGElement::InvalidationGuard invalidation_guard(this);
     BuildPendingResource();
     return;
   }
-  SVGElement::SvgAttributeChanged(attr_name);
+  SVGElement::SvgAttributeChanged(params);
 }
 
 bool SVGSMILElement::IsPresentationAttribute(
@@ -667,7 +668,7 @@ static SMILRepeatCount ParseRepeatCount(const AtomicString& value) {
     return SMILRepeatCount::Indefinite();
   bool ok;
   double result = value.ToDouble(&ok);
-  if (ok && result > 0)
+  if (ok && result > 0 && std::isfinite(result))
     return SMILRepeatCount::Numeric(result);
   return SMILRepeatCount::Unspecified();
 }

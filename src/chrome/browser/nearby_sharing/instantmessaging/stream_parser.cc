@@ -4,8 +4,20 @@
 
 #include "chrome/browser/nearby_sharing/instantmessaging/stream_parser.h"
 
+#include "base/metrics/histogram_functions.h"
+#include "base/strings/string_piece.h"
 #include "chrome/browser/nearby_sharing/instantmessaging/proto/instantmessaging.pb.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
+
+namespace {
+
+void RecordNumParsingAttemptsMetrics(int num_attempts) {
+  base::UmaHistogramCounts1000(
+      "Nearby.Connections.InstantMessaging.ReceiveExpress.NumParsingAttempts",
+      num_attempts);
+}
+
+}  // namespace
 
 StreamParser::StreamParser(
     base::RepeatingCallback<void(const std::string& message)> listener,
@@ -15,10 +27,9 @@ StreamParser::StreamParser(
 StreamParser::~StreamParser() = default;
 
 void StreamParser::Append(base::StringPiece data) {
-  size_t size = data.as_string().size();
-  data_.append(data.as_string().data(), size);
+  data_.append(data.data(), data.size());
 
-  base::Optional<chrome_browser_nearby_sharing_instantmessaging::StreamBody>
+  absl::optional<chrome_browser_nearby_sharing_instantmessaging::StreamBody>
       stream_body = GetNextMessage();
   while (stream_body) {
     DelegateMessage(stream_body.value());
@@ -26,7 +37,7 @@ void StreamParser::Append(base::StringPiece data) {
   }
 }
 
-base::Optional<chrome_browser_nearby_sharing_instantmessaging::StreamBody>
+absl::optional<chrome_browser_nearby_sharing_instantmessaging::StreamBody>
 StreamParser::GetNextMessage() {
   // The incoming stream may not be a valid StreamBody proto as it might be
   // split into various OnDataReceived calls. The easy way is to append all
@@ -38,31 +49,37 @@ StreamParser::GetNextMessage() {
   // TODO(crbug.com/1123172) - Add metrics to figure out which code paths are
   // more used and the time taken to parse the incoming messages.
   if (data_.empty())
-    return base::nullopt;
+    return absl::nullopt;
 
   // There's a good chance that the entire message is a valid proto since the
   // individual messages sent by WebRTC are small, so check that first to
   // speed up parsing.
   chrome_browser_nearby_sharing_instantmessaging::StreamBody stream_body;
+  ++parsing_counter_for_metrics_;
   if (stream_body.ParseFromString(data_)) {
     data_.clear();
+    RecordNumParsingAttemptsMetrics(parsing_counter_for_metrics_);
+    parsing_counter_for_metrics_ = 0;
     return stream_body;
   }
 
   int end_pos = 1;
   int size = data_.size();
   while (end_pos < size) {
+    ++parsing_counter_for_metrics_;
     // TODO(crbug.com/1123169) - Optimize this function to use header
     // information to figure out the start and end of proto instead of checking
     // for every length.
     if (stream_body.ParseFromArray(data_.data(), end_pos)) {
       data_.erase(data_.begin(), data_.begin() + end_pos);
+      RecordNumParsingAttemptsMetrics(parsing_counter_for_metrics_);
+      parsing_counter_for_metrics_ = 0;
       return stream_body;
     }
     end_pos++;
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void StreamParser::DelegateMessage(
@@ -79,7 +96,6 @@ void StreamParser::DelegateMessage(
     switch (response.body_case()) {
       case chrome_browser_nearby_sharing_instantmessaging::
           ReceiveMessagesResponse::kFastPathReady:
-        NS_LOG(INFO) << __func__ << ": received kFastPathReady";
         if (fastpath_ready_callback_) {
           std::move(fastpath_ready_callback_).Run();
         }

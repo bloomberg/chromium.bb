@@ -9,6 +9,7 @@
 #include "ANGLEPerfTest.h"
 
 #include "libANGLE/renderer/vulkan/vk_cache_utils.h"
+#include "libANGLE/renderer/vulkan/vk_helpers.h"
 #include "util/random_utils.h"
 
 using namespace rx;
@@ -95,7 +96,7 @@ void VulkanPipelineCachePerfTest::step()
         for (const auto &hit : mCacheHits)
         {
             (void)mCache.getPipeline(VK_NULL_HANDLE, pc, rp, pl, am, ctm, &sm, &sm, nullptr,
-                                     defaultSpecConsts, hit, &desc, &result);
+                                     nullptr, nullptr, defaultSpecConsts, hit, &desc, &result);
         }
     }
 
@@ -103,8 +104,8 @@ void VulkanPipelineCachePerfTest::step()
          ++missCount, ++mMissIndex)
     {
         const auto &miss = mCacheMisses[mMissIndex];
-        (void)mCache.getPipeline(VK_NULL_HANDLE, pc, rp, pl, am, ctm, &sm, &sm, nullptr,
-                                 defaultSpecConsts, miss, &desc, &result);
+        (void)mCache.getPipeline(VK_NULL_HANDLE, pc, rp, pl, am, ctm, &sm, &sm, nullptr, nullptr,
+                                 nullptr, defaultSpecConsts, miss, &desc, &result);
     }
 }
 

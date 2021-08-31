@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 
 @protocol ApplicationCommands;
+class Browser;
 class ChromeBrowserState;
 @class MainController;
 @class NewTabPageController;
@@ -38,10 +39,8 @@ ChromeBrowserState* GetOriginalBrowserState();
 // Returns the current incognito ChromeBrowserState
 ChromeBrowserState* GetCurrentIncognitoBrowserState();
 
-// Returns the dispatcher for the main BVC.
-// TODO(crbug.com/738881): Use HandlerForActiveBrowser()
-// instead.
-id<BrowserCommands> BrowserCommandDispatcherForMainBVC();
+// Returns the browser for the main interface.
+Browser* GetMainBrowser();
 
 // Returns the active view controller.
 // NOTE: It is preferred to not directly access the active view controller if
@@ -54,8 +53,9 @@ id<ApplicationCommands, BrowserCommands> HandlerForActiveBrowser();
 // Removes all presented infobars.
 void RemoveAllInfoBars();
 
-// Dismisses all presented views and modal dialogs.
-void ClearPresentedState();
+// Dismisses all presented views and modal dialogs. |completion| is invoked when
+// all the views are dismissed.
+void ClearPresentedState(ProceduralBlock completion);
 
 // Sets the value of a boolean local state pref.
 // TODO(crbug.com/647022): Clean up other tests that use this helper function.

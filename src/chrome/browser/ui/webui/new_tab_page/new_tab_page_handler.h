@@ -10,28 +10,23 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/time/time.h"
-#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
 #include "chrome/browser/search/background/ntp_background_service_observer.h"
 #include "chrome/browser/search/instant_service_observer.h"
-#include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
-#include "chrome/browser/search/one_google_bar/one_google_bar_service_observer.h"
 #include "chrome/browser/search/promos/promo_service.h"
 #include "chrome/browser/search/promos/promo_service_observer.h"
-#include "chrome/browser/ui/omnibox/omnibox_tab_helper.h"
+#include "chrome/browser/ui/search/ntp_user_data_logger.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
-#include "components/omnibox/browser/autocomplete_controller.h"
-#include "components/omnibox/browser/favicon_cache.h"
 #include "components/search_provider_logos/logo_common.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 class GURL;
@@ -51,10 +46,7 @@ class LogoService;
 class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
                           public InstantServiceObserver,
                           public NtpBackgroundServiceObserver,
-                          public OmniboxTabHelper::Observer,
-                          public OneGoogleBarServiceObserver,
                           public ui::SelectFileDialog::Listener,
-                          public AutocompleteController::Observer,
                           public PromoServiceObserver {
  public:
   NewTabPageHandler(mojo::PendingReceiver<new_tab_page::mojom::PageHandler>
@@ -63,7 +55,6 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
                     Profile* profile,
                     InstantService* instant_service,
                     content::WebContents* web_contents,
-                    NTPUserDataLogger* logger,
                     const base::Time& ntp_navigation_start_time);
   ~NewTabPageHandler() override;
 
@@ -97,25 +88,23 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
       GetBackgroundCollectionsCallback callback) override;
   void GetBackgroundImages(const std::string& collection_id,
                            GetBackgroundImagesCallback callback) override;
-  void FocusOmnibox() override;
-  void PasteIntoOmnibox(const std::string& text) override;
   void GetDoodle(GetDoodleCallback callback) override;
   void ChooseLocalCustomBackground(
       ChooseLocalCustomBackgroundCallback callback) override;
-  void GetOneGoogleBarParts(const std::string& ogdeb_value,
-                            GetOneGoogleBarPartsCallback callback) override;
   void GetPromo(GetPromoCallback callback) override;
   void OnDismissModule(const std::string& module_id) override;
   void OnRestoreModule(const std::string& module_id) override;
   void SetModulesVisible(bool visible) override;
-  void UpdateModulesVisible() override;
+  void SetModuleDisabled(const std::string& module_id, bool disabled) override;
+  void UpdateDisabledModules() override;
+  void OnModulesLoadedWithData() override;
   void OnAppRendered(double time) override;
   void OnMostVisitedTilesRendered(
       std::vector<new_tab_page::mojom::MostVisitedTilePtr> tiles,
       double time) override;
   void OnOneGoogleBarRendered(double time) override;
   void OnPromoRendered(double time,
-                       const base::Optional<GURL>& log_url) override;
+                       const absl::optional<GURL>& log_url) override;
   void OnMostVisitedTileNavigation(new_tab_page::mojom::MostVisitedTilePtr tile,
                                    uint32_t index,
                                    uint8_t mouse_button,
@@ -126,37 +115,15 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   void OnCustomizeDialogAction(
       new_tab_page::mojom::CustomizeDialogAction action) override;
   void OnDoodleImageClicked(new_tab_page::mojom::DoodleImageType type,
-                            const base::Optional<GURL>& log_url) override;
+                            const absl::optional<GURL>& log_url) override;
   void OnDoodleImageRendered(new_tab_page::mojom::DoodleImageType type,
                              double time,
                              const GURL& log_url,
                              OnDoodleImageRenderedCallback callback) override;
   void OnDoodleShared(new_tab_page::mojom::DoodleShareChannel channel,
                       const std::string& doodle_id,
-                      const base::Optional<std::string>& share_id) override;
+                      const absl::optional<std::string>& share_id) override;
   void OnPromoLinkClicked() override;
-  void OnVoiceSearchAction(
-      new_tab_page::mojom::VoiceSearchAction action) override;
-  void OnVoiceSearchError(new_tab_page::mojom::VoiceSearchError error) override;
-  void OnModuleImpression(const std::string& module_id, double time) override;
-  void OnModuleLoaded(const std::string& module_id, double time) override;
-  void OnModuleUsage(const std::string& module_id) override;
-  void OnModulesRendered(double time) override;
-  void QueryAutocomplete(const base::string16& input,
-                         bool prevent_inline_autocomplete) override;
-  void StopAutocomplete(bool clear_result) override;
-  void OpenAutocompleteMatch(uint8_t line,
-                             const GURL& url,
-                             bool are_matches_showing,
-                             base::TimeDelta time_elapsed_since_last_focus,
-                             uint8_t mouse_button,
-                             bool alt_key,
-                             bool ctrl_key,
-                             bool meta_key,
-                             bool shift_key) override;
-  void DeleteAutocompleteMatch(uint8_t line) override;
-  void ToggleSuggestionGroupIdVisibility(int32_t suggestion_group_id) override;
-  void LogCharTypedToRepaintLatency(base::TimeDelta latency) override;
 
  private:
   // InstantServiceObserver:
@@ -169,15 +136,6 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   void OnNextCollectionImageAvailable() override;
   void OnNtpBackgroundServiceShuttingDown() override;
 
-  // OmniboxTabHelper::Observer:
-  void OnOmniboxInputStateChanged() override;
-  void OnOmniboxFocusChanged(OmniboxFocusState state,
-                             OmniboxFocusChangeReason reason) override;
-
-  // OneGoogleBarServiceObserver:
-  void OnOneGoogleBarDataUpdated() override;
-  void OnOneGoogleBarServiceShuttingDown() override;
-
   // PromoServiceObserver:
   void OnPromoDataUpdated() override;
   void OnPromoServiceShuttingDown() override;
@@ -188,21 +146,10 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
                     void* params) override;
   void FileSelectionCanceled(void* params) override;
 
-  // AutocompleteController::Observer:
-  void OnResultChanged(AutocompleteController* controller,
-                       bool default_match_changed) override;
-
   void OnLogoAvailable(
       GetDoodleCallback callback,
       search_provider_logos::LogoCallbackReason type,
-      const base::Optional<search_provider_logos::EncodedLogo>& logo);
-
-  void OnRealboxBitmapFetched(int match_index,
-                              const GURL& image_url,
-                              const SkBitmap& bitmap);
-  void OnRealboxFaviconFetched(int match_index,
-                               const GURL& page_url,
-                               const gfx::Image& favicon);
+      const absl::optional<search_provider_logos::EncodedLogo>& logo);
 
   void LogEvent(NTPLoggingEventType event);
 
@@ -227,29 +174,20 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   std::string images_request_collection_id_;
   GetBackgroundImagesCallback background_images_callback_;
   base::TimeTicks background_images_request_start_time_;
-  std::vector<GetOneGoogleBarPartsCallback> one_google_bar_parts_callbacks_;
-  OneGoogleBarService* one_google_bar_service_;
-  ScopedObserver<OneGoogleBarService, OneGoogleBarServiceObserver>
-      one_google_bar_service_observer_{this};
-  base::Optional<base::TimeTicks> one_google_bar_load_start_time_;
+  absl::optional<base::TimeTicks> one_google_bar_load_start_time_;
   Profile* profile_;
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
-  std::unique_ptr<AutocompleteController> autocomplete_controller_;
-  FaviconCache favicon_cache_;
-  BitmapFetcherService* bitmap_fetcher_service_;
-  std::vector<BitmapFetcherService::RequestId> bitmap_request_ids_;
-  base::TimeTicks time_of_first_autocomplete_query_;
   content::WebContents* web_contents_;
   base::Time ntp_navigation_start_time_;
-  NTPUserDataLogger* logger_;
+  NTPUserDataLogger logger_;
   std::unordered_map<const network::SimpleURLLoader*,
                      std::unique_ptr<network::SimpleURLLoader>>
       loader_map_;
   std::vector<GetPromoCallback> promo_callbacks_;
   PromoService* promo_service_;
-  ScopedObserver<PromoService, PromoServiceObserver> promo_service_observer_{
-      this};
-  base::Optional<base::TimeTicks> promo_load_start_time_;
+  base::ScopedObservation<PromoService, PromoServiceObserver>
+      promo_service_observation_{this};
+  absl::optional<base::TimeTicks> promo_load_start_time_;
 
   // These are located at the end of the list of member variables to ensure the
   // WebUI page is disconnected before other members are destroyed.

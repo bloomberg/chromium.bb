@@ -10,10 +10,10 @@
 #include <algorithm>
 #include <cstdint>
 
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_time.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -79,7 +79,7 @@ class QUIC_EXPORT_PRIVATE RttStats {
   // Sets an initial RTT to be used for SmoothedRtt before any RTT updates.
   void set_initial_rtt(QuicTime::Delta initial_rtt) {
     if (initial_rtt.ToMicroseconds() <= 0) {
-      QUIC_BUG << "Attempt to set initial rtt to <= 0.";
+      QUIC_BUG(quic_bug_10453_1) << "Attempt to set initial rtt to <= 0.";
       return;
     }
     initial_rtt_ = initial_rtt;
@@ -110,6 +110,8 @@ class QUIC_EXPORT_PRIVATE RttStats {
   void EnableStandardDeviationCalculation() {
     calculate_standard_deviation_ = true;
   }
+
+  void CloneFrom(const RttStats& stats);
 
  private:
   friend class test::RttStatsPeer;

@@ -60,10 +60,6 @@ GURL GetOriginOrURL(const WebFrame* frame) {
   return top_origin.GetURL();
 }
 
-bool IsScriptDisabledForPreview(content::RenderFrame* render_frame) {
-  return render_frame->GetPreviewsState() & blink::PreviewsTypes::NOSCRIPT_ON;
-}
-
 bool IsFrameWithOpaqueOrigin(WebFrame* frame) {
   // Storage access is keyed off the top origin and the frame's origin.
   // It will be denied any opaque origins so have this method to return early
@@ -81,18 +77,18 @@ bool ContentSettingsAgentImpl::Delegate::IsSchemeAllowlisted(
   return false;
 }
 
-base::Optional<bool>
+absl::optional<bool>
 ContentSettingsAgentImpl::Delegate::AllowReadFromClipboard() {
-  return base::nullopt;
+  return absl::nullopt;
 }
 
-base::Optional<bool>
+absl::optional<bool>
 ContentSettingsAgentImpl::Delegate::AllowWriteToClipboard() {
-  return base::nullopt;
+  return absl::nullopt;
 }
 
-base::Optional<bool> ContentSettingsAgentImpl::Delegate::AllowMutationEvents() {
-  return base::nullopt;
+absl::optional<bool> ContentSettingsAgentImpl::Delegate::AllowMutationEvents() {
+  return absl::nullopt;
 }
 
 void ContentSettingsAgentImpl::Delegate::PassiveInsecureContentFound(
@@ -316,6 +312,7 @@ bool ContentSettingsAgentImpl::AllowStorageAccessSync(
   if (permissions != cached_storage_permissions_.end())
     return permissions->second;
 
+  SCOPED_UMA_HISTOGRAM_TIMER("ContentSettings.AllowStorageAccessSync");
   bool result = false;
   GetContentSettingsManager().AllowStorageAccess(
       routing_id(), ConvertToMojoStorageType(storage_type),
@@ -347,8 +344,6 @@ bool ContentSettingsAgentImpl::AllowImage(bool enabled_per_settings,
 bool ContentSettingsAgentImpl::AllowScript(bool enabled_per_settings) {
   if (!enabled_per_settings)
     return false;
-  if (IsScriptDisabledForPreview(render_frame()))
-    return false;
 
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   const auto it = cached_script_permissions_.find(frame);
@@ -375,8 +370,6 @@ bool ContentSettingsAgentImpl::AllowScriptFromSource(
     bool enabled_per_settings,
     const blink::WebURL& script_url) {
   if (!enabled_per_settings)
-    return false;
-  if (IsScriptDisabledForPreview(render_frame()))
     return false;
 
   bool allow = true;
@@ -444,10 +437,6 @@ bool ContentSettingsAgentImpl::ShouldAutoupgradeMixedContent() {
     return setting != CONTENT_SETTING_ALLOW;
   }
   return false;
-}
-
-void ContentSettingsAgentImpl::DidNotAllowPlugins() {
-  DidBlockContentType(ContentSettingsType::PLUGINS);
 }
 
 void ContentSettingsAgentImpl::DidNotAllowScript() {

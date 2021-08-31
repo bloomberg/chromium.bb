@@ -160,7 +160,7 @@ void PurgeExtensionDataFromUnsentLogStore(
     // Replace the compressed log in the store by its filtered version.
     const std::string old_compressed_log_data =
         ukm_log_store->ReplaceLogAtIndex(index, reserialized_log_data,
-                                         base::nullopt);
+                                         absl::nullopt);
 
     // Reached here only if extensions were found in the log, so data should now
     // be different after filtering.
@@ -221,8 +221,8 @@ UkmService::UkmService(PrefService* pref_service,
           base::BindRepeating(&metrics::MetricsServiceClient::GetUploadInterval,
                               base::Unretained(client_));
   bool fast_startup_for_testing = client_->ShouldStartUpFastForTesting();
-  scheduler_.reset(new UkmRotationScheduler(
-      rotate_callback, fast_startup_for_testing, get_upload_interval_callback));
+  scheduler_ = std::make_unique<UkmRotationScheduler>(
+      rotate_callback, fast_startup_for_testing, get_upload_interval_callback);
   StoreWhitelistedEntries();
 
   DelegatingUkmRecorder::Get()->AddDelegate(self_ptr_factory_.GetWeakPtr());
@@ -341,6 +341,8 @@ void UkmService::ResetClientState(ResetReason reason) {
   // Note: the session_id has already been cleared by GenerateAndStoreClientId.
   session_id_ = LoadAndIncrementSessionId(pref_service_);
   report_count_ = 0;
+
+  metrics_providers_.OnClientStateCleared();
 }
 
 void UkmService::RegisterMetricsProvider(
@@ -428,7 +430,7 @@ void UkmService::BuildAndStoreLog() {
 
   std::string serialized_log =
       UkmService::SerializeReportProtoToString(&report);
-  reporting_service_.ukm_log_store()->StoreLog(serialized_log, base::nullopt);
+  reporting_service_.ukm_log_store()->StoreLog(serialized_log, absl::nullopt);
 }
 
 bool UkmService::ShouldRestrictToWhitelistedEntries() const {

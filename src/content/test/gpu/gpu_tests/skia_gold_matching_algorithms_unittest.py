@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import unittest
 
 from gpu_tests import skia_gold_matching_algorithms as algo
@@ -61,3 +63,7 @@ class SobelMatchingAlgorithmTest(unittest.TestCase):
       algo.SobelMatchingAlgorithm(1, 2, 256)
     with self.assertRaises(RuntimeError):
       algo.SobelMatchingAlgorithm(1, 2, 255)
+
+
+if __name__ == '__main__':
+  unittest.main(verbosity=2)

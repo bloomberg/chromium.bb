@@ -7,15 +7,16 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/strings/string_piece.h"
 #include "fuchsia/base/agent_manager.h"
 
 PendingCastComponent::PendingCastComponent(
     Delegate* delegate,
-    std::unique_ptr<base::fuchsia::StartupContext> startup_context,
+    std::unique_ptr<base::StartupContext> startup_context,
     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
         controller_request,
     base::StringPiece app_id)
-    : delegate_(delegate) {
+    : delegate_(delegate), app_id_(app_id) {
   DCHECK(startup_context);
   DCHECK(controller_request);
 
@@ -34,7 +35,7 @@ PendingCastComponent::PendingCastComponent(
     delegate_->CancelPendingComponent(this);
   });
   application_config_manager_->GetConfig(
-      app_id.as_string(),
+      std::string(app_id),
       fit::bind_member(this,
                        &PendingCastComponent::OnApplicationConfigReceived));
 

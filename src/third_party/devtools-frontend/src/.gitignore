@@ -1,6 +1,5 @@
 .DS_Store
 .git_cl_description_backup
-.vscode
 *.ctc.json
 *.Makefile
 *.mk
@@ -15,11 +14,12 @@
 /.dev_profile
 /.test_cache
 /front_end/protocol_externs.js
-/front_end/i18n/locales/en-XL.json
 /release
 /scripts/visualize_deps/out
 config.gypi
 /karma-coverage
+/interactions-coverage
+/perf-data
 npm-debug.log
 /scripts/protocol_typescript/*.js
 
@@ -37,15 +37,5 @@ npm-debug.log
 
 test/screenshots/.generated
 test/perf/.generated
-test/unittests/scripts/component_bridges/fixtures/*_bridge.js
-!test/unittests/scripts/component_bridges/fixtures/manually-edited-bridge-component_bridge.js
-scripts/component_bridges/*.d.ts
-scripts/component_bridges/*.js
-scripts/component_bridges/*.js.map
-scripts/component_bridges/tsconfig.tsbuildinfo
-test/unittests/scripts/component_bridges/*.d.ts
-test/unittests/scripts/component_bridges/*.js
-test/unittests/scripts/component_bridges/*.js.map
-test/unittests/scripts/component_bridges/tsconfig.tsbuildinfo
 
-
+/.vscode/settings.json

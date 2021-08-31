@@ -9,11 +9,12 @@ import './viewer-document-outline.js';
 import './viewer-thumbnail-bar.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Bookmark} from '../bookmark_type.js';
-import {PDFMetrics, UserAction} from '../metrics.js';
+import {record, UserAction} from '../metrics.js';
 
 export class ViewerPdfSidenavElement extends PolymerElement {
   static get is() {
@@ -48,13 +49,13 @@ export class ViewerPdfSidenavElement extends PolymerElement {
 
   /** @private */
   onThumbnailClick_() {
-    PDFMetrics.record(UserAction.SELECT_SIDENAV_THUMBNAILS);
+    record(UserAction.SELECT_SIDENAV_THUMBNAILS);
     this.thumbnailView_ = true;
   }
 
   /** @private */
   onOutlineClick_() {
-    PDFMetrics.record(UserAction.SELECT_SIDENAV_OUTLINE);
+    record(UserAction.SELECT_SIDENAV_OUTLINE);
     this.thumbnailView_ = false;
   }
 

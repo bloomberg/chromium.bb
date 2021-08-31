@@ -13,9 +13,14 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "printing/print_settings.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/crosapi/mojom/local_printer.mojom.h"
+#endif
 
 namespace base {
 class Location;
@@ -48,12 +53,7 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
   // An enumeration of components where print jobs can come from. The order of
   // these enums must match that of
   // chrome/browser/chromeos/printing/history/print_job_info.proto.
-  enum class Source {
-    PRINT_PREVIEW,
-    ARC,
-    EXTENSION,
-    PRINT_PREVIEW_INCOGNITO,
-  };
+  using Source = crosapi::mojom::PrintJob::Source;
 #endif  // defined(OS_CHROMEOS)
 
   // Create a empty PrintJob. When initializing with this constructor,
@@ -66,7 +66,7 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
   // the print settings. Sets the expected page count of the print job based on
   // the settings.
   virtual void Initialize(std::unique_ptr<PrinterQuery> query,
-                          const base::string16& name,
+                          const std::u16string& name,
                           uint32_t page_count);
 
 #if defined(OS_WIN)

@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/browser_thread.h"
@@ -24,7 +24,7 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-#include "chrome/browser/enterprise/connectors/content_analysis_delegate.h"
+#include "chrome/browser/enterprise/connectors/analysis/content_analysis_delegate.h"
 #endif
 
 class Profile;
@@ -247,7 +247,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   // |accept_types| contains only valid lowercased MIME types or file extensions
   // beginning with a period (.).
   static std::unique_ptr<ui::SelectFileDialog::FileTypeInfo>
-  GetFileTypesFromAcceptType(const std::vector<base::string16>& accept_types);
+  GetFileTypesFromAcceptType(const std::vector<std::u16string>& accept_types);
 
   // Check the accept type is valid. It is expected to be all lower case with
   // no whitespace.
@@ -301,8 +301,9 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   struct ActiveDirectoryEnumeration;
   std::unique_ptr<ActiveDirectoryEnumeration> directory_enumeration_;
 
-  ScopedObserver<content::RenderWidgetHost, content::RenderWidgetHostObserver>
-      observer_{this};
+  base::ScopedObservation<content::RenderWidgetHost,
+                          content::RenderWidgetHostObserver>
+      observation_{this};
 
   // Temporary files only used on OSX. This class is responsible for deleting
   // these files when they are no longer needed.

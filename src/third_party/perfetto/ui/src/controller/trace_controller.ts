@@ -19,6 +19,7 @@ import {
   Actions,
   DeferredAction,
 } from '../common/actions';
+import {TRACE_MARGIN_TIME_S} from '../common/constants';
 import {Engine, QueryError} from '../common/engine';
 import {HttpRpcEngine} from '../common/http_rpc_engine';
 import {slowlyCountRows} from '../common/query_iterator';
@@ -38,6 +39,9 @@ import {
 import {
   CpuAggregationController
 } from './aggregation/cpu_aggregation_controller';
+import {
+  CpuByProcessAggregationController
+} from './aggregation/cpu_by_process_aggregation_controller';
 import {
   SliceAggregationController
 } from './aggregation/slice_aggregation_controller';
@@ -173,6 +177,10 @@ export class TraceController extends Controller<States> {
             ThreadAggregationController,
             {engine, kind: 'thread_state_aggregation'}));
         childControllers.push(Child(
+            'cpu_process_aggregation',
+            CpuByProcessAggregationController,
+            {engine, kind: 'cpu_by_process_aggregation'}));
+        childControllers.push(Child(
             'slice_aggregation',
             SliceAggregationController,
             {engine, kind: 'slice_aggregation'}));
@@ -277,20 +285,39 @@ export class TraceController extends Controller<States> {
     }
 
     const traceTime = await this.engine.getTraceTimeBounds();
+    let startSec = traceTime.start;
+    let endSec = traceTime.end;
+    startSec -= TRACE_MARGIN_TIME_S;
+    endSec += TRACE_MARGIN_TIME_S;
     const traceTimeState = {
-      startSec: traceTime.start,
-      endSec: traceTime.end,
+      startSec,
+      endSec,
     };
     const actions: DeferredAction[] = [
       Actions.setTraceTime(traceTimeState),
       Actions.navigate({route: '/viewer'}),
     ];
 
+    let visibleStartSec = startSec;
+    let visibleEndSec = endSec;
+    const mdTime = await this.engine.getTracingMetadataTimeBounds();
+    // make sure the bounds hold
+    if (Math.max(visibleStartSec, mdTime.start - TRACE_MARGIN_TIME_S) <
+        Math.min(visibleEndSec, mdTime.end + TRACE_MARGIN_TIME_S)) {
+      visibleStartSec =
+          Math.max(visibleStartSec, mdTime.start - TRACE_MARGIN_TIME_S);
+      visibleEndSec = Math.min(visibleEndSec, mdTime.end + TRACE_MARGIN_TIME_S);
+    }
+
     // We don't know the resolution at this point. However this will be
     // replaced in 50ms so a guess is fine.
-    const resolution = (traceTime.end - traceTime.start) / 1000;
-    actions.push(Actions.setVisibleTraceTime(
-        {...traceTimeState, lastUpdate: Date.now() / 1000, resolution}));
+    const resolution = (visibleStartSec - visibleEndSec) / 1000;
+    actions.push(Actions.setVisibleTraceTime({
+      startSec: visibleStartSec,
+      endSec: visibleEndSec,
+      lastUpdate: Date.now() / 1000,
+      resolution
+    }));
 
     globals.dispatchMultiple(actions);
 
@@ -307,6 +334,14 @@ export class TraceController extends Controller<States> {
 
     await this.listThreads();
     await this.loadTimelineOverview(traceTime);
+
+    {
+      const query = 'select to_ftrace(id) from raw limit 1';
+      const result = await assertExists(this.engine).query(query);
+      const hasFtrace = !!slowlyCountRows(result);
+      globals.publish('HasFtrace', hasFtrace);
+    }
+
     globals.dispatch(Actions.sortThreadTracks({}));
     await this.selectFirstHeapProfile();
 
@@ -483,9 +518,12 @@ export class TraceController extends Controller<States> {
     for (const metric
              of ['android_startup',
                  'android_ion',
+                 'android_dma_heap',
                  'android_thread_time_in_state',
                  'android_surfaceflinger',
-                 'android_batt']) {
+                 'android_batt',
+                 'android_sysui_cuj',
+                 'android_jank']) {
       this.updateStatus(`Computing ${metric} metric`);
       try {
         // We don't care about the actual result of metric here as we are just
@@ -502,13 +540,16 @@ export class TraceController extends Controller<States> {
 
       this.updateStatus(`Inserting data for ${metric} metric`);
       try {
-        const result = await engine.query(`
-        SELECT * FROM ${metric}_event LIMIT 1`);
-
-        const hasSliceName =
-            result.columnDescriptors.some(x => x.name === 'slice_name');
-        const hasDur = result.columnDescriptors.some(x => x.name === 'dur');
-        const hasUpid = result.columnDescriptors.some(x => x.name === 'upid');
+        const result = await engine.query(`pragma table_info(${metric}_event)`);
+        let hasSliceName = false;
+        let hasDur = false;
+        let hasUpid = false;
+        for (let i = 0; i < slowlyCountRows(result); i++) {
+          const name = result.columns[1].stringValues![i];
+          hasSliceName = hasSliceName || name === 'slice_name';
+          hasDur = hasDur || name === 'dur';
+          hasUpid = hasUpid || name === 'upid';
+        }
 
         const upidColumnSelect = hasUpid ? 'upid' : '0 AS upid';
         const upidColumnWhere = hasUpid ? 'upid' : '0';

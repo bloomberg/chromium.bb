@@ -55,15 +55,14 @@ void initTextures() {
     descriptor.dimension = wgpu::TextureDimension::e2D;
     descriptor.size.width = 1024;
     descriptor.size.height = 1024;
-    descriptor.size.depth = 1;
+    descriptor.size.depthOrArrayLayers = 1;
     descriptor.sampleCount = 1;
     descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
     descriptor.mipLevelCount = 1;
     descriptor.usage = wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled;
     texture = device.CreateTexture(&descriptor);
 
-    wgpu::SamplerDescriptor samplerDesc = utils::GetDefaultSamplerDescriptor();
-    sampler = device.CreateSampler(&samplerDesc);
+    sampler = device.CreateSampler();
 
     // Initialize the texture with arbitrary data until we can load images
     std::vector<uint8_t> data(4 * 1024 * 1024, 0);
@@ -73,12 +72,13 @@ void initTextures() {
 
     wgpu::Buffer stagingBuffer = utils::CreateBufferFromData(
         device, data.data(), static_cast<uint32_t>(data.size()), wgpu::BufferUsage::CopySrc);
-    wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(stagingBuffer, 0, 4 * 1024);
-    wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, {0, 0, 0});
+    wgpu::ImageCopyBuffer imageCopyBuffer =
+        utils::CreateImageCopyBuffer(stagingBuffer, 0, 4 * 1024);
+    wgpu::ImageCopyTexture imageCopyTexture = utils::CreateImageCopyTexture(texture, 0, {0, 0, 0});
     wgpu::Extent3D copySize = {1024, 1024, 1};
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copySize);
+    encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copySize);
 
     wgpu::CommandBuffer copy = encoder.Finish();
     queue.Submit(1, &copy);
@@ -87,7 +87,7 @@ void initTextures() {
 void init() {
     device = CreateCppDawnDevice();
 
-    queue = device.GetDefaultQueue();
+    queue = device.GetQueue();
     swapchain = GetSwapChain(device);
     swapchain.Configure(GetPreferredSwapChainTextureFormat(), wgpu::TextureUsage::RenderAttachment,
                         640, 480);
@@ -95,48 +95,43 @@ void init() {
     initBuffers();
     initTextures();
 
-    wgpu::ShaderModule vsModule =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-        #version 450
-        layout(location = 0) in vec4 pos;
-        void main() {
-            gl_Position = pos;
+    wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
+        [[stage(vertex)]] fn main([[location(0)]] pos : vec4<f32>)
+                               -> [[builtin(position)]] vec4<f32> {
+            return pos;
         })");
 
-    wgpu::ShaderModule fsModule =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-        #version 450
-        layout(set = 0, binding = 0) uniform sampler mySampler;
-        layout(set = 0, binding = 1) uniform texture2D myTexture;
+    wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
+        [[group(0), binding(0)]] var mySampler: sampler;
+        [[group(0), binding(1)]] var myTexture : texture_2d<f32>;
 
-        layout(location = 0) out vec4 fragColor;
-        void main() {
-            fragColor = texture(sampler2D(myTexture, mySampler), gl_FragCoord.xy / vec2(640.0, 480.0));
+        [[stage(fragment)]] fn main([[builtin(position)]] FragCoord : vec4<f32>)
+                                 -> [[location(0)]] vec4<f32> {
+            return textureSample(myTexture, mySampler, FragCoord.xy / vec2<f32>(640.0, 480.0));
         })");
 
     auto bgl = utils::MakeBindGroupLayout(
         device, {
-                    {0, wgpu::ShaderStage::Fragment, wgpu::BindingType::Sampler},
-                    {1, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture},
+                    {0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Filtering},
+                    {1, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float},
                 });
 
     wgpu::PipelineLayout pl = utils::MakeBasicPipelineLayout(device, &bgl);
 
     depthStencilView = CreateDefaultDepthStencilView(device);
 
-    utils::ComboRenderPipelineDescriptor descriptor(device);
+    utils::ComboRenderPipelineDescriptor2 descriptor;
     descriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl);
-    descriptor.vertexStage.module = vsModule;
-    descriptor.cFragmentStage.module = fsModule;
-    descriptor.cVertexState.vertexBufferCount = 1;
-    descriptor.cVertexState.cVertexBuffers[0].arrayStride = 4 * sizeof(float);
-    descriptor.cVertexState.cVertexBuffers[0].attributeCount = 1;
-    descriptor.cVertexState.cAttributes[0].format = wgpu::VertexFormat::Float4;
-    descriptor.depthStencilState = &descriptor.cDepthStencilState;
-    descriptor.cDepthStencilState.format = wgpu::TextureFormat::Depth24PlusStencil8;
-    descriptor.cColorStates[0].format = GetPreferredSwapChainTextureFormat();
+    descriptor.vertex.module = vsModule;
+    descriptor.vertex.bufferCount = 1;
+    descriptor.cBuffers[0].arrayStride = 4 * sizeof(float);
+    descriptor.cBuffers[0].attributeCount = 1;
+    descriptor.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
+    descriptor.cFragment.module = fsModule;
+    descriptor.cTargets[0].format = GetPreferredSwapChainTextureFormat();
+    descriptor.EnableDepthStencil(wgpu::TextureFormat::Depth24PlusStencil8);
 
-    pipeline = device.CreateRenderPipeline(&descriptor);
+    pipeline = device.CreateRenderPipeline2(&descriptor);
 
     wgpu::TextureView view = texture.CreateView();
 
@@ -163,7 +158,7 @@ void frame() {
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(0, bindGroup);
         pass.SetVertexBuffer(0, vertexBuffer);
-        pass.SetIndexBufferWithFormat(indexBuffer, wgpu::IndexFormat::Uint32);
+        pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32);
         pass.DrawIndexed(3);
         pass.EndPass();
     }

@@ -15,6 +15,9 @@
 #ifndef PLATFORM_BASE_LOGGING_H_
 #define PLATFORM_BASE_LOGGING_H_
 
+// base/logging.h is only included to allow logging clients to include CHECK's.
+// In Chrome this will be translated to base/check.h. See crbug/1212611.
+#include "base/check.h"
 #include "platform/api/log_message.h"
 #include "platform/api/platform.h"
 
@@ -36,7 +39,10 @@ class LogMessageVoidify {
 }  // namespace location
 
 // Severity enum conversion
-#define NEARBY_SEVERITY_INFO location::nearby::api::LogMessage::Severity::kInfo
+#define NEARBY_SEVERITY_VERBOSE \
+  location::nearby::api::LogMessage::Severity::kVerbose
+#define NEARBY_SEVERITY_INFO \
+  location::nearby::api::LogMessage::Severity::kInfo
 #define NEARBY_SEVERITY_WARNING \
   location::nearby::api::LogMessage::Severity::kWarning
 #define NEARBY_SEVERITY_ERROR \

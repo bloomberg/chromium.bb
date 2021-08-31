@@ -61,7 +61,7 @@ class ExtensionsContainer {
   // |closure| will be called once any animation is complete.
   virtual void PopOutAction(ToolbarActionViewController* action,
                             bool is_sticky,
-                            const base::Closure& closure) = 0;
+                            base::OnceClosure closure) = 0;
 
   // Shows the popup for the action with |id| as the result of an API call,
   // returning true if a popup is shown.
@@ -75,6 +75,12 @@ class ExtensionsContainer {
   // Same as above, but uses PostTask() in all cases.
   virtual void ShowToolbarActionBubbleAsync(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) = 0;
+
+  // Toggle the Extensions menu (as if the user clicked the puzzle piece icon).
+  virtual void ToggleExtensionsMenu() = 0;
+
+  // Whether there are any Extensions registered with the ExtensionsContainer.
+  virtual bool HasAnyExtensions() const = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_EXTENSIONS_EXTENSIONS_CONTAINER_H_

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/net/network_diagnostics/https_latency_routine.h"
 
-#include <deque>
 #include <memory>
 #include <utility>
 
+#include "base/containers/circular_deque.h"
 #include "base/run_loop.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -47,14 +47,14 @@ class FakeHostResolver : public network::mojom::HostResolver {
   struct DnsResult {
     DnsResult(int32_t result,
               net::ResolveErrorInfo resolve_error_info,
-              base::Optional<net::AddressList> resolved_addresses)
+              absl::optional<net::AddressList> resolved_addresses)
         : result(result),
           resolve_error_info(resolve_error_info),
           resolved_addresses(resolved_addresses) {}
 
     int result;
     net::ResolveErrorInfo resolve_error_info;
-    base::Optional<net::AddressList> resolved_addresses;
+    absl::optional<net::AddressList> resolved_addresses;
   };
 
   FakeHostResolver(mojo::PendingReceiver<network::mojom::HostResolver> receiver,
@@ -93,14 +93,14 @@ class FakeNetworkContext : public network::TestNetworkContext {
   FakeNetworkContext() = default;
 
   explicit FakeNetworkContext(
-      std::deque<FakeHostResolver::DnsResult*> fake_dns_results)
+      base::circular_deque<FakeHostResolver::DnsResult*> fake_dns_results)
       : fake_dns_results_(std::move(fake_dns_results)) {}
 
   ~FakeNetworkContext() override {}
 
   // network::TestNetworkContext:
   void CreateHostResolver(
-      const base::Optional<net::DnsConfigOverrides>& config_overrides,
+      const absl::optional<net::DnsConfigOverrides>& config_overrides,
       mojo::PendingReceiver<network::mojom::HostResolver> receiver) override {
     FakeHostResolver::DnsResult* result = fake_dns_results_.front();
     DCHECK(result);
@@ -111,7 +111,7 @@ class FakeNetworkContext : public network::TestNetworkContext {
 
  private:
   std::unique_ptr<FakeHostResolver> resolver_;
-  std::deque<FakeHostResolver::DnsResult*> fake_dns_results_;
+  base::circular_deque<FakeHostResolver::DnsResult*> fake_dns_results_;
 };
 
 class FakeTickClock : public base::TickClock {
@@ -193,9 +193,10 @@ class HttpsLatencyRoutineTest : public ::testing::Test {
     run_loop_.Run();
   }
 
-  void SetUpRoutine(std::deque<FakeHostResolver::DnsResult*> fake_dns_results,
-                    bool connected,
-                    const base::TickClock* fake_tick_clock) {
+  void SetUpRoutine(
+      base::circular_deque<FakeHostResolver::DnsResult*> fake_dns_results,
+      bool connected,
+      const base::TickClock* fake_tick_clock) {
     ASSERT_TRUE(profile_manager_.SetUp());
 
     // Set up the network context.
@@ -239,7 +240,7 @@ class HttpsLatencyRoutineTest : public ::testing::Test {
 };
 
 TEST_F(HttpsLatencyRoutineTest, TestFailedDnsResolution) {
-  std::deque<FakeHostResolver::DnsResult*> fake_dns_results;
+  base::circular_deque<FakeHostResolver::DnsResult*> fake_dns_results;
   std::vector<std::unique_ptr<FakeHostResolver::DnsResult>> resolutions;
 
   // kTotalHosts = 3
@@ -268,13 +269,12 @@ TEST_F(HttpsLatencyRoutineTest, TestFailedDnsResolution) {
 }
 
 TEST_F(HttpsLatencyRoutineTest, TestLowLatency) {
-  std::deque<FakeHostResolver::DnsResult*> fake_dns_results;
+  base::circular_deque<FakeHostResolver::DnsResult*> fake_dns_results;
   std::vector<std::unique_ptr<FakeHostResolver::DnsResult>> resolutions;
 
   // kTotalHosts = 3
   for (int i = 0; i < kTotalHosts; i++) {
-    std::unique_ptr<FakeHostResolver::DnsResult> resolution;
-    resolution = std::make_unique<FakeHostResolver::DnsResult>(
+    auto resolution = std::make_unique<FakeHostResolver::DnsResult>(
         net::OK, net::ResolveErrorInfo(net::OK),
         net::AddressList(FakeIPAddress()));
     fake_dns_results.push_back(resolution.get());
@@ -289,13 +289,12 @@ TEST_F(HttpsLatencyRoutineTest, TestLowLatency) {
 }
 
 TEST_F(HttpsLatencyRoutineTest, TestFailedHttpRequest) {
-  std::deque<FakeHostResolver::DnsResult*> fake_dns_results;
+  base::circular_deque<FakeHostResolver::DnsResult*> fake_dns_results;
   std::vector<std::unique_ptr<FakeHostResolver::DnsResult>> resolutions;
 
   // kTotalHosts = 3
   for (int i = 0; i < kTotalHosts; i++) {
-    std::unique_ptr<FakeHostResolver::DnsResult> resolution;
-    resolution = std::make_unique<FakeHostResolver::DnsResult>(
+    auto resolution = std::make_unique<FakeHostResolver::DnsResult>(
         net::OK, net::ResolveErrorInfo(net::OK),
         net::AddressList(FakeIPAddress()));
     fake_dns_results.push_back(resolution.get());
@@ -311,13 +310,12 @@ TEST_F(HttpsLatencyRoutineTest, TestFailedHttpRequest) {
 }
 
 TEST_F(HttpsLatencyRoutineTest, TestHighLatency) {
-  std::deque<FakeHostResolver::DnsResult*> fake_dns_results;
+  base::circular_deque<FakeHostResolver::DnsResult*> fake_dns_results;
   std::vector<std::unique_ptr<FakeHostResolver::DnsResult>> resolutions;
 
   // kTotalHosts = 3
   for (int i = 0; i < kTotalHosts; i++) {
-    std::unique_ptr<FakeHostResolver::DnsResult> resolution;
-    resolution = std::make_unique<FakeHostResolver::DnsResult>(
+    auto resolution = std::make_unique<FakeHostResolver::DnsResult>(
         net::OK, net::ResolveErrorInfo(net::OK),
         net::AddressList(FakeIPAddress()));
     fake_dns_results.push_back(resolution.get());
@@ -333,13 +331,12 @@ TEST_F(HttpsLatencyRoutineTest, TestHighLatency) {
 }
 
 TEST_F(HttpsLatencyRoutineTest, TestVeryHighLatency) {
-  std::deque<FakeHostResolver::DnsResult*> fake_dns_results;
+  base::circular_deque<FakeHostResolver::DnsResult*> fake_dns_results;
   std::vector<std::unique_ptr<FakeHostResolver::DnsResult>> resolutions;
 
   // kTotalHosts = 3
   for (int i = 0; i < kTotalHosts; i++) {
-    std::unique_ptr<FakeHostResolver::DnsResult> resolution;
-    resolution = std::make_unique<FakeHostResolver::DnsResult>(
+    auto resolution = std::make_unique<FakeHostResolver::DnsResult>(
         net::OK, net::ResolveErrorInfo(net::OK),
         net::AddressList(FakeIPAddress()));
     fake_dns_results.push_back(resolution.get());

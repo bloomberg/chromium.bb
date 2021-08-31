@@ -84,8 +84,15 @@ class GclientApi(recipe_api.RecipeApi):
     if self.spec_alias:
       prefix = ('[spec: %s] ' % self.spec_alias) + prefix
 
-    with self.m.context(
-        env_suffixes={'PATH': [self.repo_resource()]}):
+    env_suffixes = {'PATH': [self.repo_resource()]}
+    env = {}
+    if self.m.buildbucket.build.id != 0:
+      env['DEPOT_TOOLS_REPORT_BUILD'] = '%s/%s/%s/%s' % (
+          self.m.buildbucket.build.builder.project,
+          self.m.buildbucket.build.builder.bucket,
+          self.m.buildbucket.build.builder.builder,
+          self.m.buildbucket.build.id)
+    with self.m.context(env=env, env_suffixes=env_suffixes):
       return self.m.python(prefix + name,
                            self.repo_resource('gclient.py'),
                            cmd,
