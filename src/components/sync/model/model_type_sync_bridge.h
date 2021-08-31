@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/optional.h"
 #include "components/sync/engine/commit_and_get_updates_types.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/model_type_change_processor.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace syncer {
 
@@ -37,7 +37,21 @@ class ModelTypeSyncBridge {
   using DataCallback = base::OnceCallback<void(std::unique_ptr<DataBatch>)>;
   using StorageKeyList = std::vector<std::string>;
 
-  ModelTypeSyncBridge(
+  // When commit fails, all entities from the commit request are in transient
+  // state. This state is normally (by default) kept until the next successful
+  // commit of the data type or until the change processor is disconnected.
+  // However, the bridge can return the preferred option to reset state of all
+  // entities from the last failed commit.
+  enum class CommitAttemptFailedBehavior {
+    // Keep transient state of entities from the last commit request.
+    kDontRetryOnNextCycle,
+
+    // The processor should reset the transient state and include all entities
+    // into the next sync cycle.
+    kShouldRetryOnNextCycle,
+  };
+
+  explicit ModelTypeSyncBridge(
       std::unique_ptr<ModelTypeChangeProcessor> change_processor);
 
   virtual ~ModelTypeSyncBridge();
@@ -75,7 +89,7 @@ class ModelTypeSyncBridge {
   // storage writes, if not able to combine all change atomically, should save
   // the metadata after the data changes, so that this merge will be re-driven
   // by sync if is not completely saved during the current run.
-  virtual base::Optional<ModelError> MergeSyncData(
+  virtual absl::optional<ModelError> MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_data) = 0;
 
@@ -84,7 +98,7 @@ class ModelTypeSyncBridge {
   // |metadata_change_list| in case when some of the data changes are filtered
   // out, or even be empty in case when a commit confirmation is processed and
   // only the metadata needs to persisted.
-  virtual base::Optional<ModelError> ApplySyncChanges(
+  virtual absl::optional<ModelError> ApplySyncChanges(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) = 0;
 
@@ -173,10 +187,9 @@ class ModelTypeSyncBridge {
   virtual void OnCommitAttemptErrors(
       const syncer::FailedCommitResponseDataList& error_response_list);
 
-  // Called only when a commit failed due to server error. The commit will
-  // automatically be retried, so most implementations don't need to handle
-  // this.
-  virtual void OnCommitAttemptFailed(SyncCommitError commit_error);
+  // Called only when a commit failed due to server error.
+  virtual CommitAttemptFailedBehavior OnCommitAttemptFailed(
+      SyncCommitError commit_error);
 
   // Returns an estimate of memory usage attributed to sync (that is, excludes
   // the actual model). Because the resulting UMA metrics are often used to

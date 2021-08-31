@@ -5,7 +5,6 @@
 #include "components/infobars/content/content_infobar_manager.h"
 
 #include "base/command_line.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -62,12 +61,6 @@ int ContentInfoBarManager::GetActiveEntryID() {
   return active_entry ? active_entry->GetUniqueID() : 0;
 }
 
-std::unique_ptr<InfoBar> ContentInfoBarManager::CreateConfirmInfoBar(
-    std::unique_ptr<ConfirmInfoBarDelegate> delegate) {
-  NOTREACHED();
-  return nullptr;
-}
-
 void ContentInfoBarManager::RenderProcessGone(base::TerminationStatus status) {
   RemoveAllInfoBars(true);
 }
@@ -94,8 +87,16 @@ void ContentInfoBarManager::NavigationEntryCommitted(
 }
 
 void ContentInfoBarManager::WebContentsDestroyed() {
-  // Subclasses may override this method to destroy this object, so don't do
-  // anything here.
+  // The WebContents is going away; be aggressively paranoid and delete
+  // |this| lest other parts of the system attempt to add infobars or use
+  // this object otherwise during the destruction.
+  // TODO(blundell): This operation seems unnecessary as detailed in the
+  // conversation on
+  // https://chromium-review.googlesource.com/c/chromium/src/+/2859170/7 .
+  // Look at removing it.
+  web_contents()->RemoveUserData(UserDataKey());
+  // That was the equivalent of "delete this". This object is now destroyed;
+  // returning from this function is the only safe thing to do.
 }
 
 void ContentInfoBarManager::OpenURL(const GURL& url,
@@ -109,7 +110,8 @@ void ContentInfoBarManager::OpenURL(const GURL& url,
                                  ? WindowOpenDisposition::NEW_FOREGROUND_TAB
                                  : disposition,
                              ui::PAGE_TRANSITION_LINK, false));
+}
 
-}  // namespace infobars
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ContentInfoBarManager)
 
 }  // namespace infobars

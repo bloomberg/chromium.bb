@@ -22,10 +22,16 @@ class IPAddress {
     kV6,
   };
 
-  static const IPAddress kAnyV4();
-  static const IPAddress kAnyV6();
-  static const IPAddress kV4LoopbackAddress();
-  static const IPAddress kV6LoopbackAddress();
+  static constexpr IPAddress kAnyV4() { return IPAddress{0, 0, 0, 0}; }
+  static constexpr IPAddress kAnyV6() {
+    return IPAddress{0, 0, 0, 0, 0, 0, 0, 0};
+  }
+  static constexpr IPAddress kV4LoopbackAddress() {
+    return IPAddress{127, 0, 0, 1};
+  }
+  static constexpr IPAddress kV6LoopbackAddress() {
+    return IPAddress{0, 0, 0, 0, 0, 0, 0, 1};
+  }
   static constexpr size_t kV4Size = 4;
   static constexpr size_t kV6Size = 16;
 
@@ -36,28 +42,71 @@ class IPAddress {
   IPAddress(Version version, const uint8_t* bytes);
 
   // IPv4 constructors (IPAddress from 4 octets).
-  explicit IPAddress(const std::array<uint8_t, 4>& bytes);
-  explicit IPAddress(const uint8_t (&b)[4]);
-  IPAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4);
+  explicit constexpr IPAddress(const std::array<uint8_t, 4>& bytes)
+      : version_(Version::kV4),
+        bytes_{{bytes[0], bytes[1], bytes[2], bytes[3]}} {}
+
+  explicit constexpr IPAddress(const uint8_t (&b)[4])
+      : version_(Version::kV4), bytes_{{b[0], b[1], b[2], b[3]}} {}
+
+  constexpr IPAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4)
+      : version_(Version::kV4), bytes_{{b1, b2, b3, b4}} {}
 
   // IPv6 constructors (IPAddress from 8 hextets).
-  explicit IPAddress(const std::array<uint16_t, 8>& hextets);
-  explicit IPAddress(const uint16_t (&hextets)[8]);
-  IPAddress(uint16_t h1,
-            uint16_t h2,
-            uint16_t h3,
-            uint16_t h4,
-            uint16_t h5,
-            uint16_t h6,
-            uint16_t h7,
-            uint16_t h8);
+  explicit constexpr IPAddress(const std::array<uint16_t, 8>& hextets)
+      : IPAddress(hextets[0],
+                  hextets[1],
+                  hextets[2],
+                  hextets[3],
+                  hextets[4],
+                  hextets[5],
+                  hextets[6],
+                  hextets[7]) {}
 
-  IPAddress(const IPAddress& o) noexcept;
-  IPAddress(IPAddress&& o) noexcept;
+  explicit constexpr IPAddress(const uint16_t (&hextets)[8])
+      : IPAddress(hextets[0],
+                  hextets[1],
+                  hextets[2],
+                  hextets[3],
+                  hextets[4],
+                  hextets[5],
+                  hextets[6],
+                  hextets[7]) {}
+
+  constexpr IPAddress(uint16_t h0,
+                      uint16_t h1,
+                      uint16_t h2,
+                      uint16_t h3,
+                      uint16_t h4,
+                      uint16_t h5,
+                      uint16_t h6,
+                      uint16_t h7)
+      : version_(Version::kV6),
+        bytes_{{
+            static_cast<uint8_t>(h0 >> 8),
+            static_cast<uint8_t>(h0),
+            static_cast<uint8_t>(h1 >> 8),
+            static_cast<uint8_t>(h1),
+            static_cast<uint8_t>(h2 >> 8),
+            static_cast<uint8_t>(h2),
+            static_cast<uint8_t>(h3 >> 8),
+            static_cast<uint8_t>(h3),
+            static_cast<uint8_t>(h4 >> 8),
+            static_cast<uint8_t>(h4),
+            static_cast<uint8_t>(h5 >> 8),
+            static_cast<uint8_t>(h5),
+            static_cast<uint8_t>(h6 >> 8),
+            static_cast<uint8_t>(h6),
+            static_cast<uint8_t>(h7 >> 8),
+            static_cast<uint8_t>(h7),
+        }} {}
+
+  constexpr IPAddress(const IPAddress& o) noexcept = default;
+  constexpr IPAddress(IPAddress&& o) noexcept = default;
   ~IPAddress() = default;
 
-  IPAddress& operator=(const IPAddress& o) noexcept;
-  IPAddress& operator=(IPAddress&& o) noexcept;
+  constexpr IPAddress& operator=(const IPAddress& o) noexcept = default;
+  constexpr IPAddress& operator=(IPAddress&& o) noexcept = default;
 
   bool operator==(const IPAddress& o) const;
   bool operator!=(const IPAddress& o) const;

@@ -8,12 +8,14 @@
 
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/feed/core/proto/v2/wire/web_feeds.pb.h"
+#include "components/feed/core/v2/feedstore_util.h"
 #include "components/feed/core/v2/proto_util.h"
 #include "components/feed/core/v2/protocol_translator.h"
 
 namespace feed {
 
-const base::Time kTestTimeEpoch = base::Time::UnixEpoch();
+base::Time kTestTimeEpoch = base::Time::UnixEpoch();
 
 ContentId MakeContentId(ContentId::Type type,
                         std::string content_domain,
@@ -49,6 +51,7 @@ feedstore::StreamStructure MakeStream(int id_number) {
   feedstore::StreamStructure result;
   result.set_type(feedstore::StreamStructure::STREAM);
   result.set_operation(feedstore::StreamStructure::UPDATE_OR_APPEND);
+  result.set_is_root(true);
   *result.mutable_content_id() = MakeRootId(id_number);
   return result;
 }
@@ -181,22 +184,25 @@ StreamModelUpdateRequestGenerator::MakeFirstPage(int first_cluster_id) const {
 
   initial_update->shared_states.push_back(MakeSharedState(i));
   *initial_update->stream_data.mutable_content_id() = MakeRootId();
-  *initial_update->stream_data.mutable_shared_state_id() = MakeSharedStateId(i);
+  *initial_update->stream_data.add_shared_state_ids() = MakeSharedStateId(i);
   initial_update->stream_data.set_next_page_token("page-2");
   initial_update->stream_data.set_signed_in(signed_in);
   initial_update->stream_data.set_logging_enabled(logging_enabled);
   initial_update->stream_data.set_privacy_notice_fulfilled(
       privacy_notice_fulfilled);
-  SetLastAddedTime(last_added_time, initial_update->stream_data);
+  initial_update->stream_data.add_content_ids(MakeContent(i).content_id().id());
+  initial_update->stream_data.add_content_ids(MakeContent(j).content_id().id());
+  feedstore::SetLastAddedTime(last_added_time, initial_update->stream_data);
 
   return initial_update;
 }
 
 std::unique_ptr<StreamModelUpdateRequest>
-StreamModelUpdateRequestGenerator::MakeNextPage(int page_number) const {
+StreamModelUpdateRequestGenerator::MakeNextPage(
+    int page_number,
+    StreamModelUpdateRequest::Source source) const {
   auto initial_update = std::make_unique<StreamModelUpdateRequest>();
-  initial_update->source =
-      StreamModelUpdateRequest::Source::kInitialLoadFromStore;
+  initial_update->source = source;
   // Each page has two pieces of content, get their indices.
   const int i = 2 * page_number - 2;
   const int j = i + 1;
@@ -207,16 +213,20 @@ StreamModelUpdateRequestGenerator::MakeNextPage(int page_number) const {
       MakeContentNode(i, MakeClusterId(i)), MakeCluster(j, MakeRootId()),
       MakeContentNode(j, MakeClusterId(j))};
 
-  initial_update->shared_states.push_back(MakeSharedState(0));
+  initial_update->shared_states.push_back(MakeSharedState(page_number));
   *initial_update->stream_data.mutable_content_id() = MakeRootId();
-  *initial_update->stream_data.mutable_shared_state_id() = MakeSharedStateId(0);
+  *initial_update->stream_data.add_shared_state_ids() =
+      MakeSharedStateId(page_number);
   initial_update->stream_data.set_next_page_token(
       "page-" + base::NumberToString(page_number + 1));
   initial_update->stream_data.set_signed_in(signed_in);
   initial_update->stream_data.set_logging_enabled(logging_enabled);
   initial_update->stream_data.set_privacy_notice_fulfilled(
       privacy_notice_fulfilled);
-  SetLastAddedTime(last_added_time, initial_update->stream_data);
+  initial_update->stream_data.add_content_ids(MakeContent(i).content_id().id());
+  initial_update->stream_data.add_content_ids(MakeContent(j).content_id().id());
+
+  feedstore::SetLastAddedTime(last_added_time, initial_update->stream_data);
 
   return initial_update;
 }
@@ -240,13 +250,32 @@ std::unique_ptr<StreamModelUpdateRequest> MakeTypicalNextPageState(
     base::Time last_added_time,
     bool signed_in,
     bool logging_enabled,
-    bool privacy_notice_fulfilled) {
+    bool privacy_notice_fulfilled,
+    StreamModelUpdateRequest::Source source) {
   StreamModelUpdateRequestGenerator generator;
   generator.last_added_time = last_added_time;
   generator.signed_in = signed_in;
   generator.logging_enabled = logging_enabled;
   generator.privacy_notice_fulfilled = privacy_notice_fulfilled;
-  return generator.MakeNextPage(page_number);
+  return generator.MakeNextPage(page_number, source);
+}
+
+feedstore::WebFeedInfo MakeWebFeedInfo(const std::string& name) {
+  feedstore::WebFeedInfo result;
+  result.set_web_feed_id("id_" + name);
+  result.set_title("Title " + name);
+  result.mutable_favicon()->set_url("http://favicon/" + name);
+  result.set_follower_count(123);
+  result.set_visit_uri("https://" + name + ".com");
+  feedwire::webfeed::WebFeedMatcher* matcher = result.add_matchers();
+  feedwire::webfeed::WebFeedMatcher::Criteria* criteria =
+      matcher->add_criteria();
+  criteria->set_criteria_type(
+      feedwire::webfeed::WebFeedMatcher::Criteria::PAGE_URL_HOST_SUFFIX);
+  criteria->set_text(name + ".com");
+  return result;
+
+  return result;
 }
 
 }  // namespace feed

@@ -5,12 +5,8 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_HEADERS_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_HEADERS_H_
 
-#include <string>
-#include <vector>
-
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "base/time/time.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
@@ -25,7 +21,6 @@ namespace data_reduction_proxy {
 
 // Gets the header used for data reduction proxy requests and responses.
 const char* chrome_proxy_header();
-
 
 // Returns the Original-Full-Content-Length(OFCL) value in the Chrome-Proxy
 // header. Returns -1 in case of of error or if OFCL does not exist. |headers|

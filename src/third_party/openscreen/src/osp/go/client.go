@@ -4,7 +4,7 @@
 
 package osp
 
-// TODO(pthatcher):
+// TODO(jophba):
 // - Read messages as well, and more than one
 
 import (

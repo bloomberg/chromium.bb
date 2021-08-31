@@ -22,8 +22,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/child_process_host_impl.h"
-#include "content/common/frame_messages.h"
-#include "content/common/input_messages.h"
 #include "content/common/renderer.mojom.h"
 #include "content/public/browser/android/child_process_importance.h"
 #include "content/public/browser/browser_context.h"
@@ -146,13 +144,10 @@ void MockRenderProcessHost::RemoveObserver(
 void MockRenderProcessHost::ShutdownForBadMessage(
     CrashReportMode crash_report_mode) {
   ++bad_msg_count_;
+  shutdown_requested_ = true;
 }
 
 void MockRenderProcessHost::UpdateClientPriority(PriorityClient* client) {}
-
-void MockRenderProcessHost::UpdateFrameWithPriority(
-    base::Optional<FramePriority> previous_priority,
-    base::Optional<FramePriority> new_priority) {}
 
 int MockRenderProcessHost::VisibleClientCount() {
   int count = 0;
@@ -193,11 +188,10 @@ void MockRenderProcessHost::OnForegroundServiceWorkerRemoved() {
 }
 
 StoragePartition* MockRenderProcessHost::GetStoragePartition() {
-  return BrowserContext::GetDefaultStoragePartition(browser_context_);
+  return browser_context_->GetDefaultStoragePartition();
 }
 
-void MockRenderProcessHost::AddWord(const base::string16& word) {
-}
+void MockRenderProcessHost::AddWord(const std::u16string& word) {}
 
 bool MockRenderProcessHost::Shutdown(int exit_code) {
   shutdown_requested_ = true;
@@ -257,10 +251,10 @@ bool MockRenderProcessHost::IsBlocked() {
   return false;
 }
 
-std::unique_ptr<RenderProcessHost::BlockStateChangedCallbackList::Subscription>
+base::CallbackListSubscription
 MockRenderProcessHost::RegisterBlockStateChangedCallback(
     const BlockStateChangedCallback& cb) {
-  return nullptr;
+  return {};
 }
 
 void MockRenderProcessHost::Cleanup() {
@@ -471,6 +465,11 @@ MockRenderProcessHost::GetInfoForBrowserContextDestructionCrashReporting() {
   return std::string();
 }
 
+void MockRenderProcessHost::WriteIntoTrace(perfetto::TracedValue context) {
+  auto dict = std::move(context).WriteDictionary();
+  dict.Add("id", GetID());
+}
+
 void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {
   RenderProcessHostImpl::FilterURL(this, empty_allowed, url);
 }
@@ -487,10 +486,6 @@ MockRenderProcessHost::StartRtpDump(bool incoming,
                                     WebRtcRtpPacketCallback packet_callback) {
   return base::NullCallback();
 }
-
-void MockRenderProcessHost::EnableWebRtcEventLogOutput(int lid,
-                                                       int output_period_ms) {}
-void MockRenderProcessHost::DisableWebRtcEventLogOutput(int lid) {}
 
 bool MockRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
   IPC::Listener* listener = listeners_.Lookup(msg.routing_id());

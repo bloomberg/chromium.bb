@@ -38,7 +38,7 @@
 #define FWL_STYLEEXT_EDT_ShowScrollbarFocus (1L << 25)
 #define FWL_STYLEEXT_EDT_OuterScrollbar (1L << 26)
 
-class CFWL_Edit;
+class CFWL_MessageKey;
 class CFWL_MessageMouse;
 class CFWL_Caret;
 
@@ -108,7 +108,7 @@ class CFWL_Edit : public CFWL_Widget, public CFDE_TextEditEngine::Delegate {
   void RenderText(CFX_RenderDevice* pRenderDev,
                   const CFX_RectF& clipRect,
                   const CFX_Matrix& mt);
-  void DrawContent(CFGAS_GEGraphics* pGraphics, const CFX_Matrix* pMatrix);
+  void DrawContent(CFGAS_GEGraphics* pGraphics, const CFX_Matrix& mtMatrix);
 
   void UpdateEditEngine();
   void UpdateEditParams();

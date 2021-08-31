@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_send_stream.h"
+#include "quic/core/qpack/qpack_send_stream.h"
 
 #include "absl/base/macros.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
+#include "quic/core/quic_session.h"
 
 namespace quic {
 QpackSendStream::QpackSendStream(QuicStreamId id,
@@ -17,7 +17,8 @@ QpackSendStream::QpackSendStream(QuicStreamId id,
       stream_type_sent_(false) {}
 
 void QpackSendStream::OnStreamReset(const QuicRstStreamFrame& /*frame*/) {
-  QUIC_BUG << "OnStreamReset() called for write unidirectional stream.";
+  QUIC_BUG(quic_bug_10805_1)
+      << "OnStreamReset() called for write unidirectional stream.";
 }
 
 bool QpackSendStream::OnStopSending(QuicRstStreamErrorCode /* code */) {

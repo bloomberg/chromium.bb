@@ -15,9 +15,8 @@ namespace service_worker_test_utils {
 
 TestRegistrationObserver::TestRegistrationObserver(
     content::BrowserContext* browser_context)
-    : context_(
-          content::BrowserContext::GetDefaultStoragePartition(browser_context)
-              ->GetServiceWorkerContext()) {
+    : context_(browser_context->GetDefaultStoragePartition()
+                   ->GetServiceWorkerContext()) {
   context_->AddObserver(this);
 }
 
@@ -57,7 +56,7 @@ UnregisterWorkerObserver::UnregisterWorkerObserver(
     ProcessManager* process_manager,
     const ExtensionId& extension_id)
     : extension_id_(extension_id) {
-  observer_.Add(process_manager);
+  observation_.Observe(process_manager);
 }
 
 UnregisterWorkerObserver::~UnregisterWorkerObserver() = default;

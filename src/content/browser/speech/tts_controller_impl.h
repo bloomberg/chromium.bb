@@ -19,25 +19,29 @@
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/tts_platform.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "net/base/network_change_notifier.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "url/gurl.h"
 
 namespace content {
 class BrowserContext;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 class TtsControllerDelegate;
 #endif
 
 // Singleton class that manages text-to-speech for all TTS engines and
 // APIs, maintaining a queue of pending utterances and keeping
 // track of all state.
-class CONTENT_EXPORT TtsControllerImpl : public TtsController,
-                                         public WebContentsObserver {
+class CONTENT_EXPORT TtsControllerImpl
+    : public TtsController,
+      public WebContentsObserver,
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // Get the single instance of this class.
   static TtsControllerImpl* GetInstance();
@@ -156,7 +160,11 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController,
   void WebContentsDestroyed() override;
   void OnVisibilityChanged(Visibility visibility) override;
 
-#if defined(OS_CHROMEOS)
+  // net::NetworkChangeNotifier::NetworkChangeObserver
+  void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) override;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   TtsControllerDelegate* GetTtsControllerDelegate();
   void SetTtsControllerDelegateForTesting(TtsControllerDelegate* delegate);
   TtsControllerDelegate* delegate_ = nullptr;
@@ -181,6 +189,9 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController,
 
   // A queue of utterances to speak after the current one finishes.
   std::list<std::unique_ptr<TtsUtterance>> utterance_list_;
+
+  // Whether to allow remote voices.
+  bool allow_remote_voices_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TtsControllerImpl);
 };

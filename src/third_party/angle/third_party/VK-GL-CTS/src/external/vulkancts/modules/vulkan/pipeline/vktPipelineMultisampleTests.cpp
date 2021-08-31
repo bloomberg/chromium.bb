@@ -2051,6 +2051,13 @@ tcu::TestStatus AlphaToOneInstance::verifyImage (const tcu::ConstPixelBufferAcce
 	{
 		for (int x = 0; x < m_renderSize.x(); x++)
 		{
+			if (alphaOneImage.getPixel(x, y).w() != 1.0)
+			{
+				std::ostringstream message;
+				message << "Unsatisfied condition: " << alphaOneImage.getPixel(x, y) << " doesn't have alpha set to 1";
+				return tcu::TestStatus::fail(message.str());
+			}
+
 			if (!tcu::boolAll(tcu::greaterThanEqual(alphaOneImage.getPixel(x, y), noAlphaOneImage.getPixel(x, y))))
 			{
 				std::ostringstream message;
@@ -2969,6 +2976,21 @@ void MultisampleRenderer::initialize (Context&									context,
 						0u,													// VkDependencyFlags				dependencyFlags
 					};
 					subpassDependencies.push_back(copySampleSubpassDependency);
+				}
+				// the very last sample pass must synchronize with all prior subpasses
+				for (size_t i = 0; i < (m_perSampleImages.size() - 1); ++i)
+				{
+					const VkSubpassDependency storeSubpassDependency =
+					{
+						1u + static_cast<deUint32>(i),						// deUint32							srcSubpass
+						static_cast<deUint32>(m_perSampleImages.size()),    // deUint32							dstSubpass
+						VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,		// VkPipelineStageFlags				srcStageMask
+						VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,				// VkPipelineStageFlags				dstStageMask
+						VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,				// VkAccessFlags					srcAccessMask
+						VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,				// VkAccessFlags					dstAccessMask
+						0u,													// VkDependencyFlags				dependencyFlags
+					};
+					subpassDependencies.push_back(storeSubpassDependency);
 				}
 			}
 		}
@@ -4577,6 +4599,11 @@ tcu::TestCaseGroup* createMultisampleTests (tcu::TestContext& testCtx)
 	// Load/store on a multisampled rendered image (different kinds of access: color attachment write, storage image, etc.)
 	{
 		multisampleTests->addChild(createMultisampleStorageImageTests(testCtx));
+	}
+
+	// Sampling from a multisampled image texture (texelFetch), checking supersample positions
+	{
+		multisampleTests->addChild(createMultisampleStandardSamplePositionTests(testCtx));
 	}
 
 	// VK_EXT_sample_locations

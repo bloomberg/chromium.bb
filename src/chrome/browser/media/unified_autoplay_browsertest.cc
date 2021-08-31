@@ -41,9 +41,9 @@ class ChromeContentBrowserClientOverrideWebAppScope
   ~ChromeContentBrowserClientOverrideWebAppScope() override = default;
 
   void OverrideWebkitPrefs(
-      content::RenderViewHost* rvh,
+      content::WebContents* web_contents,
       blink::web_pref::WebPreferences* web_prefs) override {
-    ChromeContentBrowserClient::OverrideWebkitPrefs(rvh, web_prefs);
+    ChromeContentBrowserClient::OverrideWebkitPrefs(web_contents, web_prefs);
 
     web_prefs->web_app_scope = web_app_scope_;
   }
@@ -424,9 +424,8 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest,
 class UnifiedAutoplaySettingBrowserTest : public UnifiedAutoplayBrowserTest {
  public:
   UnifiedAutoplaySettingBrowserTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {media::kAutoplayDisableSettings, media::kAutoplayWhitelistSettings},
-        {});
+    scoped_feature_list_.InitWithFeatures({media::kAutoplayDisableSettings},
+                                          {});
   }
 
   ~UnifiedAutoplaySettingBrowserTest() override = default;

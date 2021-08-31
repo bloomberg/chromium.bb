@@ -49,7 +49,7 @@ public class BookmarkTestRule implements TestRule {
         if (chromeActivity.isTablet()) {
             showBookmarkManagerInternal(chromeActivity);
         } else {
-            mBookmarkActivity = ActivityUtils.waitForActivity(
+            mBookmarkActivity = ActivityTestUtils.waitForActivity(
                     InstrumentationRegistry.getInstrumentation(), BookmarkActivity.class,
                     () -> showBookmarkManagerInternal(chromeActivity));
         }
@@ -66,7 +66,7 @@ public class BookmarkTestRule implements TestRule {
 
     private void showBookmarkManagerInternal(ChromeActivity chromeActivity) {
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> BookmarkUtils.showBookmarkManager(chromeActivity));
+                () -> BookmarkUtils.showBookmarkManager(chromeActivity, /*isIncognito=*/false));
     }
 
     /**

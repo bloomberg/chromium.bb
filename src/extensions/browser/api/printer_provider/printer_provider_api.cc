@@ -9,19 +9,19 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
-#include "base/strings/string16.h"
+#include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "extensions/browser/api/printer_provider/printer_provider_internal_api.h"
+#include "extensions/browser/api/printer_provider/printer_provider_internal_api_observer.h"
 #include "extensions/browser/api/printer_provider/printer_provider_print_job.h"
-#include "extensions/browser/api/printer_provider_internal/printer_provider_internal_api.h"
-#include "extensions/browser/api/printer_provider_internal/printer_provider_internal_api_observer.h"
 #include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
@@ -73,13 +73,13 @@ void UpdatePrinterWithExtensionInfo(base::DictionaryValue* printer,
   printer->SetString("extensionId", extension->id());
   printer->SetString("extensionName", extension->name());
 
-  base::string16 printer_name;
+  std::u16string printer_name;
   if (printer->GetString("name", &printer_name) &&
       base::i18n::AdjustStringForLocaleDirection(&printer_name)) {
     printer->SetString("name", printer_name);
   }
 
-  base::string16 printer_description;
+  std::u16string printer_description;
   if (printer->GetString("description", &printer_description) &&
       base::i18n::AdjustStringForLocaleDirection(&printer_description)) {
     printer->SetString("description", printer_description);
@@ -301,11 +301,12 @@ class PrinterProviderAPIImpl : public PrinterProviderAPI,
   std::map<std::string, PendingUsbPrinterInfoRequests>
       pending_usb_printer_info_requests_;
 
-  ScopedObserver<PrinterProviderInternalAPI, PrinterProviderInternalAPIObserver>
-      internal_api_observer_{this};
+  base::ScopedObservation<PrinterProviderInternalAPI,
+                          PrinterProviderInternalAPIObserver>
+      internal_api_observation_{this};
 
-  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_{this};
+  base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrinterProviderAPIImpl);
 };
@@ -504,9 +505,10 @@ void PendingUsbPrinterInfoRequests::FailAll() {
 PrinterProviderAPIImpl::PrinterProviderAPIImpl(
     content::BrowserContext* browser_context)
     : browser_context_(browser_context) {
-  internal_api_observer_.Add(
+  internal_api_observation_.Observe(
       PrinterProviderInternalAPI::GetFactoryInstance()->Get(browser_context));
-  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context));
+  extension_registry_observation_.Observe(
+      ExtensionRegistry::Get(browser_context));
 }
 
 PrinterProviderAPIImpl::~PrinterProviderAPIImpl() {
@@ -526,10 +528,10 @@ void PrinterProviderAPIImpl::DispatchGetPrintersRequested(
   // be needed later on.
   int request_id = pending_get_printers_requests_.Add(callback);
 
-  std::unique_ptr<base::ListValue> internal_args(new base::ListValue);
+  std::vector<base::Value> internal_args;
   // Request id is not part of the public API, but it will be massaged out in
   // custom bindings.
-  internal_args->AppendInteger(request_id);
+  internal_args.push_back(base::Value(request_id));
 
   std::unique_ptr<Event> event(
       new Event(events::PRINTER_PROVIDER_ON_GET_PRINTERS_REQUESTED,
@@ -565,11 +567,11 @@ void PrinterProviderAPIImpl::DispatchGetCapabilityRequested(
   int request_id =
       pending_capability_requests_[extension_id].Add(std::move(callback));
 
-  std::unique_ptr<base::ListValue> internal_args(new base::ListValue);
+  std::vector<base::Value> internal_args;
   // Request id is not part of the public API, but it will be massaged out in
   // custom bindings.
-  internal_args->AppendInteger(request_id);
-  internal_args->AppendString(internal_printer_id);
+  internal_args.push_back(base::Value(request_id));
+  internal_args.push_back(base::Value(internal_printer_id));
 
   std::unique_ptr<Event> event(
       new Event(events::PRINTER_PROVIDER_ON_GET_CAPABILITY_REQUESTED,
@@ -610,11 +612,11 @@ void PrinterProviderAPIImpl::DispatchPrintRequested(PrinterProviderPrintJob job,
   int request_id = pending_print_requests_[extension_id].Add(
       std::move(job), std::move(callback));
 
-  std::unique_ptr<base::ListValue> internal_args(new base::ListValue);
+  std::vector<base::Value> internal_args;
   // Request id is not part of the public API and it will be massaged out in
   // custom bindings.
-  internal_args->AppendInteger(request_id);
-  internal_args->Append(print_job.ToValue());
+  internal_args.push_back(base::Value(request_id));
+  internal_args.push_back(base::Value::FromUniquePtrValue(print_job.ToValue()));
   std::unique_ptr<Event> event(
       new Event(events::PRINTER_PROVIDER_ON_PRINT_REQUESTED,
                 api::printer_provider::OnPrintRequested::kEventName,
@@ -648,11 +650,12 @@ void PrinterProviderAPIImpl::DispatchGetUsbPrinterInfoRequested(
   api::usb::Device api_device;
   UsbDeviceManager::Get(browser_context_)->GetApiDevice(device, &api_device);
 
-  std::unique_ptr<base::ListValue> internal_args(new base::ListValue());
+  std::vector<base::Value> internal_args;
   // Request id is not part of the public API and it will be massaged out in
   // custom bindings.
-  internal_args->AppendInteger(request_id);
-  internal_args->Append(api_device.ToValue());
+  internal_args.push_back(base::Value(request_id));
+  internal_args.push_back(
+      base::Value::FromUniquePtrValue(api_device.ToValue()));
   std::unique_ptr<Event> event(
       new Event(events::PRINTER_PROVIDER_ON_GET_USB_PRINTER_INFO_REQUESTED,
                 api::printer_provider::OnGetUsbPrinterInfoRequested::kEventName,

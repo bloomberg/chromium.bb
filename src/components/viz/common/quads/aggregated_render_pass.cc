@@ -58,7 +58,7 @@ void AggregatedRenderPass::SetAll(
     const gfx::Transform& transform_to_root_target,
     const cc::FilterOperations& filters,
     const cc::FilterOperations& backdrop_filters,
-    const base::Optional<gfx::RRectF>& backdrop_filter_bounds,
+    const absl::optional<gfx::RRectF>& backdrop_filter_bounds,
     gfx::ContentColorUsage content_color_usage,
     bool has_transparent_background,
     bool cache_render_pass,
@@ -95,7 +95,7 @@ AggregatedRenderPass::CopyFromAndAppendRenderPassDrawQuad(
       quad->needs_blending, render_pass_id, quad->mask_resource_id(),
       quad->mask_uv_rect, quad->mask_texture_size, quad->filters_scale,
       quad->filters_origin, quad->tex_coord_rect, quad->force_anti_aliasing_off,
-      quad->backdrop_filter_quality, quad->can_use_backdrop_filter_cache);
+      quad->backdrop_filter_quality, quad->intersects_damage_under);
   return copy_quad;
 }
 

@@ -134,7 +134,12 @@ void VROrientationDevice::RequestSession(
       this, data_provider.InitWithNewPipeAndPassReceiver(),
       controller.InitWithNewPipeAndPassReceiver()));
 
-  auto session = mojom::XRSession::New();
+  auto session_result = mojom::XRRuntimeSessionResult::New();
+  session_result->controller = std::move(controller);
+
+  session_result->session = mojom::XRSession::New();
+  auto* session = session_result->session.get();
+
   session->data_provider = std::move(data_provider);
   if (display_info_) {
     session->display_info = display_info_.Clone();
@@ -144,7 +149,19 @@ void VROrientationDevice::RequestSession(
       device::mojom::XREnvironmentBlendMode::kOpaque;
   session->interaction_mode = device::mojom::XRInteractionMode::kScreenSpace;
 
-  std::move(callback).Run(std::move(session), std::move(controller));
+  // Currently, the initial filtering of supported devices happens on the
+  // browser side (BrowserXRRuntimeImpl::SupportsFeature()), so if we have
+  // reached this point, it is safe to assume that all requested features are
+  // enabled.
+  // TODO(https://crbug.com/995377): revisit the approach when the bug is fixed.
+  session->enabled_features.insert(session->enabled_features.end(),
+                                   options->required_features.begin(),
+                                   options->required_features.end());
+  session->enabled_features.insert(session->enabled_features.end(),
+                                   options->optional_features.begin(),
+                                   options->optional_features.end());
+
+  std::move(callback).Run(std::move(session_result));
 
   // The sensor may have been suspended, so resume it now.
   sensor_->Resume();

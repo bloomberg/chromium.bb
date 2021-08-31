@@ -19,6 +19,7 @@
 #include <string>
 
 #include "platform/api/ble.h"
+#include "platform/base/cancellation_flag_listener.h"
 #include "platform/base/logging.h"
 #include "platform/base/medium_environment.h"
 #include "absl/synchronization/mutex.h"
@@ -44,9 +45,7 @@ InputStream& BleSocket::GetInputStream() {
   return remote_socket->GetLocalInputStream();
 }
 
-OutputStream& BleSocket::GetOutputStream() {
-  return GetLocalOutputStream();
-}
+OutputStream& BleSocket::GetOutputStream() { return GetLocalOutputStream(); }
 
 BleSocket* BleSocket::GetRemoteSocket() {
   absl::MutexLock lock(&mutex_);
@@ -317,7 +316,8 @@ bool BleMedium::StopAcceptingConnections(const std::string& service_id) {
 }
 
 std::unique_ptr<api::BleSocket> BleMedium::Connect(
-    api::BlePeripheral& remote_peripheral, const std::string& service_id) {
+    api::BlePeripheral& remote_peripheral, const std::string& service_id,
+    CancellationFlag* cancellation_flag) {
   NEARBY_LOG(INFO,
              "G3 Ble Connect [self]: medium=%p, adapter=%p, peripheral=%p, "
              "service_id=%s",
@@ -345,6 +345,18 @@ std::unique_ptr<api::BleSocket> BleMedium::Connect(
       return {};
     }
   }
+
+  if (cancellation_flag->Cancelled()) {
+    NEARBY_LOGS(ERROR) << "G3 BLE Connect: Has been cancelled: "
+                          "service_id="
+                       << service_id;
+    return {};
+  }
+
+  CancellationFlagListener listener(cancellation_flag, [this]() {
+    NEARBY_LOGS(INFO) << "G3 BLE Cancel Connect.";
+    if (server_socket_ != nullptr) server_socket_->Close();
+  });
 
   BlePeripheral peripheral = static_cast<BlePeripheral&>(remote_peripheral);
   auto socket = std::make_unique<BleSocket>(&peripheral);

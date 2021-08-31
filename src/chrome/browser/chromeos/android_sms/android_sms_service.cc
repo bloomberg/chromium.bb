@@ -12,10 +12,8 @@
 #include "chrome/browser/chromeos/android_sms/fcm_connection_establisher.h"
 #include "chrome/browser/chromeos/android_sms/pairing_lost_notifier.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/storage_partition.h"
@@ -35,7 +33,7 @@ AndroidSmsService::AndroidSmsService(
       andoid_sms_app_setup_controller_(
           std::make_unique<AndroidSmsAppSetupControllerImpl>(
               profile_,
-              &web_app_provider->pending_app_manager(),
+              &web_app_provider->externally_managed_app_manager(),
               host_content_settings_map)),
       android_sms_app_manager_(std::make_unique<AndroidSmsAppManagerImpl>(
           profile_,
@@ -67,16 +65,20 @@ void AndroidSmsService::Shutdown() {
 }
 
 void AndroidSmsService::OnSessionStateChanged() {
-  // At most one ConnectionManager should be created.
-  if (connection_manager_)
-    return;
-
   // ConnectionManager should not be created for blocked sessions.
-  if (session_manager::SessionManager::Get()->IsUserSessionBlocked())
+  if (session_manager::SessionManager::Get()->IsUserSessionBlocked()) {
     return;
+  }
 
-  std::unique_ptr<ConnectionEstablisher> connection_establisher;
-  connection_establisher = std::make_unique<FcmConnectionEstablisher>(
+  // Start Connection if connection manager already exists.
+  // This ensures that the service worker connects again and
+  // continues to receive messages after unlock.
+  if (connection_manager_) {
+    connection_manager_->StartConnection();
+    return;
+  }
+
+  auto connection_establisher = std::make_unique<FcmConnectionEstablisher>(
       std::make_unique<base::OneShotTimer>());
 
   connection_manager_ = std::make_unique<ConnectionManager>(

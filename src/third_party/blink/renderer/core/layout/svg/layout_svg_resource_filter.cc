@@ -44,8 +44,7 @@ bool LayoutSVGResourceFilter::IsChildAllowed(LayoutObject* child,
 
 void LayoutSVGResourceFilter::RemoveAllClientsFromCache() {
   NOT_DESTROYED();
-  MarkAllClientsForInvalidation(SVGResourceClient::kPaintInvalidation |
-                                SVGResourceClient::kFilterCacheInvalidation);
+  MarkAllClientsForInvalidation(kPaintInvalidation | kFilterCacheInvalidation);
 }
 
 FloatRect LayoutSVGResourceFilter::ResourceBoundingBox(
@@ -68,8 +67,7 @@ SVGUnitTypes::SVGUnitType LayoutSVGResourceFilter::PrimitiveUnits() const {
       ->CurrentEnumValue();
 }
 
-bool LayoutSVGResourceFilter::FindCycleFromSelf(
-    SVGResourcesCycleSolver& solver) const {
+bool LayoutSVGResourceFilter::FindCycleFromSelf() const {
   NOT_DESTROYED();
   // Traverse and check all <feImage> 'href' element references.
   for (auto& feimage_element :
@@ -80,24 +78,10 @@ bool LayoutSVGResourceFilter::FindCycleFromSelf(
     const LayoutObject* target_layout_object = target->GetLayoutObject();
     if (!target_layout_object)
       continue;
-    if (FindCycleInSubtree(solver, *target_layout_object))
+    if (FindCycleInSubtree(*target_layout_object))
       return true;
   }
   return false;
-}
-
-LayoutSVGResourceFilter* GetFilterResourceForSVG(const ComputedStyle& style) {
-  if (!style.HasFilter())
-    return nullptr;
-  const FilterOperations& operations = style.Filter();
-  if (operations.size() != 1)
-    return nullptr;
-  const auto* reference_filter =
-      DynamicTo<ReferenceFilterOperation>(*operations.at(0));
-  if (!reference_filter)
-    return nullptr;
-  return GetSVGResourceAsType<LayoutSVGResourceFilter>(
-      reference_filter->Resource());
 }
 
 }  // namespace blink

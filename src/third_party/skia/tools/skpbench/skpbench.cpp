@@ -42,6 +42,7 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <cinttypes>
 #include <cmath>
 #include <vector>
 
@@ -77,6 +78,7 @@ static DEFINE_string(png, "", "if set, save a .png proof to disk at this file lo
 static DEFINE_int(verbosity, 4, "level of verbosity (0=none to 5=debug)");
 static DEFINE_bool(suppressHeader, false, "don't print a header row before the results");
 static DEFINE_double(scale, 1, "Scale the size of the canvas and the zoom level by this factor.");
+static DEFINE_bool(dumpSamples, false, "print the individual samples to stdout");
 
 static const char header[] =
 "   accum    median       max       min   stddev  samples  sample_ms  clock  metric  config    bench";
@@ -205,9 +207,10 @@ private:
     std::vector<SkDocumentPage> fFrames;
 };
 
-static void ddl_sample(GrDirectContext* context, DDLTileHelper* tiles, GpuSync& gpuSync,
+static void ddl_sample(GrDirectContext* dContext, DDLTileHelper* tiles, GpuSync& gpuSync,
                        Sample* sample, SkTaskGroup* recordingTaskGroup, SkTaskGroup* gpuTaskGroup,
-                       std::chrono::high_resolution_clock::time_point* startStopTime) {
+                       std::chrono::high_resolution_clock::time_point* startStopTime,
+                       SkPicture* picture) {
     using clock = std::chrono::high_resolution_clock;
 
     clock::time_point start = *startStopTime;
@@ -219,23 +222,23 @@ static void ddl_sample(GrDirectContext* context, DDLTileHelper* tiles, GpuSync& 
         // thread. The interleaving is so that we don't starve the GPU.
         // One unfortunate side effect of this is that we can't delete the DDLs until after
         // the GPU work is flushed.
-        tiles->interleaveDDLCreationAndDraw(context);
+        tiles->interleaveDDLCreationAndDraw(dContext, picture);
     } else if (FLAGS_comparableSKP) {
         // In this mode simply draw the re-inflated per-tile SKPs directly to the GPU w/o going
         // through a DDL.
-        tiles->drawAllTilesDirectly(context);
+        tiles->drawAllTilesDirectly(dContext, picture);
     } else {
-        tiles->kickOffThreadedWork(recordingTaskGroup, gpuTaskGroup, context);
+        tiles->kickOffThreadedWork(recordingTaskGroup, gpuTaskGroup, dContext, picture);
         recordingTaskGroup->wait();
     }
 
     if (gpuTaskGroup) {
         gpuTaskGroup->add([&]{
-            flush_with_sync(context, gpuSync);
+            flush_with_sync(dContext, gpuSync);
         });
         gpuTaskGroup->wait();
     } else {
-        flush_with_sync(context, gpuSync);
+        flush_with_sync(dContext, gpuSync);
     }
 
     *startStopTime = clock::now();
@@ -246,7 +249,7 @@ static void ddl_sample(GrDirectContext* context, DDLTileHelper* tiles, GpuSync& 
     }
 }
 
-static void run_ddl_benchmark(sk_gpu_test::TestContext* testContext, GrDirectContext *context,
+static void run_ddl_benchmark(sk_gpu_test::TestContext* testContext, GrDirectContext *dContext,
                               sk_sp<SkSurface> dstSurface, SkPicture* inputPicture,
                               std::vector<Sample>* samples) {
     using clock = std::chrono::high_resolution_clock;
@@ -258,23 +261,20 @@ static void run_ddl_benchmark(sk_gpu_test::TestContext* testContext, GrDirectCon
 
     SkIRect viewport = dstSurface->imageInfo().bounds();
 
-    SkYUVAPixmapInfo::SupportedDataTypes supportedYUVADataTypes(*context);
+    SkYUVAPixmapInfo::SupportedDataTypes supportedYUVADataTypes(*dContext);
     DDLPromiseImageHelper promiseImageHelper(supportedYUVADataTypes);
-    sk_sp<SkData> compressedPictureData = promiseImageHelper.deflateSKP(inputPicture);
-    if (!compressedPictureData) {
+    sk_sp<SkPicture> newSKP = promiseImageHelper.recreateSKP(dContext, inputPicture);
+    if (!newSKP) {
         exitf(ExitErr::kUnavailable, "DDL: conversion of skp failed");
     }
 
-    promiseImageHelper.createCallbackContexts(context);
+    promiseImageHelper.uploadAllToGPU(nullptr, dContext);
 
-    promiseImageHelper.uploadAllToGPU(nullptr, context);
-
-    DDLTileHelper tiles(context, dstCharacterization, viewport, FLAGS_ddlTilingWidthHeight,
+    DDLTileHelper tiles(dContext, dstCharacterization, viewport,
+                        FLAGS_ddlTilingWidthHeight, FLAGS_ddlTilingWidthHeight,
                         /* addRandomPaddingToDst */ false);
 
-    tiles.createBackendTextures(nullptr, context);
-
-    tiles.createSKPPerTile(compressedPictureData.get(), promiseImageHelper);
+    tiles.createBackendTextures(nullptr, dContext);
 
     // In comparable modes, there is no GPU thread. The following pointers are all null.
     // Otherwise, we transfer testContext onto the GPU thread until after the bench.
@@ -294,8 +294,8 @@ static void run_ddl_benchmark(sk_gpu_test::TestContext* testContext, GrDirectCon
     clock::time_point startStopTime = clock::now();
 
     GpuSync gpuSync;
-    ddl_sample(context, &tiles, gpuSync, nullptr, recordingTaskGroup.get(),
-               gpuTaskGroup.get(), &startStopTime);
+    ddl_sample(dContext, &tiles, gpuSync, nullptr, recordingTaskGroup.get(),
+               gpuTaskGroup.get(), &startStopTime, newSKP.get());
 
     clock::duration cumulativeDuration = std::chrono::milliseconds(0);
 
@@ -305,8 +305,8 @@ static void run_ddl_benchmark(sk_gpu_test::TestContext* testContext, GrDirectCon
 
         do {
             tiles.resetAllTiles();
-            ddl_sample(context, &tiles, gpuSync, &sample, recordingTaskGroup.get(),
-                       gpuTaskGroup.get(), &startStopTime);
+            ddl_sample(dContext, &tiles, gpuSync, &sample, recordingTaskGroup.get(),
+                       gpuTaskGroup.get(), &startStopTime, newSKP.get());
         } while (sample.fDuration < sampleDuration);
 
         cumulativeDuration += sample.fDuration;
@@ -331,12 +331,12 @@ static void run_ddl_benchmark(sk_gpu_test::TestContext* testContext, GrDirectCon
 
     // Make sure the gpu has finished all its work before we exit this function and delete the
     // fence.
-    context->flush();
-    context->submit(true);
+    dContext->flush();
+    dContext->submit(true);
 
-    promiseImageHelper.deleteAllFromGPU(nullptr, context);
+    promiseImageHelper.deleteAllFromGPU(nullptr, dContext);
 
-    tiles.deleteBackendTextures(nullptr, context);
+    tiles.deleteBackendTextures(nullptr, dContext);
 
 }
 
@@ -444,6 +444,14 @@ static void run_gpu_time_benchmark(sk_gpu_test::GpuTimer* gpuTimer, GrDirectCont
 void print_result(const std::vector<Sample>& samples, const char* config, const char* bench)  {
     if (0 == (samples.size() % 2)) {
         exitf(ExitErr::kSoftware, "attempted to gather stats on even number of samples");
+    }
+
+    if (FLAGS_dumpSamples) {
+        printf("Samples: ");
+        for (const Sample& sample : samples) {
+            printf("%" PRId64 " ", static_cast<int64_t>(sample.fDuration.count()));
+        }
+        printf("%s\n", bench);
     }
 
     Sample accum = Sample();
@@ -590,8 +598,7 @@ int main(int argc, char** argv) {
     SkImageInfo info =
             SkImageInfo::Make(width, height, config->getColorType(), config->getAlphaType(),
                               sk_ref_sp(config->getColorSpace()));
-    uint32_t flags = config->getUseDIText() ? SkSurfaceProps::kUseDeviceIndependentFonts_Flag : 0;
-    SkSurfaceProps props(flags, kRGB_H_SkPixelGeometry);
+    SkSurfaceProps props(config->getSurfaceFlags(), kRGB_H_SkPixelGeometry);
     sk_sp<SkSurface> surface =
         SkSurface::MakeRenderTarget(ctx, SkBudgeted::kNo, info, config->getSamples(), &props);
     if (!surface) {

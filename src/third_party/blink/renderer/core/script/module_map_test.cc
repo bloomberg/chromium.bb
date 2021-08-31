@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_location_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
@@ -21,6 +22,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -71,7 +73,7 @@ class TestModuleRecordResolver final : public ModuleRecordResolver {
     return nullptr;
   }
 
-  v8::Local<v8::Module> Resolve(const String& specifier,
+  v8::Local<v8::Module> Resolve(const ModuleRequest& module_request,
                                 v8::Local<v8::Module> referrer,
                                 ExceptionState&) override {
     NOTREACHED();
@@ -108,19 +110,16 @@ class ModuleMapTestModulator final : public DummyModulator {
         public ModuleScriptFetcher {
    public:
     TestModuleScriptFetcher(ModuleMapTestModulator* modulator,
-                            util::PassKey<ModuleScriptLoader> pass_key)
+                            base::PassKey<ModuleScriptLoader> pass_key)
         : ModuleScriptFetcher(pass_key), modulator_(modulator) {}
     void Fetch(FetchParameters& request,
+               ModuleType module_type,
                ResourceFetcher*,
                ModuleGraphLevel,
                ModuleScriptFetcher::Client* client) override {
-      TestRequest* test_request = MakeGarbageCollected<TestRequest>(
-          ModuleScriptCreationParams(
-              request.Url(),
-              ModuleScriptCreationParams::ModuleType::kJavaScriptModule,
-              ParkableString(String("").ReleaseImpl()), nullptr,
-              request.GetResourceRequest().GetCredentialsMode()),
-          client);
+      CHECK_EQ(request.GetScriptType(), mojom::blink::ScriptType::kModule);
+      TestRequest* test_request =
+          MakeGarbageCollected<TestRequest>(request.Url(), client);
       modulator_->test_requests_.push_back(test_request);
     }
     String DebugName() const override { return "TestModuleScriptFetcher"; }
@@ -135,7 +134,7 @@ class ModuleMapTestModulator final : public DummyModulator {
 
   ModuleScriptFetcher* CreateModuleScriptFetcher(
       ModuleScriptCustomFetchType,
-      util::PassKey<ModuleScriptLoader> pass_key) override {
+      base::PassKey<ModuleScriptLoader> pass_key) override {
     return MakeGarbageCollected<TestModuleScriptFetcher>(this, pass_key);
   }
 
@@ -149,17 +148,18 @@ class ModuleMapTestModulator final : public DummyModulator {
   }
 
   struct TestRequest final : public GarbageCollected<TestRequest> {
-    TestRequest(const ModuleScriptCreationParams& params,
-                ModuleScriptFetcher::Client* client)
-        : params_(params), client_(client) {}
+    TestRequest(const KURL& url, ModuleScriptFetcher::Client* client)
+        : url_(url), client_(client) {}
     void NotifyFetchFinished() {
-      client_->NotifyFetchFinished(*params_,
-                                   HeapVector<Member<ConsoleMessage>>());
+      client_->NotifyFetchFinishedSuccess(ModuleScriptCreationParams(
+          url_, url_, ScriptSourceLocationType::kExternalFile,
+          ModuleType::kJavaScript, ParkableString(String("").ReleaseImpl()),
+          nullptr));
     }
     void Trace(Visitor* visitor) const { visitor->Trace(client_); }
 
    private:
-    base::Optional<ModuleScriptCreationParams> params_;
+    const KURL url_;
     Member<ModuleScriptFetcher::Client> client_;
   };
   HeapVector<Member<TestRequest>> test_requests_;
@@ -225,10 +225,10 @@ TEST_P(ModuleMapTest, sequentialRequests) {
   // First request
   TestSingleModuleClient* client =
       MakeGarbageCollected<TestSingleModuleClient>();
-  Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
-                                 GetDocument().Fetcher(),
-                                 ModuleGraphLevel::kTopLevelModuleFetch,
-                                 ModuleScriptCustomFetchType::kNone, client);
+  Map()->FetchSingleModuleScript(
+      ModuleScriptFetchRequest::CreateForTest(url, ModuleType::kJavaScript),
+      GetDocument().Fetcher(), ModuleGraphLevel::kTopLevelModuleFetch,
+      ModuleScriptCustomFetchType::kNone, client);
   Modulator()->ResolveFetches();
   EXPECT_FALSE(client->WasNotifyFinished())
       << "fetchSingleModuleScript shouldn't complete synchronously";
@@ -244,10 +244,10 @@ TEST_P(ModuleMapTest, sequentialRequests) {
   // Secondary request
   TestSingleModuleClient* client2 =
       MakeGarbageCollected<TestSingleModuleClient>();
-  Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
-                                 GetDocument().Fetcher(),
-                                 ModuleGraphLevel::kTopLevelModuleFetch,
-                                 ModuleScriptCustomFetchType::kNone, client2);
+  Map()->FetchSingleModuleScript(
+      ModuleScriptFetchRequest::CreateForTest(url, ModuleType::kJavaScript),
+      GetDocument().Fetcher(), ModuleGraphLevel::kTopLevelModuleFetch,
+      ModuleScriptCustomFetchType::kNone, client2);
   Modulator()->ResolveFetches();
   EXPECT_FALSE(client2->WasNotifyFinished())
       << "fetchSingleModuleScript shouldn't complete synchronously";
@@ -272,18 +272,18 @@ TEST_P(ModuleMapTest, concurrentRequestsShouldJoin) {
   // First request
   TestSingleModuleClient* client =
       MakeGarbageCollected<TestSingleModuleClient>();
-  Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
-                                 GetDocument().Fetcher(),
-                                 ModuleGraphLevel::kTopLevelModuleFetch,
-                                 ModuleScriptCustomFetchType::kNone, client);
+  Map()->FetchSingleModuleScript(
+      ModuleScriptFetchRequest::CreateForTest(url, ModuleType::kJavaScript),
+      GetDocument().Fetcher(), ModuleGraphLevel::kTopLevelModuleFetch,
+      ModuleScriptCustomFetchType::kNone, client);
 
   // Secondary request (which should join the first request)
   TestSingleModuleClient* client2 =
       MakeGarbageCollected<TestSingleModuleClient>();
-  Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
-                                 GetDocument().Fetcher(),
-                                 ModuleGraphLevel::kTopLevelModuleFetch,
-                                 ModuleScriptCustomFetchType::kNone, client2);
+  Map()->FetchSingleModuleScript(
+      ModuleScriptFetchRequest::CreateForTest(url, ModuleType::kJavaScript),
+      GetDocument().Fetcher(), ModuleGraphLevel::kTopLevelModuleFetch,
+      ModuleScriptCustomFetchType::kNone, client2);
 
   Modulator()->ResolveFetches();
   EXPECT_FALSE(client->WasNotifyFinished())

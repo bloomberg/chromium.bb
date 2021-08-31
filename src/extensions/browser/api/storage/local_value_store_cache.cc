@@ -45,7 +45,7 @@ LocalValueStoreCache::~LocalValueStoreCache() {
 }
 
 void LocalValueStoreCache::RunWithValueStoreForExtension(
-    const StorageCallback& callback,
+    StorageCallback callback,
     scoped_refptr<const Extension> extension) {
   DCHECK(IsOnBackendSequence());
 
@@ -54,11 +54,11 @@ void LocalValueStoreCache::RunWithValueStoreForExtension(
   // A neat way to implement unlimited storage; if the extension has the
   // unlimited storage permission, force through all calls to Set().
   if (extension->permissions_data()->HasAPIPermission(
-          APIPermission::kUnlimitedStorage)) {
+          mojom::APIPermissionID::kUnlimitedStorage)) {
     WeakUnlimitedSettingsStorage unlimited_storage(storage);
-    callback.Run(&unlimited_storage);
+    std::move(callback).Run(&unlimited_storage);
   } else {
-    callback.Run(storage);
+    std::move(callback).Run(storage);
   }
 }
 

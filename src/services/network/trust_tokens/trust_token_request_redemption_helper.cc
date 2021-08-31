@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -84,14 +85,6 @@ void TrustTokenRequestRedemptionHelper::Begin(
     return;
   }
 
-  if (refresh_policy_ == mojom::TrustTokenRefreshPolicy::kRefresh &&
-      (!request->initiator() ||
-       !request->initiator()->IsSameOriginWith(*issuer_))) {
-    LogOutcome(net_log_, kBegin, "Refresh from non-issuer context");
-    std::move(done).Run(mojom::TrustTokenOperationStatus::kFailedPrecondition);
-    return;
-  }
-
   if (!token_store_->SetAssociation(*issuer_, top_level_origin_)) {
     LogOutcome(net_log_, kBegin, "Couldn't set issuer-toplevel association");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kResourceExhausted);
@@ -126,7 +119,7 @@ void TrustTokenRequestRedemptionHelper::OnGotKeyCommitment(
   // recent commitments.
   token_store_->PruneStaleIssuerState(*issuer_, commitment_result->keys);
 
-  base::Optional<TrustToken> maybe_token_to_redeem = RetrieveSingleToken();
+  absl::optional<TrustToken> maybe_token_to_redeem = RetrieveSingleToken();
   if (!maybe_token_to_redeem) {
     LogOutcome(net_log_, kBegin, "No tokens to redeem");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kResourceExhausted);
@@ -150,7 +143,7 @@ void TrustTokenRequestRedemptionHelper::OnGotKeyCommitment(
     return;
   }
 
-  base::Optional<std::string> maybe_redemption_header =
+  absl::optional<std::string> maybe_redemption_header =
       cryptographer_->BeginRedemption(
           *maybe_token_to_redeem, bound_verification_key_, top_level_origin_);
 
@@ -159,6 +152,9 @@ void TrustTokenRequestRedemptionHelper::OnGotKeyCommitment(
     std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
     return;
   }
+
+  base::UmaHistogramBoolean("Net.TrustTokens.RedemptionRequestEmpty",
+                            maybe_redemption_header->empty());
 
   request->SetExtraRequestHeaderByName(kTrustTokensSecTrustTokenHeader,
                                        std::move(*maybe_redemption_header),
@@ -215,7 +211,7 @@ void TrustTokenRequestRedemptionHelper::Finalize(
   // base64-decoded, to BoringSSL.
   response->headers->RemoveHeader(kTrustTokensSecTrustTokenHeader);
 
-  base::Optional<std::string> maybe_redemption_record =
+  absl::optional<std::string> maybe_redemption_record =
       cryptographer_->ConfirmRedemption(header_value);
 
   // 3. If BoringSSL fails its structural validation / signature check, return
@@ -243,7 +239,7 @@ void TrustTokenRequestRedemptionHelper::Finalize(
   std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
 }
 
-base::Optional<TrustToken>
+absl::optional<TrustToken>
 TrustTokenRequestRedemptionHelper::RetrieveSingleToken() {
   // As a postcondition of UpdateTokenStoreFromKeyCommitmentResult, all of the
   // store's tokens for |issuer_| match the key commitment result obtained at
@@ -256,9 +252,23 @@ TrustTokenRequestRedemptionHelper::RetrieveSingleToken() {
       token_store_->RetrieveMatchingTokens(*issuer_, key_matcher);
 
   if (matching_tokens.empty())
-    return base::nullopt;
+    return absl::nullopt;
 
   return matching_tokens.front();
+}
+
+mojom::TrustTokenOperationResultPtr
+TrustTokenRequestRedemptionHelper::CollectOperationResultWithStatus(
+    mojom::TrustTokenOperationStatus status) {
+  mojom::TrustTokenOperationResultPtr operation_result =
+      mojom::TrustTokenOperationResult::New();
+  operation_result->status = status;
+  operation_result->type = mojom::TrustTokenOperationType::kRedemption;
+  operation_result->top_level_origin = top_level_origin_;
+  if (issuer_) {
+    operation_result->issuer = *issuer_;
+  }
+  return operation_result;
 }
 
 }  // namespace network

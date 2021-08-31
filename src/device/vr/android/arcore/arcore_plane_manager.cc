@@ -4,7 +4,7 @@
 
 #include "device/vr/android/arcore/arcore_plane_manager.h"
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "device/vr/android/arcore/type_converters.h"
 
 namespace device {
@@ -50,7 +50,7 @@ device::internal::ScopedArCoreObject<ArPose*> GetArPoseFromMojomPose(
   return result;
 }
 
-ArCorePlaneManager::ArCorePlaneManager(util::PassKey<ArCoreImpl> pass_key,
+ArCorePlaneManager::ArCorePlaneManager(base::PassKey<ArCoreImpl> pass_key,
                                        ArSession* arcore_session)
     : arcore_session_(arcore_session) {
   DCHECK(arcore_session_);
@@ -257,7 +257,7 @@ mojom::XRPlaneDetectionDataPtr ArCorePlaneManager::GetDetectedPlanesData()
 
       updated_planes.push_back(mojom::XRPlaneData::New(
           plane_id.GetUnsafeValue(), device::mojom::XRPlaneOrientation::UNKNOWN,
-          base::nullopt, std::vector<mojom::XRPlanePointDataPtr>{}));
+          absl::nullopt, std::vector<mojom::XRPlanePointDataPtr>{}));
     }
   }
 
@@ -265,7 +265,7 @@ mojom::XRPlaneDetectionDataPtr ArCorePlaneManager::GetDetectedPlanesData()
                                           std::move(updated_planes));
 }
 
-base::Optional<PlaneId> ArCorePlaneManager::GetPlaneId(
+absl::optional<PlaneId> ArCorePlaneManager::GetPlaneId(
     void* plane_address) const {
   return plane_address_to_id_.GetId(plane_address);
 }
@@ -274,11 +274,11 @@ bool ArCorePlaneManager::PlaneExists(PlaneId id) const {
   return base::Contains(plane_id_to_plane_info_, id);
 }
 
-base::Optional<gfx::Transform> ArCorePlaneManager::GetMojoFromPlane(
+absl::optional<gfx::Transform> ArCorePlaneManager::GetMojoFromPlane(
     PlaneId id) const {
   auto it = plane_id_to_plane_info_.find(id);
   if (it == plane_id_to_plane_info_.end()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   // Naked pointer is fine here, ArAsPlane does not increase the internal
@@ -292,7 +292,7 @@ base::Optional<gfx::Transform> ArCorePlaneManager::GetMojoFromPlane(
 }
 
 device::internal::ScopedArCoreObject<ArAnchor*>
-ArCorePlaneManager::CreateAnchor(util::PassKey<ArCoreAnchorManager> pass_key,
+ArCorePlaneManager::CreateAnchor(base::PassKey<ArCoreAnchorManager> pass_key,
                                  PlaneId id,
                                  const device::mojom::Pose& pose) const {
   auto it = plane_id_to_plane_info_.find(id);

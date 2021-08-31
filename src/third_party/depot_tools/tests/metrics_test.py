@@ -181,7 +181,28 @@ class MetricsCollectorTest(unittest.TestCase):
     fun()
     self.assert_collects_metrics()
 
-  @mock.patch('metrics.DISABLE_METRICS_COLLECTION', True)
+  @mock.patch('metrics_utils.REPORT_BUILD', 'p/b/b/1')
+  def test_collects_metrics_report_build_set(self):
+    """Tests that metrics are collected when REPORT_BUILD is set."""
+    @self.collector.collect_metrics('fun')
+    def fun():
+      pass
+
+    fun()
+    self.assert_collects_metrics({
+        'bot_metrics': {
+            'build_id': 1,
+            'builder': {
+                'project': 'p',
+                'bucket': 'b',
+                'builder': 'b',
+            }
+        }
+    })
+    # We shouldn't have tried to read the config file.
+    self.assertFalse(self.FileRead.called)
+
+  @mock.patch('metrics_utils.COLLECT_METRICS', False)
   def test_metrics_collection_disabled(self):
     """Tests that metrics collection can be disabled via a global variable."""
     @self.collector.collect_metrics('fun')
@@ -341,8 +362,18 @@ class MetricsCollectorTest(unittest.TestCase):
     self.assertEqual(cm.exception.code, 0)
     self.assertFalse(self.print_notice.called)
 
-  @mock.patch('metrics.DISABLE_METRICS_COLLECTION', True)
+  @mock.patch('metrics_utils.COLLECT_METRICS', False)
   def test_doesnt_print_notice_disable_metrics_collection(self):
+    with self.assertRaises(SystemExit) as cm:
+      with self.collector.print_notice_and_exit():
+        pass
+    self.assertEqual(cm.exception.code, 0)
+    self.assertFalse(self.print_notice.called)
+    # We shouldn't have tried to read the config file.
+    self.assertFalse(self.FileRead.called)
+
+  @mock.patch('metrics_utils.REPORT_BUILD', 'p/b/b/1')
+  def test_doesnt_print_notice_report_build(self):
     with self.assertRaises(SystemExit) as cm:
       with self.collector.print_notice_and_exit():
         pass

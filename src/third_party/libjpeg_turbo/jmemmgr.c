@@ -95,19 +95,6 @@ round_up_pow2(size_t a, size_t b)
 #endif
 #endif
 
-#ifdef WITH_SIMD
-#if (ALIGN_SIZE % 16)
-  #error "ALIGN_SIZE is not a multiple of 16 bytes - required for SIMD instructions."
-#endif
-#if defined(__AVX2__) && (ALIGN_SIZE % 32)
-  #error "AVX2 requires 32-byte alignment. ALIGN_SIZE is not a multiple of 32 bytes."
-#elif defined(__ARM_NEON) && (ALIGN_SIZE % 32)
-  /* 32-byte alignment allows us to extract more performance from */
-  /* fancy-upsampling algorithms when using NEON. */
-  #error "NEON optimizations rely on 32-byte alignment. ALIGN_SIZE is not a multiple of 32 bytes."
-#endif
-#endif
-
 /*
  * We allocate objects from "pools", where each pool is gotten with a single
  * request to jpeg_get_small() or jpeg_get_large().  There is no per-object

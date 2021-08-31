@@ -9,9 +9,7 @@
 #define YUVUtils_DEFINED
 
 #include "include/core/SkImage.h"
-#include "include/core/SkYUVAIndex.h"
 #include "include/core/SkYUVAPixmaps.h"
-#include "include/core/SkYUVASizeInfo.h"
 #include "include/gpu/GrBackendSurface.h"
 #include "src/core/SkAutoMalloc.h"
 
@@ -33,12 +31,7 @@ public:
                                               GrMipmapped = GrMipmapped::kNo,
                                               sk_sp<SkColorSpace> = nullptr);
 
-    enum class Type {
-        kFromPixmaps,
-        kFromGenerator,
-        kFromTextures,
-        kFromTexturesCopyToExternal
-    };
+    enum class Type { kFromPixmaps, kFromGenerator, kFromTextures };
 
     SkISize dimensions() const { return fPixmaps.yuvaInfo().dimensions(); }
 

@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/hpack/varint/hpack_varint_decoder.h"
+#include "http2/hpack/varint/hpack_varint_decoder.h"
 
 // Test HpackVarintDecoder against hardcoded data.
 
 #include <stddef.h>
 
 #include "absl/base/macros.h"
+#include "absl/strings/escaping.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_string_utils.h"
-#include "net/third_party/quiche/src/http2/tools/random_decoder_test.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
+#include "http2/platform/api/http2_logging.h"
+#include "http2/platform/api/http2_string_utils.h"
+#include "http2/tools/random_decoder_test.h"
+#include "common/platform/api/quiche_test.h"
 
 using ::testing::AssertionFailure;
 using ::testing::AssertionSuccess;
@@ -28,7 +29,7 @@ class HpackVarintDecoderTest : public RandomDecoderTest,
  protected:
   HpackVarintDecoderTest()
       : high_bits_(::testing::get<0>(GetParam())),
-        suffix_(Http2HexDecode(::testing::get<1>(GetParam()))),
+        suffix_(absl::HexStringToBytes(::testing::get<1>(GetParam()))),
         prefix_length_(0) {}
 
   void DecodeExpectSuccess(absl::string_view data,
@@ -89,7 +90,7 @@ class HpackVarintDecoderTest : public RandomDecoderTest,
   }
 
   DecodeStatus StartDecoding(DecodeBuffer* b) override {
-    CHECK_LT(0u, b->Remaining());
+    QUICHE_CHECK_LT(0u, b->Remaining());
     uint8_t prefix = b->DecodeUInt8();
     return decoder_.Start(prefix, prefix_length_, b);
   }
@@ -261,7 +262,7 @@ struct {
 
 TEST_P(HpackVarintDecoderTest, Success) {
   for (size_t i = 0; i < ABSL_ARRAYSIZE(kSuccessTestData); ++i) {
-    DecodeExpectSuccess(Http2HexDecode(kSuccessTestData[i].data),
+    DecodeExpectSuccess(absl::HexStringToBytes(kSuccessTestData[i].data),
                         kSuccessTestData[i].prefix_length,
                         kSuccessTestData[i].expected_value);
   }
@@ -302,7 +303,7 @@ struct {
 
 TEST_P(HpackVarintDecoderTest, Error) {
   for (size_t i = 0; i < ABSL_ARRAYSIZE(kErrorTestData); ++i) {
-    DecodeExpectError(Http2HexDecode(kErrorTestData[i].data),
+    DecodeExpectError(absl::HexStringToBytes(kErrorTestData[i].data),
                       kErrorTestData[i].prefix_length);
   }
 }

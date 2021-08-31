@@ -6,6 +6,8 @@
 namespace skia {
 namespace textlayout {
 
+const std::vector<SkString> TextStyle::kDefaultFontFamilies = { SkString(DEFAULT_FONT_FAMILY) };
+
 TextStyle::TextStyle(const TextStyle& other, bool placeholder) {
     fColor = other.fColor;
     fFontSize = other.fFontSize;
@@ -18,6 +20,7 @@ TextStyle::TextStyle(const TextStyle& other, bool placeholder) {
     fHeightOverride = other.fHeightOverride;
     fIsPlaceholder = placeholder;
     fFontFeatures = other.fFontFeatures;
+    fHalfLeading = other.fHalfLeading;
 }
 
 bool TextStyle::equals(const TextStyle& other) const {
@@ -45,6 +48,9 @@ bool TextStyle::equals(const TextStyle& other) const {
         return false;
     }
     if (fHeight != other.fHeight) {
+        return false;
+    }
+    if (fHalfLeading != other.fHalfLeading) {
         return false;
     }
     if (fFontSize != other.fFontSize) {
@@ -132,7 +138,8 @@ bool TextStyle::matchOneAttribute(StyleType styleType, const TextStyle& other) c
                    fLocale == other.fLocale &&
                    fFontFamilies == other.fFontFamilies &&
                    fFontSize == other.fFontSize &&
-                   fHeight == other.fHeight;
+                   fHeight == other.fHeight &&
+                   fHalfLeading == other.fHalfLeading;
         default:
             SkASSERT(false);
             return false;

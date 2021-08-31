@@ -15,6 +15,7 @@
 #include "core/fpdfapi/parser/cpdf_string.h"
 #include "core/fxcodec/fx_codec.h"
 #include "core/fxge/dib/cfx_cmyk_to_srgb.h"
+#include "third_party/base/check.h"
 #include "third_party/base/notreached.h"
 #include "third_party/base/stl_util.h"
 
@@ -26,9 +27,9 @@ float NormalizeChannel(float fVal) {
 
 }  // namespace
 
-CPDF_DeviceCS::CPDF_DeviceCS(int family) : CPDF_ColorSpace(nullptr, family) {
-  ASSERT(family == PDFCS_DEVICEGRAY || family == PDFCS_DEVICERGB ||
-         family == PDFCS_DEVICECMYK);
+CPDF_DeviceCS::CPDF_DeviceCS(Family family) : CPDF_ColorSpace(nullptr, family) {
+  DCHECK(family == Family::kDeviceGray || family == Family::kDeviceRGB ||
+         family == Family::kDeviceCMYK);
   SetComponentsForStockCS(ComponentsForFamily(GetFamily()));
 }
 
@@ -48,17 +49,17 @@ bool CPDF_DeviceCS::GetRGB(pdfium::span<const float> pBuf,
                            float* G,
                            float* B) const {
   switch (m_Family) {
-    case PDFCS_DEVICEGRAY:
+    case Family::kDeviceGray:
       *R = NormalizeChannel(pBuf[0]);
       *G = *R;
       *B = *R;
       return true;
-    case PDFCS_DEVICERGB:
+    case Family::kDeviceRGB:
       *R = NormalizeChannel(pBuf[0]);
       *G = NormalizeChannel(pBuf[1]);
       *B = NormalizeChannel(pBuf[2]);
       return true;
-    case PDFCS_DEVICECMYK:
+    case Family::kDeviceCMYK:
       if (m_dwStdConversion) {
         float k = pBuf[3];
         *R = 1.0f - std::min(1.0f, pBuf[0] + k);
@@ -83,17 +84,17 @@ void CPDF_DeviceCS::TranslateImageLine(uint8_t* pDestBuf,
                                        int image_height,
                                        bool bTransMask) const {
   switch (m_Family) {
-    case PDFCS_DEVICEGRAY:
+    case Family::kDeviceGray:
       for (int i = 0; i < pixels; i++) {
         *pDestBuf++ = pSrcBuf[i];
         *pDestBuf++ = pSrcBuf[i];
         *pDestBuf++ = pSrcBuf[i];
       }
       break;
-    case PDFCS_DEVICERGB:
+    case Family::kDeviceRGB:
       fxcodec::ReverseRGB(pDestBuf, pSrcBuf, pixels);
       break;
-    case PDFCS_DEVICECMYK:
+    case Family::kDeviceCMYK:
       if (bTransMask) {
         for (int i = 0; i < pixels; i++) {
           int k = 255 - pSrcBuf[3];

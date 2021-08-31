@@ -20,10 +20,12 @@
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxcrt/pauseindicator_iface.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
+#include "third_party/base/check.h"
+#include "third_party/base/check_op.h"
 
 CPDF_ContentParser::CPDF_ContentParser(CPDF_Page* pPage)
     : m_CurrentStage(Stage::kGetContent), m_pObjectHolder(pPage) {
-  ASSERT(pPage);
+  DCHECK(pPage);
   if (!pPage->GetDocument()) {
     m_CurrentStage = Stage::kComplete;
     return;
@@ -57,7 +59,7 @@ CPDF_ContentParser::CPDF_ContentParser(CPDF_Form* pForm,
     : m_CurrentStage(Stage::kParse),
       m_pObjectHolder(pForm),
       m_pType3Char(pType3Char) {
-  ASSERT(pForm);
+  DCHECK(pForm);
   CFX_Matrix form_matrix = pForm->GetDict()->GetMatrixFor("Matrix");
   if (pGraphicStates)
     form_matrix.Concat(pGraphicStates->m_CTM);
@@ -80,9 +82,8 @@ CPDF_ContentParser::CPDF_ContentParser(CPDF_Form* pForm,
 
   CPDF_Dictionary* pResources = pForm->GetDict()->GetDictFor("Resources");
   m_pParser = std::make_unique<CPDF_StreamContentParser>(
-      pForm->GetDocument(), pForm->m_pPageResources.Get(),
-      pForm->m_pResources.Get(), pParentMatrix, pForm, pResources, form_bbox,
-      pGraphicStates, pParsedSet);
+      pForm->GetDocument(), pForm->GetPageResources(), pForm->GetResources(),
+      pParentMatrix, pForm, pResources, form_bbox, pGraphicStates, pParsedSet);
   m_pParser->GetCurStates()->m_CTM = form_matrix;
   m_pParser->GetCurStates()->m_ParentMatrix = form_matrix;
   if (ClipPath.HasRef()) {
@@ -126,13 +127,13 @@ bool CPDF_ContentParser::Continue(PauseIndicatorIface* pPause) {
   if (m_CurrentStage == Stage::kCheckClip)
     m_CurrentStage = CheckClip();
 
-  ASSERT(m_CurrentStage == Stage::kComplete);
+  DCHECK_EQ(m_CurrentStage, Stage::kComplete);
   return false;
 }
 
 CPDF_ContentParser::Stage CPDF_ContentParser::GetContent() {
-  ASSERT(m_CurrentStage == Stage::kGetContent);
-  ASSERT(m_pObjectHolder->IsPage());
+  DCHECK_EQ(m_CurrentStage, Stage::kGetContent);
+  DCHECK(m_pObjectHolder->IsPage());
   CPDF_Array* pContent =
       m_pObjectHolder->GetDict()->GetArrayFor(pdfium::page_object::kContents);
   CPDF_Stream* pStreamObj = ToStream(
@@ -184,12 +185,12 @@ CPDF_ContentParser::Stage CPDF_ContentParser::PrepareContent() {
 
 CPDF_ContentParser::Stage CPDF_ContentParser::Parse() {
   if (!m_pParser) {
-    m_pParsedSet = std::make_unique<std::set<const uint8_t*>>();
+    m_ParsedSet.clear();
     m_pParser = std::make_unique<CPDF_StreamContentParser>(
-        m_pObjectHolder->GetDocument(), m_pObjectHolder->m_pPageResources.Get(),
+        m_pObjectHolder->GetDocument(), m_pObjectHolder->GetPageResources(),
         nullptr, nullptr, m_pObjectHolder.Get(),
-        m_pObjectHolder->m_pResources.Get(), m_pObjectHolder->GetBBox(),
-        nullptr, m_pParsedSet.get());
+        m_pObjectHolder->GetResources(), m_pObjectHolder->GetBBox(), nullptr,
+        &m_ParsedSet);
     m_pParser->GetCurStates()->m_ColorState.SetDefault();
   }
   if (m_CurrentOffset >= m_Size)

@@ -17,19 +17,15 @@
  */
 class SkSVGUse final : public SkSVGTransformableNode {
 public:
-    ~SkSVGUse() override = default;
-
     static sk_sp<SkSVGUse> Make() { return sk_sp<SkSVGUse>(new SkSVGUse()); }
 
     void appendChild(sk_sp<SkSVGNode>) override;
 
-    void setHref(const SkSVGStringType&);
-    void setX(const SkSVGLength&);
-    void setY(const SkSVGLength&);
+    SVG_ATTR(X   , SkSVGLength, SkSVGLength(0))
+    SVG_ATTR(Y   , SkSVGLength, SkSVGLength(0))
+    SVG_ATTR(Href, SkSVGIRI   , SkSVGIRI())
 
 protected:
-    void onSetAttribute(SkSVGAttribute, const SkSVGValue&) override;
-
     bool onPrepareToRender(SkSVGRenderContext*) const override;
     void onRender(const SkSVGRenderContext&) const override;
     SkPath onAsPath(const SkSVGRenderContext&) const override;
@@ -38,9 +34,7 @@ protected:
 private:
     SkSVGUse();
 
-    SkSVGStringType    fHref;
-    SkSVGLength        fX = SkSVGLength(0);
-    SkSVGLength        fY = SkSVGLength(0);
+    bool parseAndSetAttribute(const char*, const char*) override;
 
     using INHERITED = SkSVGTransformableNode;
 };

@@ -24,7 +24,7 @@
 #include "perfetto/base/logging.h"
 #include "perfetto/tracing/core/data_source_config.h"
 #include "src/base/test/test_task_runner.h"
-#include "test/cts/utils.h"
+#include "test/android_test_utils.h"
 #include "test/gtest_and_gmock.h"
 #include "test/test_helper.h"
 
@@ -36,14 +36,14 @@
 namespace perfetto {
 namespace {
 
-// Size of individual (repeated) allocations done by the test apps (must be kept
-// in sync with their sources).
-constexpr uint64_t kTestSamplingInterval = 4096;
+constexpr uint64_t kTestSamplingInterval = 512;
+// Size of individual (repeated) allocations done by the test apps (must be
+// kept in sync with their sources).
+// Tests rely on the sampling behaviour where large allocations are recorded
+// at their actual size, so kExpectedIndividualAllocSz needs to be greater
+// than GetPassthroughTreshold(kExpectedIndividualAllocSz). See
+// src/profiling/memory/sampler.h.
 constexpr uint64_t kExpectedIndividualAllocSz = 4153;
-// Tests rely on the sampling behaviour where allocations larger than the
-// sampling interval are recorded at their actual size.
-static_assert(kExpectedIndividualAllocSz > kTestSamplingInterval,
-              "kTestSamplingInterval invalid");
 
 std::string RandomSessionName() {
   std::random_device rd;
@@ -58,8 +58,7 @@ std::string RandomSessionName() {
 }
 
 std::vector<protos::gen::TracePacket> ProfileRuntime(
-    const std::string& app_name,
-    const bool enable_extra_guardrails = false) {
+    const std::string& app_name) {
   base::TestTaskRunner task_runner;
 
   // (re)start the target app's main activity
@@ -79,7 +78,6 @@ std::vector<protos::gen::TracePacket> ProfileRuntime(
   TraceConfig trace_config;
   trace_config.add_buffers()->set_size_kb(10 * 1024);
   trace_config.set_duration_ms(4000);
-  trace_config.set_enable_extra_guardrails(enable_extra_guardrails);
   trace_config.set_unique_session_name(RandomSessionName().c_str());
 
   auto* ds_config = trace_config.add_data_sources()->mutable_config();
@@ -214,39 +212,14 @@ TEST(HeapprofdCtsTest, ProfileableAppStartup) {
   StopApp(app_name);
 }
 
-TEST(HeapprofdCtsTest, ProfileableAppRuntimeExtraGuardrails) {
-  std::string app_name = "android.perfetto.cts.app.profileable";
-  const auto& packets = ProfileRuntime(app_name,
-                                       /*enable_extra_guardrails=*/true);
-
-  if (IsUserBuild())
-    AssertNoProfileContents(packets);
-  else
-    AssertExpectedAllocationsPresent(packets);
-  StopApp(app_name);
-}
-
-TEST(HeapprofdCtsTest, ProfileableAppStartupExtraGuardrails) {
-  std::string app_name = "android.perfetto.cts.app.profileable";
-  const auto& packets = ProfileStartup(app_name,
-                                       /*enable_extra_guardrails=*/
-                                       true);
-  if (IsUserBuild())
-    AssertNoProfileContents(packets);
-  else
-    AssertExpectedAllocationsPresent(packets);
-  StopApp(app_name);
-}
-
 TEST(HeapprofdCtsTest, ReleaseAppRuntime) {
   std::string app_name = "android.perfetto.cts.app.release";
   const auto& packets = ProfileRuntime(app_name);
 
-  if (IsDebuggableBuild())
-    AssertExpectedAllocationsPresent(packets);
-  else
+  if (IsUserBuild())
     AssertNoProfileContents(packets);
-
+  else
+    AssertExpectedAllocationsPresent(packets);
   StopApp(app_name);
 }
 
@@ -254,11 +227,10 @@ TEST(HeapprofdCtsTest, ReleaseAppStartup) {
   std::string app_name = "android.perfetto.cts.app.release";
   const auto& packets = ProfileStartup(app_name);
 
-  if (IsDebuggableBuild())
-    AssertExpectedAllocationsPresent(packets);
-  else
+  if (IsUserBuild())
     AssertNoProfileContents(packets);
-
+  else
+    AssertExpectedAllocationsPresent(packets);
   StopApp(app_name);
 }
 

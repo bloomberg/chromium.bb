@@ -7,7 +7,6 @@
 
 #include <limits>
 #include <memory>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -66,7 +65,7 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
                        size_t sliding_time_size);
   ~GvrSchedulerDelegate() override;
 
-  WebXrPresentationState* webxr() { return &webxr_; }
+  device::WebXrPresentationState* webxr() { return &webxr_; }
 
  private:
   // SchedulerDelegate overrides.
@@ -109,7 +108,7 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
   device::mojom::VRPosePtr GetHeadPose(gfx::Transform* head_mat_out);
 
   void WebXrPrepareSharedBuffer();
-  void WebXrCreateOrResizeSharedBufferImage(WebXrSharedBuffer* buffer,
+  void WebXrCreateOrResizeSharedBufferImage(device::WebXrSharedBuffer* buffer,
                                             const gfx::Size& size);
 
   // Checks if we're in a valid state for starting animation of a new frame.
@@ -188,7 +187,7 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
 
   SchedulerBrowserRendererInterface* browser_renderer_ = nullptr;
 
-  WebXrPresentationState webxr_;
+  device::WebXrPresentationState webxr_;
   bool showing_vr_dialog_ = false;
   bool cardboard_gamepad_ = false;
 
@@ -207,7 +206,8 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
   mojo::Remote<device::mojom::XRPresentationClient> submit_client_;
   base::queue<uint16_t> pending_frames_;
 
-  base::queue<std::pair<WebXrPresentationState::FrameIndexType, WebVrBounds>>
+  base::queue<
+      std::pair<device::WebXrPresentationState::FrameIndexType, WebVrBounds>>
       pending_bounds_;
 
   int webvr_unstuff_ratelimit_frames_ = 0;

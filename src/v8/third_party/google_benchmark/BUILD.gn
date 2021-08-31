@@ -3,8 +3,9 @@
 # found in the LICENSE file.
 
 import("//build/config/gclient_args.gni")
+import("../../gni/v8.gni")
 
-if (checkout_google_benchmark) {
+if (v8_enable_google_benchmark) {
   config("benchmark_config") {
     include_dirs = [ "src/include" ]
   }
@@ -35,11 +36,12 @@ if (checkout_google_benchmark) {
       "src/src/counter.cc",
       "src/src/counter.h",
       "src/src/csv_reporter.cc",
-      "src/src/cycle_clock.h",
       "src/src/internal_macros.h",
       "src/src/json_reporter.cc",
       "src/src/log.h",
       "src/src/mutex.h",
+      "src/src/perf_counters.cc",
+      "src/src/perf_counters.h",
       "src/src/re.h",
       "src/src/reporter.cc",
       "src/src/sleep.cc",
@@ -68,6 +70,6 @@ if (checkout_google_benchmark) {
   source_set("benchmark_main") {
     testonly = true
     sources = [ "src/src/benchmark_main.cc" ]
-    deps = [ ":google_benchmark" ]
+    public_deps = [ ":google_benchmark" ]
   }
 }

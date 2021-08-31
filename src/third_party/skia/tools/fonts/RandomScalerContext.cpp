@@ -23,7 +23,6 @@ public:
                         bool fFakeIt);
 
 protected:
-    unsigned generateGlyphCount() override;
     bool     generateAdvance(SkGlyph*) override;
     void     generateMetrics(SkGlyph*) override;
     void     generateImage(const SkGlyph&) override;
@@ -48,21 +47,20 @@ RandomScalerContext::RandomScalerContext(sk_sp<SkRandomTypeface>       face,
     fProxy->forceGenerateImageFromPath();
 }
 
-unsigned RandomScalerContext::generateGlyphCount() { return fProxy->getGlyphCount(); }
-
 bool RandomScalerContext::generateAdvance(SkGlyph* glyph) { return fProxy->generateAdvance(glyph); }
 
 void RandomScalerContext::generateMetrics(SkGlyph* glyph) {
     // Here we will change the mask format of the glyph
     // NOTE: this may be overridden by the base class (e.g. if a mask filter is applied).
+    SkMask::Format format = SkMask::kA8_Format;
     switch (glyph->getGlyphID() % 4) {
-        case 0: glyph->fMaskFormat = SkMask::kLCD16_Format; break;
-        case 1: glyph->fMaskFormat = SkMask::kA8_Format; break;
-        case 2: glyph->fMaskFormat = SkMask::kARGB32_Format; break;
-        case 3: glyph->fMaskFormat = SkMask::kBW_Format; break;
+        case 0: format = SkMask::kLCD16_Format; break;
+        case 1: format = SkMask::kA8_Format; break;
+        case 2: format = SkMask::kARGB32_Format; break;
+        case 3: format = SkMask::kBW_Format; break;
     }
 
-    fProxy->getMetrics(glyph);
+    *glyph = fProxy->internalMakeGlyph(glyph->getPackedID(), format);
 
     if (fFakeIt || (glyph->getGlyphID() % 4) != 2) {
         return;
@@ -143,9 +141,10 @@ SkRandomTypeface::SkRandomTypeface(sk_sp<SkTypeface> proxy, const SkPaint& paint
         , fPaint(paint)
         , fFakeIt(fakeIt) {}
 
-SkScalerContext* SkRandomTypeface::onCreateScalerContext(const SkScalerContextEffects& effects,
-                                                         const SkDescriptor*           desc) const {
-    return new RandomScalerContext(
+std::unique_ptr<SkScalerContext> SkRandomTypeface::onCreateScalerContext(
+    const SkScalerContextEffects& effects, const SkDescriptor* desc) const
+{
+    return std::make_unique<RandomScalerContext>(
             sk_ref_sp(const_cast<SkRandomTypeface*>(this)), effects, desc, fFakeIt);
 }
 

@@ -5,8 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_INSTALL_CRX_INSTALL_ERROR_H_
 #define EXTENSIONS_BROWSER_INSTALL_CRX_INSTALL_ERROR_H_
 
-#include "base/optional.h"
-#include "base/strings/string16.h"
+#include <string>
+
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace extensions {
 
@@ -71,10 +72,10 @@ class CrxInstallError {
  public:
   CrxInstallError(CrxInstallErrorType type,
                   CrxInstallErrorDetail detail,
-                  const base::string16& message);
+                  const std::u16string& message);
   CrxInstallError(CrxInstallErrorType type, CrxInstallErrorDetail detail);
   CrxInstallError(SandboxedUnpackerFailureReason reason,
-                  const base::string16& message);
+                  const std::u16string& message);
   ~CrxInstallError();
 
   CrxInstallError(const CrxInstallError& other);
@@ -83,7 +84,7 @@ class CrxInstallError {
   CrxInstallError& operator=(CrxInstallError&& other);
 
   CrxInstallErrorType type() const { return type_; }
-  const base::string16& message() const { return message_; }
+  const std::u16string& message() const { return message_; }
   CrxInstallErrorDetail detail() const;
   SandboxedUnpackerFailureReason sandbox_failure_detail() const;
   bool IsCrxVerificationFailedError() const;
@@ -92,8 +93,8 @@ class CrxInstallError {
  private:
   CrxInstallErrorType type_;
   CrxInstallErrorDetail detail_;
-  base::Optional<SandboxedUnpackerFailureReason> sandbox_failure_detail_;
-  base::string16 message_;
+  absl::optional<SandboxedUnpackerFailureReason> sandbox_failure_detail_;
+  std::u16string message_;
 };
 
 }  // namespace extensions

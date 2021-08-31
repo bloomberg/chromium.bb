@@ -40,7 +40,7 @@ unsigned NGInkOverflow::read_unset_as_none_ = 0;
 NGInkOverflow::~NGInkOverflow() {
   // Because |Type| is kept outside of the instance, callers must call |Reset|
   // before destructing.
-  DCHECK(type_ == kNotSet || type_ == kNone) << type_;
+  DCHECK(type_ == kNotSet || type_ == kNone || type_ == kInvalidated) << type_;
 }
 #endif
 
@@ -49,6 +49,7 @@ NGInkOverflow::NGInkOverflow(Type source_type, const NGInkOverflow& source) {
   new (this) NGInkOverflow();
   switch (source_type) {
     case kNotSet:
+    case kInvalidated:
     case kNone:
       break;
     case kSmallSelf:
@@ -77,6 +78,7 @@ NGInkOverflow::NGInkOverflow(Type source_type, NGInkOverflow&& source) {
   new (this) NGInkOverflow();
   switch (source_type) {
     case kNotSet:
+    case kInvalidated:
     case kNone:
       break;
     case kSmallSelf:
@@ -104,9 +106,10 @@ NGInkOverflow::NGInkOverflow(Type source_type, NGInkOverflow&& source) {
 
 NGInkOverflow::Type NGInkOverflow::Reset(Type type, Type new_type) {
   CheckType(type);
-  DCHECK(new_type == kNotSet || new_type == kNone);
+  DCHECK(new_type == kNotSet || new_type == kNone || new_type == kInvalidated);
   switch (type) {
     case kNotSet:
+    case kInvalidated:
     case kNone:
     case kSmallSelf:
     case kSmallContents:
@@ -132,9 +135,14 @@ PhysicalRect NGInkOverflow::FromOutsets(const PhysicalSize& size) const {
 
 PhysicalRect NGInkOverflow::Self(Type type, const PhysicalSize& size) const {
   CheckType(type);
-  DCHECK_NE(type, kNotSet);
   switch (type) {
     case kNotSet:
+    case kInvalidated:
+#if DCHECK_IS_ON()
+      if (!read_unset_as_none_)
+        NOTREACHED();
+      FALLTHROUGH;
+#endif
     case kNone:
     case kSmallContents:
     case kContents:
@@ -150,11 +158,40 @@ PhysicalRect NGInkOverflow::Self(Type type, const PhysicalSize& size) const {
   return {PhysicalOffset(), size};
 }
 
+PhysicalRect NGInkOverflow::Contents(Type type,
+                                     const PhysicalSize& size) const {
+  CheckType(type);
+  switch (type) {
+    case kNotSet:
+    case kInvalidated:
+#if DCHECK_IS_ON()
+      if (!read_unset_as_none_)
+        NOTREACHED();
+      FALLTHROUGH;
+#endif
+    case kNone:
+    case kSmallSelf:
+    case kSelf:
+      return PhysicalRect();
+    case kSmallContents:
+      return FromOutsets(size);
+    case kContents:
+      DCHECK(single_);
+      return single_->ink_overflow;
+    case kSelfAndContents:
+      DCHECK(container_);
+      return container_->contents_ink_overflow;
+  }
+  NOTREACHED();
+  return PhysicalRect();
+}
+
 PhysicalRect NGInkOverflow::SelfAndContents(Type type,
                                             const PhysicalSize& size) const {
   CheckType(type);
   switch (type) {
     case kNotSet:
+    case kInvalidated:
 #if DCHECK_IS_ON()
       if (!read_unset_as_none_)
         NOTREACHED();
@@ -230,6 +267,7 @@ NGInkOverflow::Type NGInkOverflow::SetSingle(Type type,
       Reset(type);
       FALLTHROUGH;
     case kNotSet:
+    case kInvalidated:
     case kNone:
     case kSmallSelf:
     case kSmallContents:
@@ -282,6 +320,7 @@ NGInkOverflow::Type NGInkOverflow::Set(Type type,
       Reset(type);
       FALLTHROUGH;
     case kNotSet:
+    case kInvalidated:
     case kNone:
     case kSmallSelf:
     case kSmallContents:
@@ -303,8 +342,8 @@ NGInkOverflow::Type NGInkOverflow::SetTextInkOverflow(
     const PhysicalSize& size,
     PhysicalRect* ink_overflow_out) {
   CheckType(type);
-  DCHECK_EQ(type, kNotSet);
-  base::Optional<PhysicalRect> ink_overflow =
+  DCHECK(type == kNotSet || type == kInvalidated);
+  absl::optional<PhysicalRect> ink_overflow =
       ComputeTextInkOverflow(text_info, style, size);
   if (!ink_overflow) {
     *ink_overflow_out = {PhysicalOffset(), size};
@@ -315,7 +354,7 @@ NGInkOverflow::Type NGInkOverflow::SetTextInkOverflow(
 }
 
 // static
-base::Optional<PhysicalRect> NGInkOverflow::ComputeTextInkOverflow(
+absl::optional<PhysicalRect> NGInkOverflow::ComputeTextInkOverflow(
     const NGTextFragmentPaintInfo& text_info,
     const ComputedStyle& style,
     const PhysicalSize& size) {
@@ -375,7 +414,7 @@ base::Optional<PhysicalRect> NGInkOverflow::ComputeTextInkOverflow(
   // Uniting the frame rect ensures that non-ink spaces such side bearings, or
   // even space characters, are included in the visual rect for decorations.
   if (!HasOverflow(local_ink_overflow, size))
-    return base::nullopt;
+    return absl::nullopt;
 
   local_ink_overflow.Unite({{}, size});
   local_ink_overflow.ExpandEdgesToPixelBoundaries();
@@ -394,7 +433,7 @@ LayoutRect NGInkOverflow::ComputeTextDecorationOverflow(
   PhysicalOffset offset;
   TextDecorationInfo decoration_info(offset, offset, ink_overflow.Width(),
                                      style.GetFontBaseline(), style,
-                                     base::nullopt, nullptr);
+                                     absl::nullopt, nullptr);
   NGTextDecorationOffset decoration_offset(decoration_info.Style(), style,
                                            nullptr);
   const Vector<AppliedTextDecoration>& decorations =

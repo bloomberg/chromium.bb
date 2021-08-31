@@ -111,16 +111,22 @@
 
 // All of these macros must be called with |name| as a runtime constant.
 
-// Used for capturing integer data with a linear bucketing scheme. This can be
-// used when you want the exact value of some small numeric count, with a max of
-// 100 or less. If you need to capture a range of greater than 100, we recommend
-// the use of the COUNT histograms below.
-
+// For numeric measurements where you want exact integer values up to
+// |exclusive_max|. |exclusive_max| itself is included in the overflow bucket.
+// Therefore, if you want an accurate measure up to kMax, then |exclusive_max|
+// should be set to kMax + 1.
+//
+// |exclusive_max| should be 101 or less. If you need to capture a larger range,
+// we recommend the use of the COUNT histograms below.
+//
 // Sample usage:
-//   UMA_HISTOGRAM_EXACT_LINEAR("Histogram.Linear", count, 10);
-#define UMA_HISTOGRAM_EXACT_LINEAR(name, sample, value_max) \
-  INTERNAL_HISTOGRAM_EXACT_LINEAR_WITH_FLAG(                \
-      name, sample, value_max, base::HistogramBase::kUmaTargetedHistogramFlag)
+//   base::UmaHistogramExactLinear("Histogram.Linear", sample, kMax + 1);
+// In this case, buckets are 1, 2, .., kMax, kMax+1, where the kMax+1 bucket
+// captures everything kMax+1 and above.
+#define UMA_HISTOGRAM_EXACT_LINEAR(name, sample, exclusive_max) \
+  INTERNAL_HISTOGRAM_EXACT_LINEAR_WITH_FLAG(                    \
+      name, sample, exclusive_max,                              \
+      base::HistogramBase::kUmaTargetedHistogramFlag)
 
 // Used for capturing basic percentages. This will be 100 buckets of size 1.
 

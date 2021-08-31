@@ -16,19 +16,25 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/engine_impl/loopback_server/loopback_server.h"
-#include "components/sync/engine_impl/loopback_server/loopback_server_entity.h"
-#include "components/sync/engine_impl/loopback_server/persistent_bookmark_entity.h"
-#include "components/sync/engine_impl/loopback_server/persistent_tombstone_entity.h"
-#include "components/sync/engine_impl/loopback_server/persistent_unique_client_entity.h"
+#include "components/sync/engine/loopback_server/loopback_server.h"
+#include "components/sync/engine/loopback_server/loopback_server_entity.h"
+#include "components/sync/engine/loopback_server/persistent_bookmark_entity.h"
+#include "components/sync/engine/loopback_server/persistent_tombstone_entity.h"
+#include "components/sync/engine/loopback_server/persistent_unique_client_entity.h"
 #include "components/sync/protocol/client_commands.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace switches {
+
+extern const char kDisableFakeServerFailureOutput[];
+
+}  // namespace switches
 
 namespace fake_server {
 
@@ -44,6 +50,8 @@ bool AreFullUpdateTypeDataProgressMarkersEquivalent(
 
 // A fake version of the Sync server used for testing. This class is not thread
 // safe.
+// |switches::kDisableFakeServerFailureOutput| can be passed to the command line
+// to avoid debug logs upon test failure.
 class FakeServer : public syncer::LoopbackServer::ObserverForTests {
  public:
   class Observer {
@@ -250,7 +258,9 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
       const sync_pb::ClientToServerMessage& message,
       sync_pb::ClientToServerResponse* response);
 
-  // Logs a string that is meant to be shown in case the running test fails.
+  // Logs a string that is meant to be shown in case the running test fails,
+  // as long as |switches::kDisableFakeServerFailureOutput| hasn't been passed
+  // to the command line.
   void LogForTestFailure(const base::Location& location,
                          const std::string& title,
                          const std::string& body);
@@ -259,7 +269,7 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   std::vector<std::unique_ptr<testing::ScopedTrace>> gtest_scoped_traces_;
 
   // If set, the server will return HTTP errors.
-  base::Optional<net::HttpStatusCode> http_error_status_code_;
+  absl::optional<net::HttpStatusCode> http_error_status_code_;
 
   // All URLs received via history sync (powered by SESSIONS).
   std::set<std::string> committed_history_urls_;

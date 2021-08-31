@@ -4,7 +4,8 @@
 
 #include <string.h>
 
-#include "base/strings/stringprintf.h"
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -62,15 +63,15 @@ class BluetoothApiTest : public extensions::ExtensionApiTest {
     mock_adapter_ = new testing::StrictMock<MockBluetoothAdapter>();
     event_router()->SetAdapterForTest(mock_adapter_);
 
-    device1_.reset(new testing::NiceMock<MockBluetoothDevice>(
-        mock_adapter_, 0, "d1", "11:12:13:14:15:16",
-        true /* paired */, true /* connected */));
-    device2_.reset(new testing::NiceMock<MockBluetoothDevice>(
-        mock_adapter_, 0, "d2", "21:22:23:24:25:26",
-        false /* paired */, false /* connected */));
-    device3_.reset(new testing::NiceMock<MockBluetoothDevice>(
-        mock_adapter_, 0, "d3", "31:32:33:34:35:36",
-        false /* paired */, false /* connected */));
+    device1_ = std::make_unique<testing::NiceMock<MockBluetoothDevice>>(
+        mock_adapter_, 0, "d1", "11:12:13:14:15:16", true /* paired */,
+        true /* connected */);
+    device2_ = std::make_unique<testing::NiceMock<MockBluetoothDevice>>(
+        mock_adapter_, 0, "d2", "21:22:23:24:25:26", false /* paired */,
+        false /* connected */);
+    device3_ = std::make_unique<testing::NiceMock<MockBluetoothDevice>>(
+        mock_adapter_, 0, "d3", "31:32:33:34:35:36", false /* paired */,
+        false /* connected */);
   }
 
   void StartScanOverride(
@@ -173,9 +174,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DeviceEvents) {
 
   EXPECT_CALL(*device2_, GetName())
       .WillRepeatedly(
-          testing::Return(base::Optional<std::string>("the real d2")));
+          testing::Return(absl::optional<std::string>("the real d2")));
   EXPECT_CALL(*device2_, GetNameForDisplay())
-      .WillRepeatedly(testing::Return(base::UTF8ToUTF16("the real d2")));
+      .WillRepeatedly(testing::Return(u"the real d2"));
   event_router()->DeviceChanged(mock_adapter_, device2_.get());
 
   event_router()->DeviceAdded(mock_adapter_, device3_.get());
@@ -398,9 +399,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DeviceInfo) {
       .WillRepeatedly(testing::Return("A4:17:31:00:00:00"));
   EXPECT_CALL(*device1_, GetName())
       .WillRepeatedly(
-          testing::Return(base::Optional<std::string>("Chromebook Pixel")));
+          testing::Return(absl::optional<std::string>("Chromebook Pixel")));
   EXPECT_CALL(*device1_, GetNameForDisplay())
-      .WillRepeatedly(testing::Return(base::UTF8ToUTF16("Chromebook Pixel")));
+      .WillRepeatedly(testing::Return(u"Chromebook Pixel"));
   EXPECT_CALL(*device1_, GetBluetoothClass())
       .WillRepeatedly(testing::Return(0x080104));
   EXPECT_CALL(*device1_, GetDeviceType())

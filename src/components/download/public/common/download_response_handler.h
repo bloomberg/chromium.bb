@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/optional.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_source.h"
@@ -19,6 +18,7 @@
 #include "net/cert/cert_status_flags.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 namespace download {
@@ -58,6 +58,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
   ~DownloadResponseHandler() override;
 
   // network::mojom::URLLoaderClient
+  void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override;
   void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          network::mojom::URLResponseHeadPtr head) override;
@@ -98,7 +99,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
   DownloadSource download_source_;
   net::CertStatus cert_status_;
   bool has_strong_validators_;
-  base::Optional<url::Origin> request_initiator_;
+  absl::optional<url::Origin> request_initiator_;
   bool is_partial_request_;
   bool completed_;
 

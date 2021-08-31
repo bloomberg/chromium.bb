@@ -6,8 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/duplicate_download_infobar.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/gfx/text_elider.h"
 
@@ -32,11 +32,11 @@ void OfflinePageInfoBarDelegate::Create(base::OnceClosure confirm_continuation,
   // infobar.
   const size_t kMaxLengthOfDisplayedPageUrl = 150;
 
-  base::string16 formatted_url = url_formatter::FormatUrl(page_to_download);
-  base::string16 elided_url;
+  std::u16string formatted_url = url_formatter::FormatUrl(page_to_download);
+  std::u16string elided_url;
   gfx::ElideString(formatted_url, kMaxLengthOfDisplayedPageUrl, &elided_url);
 
-  InfoBarService::FromWebContents(web_contents)
+  infobars::ContentInfoBarManager::FromWebContents(web_contents)
       ->AddInfoBar(DuplicateDownloadInfoBar::CreateInfoBar(
           base::WrapUnique(new OfflinePageInfoBarDelegate(
               std::move(confirm_continuation), base::UTF16ToUTF8(elided_url),

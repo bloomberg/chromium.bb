@@ -17,7 +17,7 @@ namespace content {
 class NavigationHandle;
 class NavigationThrottle;
 class RenderProcessHost;
-}
+}  // namespace content
 
 namespace blink {
 class URLLoaderThrottle;
@@ -28,7 +28,7 @@ namespace mojom {
 class NetworkContext;
 }
 class SharedURLLoaderFactory;
-}
+}  // namespace network
 
 namespace safe_browsing {
 class UrlCheckerDelegate;
@@ -67,11 +67,12 @@ class SafeBrowsingService {
 
   // May be called on the UI or IO thread. The instance returned should be
   // *accessed* only on the IO thread.
-  safe_browsing::RemoteSafeBrowsingDatabaseManager* GetSafeBrowsingDBManager();
+  scoped_refptr<safe_browsing::RemoteSafeBrowsingDatabaseManager>
+  GetSafeBrowsingDBManager();
+
+  scoped_refptr<SafeBrowsingUIManager> GetSafeBrowsingUIManager();
 
  private:
-  SafeBrowsingUIManager* GetSafeBrowsingUIManager();
-
   // Executed on IO thread
   scoped_refptr<safe_browsing::UrlCheckerDelegate>
   GetSafeBrowsingUrlCheckerDelegate();
