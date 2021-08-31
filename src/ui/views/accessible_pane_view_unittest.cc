@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/fill_layout.h"
@@ -53,7 +54,7 @@ TestBarView::~TestBarView() = default;
 
 void TestBarView::Init() {
   SetLayoutManager(std::make_unique<FillLayout>());
-  base::string16 label;
+  std::u16string label;
   child_button_ = AddChildView(std::make_unique<LabelButton>());
   second_child_button_ = AddChildView(std::make_unique<LabelButton>());
   third_child_button_ = AddChildView(std::make_unique<LabelButton>());
@@ -134,7 +135,7 @@ TEST_F(AccessiblePaneViewTest, SetPaneFocusAndRestore) {
   // predictable. On Mac, Deactivate() is not implemented. Note that
   // TestBarView calls set_allow_deactivate_on_esc(true), which is only
   // otherwise used in Ash.
-#if !defined(OS_APPLE) || defined(OS_CHROMEOS)
+#if !defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
   // Esc should deactivate the widget.
   test_view_bar->AcceleratorPressed(test_view_bar->escape_key());
   EXPECT_TRUE(widget_main->IsActive());

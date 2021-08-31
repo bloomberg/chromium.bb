@@ -106,7 +106,7 @@ class TaskManagerMacTest : public InProcessBrowserTest {
   int FindRowForTab(content::WebContents* tab) {
     SessionID tab_id = sessions::SessionTabHelper::IdForTab(tab);
     std::unique_ptr<TaskManagerTester> tester =
-        TaskManagerTester::Create(base::Closure());
+        TaskManagerTester::Create(base::RepeatingClosure());
     for (int i = 0; i < tester->GetRowCount(); ++i) {
       if (tester->GetTabId(i) == tab_id)
         return i;
@@ -138,10 +138,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerMacTest, TableStartsWithDefaultColumns) {
   EXPECT_EQ(0u, [[table sortDescriptors] count]);
   NSArray* tableColumns = [table tableColumns];
   for (size_t i = 0; i < kColumnsSize; ++i) {
-    EXPECT_EQ(kColumns[i].id,
-              [[[tableColumns objectAtIndex:i] identifier] intValue]);
-    EXPECT_EQ(kColumns[i].default_visibility,
-              ![[tableColumns objectAtIndex:i] isHidden]);
+    EXPECT_EQ(kColumns[i].id, [[tableColumns[i] identifier] intValue]);
+    EXPECT_EQ(kColumns[i].default_visibility, ![tableColumns[i] isHidden]);
   }
 }
 
@@ -160,10 +158,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerMacTest, ColumnsSettingsAreRestored) {
   EXPECT_EQ(0u, [[table sortDescriptors] count]);
   NSArray* tableColumns = [table tableColumns];
   for (size_t i = 0; i < kColumnsSize; ++i) {
-    EXPECT_EQ(kColumns[i].id,
-              [[[tableColumns objectAtIndex:i] identifier] intValue]);
-    EXPECT_EQ(kColumns[i].default_visibility,
-              ![[tableColumns objectAtIndex:i] isHidden]);
+    EXPECT_EQ(kColumns[i].id, [[tableColumns[i] identifier] intValue]);
+    EXPECT_EQ(kColumns[i].default_visibility, ![tableColumns[i] isHidden]);
     ToggleColumnVisibility(task_manager, kColumns[i].id);
   }
 
@@ -230,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerMacTest, SelectionConsistency) {
   // Find the three tabs we set up, in TaskManager model order. Because we have
   // not sorted the table yet, this should also be their UI display order.
   std::unique_ptr<TaskManagerTester> tester =
-      TaskManagerTester::Create(base::Closure());
+      TaskManagerTester::Create(base::RepeatingClosure());
   std::vector<content::WebContents*> tabs;
   for (int i = 0; i < tester->GetRowCount(); ++i) {
     // Filter based on our title.

@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_CRASH_REPORT_CRASH_KEYS_HELPER_H_
 #define IOS_CHROME_BROWSER_CRASH_REPORT_CRASH_KEYS_HELPER_H_
 
-#include <string>
 
 @class NSString;
 @class NSArray;
@@ -13,7 +12,7 @@
 namespace crash_keys {
 
 // Key for breadcrumbs attached to crash reports.
-extern NSString* const kBreadcrumbsProductDataKey;
+extern const char kBreadcrumbsProductDataKey[];
 
 // Sets a key if |background| is true, unset if false. This will allow tracking
 // of crashes that occur when the app is backgrounded.

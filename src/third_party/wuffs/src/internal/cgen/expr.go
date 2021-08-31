@@ -16,13 +16,14 @@ package cgen
 
 import (
 	"fmt"
+	"math/big"
 	"strings"
 
 	a "github.com/google/wuffs/lang/ast"
 	t "github.com/google/wuffs/lang/token"
 )
 
-func (g *gen) writeExpr(b *buffer, n *a.Expr, depth uint32) error {
+func (g *gen) writeExpr(b *buffer, n *a.Expr, sideEffectsOnly bool, depth uint32) error {
 	if depth > a.MaxExprDepth {
 		return fmt.Errorf("expression recursion depth too large")
 	}
@@ -58,10 +59,10 @@ func (g *gen) writeExpr(b *buffer, n *a.Expr, depth uint32) error {
 	case op.IsXAssociativeOp():
 		return g.writeExprAssociativeOp(b, n, depth)
 	}
-	return g.writeExprOther(b, n, depth)
+	return g.writeExprOther(b, n, sideEffectsOnly, depth)
 }
 
-func (g *gen) writeExprOther(b *buffer, n *a.Expr, depth uint32) error {
+func (g *gen) writeExprOther(b *buffer, n *a.Expr, sideEffectsOnly bool, depth uint32) error {
 	switch n.Operator() {
 	case 0:
 		if ident := n.Ident(); ident == t.IDThis {
@@ -100,7 +101,7 @@ func (g *gen) writeExprOther(b *buffer, n *a.Expr, depth uint32) error {
 
 	case t.IDOpenParen:
 		// n is a function call.
-		if err := g.writeBuiltinCall(b, n, depth); err != errNoSuchBuiltin {
+		if err := g.writeBuiltinCall(b, n, sideEffectsOnly, depth); err != errNoSuchBuiltin {
 			return err
 		}
 
@@ -117,25 +118,12 @@ func (g *gen) writeExprOther(b *buffer, n *a.Expr, depth uint32) error {
 			}
 			qid := recvTyp.QID()
 
-			if isBaseRangeType(qid) {
-				// Generate a 2 part expression using the comma operator: "(memset
-				// call, return_empty_struct call)". The final part is a function
-				// call (to a static inline function) instead of a struct literal,
-				// to avoid a "expression result unused" compiler error.
-				b.printf("(memset(%s", addr)
-				if err := g.writeExpr(b, recv, depth); err != nil {
-					return err
-				}
-				b.printf(", 0, sizeof (%s%s)), wuffs_base__make_empty_struct())",
-					g.packagePrefix(qid), qid[1].Str(g.tm))
-			} else {
-				b.printf("wuffs_base__ignore_status("+
-					"%s%s__initialize(%s", g.packagePrefix(qid), qid[1].Str(g.tm), addr)
-				if err := g.writeExpr(b, recv, depth); err != nil {
-					return err
-				}
-				b.printf(", sizeof (%s%s), WUFFS_VERSION, 0))", g.packagePrefix(qid), qid[1].Str(g.tm))
+			b.printf("wuffs_base__ignore_status("+
+				"%s%s__initialize(%s", g.packagePrefix(qid), qid[1].Str(g.tm), addr)
+			if err := g.writeExpr(b, recv, false, depth); err != nil {
+				return err
 			}
+			b.printf(", sizeof (%s%s), WUFFS_VERSION, 0))", g.packagePrefix(qid), qid[1].Str(g.tm))
 
 			return nil
 		}
@@ -144,7 +132,7 @@ func (g *gen) writeExprOther(b *buffer, n *a.Expr, depth uint32) error {
 
 	case t.IDOpenBracket:
 		// n is an index.
-		if err := g.writeExpr(b, n.LHS().AsExpr(), depth); err != nil {
+		if err := g.writeExpr(b, n.LHS().AsExpr(), false, depth); err != nil {
 			return err
 		}
 		if lTyp := n.LHS().AsExpr().MType(); lTyp.IsSliceType() {
@@ -152,7 +140,7 @@ func (g *gen) writeExprOther(b *buffer, n *a.Expr, depth uint32) error {
 			b.writes(".ptr")
 		}
 		b.writeb('[')
-		if err := g.writeExpr(b, n.RHS().AsExpr(), depth); err != nil {
+		if err := g.writeExpr(b, n.RHS().AsExpr(), false, depth); err != nil {
 			return err
 		}
 		b.writeb(']')
@@ -163,6 +151,21 @@ func (g *gen) writeExprOther(b *buffer, n *a.Expr, depth uint32) error {
 		lhs := n.LHS().AsExpr()
 		mhs := n.MHS().AsExpr()
 		rhs := n.RHS().AsExpr()
+
+		mcv := (*big.Int)(nil)
+		rcv := (*big.Int)(nil)
+		lhsIsArray := lhs.MType().IsArrayType()
+		if lhsIsArray {
+			if (mhs != nil) && (mhs.ConstValue() != nil) {
+				mcv = mhs.ConstValue()
+				mhs = nil
+			}
+			if (rhs != nil) && (rhs.ConstValue() != nil) {
+				rcv = rhs.ConstValue()
+				rhs = nil
+			}
+		}
+
 		switch {
 		case mhs != nil && rhs == nil:
 			b.writes("wuffs_base__slice_u8__subslice_i(")
@@ -178,28 +181,43 @@ func (g *gen) writeExprOther(b *buffer, n *a.Expr, depth uint32) error {
 			comma = ",\n"
 		}
 
-		lhsIsArray := lhs.MType().IsArrayType()
 		if lhsIsArray {
 			// TODO: don't assume that the slice is a slice of base.u8.
 			b.writes("wuffs_base__make_slice_u8(")
+			if mcv != nil {
+				b.writeb('(')
+			}
 		}
-		if err := g.writeExpr(b, lhs, depth); err != nil {
+		if err := g.writeExpr(b, lhs, false, depth); err != nil {
 			return err
 		}
 		if lhsIsArray {
+			if mcv != nil {
+				b.writes(") + ")
+				b.writes(mcv.String())
+			}
 			b.writes(comma)
-			b.printf("%v)", lhs.MType().ArrayLength().ConstValue())
+
+			length := lhs.MType().ArrayLength().ConstValue()
+			if rcv != nil {
+				length = rcv
+			}
+			if mcv != nil {
+				length = big.NewInt(0).Sub(length, mcv)
+			}
+			b.writes(length.String())
+			b.writeb(')')
 		}
 
 		if mhs != nil {
 			b.writes(comma)
-			if err := g.writeExpr(b, mhs, depth); err != nil {
+			if err := g.writeExpr(b, mhs, false, depth); err != nil {
 				return err
 			}
 		}
 		if rhs != nil {
 			b.writes(comma)
-			if err := g.writeExpr(b, rhs, depth); err != nil {
+			if err := g.writeExpr(b, rhs, false, depth); err != nil {
 				return err
 			}
 		}
@@ -224,7 +242,7 @@ func (g *gen) writeExprOther(b *buffer, n *a.Expr, depth uint32) error {
 			return fmt.Errorf("unrecognized status %s", n.Str(g.tm))
 		}
 
-		if err := g.writeExpr(b, lhs, depth); err != nil {
+		if err := g.writeExpr(b, lhs, false, depth); err != nil {
 			return err
 		}
 		if p := lhs.MType().Decorator(); p == t.IDNptr || p == t.IDPtr {
@@ -263,11 +281,11 @@ func (g *gen) writeExprUnaryOp(b *buffer, n *a.Expr, depth uint32) error {
 	}
 
 	b.writes(opName)
-	return g.writeExpr(b, n.RHS().AsExpr(), depth)
+	return g.writeExpr(b, n.RHS().AsExpr(), false, depth)
 }
 
 func (g *gen) writeExprBinaryOp(b *buffer, n *a.Expr, depth uint32) error {
-	opName, lhsCast := "", false
+	opName, lhsCast, tildeMod := "", false, false
 
 	op := n.Operator()
 	switch op {
@@ -286,13 +304,20 @@ func (g *gen) writeExprBinaryOp(b *buffer, n *a.Expr, depth uint32) error {
 	case t.IDXBinaryAs:
 		return g.writeExprAs(b, n.LHS().AsExpr(), n.RHS().AsTypeExpr(), depth)
 
-	case t.IDXBinaryShiftL, t.IDXBinaryShiftR, t.IDXBinaryTildeModShiftL:
+	case t.IDXBinaryTildeModPlus, t.IDXBinaryTildeModMinus, t.IDXBinaryTildeModStar:
+		tildeMod = true
+
+	case t.IDXBinaryTildeModShiftL:
+		tildeMod = true
+		fallthrough
+
+	case t.IDXBinaryShiftL, t.IDXBinaryShiftR:
 		if lhs := n.LHS().AsExpr(); lhs.ConstValue() != nil {
 			lhsCast = true
 		}
-		fallthrough
+	}
 
-	default:
+	if opName == "" {
 		opName = cOpName(op)
 		if opName == "" {
 			return fmt.Errorf("unrecognized operator %q", op.AmbiguousForm().Str(g.tm))
@@ -300,6 +325,13 @@ func (g *gen) writeExprBinaryOp(b *buffer, n *a.Expr, depth uint32) error {
 	}
 
 	b.writeb('(')
+	if tildeMod {
+		b.writeb('(')
+		if err := g.writeCTypeName(b, n.MType(), "", ""); err != nil {
+			return err
+		}
+		b.writes(")(")
+	}
 
 	if lhsCast {
 		b.writes("((")
@@ -321,6 +353,9 @@ func (g *gen) writeExprBinaryOp(b *buffer, n *a.Expr, depth uint32) error {
 		return err
 	}
 
+	if tildeMod {
+		b.writeb(')')
+	}
 	b.writeb(')')
 	return nil
 }
@@ -339,7 +374,7 @@ func (g *gen) writeExprRepr(b *buffer, n *a.Expr, depth uint32) error {
 			}
 		}
 	}
-	if err := g.writeExpr(b, n, depth); err != nil {
+	if err := g.writeExpr(b, n, false, depth); err != nil {
 		return err
 	}
 	if isStatus {
@@ -356,7 +391,7 @@ func (g *gen) writeExprAs(b *buffer, lhs *a.Expr, rhs *a.TypeExpr, depth uint32)
 		return err
 	}
 	b.writes(")(")
-	if err := g.writeExpr(b, lhs, depth); err != nil {
+	if err := g.writeExpr(b, lhs, false, depth); err != nil {
 		return err
 	}
 	b.writes("))")
@@ -378,7 +413,7 @@ func (g *gen) writeExprAssociativeOp(b *buffer, n *a.Expr, depth uint32) error {
 		if i != 0 {
 			b.writes(opName)
 		}
-		if err := g.writeExpr(b, o.AsExpr(), depth); err != nil {
+		if err := g.writeExpr(b, o.AsExpr(), false, depth); err != nil {
 			return err
 		}
 	}
@@ -399,9 +434,9 @@ func (g *gen) writeExprUserDefinedCall(b *buffer, n *a.Expr, depth uint32) error
 	}
 	qid := recvTyp.QID()
 	b.printf("%s%s__%s(", g.packagePrefix(qid), qid[1].Str(g.tm), method.Ident().Str(g.tm))
-	if !recvTyp.Eq(typeExprUtility) {
+	if !recvTyp.IsEtcUtilityType() {
 		b.writes(addr)
-		if err := g.writeExpr(b, recv, depth); err != nil {
+		if err := g.writeExpr(b, recv, false, depth); err != nil {
 			return err
 		}
 		if len(n.Args()) > 0 {
@@ -541,6 +576,17 @@ var cTypeNames = [...]string{
 	t.IDIOWriter:    "wuffs_base__io_buffer*",
 	t.IDTokenReader: "wuffs_base__token_buffer*",
 	t.IDTokenWriter: "wuffs_base__token_buffer*",
+
+	t.IDARMCRC32U32:  "uint32_t",
+	t.IDARMNeonU8x8:  "uint8x8_t",
+	t.IDARMNeonU16x4: "uint16x4_t",
+	t.IDARMNeonU32x2: "uint32x2_t",
+	t.IDARMNeonU64x1: "uint64x1_t",
+	t.IDARMNeonU8x16: "uint8x16_t",
+	t.IDARMNeonU16x8: "uint16x8_t",
+	t.IDARMNeonU32x4: "uint32x4_t",
+	t.IDARMNeonU64x2: "uint64x2_t",
+	t.IDX86M128I:     "__m128i",
 }
 
 const noSuchCOperator = " no_such_C_operator "

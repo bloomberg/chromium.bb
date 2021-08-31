@@ -7,6 +7,10 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
+
+class Profile;
+
 namespace content {
 class BrowserContext;
 }
@@ -21,10 +25,32 @@ bool IsExtensionBlockedByPolicy(content::BrowserContext* context,
 bool IsExtensionInstalled(content::BrowserContext* context,
                           const std::string& extension_id);
 
+// Returns whether the extension with `extension_id` is force installed by
+// policy, and fills `reason` (if non-null) with expository text.
+bool IsExtensionForceInstalled(content::BrowserContext* context,
+                               const std::string& extension_id,
+                               std::u16string* reason);
+
 // Returns whether the user has uninstalled an externally installed extension
 // with |extension_id|.
 bool IsExternalExtensionUninstalled(content::BrowserContext* context,
                                     const std::string& extension_id);
+
+// Waits for extension system ready to run callback.
+void OnExtensionSystemReady(content::BrowserContext* context,
+                            base::OnceClosure callback);
+
+// Checks if default apps perform new installation.
+bool DidPreinstalledAppsPerformNewInstallation(Profile* profile);
+
+// Returns if the app is managed by extension default apps. This is a hardcoded
+// list of default apps for Windows/Linux/MacOS platforms that should be
+// migrated from extension to web app. Need to be removed after migration is
+// done.
+bool IsPreinstalledAppId(const std::string& app_id);
+
+// Makes WasManagedByPreinstalledApps return true for testing.
+void SetPreinstalledAppIdForTesting(const char* app_id);
 
 }  // namespace extensions
 

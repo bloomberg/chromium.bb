@@ -13,7 +13,7 @@
 #include "ash/wm/overview/overview_types.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/transient_window_client_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -207,7 +207,8 @@ class ASH_EXPORT ScopedOverviewTransformWindow
 
   std::unique_ptr<ScopedOverviewHideWindows> hidden_transient_children_;
 
-  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
+  base::ScopedMultiSourceObservation<aura::Window, aura::WindowObserver>
+      window_observations_{this};
 
   base::WeakPtrFactory<ScopedOverviewTransformWindow> weak_ptr_factory_{this};
 };

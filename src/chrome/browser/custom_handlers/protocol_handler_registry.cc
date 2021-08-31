@@ -11,11 +11,12 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "chrome/common/pref_names.h"
@@ -23,6 +24,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
@@ -215,7 +217,7 @@ bool ProtocolHandlerRegistry::IsDefault(
 }
 
 void ProtocolHandlerRegistry::InstallDefaultsForChromeOS() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Only chromeos has default protocol handlers at this point.
   AddPredefinedHandler(
       ProtocolHandler::CreateProtocolHandler(
@@ -441,8 +443,7 @@ bool ProtocolHandlerRegistry::IsHandledProtocol(
   return enabled_ && !GetHandlerFor(scheme).IsEmpty();
 }
 
-void ProtocolHandlerRegistry::RemoveHandler(
-    const ProtocolHandler& handler) {
+void ProtocolHandlerRegistry::RemoveHandler(const ProtocolHandler& handler) {
   if (IsIgnored(handler)) {
     RemoveIgnoredHandler(handler);
     return;

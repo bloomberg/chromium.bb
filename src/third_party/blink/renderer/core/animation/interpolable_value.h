@@ -39,6 +39,7 @@ class CORE_EXPORT InterpolableValue {
   virtual bool IsBool() const { return false; }
   virtual bool IsList() const { return false; }
   virtual bool IsLength() const { return false; }
+  virtual bool IsAspectRatio() const { return false; }
   virtual bool IsShadow() const { return false; }
   virtual bool IsFilter() const { return false; }
   virtual bool IsTransformList() const { return false; }
@@ -167,4 +168,4 @@ struct DowncastTraits<InterpolableList> {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLABLE_VALUE_H_

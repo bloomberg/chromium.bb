@@ -13,6 +13,8 @@
 #define AOM_AV1_ENCODER_AQ_CYCLICREFRESH_H_
 
 #include "av1/common/blockd.h"
+#include "av1/encoder/block.h"
+#include "av1/encoder/tokenize.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -70,6 +72,10 @@ struct CYCLIC_REFRESH {
    */
   int rdmult;
   /*!
+   * Count of zero motion vectors
+   */
+  int cnt_zeromv;
+  /*!
    * Cyclic refresh map.
    */
   int8_t *map;
@@ -102,12 +108,9 @@ struct CYCLIC_REFRESH {
   int rate_boost_fac;
 
   /*!\cond */
-  double low_content_avg;
   int qindex_delta[3];
   double weight_segment;
   int apply_cyclic_refresh;
-  int cnt_zeromv;
-  double avg_frame_low_motion;
   /*!\endcond */
 };
 
@@ -158,6 +161,30 @@ int av1_cyclic_refresh_estimate_bits_at_q(const struct AV1_COMP *cpi,
 int av1_cyclic_refresh_rc_bits_per_mb(const struct AV1_COMP *cpi, int i,
                                       double correction_factor);
 
+/*!\brief Update segment_id for blocks are skipped.
+ *
+ * After encoding a given prediction block, of size bsize at (mi_row, mi_col),
+ * check if we should reset the segment_id based on skip_txfm,
+ * and update the cyclic_refresh map and segmentation counters.
+ *
+ * \ingroup cyclic_refresh
+ * \callgraph
+ * \callergraph
+ *
+ * \param[in]   cpi       Top level encoder structure
+ * \param[in]   x         Pointer to MACROBLOCK structure
+ * \param[in]   mi_row    Row coordinate of the block in a step size of MI_SIZE
+ * \param[in]   mi_col    Col coordinate of the block in a step size of MI_SIZE
+ * \param[in]   bsize     Block size
+ *
+ * \return Update the \c mbmi->segment_id, the \c cpi->cyclic_refresh and
+ * the \c cm->cpi->enc_seg.map.
+ */
+
+void av1_cyclic_reset_segment_skip(const struct AV1_COMP *cpi,
+                                   MACROBLOCK *const x, int mi_row, int mi_col,
+                                   BLOCK_SIZE bsize);
+
 /*!\brief Update segment_id for block based on mode selected.
  *
  * Prior to coding a given prediction block, of size bsize at (mi_row, mi_col),
@@ -169,21 +196,59 @@ int av1_cyclic_refresh_rc_bits_per_mb(const struct AV1_COMP *cpi, int i,
  * \callergraph
  *
  * \param[in]   cpi       Top level encoder structure
- * \param[in]   mbmi      MB_MODE_INFO pointer for mi block
+ * \param[in]   x         Pointer to MACROBLOCK structure
  * \param[in]   mi_row    Row coordinate of the block in a step size of MI_SIZE
  * \param[in]   mi_col    Col coordinate of the block in a step size of MI_SIZE
  * \param[in]   bsize     Block size
  * \param[in]   rate      Projected block rate from pickmode
  * \param[in]   dist      Projected block dist from pickmode
- * \param[in]  skip       Skip flag set from picmode
+ * \param[in]   skip      Skip flag set from picmode
+ * \param[in]   dry_run   A code indicating whether it is part of the final
+ *                         pass for reconstructing the superblock
  *
  * \return Update the \c mbmi->segment_id, the \c cpi->cyclic_refresh and
  * the \c cm->cpi->enc_seg.map.
  */
 void av1_cyclic_refresh_update_segment(const struct AV1_COMP *cpi,
-                                       MB_MODE_INFO *const mbmi, int mi_row,
+                                       MACROBLOCK *const x, int mi_row,
                                        int mi_col, BLOCK_SIZE bsize,
-                                       int64_t rate, int64_t dist, int skip);
+                                       int64_t rate, int64_t dist, int skip,
+                                       RUN_TYPE dry_run);
+
+/*!\brief Initialize counters used for cyclic refresh.
+ *
+ * Initializes cyclic refresh counters cnt_zeromv, actual_num_seg1_blocks and
+ * actual_num_seg2_blocks.
+ *
+ * \ingroup cyclic_refresh
+ * \callgraph
+ * \callergraph
+ *
+ * \param[in]   x         Pointer to MACROBLOCK structure
+ *
+ * \return Update the \c x->cnt_zeromv, the \c x->actual_num_seg1_blocks and
+ * the \c x->actual_num_seg1_blocks.
+ */
+void av1_init_cyclic_refresh_counters(MACROBLOCK *const x);
+
+/*!\brief Accumulate cyclic refresh counters.
+ *
+ * Accumulates cyclic refresh counters cnt_zeromv, actual_num_seg1_blocks and
+ * actual_num_seg2_blocks from MACROBLOCK strcture to CYCLIC_REFRESH strcture.
+ *
+ * \ingroup cyclic_refresh
+ * \callgraph
+ * \callergraph
+ *
+ * \param[in]   cyclic_refresh Pointer to CYCLIC_REFRESH structure
+ * \param[in]   x              Pointer to MACROBLOCK structure
+ *
+ * \return Update the \c cyclic_refresh->cnt_zeromv, the \c
+ * cyclic_refresh->actual_num_seg1_blocks and the \c
+ * cyclic_refresh->actual_num_seg1_blocks.
+ */
+void av1_accumulate_cyclic_refresh_counters(
+    CYCLIC_REFRESH *const cyclic_refresh, const MACROBLOCK *const x);
 
 /*!\brief Update stats after encoding frame.
  *

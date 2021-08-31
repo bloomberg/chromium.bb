@@ -26,9 +26,9 @@ SyncCycleSnapshot MakeDefaultCycleSnapshot() {
       /*num_server_conflicts=*/7, /*notifications_enabled=*/false,
       /*num_entries=*/0, /*sync_start_time=*/base::Time::Now(),
       /*poll_finish_time=*/base::Time::Now(),
-      /*num_entries_by_type=*/std::vector<int>(ModelType::NUM_ENTRIES, 0),
+      /*num_entries_by_type=*/std::vector<int>(GetNumModelTypes(), 0),
       /*num_to_delete_entries_by_type=*/
-      std::vector<int>(ModelType::NUM_ENTRIES, 0),
+      std::vector<int>(GetNumModelTypes(), 0),
       /*get_updates_origin=*/sync_pb::SyncEnums::UNKNOWN_ORIGIN,
       /*poll_interval=*/base::TimeDelta::FromMinutes(30),
       /*has_remaining_local_changes=*/false);
@@ -88,10 +88,6 @@ void TestSyncService::SetActiveDataTypes(const ModelTypeSet& types) {
   active_data_types_ = types;
 }
 
-void TestSyncService::SetBackedOffDataTypes(const ModelTypeSet& types) {
-  backed_off_data_types_ = types;
-}
-
 void TestSyncService::SetLastCycleSnapshot(const SyncCycleSnapshot& snapshot) {
   last_cycle_snapshot_ = snapshot;
 }
@@ -132,8 +128,8 @@ void TestSyncService::SetTrustedVaultRecoverabilityDegraded(bool degraded) {
   user_settings_.SetTrustedVaultRecoverabilityDegraded(degraded);
 }
 
-void TestSyncService::SetIsUsingSecondaryPassphrase(bool enabled) {
-  user_settings_.SetIsUsingSecondaryPassphrase(enabled);
+void TestSyncService::SetIsUsingExplicitPassphrase(bool enabled) {
+  user_settings_.SetIsUsingExplicitPassphrase(enabled);
 }
 
 void TestSyncService::FireStateChanged() {
@@ -204,11 +200,9 @@ ModelTypeSet TestSyncService::GetActiveDataTypes() const {
   return active_data_types_;
 }
 
-ModelTypeSet TestSyncService::GetBackedOffDataTypes() const {
-  return backed_off_data_types_;
-}
-
 void TestSyncService::StopAndClear() {}
+
+void TestSyncService::SetSyncAllowedByPlatform(bool allowed) {}
 
 void TestSyncService::OnDataTypeRequestsSyncStartup(ModelType type) {}
 
@@ -300,6 +294,7 @@ void TestSyncService::AddTrustedVaultDecryptionKeysFromWeb(
 void TestSyncService::AddTrustedVaultRecoveryMethodFromWeb(
     const std::string& gaia_id,
     const std::vector<uint8_t>& public_key,
+    int method_type_hint,
     base::OnceClosure callback) {}
 
 void TestSyncService::Shutdown() {

@@ -4,16 +4,26 @@
 
 #include "ash/capture_mode/capture_mode_util.h"
 
+#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/stop_recording_button_tray.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "base/check.h"
 #include "base/notreached.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 
 namespace capture_mode_util {
+
+bool IsCaptureModeActive() {
+  return features::IsCaptureModeEnabled() &&
+         CaptureModeController::Get()->IsActive();
+}
 
 gfx::Point GetLocationForFineTunePosition(const gfx::Rect& rect,
                                           FineTunePosition position) {
@@ -55,13 +65,6 @@ bool IsCornerFineTunePosition(FineTunePosition position) {
   return false;
 }
 
-bool ShouldHideDragAffordance(FineTunePosition position) {
-  // Do not show affordance circles when repositioning the whole region or if
-  // resizing on a corner.
-  return position == FineTunePosition::kCenter ||
-         IsCornerFineTunePosition(position);
-}
-
 void SetStopRecordingButtonVisibility(aura::Window* root, bool visible) {
   DCHECK(root);
   DCHECK(root->IsRootWindow());
@@ -82,6 +85,16 @@ void SetStopRecordingButtonVisibility(aura::Window* root, bool visible) {
                                     ->stop_recording_button_tray();
   DCHECK(stop_recording_button);
   stop_recording_button->SetVisiblePreferred(visible);
+}
+
+void TriggerAccessibilityAlert(const std::string& message) {
+  Shell::Get()
+      ->accessibility_controller()
+      ->TriggerAccessibilityAlertWithMessage(message);
+}
+
+void TriggerAccessibilityAlert(int message_id) {
+  TriggerAccessibilityAlert(l10n_util::GetStringUTF8(message_id));
 }
 
 }  // namespace capture_mode_util

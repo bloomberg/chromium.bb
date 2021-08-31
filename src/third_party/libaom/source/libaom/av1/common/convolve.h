@@ -68,6 +68,7 @@ static INLINE ConvolveParams get_conv_params_no_round(int cmp_index, int plane,
   assert(IMPLIES(cmp_index, is_compound));
 
   conv_params.is_compound = is_compound;
+  conv_params.use_dist_wtd_comp_avg = 0;
   conv_params.round_0 = ROUND0_BITS;
   conv_params.round_1 = is_compound ? COMPOUND_ROUND1_BITS
                                     : 2 * FILTER_BITS - conv_params.round_0;

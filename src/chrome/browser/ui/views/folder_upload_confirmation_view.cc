@@ -12,6 +12,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -50,16 +51,16 @@ FolderUploadConfirmationView::FolderUploadConfirmationView(
   set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 
-  SetLayoutManager(std::make_unique<views::FillLayout>());
+  SetUseDefaultFillLayout(true);
   auto label = std::make_unique<views::Label>(
       l10n_util::GetStringFUTF16(IDS_CONFIRM_FILE_UPLOAD_TEXT,
                                  path.BaseName().LossyDisplayName()),
       views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_SECONDARY);
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(label.release());
+  AddChildView(std::move(label));
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
-      views::TEXT, views::TEXT));
+      views::DialogContentType::kText, views::DialogContentType::kText));
 }
 
 FolderUploadConfirmationView::~FolderUploadConfirmationView() {
@@ -83,6 +84,9 @@ views::Widget* FolderUploadConfirmationView::ShowDialog(
 views::View* FolderUploadConfirmationView::GetInitiallyFocusedView() {
   return GetCancelButton();
 }
+
+BEGIN_METADATA(FolderUploadConfirmationView, views::DialogDelegateView)
+END_METADATA
 
 void ShowFolderUploadConfirmationDialog(
     const base::FilePath& path,

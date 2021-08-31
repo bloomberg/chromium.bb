@@ -27,13 +27,16 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOAD_REQUEST_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
-#include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/policy_container.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/triggering_event_info.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_impression.h"
 #include "third_party/blink/public/web/web_window_features.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
@@ -86,12 +89,29 @@ struct CORE_EXPORT FrameLoadRequest {
     navigation_policy_ = navigation_policy;
   }
 
-  TriggeringEventInfo GetTriggeringEventInfo() const {
+  mojom::blink::TriggeringEventInfo GetTriggeringEventInfo() const {
     return triggering_event_info_;
   }
-  void SetTriggeringEventInfo(TriggeringEventInfo info) {
-    DCHECK(info != TriggeringEventInfo::kUnknown);
+  void SetTriggeringEventInfo(mojom::blink::TriggeringEventInfo info) {
+    DCHECK(info != mojom::blink::TriggeringEventInfo::kUnknown);
     triggering_event_info_ = info;
+  }
+
+  mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
+  TakeInitiatorPolicyContainerKeepAliveHandle() {
+    return std::move(initiator_policy_container_keep_alive_handle_);
+  }
+  void SetInitiatorPolicyContainerKeepAliveHandle(
+      mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
+          handle) {
+    initiator_policy_container_keep_alive_handle_ = std::move(handle);
+  }
+
+  std::unique_ptr<SourceLocation> TakeSourceLocation() {
+    return std::move(source_location_);
+  }
+  void SetSourceLocation(std::unique_ptr<SourceLocation> source_location) {
+    source_location_ = std::move(source_location);
   }
 
   HTMLFormElement* Form() const { return form_; }
@@ -147,13 +167,22 @@ struct CORE_EXPORT FrameLoadRequest {
 
   // Impressions are set when a FrameLoadRequest is created for a click on an
   // anchor tag that has conversion measurement attributes.
-  void SetImpression(const WebImpression& impression) {
+  void SetImpression(const absl::optional<WebImpression>& impression) {
     impression_ = impression;
   }
 
-  const base::Optional<WebImpression>& Impression() { return impression_; }
+  const absl::optional<WebImpression>& Impression() const {
+    return impression_;
+  }
 
   bool CanDisplay(const KURL&) const;
+
+  void SetInitiatorFrameToken(const LocalFrameToken& token) {
+    initiator_frame_token_ = token;
+  }
+  const LocalFrameToken* GetInitiatorFrameToken() const {
+    return base::OptionalOrNullptr(initiator_frame_token_);
+  }
 
  private:
   LocalDOMWindow* origin_window_;
@@ -162,8 +191,8 @@ struct CORE_EXPORT FrameLoadRequest {
   ClientNavigationReason client_navigation_reason_ =
       ClientNavigationReason::kNone;
   NavigationPolicy navigation_policy_ = kNavigationPolicyCurrentTab;
-  TriggeringEventInfo triggering_event_info_ =
-      TriggeringEventInfo::kNotFromEvent;
+  mojom::blink::TriggeringEventInfo triggering_event_info_ =
+      mojom::blink::TriggeringEventInfo::kNotFromEvent;
   HTMLFormElement* form_ = nullptr;
   ShouldSendReferrer should_send_referrer_;
   scoped_refptr<const DOMWrapperWorld> world_;
@@ -173,7 +202,11 @@ struct CORE_EXPORT FrameLoadRequest {
   mojom::RequestContextFrameType frame_type_ =
       mojom::RequestContextFrameType::kNone;
   WebWindowFeatures window_features_;
-  base::Optional<WebImpression> impression_;
+  absl::optional<WebImpression> impression_;
+  absl::optional<LocalFrameToken> initiator_frame_token_;
+  mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
+      initiator_policy_container_keep_alive_handle_;
+  std::unique_ptr<SourceLocation> source_location_;
 };
 
 }  // namespace blink

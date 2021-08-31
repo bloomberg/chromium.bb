@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_coordinator.h"
 
 #include "base/check.h"
+#import "base/ios/ios_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -18,7 +19,11 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
+#import "ios/chrome/browser/ui/commands/thumb_strip_commands.h"
+#import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
+#import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
+#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/omnibox/keyboard_assist/omnibox_assistive_keyboard_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/keyboard_assist/omnibox_assistive_keyboard_views.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_mediator.h"
@@ -29,7 +34,6 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/multi_window_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -131,12 +135,20 @@
   if (![self.textField isFirstResponder]) {
     base::RecordAction(base::UserMetricsAction("MobileOmniboxFocused"));
 
+    // Thumb strip is not necessarily active, so only close it if it is active.
+    if ([self.browser->GetCommandDispatcher()
+            dispatchingForProtocol:@protocol(ThumbStripCommands)]) {
+      id<ThumbStripCommands> thumbStripHandler = HandlerForProtocol(
+          self.browser->GetCommandDispatcher(), ThumbStripCommands);
+      [thumbStripHandler closeThumbStrip];
+    }
+
     // In multiwindow context, -becomeFirstRepsonder is not enough to get the
     // keyboard input. The window will not automatically become key. Make it key
     // manually. UITextField does this under the hood when tapped from
     // -[UITextInteractionAssistant(UITextInteractionAssistant_Internal)
     // setFirstResponderIfNecessaryActivatingSelection:]
-    if (IsMultipleScenesSupported()) {
+    if (base::ios::IsMultipleScenesSupported()) {
       [self.textField.window makeKeyAndVisible];
     }
 
@@ -206,6 +218,20 @@
 - (void)omniboxViewControllerTextInputModeDidChange:
     (OmniboxViewController*)omniboxViewController {
   _editView->UpdatePopupAppearance();
+}
+
+- (void)omniboxViewControllerUserDidVisitCopiedLink:
+    (OmniboxViewController*)omniboxViewController {
+  // Don't log pastes in incognito.
+  if (self.browser->GetBrowserState()->IsOffTheRecord()) {
+    return;
+  }
+
+  SceneState* sceneState =
+      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
+  DefaultBrowserSceneAgent* agent =
+      [DefaultBrowserSceneAgent agentFromScene:sceneState];
+  [agent.nonModalScheduler logUserPastedInOmnibox];
 }
 
 #pragma mark - private

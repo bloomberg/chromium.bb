@@ -13,8 +13,8 @@
 #import "ios/chrome/browser/overlays/public/common/infobars/infobar_overlay_request_config.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #include "ios/chrome/browser/overlays/public/overlay_request_queue.h"
-#import "ios/web/public/test/fakes/test_navigation_manager.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_navigation_manager.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -24,10 +24,8 @@
 
 namespace {
 // The two infobar message text used in tests.  Both support badges.
-base::string16 kFirstInfobarMessageText =
-    base::ASCIIToUTF16("FakeInfobarDelegate1");
-base::string16 kSecondInfobarMessageText =
-    base::ASCIIToUTF16("FakeInfobarDelegate2");
+std::u16string kFirstInfobarMessageText = u"FakeInfobarDelegate1";
+std::u16string kSecondInfobarMessageText = u"FakeInfobarDelegate2";
 }
 
 using infobars::InfoBar;
@@ -38,7 +36,7 @@ class InfobarOverlayRequestInserterTest : public PlatformTest {
  public:
   InfobarOverlayRequestInserterTest() {
     web_state_.SetNavigationManager(
-        std::make_unique<web::TestNavigationManager>());
+        std::make_unique<web::FakeNavigationManager>());
     InfobarOverlayRequestInserter::CreateForWebState(
         &web_state_, std::make_unique<FakeInfobarOverlayRequestFactory>());
     InfoBarManagerImpl::CreateForWebState(&web_state_);
@@ -61,7 +59,7 @@ class InfobarOverlayRequestInserterTest : public PlatformTest {
   // Adds an InfoBar created with a test delegate to the manager.  Returns a
   // pointer to the added InfoBar.  If |message_text| matches an infobar already
   // added, then it the new one will be ignored.
-  InfoBar* CreateInfobar(base::string16 message_text) {
+  InfoBar* CreateInfobar(std::u16string message_text) {
     std::unique_ptr<InfoBar> added_infobar = std::make_unique<FakeInfobarIOS>(
         InfobarType::kInfobarTypeConfirm, message_text);
     InfoBar* infobar = added_infobar.get();
@@ -70,7 +68,7 @@ class InfobarOverlayRequestInserterTest : public PlatformTest {
   }
 
  private:
-  web::TestWebState web_state_;
+  web::FakeWebState web_state_;
 };
 
 // Tests that the inserter adds banner OverlayRequests to the correct queue.

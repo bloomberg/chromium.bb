@@ -21,7 +21,6 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 using blink::test::RunPendingTasks;
@@ -38,11 +37,12 @@ class AnimationMockChromeClient : public RenderingTestChromeClient {
   // ChromeClient
   MOCK_METHOD2(AttachRootGraphicsLayer,
                void(GraphicsLayer*, LocalFrame* localRoot));
-  MOCK_METHOD3(MockSetToolTip, void(LocalFrame*, const String&, TextDirection));
-  void SetToolTip(LocalFrame& frame,
-                  const String& tooltip_text,
-                  TextDirection dir) override {
-    MockSetToolTip(&frame, tooltip_text, dir);
+  MOCK_METHOD3(MockUpdateTooltipUnderCursor,
+               void(LocalFrame*, const String&, TextDirection));
+  void UpdateTooltipUnderCursor(LocalFrame& frame,
+                                const String& tooltip_text,
+                                TextDirection dir) override {
+    MockUpdateTooltipUnderCursor(&frame, tooltip_text, dir);
   }
 
   void ScheduleAnimation(const LocalFrameView*,
@@ -127,15 +127,17 @@ TEST_F(LocalFrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases) {
 TEST_F(LocalFrameViewTest, HideTooltipWhenScrollPositionChanges) {
   SetBodyInnerHTML("<div style='width:1000px;height:1000px'></div>");
 
-  EXPECT_CALL(GetAnimationMockChromeClient(),
-              MockSetToolTip(GetDocument().GetFrame(), String(), _));
+  EXPECT_CALL(
+      GetAnimationMockChromeClient(),
+      MockUpdateTooltipUnderCursor(GetDocument().GetFrame(), String(), _));
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(1, 1), mojom::blink::ScrollType::kUser);
 
-  // Programmatic scrolling should not dismiss the tooltip, so setToolTip
-  // should not be called for this invocation.
-  EXPECT_CALL(GetAnimationMockChromeClient(),
-              MockSetToolTip(GetDocument().GetFrame(), String(), _))
+  // Programmatic scrolling should not dismiss the tooltip, so
+  // MockUpdateTooltipUnderCursor should not be called for this invocation.
+  EXPECT_CALL(
+      GetAnimationMockChromeClient(),
+      MockUpdateTooltipUnderCursor(GetDocument().GetFrame(), String(), _))
       .Times(0);
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(2, 2), mojom::blink::ScrollType::kProgrammatic);
@@ -179,7 +181,7 @@ TEST_F(LocalFrameViewTest, UpdateLifecyclePhasesForPrintingDetachedFrame) {
   SetBodyInnerHTML("<iframe style='display: none'></iframe>");
   SetChildFrameHTML("A");
 
-  ChildDocument().SetPrinting(Document::kPrinting);
+  ChildFrame().StartPrinting(FloatSize(200, 200), FloatSize(200, 200), 1);
   ChildDocument().View()->UpdateLifecyclePhasesForPrinting();
 
   // The following checks that the detached frame has been walked for PrePaint.
@@ -189,6 +191,34 @@ TEST_F(LocalFrameViewTest, UpdateLifecyclePhasesForPrintingDetachedFrame) {
             ChildDocument().Lifecycle().GetState());
   auto* child_layout_view = ChildDocument().GetLayoutView();
   EXPECT_TRUE(child_layout_view->FirstFragment().PaintProperties());
+}
+
+TEST_F(LocalFrameViewTest, PrintFrameUpdateAllLifecyclePhases) {
+  SetBodyInnerHTML("<iframe></iframe>");
+  SetChildFrameHTML("A");
+
+  ChildFrame().StartPrinting(FloatSize(200, 200), FloatSize(200, 200), 1);
+  ChildDocument().View()->UpdateLifecyclePhasesForPrinting();
+
+  EXPECT_EQ(DocumentLifecycle::kCompositingAssignmentsClean,
+            GetDocument().Lifecycle().GetState());
+  EXPECT_EQ(DocumentLifecycle::kCompositingAssignmentsClean,
+            ChildDocument().Lifecycle().GetState());
+
+  // In case UpdateAllLifecyclePhases is called during child frame printing for
+  // any reason, we should not paint.
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(DocumentLifecycle::kCompositingAssignmentsClean,
+            GetDocument().Lifecycle().GetState());
+  EXPECT_EQ(DocumentLifecycle::kCompositingAssignmentsClean,
+            ChildDocument().Lifecycle().GetState());
+
+  ChildFrame().EndPrinting();
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(DocumentLifecycle::kPaintClean,
+            GetDocument().Lifecycle().GetState());
+  EXPECT_EQ(DocumentLifecycle::kPaintClean,
+            ChildDocument().Lifecycle().GetState());
 }
 
 TEST_F(LocalFrameViewTest, CanHaveScrollbarsIfScrollingAttrEqualsNoChanged) {
@@ -319,10 +349,6 @@ TEST_F(LocalFrameViewTest,
 // activate synchronously while rendering is blocked waiting on a stylesheet.
 // See https://crbug.com/851338.
 TEST_F(SimTest, FragmentNavChangesFocusWhileRenderingBlocked) {
-  // Style-sheets are parser-blocking, not render-blocking when
-  // BlockHTMLParserOnStyleSheets is enabled.
-  ScopedBlockHTMLParserOnStyleSheetsForTest scope(false);
-
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimSubresourceRequest css_resource("https://example.com/sheet.css",
                                      "text/css");
@@ -433,6 +459,16 @@ TEST_F(LocalFrameViewTest, TogglePaintEligibility) {
   ChildDocument().View()->MarkIneligibleToPaint();
   EXPECT_TRUE(ChildDocument().View()->ShouldThrottleRenderingForTest());
   EXPECT_TRUE(child_timing.FirstEligibleToPaint().is_null());
+}
+
+TEST_F(LocalFrameViewTest, IsUpdatingLifecycle) {
+  SetBodyInnerHTML("<iframe srcdoc='Hello, world!'></iframe>>");
+  EXPECT_FALSE(GetFrame().View()->IsUpdatingLifecycle());
+  EXPECT_FALSE(ChildFrame().View()->IsUpdatingLifecycle());
+  GetFrame().View()->SetTargetStateForTest(DocumentLifecycle::kPaintClean);
+  EXPECT_TRUE(GetFrame().View()->IsUpdatingLifecycle());
+  EXPECT_TRUE(ChildFrame().View()->IsUpdatingLifecycle());
+  GetFrame().View()->SetTargetStateForTest(DocumentLifecycle::kUninitialized);
 }
 
 TEST_F(SimTest, PaintEligibilityNoSubframe) {

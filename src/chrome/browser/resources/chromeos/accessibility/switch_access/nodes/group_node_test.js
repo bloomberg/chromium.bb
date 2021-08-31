@@ -5,7 +5,20 @@
 GEN_INCLUDE(['../switch_access_e2e_test_base.js']);
 
 /** Test fixture for the node wrapper type. */
-SwitchAccessGroupNodeTest = class extends SwitchAccessE2ETest {};
+SwitchAccessGroupNodeTest = class extends SwitchAccessE2ETest {
+  setUp() {
+    var runTest = this.deferRunTest(WhenTestDone.EXPECT);
+    (async function() {
+      await importModule(
+          ['BasicNode', 'BasicRootNode'], '/switch_access/nodes/basic_node.js');
+      await importModule('GroupNode', '/switch_access/nodes/group_node.js');
+      await importModule(
+          'SwitchAccessMenuAction',
+          '/switch_access/switch_access_constants.js');
+      runTest();
+    })();
+  }
+};
 
 TEST_F('SwitchAccessGroupNodeTest', 'NodesRemoved', function() {
   const website = `<button></button>`;

@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "cc/base/math_util.h"
 #include "components/viz/common/traced_value.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 
 namespace viz {
@@ -24,8 +25,7 @@ void SharedQuadState::SetAll(const gfx::Transform& quad_to_target_transform,
                              const gfx::Rect& quad_layer_rect,
                              const gfx::Rect& visible_quad_layer_rect,
                              const gfx::MaskFilterInfo& mask_filter_info,
-                             const gfx::Rect& clip_rect,
-                             bool is_clipped,
+                             const absl::optional<gfx::Rect>& clip_rect,
                              bool are_contents_opaque,
                              float opacity,
                              SkBlendMode blend_mode,
@@ -35,7 +35,6 @@ void SharedQuadState::SetAll(const gfx::Transform& quad_to_target_transform,
   this->visible_quad_layer_rect = visible_quad_layer_rect;
   this->mask_filter_info = mask_filter_info;
   this->clip_rect = clip_rect;
-  this->is_clipped = is_clipped;
   this->are_contents_opaque = are_contents_opaque;
   this->opacity = opacity;
   this->blend_mode = blend_mode;
@@ -53,8 +52,9 @@ void SharedQuadState::AsValueInto(base::trace_event::TracedValue* value) const {
       "mask_filter_rounded_corners_radii",
       mask_filter_info.rounded_corner_bounds(), value);
 
-  value->SetBoolean("is_clipped", is_clipped);
-  cc::MathUtil::AddToTracedValue("clip_rect", clip_rect, value);
+  if (clip_rect) {
+    cc::MathUtil::AddToTracedValue("clip_rect", *clip_rect, value);
+  }
 
   value->SetBoolean("are_contents_opaque", are_contents_opaque);
   value->SetDouble("opacity", opacity);

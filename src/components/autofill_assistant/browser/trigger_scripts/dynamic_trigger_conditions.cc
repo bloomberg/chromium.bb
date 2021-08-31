@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "third_party/re2/src/re2/re2.h"
 
 namespace autofill_assistant {
 
@@ -35,6 +36,9 @@ void ExtractSelectors(const TriggerScriptConditionProto& proto,
     case TriggerScriptConditionProto::kIsFirstTimeUser:
     case TriggerScriptConditionProto::kExperimentId:
     case TriggerScriptConditionProto::kKeyboardHidden:
+    case TriggerScriptConditionProto::kScriptParameterMatch:
+    case TriggerScriptConditionProto::kPathPattern:
+    case TriggerScriptConditionProto::kDomainWithScheme:
     case TriggerScriptConditionProto::TYPE_NOT_SET:
       return;
     case TriggerScriptConditionProto::kSelector:
@@ -57,11 +61,11 @@ void DynamicTriggerConditions::ClearSelectors() {
   selectors_.clear();
 }
 
-base::Optional<bool> DynamicTriggerConditions::GetSelectorMatches(
+absl::optional<bool> DynamicTriggerConditions::GetSelectorMatches(
     const Selector& selector) const {
   auto it = selector_matches_.find(selector);
   if (it == selector_matches_.end()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   return it->second;
 }
@@ -72,6 +76,40 @@ void DynamicTriggerConditions::SetKeyboardVisible(bool visible) {
 
 bool DynamicTriggerConditions::GetKeyboardVisible() const {
   return keyboard_visible_;
+}
+
+void DynamicTriggerConditions::SetURL(const GURL& url) {
+  url_ = url;
+}
+
+bool DynamicTriggerConditions::GetPathPatternMatches(
+    const std::string& path_pattern) const {
+  const re2::RE2 re(path_pattern);
+  if (!re.ok()) {
+    DCHECK(false)
+        << "Should never happen, regexp validity is checked in protocol_utils.";
+    return false;
+  }
+
+  const std::string url_path =
+      url_.has_ref() ? base::StrCat({url_.PathForRequest(), "#", url_.ref()})
+                     : url_.PathForRequest();
+  return re.Match(url_path, 0, url_path.size(), re2::RE2::ANCHOR_BOTH, nullptr,
+                  0);
+}
+
+bool DynamicTriggerConditions::GetDomainAndSchemeMatches(
+    const GURL& domain_with_scheme) const {
+  if (!domain_with_scheme.is_valid()) {
+    DCHECK(false)
+        << "Should never happen, domain format is checked in protocol_utils.";
+    return false;
+  }
+
+  // We require the scheme and host parts to match.
+  // TODO(crbug.com/806868): Consider using Origin::IsSameOriginWith here.
+  return domain_with_scheme.scheme() == url_.scheme() &&
+         domain_with_scheme.host() == url_.host();
 }
 
 void DynamicTriggerConditions::Update(WebController* web_controller,

@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/check_op.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
@@ -63,8 +62,8 @@ TEST(CertVerifierServiceFactoryTest, GetNewCertVerifier) {
       cv_service_factory_remote.BindNewPipeAndPassReceiver());
 
   mojo::Remote<mojom::CertVerifierService> cv_service_remote;
-  network::mojom::CertVerifierCreationParamsPtr cv_creation_params =
-      network::mojom::CertVerifierCreationParams::New();
+  mojom::CertVerifierCreationParamsPtr cv_creation_params =
+      mojom::CertVerifierCreationParams::New();
 
   cv_service_factory_remote->GetNewCertVerifier(
       cv_service_remote.BindNewPipeAndPassReceiver(),

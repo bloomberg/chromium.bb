@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/radio_button.h"
@@ -25,7 +24,7 @@ void CheckboxExample::CreateExampleView(View* container) {
   container->SetLayoutManager(std::make_unique<FillLayout>());
   container->AddChildView(
       views::Builder<Checkbox>()
-          .SetText(base::ASCIIToUTF16("Checkbox"))
+          .SetText(u"Checkbox")
           .SetCallback(base::BindRepeating(
               [](int* count) { PrintStatus("Pressed! count: %d", ++(*count)); },
               &count_))

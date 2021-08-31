@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/notreached.h"
@@ -20,8 +21,8 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_driver.h"
-#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
@@ -52,8 +53,9 @@ bool IsAutofillWarningEntry(int frontend_id) {
 
 }  // namespace
 
-AutofillExternalDelegate::AutofillExternalDelegate(AutofillManager* manager,
-                                                   AutofillDriver* driver)
+AutofillExternalDelegate::AutofillExternalDelegate(
+    BrowserAutofillManager* manager,
+    AutofillDriver* driver)
     : manager_(manager), driver_(driver) {
   DCHECK(manager);
 }
@@ -191,12 +193,13 @@ void AutofillExternalDelegate::OnAutofillAvailabilityEvent(
     const mojom::AutofillState state) {
   // Availability of suggestions should be communicated to Blink because
   // accessibility objects live in both the renderer and browser processes.
-  driver_->RendererShouldSetSuggestionAvailability(state);
+  driver_->RendererShouldSetSuggestionAvailability(query_field_.global_id(),
+                                                   state);
 }
 
 void AutofillExternalDelegate::SetCurrentDataListValues(
-    const std::vector<base::string16>& data_list_values,
-    const std::vector<base::string16>& data_list_labels) {
+    const std::vector<std::u16string>& data_list_values,
+    const std::vector<std::u16string>& data_list_labels) {
   data_list_values_ = data_list_values;
   data_list_labels_ = data_list_labels;
 
@@ -228,7 +231,7 @@ void AutofillExternalDelegate::OnPopupSuppressed() {
   manager_->DidSuppressPopup(query_form_, query_field_);
 }
 
-void AutofillExternalDelegate::DidSelectSuggestion(const base::string16& value,
+void AutofillExternalDelegate::DidSelectSuggestion(const std::u16string& value,
                                                    int identifier) {
   ClearPreviewedForm();
 
@@ -236,10 +239,11 @@ void AutofillExternalDelegate::DidSelectSuggestion(const base::string16& value,
   if (identifier > 0)
     FillAutofillFormData(identifier, true);
   else if (identifier == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY)
-    driver_->RendererShouldPreviewFieldWithValue(value);
+    driver_->RendererShouldPreviewFieldWithValue(query_field_.global_id(),
+                                                 value);
 }
 
-void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
+void AutofillExternalDelegate::DidAcceptSuggestion(const std::u16string& value,
                                                    int identifier,
                                                    int position) {
   if (identifier == POPUP_ITEM_ID_AUTOFILL_OPTIONS) {
@@ -255,10 +259,11 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
              identifier == POPUP_ITEM_ID_ACCOUNT_STORAGE_USERNAME_ENTRY) {
     NOTREACHED();  // Should be handled elsewhere.
   } else if (identifier == POPUP_ITEM_ID_DATALIST_ENTRY) {
-    driver_->RendererShouldAcceptDataListSuggestion(value);
+    driver_->RendererShouldAcceptDataListSuggestion(query_field_.global_id(),
+                                                    value);
   } else if (identifier == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY) {
     // User selected an Autocomplete, so we fill directly.
-    driver_->RendererShouldFillFieldWithValue(value);
+    driver_->RendererShouldFillFieldWithValue(query_field_.global_id(), value);
     AutofillMetrics::LogAutocompleteSuggestionAcceptedIndex(position);
     manager_->OnAutocompleteEntrySelected(value);
   } else if (identifier == POPUP_ITEM_ID_SCAN_CREDIT_CARD) {
@@ -301,14 +306,14 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
 }
 
 bool AutofillExternalDelegate::GetDeletionConfirmationText(
-    const base::string16& value,
+    const std::u16string& value,
     int identifier,
-    base::string16* title,
-    base::string16* body) {
+    std::u16string* title,
+    std::u16string* body) {
   return manager_->GetDeletionConfirmationText(value, identifier, title, body);
 }
 
-bool AutofillExternalDelegate::RemoveSuggestion(const base::string16& value,
+bool AutofillExternalDelegate::RemoveSuggestion(const std::u16string& value,
                                                 int identifier) {
   if (identifier > 0)
     return manager_->RemoveAutofillProfileOrCreditCard(identifier);
@@ -356,7 +361,7 @@ base::WeakPtr<AutofillExternalDelegate> AutofillExternalDelegate::GetWeakPtr() {
 
 void AutofillExternalDelegate::OnCreditCardScanned(const CreditCard& card) {
   manager_->FillCreditCardForm(query_id_, query_form_, query_field_, card,
-                               base::string16());
+                               std::u16string());
 }
 
 void AutofillExternalDelegate::FillAutofillFormData(int unique_id,
@@ -392,7 +397,7 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
   // The form has been auto-filled, so give the user the chance to clear the
   // form.  Append the 'Clear form' menu item.
   if (query_field_.is_autofilled) {
-    base::string16 value =
+    std::u16string value =
         l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM);
 #if defined(OS_ANDROID)
     if (IsKeyboardAccessoryEnabled())
@@ -428,7 +433,7 @@ void AutofillExternalDelegate::InsertDataListValues(
 
   // Go through the list of autocomplete values and remove them if they are in
   // the list of datalist values.
-  std::set<base::string16> data_list_set(data_list_values_.begin(),
+  std::set<std::u16string> data_list_set(data_list_values_.begin(),
                                          data_list_values_.end());
   base::EraseIf(*suggestions, [&data_list_set](const Suggestion& suggestion) {
     return suggestion.frontend_id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY &&
@@ -454,7 +459,7 @@ void AutofillExternalDelegate::InsertDataListValues(
   }
 }
 
-base::string16 AutofillExternalDelegate::GetSettingsSuggestionValue() const {
+std::u16string AutofillExternalDelegate::GetSettingsSuggestionValue() const {
   switch (GetPopupType()) {
     case PopupType::kAddresses:
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_ADDRESSES);
@@ -468,7 +473,7 @@ base::string16 AutofillExternalDelegate::GetSettingsSuggestionValue() const {
 
     case PopupType::kPasswords:
       NOTREACHED();
-      return base::string16();
+      return std::u16string();
   }
 }
 

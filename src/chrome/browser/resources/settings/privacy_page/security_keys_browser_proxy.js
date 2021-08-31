@@ -13,6 +13,7 @@ import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js
  */
 export const Ctap2Status = {
   OK: 0x0,
+  ERR_FP_DATABASE_FULL: 0x17,
   ERR_INVALID_OPTION: 0x2C,
   ERR_KEEPALIVE_CANCEL: 0x2D,
 };
@@ -38,6 +39,14 @@ export const Ctap2Status = {
  * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
  */
 export let Credential;
+
+/**
+ * Encapsulates information about an authenticator's biometric sensor.
+ *
+ * @typedef {{maxTemplateFriendlyName: number,
+ *            maxSamplesForEnroll: ?number}}
+ */
+export let SensorInfo;
 
 /**
  * SampleStatus is the result for reading an individual sample ("touch")
@@ -78,6 +87,18 @@ export let EnrollmentResponse;
  */
 export let Enrollment;
 
+/**
+ * SetPINResponse represents the response to startSetPIN and setPIN requests.
+ *
+ * @typedef {{done: boolean,
+ *            error: (number|undefined),
+ *            currentMinPinLength: (number|undefined),
+ *            newMinPinLength: (number|undefined),
+ *            retries: (number|undefined)}}
+ * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
+ */
+export let SetPINResponse;
+
 /** @interface */
 export class SecurityKeysPINBrowserProxy {
   /**
@@ -88,7 +109,7 @@ export class SecurityKeysPINBrowserProxy {
    * |setPIN|. In this case the second number is either the number of tries
    * remaining to correctly specify the current PIN, or else null to indicate
    * that no PIN is currently set.
-   * @return {!Promise<!Array<number>>}
+   * @return {!Promise<!SetPINResponse>}
    */
   startSetPIN() {}
 
@@ -97,7 +118,7 @@ export class SecurityKeysPINBrowserProxy {
    * whose meaning is the same as with |startSetPIN|. The first number will
    * always be 1 to indicate that the process has completed and thus the
    * second will be the CTAP error code.
-   * @return {!Promise<!Array<number>>}
+   * @return {!Promise<!SetPINResponse>}
    */
   setPIN(oldPIN, newPIN) {}
 
@@ -189,15 +210,22 @@ export class SecurityKeysBioEnrollProxy {
    * Provides a PIN for a biometric enrollment operation. The startBioEnroll()
    * Promise must have resolved before this method may be called.
    *
-   * @return {!Promise<?number>} resolves with null if the PIN was correct,
-   *     the number of retries remaining otherwise.
+   * @return {!Promise<?number>} Resolves with null if the PIN was correct, or
+   *     with the number of retries remaining otherwise.
    */
   providePIN(pin) {}
 
   /**
+   * Obtains the |SensorInfo| for the authenticator. A correct PIN must have
+   * previously been supplied via providePIN() before this method may be called.
+   *
+   * @return {!Promise<!SensorInfo>}
+   */
+  getSensorInfo() {}
+
+  /**
    * Enumerates enrollments on the authenticator. A correct PIN must have
-   * previously been supplied via bioEnrollProvidePIN() before this method may
-   * be called.
+   * previously been supplied via providePIN() before this method may be called.
    *
    * @return {!Promise<!Array<!Enrollment>>}
    */
@@ -323,6 +351,11 @@ export class SecurityKeysBioEnrollProxyImpl {
   /** @override */
   providePIN(pin) {
     return sendWithPromise('securityKeyBioEnrollProvidePIN', pin);
+  }
+
+  /** @override */
+  getSensorInfo() {
+    return sendWithPromise('securityKeyBioEnrollGetSensorInfo');
   }
 
   /** @override */

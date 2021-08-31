@@ -15,14 +15,6 @@ var DownloadsTest = class extends PolymerTest {
   get browsePreload() {
     return 'chrome://downloads';
   }
-
-  /** @override */
-  get extraLibraries() {
-    return [
-      '//third_party/mocha/mocha.js',
-      '//chrome/test/data/webui/mocha_adapter.js',
-    ];
-  }
 };
 
 // eslint-disable-next-line no-var
@@ -66,6 +58,14 @@ var DownloadsUrlTest = class extends DownloadsTest {
   /** @override */
   get browsePreload() {
     return 'chrome://downloads/a/b/';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return [
+      '//third_party/mocha/mocha.js',
+      '//chrome/test/data/webui/mocha_adapter.js',
+    ];
   }
 };
 

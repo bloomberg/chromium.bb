@@ -56,6 +56,7 @@ using google_breakpad::StackwalkerAddressList;
 using std::vector;
 using testing::_;
 using testing::AnyNumber;
+using testing::DoAll;
 using testing::Return;
 using testing::SetArgumentPointee;
 

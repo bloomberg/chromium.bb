@@ -17,8 +17,13 @@
 #ifndef TEST_TEST_HELPER_H_
 #define TEST_TEST_HELPER_H_
 
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "perfetto/ext/base/optional.h"
 #include "perfetto/ext/base/scoped_file.h"
 #include "perfetto/ext/base/thread_task_runner.h"
+#include "perfetto/ext/base/utils.h"
 #include "perfetto/ext/tracing/core/consumer.h"
 #include "perfetto/ext/tracing/core/shared_memory_arbiter.h"
 #include "perfetto/ext/tracing/core/trace_packet.h"
@@ -26,9 +31,15 @@
 #include "perfetto/ext/tracing/ipc/service_ipc_host.h"
 #include "perfetto/tracing/core/trace_config.h"
 #include "src/base/test/test_task_runner.h"
+#include "test/fake_producer.h"
+
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+// TODO(primiano): uncomment in next CL.
+// #include "src/tracing/ipc/shared_memory_windows.h"
+#else
 #include "src/traced/probes/probes_producer.h"
 #include "src/tracing/ipc/posix_shared_memory.h"
-#include "test/fake_producer.h"
+#endif
 
 #include "protos/perfetto/trace/trace_packet.gen.h"
 
@@ -56,15 +67,22 @@ class ServiceThread {
     runner_ = base::ThreadTaskRunner::CreateAndStart("perfetto.svc");
     runner_->PostTaskAndWaitForTesting([this]() {
       svc_ = ServiceIPCHost::CreateInstance(runner_->get());
-      unlink(producer_socket_.c_str());
-      unlink(consumer_socket_.c_str());
-      setenv("PERFETTO_PRODUCER_SOCK_NAME", producer_socket_.c_str(),
-             /*overwrite=*/true);
-      setenv("PERFETTO_CONSUMER_SOCK_NAME", consumer_socket_.c_str(),
-             /*overwrite=*/true);
+      if (remove(producer_socket_.c_str()) == -1) {
+        if (errno != ENOENT)
+          PERFETTO_FATAL("Failed to remove %s", producer_socket_.c_str());
+      }
+      if (remove(consumer_socket_.c_str()) == -1) {
+        if (errno != ENOENT)
+          PERFETTO_FATAL("Failed to remove %s", consumer_socket_.c_str());
+      }
+      base::SetEnv("PERFETTO_PRODUCER_SOCK_NAME", producer_socket_);
+      base::SetEnv("PERFETTO_CONSUMER_SOCK_NAME", consumer_socket_);
       bool res =
           svc_->Start(producer_socket_.c_str(), consumer_socket_.c_str());
-      PERFETTO_CHECK(res);
+      if (!res) {
+        PERFETTO_FATAL("Failed to start service listening on %s and %s",
+                       producer_socket_.c_str(), consumer_socket_.c_str());
+      }
     });
   }
 
@@ -79,6 +97,15 @@ class ServiceThread {
 };
 
 // This is used only in daemon starting integrations tests.
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+// On Windows we don't have any traced_probes, make this a no-op to avoid
+// propagating #ifdefs to the outer test.
+class ProbesProducerThread {
+ public:
+  ProbesProducerThread(const std::string& /*producer_socket*/) {}
+  void Connect() {}
+};
+#else
 class ProbesProducerThread {
  public:
   ProbesProducerThread(const std::string& producer_socket)
@@ -104,6 +131,7 @@ class ProbesProducerThread {
   std::string producer_socket_;
   std::unique_ptr<ProbesProducer> producer_;
 };
+#endif  // !OS_WIN
 
 class FakeProducerThread {
  public:
@@ -139,9 +167,13 @@ class FakeProducerThread {
   FakeProducer* producer() { return producer_.get(); }
 
   void CreateProducerProvidedSmb() {
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+    // TODO(primiano): in next CLs introduce SharedMemoryWindows.
+#else
     PosixSharedMemory::Factory factory;
     shm_ = factory.CreateSharedMemory(1024 * 1024);
     shm_arbiter_ = SharedMemoryArbiter::CreateUnboundInstance(shm_.get(), 4096);
+#endif
   }
 
   void ProduceStartupEventBatch(const protos::gen::TestConfig& config,
@@ -164,26 +196,32 @@ class FakeProducerThread {
 
 class TestHelper : public Consumer {
  public:
-  static const char* GetConsumerSocketName();
-  static const char* GetProducerSocketName();
+  enum class Mode {
+    kStartDaemons,
+    kUseSystemService,
+  };
+  static Mode kDefaultMode;
 
-  explicit TestHelper(base::TestTaskRunner* task_runner);
+  static const char* GetDefaultModeConsumerSocketName();
+  static const char* GetDefaultModeProducerSocketName();
+
+  explicit TestHelper(base::TestTaskRunner* task_runner)
+      : TestHelper(task_runner, kDefaultMode) {}
+
+  explicit TestHelper(base::TestTaskRunner* task_runner, Mode mode);
 
   // Consumer implementation.
   void OnConnect() override;
   void OnDisconnect() override;
   void OnTracingDisabled(const std::string& error) override;
+  virtual void ReadTraceData(std::vector<TracePacket> packets);
   void OnTraceData(std::vector<TracePacket> packets, bool has_more) override;
   void OnDetach(bool) override;
   void OnAttach(bool, const TraceConfig&) override;
   void OnTraceStats(bool, const TraceStats&) override;
   void OnObservableEvents(const ObservableEvents&) override;
 
-  // Starts the tracing service unconditionally.
-  void StartService();
-
-  // Starts the tracing service unless the build was configured to use an
-  // existing one running on the system.
+  // Starts the tracing service if in kStartDaemons mode.
   void StartServiceIfRequired();
 
   // Connects the producer and waits that the service has seen the
@@ -196,8 +234,10 @@ class TestHelper : public Consumer {
   void DisableTracing();
   void FlushAndWait(uint32_t timeout_ms);
   void ReadData(uint32_t read_count = 0);
+  void FreeBuffers();
   void DetachConsumer(const std::string& key);
   bool AttachConsumer(const std::string& key);
+  bool SaveTraceForBugreportAndWait();
   void CreateProducerProvidedSmb();
   bool IsShmemProvidedByProducer();
   void ProduceStartupEventBatch(const protos::gen::TestConfig& config);
@@ -240,6 +280,7 @@ class TestHelper : public Consumer {
   uint64_t instance_num_;
   base::TestTaskRunner* task_runner_ = nullptr;
   int cur_consumer_num_ = 0;
+  uint64_t trace_count_ = 0;
 
   std::function<void()> on_connect_callback_;
   std::function<void()> on_packets_finished_callback_;
@@ -250,6 +291,9 @@ class TestHelper : public Consumer {
   std::vector<protos::gen::TracePacket> full_trace_;
   std::vector<protos::gen::TracePacket> trace_;
 
+  Mode mode_;
+  const char* producer_socket_;
+  const char* consumer_socket_;
   ServiceThread service_thread_;
   FakeProducerThread fake_producer_thread_;
 

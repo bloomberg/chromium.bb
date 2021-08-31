@@ -3,15 +3,16 @@
 // found in the LICENSE file.
 
 (async function() {
-  await TestRunner.loadModule('axe_core_test_runner');
+  await TestRunner.loadTestModule('axe_core_test_runner');
   await TestRunner.showPanel('sources');
+  await TestRunner.loadLegacyModule('browser_debugger');
 
   // this rule causes false negatives due to axe not handling the shadow DOM properly
   const noRequiredParent = {'aria-required-parent': {enabled: false}};
 
   await UI.viewManager.showView('sources.xhrBreakpoints');
   TestRunner.addResult('Adding XHR breakpoint.');
-  const xhrBreakpointsPane = runtime.sharedInstance(BrowserDebugger.XHRBreakpointsSidebarPane);
+  const xhrBreakpointsPane = BrowserDebugger.XHRBreakpointsSidebarPane.instance();
   xhrBreakpointsPane._setBreakpoint('test xhr breakpoint', true);
   TestRunner.addResult('Running axe on the XHR breakpoints pane.');
 

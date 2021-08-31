@@ -25,6 +25,7 @@ ClientStatus ClientStatus::WithStatusOverride(
 
 void ClientStatus::FillProto(ProcessedActionProto* proto) const {
   proto->set_status(status_);
+  proto->set_slow_warning_status(slow_warning_status_);
   if (has_details_)
     proto->mutable_status_details()->MergeFrom(details_);
 }
@@ -129,14 +130,23 @@ std::ostream& operator<<(std::ostream& out,
     case ProcessedActionStatusProto::AUTOFILL_INCOMPLETE:
       out << "AUTOFILL_INCOMPLETE";
       break;
-    case ProcessedActionStatusProto::TOO_MANY_CANDIDATES:
-      out << "TOO_MANY_CANDIDATES";
-      break;
     case ProcessedActionStatusProto::ELEMENT_MISMATCH:
       out << "ELEMENT_MISMATCH";
       break;
     case ProcessedActionStatusProto::ELEMENT_NOT_ON_TOP:
       out << "ELEMENT_NOT_ON_TOP";
+      break;
+    case ProcessedActionStatusProto::CLIENT_ID_RESOLUTION_FAILED:
+      out << "CLIENT_ID_RESOLUTION_FAILED";
+      break;
+    case ProcessedActionStatusProto::PASSWORD_ORIGIN_MISMATCH:
+      out << "PASSWORD_ORIGIN_MISMATCH";
+      break;
+    case ProcessedActionStatusProto::TOO_MANY_OPTION_VALUES_FOUND:
+      out << "TOO_MANY_OPTION_VALUES_FOUND";
+      break;
+    case ProcessedActionStatusProto::INVALID_TARGET:
+      out << "INVALID_TARGET";
       break;
 
       // Intentionally no default case to make compilation fail if a new value

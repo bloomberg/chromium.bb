@@ -37,12 +37,25 @@ namespace vkt
 namespace sparse
 {
 
+bool formatIsR64 (const VkFormat& format)
+{
+	switch (format)
+	{
+	case VK_FORMAT_R64_SINT:
+	case VK_FORMAT_R64_UINT:
+		return true;
+	default:
+		return false;
+	}
+}
+
 std::vector<TestFormat> getTestFormats (const ImageType& imageType)
 {
 	std::vector<TestFormat> results =
 	{
-		{ VK_FORMAT_R32_SINT },				{ VK_FORMAT_R16_SINT },				{ VK_FORMAT_R8_SINT },
-		{ VK_FORMAT_R32_UINT },				{ VK_FORMAT_R16_UINT },				{ VK_FORMAT_R8_UINT },
+		{ VK_FORMAT_R64_SINT },				{ VK_FORMAT_R32_SINT },				{ VK_FORMAT_R16_SINT },				{ VK_FORMAT_R8_SINT },
+		{ VK_FORMAT_R64_UINT },				{ VK_FORMAT_R32_UINT },				{ VK_FORMAT_R16_UINT },				{ VK_FORMAT_R8_UINT },
+
 											{ VK_FORMAT_R16_UNORM },			{ VK_FORMAT_R8_UNORM },
 											{ VK_FORMAT_R16_SNORM },			{ VK_FORMAT_R8_SNORM },
 		{ VK_FORMAT_R32G32_SINT },			{ VK_FORMAT_R16G16_SINT },			{ VK_FORMAT_R8G8_SINT },
@@ -92,7 +105,11 @@ std::vector<TestFormat> getTestFormats (const ImageType& imageType)
 			{ VK_FORMAT_G16_B16R16_2PLANE_420_UNORM },
 			{ VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM },
 			{ VK_FORMAT_G16_B16R16_2PLANE_422_UNORM },
-			{ VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM }
+			{ VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM },
+			{ VK_FORMAT_G8_B8R8_2PLANE_444_UNORM_EXT },
+			{ VK_FORMAT_G10X6_B10X6R10X6_2PLANE_444_UNORM_3PACK16_EXT },
+			{ VK_FORMAT_G12X4_B12X4R12X4_2PLANE_444_UNORM_3PACK16_EXT },
+			{ VK_FORMAT_G16_B16R16_2PLANE_444_UNORM_EXT },
 		};
 		std::copy(begin(ycbcrFormats), end(ycbcrFormats), std::back_inserter(results));
 	}
@@ -509,6 +526,9 @@ std::string getShaderImageType (const vk::PlanarFormatDescription& description, 
 			DE_FATAL("Unexpected channel type");
 	}
 
+	if (formatIsR64(description.planes[0].planeCompatibleFormat))
+		formatPart += "64";
+
 	switch (imageType)
 	{
 		case IMAGE_TYPE_1D:			imageTypePart = "1D";			break;
@@ -550,9 +570,9 @@ std::string getShaderImageDataType (const vk::PlanarFormatDescription& descripti
 	switch (description.channels[0].type)
 	{
 		case tcu::TEXTURECHANNELCLASS_UNSIGNED_INTEGER:
-			return "uvec4";
+			return (formatIsR64(description.planes[0].planeCompatibleFormat) ? "u64vec4" : "uvec4");
 		case tcu::TEXTURECHANNELCLASS_SIGNED_INTEGER:
-			return "ivec4";
+			return (formatIsR64(description.planes[0].planeCompatibleFormat) ? "i64vec4" : "ivec4");
 		case tcu::TEXTURECHANNELCLASS_UNSIGNED_FIXED_POINT:
 		case tcu::TEXTURECHANNELCLASS_SIGNED_FIXED_POINT:
 		case tcu::TEXTURECHANNELCLASS_FLOATING_POINT:
@@ -614,9 +634,11 @@ std::string getShaderImageFormatQualifier (VkFormat format)
 		case VK_FORMAT_R8_SINT:										return "r8i";
 		case VK_FORMAT_R16_SINT:									return "r16i";
 		case VK_FORMAT_R32_SINT:									return "r32i";
+		case VK_FORMAT_R64_SINT:									return "r64i";
 		case VK_FORMAT_R8_UINT:										return "r8ui";
 		case VK_FORMAT_R16_UINT:									return "r16ui";
 		case VK_FORMAT_R32_UINT:									return "r32ui";
+		case VK_FORMAT_R64_UINT:									return "r64ui";
 		case VK_FORMAT_R8_SNORM:									return "r8_snorm";
 		case VK_FORMAT_R16_SNORM:									return "r16_snorm";
 		case VK_FORMAT_R8_UNORM:									return "r8";
@@ -678,6 +700,10 @@ std::string getShaderImageFormatQualifier (VkFormat format)
 		case VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM:				return "rgba16";
 		case VK_FORMAT_G16_B16R16_2PLANE_422_UNORM:					return "rgba16";
 		case VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM:				return "rgba16";
+		case VK_FORMAT_G8_B8R8_2PLANE_444_UNORM_EXT:				return "rgba8";
+		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_444_UNORM_3PACK16_EXT:return "rgba16";
+		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_444_UNORM_3PACK16_EXT:return "rgba16";
+		case VK_FORMAT_G16_B16R16_2PLANE_444_UNORM_EXT:				return "rgba16";
 
 		default:
 			DE_FATAL("Unexpected texture format");
@@ -692,9 +718,11 @@ std::string getImageFormatID (VkFormat format)
 		case VK_FORMAT_R8_SINT:				return "r8i";
 		case VK_FORMAT_R16_SINT:			return "r16i";
 		case VK_FORMAT_R32_SINT:			return "r32i";
+		case VK_FORMAT_R64_SINT:			return "r64i";
 		case VK_FORMAT_R8_UINT:				return "r8ui";
 		case VK_FORMAT_R16_UINT:			return "r16ui";
 		case VK_FORMAT_R32_UINT:			return "r32ui";
+		case VK_FORMAT_R64_UINT:			return "r64ui";
 		case VK_FORMAT_R8_SNORM:			return "r8_snorm";
 		case VK_FORMAT_R16_SNORM:			return "r16_snorm";
 		case VK_FORMAT_R8_UNORM:			return "r8";
@@ -756,6 +784,10 @@ std::string getImageFormatID (VkFormat format)
 		case VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM:
 		case VK_FORMAT_G16_B16R16_2PLANE_422_UNORM:
 		case VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM:
+		case VK_FORMAT_G8_B8R8_2PLANE_444_UNORM_EXT:
+		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_444_UNORM_3PACK16_EXT:
+		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_444_UNORM_3PACK16_EXT:
+		case VK_FORMAT_G16_B16R16_2PLANE_444_UNORM_EXT:
 			return de::toLower(std::string(getFormatName(format)).substr(10));
 
 		default:

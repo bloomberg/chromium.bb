@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/compiler_specific.h"
 #include "base/functional/identity.h"
 #include "base/functional/invoke.h"
 #include "base/ranges/functional.h"
@@ -151,14 +152,13 @@ using range_category_t = iterator_category_t<ranges::iterator_t<Range>>;
 
 namespace ranges {
 
-// C++14 implementation of std::ranges::in_fun_result. Note the because C++14
-// lacks the `no_unique_address` attribute it is commented out.
+// C++14 implementation of std::ranges::in_fun_result.
 //
 // Reference: https://wg21.link/algorithms.results#:~:text=in_fun_result
 template <typename I, typename F>
 struct in_fun_result {
-  /* [[no_unique_address]] */ I in;
-  /* [[no_unique_address]] */ F fun;
+  NO_UNIQUE_ADDRESS I in;
+  NO_UNIQUE_ADDRESS F fun;
 
   template <typename I2,
             typename F2,
@@ -419,11 +419,12 @@ constexpr auto find(InputIterator first,
                     InputIterator last,
                     const T& value,
                     Proj proj = {}) {
-  // Note: In order to be able to apply `proj` to each element in [first, last)
-  // we are dispatching to std::find_if instead of std::find.
-  return std::find_if(first, last, [&proj, &value](auto&& lhs) {
-    return base::invoke(proj, std::forward<decltype(lhs)>(lhs)) == value;
-  });
+  for (; first != last; ++first) {
+    if (base::invoke(proj, *first) == value)
+      break;
+  }
+
+  return first;
 }
 
 // Let `E(i)` be `bool(invoke(proj, *i) == value)`.
@@ -923,6 +924,17 @@ constexpr bool equal(ForwardIterator1 first1,
                      Pred pred = {},
                      Proj1 proj1 = {},
                      Proj2 proj2 = {}) {
+  if (base::is_constant_evaluated()) {
+    for (; first1 != last1 && first2 != last2; ++first1, ++first2) {
+      if (!base::invoke(pred, base::invoke(proj1, *first1),
+                        base::invoke(proj2, *first2))) {
+        return false;
+      }
+    }
+
+    return first1 == last1 && first2 == last2;
+  }
+
   return std::equal(first1, last1, first2, last2,
                     internal::ProjectedBinaryPredicate(pred, proj1, proj2));
 }
@@ -4299,7 +4311,7 @@ constexpr auto pop_heap(Range&& range, Comp comp = {}, Proj proj = {}) {
 //
 // Returns: `last`.
 //
-// Complexity: At most `3 log(last - first)` comparisons and twice as many
+// Complexity: At most `3 * (last - first)` comparisons and twice as many
 // projections.
 //
 // Reference: https://wg21.link/make.heap#:~:text=ranges::make_heap(I
@@ -4323,7 +4335,7 @@ constexpr auto make_heap(RandomAccessIterator first,
 //
 // Returns: `end(range)`.
 //
-// Complexity: At most `3 log(size(range))` comparisons and twice as many
+// Complexity: At most `3 * size(range)` comparisons and twice as many
 // projections.
 //
 // Reference: https://wg21.link/make.heap#:~:text=ranges::make_heap(R

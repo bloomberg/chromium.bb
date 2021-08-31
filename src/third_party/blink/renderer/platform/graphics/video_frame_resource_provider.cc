@@ -109,16 +109,14 @@ void VideoFrameResourceProvider::AppendQuads(
   }
 
   gfx::Rect visible_quad_rect = quad_rect;
-  gfx::Rect clip_rect;
   gfx::MaskFilterInfo mask_filter_info;
-  bool is_clipped = false;
   float draw_opacity = 1.0f;
   int sorting_context_id = 0;
 
   resource_updater_->AppendQuads(render_pass, std::move(frame), transform,
                                  quad_rect, visible_quad_rect, mask_filter_info,
-                                 clip_rect, is_clipped, is_opaque, draw_opacity,
-                                 sorting_context_id);
+                                 /*clip_rect=*/absl::nullopt, is_opaque,
+                                 draw_opacity, sorting_context_id);
 }
 
 void VideoFrameResourceProvider::ReleaseFrameResources() {
@@ -136,9 +134,11 @@ void VideoFrameResourceProvider::PrepareSendToParent(
 }
 
 void VideoFrameResourceProvider::ReceiveReturnsFromParent(
-    const Vector<viz::ReturnedResource>& transferable_resources) {
-  resource_provider_->ReceiveReturnsFromParent(
-      WebVector<viz::ReturnedResource>(transferable_resources).ReleaseVector());
+    Vector<viz::ReturnedResource> transferable_resources) {
+  std::vector<viz::ReturnedResource> returned_resources(
+      std::make_move_iterator(transferable_resources.begin()),
+      std::make_move_iterator(transferable_resources.end()));
+  resource_provider_->ReceiveReturnsFromParent(std::move(returned_resources));
 }
 
 }  // namespace blink

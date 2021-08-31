@@ -4,16 +4,17 @@
 
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_menu_helper.h"
 
+#import "base/ios/ios_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/menu/action_factory.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
+#import "ios/chrome/browser/ui/menu/tab_context_menu_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_menu_provider.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
 #include "ios/chrome/browser/ui/recent_tabs/synced_sessions.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
-#import "ios/chrome/browser/ui/util/multi_window_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -26,8 +27,7 @@
 @property(nonatomic, weak) id<RecentTabsPresentationDelegate>
     recentTabsPresentationDelegate;
 
-@property(nonatomic, weak) id<RecentTabsContextMenuDelegate>
-    recentTabsContextMenuDelegate;
+@property(nonatomic, weak) id<TabContextMenuDelegate> contextMenuDelegate;
 
 @end
 
@@ -36,13 +36,13 @@
 - (instancetype)initWithBrowser:(Browser*)browser
     recentTabsPresentationDelegate:
         (id<RecentTabsPresentationDelegate>)recentTabsPresentationDelegate
-     recentTabsContextMenuDelegate:
-         (id<RecentTabsContextMenuDelegate>)recentTabsContextMenuDelegate {
+            tabContextMenuDelegate:
+                (id<TabContextMenuDelegate>)tabContextMenuDelegate {
   self = [super init];
   if (self) {
     _browser = browser;
     _recentTabsPresentationDelegate = recentTabsPresentationDelegate;
-    _recentTabsContextMenuDelegate = recentTabsContextMenuDelegate;
+    _contextMenuDelegate = tabContextMenuDelegate;
   }
   return self;
 }
@@ -79,30 +79,24 @@
             [actionFactory
                 actionToOpenInNewTabWithURL:item.URL
                                  completion:^{
-                                   [strongSelf.recentTabsPresentationDelegate
+                                   [weakSelf.recentTabsPresentationDelegate
                                            showActiveRegularTabFromRecentTabs];
                                  }]];
 
-    if (IsMultipleScenesSupported()) {
+    if (base::ios::IsMultipleScenesSupported()) {
       [menuElements
-          addObject:
-              [actionFactory
-                  actionToOpenInNewWindowWithURL:item.URL
-                                  activityOrigin:WindowActivityRecentTabsOrigin
-                                      completion:^{
-                                        [strongSelf
-                                                .recentTabsPresentationDelegate
-                                                    dismissRecentTabs];
-                                      }]];
+          addObject:[actionFactory
+                        actionToOpenInNewWindowWithURL:item.URL
+                                        activityOrigin:
+                                            WindowActivityRecentTabsOrigin]];
     }
 
     [menuElements addObject:[actionFactory actionToCopyURL:item.URL]];
 
     [menuElements addObject:[actionFactory actionToShareWithBlock:^{
-                    [strongSelf.recentTabsContextMenuDelegate
-                        shareURL:item.URL
-                           title:item.title
-                        fromView:view];
+                    [weakSelf.contextMenuDelegate shareURL:item.URL
+                                                     title:item.title
+                                                  fromView:view];
                   }]];
 
     return [UIMenu menuWithTitle:@"" children:menuElements];
@@ -139,8 +133,8 @@
             [[NSMutableArray alloc] init];
 
         synced_sessions::DistantSession const* session =
-            [weakSelf.recentTabsContextMenuDelegate
-                sessionForSectionIdentifier:sectionIdentifier];
+            [weakSelf.contextMenuDelegate
+                sessionForTableSectionWithIdentifier:sectionIdentifier];
 
         if (!session->tabs.empty()) {
           [menuElements addObject:[actionFactory actionToOpenAllTabsWithBlock:^{
@@ -151,8 +145,8 @@
 
         [menuElements
             addObject:[actionFactory actionToHideWithBlock:^{
-              [strongSelf.recentTabsContextMenuDelegate
-                  removeSessionAtSessionSectionIdentifier:sectionIdentifier];
+              [strongSelf.contextMenuDelegate
+                  removeSessionAtTableSectionWithIdentifier:sectionIdentifier];
             }]];
 
         return [UIMenu menuWithTitle:@"" children:menuElements];

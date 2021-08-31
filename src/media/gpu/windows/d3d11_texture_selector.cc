@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
+#include "media/base/win/mf_helpers.h"
 #include "media/gpu/windows/d3d11_copying_texture_wrapper.h"
 #include "media/gpu/windows/d3d11_video_device_format_support.h"
 #include "ui/gfx/geometry/size.h"
@@ -49,7 +50,7 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
     MediaLog* media_log) {
   VideoPixelFormat output_pixel_format;
   DXGI_FORMAT output_dxgi_format;
-  base::Optional<gfx::ColorSpace> output_color_space;
+  absl::optional<gfx::ColorSpace> output_color_space;
 
   // TODO(liberato): add other options here, like "copy to rgb" for NV12.
   switch (decoder_output_format) {
@@ -65,7 +66,6 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
     }
     case DXGI_FORMAT_P010: {
       MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder producing P010";
-      output_pixel_format = PIXEL_FORMAT_ARGB;
 
       // TODO(liberato): handle case where we bind P010 directly (see dxva).
 
@@ -93,6 +93,7 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
           // TODO(liberato): use the format checker, else bind P010.
           MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder: 8 bit sRGB";
           output_dxgi_format = DXGI_FORMAT_B8G8R8A8_UNORM;
+          output_pixel_format = PIXEL_FORMAT_ARGB;
           output_color_space = gfx::ColorSpace::CreateSRGB();
         } else {
           // Bind P010 directly, since we can't copy.
@@ -111,12 +112,14 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
                 DXGI_FORMAT_R16G16B16A16_FLOAT)) {
           MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder: fp16 scRGBLinear";
           output_dxgi_format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+          output_pixel_format = PIXEL_FORMAT_RGBAF16;
           output_color_space = gfx::ColorSpace::CreateSCRGBLinear();
         } else if (format_checker->CheckOutputFormatSupport(
                        DXGI_FORMAT_R10G10B10A2_UNORM)) {
-          MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder: BGRA10 scRGBLinear";
+          MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder: RGB10A2 HDR10/PQ";
           output_dxgi_format = DXGI_FORMAT_R10G10B10A2_UNORM;
-          output_color_space = gfx::ColorSpace::CreateSCRGBLinear();
+          output_pixel_format = PIXEL_FORMAT_XB30;
+          output_color_space = gfx::ColorSpace::CreateHDR10();
         } else {
           // No support at all.  Just bind P010, and hope for the best.
           MEDIA_LOG(INFO, media_log)
@@ -147,9 +150,10 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
   // If we're trying to produce an output texture that's different from what
   // the decoder is providing, then we need to copy it.  If sharing decoder
   // textures is not allowed, then copy either way.
-  bool needs_texture_copy = !SupportsZeroCopy(gpu_preferences, workarounds) ||
-                            (decoder_output_format != output_dxgi_format) ||
-               base::FeatureList::IsEnabled(kD3D11VideoDecoderAlwaysCopy);
+  bool needs_texture_copy =
+      !SupportsZeroCopy(gpu_preferences, workarounds) ||
+      (decoder_output_format != output_dxgi_format) ||
+      base::FeatureList::IsEnabled(kD3D11VideoDecoderAlwaysCopy);
 
   MEDIA_LOG(INFO, media_log)
       << "D3D11VideoDecoder output color space: "
@@ -176,8 +180,7 @@ std::unique_ptr<Texture2DWrapper> TextureSelector::CreateTextureWrapper(
     ComD3D11Device device,
     gfx::Size size) {
   // TODO(liberato): If the output format is rgb, then create a pbuffer wrapper.
-  return std::make_unique<DefaultTexture2DWrapper>(size, OutputDXGIFormat(),
-                                                   PixelFormat());
+  return std::make_unique<DefaultTexture2DWrapper>(size, OutputDXGIFormat());
 }
 
 bool TextureSelector::WillCopyForTesting() const {
@@ -188,7 +191,7 @@ CopyTextureSelector::CopyTextureSelector(
     VideoPixelFormat pixfmt,
     DXGI_FORMAT input_dxgifmt,
     DXGI_FORMAT output_dxgifmt,
-    base::Optional<gfx::ColorSpace> output_color_space,
+    absl::optional<gfx::ColorSpace> output_color_space,
     ComD3D11VideoDevice video_device,
     ComD3D11DeviceContext device_context)
     : TextureSelector(pixfmt,
@@ -218,13 +221,15 @@ std::unique_ptr<Texture2DWrapper> CopyTextureSelector::CreateTextureWrapper(
   texture_desc.Height = size.height();
 
   ComD3D11Texture2D out_texture;
-  if (!SUCCEEDED(device->CreateTexture2D(&texture_desc, nullptr, &out_texture)))
+  if (FAILED(device->CreateTexture2D(&texture_desc, nullptr, &out_texture)))
+    return nullptr;
+
+  if (FAILED(
+          SetDebugName(out_texture.Get(), "D3D11Decoder_CopyTextureSelector")))
     return nullptr;
 
   return std::make_unique<CopyingTexture2DWrapper>(
-      size,
-      std::make_unique<DefaultTexture2DWrapper>(size, OutputDXGIFormat(),
-                                                PixelFormat()),
+      size, std::make_unique<DefaultTexture2DWrapper>(size, OutputDXGIFormat()),
       video_processor_proxy_, out_texture, output_color_space_);
 }
 

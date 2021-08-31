@@ -15,7 +15,7 @@
 namespace printing {
 
 // This class creates a graphics context that renders into a PDF data stream.
-class PRINTING_EXPORT PdfMetafileCg : public Metafile {
+class COMPONENT_EXPORT(PRINTING) PdfMetafileCg : public Metafile {
  public:
   PdfMetafileCg();
   PdfMetafileCg(const PdfMetafileCg&) = delete;
@@ -49,7 +49,7 @@ class PRINTING_EXPORT PdfMetafileCg : public Metafile {
                   bool fit_to_page) const override;
 
  private:
-  // Returns a CGPDFDocumentRef version of |pdf_data_|.
+  // Returns a CGPDFDocumentRef version of `pdf_data_`.
   CGPDFDocumentRef GetPDFDocument() const;
 
   // Context for rendering to the pdf.
@@ -58,7 +58,7 @@ class PRINTING_EXPORT PdfMetafileCg : public Metafile {
   // PDF backing store.
   base::ScopedCFTypeRef<CFMutableDataRef> pdf_data_;
 
-  // Lazily-created CGPDFDocument representation of |pdf_data_|.
+  // Lazily-created CGPDFDocument representation of `pdf_data_`.
   mutable base::ScopedCFTypeRef<CGPDFDocumentRef> pdf_doc_;
 
   // Whether or not a page is currently open.

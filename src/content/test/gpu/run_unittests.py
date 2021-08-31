@@ -7,6 +7,8 @@
 This script DOES NOT run tests. run_gpu_test does that.
 """
 
+from __future__ import print_function
+
 import sys
 
 from gpu_tests import path_util
@@ -19,7 +21,10 @@ from telemetry.testing import unittest_runner
 
 
 def main():
-  return unittest_runner.Run(gpu_project_config.CONFIG, no_browser=True)
+  args = sys.argv[1:]
+  return unittest_runner.Run(gpu_project_config.CONFIG,
+                             no_browser=True,
+                             passed_args=args)
 
 
 if __name__ == '__main__':

@@ -7,7 +7,7 @@
 #include "content/browser/appcache/appcache_update_job.h"
 #include "net/http/http_request_headers.h"
 #include "sql/statement.h"
-#include "storage/browser/quota/padding_key.h"
+#include "storage/common/quota/padding_key.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -18,9 +18,7 @@ int64_t ComputeEntryPaddingSize(std::string response_url,
                                 std::string manifest_url) {
   if (GURL(response_url).GetOrigin() == GURL(manifest_url).GetOrigin())
     return 0;
-  return storage::ComputeResponsePadding(
-      response_url, storage::GetDefaultPaddingKey(), /*has_metadata=*/false,
-      /*loaded_with_credentials=*/false, net::HttpRequestHeaders::kGetMethod);
+  return storage::ComputeRandomResponsePadding();
 }
 
 // Iterates over each Cache record; execute |callable| on each iteration.
@@ -47,7 +45,7 @@ bool ForEachCache(sql::Database* db, const ForEachCallable& callable) {
 
 bool AppCacheBackfillerVersion8::BackfillPaddingSizes() {
   return ForEachCache(db_, [&](int64_t cache_id, int64_t group_id) -> bool {
-    base::Optional<std::string> manifest_url = GetManifestUrlForGroup(group_id);
+    absl::optional<std::string> manifest_url = GetManifestUrlForGroup(group_id);
     if (!manifest_url.has_value())
       return false;
 
@@ -83,14 +81,14 @@ bool AppCacheBackfillerVersion8::ForEachEntry(int64_t cache_id,
   return true;
 }
 
-base::Optional<std::string> AppCacheBackfillerVersion8::GetManifestUrlForGroup(
+absl::optional<std::string> AppCacheBackfillerVersion8::GetManifestUrlForGroup(
     int64_t group_id) {
   static const char kSql[] =
       "SELECT manifest_url, group_id FROM Groups WHERE group_id = ?";
   sql::Statement statement(db_->GetUniqueStatement(kSql));
   statement.BindInt64(0, group_id);
   if (!statement.Step())
-    return base::nullopt;
+    return absl::nullopt;
   return statement.ColumnString(0);
 }
 
@@ -118,7 +116,7 @@ bool AppCacheBackfillerVersion8::UpdateCachePaddingSize(int64_t cache_id,
 
 bool AppCacheBackfillerVersion9::BackfillManifestParserVersionAndScope() {
   return ForEachCache(db_, [&](int64_t cache_id, int64_t group_id) -> bool {
-    base::Optional<std::string> manifest_url = GetManifestUrlForGroup(group_id);
+    absl::optional<std::string> manifest_url = GetManifestUrlForGroup(group_id);
     if (!manifest_url.has_value())
       return false;
 
@@ -161,14 +159,14 @@ bool AppCacheBackfillerVersion9::UpdateCacheManifestScope(
   return statement.Run();
 }
 
-base::Optional<std::string> AppCacheBackfillerVersion9::GetManifestUrlForGroup(
+absl::optional<std::string> AppCacheBackfillerVersion9::GetManifestUrlForGroup(
     int64_t group_id) {
   static const char kSql[] =
       "SELECT manifest_url, group_id FROM Groups WHERE group_id = ?";
   sql::Statement statement(db_->GetUniqueStatement(kSql));
   statement.BindInt64(0, group_id);
   if (!statement.Step())
-    return base::nullopt;
+    return absl::nullopt;
   return statement.ColumnString(0);
 }
 

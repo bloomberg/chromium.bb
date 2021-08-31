@@ -18,7 +18,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/updater/tools/certificate_tag.h"
 
 namespace updater {
@@ -129,14 +128,14 @@ int CertificateTagMain(int argc, char** argv) {
     HandleError(logging::GetLastSystemErrorCode());
   }
 
-  base::Optional<tools::Binary> bin = tools::Binary::Parse(contents);
+  absl::optional<tools::Binary> bin = tools::Binary::Parse(contents);
   if (!bin) {
     std::cerr << "Failed to parse tag binary." << std::endl;
     std::exit(1);
   }
 
   if (args.get_superfluous_cert_tag) {
-    base::Optional<base::span<const uint8_t>> tag = bin->tag();
+    absl::optional<base::span<const uint8_t>> tag = bin->tag();
     if (!tag) {
       std::cerr << "No tag in binary." << std::endl;
       std::exit(1);
@@ -150,7 +149,7 @@ int CertificateTagMain(int argc, char** argv) {
     std::vector<uint8_t> tag_contents;
     if (base::StartsWith(args.set_superfluous_cert_tag, kPrefix,
                          base::CompareCase::INSENSITIVE_ASCII)) {
-      const base::StringPiece hex_chars(
+      const auto hex_chars = base::MakeStringPiece(
           std::begin(args.set_superfluous_cert_tag) + base::size(kPrefix) - 1,
           std::end(args.set_superfluous_cert_tag));
       if (!base::HexStringToBytes(hex_chars, &tag_contents)) {

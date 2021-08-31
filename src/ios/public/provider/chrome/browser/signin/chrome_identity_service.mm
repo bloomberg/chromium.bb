@@ -56,7 +56,6 @@ ChromeIdentityService::PresentWebAndAppSettingDetailsController(
 
 ChromeIdentityInteractionManager*
 ChromeIdentityService::CreateChromeIdentityInteractionManager(
-    ChromeBrowserState* browser_state,
     id<ChromeIdentityInteractionManagerDelegate> delegate) const {
   return nil;
 }
@@ -74,21 +73,14 @@ bool ChromeIdentityService::HasIdentities() {
   return false;
 }
 
-NSArray* ChromeIdentityService::GetAllIdentities() {
+NSArray* ChromeIdentityService::GetAllIdentities(PrefService* pref_service) {
   return nil;
 }
 
-NSArray* ChromeIdentityService::GetAllIdentitiesSortedForDisplay() {
+NSArray* ChromeIdentityService::GetAllIdentitiesSortedForDisplay(
+    PrefService* pref_service) {
   return nil;
 }
-
-void ChromeIdentityService::RunAfterCacheIsPopulated(
-    base::OnceClosure callback) {
-  if (!callback.is_null())
-    std::move(callback).Run();
-}
-
-void ChromeIdentityService::WaitUntilCacheIsPopulated() {}
 
 void ChromeIdentityService::ForgetIdentity(ChromeIdentity* identity,
                                            ForgetIdentityCallback callback) {}
@@ -128,6 +120,11 @@ NSString* ChromeIdentityService::GetCachedHostedDomainForIdentity(
   return nil;
 }
 
+absl::optional<bool> ChromeIdentityService::IsSubjectToMinorModeRestrictions(
+    ChromeIdentity* identity) {
+  return absl::nullopt;
+}
+
 MDMDeviceStatus ChromeIdentityService::GetMDMDeviceStatus(
     NSDictionary* user_info) {
   return 0;
@@ -156,9 +153,9 @@ bool ChromeIdentityService::IsInvalidGrantError(NSDictionary* user_info) {
   return false;
 }
 
-void ChromeIdentityService::FireIdentityListChanged() {
+void ChromeIdentityService::FireIdentityListChanged(bool keychainReload) {
   for (auto& observer : observer_list_)
-    observer.OnIdentityListChanged();
+    observer.OnIdentityListChanged(keychainReload);
 }
 
 void ChromeIdentityService::FireAccessTokenRefreshFailed(

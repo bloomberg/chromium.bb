@@ -11,13 +11,13 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "components/page_load_metrics/browser/page_load_metrics_embedder_interface.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/common/page_load_metrics_constants.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace page_load_metrics {
@@ -38,7 +38,7 @@ namespace {
 
 // Helper to allow use of Optional<> values in LOG() messages.
 std::ostream& operator<<(std::ostream& os,
-                         const base::Optional<base::TimeDelta>& opt) {
+                         const absl::optional<base::TimeDelta>& opt) {
   if (opt)
     os << opt.value();
   else
@@ -48,8 +48,8 @@ std::ostream& operator<<(std::ostream& os,
 
 // If second is non-zero, first must also be non-zero and less than or equal to
 // second.
-bool EventsInOrder(const base::Optional<base::TimeDelta>& first,
-                   const base::Optional<base::TimeDelta>& second) {
+bool EventsInOrder(const absl::optional<base::TimeDelta>& first,
+                   const absl::optional<base::TimeDelta>& second) {
   if (!second) {
     return true;
   }
@@ -239,8 +239,8 @@ internal::PageLoadTimingStatus IsValidPageLoadTiming(
 
 // If the updated value has an earlier time than the current value, log so we
 // can keep track of how often this happens.
-void LogIfOutOfOrderTiming(const base::Optional<base::TimeDelta>& current,
-                           const base::Optional<base::TimeDelta>& update) {
+void LogIfOutOfOrderTiming(const absl::optional<base::TimeDelta>& current,
+                           const absl::optional<base::TimeDelta>& update) {
   if (!current || !update)
     return;
 
@@ -286,9 +286,9 @@ class PageLoadTimingMerger {
   // |navigation_start_offset| contains the delta in navigation start time
   // between the main frame and the frame for |optional_candidate_new_value|.
   bool MaybeUpdateTimeDelta(
-      base::Optional<base::TimeDelta>* inout_existing_value,
+      absl::optional<base::TimeDelta>* inout_existing_value,
       base::TimeDelta navigation_start_offset,
-      const base::Optional<base::TimeDelta>& optional_candidate_new_value) {
+      const absl::optional<base::TimeDelta>& optional_candidate_new_value) {
     // If we don't get a new value, there's nothing to do
     if (!optional_candidate_new_value)
       return false;
@@ -334,6 +334,9 @@ class PageLoadTimingMerger {
     mojom::PaintTiming* target_paint_timing = target_->paint_timing.get();
     MaybeUpdateTimeDelta(&target_paint_timing->first_paint,
                          navigation_start_offset, new_paint_timing.first_paint);
+    MaybeUpdateTimeDelta(&target_paint_timing->first_eligible_to_paint,
+                         navigation_start_offset,
+                         new_paint_timing.first_eligible_to_paint);
     MaybeUpdateTimeDelta(&target_paint_timing->first_image_paint,
                          navigation_start_offset,
                          new_paint_timing.first_image_paint);
@@ -464,7 +467,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     content::RenderFrameHost* render_frame_host,
     mojom::PageLoadTimingPtr new_timing,
     mojom::FrameMetadataPtr new_metadata,
-    mojom::PageLoadFeaturesPtr new_features,
+    const std::vector<blink::UseCounterFeature>& new_features,
     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
     mojom::FrameRenderDataUpdatePtr render_data,
     mojom::CpuTimingPtr new_cpu_timing,
@@ -506,7 +509,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     OnSubFrameRenderDataChanged(render_frame_host, *render_data);
   }
 
-  client_->UpdateFeaturesUsage(render_frame_host, *new_features);
+  client_->UpdateFeaturesUsage(render_frame_host, new_features);
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateHasSeenInputOrScroll(
@@ -525,7 +528,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateHasSeenInputOrScroll(
 
 void PageLoadMetricsUpdateDispatcher::UpdateFeatures(
     content::RenderFrameHost* render_frame_host,
-    const mojom::PageLoadFeatures& new_features) {
+    const std::vector<blink::UseCounterFeature>& new_features) {
   if (embedder_interface_->IsExtensionUrl(
           render_frame_host->GetLastCommittedURL())) {
     // Extensions can inject child frames into a page. We don't want to track
@@ -566,10 +569,8 @@ void PageLoadMetricsUpdateDispatcher::DidFinishSubFrameNavigation(
       navigation_handle->GetFrameTreeNodeId(), navigation_delta));
 }
 
-void PageLoadMetricsUpdateDispatcher::OnFrameDeleted(
-    content::RenderFrameHost* render_frame_host) {
-  subframe_navigation_start_offset_.erase(
-      render_frame_host->GetFrameTreeNodeId());
+void PageLoadMetricsUpdateDispatcher::OnFrameDeleted(int frame_tree_node_id) {
+  subframe_navigation_start_offset_.erase(frame_tree_node_id);
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateSubFrameTiming(
@@ -738,6 +739,10 @@ void PageLoadMetricsUpdateDispatcher::UpdatePageRenderData(
   layout_shift_normalization_.AddNewLayoutShifts(
       render_data.new_layout_shifts, base::TimeTicks::Now(),
       page_render_data_.layout_shift_score);
+  layout_shift_normalization_for_bfcache_.AddNewLayoutShifts(
+      render_data.new_layout_shifts, base::TimeTicks::Now(),
+      page_render_data_.layout_shift_score -
+          cumulative_layout_shift_score_for_bfcache_);
 
   // Stop accumulating page-wide layout_shift_score_before_input_or_scroll after
   // input or scroll in any frame. Note that we can't unconditionally accumulate
@@ -756,6 +761,10 @@ void PageLoadMetricsUpdateDispatcher::UpdatePageRenderData(
       render_data.all_layout_call_count_delta;
   page_render_data_.ng_layout_call_count +=
       render_data.ng_layout_call_count_delta;
+  page_render_data_.flexbox_ng_layout_block_count +=
+      render_data.flexbox_ng_layout_block_count_delta;
+  page_render_data_.grid_ng_layout_block_count +=
+      render_data.grid_ng_layout_block_count_delta;
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameRenderData(
@@ -774,8 +783,10 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameRenderData(
       render_data.ng_layout_block_count_delta;
   main_frame_render_data_.all_layout_call_count +=
       render_data.all_layout_call_count_delta;
-  main_frame_render_data_.ng_layout_call_count +=
-      render_data.ng_layout_call_count_delta;
+  main_frame_render_data_.flexbox_ng_layout_block_count +=
+      render_data.flexbox_ng_layout_block_count_delta;
+  page_render_data_.grid_ng_layout_block_count +=
+      render_data.grid_ng_layout_block_count_delta;
 }
 
 void PageLoadMetricsUpdateDispatcher::OnSubFrameRenderDataChanged(
@@ -794,12 +805,13 @@ void PageLoadMetricsUpdateDispatcher::FlushPendingTimingUpdates() {
 
 void PageLoadMetricsUpdateDispatcher::MaybeDispatchTimingUpdates(
     bool should_buffer_timing_update_callback) {
-  // If we merged a new timing value, then we should buffer updates for
-  // |kBufferTimerDelayMillis|, to allow for any other out of order timings to
-  // arrive before we dispatch the minimum observed timings to observers.
+  // If we merged a new timing value, then we should buffer updates to allow for
+  // any other out of order timings to arrive before we dispatch to observers.
   if (should_buffer_timing_update_callback) {
     timer_->Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(kBufferTimerDelayMillis),
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(
+            GetBufferTimerDelayMillis(TimerType::kBrowser)),
         base::BindOnce(&PageLoadMetricsUpdateDispatcher::DispatchTimingUpdates,
                        base::Unretained(this)));
   } else if (!timer_->IsRunning()) {

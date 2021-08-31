@@ -10,6 +10,7 @@ import * as util from '../../../util.js';
 
 import {
   Photo,
+  PhotoFactory,
   PhotoHandler,  // eslint-disable-line no-unused-vars
 } from './photo.js';
 
@@ -66,6 +67,13 @@ class SquarePhotoHandler {
   playShutterEffect() {
     this.handler_.playShutterEffect();
   }
+
+  /**
+   * @override
+   */
+  getPreviewFrame() {
+    return this.handler_.getPreviewFrame();
+  }
 }
 
 /**
@@ -80,5 +88,19 @@ export class Square extends Photo {
    */
   constructor(stream, facing, captureResolution, handler) {
     super(stream, facing, captureResolution, new SquarePhotoHandler(handler));
+  }
+}
+
+/**
+ * Factory for creating square mode capture object.
+ */
+export class SquareFactory extends PhotoFactory {
+  /**
+   * @override
+   */
+  produce_() {
+    return new Square(
+        this.previewStream_, this.facing_, this.captureResolution_,
+        this.handler_);
   }
 }

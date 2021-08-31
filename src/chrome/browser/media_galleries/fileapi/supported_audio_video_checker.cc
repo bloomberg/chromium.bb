@@ -12,15 +12,16 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/services/media_gallery_util/public/cpp/safe_audio_video_checker.h"
+#include "components/download/public/common/quarantine_connection.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/mime_util.h"
@@ -86,8 +87,9 @@ void SupportedAudioVideoChecker::StartPreWriteValidation(
 }
 
 SupportedAudioVideoChecker::SupportedAudioVideoChecker(
-    const base::FilePath& path)
-    : path_(path) {}
+    const base::FilePath& path,
+    download::QuarantineConnectionCallback quarantine_connection_callback)
+    : AVScanningFileValidator(quarantine_connection_callback), path_(path) {}
 
 void SupportedAudioVideoChecker::OnFileOpen(base::File file) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);

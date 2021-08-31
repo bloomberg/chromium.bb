@@ -13,17 +13,22 @@
 #include "media/base/audio_renderer.h"
 #include "media/base/buffering_state.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/media_export.h"
 #include "media/base/time_source.h"
+#include "media/fuchsia/common/sysmem_buffer_stream.h"
+#include "media/fuchsia/common/sysmem_client.h"
+#include "media/fuchsia/common/vmo_buffer.h"
 
 namespace media {
 
-class DecryptingDemuxerStream;
 class MediaLog;
 
 // AudioRenderer implementation that output audio to AudioConsumer interface on
 // Fuchsia. Unlike the default AudioRendererImpl it doesn't decode audio and
 // sends encoded stream directly to AudioConsumer provided by the platform.
-class FuchsiaAudioRenderer : public AudioRenderer, public TimeSource {
+class MEDIA_EXPORT FuchsiaAudioRenderer : public AudioRenderer,
+                                          public TimeSource,
+                                          public SysmemBufferStream::Sink {
  public:
   FuchsiaAudioRenderer(MediaLog* media_log,
                        fidl::InterfaceHandle<fuchsia::media::AudioConsumer>
@@ -39,8 +44,9 @@ class FuchsiaAudioRenderer : public AudioRenderer, public TimeSource {
   void Flush(base::OnceClosure callback) final;
   void StartPlaying() final;
   void SetVolume(float volume) final;
-  void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) final;
+  void SetLatencyHint(absl::optional<base::TimeDelta> latency_hint) final;
   void SetPreservesPitch(bool preserves_pitch) final;
+  void SetAutoplayInitiated(bool autoplay_initiated) final;
 
   // TimeSource implementation.
   void StartTicking() final;
@@ -55,23 +61,21 @@ class FuchsiaAudioRenderer : public AudioRenderer, public TimeSource {
   enum class PlaybackState {
     kStopped,
 
+    // StartTicking() was called, but sysmem buffers haven't been allocated yet.
+    // AudioConsumer::Start() will be called after CreateStreamSink() once the
+    // sysmem buffers are allocated.
+    kStartPending,
+
     // We've called Start(), but haven't received updated state. |start_time_|
     // should not be used yet.
     kStarting,
 
+    // Playback is active. When the stream reaches EOS it stays in the kPlaying
+    // state.
     kPlaying,
-
-    // Received end-of-stream packet from the |demuxer_stream_|. Waiting for
-    // EndOfStream event from |audio_consumer_|.
-    kEndOfStream,
   };
 
-  // Struct used to store state of an input buffer shared with the
-  // |stream_sink_|.
-  struct StreamSinkBuffer {
-    zx::vmo vmo;
-    bool is_used = false;
-  };
+  void StartAudioConsumer();
 
   // Returns current PlaybackState. Should be used only on the main thread.
   PlaybackState GetPlaybackState() NO_THREAD_SAFETY_ANALYSIS;
@@ -89,12 +93,14 @@ class FuchsiaAudioRenderer : public AudioRenderer, public TimeSource {
   // |volume_|.
   void UpdateVolume();
 
+  // Callback for input_buffer_collection_.AcquireBuffers().
+  void OnBuffersAcquired(
+      std::vector<VmoBuffer> buffers,
+      const fuchsia::sysmem::SingleBufferSettings& buffer_settings);
+
   // Initializes |stream_sink_|. Called during initialization and every time
   // configuration changes.
-  void InitializeStreamSink(const AudioDecoderConfig& config);
-
-  // Callback for DecryptingDemuxerStream::Initialize().
-  void OnDecryptorInitialized(PipelineStatus status);
+  void InitializeStreamSink();
 
   // Helpers to receive AudioConsumerStatus from the |audio_consumer_|.
   void RequestAudioConsumerStatus();
@@ -106,8 +112,12 @@ class FuchsiaAudioRenderer : public AudioRenderer, public TimeSource {
   void OnDemuxerStreamReadDone(DemuxerStream::Status status,
                                scoped_refptr<DecoderBuffer> buffer);
 
+  // Sends the specified packet to |stream_sink_|.
+  void SendInputPacket(StreamProcessorHelper::IoPacket packet);
+
   // Result handler for StreamSink::SendPacket().
-  void OnStreamSendDone(size_t buffer_index);
+  void OnStreamSendDone(
+      std::unique_ptr<StreamProcessorHelper::IoPacket> packet);
 
   // Updates buffer state and notifies the |client_| if necessary.
   void SetBufferState(BufferingState buffer_state);
@@ -123,17 +133,24 @@ class FuchsiaAudioRenderer : public AudioRenderer, public TimeSource {
 
   // Updates TimelineFunction parameters after StopTicking() or
   // SetPlaybackRate(0.0). Normally these parameters are provided by
-  // AudioConsumer, but this happens asynchronously, while we need to make sure
+  // AudioConsumer, but this happens asynchronously and we need to make sure
   // that StopTicking() and SetPlaybackRate(0.0) stop the media clock
-  // synchronously.
-  void UpdateTimelineAfterStop() EXCLUSIVE_LOCKS_REQUIRED(timeline_lock_);
+  // synchronously. Must be called before updating the |state_|.
+  void UpdateTimelineOnStop() EXCLUSIVE_LOCKS_REQUIRED(timeline_lock_);
 
   // Calculates media position based on the TimelineFunction returned from
-  // AudioConsumer. Should be called only when IsTimeMoving() is true.
+  // AudioConsumer. Must be called only when IsTimeMoving() is true.
   base::TimeDelta CurrentMediaTimeLocked()
       EXCLUSIVE_LOCKS_REQUIRED(timeline_lock_);
 
-  MediaLog* const media_log_;
+  // SysmemBufferStream::Sink implementation.
+  void OnSysmemBufferStreamBufferCollectionToken(
+      fuchsia::sysmem::BufferCollectionTokenPtr token) override;
+  void OnSysmemBufferStreamOutputPacket(
+      StreamProcessorHelper::IoPacket packet) override;
+  void OnSysmemBufferStreamEndOfStream() override;
+  void OnSysmemBufferStreamError() override;
+  void OnSysmemBufferStreamNoKey() override;
 
   // Handle for |audio_consumer_|. It's stored here until Initialize() is
   // called.
@@ -154,20 +171,36 @@ class FuchsiaAudioRenderer : public AudioRenderer, public TimeSource {
   // Initialize() completion callback.
   PipelineStatusCallback init_cb_;
 
-  std::unique_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
+  // Indicates that StartPlaying() has been called. Note that playback doesn't
+  // start until TimeSource::StartTicking() is called.
+  bool renderer_started_ = false;
 
   BufferingState buffer_state_ = BUFFERING_HAVE_NOTHING;
 
   base::TimeDelta last_packet_timestamp_ = base::TimeDelta::Min();
   base::OneShotTimer read_timer_;
 
-  std::vector<StreamSinkBuffer> stream_sink_buffers_;
-  size_t num_pending_packets_ = 0u;
+  SysmemAllocatorClient sysmem_allocator_{"CrFuchsiaAudioRenderer"};
+  std::unique_ptr<SysmemCollectionClient> input_buffer_collection_;
 
-  // Lead time range requested by the |audio_consumer_|. Initialized to 0 until
-  // the initial AudioConsumerStatus is received.
-  base::TimeDelta min_lead_time_;
-  base::TimeDelta max_lead_time_;
+  std::unique_ptr<SysmemBufferStream> sysmem_buffer_stream_;
+
+  // VmoBuffers for the buffers |input_buffer_collection_|.
+  std::vector<VmoBuffer> input_buffers_;
+
+  // Packets produced before the |stream_sink_| is connected. They are sent as
+  // soon as input buffers are acquired and |stream_sink_| is connected in
+  // OnBuffersAcquired().
+  std::list<StreamProcessorHelper::IoPacket> delayed_packets_;
+
+  // Lead time range requested by the |audio_consumer_|. Initialized to  the
+  // [100ms, 500ms] until the initial AudioConsumerStatus is received.
+  base::TimeDelta min_lead_time_ = base::TimeDelta::FromMilliseconds(100);
+  base::TimeDelta max_lead_time_ = base::TimeDelta::FromMilliseconds(500);
+
+  // Set to true after we've received end-of-stream from the |demuxer_stream_|.
+  // The renderer may be restarted after Flush().
+  bool is_at_end_of_stream_ = false;
 
   // TimeSource interface is not single-threaded. The lock is used to guard
   // fields that are accessed in the TimeSource implementation. Note that these

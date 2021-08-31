@@ -8,9 +8,11 @@
 // #import {FakeNetworkConfig} from 'chrome://test/chromeos/fake_network_config_mojom.m.js';
 // #import {MojoInterfaceProviderImpl} from 'chrome://resources/cr_components/chromeos/network/mojo_interface_provider.m.js';
 // #import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
+// #import {TestInternetPageBrowserProxy} from './test_internet_page_browser_proxy.m.js';
+// #import {InternetPageBrowserProxyImpl} from 'chrome://os-settings/chromeos/os_settings.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
-// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {waitAfterNextRender, eventToPromise} from 'chrome://test/test_util.m.js';
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 // clang-format on
 
@@ -20,6 +22,9 @@ suite('InternetDetailPage', function() {
 
   /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   let mojoApi_ = null;
+
+  /** @type {?TestInternetPageBrowserProxy} */
+  let browserProxy = null;
 
   /** @type {Object} */
   const prefs_ = {
@@ -40,18 +45,6 @@ suite('InternetDetailPage', function() {
   };
 
   suiteSetup(function() {
-    loadTimeData.overrideValues({
-      internetAddConnection: 'internetAddConnection',
-      internetAddConnectionExpandA11yLabel:
-          'internetAddConnectionExpandA11yLabel',
-      internetAddConnectionNotAllowed: 'internetAddConnectionNotAllowed',
-      internetAddThirdPartyVPN: 'internetAddThirdPartyVPN',
-      internetAddVPN: 'internetAddVPN',
-      internetAddWiFi: 'internetAddWiFi',
-      internetDetailPageTitle: 'internetDetailPageTitle',
-      internetKnownNetworksPageTitle: 'internetKnownNetworksPageTitle',
-    });
-
     mojoApi_ = new FakeNetworkConfig();
     network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
 
@@ -93,15 +86,64 @@ suite('InternetDetailPage', function() {
     return result;
   }
 
-  setup(function() {
-    PolymerTest.clearBody();
-    internetDetailPage =
-        document.createElement('settings-internet-detail-page');
-    assertTrue(!!internetDetailPage);
-    mojoApi_.resetForTest();
-    internetDetailPage.prefs = Object.assign({}, prefs_);
-    document.body.appendChild(internetDetailPage);
+  /**
+   * @param {boolean} isSimLocked
+   */
+  function deepLinkToSimLockElement(isSimLocked) {
+    init();
+    const mojom = chromeos.networkConfig.mojom;
+
+    const test_iccid = '11111111111111111';
+    mojoApi_.setDeviceStateForTest({
+      type: mojom.NetworkType.kCellular,
+      deviceState: chromeos.networkConfig.mojom.DeviceStateType.kEnabled,
+      simLockStatus: {
+        lockEnabled: true,
+        lockType: isSimLocked ? 'sim-pin' : undefined,
+      },
+      simInfos: [{
+        iccid: test_iccid,
+        isPrimary: true,
+      }],
+    });
+
+    const cellularNetwork =
+        getManagedProperties(mojom.NetworkType.kCellular, 'cellular');
+    cellularNetwork.connectable = false;
+    cellularNetwork.typeProperties.cellular.iccid = test_iccid;
+    mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+
+    const params = new URLSearchParams;
+    params.append('guid', 'cellular_guid');
+    params.append('type', 'Cellular');
+    params.append('name', 'cellular');
+    params.append('settingId', '14');
+    settings.Router.getInstance().navigateTo(
+        settings.routes.NETWORK_DETAIL, params);
+
     return flushAsync();
+  }
+
+  setup(function() {
+    loadTimeData.overrideValues({
+      internetAddConnection: 'internetAddConnection',
+      internetAddConnectionExpandA11yLabel:
+          'internetAddConnectionExpandA11yLabel',
+      internetAddConnectionNotAllowed: 'internetAddConnectionNotAllowed',
+      internetAddThirdPartyVPN: 'internetAddThirdPartyVPN',
+      internetAddVPN: 'internetAddVPN',
+      internetAddWiFi: 'internetAddWiFi',
+      internetDetailPageTitle: 'internetDetailPageTitle',
+      internetKnownNetworksPageTitle: 'internetKnownNetworksPageTitle',
+      updatedCellularActivationUi: false,
+      showMeteredToggle: true,
+    });
+
+    PolymerTest.clearBody();
+    mojoApi_.resetForTest();
+
+    browserProxy = new TestInternetPageBrowserProxy();
+    settings.InternetPageBrowserProxyImpl.instance_ = browserProxy;
   });
 
   teardown(function() {
@@ -113,10 +155,21 @@ suite('InternetDetailPage', function() {
     });
   });
 
+  function init() {
+    internetDetailPage =
+        document.createElement('settings-internet-detail-page');
+    assertTrue(!!internetDetailPage);
+    internetDetailPage.prefs = Object.assign({}, prefs_);
+    document.body.appendChild(internetDetailPage);
+  }
+
   suite('DetailsPageWiFi', function() {
-    test('LoadPage', function() {});
+    test('LoadPage', function() {
+      init();
+    });
 
     test('WiFi1', function() {
+      init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
       setNetworksForTest([
@@ -133,6 +186,7 @@ suite('InternetDetailPage', function() {
     // Sanity test for the suite setup. Makes sure that re-opening the details
     // page with a different network also succeeds.
     test('WiFi2', function() {
+      init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
       setNetworksForTest([
@@ -146,7 +200,72 @@ suite('InternetDetailPage', function() {
       });
     });
 
+    test('Hidden toggle enabled', function() {
+      init();
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.resetForTest();
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
+      const wifiNetwork =
+          getManagedProperties(mojom.NetworkType.kWiFi, 'wifi_user');
+      wifiNetwork.source = mojom.OncSource.kUser;
+      wifiNetwork.connectable = true;
+      wifiNetwork.typeProperties.wifi.hiddenSsid =
+          OncMojo.createManagedBool(true);
+
+      mojoApi_.setManagedPropertiesForTest(wifiNetwork);
+
+      internetDetailPage.init('wifi_user_guid', 'WiFi', 'wifi_user');
+      return flushAsync().then(() => {
+        const hiddenToggle = internetDetailPage.$$('#hiddenToggle');
+        assertTrue(!!hiddenToggle);
+        assertTrue(hiddenToggle.checked);
+      });
+    });
+
+    test('Hidden toggle disabled', function() {
+      init();
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.resetForTest();
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
+      const wifiNetwork =
+          getManagedProperties(mojom.NetworkType.kWiFi, 'wifi_user');
+      wifiNetwork.source = mojom.OncSource.kUser;
+      wifiNetwork.connectable = true;
+      wifiNetwork.typeProperties.wifi.hiddenSsid =
+          OncMojo.createManagedBool(false);
+
+      mojoApi_.setManagedPropertiesForTest(wifiNetwork);
+
+      internetDetailPage.init('wifi_user_guid', 'WiFi', 'wifi_user');
+      return flushAsync().then(() => {
+        const hiddenToggle = internetDetailPage.$$('#hiddenToggle');
+        assertTrue(!!hiddenToggle);
+        assertFalse(hiddenToggle.checked);
+      });
+    });
+
+    test('Hidden toggle hidden when not configured', function() {
+      init();
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.resetForTest();
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
+      const wifiNetwork =
+          getManagedProperties(mojom.NetworkType.kWiFi, 'wifi_user');
+      wifiNetwork.connectable = false;
+      wifiNetwork.typeProperties.wifi.hiddenSsid =
+          OncMojo.createManagedBool(false);
+
+      mojoApi_.setManagedPropertiesForTest(wifiNetwork);
+
+      internetDetailPage.init('wifi_user_guid', 'WiFi', 'wifi_user');
+      return flushAsync().then(() => {
+        const hiddenToggle = internetDetailPage.$$('#hiddenToggle');
+        assertFalse(!!hiddenToggle);
+      });
+    });
+
     test('Proxy Unshared', function() {
+      init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.resetForTest();
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
@@ -166,6 +285,7 @@ suite('InternetDetailPage', function() {
     });
 
     test('Proxy Shared', function() {
+      init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.resetForTest();
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
@@ -186,6 +306,7 @@ suite('InternetDetailPage', function() {
     // allowed_shared_proxies pref so #allowShared should be visible.
     // TOD(stevenjb): Improve this: crbug.com/662529.
     test('Proxy Shared User Managed', function() {
+      init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.resetForTest();
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
@@ -210,6 +331,7 @@ suite('InternetDetailPage', function() {
     // When proxy settings are managed by a device policy they may respect the
     // allowd_shared_proxies pref so #allowShared should be visible.
     test('Proxy Shared Device Managed', function() {
+      init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.resetForTest();
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
@@ -234,9 +356,7 @@ suite('InternetDetailPage', function() {
     // Tests that when the route changes to one containing a deep link to
     // the shared proxy toggle, toggle is foxused.
     test('Deep link to shared proxy toggle', async () => {
-      loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-      assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
-
+      init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.resetForTest();
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
@@ -265,7 +385,8 @@ suite('InternetDetailPage', function() {
   });
 
   suite('DetailsPageVPN', function() {
-    test('VPN config allowed', function() {
+    setup(function() {
+      init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kVPN, true);
       setNetworksForTest([
@@ -273,6 +394,9 @@ suite('InternetDetailPage', function() {
       ]);
 
       internetDetailPage.init('vpn1_guid', 'VPN', 'vpn1');
+    });
+
+    test('VPN config allowed', function() {
       prefs_.vpn_config_allowed.value = true;
       internetDetailPage.prefs = Object.assign({}, prefs_);
       return flushAsync().then(() => {
@@ -283,13 +407,6 @@ suite('InternetDetailPage', function() {
     });
 
     test('VPN config disallowed', function() {
-      const mojom = chromeos.networkConfig.mojom;
-      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kVPN, true);
-      setNetworksForTest([
-        OncMojo.getDefaultNetworkState(mojom.NetworkType.kVPN, 'vpn1'),
-      ]);
-
-      internetDetailPage.init('vpn1_guid', 'VPN', 'vpn1');
       prefs_.vpn_config_allowed.value = false;
       internetDetailPage.prefs = Object.assign({}, prefs_);
       return flushAsync().then(() => {
@@ -301,7 +418,16 @@ suite('InternetDetailPage', function() {
   });
 
   suite('DetailsPageCellular', function() {
-    test('Connect button disabled when not connectable', function() {
+    async function expandConfigurableSection() {
+      const configurableSetions = internetDetailPage.$$('#configurableSetions');
+      assertTrue(!!configurableSetions);
+      configurableSetions.click();
+      await flushAsync();
+      assertTrue(internetDetailPage.showConfigurableSections_);
+    }
+    // Regression test for https://crbug.com/1182884.
+    test('Connect button enabled when not connectable', function() {
+      init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, true);
       const cellularNetwork =
@@ -313,11 +439,55 @@ suite('InternetDetailPage', function() {
       return flushAsync().then(() => {
         const connectButton = getButton('connectDisconnect');
         assertFalse(connectButton.hasAttribute('hidden'));
+        assertFalse(connectButton.hasAttribute('disabled'));
+      });
+    });
+
+    test('Connect button disabled when not connectable and locked', function() {
+      init();
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, true);
+      const cellularNetwork =
+          getManagedProperties(mojom.NetworkType.kCellular, 'cellular');
+      cellularNetwork.connectable = false;
+      cellularNetwork.typeProperties.cellular.simLocked = true;
+      mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+
+      internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
+      return flushAsync().then(() => {
+        const connectButton = getButton('connectDisconnect');
+        assertFalse(connectButton.hasAttribute('hidden'));
         assertTrue(connectButton.hasAttribute('disabled'));
       });
     });
 
+    test(
+        'Cellular view account button opens carrier account details',
+        function() {
+          init();
+          const mojom = chromeos.networkConfig.mojom;
+          mojoApi_.setNetworkTypeEnabledState(
+              mojom.NetworkType.kCellular, true);
+          const cellularNetwork =
+              getManagedProperties(mojom.NetworkType.kCellular, 'cellular');
+          mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+
+          internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
+          return flushAsync()
+              .then(() => {
+                const viewAccountButton =
+                    internetDetailPage.$$('#viewAccountButton');
+                assertTrue(!!viewAccountButton);
+                viewAccountButton.click();
+                return flushAsync();
+              })
+              .then(() => {
+                return browserProxy.whenCalled('showCarrierAccountDetail');
+              });
+        });
+
     test('Cellular Scanning', function() {
+      init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, true);
       const cellularNetwork =
@@ -338,7 +508,39 @@ suite('InternetDetailPage', function() {
       });
     });
 
+    // Regression test for https://crbug.com/1201449.
+    test('Page closed while device is updating', function() {
+      init();
+
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, true);
+      const cellularNetwork =
+          getManagedProperties(mojom.NetworkType.kCellular, 'cellular');
+      mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+
+      mojoApi_.setDeviceStateForTest({
+        type: mojom.NetworkType.kCellular,
+        deviceState: chromeos.networkConfig.mojom.DeviceStateType.kEnabled,
+        scanning: true,
+      });
+
+      internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
+
+      return flushAsync().then(() => {
+        // Close the page as soon as getDeviceStateList() is invoked, before the
+        // callback returns.
+        mojoApi_.beforeGetDeviceStateList = () => {
+          internetDetailPage.close();
+        };
+
+        mojoApi_.onDeviceStateListChanged();
+
+        return flushAsync();
+      });
+    });
+
     test('Cellular roaming subtext', async function() {
+      init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, true);
       mojoApi_.setManagedPropertiesForTest(
@@ -365,6 +567,11 @@ suite('InternetDetailPage', function() {
     });
 
     test('Deep link to disconnect button', async () => {
+      // Add listener for popstate event fired when the dialog closes and the
+      // router navigates backwards.
+      const popStatePromise = test_util.eventToPromise('popstate', window);
+
+      init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, true);
       const cellularNetwork =
@@ -387,49 +594,394 @@ suite('InternetDetailPage', function() {
       assertEquals(
           deepLinkElement, getDeepActiveElement(),
           'Disconnect network button should be focused for settingId=17.');
+
+      // Close the dialog and wait for os_route's popstate listener to fire. If
+      // we don't add this wait, this event can fire during the next test which
+      // will interfere with its routing.
+      internetDetailPage.close();
+      await popStatePromise;
     });
 
-    test('Deep link to sim lock toggle', async () => {
-      const mojom = chromeos.networkConfig.mojom;
-      mojoApi_.setDeviceStateForTest({
-        type: mojom.NetworkType.kCellular,
-        deviceState: chromeos.networkConfig.mojom.DeviceStateType.kEnabled,
-        simLockStatus: {
-          lockEnabled: false,
-        },
+    test('Deep link to sim lock toggle with cellular flag off', async () => {
+      await deepLinkToSimLockElement(/*isSimLocked=*/ false);
+
+      const simInfo = internetDetailPage.$$('#cellularSimInfo');
+
+      // In this rare case, wait after next render twice due to focus behavior
+      // of the siminfo component.
+      await test_util.waitAfterNextRender(simInfo);
+      await test_util.waitAfterNextRender(simInfo);
+      assertEquals(
+          simInfo.$$('#simLockButton'), getDeepActiveElement(),
+          'Sim lock toggle should be focused for settingId=14.');
+    });
+
+    test('Deep link to sim lock toggle with cellular flag on', async () => {
+      loadTimeData.overrideValues({
+        updatedCellularActivationUi: true,
       });
+      await deepLinkToSimLockElement(/*isSimLocked=*/ false);
+
+      const simInfo = internetDetailPage.$$('#cellularSimInfoAdvanced');
+
+      // In this rare case, wait after next render twice due to focus behavior
+      // of the siminfo component.
+      await test_util.waitAfterNextRender(simInfo);
+      await test_util.waitAfterNextRender(simInfo);
+      assertEquals(
+          simInfo.$$('#simLockButton'), getDeepActiveElement(),
+          'Sim lock toggle should be focused for settingId=14.');
+    });
+
+    test('Deep link to sim unlock button with cellular flag on', async () => {
+      loadTimeData.overrideValues({
+        updatedCellularActivationUi: true,
+      });
+      await deepLinkToSimLockElement(/*isSimLocked=*/ true);
+
+      const simInfo = internetDetailPage.$$('#cellularSimInfoAdvanced');
+
+      // In this rare case, wait after next render twice due to focus behavior
+      // of the siminfo component.
+      await test_util.waitAfterNextRender(simInfo);
+      await test_util.waitAfterNextRender(simInfo);
+      assertEquals(
+          simInfo.$$('#unlockPinButton'), getDeepActiveElement(),
+          'Sim unlock button should be focused for settingId=14.');
+    });
+
+    test('Cellular page hides hidden toggle', function() {
+      init();
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, true);
       const cellularNetwork =
           getManagedProperties(mojom.NetworkType.kCellular, 'cellular');
       cellularNetwork.connectable = false;
       mojoApi_.setManagedPropertiesForTest(cellularNetwork);
 
-      const params = new URLSearchParams;
-      params.append('guid', 'cellular_guid');
-      params.append('type', 'Cellular');
-      params.append('name', 'cellular');
-      params.append('settingId', '14');
-      settings.Router.getInstance().navigateTo(
-          settings.routes.NETWORK_DETAIL, params);
+      internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
+      return flushAsync().then(() => {
+        const hiddenToggle = internetDetailPage.$$('#hiddenToggle');
+        assertFalse(!!hiddenToggle);
+      });
+    });
 
-      Polymer.dom.flush();
+    test(
+        'Cellular network on active sim slot, show config sections',
+        async () => {
+          loadTimeData.overrideValues({
+            updatedCellularActivationUi: true,
+          });
+          init();
+          const test_iccid = '11111111111111111';
 
-      const deepLinkElement =
-          internetDetailPage.$$('network-siminfo').$$('#simLockButton');
+          const mojom = chromeos.networkConfig.mojom;
+          await mojoApi_.setNetworkTypeEnabledState(
+              mojom.NetworkType.kCellular, true);
+          const cellularNetwork = getManagedProperties(
+              mojom.NetworkType.kCellular, 'cellular', mojom.OncSource.kDevice);
+          cellularNetwork.typeProperties.cellular.iccid = test_iccid;
 
-      // In this rare case, wait after next render twice due to focus behavior
-      // of the siminfo component.
-      await test_util.waitAfterNextRender(deepLinkElement);
-      await test_util.waitAfterNextRender(deepLinkElement);
-      assertEquals(
-          deepLinkElement, getDeepActiveElement(),
-          'Sim lock toggle should be focused for settingId=14.');
+          mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+          internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
+          mojoApi_.setDeviceStateForTest({
+            type: mojom.NetworkType.kCellular,
+            deviceState: mojom.DeviceStateType.kEnabled,
+            inhibitReason: mojom.InhibitReason.kNotInhibited,
+            simInfos: [{
+              iccid: test_iccid,
+              isPrimary: true,
+            }],
+          });
+          await flushAsync();
+          assertTrue(internetDetailPage.showConfigurableSections_);
+          // Check that an element from the primary account section exists.
+          assertTrue(!!internetDetailPage.$$('#allowDataRoaming'));
+        });
+
+    test(
+        'Cellular network on non-active sim slot, hide config sections',
+        async () => {
+          loadTimeData.overrideValues({
+            updatedCellularActivationUi: true,
+          });
+          init();
+          const test_iccid = '11111111111111111';
+
+          const mojom = chromeos.networkConfig.mojom;
+          await mojoApi_.setNetworkTypeEnabledState(
+              mojom.NetworkType.kCellular, true);
+          const cellularNetwork = getManagedProperties(
+              mojom.NetworkType.kCellular, 'cellular', mojom.OncSource.kDevice);
+          cellularNetwork.typeProperties.cellular.iccid = '000';
+
+          mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+          internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
+          mojoApi_.setDeviceStateForTest({
+            type: mojom.NetworkType.kCellular,
+            deviceState: mojom.DeviceStateType.kEnabled,
+            inhibitReason: mojom.InhibitReason.kNotInhibited,
+            simInfos: [{
+              iccid: test_iccid,
+              isPrimary: true,
+            }],
+          });
+          await flushAsync();
+          assertFalse(internetDetailPage.showConfigurableSections_);
+          // Check that an element from the primary account section exists.
+          assertFalse(!!internetDetailPage.$$('#allowDataRoaming'));
+          // The section ConnectDisconnect button belongs to should still be
+          // showing.
+          assertTrue(!!internetDetailPage.$$('#connectDisconnect'));
+        });
+
+    test(
+        'Hide config section and Cellular Device object fields when' +
+            'sim becomes non-active',
+        async () => {
+          loadTimeData.overrideValues({
+            updatedCellularActivationUi: true,
+          });
+          init();
+          const test_iccid = '11111111111111111';
+
+          const mojom = chromeos.networkConfig.mojom;
+          await mojoApi_.setNetworkTypeEnabledState(
+              mojom.NetworkType.kCellular, true);
+          const cellularNetwork = getManagedProperties(
+              mojom.NetworkType.kCellular, 'cellular', mojom.OncSource.kDevice);
+          cellularNetwork.typeProperties.cellular.iccid = test_iccid;
+
+          const isShowingCellularDeviceObjectFields = () => {
+            return internetDetailPage.$$('#deviceFields')
+                .fields.includes('cellular.homeProvider.name');
+          };
+
+          // Set sim to non-active.
+          mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+          internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
+          mojoApi_.setDeviceStateForTest({
+            type: mojom.NetworkType.kCellular,
+            deviceState: mojom.DeviceStateType.kEnabled,
+            inhibitReason: mojom.InhibitReason.kNotInhibited,
+            simInfos: [{
+              iccid: test_iccid,
+              isPrimary: false,
+            }],
+          });
+          await flushAsync();
+          assertFalse(internetDetailPage.showConfigurableSections_);
+          assertFalse(isShowingCellularDeviceObjectFields());
+
+          // Set sim to active.
+          mojoApi_.setDeviceStateForTest({
+            type: mojom.NetworkType.kCellular,
+            deviceState: mojom.DeviceStateType.kEnabled,
+            inhibitReason: mojom.InhibitReason.kNotInhibited,
+            simInfos: [{
+              iccid: test_iccid,
+              isPrimary: true,
+            }],
+          });
+          await flushAsync();
+          assertTrue(internetDetailPage.showConfigurableSections_);
+          assertTrue(isShowingCellularDeviceObjectFields());
+
+          // Set sim to non-active again.
+          mojoApi_.setDeviceStateForTest({
+            type: mojom.NetworkType.kCellular,
+            deviceState: mojom.DeviceStateType.kEnabled,
+            inhibitReason: mojom.InhibitReason.kNotInhibited,
+            simInfos: [{
+              iccid: test_iccid,
+              isPrimary: false,
+            }],
+          });
+          await flushAsync();
+          assertFalse(internetDetailPage.showConfigurableSections_);
+          assertFalse(isShowingCellularDeviceObjectFields());
+        });
+
+    test('Do not show MAC address', async () => {
+      const TEST_ICCID = '11111111111111111';
+      const TEST_MAC_ADDRESS = '01:23:45:67:89:AB';
+      const MISSING_MAC_ADDRESS = '00:00:00:00:00:00';
+
+      loadTimeData.overrideValues({
+        updatedCellularActivationUi: true,
+      });
+      init();
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, true);
+      const cellularNetwork =
+          getManagedProperties(mojom.NetworkType.kCellular, 'cellular');
+      cellularNetwork.connectable = true;
+      cellularNetwork.typeProperties.cellular.simLocked = false;
+      cellularNetwork.typeProperties.cellular.iccid = TEST_ICCID;
+      mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+      internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
+
+      let deviceState = {
+        type: mojom.NetworkType.kCellular,
+        deviceState: mojom.DeviceStateType.kEnabled,
+        inhibitReason: mojom.InhibitReason.kNotInhibited,
+        simInfos: [{
+          iccid: TEST_ICCID,
+          isPrimary: true,
+        }],
+        macAddress: TEST_MAC_ADDRESS
+      };
+
+      mojoApi_.setDeviceStateForTest(deviceState);
+      await flushAsync();
+      expandConfigurableSection();
+      let macAddress = internetDetailPage.$$('#mac-address-container');
+      assertTrue(!!macAddress);
+      assertFalse(macAddress.hidden);
+
+      // Set MAC address to '00:00:00:00:00:00' missing address, this address
+      // is provided when device MAC address cannot be retrieved. If this is the
+      // case, the MAC address should not be displayed in UI.
+      deviceState = {
+        type: mojom.NetworkType.kCellular,
+        deviceState: mojom.DeviceStateType.kEnabled,
+        inhibitReason: mojom.InhibitReason.kNotInhibited,
+        simInfos: [{
+          iccid: TEST_ICCID,
+          isPrimary: true,
+        }],
+        macAddress: MISSING_MAC_ADDRESS
+      };
+      mojoApi_.setDeviceStateForTest(deviceState);
+      await flushAsync();
+      expandConfigurableSection();
+      macAddress = internetDetailPage.$$('#mac-address-container');
+      assertTrue(!!macAddress);
+      assertTrue(macAddress.hidden);
+    });
+
+    test('Page disabled when inhibited', async () => {
+      loadTimeData.overrideValues({
+        updatedCellularActivationUi: true,
+      });
+      init();
+
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, true);
+      const cellularNetwork = getManagedProperties(
+          mojom.NetworkType.kCellular, 'cellular', mojom.OncSource.kDevice);
+      // Required for connectDisconnectButton to be rendered.
+      cellularNetwork.connectionState = mojom.ConnectionStateType.kConnected;
+      // Required for advancedFields to be rendered.
+      cellularNetwork.typeProperties.cellular.networkTechnology = 'LTE';
+      // Required for infoFields to be rendered.
+      cellularNetwork.typeProperties.cellular.servingOperator = {name: 'name'};
+      // Required for deviceFields to be rendered.
+      const test_iccid = '11111111111111111';
+      cellularNetwork.typeProperties.cellular.iccid = test_iccid;
+      // Required for networkChooseMobile to be rendered.
+      cellularNetwork.typeProperties.cellular.supportNetworkScan = true;
+      mojoApi_.setManagedPropertiesForTest(cellularNetwork);
+
+      // Start uninhibited.
+      mojoApi_.setDeviceStateForTest({
+        type: mojom.NetworkType.kCellular,
+        deviceState: chromeos.networkConfig.mojom.DeviceStateType.kEnabled,
+        inhibitReason: mojom.InhibitReason.kNotInhibited,
+        // Required for configurable sections to be rendered.
+        simInfos: [{
+          iccid: test_iccid,
+          isPrimary: true,
+        }],
+      });
+
+      internetDetailPage.init('cellular_guid', 'Cellular', 'cellular');
+
+      await flushAsync();
+
+      const connectDisconnectButton = getButton('connectDisconnect');
+      const allowDataRoamingButton = getButton('allowDataRoaming');
+      const infoFields = getButton('infoFields');
+      const cellularSimInfoAdvanced = getButton('cellularSimInfoAdvanced');
+      const advancedFields = getButton('advancedFields');
+      const deviceFields = getButton('deviceFields');
+      const networkChooseMobile =
+          internetDetailPage.$$('network-choose-mobile');
+      const networkApnlist = internetDetailPage.$$('network-apnlist');
+      const networkIpConfig = internetDetailPage.$$('network-ip-config');
+      const networkNameservers = internetDetailPage.$$('network-nameservers');
+      const networkProxySection =
+          internetDetailPage.$$('network-proxy-section');
+
+      assertFalse(connectDisconnectButton.disabled);
+      assertFalse(allowDataRoamingButton.disabled);
+      assertFalse(infoFields.disabled);
+      assertFalse(cellularSimInfoAdvanced.disabled);
+      assertFalse(advancedFields.disabled);
+      assertFalse(deviceFields.disabled);
+      assertFalse(networkChooseMobile.disabled);
+      assertFalse(networkApnlist.disabled);
+      assertFalse(networkIpConfig.disabled);
+      assertFalse(networkNameservers.disabled);
+      assertFalse(networkProxySection.disabled);
+
+      // Mock device being inhibited.
+      mojoApi_.setDeviceStateForTest({
+        type: mojom.NetworkType.kCellular,
+        deviceState: chromeos.networkConfig.mojom.DeviceStateType.kEnabled,
+        inhibitReason: mojom.InhibitReason.kConnectingToProfile,
+        simInfos: [{
+          iccid: test_iccid,
+          isPrimary: true,
+        }],
+      });
+      await flushAsync();
+
+      assertTrue(connectDisconnectButton.disabled);
+      assertTrue(allowDataRoamingButton.disabled);
+      assertTrue(infoFields.disabled);
+      assertTrue(cellularSimInfoAdvanced.disabled);
+      assertTrue(advancedFields.disabled);
+      assertTrue(deviceFields.disabled);
+      assertTrue(networkChooseMobile.disabled);
+      assertTrue(networkApnlist.disabled);
+      assertTrue(networkIpConfig.disabled);
+      assertTrue(networkNameservers.disabled);
+      assertTrue(networkProxySection.disabled);
+
+      // Uninhibit.
+      mojoApi_.setDeviceStateForTest({
+        type: mojom.NetworkType.kCellular,
+        deviceState: chromeos.networkConfig.mojom.DeviceStateType.kEnabled,
+        inhibitReason: mojom.InhibitReason.kNotInhibited,
+        simInfos: [{
+          iccid: test_iccid,
+          isPrimary: true,
+        }],
+      });
+      await flushAsync();
+
+      assertFalse(connectDisconnectButton.disabled);
+      assertFalse(allowDataRoamingButton.disabled);
+      assertFalse(infoFields.disabled);
+      assertFalse(cellularSimInfoAdvanced.disabled);
+      assertFalse(advancedFields.disabled);
+      assertFalse(deviceFields.disabled);
+      assertFalse(networkChooseMobile.disabled);
+      assertFalse(networkApnlist.disabled);
+      assertFalse(networkIpConfig.disabled);
+      assertFalse(networkNameservers.disabled);
+      assertFalse(networkProxySection.disabled);
     });
   });
 
   suite('DetailsPageEthernet', function() {
-    test('LoadPage', function() {});
+    test('LoadPage', function() {
+      init();
+    });
 
     test('Eth1', function() {
+      init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kEthernet, true);
       setNetworksForTest([
@@ -444,6 +996,7 @@ suite('InternetDetailPage', function() {
     });
 
     test('Deep link to configure ethernet button', async () => {
+      init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kEthernet, true);
       setNetworksForTest([
@@ -470,9 +1023,12 @@ suite('InternetDetailPage', function() {
   });
 
   suite('DetailsPageTether', function() {
-    test('LoadPage', function() {});
+    test('LoadPage', function() {
+      init();
+    });
 
     test('Tether1', function() {
+      init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kTether, true);
       setNetworksForTest([
@@ -487,6 +1043,7 @@ suite('InternetDetailPage', function() {
     });
 
     test('Deep link to disconnect tether network', async () => {
+      init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kTether, true);
       setNetworksForTest([
@@ -519,6 +1076,7 @@ suite('InternetDetailPage', function() {
 
   suite('DetailsPageAutoConnect', function() {
     test('Auto Connect toggle updates after GUID change', function() {
+      init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
       const wifi1 = getManagedProperties(
@@ -548,6 +1106,7 @@ suite('InternetDetailPage', function() {
     });
 
     test('Auto Connect updates don\'t trigger a re-save', function() {
+      init();
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
       let wifi1 = getManagedProperties(

@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_GRID_AREA_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_GRID_AREA_H_
 
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -68,6 +69,17 @@ struct GridSpan {
   bool operator==(const GridSpan& o) const {
     return type_ == o.type_ && start_line_ == o.start_line_ &&
            end_line_ == o.end_line_;
+  }
+
+  bool operator<(const GridSpan& o) const {
+    DCHECK(IsTranslatedDefinite());
+    return start_line_ < o.start_line_ ||
+           (start_line_ == o.start_line_ && end_line_ < o.end_line_);
+  }
+
+  bool operator<=(const GridSpan& o) const {
+    DCHECK(IsTranslatedDefinite());
+    return *this < o || *this == o;
   }
 
   size_t IntegerSpan() const {
@@ -120,8 +132,8 @@ struct GridSpan {
     return end_line_;
   }
 
+  bool IsUntranslatedDefinite() const { return type_ == kUntranslatedDefinite; }
   bool IsTranslatedDefinite() const { return type_ == kTranslatedDefinite; }
-
   bool IsIndefinite() const { return type_ == kIndefinite; }
 
   void Translate(size_t offset) {

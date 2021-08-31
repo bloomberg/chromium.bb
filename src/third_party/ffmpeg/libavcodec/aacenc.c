@@ -30,14 +30,12 @@
  ***********************************/
 
 #include "libavutil/libm.h"
-#include "libavutil/thread.h"
 #include "libavutil/float_dsp.h"
 #include "libavutil/opt.h"
 #include "avcodec.h"
 #include "put_bits.h"
 #include "internal.h"
 #include "mpeg4audio.h"
-#include "kbdwin.h"
 #include "sinewin.h"
 #include "profiles.h"
 
@@ -48,8 +46,6 @@
 #include "aacenc_utils.h"
 
 #include "psymodel.h"
-
-static AVOnce aac_table_init = AV_ONCE_INIT;
 
 static void put_pce(PutBitContext *pb, AVCodecContext *avctx)
 {
@@ -83,9 +79,9 @@ static void put_pce(PutBitContext *pb, AVCodecContext *avctx)
         }
     }
 
-    avpriv_align_put_bits(pb);
+    align_put_bits(pb);
     put_bits(pb, 8, strlen(aux_data));
-    avpriv_put_string(pb, aux_data, 0);
+    ff_put_string(pb, aux_data, 0);
 }
 
 /**
@@ -522,7 +518,7 @@ static void put_bitstream_info(AACEncContext *s, const char *name)
         put_bits(&s->pb, 8, namelen - 14);
     put_bits(&s->pb, 4, 0); //extension type - filler
     padbits = -put_bits_count(&s->pb) & 7;
-    avpriv_align_put_bits(&s->pb);
+    align_put_bits(&s->pb);
     for (i = 0; i < namelen - 2; i++)
         put_bits(&s->pb, 8, name[i]);
     put_bits(&s->pb, 12 - padbits, 0);
@@ -925,10 +921,7 @@ static av_cold int dsp_init(AVCodecContext *avctx, AACEncContext *s)
         return AVERROR(ENOMEM);
 
     // window init
-    ff_kbd_window_init(ff_aac_kbd_long_1024, 4.0, 1024);
-    ff_kbd_window_init(ff_aac_kbd_short_128, 6.0, 128);
-    ff_init_ff_sine_windows(10);
-    ff_init_ff_sine_windows(7);
+    ff_aac_float_common_init();
 
     if ((ret = ff_mdct_init(&s->mdct1024, 11, 0, 32768.0)) < 0)
         return ret;
@@ -949,11 +942,6 @@ static av_cold int alloc_buffers(AVCodecContext *avctx, AACEncContext *s)
         s->planar_samples[ch] = s->buffer.samples + 3 * 1024 * ch;
 
     return 0;
-}
-
-static av_cold void aac_encode_init_tables(void)
-{
-    ff_aac_tableinit();
 }
 
 static av_cold int aac_encode_init(AVCodecContext *avctx)
@@ -1107,10 +1095,8 @@ static av_cold int aac_encode_init(AVCodecContext *avctx)
     if (HAVE_MIPSDSP)
         ff_aac_coder_init_mips(s);
 
-    if ((ret = ff_thread_once(&aac_table_init, &aac_encode_init_tables)) != 0)
-        return AVERROR_UNKNOWN;
-
     ff_af_queue_init(avctx, &s->afq);
+    ff_aac_tableinit();
 
     return 0;
 }

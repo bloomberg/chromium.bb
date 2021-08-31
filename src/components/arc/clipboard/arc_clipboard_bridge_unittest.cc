@@ -25,7 +25,10 @@ namespace arc {
 namespace {
 
 constexpr char kSampleText[] = "Copy&Paste 复制和粘贴 コピペ";
+constexpr char16_t kSampleText16[] = u"Copy&Paste 复制和粘贴 コピペ";
 constexpr char kSampleHtml[] = "<span>Copy&amp;Paste</span><span>コピペ</span>";
+constexpr char16_t kSampleHtml16[] =
+    u"<span>Copy&amp;Paste</span><span>コピペ</span>";
 
 MATCHER_P(ClipDataMatcher, expected, "") {
   EXPECT_EQ(expected->representations.size(), arg->representations.size());
@@ -85,7 +88,7 @@ class ArcClipboardBridgeTest : public testing::Test {
 TEST_F(ArcClipboardBridgeTest, GetClipContent_PlainText) {
   {
     ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste);
-    writer.WriteText(base::UTF8ToUTF16(kSampleText));
+    writer.WriteText(kSampleText16);
   }
 
   mojom::ClipDataPtr expected_clip_data =
@@ -101,7 +104,7 @@ TEST_F(ArcClipboardBridgeTest, GetClipContent_PlainText) {
 TEST_F(ArcClipboardBridgeTest, GetClipContent_Html) {
   {
     ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste);
-    writer.WriteHTML(base::UTF8ToUTF16(kSampleHtml), std::string());
+    writer.WriteHTML(kSampleHtml16, std::string());
   }
 
   mojom::ClipDataPtr expected_clip_data =
@@ -119,13 +122,13 @@ TEST_F(ArcClipboardBridgeTest, SetClipContent_PlainText) {
 
   clipboard_bridge_->SetClipContent(std::move(clip_data));
 
-  std::vector<base::string16> mime_types;
+  std::vector<std::u16string> mime_types;
   GetClipboard()->ReadAvailableTypes(ui::ClipboardBuffer::kCopyPaste,
                                      /* data_dst = */ nullptr, &mime_types);
   ASSERT_EQ(1u, mime_types.size());
   EXPECT_EQ(ui::kMimeTypeText, base::UTF16ToUTF8(mime_types[0]));
 
-  base::string16 result;
+  std::u16string result;
   GetClipboard()->ReadText(ui::ClipboardBuffer::kCopyPaste,
                            /* data_dst = */ nullptr, &result);
   EXPECT_EQ(kSampleText, base::UTF16ToUTF8(result));
@@ -136,19 +139,19 @@ TEST_F(ArcClipboardBridgeTest, SetClipContent_Html) {
 
   clipboard_bridge_->SetClipContent(std::move(clip_data));
 
-  std::vector<base::string16> mime_types;
+  std::vector<std::u16string> mime_types;
   GetClipboard()->ReadAvailableTypes(ui::ClipboardBuffer::kCopyPaste,
                                      /* data_dst = */ nullptr, &mime_types);
   ASSERT_EQ(1u, mime_types.size());
   EXPECT_EQ(ui::kMimeTypeHTML, base::UTF16ToUTF8(mime_types[0]));
 
-  base::string16 markup16;
+  std::u16string markup16;
   std::string url;
   uint32_t fragment_start, fragment_end;
   GetClipboard()->ReadHTML(ui::ClipboardBuffer::kCopyPaste,
                            /* data_dst = */ nullptr, &markup16, &url,
                            &fragment_start, &fragment_end);
-  base::string16 result =
+  std::u16string result =
       markup16.substr(fragment_start, fragment_end - fragment_start);
   EXPECT_EQ(kSampleHtml, base::UTF16ToUTF8(result));
 }

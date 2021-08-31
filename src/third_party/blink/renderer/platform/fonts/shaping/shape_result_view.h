@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPE_RESULT_VIEW_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPE_RESULT_VIEW_H_
 
-#include <memory>
 #include "base/containers/span.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
@@ -114,7 +113,8 @@ class PLATFORM_EXPORT ShapeResultView final
   TextDirection Direction() const {
     return static_cast<TextDirection>(direction_);
   }
-  bool Rtl() const { return Direction() == TextDirection::kRtl; }
+  bool IsLtr() const { return blink::IsLtr(Direction()); }
+  bool IsRtl() const { return blink::IsRtl(Direction()); }
   bool HasVerticalOffsets() const { return has_vertical_offsets_; }
   void FallbackFonts(HashSet<const SimpleFontData*>* fallback) const;
 

@@ -31,7 +31,7 @@ TEST(VideoAcceleratorStructTraitsTest, ConvertVideoFrameLayout) {
   constexpr size_t buffer_addr_align = 128;
   constexpr uint64_t modifier = 0x1234;
 
-  base::Optional<media::VideoFrameLayout> layout =
+  absl::optional<media::VideoFrameLayout> layout =
       media::VideoFrameLayout::CreateWithPlanes(kFormat, kCodedSize, planes,
                                                 buffer_addr_align, modifier);
   EXPECT_TRUE(layout);
@@ -39,8 +39,8 @@ TEST(VideoAcceleratorStructTraitsTest, ConvertVideoFrameLayout) {
   std::unique_ptr<media::VideoFrameLayout> input =
       std::make_unique<media::VideoFrameLayout>(*layout);
   std::unique_ptr<media::VideoFrameLayout> output;
-  mojo::test::SerializeAndDeserialize<arc::mojom::VideoFrameLayout>(&input,
-                                                                    &output);
+  mojo::test::SerializeAndDeserialize<arc::mojom::VideoFrameLayout>(input,
+                                                                    output);
 
   EXPECT_EQ(output->format(), kFormat);
   EXPECT_EQ(output->coded_size(), kCodedSize);
@@ -52,8 +52,8 @@ TEST(VideoAcceleratorStructTraitsTest, ConvertVideoFrameLayout) {
 TEST(VideoAcceleratorStructTraitsTest, ConvertNullVideoFrameLayout) {
   std::unique_ptr<media::VideoFrameLayout> input;
   std::unique_ptr<media::VideoFrameLayout> output;
-  mojo::test::SerializeAndDeserialize<arc::mojom::VideoFrameLayout>(&input,
-                                                                    &output);
+  mojo::test::SerializeAndDeserialize<arc::mojom::VideoFrameLayout>(input,
+                                                                    output);
 
   EXPECT_FALSE(output);
 }

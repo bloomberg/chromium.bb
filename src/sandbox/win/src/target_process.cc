@@ -67,7 +67,7 @@ bool GetTokenAppContainerSid(HANDLE token_handle,
           app_container_info.data());
   if (!info->TokenAppContainer)
     return false;
-  *app_container_sid = std::unique_ptr<Sid>(new Sid(info->TokenAppContainer));
+  *app_container_sid = std::make_unique<Sid>(info->TokenAppContainer);
   return true;
 }
 
@@ -104,7 +104,7 @@ SANDBOX_INTERCEPT size_t g_shared_policy_size;
 TargetProcess::TargetProcess(base::win::ScopedHandle initial_token,
                              base::win::ScopedHandle lockdown_token,
                              HANDLE job,
-                             ThreadProvider* thread_pool,
+                             ThreadPool* thread_pool,
                              const std::vector<Sid>& impersonation_capabilities)
     // This object owns everything initialized here except thread_pool and
     // the job_ handle. The Job handle is closed by BrokerServices and results
@@ -235,26 +235,8 @@ ResultCode TargetProcess::TransferVariable(const char* name,
   if (!sandbox_process_info_.IsValid())
     return SBOX_ERROR_UNEXPECTED_CALL;
 
-  void* child_var = address;
-
-#if SANDBOX_EXPORTS
-  HMODULE module = ::LoadLibrary(exe_name_.get());
-  if (!module)
-    return SBOX_ERROR_CANNOT_LOADLIBRARY_EXECUTABLE;
-
-  child_var = ::GetProcAddress(module, name);
-  ::FreeLibrary(module);
-
-  if (!child_var)
-    return SBOX_ERROR_CANNOT_FIND_VARIABLE_ADDRESS;
-
-  size_t offset =
-      reinterpret_cast<char*>(child_var) - reinterpret_cast<char*>(module);
-  child_var = reinterpret_cast<char*>(MainModule()) + offset;
-#endif
-
   SIZE_T written;
-  if (!::WriteProcessMemory(sandbox_process_info_.process_handle(), child_var,
+  if (!::WriteProcessMemory(sandbox_process_info_.process_handle(), address,
                             address, size, &written))
     return SBOX_ERROR_CANNOT_WRITE_VARIABLE_VALUE;
 
@@ -317,9 +299,9 @@ ResultCode TargetProcess::Init(Dispatcher* ipc_dispatcher,
     return ret;
   }
 
-  ipc_server_.reset(new SharedMemIPCServer(
+  ipc_server_ = std::make_unique<SharedMemIPCServer>(
       sandbox_process_info_.process_handle(),
-      sandbox_process_info_.process_id(), thread_pool_, ipc_dispatcher));
+      sandbox_process_info_.process_id(), thread_pool_, ipc_dispatcher);
 
   if (!ipc_server_->Init(shared_memory, shared_IPC_size, kIPCChannelSize))
     return SBOX_ERROR_NO_SPACE;

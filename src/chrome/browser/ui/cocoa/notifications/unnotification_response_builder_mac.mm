@@ -8,37 +8,34 @@
 
 #include "base/check.h"
 #include "base/notreached.h"
-#include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
-#include "chrome/browser/ui/cocoa/notifications/notification_operation.h"
+#include "chrome/services/mac_notifications/public/cpp/notification_constants_mac.h"
+#include "chrome/services/mac_notifications/public/cpp/notification_operation.h"
 
 @implementation UNNotificationResponseBuilder
 
-+ (NSDictionary*)buildDictionary:(UNNotificationResponse*)response {
++ (NSDictionary*)buildDictionary:(UNNotificationResponse*)response
+                       fromAlert:(BOOL)fromAlert {
   NSDictionary* userInfo =
       [[[[response notification] request] content] userInfo];
 
-  NSString* origin =
-      [userInfo objectForKey:notification_constants::kNotificationOrigin]
-          ? [userInfo objectForKey:notification_constants::kNotificationOrigin]
-          : @"";
-  DCHECK([userInfo objectForKey:notification_constants::kNotificationId]);
-  NSString* notificationId =
-      [userInfo objectForKey:notification_constants::kNotificationId];
+  NSString* origin = userInfo[notification_constants::kNotificationOrigin]
+                         ? userInfo[notification_constants::kNotificationOrigin]
+                         : @"";
+  DCHECK(userInfo[notification_constants::kNotificationId]);
+  NSString* notificationId = userInfo[notification_constants::kNotificationId];
 
-  DCHECK(
-      [userInfo objectForKey:notification_constants::kNotificationProfileId]);
+  DCHECK(userInfo[notification_constants::kNotificationProfileId]);
   NSString* profileId =
-      [userInfo objectForKey:notification_constants::kNotificationProfileId];
+      userInfo[notification_constants::kNotificationProfileId];
 
   NSNumber* creatorPid =
-      [userInfo objectForKey:notification_constants::kNotificationCreatorPid];
+      userInfo[notification_constants::kNotificationCreatorPid];
 
-  DCHECK(
-      [userInfo objectForKey:notification_constants::kNotificationIncognito]);
+  DCHECK(userInfo[notification_constants::kNotificationIncognito]);
   NSNumber* incognito =
-      [userInfo objectForKey:notification_constants::kNotificationIncognito];
+      userInfo[notification_constants::kNotificationIncognito];
   NSNumber* notificationType =
-      [userInfo objectForKey:notification_constants::kNotificationType];
+      userInfo[notification_constants::kNotificationType];
 
   int buttonIndex = notification_constants::kNotificationInvalidButtonIndex;
 
@@ -80,10 +77,10 @@
     notification_constants::kNotificationCreatorPid : creatorPid ? creatorPid
                                                                  : @0,
     notification_constants::kNotificationType : notificationType,
-    notification_constants::kNotificationOperation :
-        [NSNumber numberWithInt:static_cast<int>(operation)],
     notification_constants::
-    kNotificationButtonIndex : [NSNumber numberWithInt:buttonIndex],
+    kNotificationOperation : @(static_cast<int>(operation)),
+    notification_constants::kNotificationButtonIndex : @(buttonIndex),
+    notification_constants::kNotificationIsAlert : @(fromAlert),
   };
 }
 

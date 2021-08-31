@@ -6,13 +6,44 @@
 
 #include <vector>
 
+#include "base/base_paths.h"
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/test/base/js_test_api.h"
+#include "chromeos/components/web_applications/webui_test_prod_util.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+void HandleTestFileRequestCallback(
+    const base::FilePath& test_file_location,
+    const std::string& path,
+    content::WebUIDataSource::GotDataCallback callback) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  base::FilePath source_root;
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root);
+  const base::FilePath test_file_path =
+      source_root.Append(test_file_location).AppendASCII(path);
+
+  std::string contents;
+  CHECK(base::ReadFileToString(test_file_path, &contents)) << test_file_path;
+
+  std::move(callback).Run(base::RefCountedString::TakeString(&contents));
+}
+
+bool TestRequestHandlerShouldHandleRequest(
+    const std::vector<std::string>& test_paths,
+    const std::string& path) {
+  return base::Contains(test_paths, path);
+}
+
+}  // namespace
 
 class SandboxedWebUiAppTestBase::TestCodeInjector
     : public content::TestNavigationObserver {
@@ -42,6 +73,19 @@ class SandboxedWebUiAppTestBase::TestCodeInjector
       ASSERT_TRUE(
           content::ExecuteScript(guest_frame, LoadJsTestLibrary(script)));
     }
+    if (!owner_->test_module_.empty()) {
+      constexpr char kScript[] = R"(
+          (() => {
+            const s = document.createElement('script');
+            s.type = 'module';
+            s.src = '$1';
+            document.body.appendChild(s);
+          })();
+      )";
+      ASSERT_TRUE(content::ExecuteScript(
+          guest_frame, base::ReplaceStringPlaceholders(
+                           kScript, {owner_->test_module_}, nullptr)));
+    }
     TestNavigationObserver::OnDidFinishNavigation(navigation_handle);
   }
 
@@ -52,10 +96,24 @@ class SandboxedWebUiAppTestBase::TestCodeInjector
 SandboxedWebUiAppTestBase::SandboxedWebUiAppTestBase(
     const std::string& host_url,
     const std::string& sandboxed_url,
-    const std::vector<base::FilePath>& scripts)
-    : host_url_(host_url), sandboxed_url_(sandboxed_url), scripts_(scripts) {}
+    const std::vector<base::FilePath>& scripts,
+    const std::string& test_module)
+    : host_url_(host_url),
+      sandboxed_url_(sandboxed_url),
+      scripts_(scripts),
+      test_module_(test_module) {}
 
 SandboxedWebUiAppTestBase::~SandboxedWebUiAppTestBase() = default;
+
+// static
+void SandboxedWebUiAppTestBase::ConfigureDefaultTestRequestHandler(
+    const base::FilePath& root_folder,
+    const std::vector<std::string>& resource_files) {
+  SetTestableDataSourceRequestHandlerForTesting(
+      base::BindRepeating(&TestRequestHandlerShouldHandleRequest,
+                          resource_files),
+      base::BindRepeating(&HandleTestFileRequestCallback, root_folder));
+}
 
 // static
 std::string SandboxedWebUiAppTestBase::LoadJsTestLibrary(

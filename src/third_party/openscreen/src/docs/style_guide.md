@@ -1,6 +1,6 @@
 # Open Screen Library Style Guide
 
-The Open Screen Library follows the [Chromium C++ coding style](https://chromium.googlesource.com/chromium/src/+/master/styleguide/c++/c++.md)
+The Open Screen Library follows the [Chromium C++ coding style](https://chromium.googlesource.com/chromium/src/+/main/styleguide/c++/c++.md)
 which, in turn, defers to the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html).
 We also follow the [Chromium C++ Do's and Don'ts](https://sites.google.com/a/chromium.org/dev/developers/coding-style/cpp-dos-and-donts).
 
@@ -188,4 +188,4 @@ not explicitly sprinkle "#if OSP_DCHECK_IS_ON()" guards all around any
 functions, variables, etc. that will be unused in "DCHECK off" builds.
 
 Use OSP_DCHECK and OSP_CHECK in accordance with the
-[Chromium guidance for DCHECK/CHECK](https://chromium.googlesource.com/chromium/src/+/master/styleguide/c++/c++.md#check_dcheck_and-notreached).
+[Chromium guidance for DCHECK/CHECK](https://chromium.googlesource.com/chromium/src/+/main/styleguide/c++/c++.md#check_dcheck_and-notreached).

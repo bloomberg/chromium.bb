@@ -4,12 +4,19 @@
 
 #include "chrome/browser/safe_browsing/chrome_enterprise_url_lookup_service.h"
 
+#include "base/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
+#include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/policy/dm_token_utils.h"
+#include "chrome/browser/safe_browsing/user_population.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/policy/core/common/cloud/dm_token.h"
+#include "components/policy/core/common/policy_types.h"
+#include "components/safe_browsing/core/browser/referrer_chain_provider.h"
+#include "components/safe_browsing/core/browser/sync/sync_utils.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/sync/driver/test_sync_service.h"
@@ -26,7 +33,27 @@ namespace safe_browsing {
 
 namespace {
 constexpr char kRealTimeLookupUrl[] =
-    "https://safebrowsing.google.com/safebrowsing/clientreport/realtime";
+    "https://enterprise-safebrowsing.googleapis.com/safebrowsing/clientreport/"
+    "realtime";
+
+class MockReferrerChainProvider : public ReferrerChainProvider {
+ public:
+  virtual ~MockReferrerChainProvider() = default;
+  MOCK_METHOD3(IdentifyReferrerChainByWebContents,
+               AttributionResult(content::WebContents* web_contents,
+                                 int user_gesture_count_limit,
+                                 ReferrerChain* out_referrer_chain));
+  MOCK_METHOD4(IdentifyReferrerChainByEventURL,
+               AttributionResult(const GURL& event_url,
+                                 SessionID event_tab_id,
+                                 int user_gesture_count_limit,
+                                 ReferrerChain* out_referrer_chain));
+  MOCK_METHOD3(IdentifyReferrerChainByPendingEventURL,
+               AttributionResult(const GURL& event_url,
+                                 int user_gesture_count_limit,
+                                 ReferrerChain* out_referrer_chain));
+};
+
 }  // namespace
 
 class ChromeEnterpriseRealTimeUrlLookupServiceTest : public PlatformTest {
@@ -46,17 +73,36 @@ class ChromeEnterpriseRealTimeUrlLookupServiceTest : public PlatformTest {
         false /* restore_session */);
     cache_manager_ = std::make_unique<VerdictCacheManager>(
         nullptr, content_setting_map_.get());
+    referrer_chain_provider_ = std::make_unique<MockReferrerChainProvider>();
 
     TestingProfile::Builder builder;
     test_profile_ = builder.Build();
 
-    enterprise_rt_service_ =
-        std::make_unique<ChromeEnterpriseRealTimeUrlLookupService>(
-            test_shared_loader_factory_, cache_manager_.get(),
-            test_profile_.get(), &test_sync_service_, &test_pref_service_,
-            ChromeUserPopulation::NOT_MANAGED,
-            /*is_under_advanced_protection=*/true,
-            /*is_off_the_record=*/false);
+    enterprise_rt_service_ = std::make_unique<
+        ChromeEnterpriseRealTimeUrlLookupService>(
+        test_shared_loader_factory_, cache_manager_.get(), test_profile_.get(),
+        base::BindRepeating(
+            [](Profile* profile, syncer::TestSyncService* test_sync_service) {
+              ChromeUserPopulation population = GetUserPopulation(profile);
+              population.set_is_history_sync_enabled(
+                  safe_browsing::SyncUtils::IsHistorySyncEnabled(
+                      test_sync_service));
+              population.set_profile_management_status(
+                  ChromeUserPopulation::NOT_MANAGED);
+              population.set_is_under_advanced_protection(true);
+              return population;
+            },
+            test_profile_.get(), &test_sync_service_),
+        enterprise_connectors::ConnectorsServiceFactory::GetForBrowserContext(
+            test_profile_.get()),
+        referrer_chain_provider_.get());
+
+    test_profile_->GetPrefs()->SetInteger(
+        prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckMode,
+        REAL_TIME_CHECK_FOR_MAINFRAME_ENABLED);
+    test_profile_->GetPrefs()->SetInteger(
+        prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckScope,
+        policy::POLICY_SCOPE_MACHINE);
   }
 
   void TearDown() override {
@@ -124,6 +170,7 @@ class ChromeEnterpriseRealTimeUrlLookupServiceTest : public PlatformTest {
   sync_preferences::TestingPrefServiceSyncable test_pref_service_;
   std::unique_ptr<TestingProfile> test_profile_;
   syncer::TestSyncService test_sync_service_;
+  std::unique_ptr<MockReferrerChainProvider> referrer_chain_provider_;
 };
 
 TEST_F(ChromeEnterpriseRealTimeUrlLookupServiceTest,
@@ -156,6 +203,10 @@ TEST_F(ChromeEnterpriseRealTimeUrlLookupServiceTest,
                         "example.test/",
                         RTLookupResponse::ThreatInfo::COVERING_MATCH);
   SetDMTokenForTesting(policy::DMToken::CreateValidTokenForTesting("dm_token"));
+  // Referrer chain is currently disabled for enterprise requests.
+  EXPECT_CALL(*referrer_chain_provider_,
+              IdentifyReferrerChainByPendingEventURL(_, _, _))
+      .Times(0);
 
   base::MockCallback<RTLookupResponseCallback> response_callback;
   enterprise_rt_service()->StartLookup(

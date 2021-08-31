@@ -94,7 +94,8 @@ class ProfileReportGeneratorIOSTest : public PlatformTest {
         ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
     identityService->AddIdentities(@[ base::SysUTF8ToNSString(kAccount) ]);
     ChromeIdentity* identity =
-        [identityService->GetAllIdentitiesSortedForDisplay() objectAtIndex:0];
+        [identityService->GetAllIdentitiesSortedForDisplay(nullptr)
+            objectAtIndex:0];
     authentication_service_->SignIn(identity);
   }
 
@@ -109,7 +110,7 @@ class ProfileReportGeneratorIOSTest : public PlatformTest {
 
     EXPECT_EQ(kProfilePath.BaseName().AsUTF8Unsafe(), report->name());
     EXPECT_EQ(kProfilePath.AsUTF8Unsafe(), report->id());
-    EXPECT_TRUE(report->is_full_report());
+    EXPECT_TRUE(report->is_detail_available());
 
     return report;
   }
@@ -141,7 +142,7 @@ TEST_F(ProfileReportGeneratorIOSTest, SignedInProfile) {
   EXPECT_TRUE(report->has_chrome_signed_in_user());
   EXPECT_EQ(kAccount + "@gmail.com", report->chrome_signed_in_user().email());
   EXPECT_EQ(kAccount + "_hashID",
-            report->chrome_signed_in_user().obfudscated_gaia_id());
+            report->chrome_signed_in_user().obfuscated_gaia_id());
 }
 
 TEST_F(ProfileReportGeneratorIOSTest, PoliciesReportedOnlyWhenEnabled) {

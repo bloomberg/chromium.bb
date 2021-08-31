@@ -4,6 +4,7 @@
 
 #include "media/cdm/library_cdm/clear_key_cdm/cdm_video_decoder.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 // Necessary to convert async media::VideoDecoder to sync CdmVideoDecoder.
 // Typically not recommended for production code, but is ok here since
 // ClearKeyCdm is only for testing.
@@ -27,7 +28,6 @@
 #include "media/cdm/cdm_type_conversion.h"
 #include "media/cdm/library_cdm/cdm_host_proxy.h"
 #include "media/media_buildflags.h"
-#include "third_party/libaom/libaom_buildflags.h"
 #include "third_party/libyuv/include/libyuv/planar_functions.h"
 
 #if BUILDFLAG(ENABLE_LIBVPX)
@@ -257,7 +257,7 @@ class VideoDecoderAdapter final : public CdmVideoDecoder {
 
   void OnVideoFrameReady(scoped_refptr<VideoFrame> video_frame) {
     // Do not queue EOS frames, which is not needed.
-    if (video_frame->metadata()->end_of_stream)
+    if (video_frame->metadata().end_of_stream)
       return;
 
     decoded_video_frames_.push(std::move(video_frame));
@@ -280,8 +280,8 @@ class VideoDecoderAdapter final : public CdmVideoDecoder {
 
   // Results of |video_decoder_| operations. Set iff the callback of the
   // operation has been called.
-  base::Optional<Status> last_init_result_;
-  base::Optional<Status> last_decode_status_;
+  absl::optional<Status> last_init_result_;
+  absl::optional<Status> last_decode_status_;
 
   // Queue of decoded video frames.
   using VideoFrameQueue = base::queue<scoped_refptr<VideoFrame>>;
@@ -304,7 +304,7 @@ std::unique_ptr<CdmVideoDecoder> CreateVideoDecoder(
 
 #if BUILDFLAG(ENABLE_LIBVPX)
   if (config.codec == cdm::kCodecVp8 || config.codec == cdm::kCodecVp9)
-    video_decoder.reset(new VpxVideoDecoder());
+    video_decoder = std::make_unique<VpxVideoDecoder>();
 #endif
 
 #if BUILDFLAG(ENABLE_LIBGAV1_DECODER)
@@ -316,13 +316,13 @@ std::unique_ptr<CdmVideoDecoder> CreateVideoDecoder(
   {
 #if BUILDFLAG(ENABLE_DAV1D_DECODER)
     if (config.codec == cdm::kCodecAv1)
-      video_decoder.reset(new Dav1dVideoDecoder(null_media_log.get()));
+      video_decoder = std::make_unique<Dav1dVideoDecoder>(null_media_log.get());
 #endif
   }
 
 #if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
   if (!video_decoder)
-    video_decoder.reset(new FFmpegVideoDecoder(null_media_log.get()));
+    video_decoder = std::make_unique<FFmpegVideoDecoder>(null_media_log.get());
 #endif
 
   if (!video_decoder)

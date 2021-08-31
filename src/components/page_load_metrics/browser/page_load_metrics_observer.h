@@ -9,10 +9,11 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
+#include "components/page_load_metrics/browser/page_load_metrics_event.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer_delegate.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/base/host_port_pair.h"
@@ -20,7 +21,9 @@
 #include "net/cookies/canonical_cookie.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/use_counter/use_counter_feature.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -28,6 +31,13 @@ class RenderFrameHost;
 }  // namespace content
 
 namespace page_load_metrics {
+
+// Struct for storing per-frame memory update data.
+struct MemoryUpdate {
+  content::GlobalFrameRoutingId routing_id;
+  int64_t delta_bytes;
+  MemoryUpdate(content::GlobalFrameRoutingId id, int64_t delta);
+};
 
 // Storage types reported to page load metrics observers on storage
 // accesses.
@@ -116,6 +126,10 @@ struct PageRenderData {
 
   // How many times LayoutNG-based LayoutObject::UpdateLayout() is called.
   uint64_t ng_layout_call_count = 0;
+
+  uint64_t flexbox_ng_layout_block_count = 0;
+
+  uint64_t grid_ng_layout_block_count = 0;
 };
 
 // Information related to layout shift normalization for different strategies.
@@ -130,15 +144,20 @@ struct NormalizedCLSData {
 
   // Maximum CLS of session windows. The gap between two consecutive shifts is
   // not bigger than 1000ms and the maximum window size is 5000ms.
-  double session_windows_gap1000ms_max5000ms_max_cls = 0.0;
+  float session_windows_gap1000ms_max5000ms_max_cls = 0.0;
 
   // Maximum CLS of session windows. The gap between two consecutive shifts is
   // not bigger than 1000ms.
-  double session_windows_gap1000ms_maxMax_max_cls = 0.0;
+  float session_windows_gap1000ms_maxMax_max_cls = 0.0;
 
   // The average CLS of session windows. The gap between two consecutive shifts
   // is not bigger than 5000ms.
-  double session_windows_gap5000ms_maxMax_average_cls = 0.0;
+  float session_windows_gap5000ms_maxMax_average_cls = 0.0;
+
+  // Maximum CLS of session windows. The gap between two consecutive shifts is
+  // not bigger than 1000ms or segmented by a user input. The maximum window
+  // size is 5000ms.
+  float session_windows_by_inputs_gap1000ms_max5000ms_max_cls = 0.0;
 
   // If true, will not report the data in UKM.
   bool data_tainted = false;
@@ -406,7 +425,8 @@ class PageLoadMetricsObserver {
   // coded as WebPerformance::
   // kRequestAnimationFramesToRecordAfterBackForwardCacheRestore.
   virtual void OnRequestAnimationFramesAfterBackForwardCacheRestoreInPage(
-      const mojom::BackForwardCacheTiming& timing) {}
+      const mojom::BackForwardCacheTiming& timing,
+      size_t index) {}
 
   // Unlike other paint callbacks, OnFirstMeaningfulPaintInMainFrameDocument is
   // tracked per document, and is reported for the main frame document only.
@@ -423,7 +443,7 @@ class PageLoadMetricsObserver {
   // Invoked when new use counter features are observed across all frames.
   virtual void OnFeaturesUsageObserved(
       content::RenderFrameHost* rfh,
-      const mojom::PageLoadFeatures& features) {}
+      const std::vector<blink::UseCounterFeature>& features) {}
 
   // The smoothness metrics is shared over shared-memory. The observer should
   // create a mapping (by calling |shared_memory.Map()|) so that they are able
@@ -502,7 +522,7 @@ class PageLoadMetricsObserver {
   virtual void OnLoadedResource(
       const ExtraRequestCompleteInfo& extra_request_complete_info) {}
 
-  virtual void FrameReceivedFirstUserActivation(
+  virtual void FrameReceivedUserActivation(
       content::RenderFrameHost* render_frame_host) {}
 
   // Called when the display property changes on the frame.
@@ -514,7 +534,9 @@ class PageLoadMetricsObserver {
   virtual void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
                                 const gfx::Size& frame_size) {}
 
-  virtual void OnFrameDeleted(content::RenderFrameHost* render_frame_host) {}
+  virtual void OnRenderFrameDeleted(
+      content::RenderFrameHost* render_frame_host) {}
+  virtual void OnFrameDeleted(int frame_tree_node_id) {}
 
   // Called when a cookie is read for a resource request or by document.cookie.
   virtual void OnCookiesRead(const GURL& url,
@@ -536,13 +558,18 @@ class PageLoadMetricsObserver {
                                  bool blocked_by_policy,
                                  StorageType access_type) {}
 
-  // Called when the event corresponding to |event_key| occurs in this page
-  // load.
-  virtual void OnEventOccurred(const void* const event_key) {}
+  // Called when |event| occurs in this page load.
+  virtual void OnEventOccurred(PageLoadMetricsEvent event) {}
 
   // Called when the page tracked was just activated after being loaded inside a
   // portal.
   virtual void DidActivatePortal(base::TimeTicks activation_time) {}
+
+  // Called when V8 per-frame memory usage updates are available. Each
+  // MemoryUpdate consists of a GlobalFrameRoutingId and a nonzero int64_t
+  // change in bytes used.
+  virtual void OnV8MemoryChanged(
+      const std::vector<MemoryUpdate>& memory_updates) {}
 
  private:
   PageLoadMetricsObserverDelegate* delegate_ = nullptr;

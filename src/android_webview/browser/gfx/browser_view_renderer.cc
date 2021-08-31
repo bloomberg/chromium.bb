@@ -118,10 +118,8 @@ BrowserViewRenderer::BrowserViewRenderer(
       offscreen_pre_raster_(false),
       recorder_(base::MakeRefCounted<AwAttachingToWindowRecorder>()) {
   begin_frame_source_ = std::make_unique<BeginFrameSourceWebView>();
-  if (::features::IsUsingVizForWebView()) {
-    root_frame_sink_proxy_ = std::make_unique<RootFrameSinkProxy>(
-        ui_task_runner_, this, begin_frame_source_.get());
-  }
+  root_frame_sink_proxy_ = std::make_unique<RootFrameSinkProxy>(
+      ui_task_runner_, this, begin_frame_source_.get());
   UpdateBeginFrameSource();
   recorder_->Start();
 }
@@ -146,6 +144,11 @@ void BrowserViewRenderer::SetCurrentCompositorFrameConsumer(
   }
   current_compositor_frame_consumer_ = compositor_frame_consumer;
   if (current_compositor_frame_consumer_) {
+    // Previous renderer will evict CompositorFrame, compositor needs to submit
+    // next frames with new local surface id.
+    if (compositor_)
+      compositor_->WasEvicted();
+
     RootFrameSinkGetter root_sink_getter;
     if (root_frame_sink_proxy_)
       root_sink_getter = root_frame_sink_proxy_->GetRootFrameSinkCallback();
@@ -165,6 +168,13 @@ void BrowserViewRenderer::RegisterWithWebContents(
 void BrowserViewRenderer::TrimMemory() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::TrimMemory");
+
+  // Trimming memory might destroy HardwareRenderer which will evict
+  // CompositorFrame, compositor needs to submit next frames with new local
+  // surface id.
+  if (compositor_)
+    compositor_->WasEvicted();
+
   // Just set the memory limit to 0 and drop all tiles. This will be reset to
   // normal levels in the next DrawGL call.
   if (!offscreen_pre_raster_)
@@ -391,18 +401,18 @@ void BrowserViewRenderer::ReturnUnusedResource(
 }
 
 void BrowserViewRenderer::ReturnUsedResources(
-    const std::vector<viz::ReturnedResource>& resources,
+    std::vector<viz::ReturnedResource> resources,
     const viz::FrameSinkId& frame_sink_id,
     uint32_t layer_tree_frame_sink_id) {
   content::SynchronousCompositor* compositor = FindCompositor(frame_sink_id);
   if (compositor && !resources.empty())
-    compositor->ReturnResources(layer_tree_frame_sink_id, resources);
+    compositor->ReturnResources(layer_tree_frame_sink_id, std::move(resources));
   has_rendered_frame_ = true;
 }
 
 bool BrowserViewRenderer::OnDrawSoftware(SkCanvas* canvas) {
   did_invalidate_since_last_draw_ = false;
-  return CanOnDraw() && CompositeSW(canvas);
+  return CanOnDraw() && CompositeSW(canvas, /*software_canvas=*/true);
 }
 
 bool BrowserViewRenderer::NeedToDrawBackgroundColor() {
@@ -430,7 +440,7 @@ sk_sp<SkPicture> BrowserViewRenderer::CapturePicture(int width,
                                                    gfx::Vector2dF());
       compositor_->DidChangeRootLayerScrollOffset(
           gfx::ScrollOffset(scroll_offset_unscaled_));
-      CompositeSW(rec_canvas);
+      CompositeSW(rec_canvas, /*software_canvas=*/false);
     }
     compositor_->DidChangeRootLayerScrollOffset(
         gfx::ScrollOffset(scroll_offset_unscaled_));
@@ -877,7 +887,8 @@ void BrowserViewRenderer::ReturnResourcesFromViz(
     viz::FrameSinkId frame_sink_id,
     uint32_t layer_tree_frame_sink_id,
     std::vector<viz::ReturnedResource> resources) {
-  ReturnUsedResources(resources, frame_sink_id, layer_tree_frame_sink_id);
+  ReturnUsedResources(std::move(resources), frame_sink_id,
+                      layer_tree_frame_sink_id);
 }
 
 void BrowserViewRenderer::OnInputEvent() {
@@ -901,9 +912,9 @@ void BrowserViewRenderer::PostInvalidate(
   client_->PostInvalidate();
 }
 
-bool BrowserViewRenderer::CompositeSW(SkCanvas* canvas) {
+bool BrowserViewRenderer::CompositeSW(SkCanvas* canvas, bool software_canvas) {
   DCHECK(compositor_);
-  return compositor_->DemandDrawSw(canvas);
+  return compositor_->DemandDrawSw(canvas, software_canvas);
 }
 
 std::string BrowserViewRenderer::ToString() const {

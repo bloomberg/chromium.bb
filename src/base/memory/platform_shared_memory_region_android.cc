@@ -8,10 +8,10 @@
 
 #include "base/bits.h"
 #include "base/logging.h"
+#include "base/memory/page_size.h"
 #include "base/memory/shared_memory_tracker.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/process/process_metrics.h"
 #include "third_party/ashmem/ashmem.h"
 
 namespace base {
@@ -146,7 +146,7 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
 
   // Align size as required by ashmem_create_region() API documentation. This
   // operation may overflow so check that the result doesn't decrease.
-  size_t rounded_size = bits::Align(size, GetPageSize());
+  size_t rounded_size = bits::AlignUp(size, GetPageSize());
   if (rounded_size < size ||
       rounded_size > static_cast<size_t>(std::numeric_limits<int>::max())) {
     return {};

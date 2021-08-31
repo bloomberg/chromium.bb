@@ -7,6 +7,7 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/ui/browser.h"
@@ -28,10 +29,15 @@
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
 #include "components/constrained_window/constrained_window_views.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "content/public/browser/context_factory.h"
 #endif
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/lacros/lacros_test_helper.h"
+#include "chromeos/ui/base/tablet_state.h"
 #endif
 
 using content::NavigationController;
@@ -43,8 +49,16 @@ BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {}
 
 void BrowserWithTestWindowTest::SetUp() {
   testing::Test::SetUp();
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ash_test_helper_.SetUp();
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (!chromeos::LacrosChromeServiceImpl::Get()) {
+    lacros_service_test_helper_ =
+        std::make_unique<chromeos::ScopedLacrosServiceTestHelper>();
+  }
+  tablet_state_ = std::make_unique<chromeos::TabletState>();
 #endif
 
   // This must be created after |ash_test_helper_| is set up so that it doesn't
@@ -95,11 +109,16 @@ void BrowserWithTestWindowTest::TearDown() {
 
   profile_manager_.reset();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  tablet_state_.reset();
+  lacros_service_test_helper_.reset();
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // If initialized, the KioskAppManager will register an observer to
   // CrosSettings and will need to be destroyed before it. Having it destroyed
   // as part of the teardown will avoid unexpected test failures.
-  chromeos::KioskAppManager::Shutdown();
+  ash::KioskAppManager::Shutdown();
 
   test_views_delegate_.reset();
   ash_test_helper_.TearDown();
@@ -116,7 +135,7 @@ void BrowserWithTestWindowTest::TearDown() {
 }
 
 gfx::NativeWindow BrowserWithTestWindowTest::GetContext() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return ash_test_helper_.GetContext();
 #elif defined(TOOLKIT_VIEWS)
   return views_test_helper_->GetContext();
@@ -157,7 +176,7 @@ void BrowserWithTestWindowTest::NavigateAndCommitActiveTab(const GURL& url) {
 void BrowserWithTestWindowTest::NavigateAndCommitActiveTabWithTitle(
     Browser* navigating_browser,
     const GURL& url,
-    const base::string16& title) {
+    const std::u16string& title) {
   WebContents* contents =
       navigating_browser->tab_strip_model()->GetActiveWebContents();
   NavigationController* controller = &contents->GetController();
@@ -167,7 +186,7 @@ void BrowserWithTestWindowTest::NavigateAndCommitActiveTabWithTitle(
 
 TestingProfile* BrowserWithTestWindowTest::CreateProfile() {
   return profile_manager_->CreateTestingProfile(
-      "testing_profile", nullptr, base::string16(), 0, std::string(),
+      "testing_profile", nullptr, std::u16string(), 0, std::string(),
       GetTestingFactories());
 }
 
@@ -199,8 +218,8 @@ std::unique_ptr<Browser> BrowserWithTestWindowTest::CreateBrowser(
   return std::unique_ptr<Browser>(Browser::Create(params));
 }
 
-#if defined(OS_CHROMEOS)
-chromeos::ScopedCrosSettingsTestHelper*
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+ash::ScopedCrosSettingsTestHelper*
 BrowserWithTestWindowTest::GetCrosSettingsHelper() {
   return &cros_settings_test_helper_;
 }
@@ -209,7 +228,7 @@ chromeos::StubInstallAttributes*
 BrowserWithTestWindowTest::GetInstallAttributes() {
   return GetCrosSettingsHelper()->InstallAttributes();
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest(
     std::unique_ptr<content::BrowserTaskEnvironment> task_environment,

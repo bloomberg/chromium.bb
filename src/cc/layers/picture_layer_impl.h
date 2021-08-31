@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <string>
@@ -65,7 +66,7 @@ class CC_EXPORT PictureLayerImpl
   void ReleaseTileResources() override;
   void RecreateTileResources() override;
   Region GetInvalidationRegionForDebugging() override;
-  gfx::Rect GetEnclosingRectInTargetSpace() const override;
+  gfx::Rect GetEnclosingVisibleRectInTargetSpace() const override;
   gfx::ContentColorUsage GetContentColorUsage() const override;
 
   // PictureLayerTilingClient overrides.
@@ -78,6 +79,8 @@ class CC_EXPORT PictureLayerImpl
   bool RequiresHighResToDraw() const override;
   const PaintWorkletRecordMap& GetPaintWorkletRecords() const override;
   bool IsDirectlyCompositedImage() const override;
+  bool ScrollInteractionInProgress() const override;
+  bool DidCheckerboardQuad() const override;
 
   // ImageAnimationController::AnimationDriver overrides.
   bool ShouldAnimate(PaintImage::Id paint_image_id) const override;
@@ -104,7 +107,11 @@ class CC_EXPORT PictureLayerImpl
 
   void SetNearestNeighbor(bool nearest_neighbor);
 
-  void SetDirectlyCompositedImageSize(base::Optional<gfx::Size>);
+  void SetDidCheckerboardQuad(bool did_checkerboard_quad) {
+    did_checkerboard_quad_ = did_checkerboard_quad;
+  }
+
+  void SetDirectlyCompositedImageSize(absl::optional<gfx::Size>);
 
   size_t GPUMemoryUsageInBytes() const override;
 
@@ -164,7 +171,12 @@ class CC_EXPORT PictureLayerImpl
   void InvalidatePaintWorklets(const PaintWorkletInput::PropertyKey& key);
 
   void SetContentsScaleForTesting(float scale) {
-    ideal_contents_scale_ = raster_contents_scale_ = scale;
+    ideal_contents_scale_ = raster_contents_scale_ =
+        gfx::Vector2dF(scale, scale);
+  }
+
+  void AddLastAppendQuadsTilingForTesting(PictureLayerTiling* tiling) {
+    last_append_quads_tilings_.push_back(tiling);
   }
 
  protected:
@@ -178,7 +190,7 @@ class CC_EXPORT PictureLayerImpl
   bool ShouldAdjustRasterScale() const;
   void RecalculateRasterScales();
   void AdjustRasterScaleForTransformAnimation(
-      float preserved_raster_contents_scale);
+      const gfx::Vector2dF& preserved_raster_contents_scale);
   float MinimumRasterContentsScaleForWillChangeTransform() const;
   // Returns false if raster translation is not applicable.
   bool CalculateRasterTranslation(gfx::Vector2dF& raster_translation) const;
@@ -232,31 +244,45 @@ class CC_EXPORT PictureLayerImpl
   // will change transform.
   bool HasWillChangeTransformHint() const;
 
-  PictureLayerImpl* twin_layer_;
+  PictureLayerImpl* twin_layer_ = nullptr;
 
-  std::unique_ptr<PictureLayerTilingSet> tilings_;
+  std::unique_ptr<PictureLayerTilingSet> tilings_ =
+      CreatePictureLayerTilingSet();
   scoped_refptr<RasterSource> raster_source_;
   Region invalidation_;
 
   // Ideal scales are calcuated from the transforms applied to the layer. They
   // represent the best known scale from the layer to the final output.
   // Page scale is from user pinch/zoom.
-  float ideal_page_scale_;
+  float ideal_page_scale_ = 0.f;
   // Device scale is from screen dpi, and it comes from device scale facter.
-  float ideal_device_scale_;
+  float ideal_device_scale_ = 0.f;
   // Source scale comes from javascript css scale.
-  float ideal_source_scale_;
+  gfx::Vector2dF ideal_source_scale_;
   // Contents scale = device scale * page scale * source scale.
-  float ideal_contents_scale_;
+  gfx::Vector2dF ideal_contents_scale_;
 
   // Raster scales are set from ideal scales. They are scales we choose to
   // raster at. They may not match the ideal scales at times to avoid raster for
   // performance reasons.
-  float raster_page_scale_;
-  float raster_device_scale_;
-  float raster_source_scale_;
-  float raster_contents_scale_;
-  float low_res_raster_contents_scale_;
+  float raster_page_scale_ = 0.f;
+  float raster_device_scale_ = 0.f;
+  gfx::Vector2dF raster_source_scale_;
+  gfx::Vector2dF raster_contents_scale_;
+  float low_res_raster_contents_scale_ = 0.f;
+
+  float ideal_source_scale_key() const {
+    return std::max(ideal_source_scale_.x(), ideal_source_scale_.y());
+  }
+  float ideal_contents_scale_key() const {
+    return std::max(ideal_contents_scale_.x(), ideal_contents_scale_.y());
+  }
+  float raster_source_scale_key() const {
+    return std::max(raster_source_scale_.x(), raster_source_scale_.y());
+  }
+  float raster_contents_scale_key() const {
+    return std::max(raster_contents_scale_.x(), raster_contents_scale_.y());
+  }
 
   bool is_backdrop_filter_mask_ : 1;
 
@@ -265,18 +291,27 @@ class CC_EXPORT PictureLayerImpl
 
   bool nearest_neighbor_ : 1;
 
-  LCDTextDisallowedReason lcd_text_disallowed_reason_;
+  // Whether the layer did not have a draw quad during last AppendQuads call.
+  bool did_checkerboard_quad_ : 1;
+
+  // This is set by UpdateRasterSource() on change of raster source size. It's
+  // used to recalculate raster scale for will-chagne:transform. It's reset to
+  // false after raster scale update.
+  bool raster_source_size_changed_ : 1;
+
+  LCDTextDisallowedReason lcd_text_disallowed_reason_ =
+      LCDTextDisallowedReason::kNone;
 
   // The intrinsic size of the directly composited image. A directly composited
   // image is an image which is the only thing drawn into a layer. In these
   // cases we attempt to raster the image at its intrinsic size.
-  base::Optional<gfx::Size> directly_composited_image_size_;
+  absl::optional<gfx::Size> directly_composited_image_size_;
 
   // The default raster source scale for a directly composited image, the last
   // time raster scales were calculated. This will be the same as
   // |raster_source_scale_| if no adjustments were made in
   // |CalculateDirectlyCompositedImageRasterScale()|.
-  float directly_composited_image_initial_raster_scale_;
+  float directly_composited_image_initial_raster_scale_ = 0.f;
 
   // Use this instead of |visible_layer_rect()| for tiling calculations. This
   // takes external viewport and transform for tile priority into account.
@@ -299,7 +334,7 @@ class CC_EXPORT PictureLayerImpl
   PaintWorkletRecordMap paint_worklet_records_;
 
   gfx::Size content_bounds_;
-  TileSizeCalculator tile_size_calculator_;
+  TileSizeCalculator tile_size_calculator_{this};
 
   // Denotes an area that is damaged and needs redraw. This is in the layer's
   // space.

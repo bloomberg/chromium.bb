@@ -5,6 +5,7 @@
 #include "discovery/dnssd/public/dns_sd_txt_record.h"
 
 #include <cctype>
+#include <utility>
 
 namespace openscreen {
 namespace discovery {
@@ -40,10 +41,6 @@ Error DnsSdTxtRecord::SetValue(const std::string& key,
   key_value_txt_[key] = std::move(value);
   ClearFlag(key);
   return Error::None();
-}
-
-Error DnsSdTxtRecord::SetValue(const std::string& key, uint8_t value) {
-  return SetValue(key, std::vector<uint8_t>{value});
 }
 
 Error DnsSdTxtRecord::SetValue(const std::string& key,

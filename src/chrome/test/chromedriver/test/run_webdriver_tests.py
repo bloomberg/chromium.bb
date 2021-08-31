@@ -12,6 +12,7 @@ import json
 import tempfile
 import time
 import logging
+import zlib
 
 _log = logging.getLogger(__name__)
 
@@ -39,8 +40,15 @@ from blinkpy.w3c.common import CHROMIUM_WPT_DIR
 from blinkpy.web_tests.models.test_expectations import TestExpectations
 from blinkpy.web_tests.models.typ_types import ResultType
 
-WD_CLIENT_PATH = 'blinkpy/third_party/wpt/wpt/tools/webdriver'
-WEBDRIVER_CLIENT_ABS_PATH = os.path.join(BLINK_TOOLS_ABS_PATH, WD_CLIENT_PATH)
+WPT_TOOLS_PATH = 'third_party/wpt_tools/wpt/tools'
+WPT_TOOLS_ABSPATH = os.path.join(SRC_DIR, WPT_TOOLS_PATH)
+sys.path.insert(0, WPT_TOOLS_ABSPATH)
+# Importing localpaths allows us to use vendored-in dependencies from the
+# wpt_tools/wpt/tools/third_party directory.
+import localpaths  # noqa: F401
+
+WD_CLIENT_PATH = os.path.join(WPT_TOOLS_PATH, 'webdriver')
+WEBDRIVER_CLIENT_ABS_PATH = os.path.join(SRC_DIR, WD_CLIENT_PATH)
 
 
 class TestShard(object):
@@ -58,7 +66,11 @@ class TestShard(object):
     if self.total_shards == 1:
       return True
 
-    return (hash(test_path) % self.total_shards) == self.shard_index
+    # zlip.adler32 doesn't have perfect distribution, but should suffice for our
+    # needs. Note that the built-in string __hash__ in Python is
+    # non-deterministic between runs of Python so cannot be used for sharding!
+    hashed_path = zlib.adler32(test_path.encode('utf-8')) & 0xFFFFFFFF
+    return (hashed_path % self.total_shards) == self.shard_index
 
 class WebDriverTestResult(object):
   def __init__(self, test_name, test_status, messsage=None):
@@ -182,11 +194,13 @@ def set_up_config(path_finder, chromedriver_server):
       }
   })
 
+  config_path = os.path.join(tempfile.mkdtemp(), "wd_server_config.json")
+  os.environ["WD_SERVER_CONFIG_FILE"] = config_path
   # Port numbers are defined at
   # https://cs.chromium.org/chromium/src/third_party/blink/tools
   # /blinkpy/web_tests/servers/wptserve.py?l=23&rcl=375b34c6ba64
   # 5d00c1413e4c6106c7bb74581c85
-  os.environ["WD_SERVER_CONFIG"] = json.dumps({
+  config_dict = {
     "doc_root": path_finder.path_from_chromium_base(CHROMIUM_WPT_DIR),
     "browser_host": "web-platform.test",
     "domains": {"": {"": "web-platform.test",
@@ -194,7 +208,10 @@ def set_up_config(path_finder, chromedriver_server):
                      "www.www": "www.www.web-platform.test",
                      "www1": "www1.web-platform.test",
                      "www2": "www2.web-platform.test"}},
-    "ports": {"ws": [9001], "wss": [9444], "http": [8001], "https": [8444]}})
+    "ports": {"ws": [9001], "wss": [9444], "http": [8001], "https": [8444]}}
+  with open(config_path, "w") as f:
+    json.dump(config_dict, f)
+
 
 def run_test(path, path_finder, port, skipped_tests=[]):
   abs_path = os.path.abspath(path)

@@ -37,6 +37,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -71,10 +72,6 @@ base::WeakPtr<PaymentRequestDialogView> PaymentRequestDialogView::Create(
 
 void PaymentRequestDialogView::RequestFocus() {
   view_stack_->RequestFocus();
-}
-
-ui::ModalType PaymentRequestDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
 }
 
 views::View* PaymentRequestDialogView::GetInitiallyFocusedView() {
@@ -278,9 +275,9 @@ void PaymentRequestDialogView::GoBack() {
 void PaymentRequestDialogView::GoBackToPaymentSheet(bool animate) {
   // This assumes that the Payment Sheet is the first view in the stack. Thus if
   // there is only one view, we are already showing the payment sheet.
-  if (view_stack_->size() > 1) {
+  if (view_stack_->GetSize() > 1) {
     // Do not animate views when the dialog size changes.
-    view_stack_->PopMany(view_stack_->size() - 1,
+    view_stack_->PopMany(view_stack_->GetSize() - 1,
                          animate && !is_showing_large_payment_handler_window_);
 
     // Back navigation from payment handler window should resize the dialog;
@@ -473,9 +470,15 @@ PaymentRequestDialogView::PaymentRequestDialogView(
   DCHECK(request->spec());
 
   SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetModalType(ui::MODAL_TYPE_CHILD);
 
   SetCloseCallback(base::BindOnce(&PaymentRequestDialogView::OnDialogClosed,
                                   weak_ptr_factory_.GetWeakPtr()));
+  // The dialog's CancelCallback may be called during initialization e.g. by
+  // pressing the escape key, calling OnDialogClosed will ensure the correct
+  // order of destruction.
+  SetCancelCallback(base::BindOnce(&PaymentRequestDialogView::OnDialogClosed,
+                                   weak_ptr_factory_.GetWeakPtr()));
 
   request->spec()->AddObserver(this);
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -638,5 +641,10 @@ void PaymentRequestDialogView::ResizeDialogWindow() {
                          ->GetWebContentsModalDialogHost());
   }
 }
+
+BEGIN_METADATA(PaymentRequestDialogView, views::DialogDelegateView)
+ADD_READONLY_PROPERTY_METADATA(int, ActualPaymentHandlerDialogHeight)
+ADD_READONLY_PROPERTY_METADATA(int, ActualDialogWidth)
+END_METADATA
 
 }  // namespace payments

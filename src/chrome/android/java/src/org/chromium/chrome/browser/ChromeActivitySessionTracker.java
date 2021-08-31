@@ -34,13 +34,11 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
+import org.chromium.chrome.browser.read_later.ReadingListBridge;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.components.browser_ui.share.ShareImageFileUtils;
 import org.chromium.components.user_prefs.UserPrefs;
-import org.chromium.ui.base.ResourceBundle;
-
-import java.util.Locale;
 
 /**
  * Tracks the foreground session state for the Chrome activities.
@@ -135,11 +133,12 @@ public class ChromeActivitySessionTracker {
         UmaUtils.recordForegroundStartTime();
         updatePasswordEchoState();
         FontSizePrefs.getInstance().onSystemFontScaleChanged();
-        recordWhetherSystemAndAppLanguagesDiffer();
+        ChromeLocalizationUtils.recordUiLanguageStatus();
         updateAcceptLanguages();
         mVariationsSession.start();
         mPowerBroadcastReceiver.onForegroundSessionStart();
         AppHooks.get().getChimeDelegate().startSession();
+        ReadingListBridge.onStartChromeForeground();
 
         // Track the ratio of Chrome startups that are caused by notification clicks.
         // TODO(johnme): Add other reasons (and switch to recordEnumeratedHistogram).
@@ -245,37 +244,6 @@ public class ChromeActivitySessionTracker {
 
         UserPrefs.get(Profile.getLastUsedRegularProfile())
                 .setBoolean(Pref.WEB_KIT_PASSWORD_ECHO_ENABLED, systemEnabled);
-    }
-
-    /**
-     * Records whether Chrome was started in a language other than the system language.
-     * Also records if the UI and system languages differ but we support the system language. That
-     * can happen if the user changes the system language and the required language split cannot be
-     * installed in time.
-     */
-    private void recordWhetherSystemAndAppLanguagesDiffer() {
-        String uiLanguage =
-                LocaleUtils.toLanguage(ChromeLocalizationUtils.getUiLocaleStringForCompressedPak());
-        String systemLanguage =
-                LocaleUtils.toLanguage(LocaleUtils.toLanguageTag(Locale.getDefault()));
-
-        boolean systemLanguageIsUiLanguage = systemLanguage.equals(uiLanguage);
-        RecordHistogram.recordBooleanHistogram(
-                "Android.Language.UiIsSystemLanguage", systemLanguageIsUiLanguage);
-
-        boolean systemLanguageIsSupported = isLanguageSupported(
-                systemLanguage, ResourceBundle.getAvailableCompressedPakLocales());
-        RecordHistogram.recordBooleanHistogram("Android.Language.WrongLanguageAfterResume",
-                !systemLanguageIsUiLanguage && systemLanguageIsSupported);
-    }
-
-    private static boolean isLanguageSupported(String language, String[] compressedLocales) {
-        for (String languageTag : compressedLocales) {
-            if (LocaleUtils.toLanguage(languageTag).equals(language)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

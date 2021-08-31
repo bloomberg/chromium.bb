@@ -21,11 +21,11 @@ ConversionInternalsUI::ConversionInternalsUI(WebUI* web_ui)
     : WebUIController(web_ui) {
   // Initialize the UI with no bindings. Mojo bindings will be separately
   // granted to frames within this WebContents.
-  web_ui->SetBindings(0);
+  web_ui->SetBindings(BINDINGS_POLICY_NONE);
   WebUIDataSource* source =
       WebUIDataSource::Create(kChromeUIConversionInternalsHost);
 
-  source->AddResourcePath("conversion_internals.mojom-lite.js",
+  source->AddResourcePath("conversion_internals.mojom-webui.js",
                           IDR_CONVERSION_INTERNALS_MOJOM_JS);
   source->AddResourcePath("conversion_internals.js",
                           IDR_CONVERSION_INTERNALS_JS);

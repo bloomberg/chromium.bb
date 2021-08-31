@@ -17,6 +17,7 @@
 
 #include "base/atomicops.h"
 #include "base/bind.h"
+#include "base/bind_post_task.h"
 #include "base/command_line.h"
 #include "base/containers/circular_deque.h"
 #include "base/location.h"
@@ -35,7 +36,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox.h"
-#include "gpu/command_buffer/service/abstract_texture_impl_shared_context_state.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -43,6 +43,7 @@
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/ipc/common/command_buffer_id.h"
+#include "gpu/ipc/common/gpu_channel.mojom.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gles2_command_buffer_stub.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
@@ -53,6 +54,7 @@
 #include "gpu/ipc/service/webgpu_command_buffer_stub.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/message_filter.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_surface.h"
@@ -78,16 +80,28 @@ struct GpuChannelMessage {
   DISALLOW_COPY_AND_ASSIGN(GpuChannelMessage);
 };
 
+namespace {
+
+bool TryCreateStreamTexture(base::WeakPtr<GpuChannel> channel,
+                            int32_t stream_id) {
+  if (!channel)
+    return false;
+  return channel->CreateStreamTexture(stream_id);
+}
+
+}  // namespace
+
 // This filter does the following:
 // - handles the Nop message used for verifying sync tokens on the IO thread
 // - forwards messages to child message filters
 // - posts control and out of order messages to the main thread
 // - forwards other messages to the scheduler
 class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
-    : public IPC::MessageFilter {
+    : public IPC::MessageFilter,
+      public mojom::GpuChannel {
  public:
   GpuChannelMessageFilter(
-      GpuChannel* gpu_channel,
+      gpu::GpuChannel* gpu_channel,
       Scheduler* scheduler,
       ImageDecodeAcceleratorWorker* image_decode_accelerator_worker,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
@@ -111,6 +125,11 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
   void AddChannelFilter(scoped_refptr<IPC::MessageFilter> filter);
   void RemoveChannelFilter(scoped_refptr<IPC::MessageFilter> filter);
 
+  void BindGpuChannel(
+      mojo::PendingAssociatedReceiver<mojom::GpuChannel> receiver) {
+    receiver_.Bind(std::move(receiver));
+  }
+
   ImageDecodeAcceleratorStub* image_decode_accelerator_stub() const {
     return image_decode_accelerator_stub_.get();
   }
@@ -120,18 +139,47 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
 
   SequenceId GetSequenceId(int32_t route_id) const;
 
-  bool HandleFlushMessage(const IPC::Message& message);
-
   bool MessageErrorHandler(const IPC::Message& message, const char* error_msg);
+
+  // mojom::GpuChannel:
+  void CrashForTesting() override;
+  void TerminateForTesting() override;
+  void Flush(FlushCallback callback) override;
+  void CreateCommandBuffer(mojom::CreateCommandBufferParamsPtr config,
+                           int32_t routing_id,
+                           base::UnsafeSharedMemoryRegion shared_state,
+                           CreateCommandBufferCallback callback) override;
+  void DestroyCommandBuffer(int32_t routing_id,
+                            DestroyCommandBufferCallback callback) override;
+  void ScheduleImageDecode(mojom::ScheduleImageDecodeParamsPtr params,
+                           uint64_t decode_release_count) override;
+  void FlushDeferredRequests(
+      std::vector<mojom::DeferredRequestPtr> requests) override;
+  void CreateStreamTexture(int32_t stream_id,
+                           CreateStreamTextureCallback callback) override;
+  void WaitForTokenInRange(int32_t routing_id,
+                           int32_t start,
+                           int32_t end,
+                           WaitForTokenInRangeCallback callback) override;
+  void WaitForGetOffsetInRange(
+      int32_t routing_id,
+      uint32_t set_get_buffer_count,
+      int32_t start,
+      int32_t end,
+      WaitForGetOffsetInRangeCallback callback) override;
 
   IPC::Channel* ipc_channel_ = nullptr;
   base::ProcessId peer_pid_ = base::kNullProcessId;
   std::vector<scoped_refptr<IPC::MessageFilter>> channel_filters_;
 
-  GpuChannel* gpu_channel_ = nullptr;
   // Map of route id to scheduler sequence id.
   base::flat_map<int32_t, SequenceId> route_sequences_;
   mutable base::Lock gpu_channel_lock_;
+
+  // Note that this field may be reset at any time by the owning GpuChannel's
+  // thread, so it must be accessed under lock and must be tested for null
+  // before dereferencing.
+  gpu::GpuChannel* gpu_channel_ GUARDED_BY(gpu_channel_lock_) = nullptr;
 
   Scheduler* scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -141,11 +189,13 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
 
   bool allow_process_kill_for_testing_ = false;
 
+  mojo::AssociatedReceiver<mojom::GpuChannel> receiver_{this};
+
   DISALLOW_COPY_AND_ASSIGN(GpuChannelMessageFilter);
 };
 
 GpuChannelMessageFilter::GpuChannelMessageFilter(
-    GpuChannel* gpu_channel,
+    gpu::GpuChannel* gpu_channel,
     Scheduler* scheduler,
     ImageDecodeAcceleratorWorker* image_decode_accelerator_worker,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
@@ -250,43 +300,6 @@ bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
   if (message.should_unblock() || message.is_reply())
     return MessageErrorHandler(message, "Unexpected message type");
 
-  switch (message.type()) {
-    case GpuCommandBufferMsg_AsyncFlush::ID:
-    case GpuCommandBufferMsg_DestroyTransferBuffer::ID:
-    case GpuCommandBufferMsg_ReturnFrontBuffer::ID:
-    case GpuCommandBufferMsg_TakeFrontBuffer::ID:
-    case GpuChannelMsg_CreateSharedImage::ID:
-    case GpuChannelMsg_DestroySharedImage::ID:
-      return MessageErrorHandler(message, "Invalid message");
-    case GpuChannelMsg_CrashForTesting::ID:
-      // Handle this message early, on the IO thread, in case the main
-      // thread is hung. This is the purpose of this message: generating
-      // minidumps on the bots, which are symbolized later by the test
-      // harness. Only pay attention to this message if Telemetry's GPU
-      // benchmarking extension was enabled via the command line, which
-      // exposes privileged APIs to JavaScript.
-      if (allow_process_kill_for_testing_) {
-        gl::Crash();
-      }
-      // Won't be reached if the extension is enabled.
-      return MessageErrorHandler(message, "Crashes for testing are disabled");
-    case GpuChannelMsg_TerminateForTesting::ID:
-      if (allow_process_kill_for_testing_) {
-        base::Process::TerminateCurrentProcessImmediately(0);
-        return true;
-      }
-      return MessageErrorHandler(message,
-                                 "Process termination for testing is disabled");
-    default:
-      break;
-  }
-
-  if (message.type() == GpuChannelMsg_Nop::ID) {
-    IPC::Message* reply = IPC::SyncMessage::GenerateReply(&message);
-    ipc_channel_->Send(reply);
-    return true;
-  }
-
   for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_) {
     if (filter->OnMessageReceived(message))
       return true;
@@ -296,30 +309,8 @@ bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
   if (!gpu_channel_)
     return MessageErrorHandler(message, "Channel destroyed");
 
-  // Handle flush first so that it doesn't get handled out of order.
-  if (message.type() == GpuChannelMsg_FlushDeferredMessages::ID)
-    return HandleFlushMessage(message);
-
-  if (message.routing_id() ==
-      static_cast<int32_t>(GpuChannelReservedRoutes::kImageDecodeAccelerator)) {
-    if (!image_decode_accelerator_stub_->OnMessageReceived(message))
-      return MessageErrorHandler(message, "Invalid image decode request");
-    return true;
-  }
-
-  bool handle_out_of_order =
-      message.routing_id() == MSG_ROUTING_CONTROL ||
-      message.type() == GpuCommandBufferMsg_WaitForTokenInRange::ID ||
-      message.type() == GpuCommandBufferMsg_WaitForGetOffsetInRange::ID;
-
-  if (handle_out_of_order) {
-    // It's OK to post task that may never run even for sync messages, because
-    // if the channel is destroyed, the client Send will fail.
-    main_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&GpuChannel::HandleOutOfOrderMessage,
-                                  gpu_channel_->AsWeakPtr(), message));
-    return true;
-  }
+  if (message.routing_id() == MSG_ROUTING_CONTROL)
+    return MessageErrorHandler(message, "Invalid control message");
 
   // Messages which do not have sync token dependencies.
   SequenceId sequence_id = GetSequenceId(message.routing_id());
@@ -328,7 +319,7 @@ bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
 
   scheduler_->ScheduleTask(
       Scheduler::Task(sequence_id,
-                      base::BindOnce(&GpuChannel::HandleMessage,
+                      base::BindOnce(&gpu::GpuChannel::HandleMessage,
                                      gpu_channel_->AsWeakPtr(), message),
                       std::vector<SyncToken>()));
   return true;
@@ -342,33 +333,45 @@ SequenceId GpuChannelMessageFilter::GetSequenceId(int32_t route_id) const {
   return it->second;
 }
 
-bool GpuChannelMessageFilter::HandleFlushMessage(const IPC::Message& message) {
-  DCHECK_EQ(message.type(), GpuChannelMsg_FlushDeferredMessages::ID);
-  gpu_channel_lock_.AssertAcquired();
-
-  GpuChannelMsg_FlushDeferredMessages::Param params;
-  if (!GpuChannelMsg_FlushDeferredMessages::Read(&message, &params))
-    return MessageErrorHandler(message, "Invalid flush message");
-
-  std::vector<GpuDeferredMessage> deferred_messages =
-      std::get<0>(std::move(params));
+void GpuChannelMessageFilter::FlushDeferredRequests(
+    std::vector<mojom::DeferredRequestPtr> requests) {
+  base::AutoLock auto_lock(gpu_channel_lock_);
+  if (!gpu_channel_)
+    return;
 
   std::vector<Scheduler::Task> tasks;
-  tasks.reserve(deferred_messages.size());
-  for (auto& deferred_message : deferred_messages) {
-    auto it = route_sequences_.find(deferred_message.message.routing_id());
+  tasks.reserve(requests.size());
+  for (auto& request : requests) {
+    int32_t routing_id;
+    switch (request->params->which()) {
+#if defined(OS_ANDROID)
+      case mojom::DeferredRequestParams::Tag::kDestroyStreamTexture:
+        routing_id = request->params->get_destroy_stream_texture();
+        break;
+#endif  // defined(OS_ANDROID)
+
+      case mojom::DeferredRequestParams::Tag::kCommandBufferRequest:
+        routing_id = request->params->get_command_buffer_request()->routing_id;
+        break;
+
+      case mojom::DeferredRequestParams::Tag::kSharedImageRequest:
+        routing_id = static_cast<int32_t>(
+            GpuChannelReservedRoutes::kSharedImageInterface);
+        break;
+    }
+
+    auto it = route_sequences_.find(routing_id);
     if (it == route_sequences_.end()) {
       DLOG(ERROR) << "Invalid route id in flush list";
       continue;
     }
     tasks.emplace_back(
         it->second /* sequence_id */,
-        base::BindOnce(&GpuChannel::HandleMessage, gpu_channel_->AsWeakPtr(),
-                       std::move(deferred_message.message)),
-        std::move(deferred_message.sync_token_fences));
+        base::BindOnce(&gpu::GpuChannel::ExecuteDeferredRequest,
+                       gpu_channel_->AsWeakPtr(), std::move(request->params)),
+        std::move(request->sync_token_fences));
   }
   scheduler_->ScheduleTasks(std::move(tasks));
-  return true;
 }
 
 bool GpuChannelMessageFilter::MessageErrorHandler(const IPC::Message& message,
@@ -380,6 +383,124 @@ bool GpuChannelMessageFilter::MessageErrorHandler(const IPC::Message& message,
     ipc_channel_->Send(reply);
   }
   return true;
+}
+
+void GpuChannelMessageFilter::CrashForTesting() {
+  if (allow_process_kill_for_testing_) {
+    gl::Crash();
+    return;
+  }
+
+  receiver_.ReportBadMessage("CrashForTesting is a test-only API");
+}
+
+void GpuChannelMessageFilter::TerminateForTesting() {
+  if (allow_process_kill_for_testing_) {
+    base::Process::TerminateCurrentProcessImmediately(0);
+    return;
+  }
+
+  receiver_.ReportBadMessage("TerminateForTesting is a test-only API");
+}
+
+void GpuChannelMessageFilter::Flush(FlushCallback callback) {
+  std::move(callback).Run();
+}
+
+void GpuChannelMessageFilter::CreateCommandBuffer(
+    mojom::CreateCommandBufferParamsPtr params,
+    int32_t routing_id,
+    base::UnsafeSharedMemoryRegion shared_state,
+    CreateCommandBufferCallback callback) {
+  base::AutoLock auto_lock(gpu_channel_lock_);
+  if (!gpu_channel_) {
+    receiver_.reset();
+    return;
+  }
+
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&gpu::GpuChannel::CreateCommandBuffer,
+                     gpu_channel_->AsWeakPtr(), std::move(params), routing_id,
+                     std::move(shared_state),
+                     base::BindPostTask(base::ThreadTaskRunnerHandle::Get(),
+                                        std::move(callback))));
+}
+
+void GpuChannelMessageFilter::DestroyCommandBuffer(
+    int32_t routing_id,
+    DestroyCommandBufferCallback callback) {
+  base::AutoLock auto_lock(gpu_channel_lock_);
+  if (!gpu_channel_) {
+    receiver_.reset();
+    return;
+  }
+
+  main_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&gpu::GpuChannel::DestroyCommandBuffer,
+                     gpu_channel_->AsWeakPtr(), routing_id),
+      std::move(callback));
+}
+
+void GpuChannelMessageFilter::ScheduleImageDecode(
+    mojom::ScheduleImageDecodeParamsPtr params,
+    uint64_t decode_release_count) {
+  image_decode_accelerator_stub_->ScheduleImageDecode(std::move(params),
+                                                      decode_release_count);
+}
+
+void GpuChannelMessageFilter::CreateStreamTexture(
+    int32_t stream_id,
+    CreateStreamTextureCallback callback) {
+  base::AutoLock auto_lock(gpu_channel_lock_);
+  if (!gpu_channel_) {
+    receiver_.reset();
+    return;
+  }
+  main_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&TryCreateStreamTexture, gpu_channel_->AsWeakPtr(),
+                     stream_id),
+      std::move(callback));
+}
+
+void GpuChannelMessageFilter::WaitForTokenInRange(
+    int32_t routing_id,
+    int32_t start,
+    int32_t end,
+    WaitForTokenInRangeCallback callback) {
+  base::AutoLock lock(gpu_channel_lock_);
+  if (!gpu_channel_) {
+    receiver_.reset();
+    return;
+  }
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&gpu::GpuChannel::WaitForTokenInRange,
+                     gpu_channel_->AsWeakPtr(), routing_id, start, end,
+                     base::BindPostTask(base::ThreadTaskRunnerHandle::Get(),
+                                        std::move(callback))));
+}
+
+void GpuChannelMessageFilter::WaitForGetOffsetInRange(
+    int32_t routing_id,
+    uint32_t set_get_buffer_count,
+    int32_t start,
+    int32_t end,
+    WaitForGetOffsetInRangeCallback callback) {
+  base::AutoLock lock(gpu_channel_lock_);
+  if (!gpu_channel_) {
+    receiver_.reset();
+    return;
+  }
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&gpu::GpuChannel::WaitForGetOffsetInRange,
+                     gpu_channel_->AsWeakPtr(), routing_id,
+                     set_get_buffer_count, start, end,
+                     base::BindPostTask(base::ThreadTaskRunnerHandle::Get(),
+                                        std::move(callback))));
 }
 
 GpuChannel::GpuChannel(
@@ -454,10 +575,13 @@ std::unique_ptr<GpuChannel> GpuChannel::Create(
 
 void GpuChannel::Init(IPC::ChannelHandle channel_handle,
                       base::WaitableEvent* shutdown_event) {
-  sync_channel_ = IPC::SyncChannel::Create(
-      channel_handle, IPC::Channel::MODE_SERVER, this, io_task_runner_.get(),
-      task_runner_.get(), false, shutdown_event);
+  sync_channel_ = IPC::SyncChannel::Create(this, io_task_runner_.get(),
+                                           task_runner_.get(), shutdown_event);
   sync_channel_->AddFilter(filter_.get());
+  sync_channel_->AddAssociatedInterfaceForIOThread(
+      base::BindRepeating(&GpuChannelMessageFilter::BindGpuChannel, filter_));
+  sync_channel_->Init(channel_handle, IPC::Channel::MODE_SERVER,
+                      /*create_pipe_now=*/false);
   channel_ = sync_channel_.get();
 }
 
@@ -562,43 +686,82 @@ void GpuChannel::RemoveRoute(int32_t route_id) {
   router_.RemoveRoute(route_id);
 }
 
-bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(GpuChannel, msg)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateCommandBuffer,
-                        OnCreateCommandBuffer)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyCommandBuffer,
-                        OnDestroyCommandBuffer)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateStreamTexture,
-                        OnCreateStreamTexture)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
+void GpuChannel::ExecuteDeferredRequest(
+    mojom::DeferredRequestParamsPtr params) {
+  switch (params->which()) {
+#if defined(OS_ANDROID)
+    case mojom::DeferredRequestParams::Tag::kDestroyStreamTexture:
+      DestroyStreamTexture(params->get_destroy_stream_texture());
+      break;
+#endif  // defined(OS_ANDROID)
+
+    case mojom::DeferredRequestParams::Tag::kCommandBufferRequest: {
+      mojom::DeferredCommandBufferRequest& request =
+          *params->get_command_buffer_request();
+      CommandBufferStub* stub = LookupCommandBuffer(request.routing_id);
+      if (!stub || !stub->IsScheduled()) {
+        DLOG(ERROR) << "Invalid routing ID in deferred request";
+        return;
+      }
+
+      stub->ExecuteDeferredRequest(*request.params);
+
+      // If we get descheduled or yield while processing a message.
+      if (stub->HasUnprocessedCommands() || !stub->IsScheduled()) {
+        DCHECK_EQ(mojom::DeferredCommandBufferRequestParams::Tag::kAsyncFlush,
+                  request.params->which());
+        scheduler_->ContinueTask(
+            stub->sequence_id(),
+            base::BindOnce(&GpuChannel::ExecuteDeferredRequest, AsWeakPtr(),
+                           std::move(params)));
+      }
+      break;
+    }
+
+    case mojom::DeferredRequestParams::Tag::kSharedImageRequest:
+      shared_image_stub_->ExecuteDeferredRequest(
+          std::move(params->get_shared_image_request()));
+      break;
+  }
 }
 
-void GpuChannel::HandleMessage(const IPC::Message& msg) {
-  int32_t routing_id = msg.routing_id();
+void GpuChannel::WaitForTokenInRange(
+    int32_t routing_id,
+    int32_t start,
+    int32_t end,
+    mojom::GpuChannel::WaitForTokenInRangeCallback callback) {
   CommandBufferStub* stub = LookupCommandBuffer(routing_id);
-
-  DCHECK(!stub || stub->IsScheduled());
-
-  DVLOG(1) << "received message @" << &msg << " on channel @" << this
-           << " with type " << msg.type();
-
-  HandleMessageHelper(msg);
-
-  // If we get descheduled or yield while processing a message.
-  if (stub && (stub->HasUnprocessedCommands() || !stub->IsScheduled())) {
-    DCHECK_EQ(GpuCommandBufferMsg_AsyncFlush::ID, msg.type());
-    scheduler_->ContinueTask(
-        stub->sequence_id(),
-        base::BindOnce(&GpuChannel::HandleMessage, AsWeakPtr(), msg));
+  if (!stub) {
+    std::move(callback).Run(CommandBuffer::State());
+    return;
   }
+
+  stub->WaitForTokenInRange(start, end, std::move(callback));
+}
+
+void GpuChannel::WaitForGetOffsetInRange(
+    int32_t routing_id,
+    uint32_t set_get_buffer_count,
+    int32_t start,
+    int32_t end,
+    mojom::GpuChannel::WaitForGetOffsetInRangeCallback callback) {
+  CommandBufferStub* stub = LookupCommandBuffer(routing_id);
+  if (!stub) {
+    std::move(callback).Run(CommandBuffer::State());
+    return;
+  }
+
+  stub->WaitForGetOffsetInRange(set_get_buffer_count, start, end,
+                                std::move(callback));
 }
 
 void GpuChannel::HandleMessageForTesting(const IPC::Message& msg) {
   // Message filter gets message first on IO thread.
   filter_->OnMessageReceived(msg);
+}
+
+mojom::GpuChannel& GpuChannel::GetGpuChannelForTesting() {
+  return *filter_;
 }
 
 ImageDecodeAcceleratorStub* GpuChannel::GetImageDecodeAcceleratorStub() const {
@@ -620,29 +783,21 @@ bool GpuChannel::CreateSharedImageStub() {
   return true;
 }
 
-void GpuChannel::HandleMessageHelper(const IPC::Message& msg) {
+void GpuChannel::HandleMessage(const IPC::Message& msg) {
   int32_t routing_id = msg.routing_id();
+  CommandBufferStub* stub = LookupCommandBuffer(routing_id);
+
+  DCHECK(!stub || stub->IsScheduled());
+
+  DVLOG(1) << "received message @" << &msg << " on channel @" << this
+           << " with type " << msg.type();
 
   bool handled = false;
-  if (routing_id == MSG_ROUTING_CONTROL) {
-    handled = OnControlMessageReceived(msg);
-  } else {
+  if (routing_id != MSG_ROUTING_CONTROL)
     handled = router_.RouteMessage(msg);
-  }
 
   if (!handled && unhandled_message_listener_)
     handled = unhandled_message_listener_->OnMessageReceived(msg);
-
-  // Respond to sync messages even if router failed to route.
-  if (!handled && msg.is_sync()) {
-    IPC::Message* reply = IPC::SyncMessage::GenerateReply(&msg);
-    reply->set_reply_error();
-    Send(reply);
-  }
-}
-
-void GpuChannel::HandleOutOfOrderMessage(const IPC::Message& msg) {
-  HandleMessageHelper(msg);
 }
 
 #if defined(OS_ANDROID)
@@ -666,20 +821,39 @@ void GpuChannel::DestroyStreamTexture(int32_t stream_id) {
 }
 #endif
 
-void GpuChannel::OnCreateCommandBuffer(
-    const GPUCreateCommandBufferConfig& init_params,
+// Helper to ensure CreateCommandBuffer below always invokes its response
+// callback.
+class ScopedCreateCommandBufferResponder {
+ public:
+  explicit ScopedCreateCommandBufferResponder(
+      mojom::GpuChannel::CreateCommandBufferCallback callback)
+      : callback_(std::move(callback)) {}
+  ~ScopedCreateCommandBufferResponder() {
+    std::move(callback_).Run(result_, capabilities_);
+  }
+
+  void set_result(ContextResult result) { result_ = result; }
+  void set_capabilities(const Capabilities& capabilities) {
+    capabilities_ = capabilities;
+  }
+
+ private:
+  mojom::GpuChannel::CreateCommandBufferCallback callback_;
+  ContextResult result_ = ContextResult::kFatalFailure;
+  Capabilities capabilities_;
+};
+
+void GpuChannel::CreateCommandBuffer(
+    mojom::CreateCommandBufferParamsPtr init_params,
     int32_t route_id,
     base::UnsafeSharedMemoryRegion shared_state_shm,
-    ContextResult* result,
-    gpu::Capabilities* capabilities) {
-  TRACE_EVENT2("gpu", "GpuChannel::OnCreateCommandBuffer", "route_id", route_id,
-               "offscreen", (init_params.surface_handle == kNullSurfaceHandle));
-  // Default result on failure. Override with a more accurate failure if needed,
-  // or with success.
-  *result = ContextResult::kFatalFailure;
-  *capabilities = gpu::Capabilities();
+    mojom::GpuChannel::CreateCommandBufferCallback callback) {
+  ScopedCreateCommandBufferResponder responder(std::move(callback));
+  TRACE_EVENT2("gpu", "GpuChannel::CreateCommandBuffer", "route_id", route_id,
+               "offscreen",
+               (init_params->surface_handle == kNullSurfaceHandle));
 
-  if (init_params.surface_handle != kNullSurfaceHandle && !is_gpu_host_) {
+  if (init_params->surface_handle != kNullSurfaceHandle && !is_gpu_host_) {
     LOG(ERROR)
         << "ContextResult::kFatalFailure: "
            "attempt to create a view context on a non-privileged channel";
@@ -689,12 +863,12 @@ void GpuChannel::OnCreateCommandBuffer(
   if (gpu_channel_manager_->delegate()->IsExiting()) {
     LOG(ERROR) << "ContextResult::kTransientFailure: trying to create command "
                   "buffer during process shutdown.";
-    *result = gpu::ContextResult::kTransientFailure;
+    responder.set_result(ContextResult::kTransientFailure);
     return;
   }
 
-  int32_t stream_id = init_params.stream_id;
-  int32_t share_group_id = init_params.share_group_id;
+  int32_t stream_id = init_params->stream_id;
+  int32_t share_group_id = init_params->share_group_id;
   CommandBufferStub* share_group = LookupCommandBuffer(share_group_id);
 
   if (!share_group && share_group_id != MSG_ROUTING_NONE) {
@@ -720,7 +894,7 @@ void GpuChannel::OnCreateCommandBuffer(
     // The caller should retry to get a context.
     LOG(ERROR) << "ContextResult::kTransientFailure: "
                   "shared context was already lost";
-    *result = gpu::ContextResult::kTransientFailure;
+    responder.set_result(ContextResult::kTransientFailure);
     return;
   }
 
@@ -729,35 +903,38 @@ void GpuChannel::OnCreateCommandBuffer(
 
   SequenceId sequence_id = stream_sequences_[stream_id];
   if (sequence_id.is_null()) {
-    sequence_id = scheduler_->CreateSequence(init_params.stream_priority);
+    sequence_id = scheduler_->CreateSequence(init_params->stream_priority);
     stream_sequences_[stream_id] = sequence_id;
   }
 
   std::unique_ptr<CommandBufferStub> stub;
-  if (init_params.attribs.context_type == CONTEXT_TYPE_WEBGPU) {
+  if (init_params->attribs.context_type == CONTEXT_TYPE_WEBGPU) {
     if (!gpu_channel_manager_->gpu_preferences().enable_webgpu) {
       DLOG(ERROR) << "ContextResult::kFatalFailure: WebGPU not enabled";
       return;
     }
 
     stub = std::make_unique<WebGPUCommandBufferStub>(
-        this, init_params, command_buffer_id, sequence_id, stream_id, route_id);
-  } else if (init_params.attribs.enable_raster_interface &&
-             !init_params.attribs.enable_gles2_interface &&
-             !init_params.attribs.enable_grcontext) {
+        this, *init_params, command_buffer_id, sequence_id, stream_id,
+        route_id);
+  } else if (init_params->attribs.enable_raster_interface &&
+             !init_params->attribs.enable_gles2_interface &&
+             !init_params->attribs.enable_grcontext) {
     stub = std::make_unique<RasterCommandBufferStub>(
-        this, init_params, command_buffer_id, sequence_id, stream_id, route_id);
+        this, *init_params, command_buffer_id, sequence_id, stream_id,
+        route_id);
   } else {
     stub = std::make_unique<GLES2CommandBufferStub>(
-        this, init_params, command_buffer_id, sequence_id, stream_id, route_id);
+        this, *init_params, command_buffer_id, sequence_id, stream_id,
+        route_id);
   }
 
   auto stub_result =
-      stub->Initialize(share_group, init_params, std::move(shared_state_shm));
+      stub->Initialize(share_group, *init_params, std::move(shared_state_shm));
   if (stub_result != gpu::ContextResult::kSuccess) {
     DLOG(ERROR) << "GpuChannel::CreateCommandBuffer(): failed to initialize "
                    "CommandBufferStub";
-    *result = stub_result;
+    responder.set_result(stub_result);
     return;
   }
 
@@ -766,12 +943,12 @@ void GpuChannel::OnCreateCommandBuffer(
     return;
   }
 
-  *result = ContextResult::kSuccess;
-  *capabilities = stub->decoder_context()->GetCapabilities();
+  responder.set_result(ContextResult::kSuccess);
+  responder.set_capabilities(stub->decoder_context()->GetCapabilities());
   stubs_[route_id] = std::move(stub);
 }
 
-void GpuChannel::OnDestroyCommandBuffer(int32_t route_id) {
+void GpuChannel::DestroyCommandBuffer(int32_t route_id) {
   TRACE_EVENT1("gpu", "GpuChannel::OnDestroyCommandBuffer", "route_id",
                route_id);
 
@@ -791,25 +968,23 @@ void GpuChannel::OnDestroyCommandBuffer(int32_t route_id) {
   RemoveRoute(route_id);
 }
 
-void GpuChannel::OnCreateStreamTexture(int32_t stream_id, bool* succeeded) {
+bool GpuChannel::CreateStreamTexture(int32_t stream_id) {
 #if defined(OS_ANDROID)
   auto found = stream_textures_.find(stream_id);
   if (found != stream_textures_.end()) {
     LOG(ERROR)
         << "Trying to create a StreamTexture with an existing stream_id.";
-    *succeeded = false;
-    return;
+    return false;
   }
   scoped_refptr<StreamTexture> stream_texture =
       StreamTexture::Create(this, stream_id);
   if (!stream_texture) {
-    *succeeded = false;
-    return;
+    return false;
   }
   stream_textures_.emplace(stream_id, std::move(stream_texture));
-  *succeeded = true;
+  return true;
 #else
-  *succeeded = false;
+  return false;
 #endif
 }
 
@@ -853,9 +1028,12 @@ scoped_refptr<gl::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
     gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
+    gfx::BufferPlane plane,
     SurfaceHandle surface_handle) {
   switch (handle.type) {
     case gfx::SHARED_MEMORY_BUFFER: {
+      if (plane != gfx::BufferPlane::DEFAULT)
+        return nullptr;
       if (!base::IsValueInRangeForNumericType<size_t>(handle.stride))
         return nullptr;
       auto image = base::MakeRefCounted<gl::GLImageSharedMemory>(size);
@@ -874,7 +1052,7 @@ scoped_refptr<gl::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
       return manager->gpu_memory_buffer_factory()
           ->AsImageFactory()
           ->CreateImageForGpuMemoryBuffer(std::move(handle), size, format,
-                                          client_id_, surface_handle);
+                                          plane, client_id_, surface_handle);
     }
   }
 }

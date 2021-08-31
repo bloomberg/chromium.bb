@@ -5,6 +5,8 @@
 #ifndef UI_GTK_SELECT_FILE_DIALOG_IMPL_GTK_H_
 #define UI_GTK_SELECT_FILE_DIALOG_IMPL_GTK_H_
 
+#include <map>
+
 #include "base/macros.h"
 #include "ui/base/glib/glib_signal.h"
 #include "ui/gtk/gtk_util.h"
@@ -29,7 +31,7 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
   // SelectFileDialog implementation.
   // |params| is user data we pass back via the Listener interface.
   void SelectFileImpl(Type type,
-                      const base::string16& title,
+                      const std::u16string& title,
                       const base::FilePath& default_path,
                       const FileTypeInfo* file_types,
                       int file_type_index,
@@ -122,7 +124,8 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
                      OnFileChooserDestroy,
                      GtkWidget*);
 
-  // Callback for when we update the preview for the selection.
+  // Callback for when we update the preview for the selection. Only used on
+  // GTK3.
   CHROMEG_CALLBACK_0(SelectFileDialogImplGTK,
                      void,
                      OnUpdatePreview,
@@ -131,11 +134,12 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
   // A map from dialog windows to the |params| user data associated with them.
   std::map<GtkWidget*, void*> params_map_;
 
+  // Only used on GTK3 since GTK4 provides its own preview.
   // The GtkImage widget for showing previews of selected images.
-  GtkWidget* preview_;
+  GtkWidget* preview_ = nullptr;
 
-  // All our dialogs.
-  std::set<GtkWidget*> dialogs_;
+  // Maps from dialogs to signal handler IDs.
+  std::map<GtkWidget*, unsigned long> dialogs_;
 
   // The set of all parent windows for which we are currently running dialogs.
   std::set<aura::Window*> parents_;

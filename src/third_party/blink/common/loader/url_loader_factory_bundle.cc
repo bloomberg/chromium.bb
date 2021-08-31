@@ -50,6 +50,11 @@ PendingURLLoaderFactoryBundle::PendingURLLoaderFactoryBundle(
 
 PendingURLLoaderFactoryBundle::~PendingURLLoaderFactoryBundle() = default;
 
+bool PendingURLLoaderFactoryBundle::
+    IsTrackedChildPendingURLLoaderFactoryBundle() const {
+  return false;
+}
+
 scoped_refptr<network::SharedURLLoaderFactory>
 PendingURLLoaderFactoryBundle::CreateFactory() {
   auto other = std::make_unique<PendingURLLoaderFactoryBundle>();
@@ -92,20 +97,23 @@ network::mojom::URLLoaderFactory* URLLoaderFactoryBundle::GetFactory(
   if (appcache_factory_)
     return appcache_factory_.get();
 
-  return default_factory_.is_bound() ? default_factory_.get() : nullptr;
+  // Hitting the DCHECK below means that a subresource load has unexpectedly
+  // happened in a speculative frame (or in a test frame created via
+  // RenderViewTest).  This most likely indicates a bug somewhere else.
+  DCHECK(default_factory_.is_bound());
+  return default_factory_.get();
 }
 
 void URLLoaderFactoryBundle::CreateLoaderAndStart(
     mojo::PendingReceiver<network::mojom::URLLoader> loader,
-    int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   network::mojom::URLLoaderFactory* factory_ptr = GetFactory(request);
-  factory_ptr->CreateLoaderAndStart(std::move(loader), routing_id, request_id,
-                                    options, request, std::move(client),
+  factory_ptr->CreateLoaderAndStart(std::move(loader), request_id, options,
+                                    request, std::move(client),
                                     traffic_annotation);
 }
 

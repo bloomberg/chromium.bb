@@ -6,7 +6,6 @@
 #define CONTENT_PUBLIC_BROWSER_NATIVE_WEB_KEYBOARD_EVENT_H_
 
 #include "base/compiler_specific.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -52,7 +51,7 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent : public blink::WebKeyboardEvent {
   explicit NativeWebKeyboardEvent(const ui::KeyEvent& key_event);
 #if defined(USE_AURA)
   // Create a legacy keypress event specified by |character|.
-  NativeWebKeyboardEvent(const ui::KeyEvent& key_event, base::char16 character);
+  NativeWebKeyboardEvent(const ui::KeyEvent& key_event, char16_t character);
 #endif
 #endif
 

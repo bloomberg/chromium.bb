@@ -4,6 +4,8 @@
 
 #include "remoting/host/chromeos/clipboard_aura.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
@@ -71,7 +73,7 @@ void ClipboardAuraTest::SetUp() {
 
   // Setup the clipboard.
   client_clipboard_ = new ClientClipboard();
-  clipboard_.reset(new ClipboardAura());
+  clipboard_ = std::make_unique<ClipboardAura>();
 
   EXPECT_GT(TestTimeouts::tiny_timeout(), kTestOverridePollingInterval * 10)
       << "The test timeout should be greater than the polling interval";
@@ -112,7 +114,7 @@ TEST_F(ClipboardAuraTest, MonitorClipboardChanges) {
   {
     // |clipboard_writer| will write to the clipboard when it goes out of scope.
     ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kCopyPaste);
-    clipboard_writer.WriteText(base::UTF8ToUTF16("Test data."));
+    clipboard_writer.WriteText(u"Test data.");
   }
 
   EXPECT_CALL(*client_clipboard_,

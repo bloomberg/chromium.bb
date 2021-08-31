@@ -9,13 +9,11 @@
 #include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/credit_card_fido_authenticator.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
-#include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 
 namespace autofill {
 
@@ -56,7 +54,7 @@ class TestCreditCardFIDOAuthenticator : public CreditCardFIDOAuthenticator {
   bool IsOptOutCalled() { return opt_out_called_; }
 
  private:
-  friend class AutofillManagerTest;
+  friend class BrowserAutofillManagerTest;
   friend class CreditCardAccessManagerTest;
 
   PublicKeyCredentialRequestOptionsPtr request_options_;

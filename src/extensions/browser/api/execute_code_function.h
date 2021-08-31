@@ -6,11 +6,11 @@
 #define EXTENSIONS_BROWSER_API_EXECUTE_CODE_FUNCTION_H_
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/script_executor.h"
 #include "extensions/common/api/extension_types.h"
-#include "extensions/common/host_id.h"
+#include "extensions/common/mojom/host_id.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace extensions {
 
@@ -57,8 +57,8 @@ class ExecuteCodeFunction : public ExtensionFunction {
                               bool success,
                               std::unique_ptr<std::string> data);
 
-  const HostID& host_id() const { return host_id_; }
-  void set_host_id(const HostID& host_id) { host_id_ = host_id; }
+  const mojom::HostID& host_id() const { return host_id_; }
+  void set_host_id(const mojom::HostID& host_id) { host_id_ = host_id; }
 
   InitResult set_init_result(InitResult init_result) {
     init_result_ = init_result;
@@ -74,14 +74,12 @@ class ExecuteCodeFunction : public ExtensionFunction {
   // |DeleteInjectionDetails|, since the two types are compatible; the value
   // of |run_at| defaults to |RUN_AT_NONE|.
   std::unique_ptr<api::extension_types::InjectDetails> details_;
-  base::Optional<InitResult> init_result_;
+  absl::optional<InitResult> init_result_;
   // Set iff |init_result_| == FAILURE, holds the error string.
-  base::Optional<std::string> init_error_;
+  absl::optional<std::string> init_error_;
 
  private:
-  void OnExecuteCodeFinished(const std::string& error,
-                             const GURL& on_url,
-                             const base::ListValue& result);
+  void OnExecuteCodeFinished(std::vector<ScriptExecutor::FrameResult> results);
 
   // Run in UI thread.  Code string contains the code to be executed. Returns
   // true on success. If true is returned, this does an AddRef. Returns false on
@@ -93,7 +91,10 @@ class ExecuteCodeFunction : public ExtensionFunction {
   GURL script_url_;
 
   // The ID of the injection host.
-  HostID host_id_;
+  mojom::HostID host_id_;
+
+  // The ID of the root frame to inject into.
+  int root_frame_id_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(ExecuteCodeFunction);
 };

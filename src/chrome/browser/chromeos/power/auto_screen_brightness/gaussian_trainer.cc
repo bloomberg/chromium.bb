@@ -8,14 +8,13 @@
 #include <cmath>
 #include <limits>
 
+#include "ash/constants/ash_features.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
-#include "chromeos/constants/chromeos_features.h"
 
 namespace chromeos {
 namespace power {
@@ -50,7 +49,7 @@ enum class BoundedBrightnessChange {
 // |is_lower_bound_exceeded| is nullopt if the new brightness is within the
 // bounds.
 BoundedBrightnessChange GetBoundedBrightnessChange(
-    base::Optional<bool> is_lower_bound_exceeded,
+    absl::optional<bool> is_lower_bound_exceeded,
     bool is_user) {
   if (!is_lower_bound_exceeded.has_value()) {
     if (is_user) {
@@ -131,13 +130,11 @@ double BoundedBrightnessAdjustment(double brightness_old,
   const bool exceeded_lower = brightness_new < lower_bound;
 
   const BoundedBrightnessChange change = GetBoundedBrightnessChange(
-      exceeded_lower || exceeded_upper ? base::Optional<bool>(exceeded_lower)
-                                       : base::nullopt,
+      exceeded_lower || exceeded_upper ? absl::optional<bool>(exceeded_lower)
+                                       : absl::nullopt,
       is_user);
   UMA_HISTOGRAM_ENUMERATION(
       "AutoScreenBrightness.ModelTraining.BrightnessChange", change);
-  VLOG(1) << "ABTrainer bounded brightness change type: "
-          << static_cast<int>(change);
 
   return base::ClampToRange(brightness_new, lower_bound, upper_bound) -
          brightness_old;
@@ -177,9 +174,6 @@ double ModelPredictionAdjustment(double brightness_old,
   // If model's prediction is consistent with user's selection, then no
   // brightness change will be necessary.
   if (is_consistent) {
-    VLOG(1) << "ABTrainer model user brightness consistent (model,user): "
-            << FormatToPrint(model_brightness - target_brightness) << ","
-            << FormatToPrint(bounded_user_adjustment);
     return 0.0;
   }
 
@@ -203,15 +197,13 @@ void LogModelCurveError(double error, bool model_updated) {
       (model_updated ? "Update" : "NoUpdate");
   base::UmaHistogramPercentageObsoleteDoNotUse(histogram_name,
                                                std::round(error));
-  VLOG(1) << "ABTrainer model error " << (model_updated ? "with " : "without ")
-          << "model updated: " << FormatToPrint(error);
 }
 
 }  // namespace
 
 TrainingResult::TrainingResult() = default;
 TrainingResult::TrainingResult(
-    const base::Optional<MonotoneCubicSpline>& new_curve,
+    const absl::optional<MonotoneCubicSpline>& new_curve,
     double error)
     : new_curve(new_curve), error(error) {}
 
@@ -421,9 +413,7 @@ TrainingResult GaussianTrainer::Train(
   if (!need_to_update_curve_) {
     const double error = CalculateCurveError(data);
     LogModelCurveError(error, false /* model_updated */);
-    VLOG(1) << "ABTrainer training finished without new curve: \n"
-            << current_curve_->ToString();
-    return TrainingResult(base::nullopt, error);
+    return TrainingResult(absl::nullopt, error);
   }
 
   need_to_update_curve_ = false;
@@ -431,13 +421,10 @@ TrainingResult GaussianTrainer::Train(
   const auto new_curve = MonotoneCubicSpline::CreateMonotoneCubicSpline(
       ambient_log_lux_, brightness_);
   if (!new_curve) {
-    VLOG(1) << "ABTrainer training finished with new invalid curve";
-    return TrainingResult(base::nullopt, 0 /* error */);
+    return TrainingResult(absl::nullopt, 0 /* error */);
   }
 
   current_curve_ = new_curve;
-  VLOG(1) << "ABTrainer training finished with new curve: \n"
-          << current_curve_->ToString();
 
   const double error = CalculateCurveError(data);
   LogModelCurveError(error, true /* model_updated */);
@@ -463,11 +450,6 @@ void GaussianTrainer::AdjustCurveWithSingleDataPoint(
   const double brightness_global =
       global_curve_->Interpolate(data.ambient_log_lux);
 
-  VLOG(1) << "ABTrainer training data point (global,old,new,log_lux): "
-          << FormatToPrint(brightness_global) << ", "
-          << FormatToPrint(data.brightness_old) << ", "
-          << FormatToPrint(data.brightness_new) << ", " << data.ambient_log_lux;
-
   // Check if this |data| is an outlier and should be ignored. It's an outlier
   // if its original/old brightness is too far off from the brightness as
   // predicted by the global curve. This assumes the global curve is reasonably
@@ -478,9 +460,6 @@ void GaussianTrainer::AdjustCurveWithSingleDataPoint(
                         is_brightness_outlier);
 
   if (is_brightness_outlier) {
-    VLOG(1) << "ABTrainer outlier (user,global): "
-            << FormatToPrint(data.brightness_old) << ","
-            << FormatToPrint(brightness_global);
     return;
   }
 
@@ -527,8 +506,6 @@ void GaussianTrainer::EnforceMonotonicity(size_t center_index) {
     brightness_[i - 1] =
         base::ClampToRange(brightness_[i - 1], min_value, max_value);
     if (brightness_[i - 1] > 100.0) {
-      VLOG(1) << "ABTrainer exceeded max at " << (i - 1)
-              << " with value: " << FormatToPrint(brightness_[i - 1]);
       brightness_[i - 1] = 100.0;
     }
   }
@@ -541,8 +518,6 @@ void GaussianTrainer::EnforceMonotonicity(size_t center_index) {
     brightness_[i + 1] =
         base::ClampToRange(brightness_[i + 1], min_value, max_value);
     if (brightness_[i + 1] > 100.0) {
-      VLOG(1) << "ABTrainer exceeded max at " << (i + 1)
-              << " with value: " << FormatToPrint(brightness_[i + 1]);
       brightness_[i + 1] = 100.0;
     }
   }

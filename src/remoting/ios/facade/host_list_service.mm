@@ -96,14 +96,12 @@ void HostListService::Init() {
               }];
 }
 
-std::unique_ptr<HostListService::CallbackSubscription>
-HostListService::RegisterHostListStateCallback(
+base::CallbackListSubscription HostListService::RegisterHostListStateCallback(
     const base::RepeatingClosure& callback) {
   return host_list_state_callbacks_.Add(callback);
 }
 
-std::unique_ptr<HostListService::CallbackSubscription>
-HostListService::RegisterFetchFailureCallback(
+base::CallbackListSubscription HostListService::RegisterFetchFailureCallback(
     const base::RepeatingClosure& callback) {
   return fetch_failure_callbacks_.Add(callback);
 }
@@ -179,8 +177,7 @@ void HostListService::HandleFetchFailure(const ProtobufHttpStatus& status) {
 }
 
 void HostListService::OnUserUpdated(bool is_user_signed_in) {
-  directory_client_.Post(FROM_HERE,
-                         &DirectoryServiceClient::CancelPendingRequests);
+  directory_client_.AsyncCall(&DirectoryServiceClient::CancelPendingRequests);
   SetState(State::NOT_FETCHED);
   if (is_user_signed_in) {
     RequestFetch();

@@ -23,6 +23,11 @@ TOOLS_SRC_ROOT = os.environ.get(
 
 _SAMPLE_TOOL_SUFFIX = 'readelf'
 
+ANDROID_ARM_NDK_TOOL_PREFIX = os.path.join(TOOLS_SRC_ROOT, 'third_party',
+                                           'android_ndk', 'toolchains', 'llvm',
+                                           'prebuilt', 'linux-x86_64', 'bin',
+                                           'arm-linux-androideabi-')
+
 
 class _PathFinder(object):
   def __init__(self, name, value):
@@ -210,6 +215,12 @@ def GetApkAnalyzerPath():
       os.path.join('third_party', 'android_sdk', 'public', 'cmdline-tools',
                    'latest', 'bin', 'apkanalyzer'))
   return os.environ.get('APK_ANALYZER', default_path)
+
+
+def GetAapt2Path():
+  default_path = FromToolsSrcRootRelative(
+      os.path.join('third_party', 'android_build_tools', 'aapt2', 'aapt2'))
+  return os.environ.get('AAPT2', default_path)
 
 
 def GetJavaHome():

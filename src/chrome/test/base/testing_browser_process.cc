@@ -4,12 +4,15 @@
 
 #include "chrome/test/base/testing_browser_process.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_measurement.h"
@@ -29,7 +32,6 @@
 #include "chrome/test/base/testing_browser_process_platform_part.h"
 #include "components/federated_learning/floc_sorting_lsh_clusters_service.h"
 #include "components/network_time/network_time_tracker.h"
-#include "components/optimization_guide/optimization_guide_service.h"
 #include "components/permissions/permissions_client.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/prefs/pref_service.h"
@@ -65,7 +67,7 @@
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #endif
 
@@ -155,10 +157,6 @@ metrics::MetricsService* TestingBrowserProcess::metrics_service() {
   return nullptr;
 }
 
-rappor::RapporServiceImpl* TestingBrowserProcess::rappor_service() {
-  return rappor_service_;
-}
-
 SystemNetworkContextManager*
 TestingBrowserProcess::system_network_context_manager() {
   return nullptr;
@@ -186,7 +184,8 @@ ProfileManager* TestingBrowserProcess::profile_manager() {
   return profile_manager_.get();
 }
 
-void TestingBrowserProcess::SetProfileManager(ProfileManager* profile_manager) {
+void TestingBrowserProcess::SetProfileManager(
+    std::unique_ptr<ProfileManager> profile_manager) {
   // NotificationUIManager can contain references to elements in the current
   // ProfileManager (for example, the MessageCenterSettingsController maintains
   // a pointer to the ProfileInfoCache). So when we change the ProfileManager
@@ -194,7 +193,7 @@ void TestingBrowserProcess::SetProfileManager(ProfileManager* profile_manager) {
   // maintain references to it. See SetLocalState() for a description of a
   // similar situation.
   notification_ui_manager_.reset();
-  profile_manager_.reset(profile_manager);
+  profile_manager_ = std::move(profile_manager);
 }
 
 PrefService* TestingBrowserProcess::local_state() {
@@ -227,13 +226,13 @@ TestingBrowserProcess::browser_policy_connector() {
         chrome::DIR_POLICY_FILES, local_policy_path, true, false));
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     browser_policy_connector_ =
         std::make_unique<policy::BrowserPolicyConnectorChromeOS>();
 #else
     browser_policy_connector_ =
         std::make_unique<policy::ChromeBrowserPolicyConnector>();
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     // Note: creating the ChromeBrowserPolicyConnector invokes BrowserThread::
     // GetTaskRunnerForThread(), which initializes a base::LazyInstance of
@@ -261,10 +260,12 @@ BackgroundModeManager* TestingBrowserProcess::background_mode_manager() {
   return nullptr;
 }
 
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 void TestingBrowserProcess::set_background_mode_manager_for_test(
     std::unique_ptr<BackgroundModeManager> manager) {
   NOTREACHED();
 }
+#endif
 
 StatusTray* TestingBrowserProcess::status_tray() {
   return nullptr;
@@ -285,11 +286,6 @@ TestingBrowserProcess::floc_sorting_lsh_clusters_service() {
   return floc_sorting_lsh_clusters_service_.get();
 }
 
-optimization_guide::OptimizationGuideService*
-TestingBrowserProcess::optimization_guide_service() {
-  return optimization_guide_service_.get();
-}
-
 BrowserProcessPlatformPart* TestingBrowserProcess::platform_part() {
   return platform_part_.get();
 }
@@ -300,7 +296,7 @@ TestingBrowserProcess::extension_event_router_forwarder() {
 }
 
 NotificationUIManager* TestingBrowserProcess::notification_ui_manager() {
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   if (!notification_ui_manager_.get())
     notification_ui_manager_ = NotificationUIManager::Create();
   return notification_ui_manager_.get();
@@ -332,7 +328,7 @@ bool TestingBrowserProcess::IsShuttingDown() {
 printing::PrintJobManager* TestingBrowserProcess::print_job_manager() {
 #if BUILDFLAG(ENABLE_PRINTING)
   if (!print_job_manager_.get())
-    print_job_manager_.reset(new printing::PrintJobManager());
+    print_job_manager_ = std::make_unique<printing::PrintJobManager>();
   return print_job_manager_.get();
 #else
   NOTIMPLEMENTED();
@@ -357,8 +353,8 @@ printing::BackgroundPrintingManager*
 TestingBrowserProcess::background_printing_manager() {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (!background_printing_manager_.get()) {
-    background_printing_manager_.reset(
-        new printing::BackgroundPrintingManager());
+    background_printing_manager_ =
+        std::make_unique<printing::BackgroundPrintingManager>();
   }
   return background_printing_manager_.get();
 #else
@@ -391,20 +387,13 @@ TestingBrowserProcess::component_updater() {
   return nullptr;
 }
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-component_updater::SupervisedUserWhitelistInstaller*
-TestingBrowserProcess::supervised_user_whitelist_installer() {
-  return nullptr;
-}
-#endif
-
 MediaFileSystemRegistry* TestingBrowserProcess::media_file_system_registry() {
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();
   return nullptr;
 #else
   if (!media_file_system_registry_)
-    media_file_system_registry_.reset(new MediaFileSystemRegistry());
+    media_file_system_registry_ = std::make_unique<MediaFileSystemRegistry>();
   return media_file_system_registry_.get();
 #endif
 }
@@ -419,10 +408,10 @@ TestingBrowserProcess::network_time_tracker() {
     if (!local_state_)
       return nullptr;
 
-    network_time_tracker_.reset(new network_time::NetworkTimeTracker(
+    network_time_tracker_ = std::make_unique<network_time::NetworkTimeTracker>(
         std::unique_ptr<base::Clock>(new base::DefaultClock()),
         std::unique_ptr<base::TickClock>(new base::DefaultTickClock()),
-        local_state_, nullptr));
+        local_state_, nullptr);
   }
   return network_time_tracker_.get();
 }
@@ -518,17 +507,6 @@ void TestingBrowserProcess::SetFlocSortingLshClustersService(
     std::unique_ptr<federated_learning::FlocSortingLshClustersService>
         service) {
   floc_sorting_lsh_clusters_service_.swap(service);
-}
-
-void TestingBrowserProcess::SetOptimizationGuideService(
-    std::unique_ptr<optimization_guide::OptimizationGuideService>
-        optimization_guide_service) {
-  optimization_guide_service_.swap(optimization_guide_service);
-}
-
-void TestingBrowserProcess::SetRapporServiceImpl(
-    rappor::RapporServiceImpl* rappor_service) {
-  rappor_service_ = rappor_service;
 }
 
 void TestingBrowserProcess::SetShuttingDown(bool is_shutting_down) {

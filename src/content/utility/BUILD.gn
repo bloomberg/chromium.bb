@@ -2,8 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
+import("//chromeos/assistant/assistant.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//media/media_options.gni")
+import("//printing/buildflags/buildflags.gni")
 
 source_set("utility") {
   # Only the public target should depend on this. All other targets (even
@@ -34,22 +37,25 @@ source_set("utility") {
 
   deps = [
     "//base",
+    "//build:branding_buildflags",
+    "//build:chromeos_buildflags",
     "//components/services/storage",
     "//components/services/storage/public/mojom",
     "//content:export",
     "//content/child",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
+    "//content/services/auction_worklet",
     "//device/vr/buildflags",
     "//media:media_buildflags",
     "//mojo/public/cpp/bindings",
     "//net",
+    "//printing/buildflags",
     "//sandbox",
     "//services/audio",
     "//services/data_decoder:lib",
     "//services/data_decoder/public/cpp",
     "//services/network:network_service",
-    "//services/service_manager",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/shape_detection:lib",
@@ -62,9 +68,9 @@ source_set("utility") {
     "//url",
   ]
 
-  # When pepper CDMs are supported, we also support running the CDM in the
-  # utility process using mojo MediaService.
-  if (enable_library_cdms) {
+  # When library CDMs are supported, we support running the CDM in the utility
+  # process using mojo MediaService. On Windows, we use MediaFoundationService.
+  if (enable_library_cdms || is_win) {
     deps += [
       "//media",
       "//media/mojo:buildflags",
@@ -72,11 +78,23 @@ source_set("utility") {
     ]
   }
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     deps += [
+      "//chromeos/assistant:buildflags",
       "//chromeos/services/ime:sandbox_hook",
       "//chromeos/services/tts:sandbox_hook",
     ]
+  }
+
+  if (is_chromeos_ash && is_chrome_branded) {
+    deps += [
+      "//services/shape_detection:lib",
+      "//services/shape_detection/public/mojom",
+    ]
+  }
+
+  if (enable_libassistant_sandbox) {
+    deps += [ "//chromeos/services/libassistant:sandbox_hook" ]
   }
 
   # PAC execution is done in process on Android.
@@ -85,7 +103,13 @@ source_set("utility") {
   }
 
   if (is_linux || is_chromeos) {
-    deps += [ "//content/utility/speech:speech_recognition_sandbox_hook" ]
+    deps += [
+      "//content/utility/speech:speech_recognition_sandbox_hook",
+      "//services/network:network_sandbox_hook",
+    ]
+    if (enable_basic_printing) {
+      deps += [ "//printing:printing_sandbox_hook" ]
+    }
   }
 
   if (enable_vr && !is_android) {

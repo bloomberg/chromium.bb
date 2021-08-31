@@ -1,0 +1,209 @@
+#!/usr/bin/env -S deno run --unstable --allow-read --allow-write --allow-env --no-check
+
+/* eslint no-console: "off" */
+/* eslint no-process-exit: "off" */
+
+import { existsSync } from "https://deno.land/std@0.90.0/fs/exists.ts";
+import { resolve as pathResolve } from "https://deno.land/std@0.90.0/path/mod.ts"
+
+import { DefaultTestFileLoader } from "../out/common/framework/file_loader.js";
+import { Logger } from "../out/common/framework/logging/logger.js";
+import { parseQuery } from "../out/common/framework/query/parseQuery.js";
+import { compareQueries, Ordering } from '../out/common/framework/query/compare.js';
+import { assert, unreachable } from "../out/common/framework/util/util.js";
+import { parseExpectationsForTestQuery } from "../src/common/framework/query/query.js";
+
+function usage(rc) {
+  console.log("Usage:");
+  console.log("  tools/deno [OPTIONS...] QUERIES...");
+  console.log("  tools/deno 'unittests:*' 'webgpu:buffers,*'");
+  console.log("Options:");
+  console.log("  --verbose             Print result/log of every test as it runs.");
+  console.log("  --debug               Include debug messages in logging.");
+  console.log("  --print-json          Print the complete result JSON in the output.");
+  console.log("  --trace               Record a trace of the WebGPU operations into a ./trace directory.");
+  console.log("  --ignore-file=<file>  A line delimited text file containing names of tests to skip.");
+  console.log('  --expectations        Path to expectations file. Must be absolute, or relative to')
+  return Deno.exit(rc);
+}
+
+function printResults(results) {
+  for (const [name, r] of results) {
+    console.log(`[${r.status}] ${name} (${r.timems}ms). Log:`);
+    if (r.logs) {
+      for (const l of r.logs) {
+        console.log("  - " + l.toJSON().replace(/\n/g, "\n    "));
+      }
+    }
+  }
+}
+
+if (!existsSync("src/common/runtime/cmdline.ts")) {
+  console.log("Must be run from repository root");
+  usage(1);
+}
+
+if (!existsSync("out/common/runtime/cmdline.js")) {
+  console.log("You must run `npm run standalone` before running ./tools/deno");
+  usage(1);
+}
+
+// Remove the `/// <reference types="@webgpu/types" />` comment, so Deno does not
+// parse it and try to import `@webgpu/types`. (Which it fails on because Deno
+// uses fully specified import specifiers).
+const badComment = `/// <reference types="@webgpu/types" />`;
+const navigatorGpuPath = "./out/webgpu/util/navigator_gpu.js";
+let navigatorGpuFile = await Deno.readTextFile(navigatorGpuPath);
+navigatorGpuFile = navigatorGpuFile.replace(
+  badComment,
+  " ".repeat(badComment.length),
+);
+await Deno.writeTextFile(navigatorGpuPath, navigatorGpuFile);
+
+let verbose = false;
+let trace = false;
+let debug = false;
+let ignoreFile = undefined;
+let printJSON = false;
+let loadWebGPUExpectations = undefined;
+
+const queries = [];
+for (const a of Deno.args) {
+  if (a.startsWith("-")) {
+    if (a === "--verbose") {
+      verbose = true;
+    } else if (a === "--trace") {
+      trace = true;
+    } else if (a === "--debug") {
+      debug = true;
+    } else if (a === "--print-json") {
+      printJSON = true;
+    } else if (a.startsWith("--ignore-file=")) {
+      ignoreFile = a.slice("--ignore-file=".length);
+    } else if (a === '--expectations') {
+      const expectationsFile = pathResolve(Deno.cwd(), Deno.args[++i]);
+      loadWebGPUExpectations = import(expectationsFile).then(m => m.expectations);
+    } else {
+      usage(1);
+    }
+  } else {
+    queries.push(a);
+  }
+}
+
+if (queries.length === 0) {
+  usage(0);
+}
+
+let ignores = [];
+if (ignoreFile) {
+  const ignoreFileText = await Deno.readTextFile(ignoreFile);
+  ignores = ignoreFileText.split("\n").map((line) => line.split("#")[0].trim())
+    .filter((l) => l.length > 0);
+}
+
+try {
+  const loader = new DefaultTestFileLoader();
+  assert(
+    queries.length === 1,
+    "currently, there must be exactly one query on the cmd line",
+  );
+  const filterQuery = parseQuery(queries[0]);
+  const testcases = await loader.loadCases(filterQuery);
+  const expectations = parseExpectationsForTestQuery(
+    await (loadWebGPUExpectations ?? []),
+    filterQuery
+  );
+
+  const log = new Logger(debug);
+
+  const failed = [];
+  const warned = [];
+  const skipped = [];
+  const ignored = [];
+
+  let total = 0;
+
+  for (const testcase of testcases) {
+    total++;
+    const name = testcase.query.toString();
+    if (ignores.includes(name)) {
+      ignored.push(name);
+      continue;
+    }
+    if (verbose) {
+      console.log(`Starting ${name}`);
+    }
+    if (trace) {
+      const traceDir = `./trace/${name}`;
+      await Deno.mkdir(traceDir, { recursive: true });
+      Deno.env.set("DENO_WEBGPU_TRACE", traceDir);
+    }
+    const [rec, res] = log.record(name);
+    await testcase.run(rec, expectations);
+
+    if (verbose) {
+      printResults([[name, res]]);
+    }
+
+    switch (res.status) {
+      case "pass":
+        break;
+      case "fail":
+        failed.push([name, res]);
+        break;
+      case "warn":
+        warned.push([name, res]);
+        break;
+      case "skip":
+        skipped.push([name, res]);
+        break;
+      default:
+        unreachable("unrecognized status");
+    }
+  }
+
+  assert(total > 0, "found no tests!");
+
+  // TODO: write results out somewhere (a file?)
+  if (printJSON) {
+    console.log(log.asJSON(2));
+  }
+
+  if (skipped.length) {
+    console.log("");
+    console.log("** Skipped **");
+    printResults(skipped);
+  }
+  if (warned.length) {
+    console.log("");
+    console.log("** Warnings **");
+    printResults(warned);
+  }
+  if (failed.length) {
+    console.log("");
+    console.log("** Failures **");
+    printResults(failed);
+  }
+
+  const passed = total - warned.length - failed.length - skipped.length;
+  const pct = (x) => ((100 * x) / total).toFixed(2);
+  const rpt = (x) => {
+    const xs = x.toString().padStart(1 + Math.log10(total), " ");
+    return `${xs} / ${total} = ${pct(x).padStart(6, " ")}%`;
+  };
+  console.log("");
+  console.log(`** Summary **
+Passed  w/o warnings = ${rpt(passed)}
+Passed with warnings = ${rpt(warned.length)}
+Skipped              = ${rpt(skipped.length)}
+Failed               = ${rpt(failed.length)}
+Ignored              = ${rpt(ignored.length)}`);
+
+  if (failed.length || warned.length) {
+    Deno.exit(1);
+  }
+} catch (ex) {
+  console.log(ex);
+  Deno.exit(1);
+}

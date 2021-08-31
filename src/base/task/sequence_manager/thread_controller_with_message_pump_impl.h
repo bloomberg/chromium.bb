@@ -9,7 +9,6 @@
 
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/work_id_provider.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/task/common/checked_lock.h"
 #include "base/task/common/task_annotator.h"
@@ -25,6 +24,7 @@
 #include "base/threading/sequence_local_storage_map.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 namespace sequence_manager {
@@ -72,6 +72,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   void SetTaskExecutionAllowed(bool allowed) override;
   bool IsTaskExecutionAllowed() const override;
   MessagePump* GetBoundMessagePump() const override;
+  void PrioritizeYieldingToNative(base::TimeTicks prioritize_until) override;
 #if defined(OS_IOS) || defined(OS_ANDROID)
   void AttachToMessagePump() override;
 #endif
@@ -89,8 +90,8 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
       const SequenceManager::Settings& settings);
 
   // MessagePump::Delegate implementation.
-  void OnBeginNativeWork() override;
-  void OnEndNativeWork() override;
+  void OnBeginWorkItem() override;
+  void OnEndWorkItem() override;
   void BeforeWait() override;
   MessagePump::Delegate::NextWorkInfo DoWork() override;
   bool DoIdleWork() override;
@@ -117,6 +118,10 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
 
     // Number of tasks processed in a single DoWork invocation.
     int work_batch_size = 1;
+
+    // While Now() is less than |yield_to_native_after_batch| we will request a
+    // yield to the MessagePump after |work_batch_size| work items.
+    base::TimeTicks yield_to_native_after_batch = base::TimeTicks();
 
     // Tracks the number and state of each run-level managed by this instance.
     RunLevelTracker run_level_tracker;
@@ -159,9 +164,9 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
     return main_thread_only_;
   }
 
-  // Instantiate a HangWatchScopeEnabled to cover the current work if hang
-  // watching is activated via finch and the current loop is not nested.
-  void MaybeStartHangWatchScopeEnabled();
+  // Instantiate a WatchHangsInScope to cover the current work if hang
+  // watching is activated via finch.
+  void MaybeStartWatchHangsInScope();
 
   // TODO(altimin): Merge with the one in SequenceManager.
   scoped_refptr<AssociatedThreadId> associated_thread_;
@@ -182,11 +187,6 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
 
   TaskAnnotator task_annotator_;
 
-#if DCHECK_IS_ON()
-  const bool log_runloop_quit_and_quit_when_idle_;
-  bool quit_when_idle_requested_ = false;
-#endif
-
   const TickClock* time_source_;  // Not owned.
 
   // Non-null provider of id state for identifying distinct work items executed
@@ -202,7 +202,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
 
   // Reset at the start of each unit of work to cover the work itself and then
   // transition to the next one.
-  base::Optional<HangWatchScopeEnabled> hang_watch_scope_;
+  absl::optional<WatchHangsInScope> hang_watch_scope_;
 };
 
 }  // namespace internal

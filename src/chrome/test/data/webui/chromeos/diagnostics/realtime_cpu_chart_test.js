@@ -44,21 +44,21 @@ export function realtimeCpuChartTestSuite() {
   }
 
   /**
-   * Get refreshInterval_ private member for testing.
+   * Get frameDuration_ private member for testing.
    * @suppress {visibility} // access private member
    */
-  function getRefreshInterval() {
+  function getFrameDuration() {
     assertTrue(!!realtimeCpuChartElement);
-    return realtimeCpuChartElement.refreshInterval_;
+    return realtimeCpuChartElement.frameDuration_;
   }
 
   /**
-   * Get margin_ private member for testing.
+   * Get padding_ private member for testing.
    * @suppress {visibility} // access private member
    */
-  function getMargins() {
+  function getPaddings() {
     assertTrue(!!realtimeCpuChartElement);
-    return realtimeCpuChartElement.margin_;
+    return realtimeCpuChartElement.padding_;
   }
 
   /**
@@ -73,7 +73,7 @@ export function realtimeCpuChartTestSuite() {
         flushTasks().then(() => {
           resolve();
         });
-      }, getRefreshInterval());
+      }, getFrameDuration());
     });
   }
 
@@ -91,31 +91,29 @@ export function realtimeCpuChartTestSuite() {
     });
   });
 
-  test(
-      'ChartAreaBoundary',
-      /** @suppress {visibility} access private member for test */ () => {
-        const user = 10;
-        const system = 30;
-        return initializeRealtimeCpuChart(user, system).then(() => {
-          const svg = realtimeCpuChartElement.$$('#chart');
-          const boundary = realtimeCpuChartElement.$$('#defClip>rect');
+  test('ChartAreaBoundary', () => {
+    const user = 10;
+    const system = 30;
+    return initializeRealtimeCpuChart(user, system).then(() => {
+      const svg = realtimeCpuChartElement.$$('#chart');
+      const boundary = realtimeCpuChartElement.$$('#defClip>rect');
 
-          // Chart area boundary must fit within svg.
-          assertGT(
-              Number(svg.getAttribute('width')),
-              Number(boundary.getAttribute('width')));
-          assertGT(
-              Number(svg.getAttribute('height')),
-              Number(boundary.getAttribute('height')));
+      // Chart area boundary must fit within svg.
+      assertGT(
+          Number(svg.getAttribute('width')),
+          Number(boundary.getAttribute('width')));
+      assertGT(
+          Number(svg.getAttribute('height')),
+          Number(boundary.getAttribute('height')));
 
-          const chartGroup = realtimeCpuChartElement.$$('#chartGroup');
+      const chartGroup = realtimeCpuChartElement.$$('#chartGroup');
 
-          // Margins are in effect.
-          assertEquals(
-              `translate(${getMargins().left},${getMargins().top})`,
-              chartGroup.getAttribute('transform'));
-        });
-      });
+      // Margins are in effect.
+      assertEquals(
+          `translate(${getPaddings().left},${getPaddings().top})`,
+          chartGroup.getAttribute('transform'));
+    });
+  });
 
   test('InitializePlot', () => {
     const user = 10;
@@ -127,7 +125,7 @@ export function realtimeCpuChartTestSuite() {
 
       // Correct number of yAxis ticks drawn.
       assertEquals(
-          3,
+          5,
           realtimeCpuChartElement.shadowRoot
               .querySelectorAll('#gridLines>g.tick')
               .length);

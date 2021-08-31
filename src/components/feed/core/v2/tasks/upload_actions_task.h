@@ -9,15 +9,16 @@
 #include <vector>
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "components/feed/core/proto/v2/store.pb.h"
-#include "components/feed/core/proto/v2/wire/discover_actions_service.pb.h"
 #include "components/feed/core/proto/v2/wire/feed_action.pb.h"
+#include "components/feed/core/proto/v2/wire/upload_actions_request.pb.h"
+#include "components/feed/core/proto/v2/wire/upload_actions_response.pb.h"
 #include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_store.h"
 #include "components/feed/core/v2/types.h"
 #include "components/offline_pages/task/task.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace feed {
 class FeedStream;
@@ -50,7 +51,7 @@ class UploadActionsTask : public offline_pages::Task {
     // staleness.
     size_t stale_count;
     // Information about the last network request, if one was attempted.
-    base::Optional<NetworkResponseInfo> last_network_response_info;
+    absl::optional<NetworkResponseInfo> last_network_response_info;
   };
 
   // Store an action. Use |upload_now|=true to kick off an upload of all pending
@@ -87,8 +88,9 @@ class UploadActionsTask : public offline_pages::Task {
   void UploadPendingActions();
   void UpdateAndUploadNextBatch();
   void OnUpdateActionsFinished(std::unique_ptr<Batch> batch, bool update_ok);
-  void OnUploadFinished(std::unique_ptr<Batch> batch,
-                        FeedNetwork::ActionRequestResult result);
+  void OnUploadFinished(
+      std::unique_ptr<Batch> batch,
+      FeedNetwork::ApiResult<feedwire::UploadActionsResponse> result);
   void OnUploadedActionsRemoved(bool remove_ok);
   void UpdateTokenAndFinish();
   void BatchComplete(UploadActionsBatchStatus status);
@@ -98,7 +100,7 @@ class UploadActionsTask : public offline_pages::Task {
   bool upload_now_ = false;
   bool read_pending_actions_ = false;
   // Pending action to be stored.
-  base::Optional<feedwire::FeedAction> wire_action_;
+  absl::optional<feedwire::FeedAction> wire_action_;
 
   // Pending actions to be uploaded, set either by the constructor or by
   // OnReadPendingActionsFinished(). Not set if we're just storing an action.
@@ -113,7 +115,9 @@ class UploadActionsTask : public offline_pages::Task {
   size_t upload_attempt_count_ = 0;
   // Number of stale actions.
   size_t stale_count_ = 0;
-  base::Optional<NetworkResponseInfo> last_network_response_info_;
+  absl::optional<NetworkResponseInfo> last_network_response_info_;
+
+  std::string gaia_;
 
   base::WeakPtrFactory<UploadActionsTask> weak_ptr_factory_{this};
 };

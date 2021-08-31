@@ -7,16 +7,17 @@
 
 #include <memory>
 
-#include "base/time/time.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/test_compositor_host.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/x/xproto.h"
 
-namespace ui {
-
+namespace x11 {
 class XScopedEventSelector;
+}
+
+namespace ui {
 
 class TestCompositorHostX11 : public TestCompositorHost {
  public:
@@ -39,7 +40,7 @@ class TestCompositorHostX11 : public TestCompositorHost {
 
   x11::Window window_;
 
-  std::unique_ptr<XScopedEventSelector> window_events_;
+  std::unique_ptr<x11::XScopedEventSelector> window_events_;
   viz::ParentLocalSurfaceIdAllocator allocator_;
 };
 

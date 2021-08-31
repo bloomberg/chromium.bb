@@ -113,11 +113,17 @@ class MockBluetoothAdapter : public BluetoothAdapter {
                     CreateServiceErrorCallback error_callback));
   MOCK_CONST_METHOD1(GetGattService,
                      BluetoothLocalGattService*(const std::string& identifier));
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  MOCK_METHOD3(SetServiceAllowList,
+               void(const UUIDList& uuids,
+                    base::OnceClosure callback,
+                    ErrorCallback error_callback));
+#endif
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
   MOCK_METHOD4(
       ConnectDevice,
       void(const std::string& address,
-           const base::Optional<BluetoothDevice::AddressType>& address_type,
+           const absl::optional<BluetoothDevice::AddressType>& address_type,
            ConnectDeviceCallback callback,
            ErrorCallback error_callback));
 

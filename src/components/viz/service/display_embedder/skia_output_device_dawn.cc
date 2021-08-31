@@ -26,7 +26,7 @@ constexpr wgpu::TextureFormat kSwapChainFormat =
     wgpu::TextureFormat::RGBA8Unorm;
 
 constexpr wgpu::TextureUsage kUsage =
-    wgpu::TextureUsage::OutputAttachment | wgpu::TextureUsage::CopySrc;
+    wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
 
 }  // namespace
 
@@ -77,7 +77,7 @@ bool SkiaOutputDeviceDawn::Reshape(const gfx::Size& size,
   CreateSwapChainImplementation();
   wgpu::SwapChainDescriptor desc;
   desc.implementation = reinterpret_cast<int64_t>(&swap_chain_implementation_);
-  // TODO(sgilhuly): Use a wgpu::Surface in this call once the Surface-based
+  // TODO(rivr): Use a wgpu::Surface in this call once the Surface-based
   // SwapChain API is ready.
   swap_chain_ = context_provider_->GetDevice().CreateSwapChain(nullptr, &desc);
   if (!swap_chain_)
@@ -87,20 +87,18 @@ bool SkiaOutputDeviceDawn::Reshape(const gfx::Size& size,
   return true;
 }
 
-void SkiaOutputDeviceDawn::SwapBuffers(
-    BufferPresentedCallback feedback,
-    std::vector<ui::LatencyInfo> latency_info) {
+void SkiaOutputDeviceDawn::SwapBuffers(BufferPresentedCallback feedback,
+                                       OutputSurfaceFrame frame) {
   StartSwapBuffers({});
   swap_chain_.Present();
   FinishSwapBuffers(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_ACK),
-                    gfx::Size(size_.width(), size_.height()),
-                    std::move(latency_info));
+                    gfx::Size(size_.width(), size_.height()), std::move(frame));
 
   base::TimeTicks timestamp = base::TimeTicks::Now();
   base::TimeTicks vsync_timebase;
   base::TimeDelta vsync_interval;
   uint32_t flags = 0;
-  // TODO(sgilhuly): Add an async path for getting vsync parameters. The sync
+  // TODO(rivr): Add an async path for getting vsync parameters. The sync
   // path is sufficient for VSyncProviderWin.
   if (vsync_provider_ && vsync_provider_->GetVSyncParametersIfAvailable(
                              &vsync_timebase, &vsync_interval)) {

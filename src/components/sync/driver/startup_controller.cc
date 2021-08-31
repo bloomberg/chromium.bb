@@ -22,7 +22,8 @@ namespace {
 
 // The amount of time we'll wait to initialize sync if no data type requests
 // immediately initialization.
-const int kDefaultDeferredInitDelaySeconds = 10;
+constexpr base::TimeDelta kDefaultDeferredInitDelay =
+    base::TimeDelta::FromSeconds(10);
 
 base::TimeDelta GetDeferredInitDelay() {
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
@@ -37,7 +38,7 @@ base::TimeDelta GetDeferredInitDelay() {
       return base::TimeDelta::FromSeconds(timeout);
     }
   }
-  return base::TimeDelta::FromSeconds(kDefaultDeferredInitDelaySeconds);
+  return kDefaultDeferredInitDelay;
 }
 
 bool IsDeferredStartupEnabled() {
@@ -125,9 +126,8 @@ void StartupController::TryStart(bool force_immediate) {
       waiting_for_policies_start_time_ = base::Time::Now();
       wait_for_policy_timer_.Start(
           FROM_HERE, switches::kSyncPolicyLoadTimeout.Get(),
-          base::BindOnce(&StartupController::OnFirstPoliciesLoaded,
-                         base::Unretained(this),
-                         policy::PolicyDomain::POLICY_DOMAIN_CHROME));
+          base::BindOnce(&StartupController::OnFirstPoliciesLoadedTimeout,
+                         base::Unretained(this)));
     }
     // If the Service had to start immediately, bypass the deferred startup when
     // we receive the policies.
@@ -210,7 +210,7 @@ void StartupController::OnFirstPoliciesLoadedImpl(bool timeout) {
   policy_service_->RemoveObserver(policy::PolicyDomain::POLICY_DOMAIN_CHROME,
                                   this);
   policy_service_ = nullptr;
-  base::UmaHistogramBoolean("Sync.Startup.PolicyLoadTimeout", timeout);
+  base::UmaHistogramBoolean("Sync.Startup.PolicyLoadTimeout2", timeout);
   base::UmaHistogramTimes(
       "Sync.Startup.PolicyLoadStartupDelay",
       waiting_for_policies_start_time_.is_null()

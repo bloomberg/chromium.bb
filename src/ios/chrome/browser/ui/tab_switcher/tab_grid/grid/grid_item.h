@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,18 +7,23 @@
 
 #import <Foundation/Foundation.h>
 
-// Model object representing an item in a grid.
+class GURL;
+
+// Model object representing details about an item from the tab grid.
 @interface GridItem : NSObject
 
-// Create an item with |identifier|, which cannot be nil.
-- (instancetype)initWithIdentifier:(NSString*)identifier
-    NS_DESIGNATED_INITIALIZER;
+// Create an item with |title|, and |url|.
+- (instancetype)initWithTitle:(NSString*)title
+                          url:(GURL)URL NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-@property(nonatomic, readonly) NSString* identifier;
+// The title for the grid cell.
 @property(nonatomic, copy) NSString* title;
-@property(nonatomic, assign) BOOL hidesTitle;
+
+// The URL of the tab represented by the Grid cell.
+@property(nonatomic, assign) GURL URL;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_SWITCHER_TAB_GRID_GRID_GRID_ITEM_H_

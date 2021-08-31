@@ -265,7 +265,7 @@ LIBGAV1_ALWAYS_INLINE void AddPartial(const void* const source,
   // 05 15 25 35 45 55 65 75  00 00 00 00 00 00 00 00
   // 06 16 26 36 46 56 66 76  00 00 00 00 00 00 00 00
   // 07 17 27 37 47 57 67 77  00 00 00 00 00 00 00 00
-  partial_lo[2] = vsetq_lane_u16(SumVector(v_src[0]), partial_lo[2], 0);
+  partial_lo[2] = vsetq_lane_u16(SumVector(v_src[0]), vdupq_n_u16(0), 0);
   partial_lo[2] = vsetq_lane_u16(SumVector(v_src[1]), partial_lo[2], 1);
   partial_lo[2] = vsetq_lane_u16(SumVector(v_src[2]), partial_lo[2], 2);
   partial_lo[2] = vsetq_lane_u16(SumVector(v_src[3]), partial_lo[2], 3);
@@ -285,9 +285,8 @@ LIBGAV1_ALWAYS_INLINE void AddPartial(const void* const source,
   // 50 51 52 53 54 55 56 57  00 00 00 00 00 00 00 00
   // 60 61 62 63 64 65 66 67  00 00 00 00 00 00 00 00
   // 70 71 72 73 74 75 76 77  00 00 00 00 00 00 00 00
-  const uint8x8_t v_zero = vdup_n_u8(0);
-  partial_lo[6] = vaddl_u8(v_zero, v_src[0]);
-  for (int i = 1; i < 8; ++i) {
+  partial_lo[6] = vaddl_u8(v_src[0], v_src[1]);
+  for (int i = 2; i < 8; ++i) {
     partial_lo[6] = vaddw_u8(partial_lo[6], v_src[i]);
   }
 
@@ -360,7 +359,7 @@ uint32_t CostOdd(const uint16x8_t a, const uint16x8_t b, const uint32x4_t mask,
 }
 
 void CdefDirection_NEON(const void* const source, ptrdiff_t stride,
-                        int* const direction, int* const variance) {
+                        uint8_t* const direction, int* const variance) {
   assert(direction != nullptr);
   assert(variance != nullptr);
   const auto* src = static_cast<const uint8_t*>(source);
@@ -451,7 +450,7 @@ void LoadDirection4(const uint16_t* const src, const ptrdiff_t stride,
 
 int16x8_t Constrain(const uint16x8_t pixel, const uint16x8_t reference,
                     const uint16x8_t threshold, const int16x8_t damping) {
-  // If reference > pixel, the difference will be negative, so covert to 0 or
+  // If reference > pixel, the difference will be negative, so convert to 0 or
   // -1.
   const uint16x8_t sign = vcgtq_u16(reference, pixel);
   const uint16x8_t abs_diff = vabdq_u16(pixel, reference);
@@ -686,7 +685,7 @@ void CdefInit_NEON() { low_bitdepth::Init8bpp(); }
 
 }  // namespace dsp
 }  // namespace libgav1
-#else  // !LIBGAV1_ENABLE_NEON
+#else   // !LIBGAV1_ENABLE_NEON
 namespace libgav1 {
 namespace dsp {
 

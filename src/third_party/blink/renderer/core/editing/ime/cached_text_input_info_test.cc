@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
@@ -40,6 +41,42 @@ TEST_F(CachedTextInputInfoTest, Basic) {
   EXPECT_EQ(PlainTextRange(1, 1),
             GetInputMethodController().GetSelectionOffsets());
   EXPECT_EQ("abX", GetCachedTextInputInfo().GetText());
+}
+
+// http://crbug.com/1194349
+TEST_F(CachedTextInputInfoTest, PlaceholderBRInTextArea) {
+  SetBodyContent("<textarea id=target>abc\n</textarea>");
+  auto& target = *To<TextControlElement>(GetElementById("target"));
+
+  // Inner editor is <div>abc<br></div>.
+  GetFrame().Selection().SetSelectionAndEndTyping(
+      SelectionInDOMTree::Builder()
+          .Collapse(Position::LastPositionInNode(*target.InnerEditorElement()))
+          .Build());
+
+  EXPECT_EQ(PlainTextRange(4, 4),
+            GetInputMethodController().GetSelectionOffsets());
+  EXPECT_EQ("abc\n", GetCachedTextInputInfo().GetText())
+      << "We should not emit a newline for placeholder <br>";
+}
+
+// http://crbug.com/1197801
+TEST_F(CachedTextInputInfoTest, PlaceholderBROnlyInTextArea) {
+  SetBodyContent("<textarea id=target></textarea>");
+  auto& target = *To<TextControlElement>(GetElementById("target"));
+  target.focus();
+  GetDocument().execCommand("insertparagraph", false, "", ASSERT_NO_EXCEPTION);
+  GetDocument().execCommand("delete", false, "", ASSERT_NO_EXCEPTION);
+
+  // Inner editor is <div><br></div>.
+  GetFrame().Selection().SetSelectionAndEndTyping(
+      SelectionInDOMTree::Builder()
+          .Collapse(Position::LastPositionInNode(*target.InnerEditorElement()))
+          .Build());
+
+  EXPECT_EQ(PlainTextRange(0, 0),
+            GetInputMethodController().GetSelectionOffsets());
+  EXPECT_EQ("", GetCachedTextInputInfo().GetText());
 }
 
 TEST_F(CachedTextInputInfoTest, RelayoutBoundary) {

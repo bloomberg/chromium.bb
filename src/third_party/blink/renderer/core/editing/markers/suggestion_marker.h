@@ -21,7 +21,12 @@ class SuggestionMarkerProperties;
 // SuggestionMarker a suggestion replace operation pertains to.
 class CORE_EXPORT SuggestionMarker final : public StyleableMarker {
  public:
-  enum class SuggestionType { kMisspelling, kNotMisspelling, kAutocorrect };
+  enum class SuggestionType {
+    kMisspelling,
+    kNotMisspelling,
+    kAutocorrect,
+    kGrammar,
+  };
   enum class RemoveOnFinishComposing { kRemove, kDoNotRemove };
 
   SuggestionMarker(unsigned start_offset,
@@ -67,4 +72,4 @@ struct DowncastTraits<SuggestionMarker> {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_SUGGESTION_MARKER_H_

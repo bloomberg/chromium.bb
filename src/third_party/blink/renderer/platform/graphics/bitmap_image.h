@@ -30,7 +30,7 @@
 
 #include <memory>
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-blink.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -44,6 +44,8 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
+
+class UseCounter;
 
 class PLATFORM_EXPORT BitmapImage final : public Image {
   friend class BitmapImageTest;
@@ -107,6 +109,10 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
 
   IntSize DensityCorrectedSize() const override;
 
+  // Records the decoded image type in a UseCounter. |use_counter| may be a null
+  // pointer.
+  void RecordDecodedImageType(UseCounter* use_counter);
+
  protected:
   bool IsSizeAvailable() override;
 
@@ -131,6 +137,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
             const cc::PaintFlags&,
             const FloatRect& dst_rect,
             const FloatRect& src_rect,
+            const SkSamplingOptions&,
             RespectImageOrientationEnum,
             ImageClampingMode,
             ImageDecodingMode) override;
@@ -196,4 +203,4 @@ struct DowncastTraits<BitmapImage> {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_BITMAP_IMAGE_H_

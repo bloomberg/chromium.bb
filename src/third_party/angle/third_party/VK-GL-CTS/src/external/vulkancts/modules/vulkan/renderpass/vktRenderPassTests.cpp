@@ -481,7 +481,7 @@ VkImageAspectFlags getImageAspectFlags (VkFormat vkFormat)
 {
 	const tcu::TextureFormat format = mapVkFormat(vkFormat);
 
-	DE_STATIC_ASSERT(tcu::TextureFormat::CHANNELORDER_LAST == 21);
+	DE_STATIC_ASSERT(tcu::TextureFormat::CHANNELORDER_LAST == 22);
 
 	switch (format.order)
 	{
@@ -658,6 +658,9 @@ public:
 	VkAccessFlags			getDstAccessMask	(void) const { return m_dstAccessMask;	}
 
 	VkDependencyFlags		getFlags			(void) const { return m_flags;		}
+
+	void					setSrcAccessMask	(const VkAccessFlags& flags) { m_srcAccessMask = flags; }
+	void					setDstAccessMask	(const VkAccessFlags& flags) { m_dstAccessMask = flags; }
 
 private:
 	deUint32				m_srcPass;
@@ -1599,7 +1602,7 @@ void uploadBufferData (const DeviceInterface&	vk,
 
 VkImageAspectFlagBits getPrimaryImageAspect (tcu::TextureFormat::ChannelOrder order)
 {
-	DE_STATIC_ASSERT(tcu::TextureFormat::CHANNELORDER_LAST == 21);
+	DE_STATIC_ASSERT(tcu::TextureFormat::CHANNELORDER_LAST == 22);
 
 	switch (order)
 	{
@@ -2121,7 +2124,7 @@ public:
 
 			bindBufferMemory(vk, device, *m_vertexBuffer, m_vertexBufferMemory->getMemory(), m_vertexBufferMemory->getOffset());
 
-			uploadBufferData(vk, device, *m_vertexBufferMemory, static_cast<size_t>(vertexBufferSize), renderQuad.getVertexPointer(), properties.limits.nonCoherentAtomSize);
+			uploadBufferData(vk, device, *m_vertexBufferMemory, renderQuad.getVertexDataSize(), renderQuad.getVertexPointer(), properties.limits.nonCoherentAtomSize);
 
 			if (renderInfo.getInputAttachmentCount() > 0)
 			{
@@ -3795,17 +3798,23 @@ bool logAndVerifyImages (TestLog&											log,
 
 					if (!depthOK || !stencilOK)
 					{
-						log << TestLog::ImageSet("TestImages", "Output depth and stencil attachments, reference images and error masks");
-						log << TestLog::Image("Attachment" + de::toString(attachmentNdx) + "Depth", "Attachment " + de::toString(attachmentNdx) + " Depth", depthAccess);
-						log << TestLog::Image("Attachment" + de::toString(attachmentNdx) + "Stencil", "Attachment " + de::toString(attachmentNdx) + " Stencil", stencilAccess);
-						log << TestLog::Image("AttachmentReference" + de::toString(attachmentNdx), "Attachment reference " + de::toString(attachmentNdx), referenceAttachments[attachmentNdx].getAccess());
+						const auto attachmentNdxStr = de::toString(attachmentNdx);
 
+						// Output images.
+						log << TestLog::ImageSet("OutputAttachments" + attachmentNdxStr, "Output depth and stencil attachments " + attachmentNdxStr);
+						log << TestLog::Image("Attachment" + attachmentNdxStr + "Depth", "Attachment " + attachmentNdxStr + " Depth", depthAccess);
+						log << TestLog::Image("Attachment" + attachmentNdxStr + "Stencil", "Attachment " + attachmentNdxStr + " Stencil", stencilAccess);
+						log << TestLog::EndImageSet;
+
+						// Reference images. These will be logged as image sets due to having depth and stencil aspects.
+						log << TestLog::Image("AttachmentReferences" + attachmentNdxStr, "Reference images " + attachmentNdxStr, referenceAttachments[attachmentNdx].getAccess());
+
+						// Error masks.
+						log << TestLog::ImageSet("ErrorMasks" + attachmentNdxStr, "Error masks " + attachmentNdxStr);
 						if (!depthOK)
-							log << TestLog::Image("DepthAttachmentError" + de::toString(attachmentNdx), "Depth Attachment Error " + de::toString(attachmentNdx), depthErrorImage.getAccess());
-
+							log << TestLog::Image("DepthAttachmentError" + attachmentNdxStr, "Depth Attachment Error " + attachmentNdxStr, depthErrorImage.getAccess());
 						if (!stencilOK)
-							log << TestLog::Image("StencilAttachmentError" + de::toString(attachmentNdx), "Stencil Attachment Error " + de::toString(attachmentNdx), stencilErrorImage.getAccess());
-
+							log << TestLog::Image("StencilAttachmentError" + attachmentNdxStr, "Stencil Attachment Error " + attachmentNdxStr, stencilErrorImage.getAccess());
 						log << TestLog::EndImageSet;
 
 						attachmentOK = false;
@@ -5386,23 +5395,12 @@ void addAttachmentAllocationTests (tcu::TestCaseGroup* group, const TestConfigEx
 							if (lastUseOfAttachment[colorAttachmentIndex])
 							{
 								deBool foundDuplicate = false;
+
+								const deUint32			srcPass			= *lastUseOfAttachment[colorAttachmentIndex];
+								const deUint32			dstPass			= subpassIndex;
 								const VkDependencyFlags dependencyFlags = rng.getBool() ? (VkDependencyFlags) VK_DEPENDENCY_BY_REGION_BIT : 0u;
 
-								for (const SubpassDependency& dependency : deps)
-								{
-									if (dependency.getSrcPass() == *lastUseOfAttachment[colorAttachmentIndex]
-										&& dependency.getDstPass() == subpassIndex
-										&& dependency.getSrcAccessMask() == VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
-										&& dependency.getFlags() == dependencyFlags)
-									{
-										foundDuplicate = true;
-										break;
-									}
-								}
-
-								if (!foundDuplicate)
-								{
-									deps.push_back(SubpassDependency(*lastUseOfAttachment[colorAttachmentIndex], subpassIndex,
+								const SubpassDependency newDependency(srcPass, dstPass,
 																	  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
 																	  | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
 																	  | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
@@ -5416,13 +5414,28 @@ void addAttachmentAllocationTests (tcu::TestCaseGroup* group, const TestConfigEx
 																	  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
 																	  VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
 
-																	  dependencyFlags));
+																	  dependencyFlags);
+
+								for (SubpassDependency& dependency : deps)
+								{
+									if (dependency.getSrcPass() == srcPass && dependency.getDstPass() == dstPass)
+									{
+										const VkAccessFlags newDstFlags = dependency.getDstAccessMask() | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+										dependency.setDstAccessMask(newDstFlags);
+										foundDuplicate = true;
+										break;
+									}
 								}
 
-								lastUseOfAttachment[colorAttachmentIndex] = just(subpassIndex);
-
-								colorAttachmentReferences.push_back(AttachmentReference((deUint32)subpassColorAttachments[colorAttachmentNdx], VK_IMAGE_LAYOUT_GENERAL));
+								if (!foundDuplicate)
+								{
+									deps.push_back(newDependency);
+								}
 							}
+
+							lastUseOfAttachment[colorAttachmentIndex] = just(subpassIndex);
+
+							colorAttachmentReferences.push_back(AttachmentReference((deUint32)subpassColorAttachments[colorAttachmentNdx], VK_IMAGE_LAYOUT_GENERAL));
 						}
 
 						for (size_t inputAttachmentNdx = 0; inputAttachmentNdx < subpassInputAttachments.size(); inputAttachmentNdx++)
@@ -5432,15 +5445,34 @@ void addAttachmentAllocationTests (tcu::TestCaseGroup* group, const TestConfigEx
 							if(lastUseOfAttachment[inputAttachmentIndex])
 							{
 								deBool foundDuplicate = false;
-								const VkDependencyFlags dependencyFlags = (*lastUseOfAttachment[inputAttachmentIndex] == subpassIndex) || rng.getBool();
 
-								for (const SubpassDependency& dependency : deps)
+								const deUint32			srcPass			= *lastUseOfAttachment[inputAttachmentIndex];
+								const deUint32			dstPass			= subpassIndex;
+								const VkDependencyFlags dependencyFlags = ((srcPass == subpassIndex) || rng.getBool()) ? (VkDependencyFlags)VK_DEPENDENCY_BY_REGION_BIT : 0u;
+
+								const SubpassDependency newDependency(srcPass, dstPass,
+																	  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+																	  | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+																	  | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
+																	  | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+
+																	  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+																	  | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+																	  | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
+																	  | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+
+																	  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+																	  VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
+
+																	  dependencyFlags);
+								for (SubpassDependency& dependency : deps)
 								{
-									if (dependency.getSrcPass() == *lastUseOfAttachment[inputAttachmentIndex]
-										&& dependency.getDstPass()== subpassIndex
-										&& dependency.getSrcAccessMask() == (VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT)
-										&& dependency.getFlags() == dependencyFlags)
+									if (dependency.getSrcPass() == srcPass && dependency.getDstPass() == dstPass)
 									{
+										const VkAccessFlags newSrcFlags = dependency.getSrcAccessMask() | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+										const VkAccessFlags newDstFlags = dependency.getDstAccessMask() | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+										dependency.setDstAccessMask(newSrcFlags);
+										dependency.setDstAccessMask(newDstFlags);
 										foundDuplicate = true;
 										break;
 									}
@@ -5448,21 +5480,7 @@ void addAttachmentAllocationTests (tcu::TestCaseGroup* group, const TestConfigEx
 
 								if (!foundDuplicate)
 								{
-									deps.push_back(SubpassDependency(*lastUseOfAttachment[inputAttachmentIndex], subpassIndex,
-																	 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
-																		| VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-																		| VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
-																		| VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-
-																	 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
-																		| VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-																		| VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
-																		| VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-
-																	 VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-																	 VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
-
-																	 dependencyFlags));
+									deps.push_back(newDependency);
 								}
 
 								lastUseOfAttachment[inputAttachmentIndex] = just(subpassIndex);
@@ -5477,40 +5495,48 @@ void addAttachmentAllocationTests (tcu::TestCaseGroup* group, const TestConfigEx
 							}
 						}
 
-						if (depthStencilAttachment && lastUseOfAttachment[*depthStencilAttachment])
+						if (depthStencilAttachment)
 						{
-							deBool foundDuplicate = false;
-							const VkDependencyFlags dependencyFlags = (*lastUseOfAttachment[*depthStencilAttachment] == subpassIndex) || rng.getBool();
-
-							for (const SubpassDependency& dependency : deps)
+							if (lastUseOfAttachment[*depthStencilAttachment])
 							{
-								if (dependency.getSrcPass() == *lastUseOfAttachment[*depthStencilAttachment]
-									&& dependency.getDstPass() == subpassIndex
-									&& dependency.getSrcAccessMask() == (VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT)
-									&& dependency.getFlags() == dependencyFlags)
+								deBool foundDuplicate = false;
+
+								const deUint32			srcPass			= *lastUseOfAttachment[*depthStencilAttachment];
+								const deUint32			dstPass			= subpassIndex;
+								const VkDependencyFlags dependencyFlags = ((srcPass == subpassIndex) || rng.getBool()) ? (VkDependencyFlags)VK_DEPENDENCY_BY_REGION_BIT : 0u;
+
+								const SubpassDependency newDependency(srcPass, dstPass,
+																	  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+																	  | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+																	  | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
+																	  | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+
+																	  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+																	  | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+																	  | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
+																	  | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+
+																	  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+																	  VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
+
+																	  dependencyFlags);
+								for (SubpassDependency& dependency : deps)
 								{
-									foundDuplicate = true;
-									break;
+									if (dependency.getSrcPass() == srcPass && dependency.getDstPass() == dstPass)
+									{
+										const VkAccessFlags newSrcFlags = dependency.getSrcAccessMask() | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+										const VkAccessFlags newDstFlags = dependency.getDstAccessMask() | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+										dependency.setDstAccessMask(newSrcFlags);
+										dependency.setDstAccessMask(newDstFlags);
+										foundDuplicate = true;
+										break;
+									}
 								}
-							}
 
-							if (!foundDuplicate)
-							{
-								deps.push_back(SubpassDependency(*lastUseOfAttachment[*depthStencilAttachment], subpassIndex,
-																 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
-																 | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-																 | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
-																 | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-
-																 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
-																 | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-																 | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
-																 | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-
-																 VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-																 VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
-
-																 dependencyFlags));
+								if (!foundDuplicate)
+								{
+									deps.push_back(newDependency);
+								}
 							}
 
 							lastUseOfAttachment[*depthStencilAttachment] = just(subpassIndex);
@@ -5686,6 +5712,24 @@ void addAttachmentAllocationTests (tcu::TestCaseGroup* group, const TestConfigEx
 						vector<AttachmentReference>	colorAttachmentReferences;
 
 						for (size_t attachmentNdx = 0; attachmentNdx < subpassNdx + 1; attachmentNdx++)
+						{
+							const VkImageLayout subpassLayout = rng.choose<VkImageLayout>(DE_ARRAY_BEGIN(subpassLayoutsColor), DE_ARRAY_END(subpassLayoutsColor));
+
+							colorAttachmentReferences.push_back(AttachmentReference((deUint32)attachmentNdx, subpassLayout));
+						}
+
+						subpasses.push_back(Subpass(VK_PIPELINE_BIND_POINT_GRAPHICS, 0u,
+													vector<AttachmentReference>(),
+													colorAttachmentReferences,
+													vector<AttachmentReference>(),
+													AttachmentReference(VK_ATTACHMENT_UNUSED, VK_IMAGE_LAYOUT_GENERAL),
+													vector<deUint32>()));
+					}
+					for (size_t subpassNdx = 0; subpassNdx < attachmentCount; subpassNdx++)
+					{
+						vector<AttachmentReference>	colorAttachmentReferences;
+
+						for (size_t attachmentNdx = 0; attachmentNdx < (attachmentCount - subpassNdx); attachmentNdx++)
 						{
 							const VkImageLayout subpassLayout = rng.choose<VkImageLayout>(DE_ARRAY_BEGIN(subpassLayoutsColor), DE_ARRAY_END(subpassLayoutsColor));
 

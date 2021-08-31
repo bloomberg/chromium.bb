@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/no_destructor.h"
-#include "base/optional.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_api_call_flow_impl.h"
 #include "net/base/net_errors.h"
@@ -19,6 +18,7 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -46,7 +46,7 @@ GetTestRequestProtoAsQueryParameters() {
 // |request_as_query_parameters| is only non-null for GET requests.
 GURL UrlWithQueryParameters(
     const std::string& url,
-    const base::Optional<NearbyShareApiCallFlow::QueryParameters>&
+    const absl::optional<NearbyShareApiCallFlow::QueryParameters>&
         request_as_query_parameters) {
   GURL url_with_qp(url);
 
@@ -137,6 +137,12 @@ class NearbyShareApiCallFlowImplTest : public testing::Test {
     network_error_ = std::make_unique<NearbyShareHttpError>(network_error);
   }
 
+  void CheckPlatformTypeHeader(const net::HttpRequestHeaders& headers) {
+    std::string platform_type;
+    EXPECT_TRUE(headers.GetHeader("X-Sharing-Platform-Type", &platform_type));
+    EXPECT_EQ("OSType.CHROME_OS", platform_type);
+  }
+
   void CheckNearbySharingClientHttpPostRequest(
       const std::string& serialized_request) {
     const std::vector<network::TestURLLoaderFactory::PendingRequest>& pending =
@@ -144,8 +150,10 @@ class NearbyShareApiCallFlowImplTest : public testing::Test {
     ASSERT_EQ(1u, pending.size());
     const network::ResourceRequest& request = pending[0].request;
 
+    CheckPlatformTypeHeader(request.headers);
+
     EXPECT_EQ(UrlWithQueryParameters(
-                  kRequestUrl, base::nullopt /* request_as_query_parameters */),
+                  kRequestUrl, absl::nullopt /* request_as_query_parameters */),
               request.url);
 
     EXPECT_EQ(kPost, request.method);
@@ -165,8 +173,10 @@ class NearbyShareApiCallFlowImplTest : public testing::Test {
     ASSERT_EQ(1u, pending.size());
     const network::ResourceRequest& request = pending[0].request;
 
+    CheckPlatformTypeHeader(request.headers);
+
     EXPECT_EQ(UrlWithQueryParameters(
-                  kRequestUrl, base::nullopt /* request_as_query_parameters */),
+                  kRequestUrl, absl::nullopt /* request_as_query_parameters */),
               request.url);
 
     EXPECT_EQ(kPatch, request.method);
@@ -187,6 +197,8 @@ class NearbyShareApiCallFlowImplTest : public testing::Test {
     ASSERT_EQ(1u, pending.size());
     const network::ResourceRequest& request = pending[0].request;
 
+    CheckPlatformTypeHeader(request.headers);
+
     EXPECT_EQ(UrlWithQueryParameters(kRequestUrl, request_as_query_parameters),
               request.url);
 
@@ -202,8 +214,8 @@ class NearbyShareApiCallFlowImplTest : public testing::Test {
   // then the |response_code| and |response_string| are null.
   void CompleteCurrentPostRequest(
       net::Error error,
-      base::Optional<int> response_code = base::nullopt,
-      const base::Optional<std::string>& response_string = base::nullopt) {
+      absl::optional<int> response_code = absl::nullopt,
+      const absl::optional<std::string>& response_string = absl::nullopt) {
     network::URLLoaderCompletionStatus completion_status(error);
     auto response_head = network::mojom::URLResponseHead::New();
     std::string content;
@@ -226,8 +238,8 @@ class NearbyShareApiCallFlowImplTest : public testing::Test {
   // then the |response_code| and |response_string| are null.
   void CompleteCurrentPatchRequest(
       net::Error error,
-      base::Optional<int> response_code = base::nullopt,
-      const base::Optional<std::string>& response_string = base::nullopt) {
+      absl::optional<int> response_code = absl::nullopt,
+      const absl::optional<std::string>& response_string = absl::nullopt) {
     network::URLLoaderCompletionStatus completion_status(error);
     auto response_head = network::mojom::URLResponseHead::New();
     std::string content;
@@ -250,8 +262,8 @@ class NearbyShareApiCallFlowImplTest : public testing::Test {
   // then the |response_code| and |response_string| are null.
   void CompleteCurrentGetRequest(
       net::Error error,
-      base::Optional<int> response_code = base::nullopt,
-      const base::Optional<std::string>& response_string = base::nullopt) {
+      absl::optional<int> response_code = absl::nullopt,
+      const absl::optional<std::string>& response_string = absl::nullopt) {
     network::URLLoaderCompletionStatus completion_status(error);
     auto response_head = network::mojom::URLResponseHead::New();
     std::string content;

@@ -28,10 +28,11 @@
 
 namespace dawn_native {
 
-    MaybeError ValidateProgrammableStageDescriptor(DeviceBase* device,
-                                                   const ProgrammableStageDescriptor* descriptor,
-                                                   const PipelineLayoutBase* layout,
-                                                   SingleShaderStage stage);
+    MaybeError ValidateProgrammableStage(DeviceBase* device,
+                                         const ShaderModuleBase* module,
+                                         const std::string& entryPoint,
+                                         const PipelineLayoutBase* layout,
+                                         SingleShaderStage stage);
 
     struct ProgrammableStage {
         Ref<ShaderModuleBase> module;
@@ -49,11 +50,14 @@ namespace dawn_native {
         const ProgrammableStage& GetStage(SingleShaderStage stage) const;
         const PerStage<ProgrammableStage>& GetAllStages() const;
 
-        BindGroupLayoutBase* GetBindGroupLayout(uint32_t groupIndex);
+        ResultOrError<Ref<BindGroupLayoutBase>> GetBindGroupLayout(uint32_t groupIndex);
 
-        // Helper function for the functors for std::unordered_map-based pipeline caches.
-        static size_t HashForCache(const PipelineBase* pipeline);
+        // Helper functions for std::unordered_map-based pipeline caches.
+        size_t ComputeContentHash() override;
         static bool EqualForCache(const PipelineBase* a, const PipelineBase* b);
+
+        // Implementation of the API entrypoint. Do not use in a reentrant manner.
+        BindGroupLayoutBase* APIGetBindGroupLayout(uint32_t groupIndex);
 
       protected:
         PipelineBase(DeviceBase* device,

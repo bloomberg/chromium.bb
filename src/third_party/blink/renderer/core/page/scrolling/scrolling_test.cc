@@ -34,7 +34,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_cache.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view_client.h"
@@ -48,7 +47,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
-#include "third_party/blink/renderer/core/frame/web_view_frame_widget.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -80,7 +78,7 @@ namespace blink {
 class ScrollingTest : public testing::Test, public PaintTestConfigurations {
  public:
   ScrollingTest() : base_url_("http://www.test.com/") {
-    helper_.Initialize(nullptr, nullptr, nullptr, &ConfigureSettings);
+    helper_.Initialize(nullptr, nullptr, &ConfigureSettings);
     GetWebView()->MainFrameViewWidget()->Resize(gfx::Size(320, 240));
     GetWebView()->MainFrameViewWidget()->UpdateAllLifecyclePhases(
         DocumentUpdateReason::kTest);
@@ -114,8 +112,9 @@ class ScrollingTest : public testing::Test, public PaintTestConfigurations {
 
   WebViewImpl* GetWebView() const { return helper_.GetWebView(); }
   LocalFrame* GetFrame() const { return helper_.LocalMainFrame()->GetFrame(); }
-  frame_test_helpers::TestWebWidgetClient* GetWidgetClient() const {
-    return helper_.GetWebWidgetClient();
+
+  frame_test_helpers::TestWebFrameWidget* GetMainFrameWidget() const {
+    return helper_.GetMainFrameWidget();
   }
 
   PaintLayerScrollableArea* ScrollableAreaByDOMElementId(
@@ -156,7 +155,7 @@ class ScrollingTest : public testing::Test, public PaintTestConfigurations {
     return CurrentScrollOffset(scroll_node->element_id);
   }
 
-  const cc::ScrollbarLayerBase* ScrollbarLayerForScrollNode(
+  cc::ScrollbarLayerBase* ScrollbarLayerForScrollNode(
       const cc::ScrollNode* scroll_node,
       cc::ScrollbarOrientation orientation) const {
     return blink::ScrollbarLayerForScrollNode(RootCcLayer(), scroll_node,
@@ -479,7 +478,7 @@ TEST_P(ScrollingTest, scrollEventHandler) {
   NavigateTo(base_url_ + "scroll-event-handler.html");
   ForceFullCompositingUpdate();
 
-  ASSERT_TRUE(GetWidgetClient()->HaveScrollEventHandlers());
+  ASSERT_TRUE(GetMainFrameWidget()->HaveScrollEventHandlers());
 }
 
 TEST_P(ScrollingTest, updateEventHandlersDuringTeardown) {
@@ -1339,7 +1338,7 @@ TEST_P(ScrollingTest, NonFastScrollableRegionsForPlugins) {
       }
       #fixed {
         position: fixed;
-        top: 500px;
+        left: 300px;
       }
     </style>
     <div id="fixed">
@@ -1790,7 +1789,7 @@ TEST_P(ScrollingTest, ScrollOffsetClobberedBeforeCompositingUpdate) {
   gfx::ScrollOffset compositor_delta(0, 100.f);
   cc::CompositorCommitData commit_data;
   commit_data.scrolls.push_back(
-      {scrollable_area->GetScrollElementId(), compositor_delta, base::nullopt});
+      {scrollable_area->GetScrollElementId(), compositor_delta, absl::nullopt});
   RootCcLayer()->layer_tree_host()->ApplyCompositorChanges(&commit_data);
   // The compositor offset is reflected in blink and cc scroll tree.
   EXPECT_EQ(compositor_delta,
@@ -1996,10 +1995,34 @@ TEST_P(ScrollingTest, MainThreadScrollAndDeltaFromImplSide) {
   // beginning of BeginMainFrame.
   cc::CompositorCommitData commit_data;
   commit_data.scrolls.push_back(cc::CompositorCommitData::ScrollUpdateInfo(
-      element_id, gfx::ScrollOffset(0, 10), base::nullopt));
+      element_id, gfx::ScrollOffset(0, 10), absl::nullopt));
   RootCcLayer()->layer_tree_host()->ApplyCompositorChanges(&commit_data);
   EXPECT_EQ(FloatPoint(0, 210), scrollable_area->ScrollPosition());
   EXPECT_EQ(gfx::ScrollOffset(0, 210), CurrentScrollOffset(element_id));
+}
+
+TEST_P(ScrollingTest, ThumbInvalidatesLayer) {
+  ScopedMockOverlayScrollbars mock_overlay_scrollbar(false);
+  LoadHTML(R"HTML(
+    <div id='scroller' style='overflow-y: scroll; width: 100px; height: 100px'>
+      <div style='height: 1000px'></div>
+    </div>
+  )HTML");
+  ForceFullCompositingUpdate();
+
+  const auto* scroll_node = ScrollNodeByDOMElementId("scroller");
+  auto* layer = ScrollbarLayerForScrollNode(scroll_node,
+                                            cc::ScrollbarOrientation::VERTICAL);
+  // Solid color scrollbars do not repaint (see:
+  // |SolidColorScrollbarLayer::SetNeedsDisplayRect|).
+  if (layer->GetScrollbarLayerType() != cc::ScrollbarLayerBase::kSolidColor) {
+    layer->ResetUpdateRectForTesting();
+    ASSERT_TRUE(layer->update_rect().IsEmpty());
+
+    auto* scrollable_area = ScrollableAreaByDOMElementId("scroller");
+    scrollable_area->VerticalScrollbar()->SetNeedsPaintInvalidation(kThumbPart);
+    EXPECT_FALSE(layer->update_rect().IsEmpty());
+  }
 }
 
 class UnifiedScrollingSimTest : public SimTest, public PaintTestConfigurations {

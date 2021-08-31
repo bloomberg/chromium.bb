@@ -41,7 +41,7 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
     AttachObserver();
   }
 
-  const std::vector<mojom::PageLoadFeatures>& observed_features() const {
+  const std::vector<blink::UseCounterFeature>& observed_features() const {
     return embedder_interface_->observed_features();
   }
 
@@ -81,7 +81,7 @@ TEST_F(MetricsWebContentsObserverTest,
   scoped_refptr<extensions::Extension> extension =
       extensions::Extension::Create(
           base::FilePath(FILE_PATH_LITERAL("//no-such-file")),
-          extensions::Manifest::INVALID_LOCATION, manifest,
+          extensions::mojom::ManifestLocation::kInvalidLocation, manifest,
           extensions::Extension::NO_FLAGS, "mbflcebpggnecokmikipoihdbecnjfoj",
           &error);
   ASSERT_TRUE(error.empty());
@@ -96,11 +96,9 @@ TEST_F(MetricsWebContentsObserverTest,
   ASSERT_EQ(main_rfh()->GetLastCommittedURL().spec(),
             GURL(chrome_extension_url));
 
-  std::vector<blink::mojom::WebFeature> web_features;
-  web_features.push_back(blink::mojom::WebFeature::kHTMLMarqueeElement);
-  web_features.push_back(blink::mojom::WebFeature::kFormAttribute);
-  mojom::PageLoadFeatures features(web_features, {}, {});
-  MetricsWebContentsObserver::RecordFeatureUsage(main_rfh(), features);
+  MetricsWebContentsObserver::RecordFeatureUsage(
+      main_rfh(), {blink::mojom::WebFeature::kHTMLMarqueeElement,
+                   blink::mojom::WebFeature::kFormAttribute});
 
   // The features come from an extension source, so shouldn't be counted.
   EXPECT_EQ(observed_features().size(), 0ul);

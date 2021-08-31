@@ -65,7 +65,7 @@ class AppCacheUpdateJob::UpdateURLLoaderRequest
   void SetSiteForCookies(const GURL& site_for_cookies);
 
   // Sets the origin of the context which initiated the request.
-  void SetInitiator(const base::Optional<url::Origin>& initiator);
+  void SetInitiator(const absl::optional<url::Origin>& initiator);
 
   // Get all response headers, as a HttpResponseHeaders object.  See comments
   // in HttpResponseHeaders class as to the format of the data.
@@ -103,6 +103,7 @@ class AppCacheUpdateJob::UpdateURLLoaderRequest
 
   // network::mojom::URLLoaderClient implementation.
   // These methods are called by the network loader.
+  void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override;
   void OnReceiveResponse(
       network::mojom::URLResponseHeadPtr response_head) override;
   void OnReceiveRedirect(

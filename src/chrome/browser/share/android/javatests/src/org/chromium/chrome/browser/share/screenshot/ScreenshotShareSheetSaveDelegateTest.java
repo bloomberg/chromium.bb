@@ -10,7 +10,6 @@ import android.Manifest.permission;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.support.test.rule.ActivityTestRule;
 
 import androidx.test.filters.MediumTest;
 
@@ -23,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.UiThreadTest;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -41,8 +41,8 @@ public class ScreenshotShareSheetSaveDelegateTest {
     private ScreenshotShareSheetSaveDelegate mScreenshotShareSheetSaveDelegate;
 
     @Rule
-    public ActivityTestRule<DummyUiActivity> mActivityTestRule =
-            new ActivityTestRule<>(DummyUiActivity.class);
+    public BaseActivityTestRule<DummyUiActivity> mActivityTestRule =
+            new BaseActivityTestRule<>(DummyUiActivity.class);
 
     @Mock
     private PropertyModel mModel;
@@ -52,6 +52,8 @@ public class ScreenshotShareSheetSaveDelegateTest {
 
     private TestAndroidPermissionDelegate mPermissionDelegate;
 
+    private boolean mScreenshotSaved;
+
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -59,10 +61,16 @@ public class ScreenshotShareSheetSaveDelegateTest {
         Mockito.when(mModel.get(eq(ScreenshotShareSheetViewProperties.SCREENSHOT_BITMAP)))
                 .thenReturn(Bitmap.createBitmap(10, 10, Bitmap.Config.ALPHA_8));
 
+        mActivityTestRule.launchActivity(null);
         Activity activity = mActivityTestRule.getActivity();
         mPermissionDelegate = new TestAndroidPermissionDelegate();
         mScreenshotShareSheetSaveDelegate = new ScreenshotShareSheetSaveDelegate(
-                activity, mModel, mCloseDialogRunnable, mPermissionDelegate);
+                activity, mModel, mCloseDialogRunnable, mPermissionDelegate) {
+            @Override
+            protected void finishDownloadWithPermission(boolean granted) {
+                mScreenshotSaved = true;
+            }
+        };
     }
 
     @Test
@@ -74,18 +82,7 @@ public class ScreenshotShareSheetSaveDelegateTest {
 
         Assert.assertTrue(mPermissionDelegate.calledHasPermission());
         Assert.assertFalse(mPermissionDelegate.calledCanRequestPermission());
-    }
-
-    @Test
-    @MediumTest
-    @UiThreadTest
-    public void testSaveWithoutPermissionCanAsk() {
-        mPermissionDelegate.setHasPermission(false);
-        mPermissionDelegate.setCanRequestPermission(true);
-        mScreenshotShareSheetSaveDelegate.save();
-
-        Assert.assertTrue(mPermissionDelegate.calledHasPermission());
-        Assert.assertTrue(mPermissionDelegate.calledCanRequestPermission());
+        Assert.assertTrue(mScreenshotSaved);
     }
 
     @Test
@@ -99,6 +96,7 @@ public class ScreenshotShareSheetSaveDelegateTest {
         Assert.assertTrue(mPermissionDelegate.calledHasPermission());
         Assert.assertTrue(mPermissionDelegate.calledCanRequestPermission());
         Assert.assertTrue(mScreenshotShareSheetSaveDelegate.getDialog().isShowing());
+        Assert.assertFalse(mScreenshotSaved);
     }
 
     /**

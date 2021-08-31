@@ -32,17 +32,14 @@ class CallTrackingTestWebLocalFrameClient
   }
 
   void DidCommitNavigation(
-      const WebHistoryItem& item,
-      WebHistoryCommitType type,
-      bool should_reset_browser_interface_broker) override {
+      WebHistoryCommitType commit_type,
+      bool should_reset_browser_interface_broker,
+      const ParsedPermissionsPolicy& permissions_policy_header,
+      const DocumentPolicyFeatureState& document_policy_header) override {
     calls_.push_back("DidCommitNavigation");
     TestWebFrameClient::DidCommitNavigation(
-        item, type, should_reset_browser_interface_broker);
-  }
-
-  void DidCreateInitialEmptyDocument() override {
-    calls_.push_back("DidCreateInitialEmptyDocument");
-    TestWebFrameClient::DidCreateInitialEmptyDocument();
+        commit_type, should_reset_browser_interface_broker,
+        permissions_policy_header, document_policy_header);
   }
 
   void DidCreateDocumentElement() override {
@@ -95,7 +92,6 @@ TEST(WebLocalFrameClientTest, Basic) {
   web_view_helper.Initialize(&client);
   EXPECT_THAT(client.TakeCalls(),
               testing::ElementsAre("DidCreateDocumentLoader",
-                                   "DidCreateInitialEmptyDocument",
                                    "DidCreateDocumentElement",
                                    "RunScriptsAtDocumentElementAvailable"));
 

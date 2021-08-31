@@ -6,12 +6,15 @@
 
 #include <string>
 
+#include "media/base/limits.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_data_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_decoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_audio_chunk_init.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_audio_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_chunk_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_cssimagevalue_htmlcanvaselement_htmlimageelement_htmlvideoelement_imagebitmap_offscreencanvas_svgimageelement_videoframe.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_encoder_config.h"
@@ -19,8 +22,10 @@
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 #include "third_party/blink/renderer/modules/webcodecs/fuzzer_inputs.pb.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -56,9 +61,9 @@ VideoDecoderConfig* MakeVideoDecoderConfig(
   return config;
 }
 
-EncodedAudioConfig* MakeAudioDecoderConfig(
+AudioDecoderConfig* MakeAudioDecoderConfig(
     const wc_fuzzer::ConfigureAudioDecoder& proto) {
-  EncodedAudioConfig* config = EncodedAudioConfig::Create();
+  AudioDecoderConfig* config = AudioDecoderConfig::Create();
   config->setCodec(proto.codec().c_str());
   config->setSampleRate(proto.sample_rate());
   config->setNumberOfChannels(proto.number_of_channels());
@@ -71,11 +76,11 @@ EncodedAudioConfig* MakeAudioDecoderConfig(
   return config;
 }
 
-VideoEncoderConfig* MakeEncoderConfig(
+VideoEncoderConfig* MakeVideoEncoderConfig(
     const wc_fuzzer::ConfigureVideoEncoder& proto) {
   VideoEncoderConfig* config = VideoEncoderConfig::Create();
   config->setCodec(proto.codec().c_str());
-  config->setAcceleration(ToAccelerationType(proto.acceleration()));
+  config->setHardwareAcceleration(ToAccelerationType(proto.acceleration()));
   config->setFramerate(proto.framerate());
   config->setWidth(proto.width());
   config->setHeight(proto.height());
@@ -83,6 +88,17 @@ VideoEncoderConfig* MakeEncoderConfig(
   // Bitrate is truly optional, so don't just take the proto default value.
   if (proto.has_bitrate())
     config->setBitrate(proto.bitrate());
+
+  return config;
+}
+
+AudioEncoderConfig* MakeAudioEncoderConfig(
+    const wc_fuzzer::ConfigureAudioEncoder& proto) {
+  auto* config = AudioEncoderConfig::Create();
+  config->setCodec(proto.codec().c_str());
+  config->setBitrate(proto.bitrate());
+  config->setNumberOfChannels(proto.number_of_channels());
+  config->setSampleRate(proto.sample_rate());
 
   return config;
 }
@@ -146,10 +162,19 @@ VideoEncoderEncodeOptions* MakeEncodeOptions(
   return options;
 }
 
-VideoFrame* MakeVideoFrame(const wc_fuzzer::VideoFrameBitmapInit& proto) {
+VideoFrame* MakeVideoFrame(ScriptState* script_state,
+                           const wc_fuzzer::VideoFrameBitmapInit& proto) {
+  constexpr size_t kBytesPerPixel = 4;
+  auto bitmap_size = proto.rgb_bitmap().size();
+  // ImageData::Create() rejects inputs if data size is not a multiple of
+  // width * 4.
+  // Round down bitmap size to width * 4, it makes more fuzzer inputs
+  // acceptable and incresease fuzzing penetration.
+  if (proto.bitmap_width() > 0 && proto.bitmap_width() < bitmap_size)
+    bitmap_size -= bitmap_size % (proto.bitmap_width() * kBytesPerPixel);
   NotShared<DOMUint8ClampedArray> data_u8(DOMUint8ClampedArray::Create(
       reinterpret_cast<const unsigned char*>(proto.rgb_bitmap().data()),
-      proto.rgb_bitmap().size()));
+      bitmap_size));
 
   ImageData* image_data = ImageData::Create(data_u8, proto.bitmap_width(),
                                             IGNORE_EXCEPTION_FOR_TESTING);
@@ -158,14 +183,48 @@ VideoFrame* MakeVideoFrame(const wc_fuzzer::VideoFrameBitmapInit& proto) {
     return nullptr;
 
   ImageBitmap* image_bitmap = MakeGarbageCollected<ImageBitmap>(
-      image_data, base::nullopt, ImageBitmapOptions::Create());
+      image_data, absl::nullopt, ImageBitmapOptions::Create());
 
   VideoFrameInit* video_frame_init = VideoFrameInit::Create();
   video_frame_init->setTimestamp(proto.timestamp());
   video_frame_init->setDuration(proto.duration());
 
-  return VideoFrame::Create(image_bitmap, video_frame_init,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  auto* source = MakeGarbageCollected<V8CanvasImageSource>(image_bitmap);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  CanvasImageSourceUnion source;
+  source.SetImageBitmap(image_bitmap);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+
+  return VideoFrame::Create(script_state, source, video_frame_init,
                             IGNORE_EXCEPTION_FOR_TESTING);
+}
+
+AudioData* MakeAudioData(ScriptState* script_state,
+                         const wc_fuzzer::AudioDataInit& proto) {
+  if (proto.channels().size() > media::limits::kMaxChannels)
+    return nullptr;
+
+  if (proto.length() > media::limits::kMaxSamplesPerPacket)
+    return nullptr;
+
+  auto bus = AudioBus::Create(proto.channels().size(), proto.length());
+  if (!bus)
+    return nullptr;
+  for (int i = 0; i < proto.channels().size(); i++) {
+    size_t max_size = proto.length() * sizeof(float);
+    memset(bus->Channel(i)->MutableData(), 0, max_size);
+
+    auto* data = proto.channels().Get(i).data();
+    auto size = std::min(proto.channels().Get(i).size(), max_size);
+    memcpy(bus->Channel(i)->MutableData(), data, size);
+  }
+
+  auto* init = AudioDataInit::Create();
+  init->setTimestamp(proto.timestamp());
+  init->setBuffer(AudioBuffer::CreateFromAudioBus(bus.get()));
+
+  return AudioData::Create(init, IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 }  // namespace blink

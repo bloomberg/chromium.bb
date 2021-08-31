@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/core/dom/text_link_colors.h"
 
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink.h"
-#include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_color.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_light_dark_value_pair.h"
 #include "third_party/blink/renderer/core/css/style_color.h"
@@ -62,7 +62,7 @@ void TextLinkColors::SetTextColor(const Color& color) {
 }
 
 Color TextLinkColors::TextColor() const {
-  return TextColor(mojom::ColorScheme::kLight);
+  return TextColor(mojom::blink::ColorScheme::kLight);
 }
 
 Color TextLinkColors::TextColor(mojom::blink::ColorScheme color_scheme) const {
@@ -79,7 +79,7 @@ void TextLinkColors::SetLinkColor(const Color& color) {
 }
 
 const Color& TextLinkColors::LinkColor() const {
-  return LinkColor(mojom::ColorScheme::kLight);
+  return LinkColor(mojom::blink::ColorScheme::kLight);
 }
 
 const Color& TextLinkColors::LinkColor(
@@ -97,7 +97,7 @@ void TextLinkColors::SetVisitedLinkColor(const Color& color) {
 }
 
 const Color& TextLinkColors::VisitedLinkColor() const {
-  return VisitedLinkColor(mojom::ColorScheme::kLight);
+  return VisitedLinkColor(mojom::blink::ColorScheme::kLight);
 }
 
 const Color& TextLinkColors::VisitedLinkColor(
@@ -115,7 +115,7 @@ void TextLinkColors::SetActiveLinkColor(const Color& color) {
 }
 
 const Color& TextLinkColors::ActiveLinkColor() const {
-  return ActiveLinkColor(mojom::ColorScheme::kLight);
+  return ActiveLinkColor(mojom::blink::ColorScheme::kLight);
 }
 
 const Color& TextLinkColors::ActiveLinkColor(
@@ -131,7 +131,7 @@ Color TextLinkColors::ColorFromCSSValue(const CSSValue& value,
                                         Color current_color,
                                         mojom::blink::ColorScheme color_scheme,
                                         bool for_visited_link) const {
-  if (auto* color_value = DynamicTo<cssvalue::CSSColorValue>(value))
+  if (auto* color_value = DynamicTo<cssvalue::CSSColor>(value))
     return color_value->Value();
 
   if (auto* pair = DynamicTo<CSSLightDarkValuePair>(value)) {
@@ -155,7 +155,7 @@ Color TextLinkColors::ColorFromCSSValue(const CSSValue& value,
     case CSSValueID::kWebkitActivelink:
       return ActiveLinkColor(color_scheme);
     case CSSValueID::kWebkitFocusRingColor:
-      return LayoutTheme::GetTheme().FocusRingColor();
+      return LayoutTheme::GetTheme().FocusRingColor(color_scheme);
     case CSSValueID::kCurrentcolor:
       return current_color;
     default:

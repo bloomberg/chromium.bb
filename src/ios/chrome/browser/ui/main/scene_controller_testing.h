@@ -9,12 +9,14 @@
 
 class Browser;
 struct UrlLoadParams;
+@class TabGridCoordinator;
 
 // Methods exposed for testing. This is terrible and should be rewritten.
 @interface SceneController ()
 
-- (void)showFirstRunUI;
-- (BOOL)isTabSwitcherActive;
+@property(nonatomic, strong) TabGridCoordinator* mainCoordinator;
+
+- (void)showLegacyFirstRunUI;
 
 - (void)addANewTabAndPresentBrowser:(Browser*)browser
                   withURLLoadParams:(const UrlLoadParams&)urlLoadParams;

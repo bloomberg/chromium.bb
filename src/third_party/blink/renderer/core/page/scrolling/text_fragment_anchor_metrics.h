@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_TEXT_FRAGMENT_ANCHOR_METRICS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_TEXT_FRAGMENT_ANCHOR_METRICS_H_
 
+#include "base/time/tick_clock.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_selector.h"
@@ -24,6 +25,7 @@ class CORE_EXPORT TextFragmentAnchorMetrics final
     TextFragmentSelector selector;
     bool is_list_item = false;
     bool is_table_cell = false;
+    bool spans_multiple_blocks = false;
   };
 
   // An enum to indicate which parameters were specified in the text fragment.

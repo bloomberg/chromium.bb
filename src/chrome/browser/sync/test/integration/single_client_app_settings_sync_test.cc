@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/user_selectable_type.h"
@@ -10,9 +11,9 @@
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "chrome/browser/sync/test/integration/os_sync_test.h"
-#include "chromeos/constants/chromeos_features.h"
 #endif
 
 using syncer::UserSelectableType;
@@ -20,7 +21,7 @@ using syncer::UserSelectableTypeSet;
 
 namespace {
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Chrome OS syncs apps as an OS type.
 class SingleClientAppSettingsOsSyncTest : public OsSyncTest {
  public:
@@ -43,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppSettingsOsSyncTest,
   EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::APP_SETTINGS));
 }
 
-#else   // !defined(OS_CHROMEOS)
+#else   // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 // See also TwoClientExtensionSettingsAndAppSettingsSyncTest.
 class SingleClientAppSettingsSyncTest : public SyncTest {
@@ -63,6 +64,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppSettingsSyncTest, Basics) {
   EXPECT_FALSE(settings->GetSelectedTypes().Has(UserSelectableType::kApps));
   EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::APP_SETTINGS));
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace

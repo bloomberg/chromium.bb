@@ -46,10 +46,9 @@ SharedQuadState* CreateSharedQuadState(AggregatedRenderPass* render_pass,
                                        const gfx::Rect& rect) {
   const gfx::Rect layer_rect = rect;
   const gfx::Rect visible_layer_rect = rect;
-  const gfx::Rect clip_rect = rect;
   SharedQuadState* shared_state = render_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), layer_rect, visible_layer_rect,
-                       gfx::MaskFilterInfo(), clip_rect, /*is_clipped=*/false,
+                       gfx::MaskFilterInfo(), /*clip_rect=*/absl::nullopt,
                        /*are_contents_opaque=*/false, /*opacity=*/1.0f,
                        SkBlendMode::kSrcOver,
                        /*sorting_context_id=*/0);
@@ -115,8 +114,8 @@ class SkiaReadbackPixelTest : public cc::PixelTest,
         mailbox, GL_LINEAR, GL_TEXTURE_2D, sync_token, size,
         /*is_overlay_candidate=*/false);
     gl_resource.format = format;
-    auto release_callback = SingleReleaseCallback::Create(
-        base::BindOnce(&DeleteSharedImage, child_context_provider_, mailbox));
+    auto release_callback =
+        base::BindOnce(&DeleteSharedImage, child_context_provider_, mailbox);
     return child_resource_provider_->ImportResource(
         gl_resource, std::move(release_callback));
   }
@@ -130,7 +129,7 @@ class SkiaReadbackPixelTest : public cc::PixelTest,
     ResourceId resource_id =
         CreateGpuResource(kSourceSize, format, MakePixelSpan(source_bitmap_));
 
-    std::unordered_map<ResourceId, ResourceId> resource_map =
+    std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
         cc::SendResourceAndGetChildToParentMap(
             {resource_id}, this->resource_provider_.get(),
             this->child_resource_provider_.get(),
@@ -199,7 +198,7 @@ TEST_P(SkiaReadbackPixelTest, ExecutesCopyRequest) {
 
   renderer_->DecideRenderPassAllocationsForFrame(pass_list);
   renderer_->DrawFrame(&pass_list, 1.0f, kSourceSize, gfx::DisplayColorSpaces(),
-                       &surface_damage_rect_list);
+                       std::move(surface_damage_rect_list));
   // Call SwapBuffersSkipped(), so the renderer can have a chance to release
   // resources.
   renderer_->SwapBuffersSkipped();
@@ -212,7 +211,8 @@ TEST_P(SkiaReadbackPixelTest, ExecutesCopyRequest) {
   EXPECT_EQ(result_selection, result->rect());
 
   // Examine the image in the |result|, and compare it to the baseline PNG file.
-  const SkBitmap actual = result->AsSkBitmap();
+  auto scoped_bitmap = result->ScopedAccessSkBitmap();
+  auto actual = scoped_bitmap.bitmap();
 
   base::FilePath expected_path = GetExpectedPath();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

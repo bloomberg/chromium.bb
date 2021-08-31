@@ -28,7 +28,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/values.h"
 
@@ -73,7 +72,6 @@ class DictionaryBuilder {
 class ListBuilder {
  public:
   ListBuilder();
-  explicit ListBuilder(const base::ListValue& init);
   ~ListBuilder();
 
   // Can only be called once, after which it's invalid to use the builder.

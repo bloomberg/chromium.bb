@@ -37,6 +37,11 @@ enum CSSSampleId {
     kInternalVisitedTextFillColor = 0,
     kInternalVisitedTextStrokeColor = 0,
     kInternalFontSizeDelta = 0,
+    kInternalForcedBackgroundColor = 0,
+    kInternalForcedBorderColor = 0,
+    kInternalForcedColor = 0,
+    kInternalForcedOutlineColor = 0,
+    kInternalForcedVisitedColor = 0,
 
     // This CSSSampleId represents page load for CSS histograms. It is recorded once
     // per page visit for each CSS histogram being logged on the blink side and the
@@ -722,7 +727,7 @@ enum CSSSampleId {
     kLineGapOverride = 675,
     kMathShift = 676,
     kMathDepth = 677,
-    kAdvanceProportionalOverride = 678,
+    // kAdvanceProportionalOverride = 678,
     kOverflowClipMargin = 679,
     kScrollbarWidth = 680,
     // @counter-style descriptors
@@ -736,16 +741,22 @@ enum CSSSampleId {
     kSymbols = 688,
     kAdditiveSymbols = 689,
     kSpeakAs = 690,
+    kBorderStartStartRadius = 691,
+    kBorderStartEndRadius = 692,
+    kBorderEndStartRadius = 693,
+    kBorderEndEndRadius = 694,
+    kAccentColor = 695,
+    kSizeAdjust = 696,
 
 
 
-    // patch section: rubberband (features 691,692,693)
+    // patch section: rubberband (features 697,698,699)
 
 
-    // patch section: lcd-text background (feature 694)
+    // patch section: lcd-text background (feature 700)
 
 
-    // patch section: suppress-needs-compositing-input-update (feature 695)
+    // patch section: suppress-needs-compositing-input-update (feature 701)
 
 
 

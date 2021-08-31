@@ -7,7 +7,9 @@
 
 #include <memory>
 
+#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "chrome/browser/flags/android/chrome_session_state.h"
 #include "chrome/browser/ui/android/tab_model/android_live_tab_context.h"
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/location_bar_model_delegate.h"
@@ -84,6 +86,14 @@ class TabModel {
     FROM_STARTUP,
     // Opened from the start surface.
     FROM_START_SURFACE,
+    // Opened from Tab group UI.
+    // Tab group UI include:
+    // - "+" button in the bottom tab strip
+    // - "+" button in the tab grid dialog
+    FROM_TAB_GROUP_UI,
+    // Open from the long press context menu item 'Open in new tab in group'.
+    // Will not be brought to the foreground.
+    FROM_LONGPRESS_BACKGROUND_IN_GROUP,
     // Must be last.
     SIZE
   };
@@ -120,6 +130,7 @@ class TabModel {
   virtual content::WebContents* GetWebContentsAt(int index) const = 0;
   // This will return NULL if the tab has not yet been initialized.
   virtual TabAndroid* GetTabAt(int index) const = 0;
+  virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() const = 0;
 
   virtual void SetActiveIndex(int index) = 0;
   virtual void CloseTabAt(int index) = 0;
@@ -148,8 +159,10 @@ class TabModel {
   // Removes an observer from this TabModel.
   virtual void RemoveObserver(TabModelObserver* observer) = 0;
 
+  chrome::android::ActivityType activity_type() const { return activity_type_; }
+
  protected:
-  explicit TabModel(Profile* profile, bool is_tabbed_activity);
+  TabModel(Profile* profile, chrome::android::ActivityType activity_type);
   virtual ~TabModel();
 
   // Instructs the TabModel to broadcast a notification that all tabs are now
@@ -160,6 +173,8 @@ class TabModel {
 
  private:
   Profile* profile_;
+
+  chrome::android::ActivityType activity_type_;
 
   // The LiveTabContext associated with TabModel.
   // Used to restore closed tabs through the TabRestoreService.

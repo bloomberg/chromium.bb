@@ -17,8 +17,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/memory/aligned_memory.h"
-#include "base/process/process_metrics.h"
-#include "base/strings/stringprintf.h"
+#include "base/memory/page_size.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,6 +37,9 @@
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include <malloc.h>
 #include "base/test/malloc_wrapper.h"
+#endif
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
 #endif
 
 #if defined(OS_WIN)
@@ -64,6 +66,11 @@ typedef BOOL (WINAPI* HeapQueryFn)  \
 // test suite setup and does not need to be done again, else mach_override
 // will fail.
 
+// Wrap free() in a function to thwart Clang's -Wfree-nonheap-object warning.
+static void callFree(void *ptr) {
+  free(ptr);
+}
+
 TEST(ProcessMemoryTest, MacTerminateOnHeapCorruption) {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
   base::allocator::InitializeAllocatorShim();
@@ -74,11 +81,11 @@ TEST(ProcessMemoryTest, MacTerminateOnHeapCorruption) {
 #if ARCH_CPU_64_BITS
   // On 64 bit Macs, the malloc system automatically abort()s on heap corruption
   // but does not output anything.
-  ASSERT_DEATH(free(buf), "");
+  ASSERT_DEATH(callFree(buf), "");
 #elif defined(ADDRESS_SANITIZER)
   // AddressSanitizer replaces malloc() and prints a different error message on
   // heap corruption.
-  ASSERT_DEATH(free(buf), "attempting free on address which "
+  ASSERT_DEATH(callFree(buf), "attempting free on address which "
       "was not malloc\\(\\)-ed");
 #else
   ADD_FAILURE() << "This test is not supported in this build configuration.";
@@ -166,9 +173,21 @@ class OutOfMemoryDeathTest : public OutOfMemoryTest {
     base::allocator::UninterceptMallocZonesForTesting();
   }
 #endif
+
+  // These tests don't work properly on old x86 Android; crbug.com/1181112
+  bool ShouldSkipTest() {
+#if defined(OS_ANDROID) && defined(ARCH_CPU_X86)
+    return base::android::BuildInfo::GetInstance()->sdk_int() <
+           base::android::SDK_VERSION_NOUGAT;
+#endif
+    return false;
+  }
 };
 
 TEST_F(OutOfMemoryDeathTest, New) {
+  if (ShouldSkipTest()) {
+    return;
+  }
   ASSERT_OOM_DEATH({
     SetUpInDeathAssert();
     value_ = operator new(test_size_);
@@ -176,6 +195,9 @@ TEST_F(OutOfMemoryDeathTest, New) {
 }
 
 TEST_F(OutOfMemoryDeathTest, NewArray) {
+  if (ShouldSkipTest()) {
+    return;
+  }
   ASSERT_OOM_DEATH({
     SetUpInDeathAssert();
     value_ = new char[test_size_];
@@ -183,6 +205,9 @@ TEST_F(OutOfMemoryDeathTest, NewArray) {
 }
 
 TEST_F(OutOfMemoryDeathTest, Malloc) {
+  if (ShouldSkipTest()) {
+    return;
+  }
   ASSERT_OOM_DEATH({
     SetUpInDeathAssert();
     value_ = malloc(test_size_);
@@ -190,6 +215,9 @@ TEST_F(OutOfMemoryDeathTest, Malloc) {
 }
 
 TEST_F(OutOfMemoryDeathTest, Realloc) {
+  if (ShouldSkipTest()) {
+    return;
+  }
   ASSERT_OOM_DEATH({
     SetUpInDeathAssert();
     value_ = realloc(nullptr, test_size_);
@@ -197,6 +225,9 @@ TEST_F(OutOfMemoryDeathTest, Realloc) {
 }
 
 TEST_F(OutOfMemoryDeathTest, Calloc) {
+  if (ShouldSkipTest()) {
+    return;
+  }
   ASSERT_OOM_DEATH({
     SetUpInDeathAssert();
     value_ = calloc(1024, test_size_ / 1024L);
@@ -204,6 +235,9 @@ TEST_F(OutOfMemoryDeathTest, Calloc) {
 }
 
 TEST_F(OutOfMemoryDeathTest, AlignedAlloc) {
+  if (ShouldSkipTest()) {
+    return;
+  }
   ASSERT_OOM_DEATH({
     SetUpInDeathAssert();
     value_ = base::AlignedAlloc(test_size_, 8);
@@ -213,6 +247,9 @@ TEST_F(OutOfMemoryDeathTest, AlignedAlloc) {
 // POSIX does not define an aligned realloc function.
 #if defined(OS_WIN)
 TEST_F(OutOfMemoryDeathTest, AlignedRealloc) {
+  if (ShouldSkipTest()) {
+    return;
+  }
   ASSERT_OOM_DEATH({
     SetUpInDeathAssert();
     value_ = _aligned_realloc(nullptr, test_size_, 8);

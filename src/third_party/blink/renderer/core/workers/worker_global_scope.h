@@ -85,6 +85,7 @@ class CORE_EXPORT WorkerGlobalScope
   void Dispose() override;
   WorkerThread* GetThread() const final { return thread_; }
   const base::UnguessableToken& GetDevToolsToken() const override;
+  bool IsInitialized() const final { return !url_.IsNull(); }
 
   void ExceptionUnhandled(int exception_id);
 
@@ -116,14 +117,16 @@ class CORE_EXPORT WorkerGlobalScope
   bool IsContextThread() const final;
   const KURL& BaseURL() const final;
   String UserAgent() const final { return user_agent_; }
-  const UserAgentMetadata& GetUserAgentMetadata() const { return ua_metadata_; }
+  UserAgentMetadata GetUserAgentMetadata() const override {
+    return ua_metadata_;
+  }
   HttpsState GetHttpsState() const override { return https_state_; }
   scheduler::WorkerScheduler* GetScheduler() final;
   ukm::UkmRecorder* UkmRecorder() final;
   ScriptWrappable* ToScriptWrappable() final { return this; }
 
   void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
-  BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() final;
+  const BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() const final;
 
   OffscreenFontSelector* GetFontSelector() { return font_selector_; }
 
@@ -145,7 +148,7 @@ class CORE_EXPORT WorkerGlobalScope
       const KURL& response_url,
       network::mojom::ReferrerPolicy response_referrer_policy,
       network::mojom::IPAddressSpace response_address_space,
-      const Vector<CSPHeaderAndType>& response_csp_headers,
+      Vector<network::mojom::blink::ContentSecurityPolicyPtr> response_csp,
       const Vector<String>* response_origin_trial_tokens,
       int64_t appcache_id) = 0;
 
@@ -163,7 +166,7 @@ class CORE_EXPORT WorkerGlobalScope
   // Spec: https://html.spec.whatwg.org/C/#run-a-worker Step 12 is completed,
   // and it's ready to proceed to Step 23.
   void WorkerScriptFetchFinished(Script&,
-                                 base::Optional<v8_inspector::V8StackTraceId>);
+                                 absl::optional<v8_inspector::V8StackTraceId>);
 
   // Fetches and evaluates the top-level classic script.
   virtual void FetchAndRunClassicScript(
@@ -223,11 +226,12 @@ class CORE_EXPORT WorkerGlobalScope
   // successful and not successful) by the worker.
   FontMatchingMetrics* GetFontMatchingMetrics();
 
+  bool IsUrlValid() { return url_.IsValid(); }
+
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                     WorkerThread*,
-                    base::TimeTicks time_origin,
-                    ukm::SourceId);
+                    base::TimeTicks time_origin);
 
   // ExecutionContext
   void ExceptionThrown(ErrorEvent*) override;
@@ -264,6 +268,7 @@ class CORE_EXPORT WorkerGlobalScope
   void ImportScriptsInternal(const Vector<String>& urls);
   // ExecutionContext
   void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) final;
+  void AddInspectorIssue(AuditsIssue) final;
   EventTarget* ErrorEventTarget() final { return this; }
 
   KURL url_;
@@ -308,7 +313,7 @@ class CORE_EXPORT WorkerGlobalScope
   ScriptEvalState script_eval_state_;
 
   Member<Script> worker_script_;
-  base::Optional<v8_inspector::V8StackTraceId> stack_id_;
+  absl::optional<v8_inspector::V8StackTraceId> stack_id_;
 
   HttpsState https_state_;
 

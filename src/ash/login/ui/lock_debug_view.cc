@@ -28,10 +28,10 @@
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/scroll_view.h"
@@ -62,7 +62,7 @@ constexpr const char kDebugEnterpriseInfo[] = "Asset ID: 1111";
 constexpr const char kDebugBluetoothName[] = "Bluetooth adapter";
 
 constexpr const char kDebugKioskAppId[] = "asdf1234";
-constexpr const char kDebugKioskAppName[] = "Test App Name";
+constexpr const char16_t kDebugKioskAppName[] = u"Test App Name";
 
 constexpr const char kDebugDefaultLocaleCode[] = "en-GB";
 constexpr const char kDebugDefaultLocaleTitle[] = "English";
@@ -219,7 +219,7 @@ class LockDebugView::DebugDataDispatcherTransformer
 
   int GetUserCount() const { return debug_users_.size(); }
 
-  base::string16 GetDisplayNameForUserIndex(size_t user_index) {
+  std::u16string GetDisplayNameForUserIndex(size_t user_index) {
     DCHECK(user_index >= 0 && user_index < debug_users_.size());
     return base::UTF8ToUTF16(debug_users_[user_index].display_name);
   }
@@ -294,7 +294,7 @@ class LockDebugView::DebugDataDispatcherTransformer
     EasyUnlockIconOptions icon;
     icon.icon = debug_user->easy_unlock_id;
     if (icon.icon == EasyUnlockIconId::SPINNER) {
-      icon.aria_label = base::ASCIIToUTF16("Icon is spinning");
+      icon.aria_label = u"Icon is spinning";
     } else if (icon.icon == EasyUnlockIconId::LOCKED ||
                icon.icon == EasyUnlockIconId::LOCKED_TO_BE_ACTIVATED) {
       icon.autoshow_tooltip = true;
@@ -303,8 +303,7 @@ class LockDebugView::DebugDataDispatcherTransformer
           "automatically. icon_id=" +
           base::NumberToString(static_cast<int>(icon.icon)));
     } else {
-      icon.tooltip =
-          base::ASCIIToUTF16("This should not show up automatically.");
+      icon.tooltip = u"This should not show up automatically.";
     }
 
     // Show icon and enable/disable click to unlock.
@@ -410,7 +409,7 @@ class LockDebugView::DebugDataDispatcherTransformer
   void AddKioskApp(ShelfWidget* shelf_widget) {
     KioskAppMenuEntry menu_item;
     menu_item.app_id = kDebugKioskAppId;
-    menu_item.name = base::UTF8ToUTF16(kDebugKioskAppName);
+    menu_item.name = kDebugKioskAppName;
     kiosk_apps_.push_back(std::move(menu_item));
     shelf_widget->login_shelf_view()->SetKioskApps(kiosk_apps_, {}, {});
   }
@@ -431,7 +430,7 @@ class LockDebugView::DebugDataDispatcherTransformer
                                     adb_sideloading_enabled);
   }
 
-  void UpdateWarningMessage(const base::string16& message) {
+  void UpdateWarningMessage(const std::u16string& message) {
     debug_dispatcher_.UpdateWarningMessage(message);
   }
 
@@ -615,7 +614,7 @@ class LockDebugView::DebugLoginDetachableBaseModel
 
   // Clears all in-memory pairing state.
   void ClearDebugPairingState() {
-    pairing_status_ = base::nullopt;
+    pairing_status_ = absl::nullopt;
     base_id_ = kNullBaseId;
     last_used_bases_.clear();
 
@@ -649,7 +648,7 @@ class LockDebugView::DebugLoginDetachableBaseModel
 
  private:
   // In-memory detachable base pairing state.
-  base::Optional<DetachableBasePairingStatus> pairing_status_;
+  absl::optional<DetachableBasePairingStatus> pairing_status_;
   int base_id_ = kNullBaseId;
   // Maps user account to the last used detachable base ID (base ID being the
   // base's index in kDebugDetachableBases array).
@@ -798,7 +797,7 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
         views::ScrollView::CreateScrollViewWithBorder();
     scroll->SetPreferredSize(gfx::Size(600, height));
     scroll->SetContents(base::WrapUnique(content));
-    scroll->SetBackgroundColor(base::nullopt);
+    scroll->SetBackgroundColor(absl::nullopt);
     scroll->SetVerticalScrollBar(
         std::make_unique<views::OverlayScrollBar>(false));
     scroll->SetHorizontalScrollBar(
@@ -826,6 +825,14 @@ void LockDebugView::Layout() {
   lock_->SetBoundsRect(GetLocalBounds());
   container_->SetPosition(gfx::Point());
   container_->SizeToPreferredSize();
+
+  for (views::View* child : container_->children())
+    child->Layout();
+}
+
+void LockDebugView::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  UpdatePerUserActionContainerAndLayout();
 }
 
 void LockDebugView::AddOrRemoveUsersButtonPressed(int delta) {
@@ -926,9 +933,8 @@ void LockDebugView::CycleDetachableBaseIdButtonPressed() {
 void LockDebugView::ToggleWarningBannerButtonPressed() {
   debug_data_dispatcher_->UpdateWarningMessage(
       is_warning_banner_shown_
-          ? base::string16()
-          : base::ASCIIToUTF16("A critical update is ready to install. Sign "
-                               "in to get started."));
+          ? std::u16string()
+          : u"A critical update is ready to install. Sign in to get started.");
   is_warning_banner_shown_ = !is_warning_banner_shown_;
 }
 

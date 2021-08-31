@@ -21,13 +21,16 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/safe_browsing/core/db/database_manager.h"
-#include "components/safe_browsing/core/db/test_database_manager.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
+#include "components/content_settings/core/common/content_settings_types.h"
+#include "components/infobars/content/content_infobar_manager.h"
+#include "components/infobars/core/confirm_infobar_delegate.h"
+#include "components/infobars/core/infobar.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
+#include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
 #include "components/subresource_filter/content/browser/subframe_navigation_test_utils.h"
-#include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
-#include "components/subresource_filter/content/common/subresource_filter_messages.h"
+#include "components/subresource_filter/content/browser/throttle_manager_test_support.h"
 #include "components/subresource_filter/content/mojom/subresource_filter_agent.mojom.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/common/common_features.h"
@@ -74,6 +77,7 @@ class FakeSubresourceFilterAgent : public mojom::SubresourceFilterAgent {
 
   void OnSubresourceFilterAgentReceiver(
       mojo::ScopedInterfaceEndpointHandle handle) {
+    receiver_.reset();
     receiver_.Bind(
         mojo::PendingAssociatedReceiver<mojom::SubresourceFilterAgent>(
             std::move(handle)));
@@ -82,10 +86,10 @@ class FakeSubresourceFilterAgent : public mojom::SubresourceFilterAgent {
   // mojom::SubresourceFilterAgent:
   void ActivateForNextCommittedLoad(
       mojom::ActivationStatePtr activation_state,
-      blink::mojom::AdFrameType ad_frame_type =
-          blink::mojom::AdFrameType::kNonAd) override {
+      const absl::optional<blink::FrameAdEvidence>& ad_evidence) override {
     last_activation_ = std::move(activation_state);
-    is_ad_subframe_ = ad_frame_type != blink::mojom::AdFrameType::kNonAd;
+    is_ad_subframe_ =
+        ad_evidence.has_value() && ad_evidence->IndicatesAdSubframe();
   }
 
   // These methods reset state back to default when they are called.
@@ -94,9 +98,11 @@ class FakeSubresourceFilterAgent : public mojom::SubresourceFilterAgent {
     is_ad_subframe_ = false;
     return is_ad_subframe;
   }
-  bool LastActivated() {
-    bool activated = last_activation_ && last_activation_->activation_level !=
-                                             mojom::ActivationLevel::kDisabled;
+  absl::optional<bool> LastActivated() {
+    if (!last_activation_)
+      return absl::nullopt;
+    bool activated =
+        last_activation_->activation_level != mojom::ActivationLevel::kDisabled;
     last_activation_.reset();
     return activated;
   }
@@ -105,17 +111,6 @@ class FakeSubresourceFilterAgent : public mojom::SubresourceFilterAgent {
   mojom::ActivationStatePtr last_activation_;
   bool is_ad_subframe_ = false;
   mojo::AssociatedReceiver<mojom::SubresourceFilterAgent> receiver_{this};
-};
-
-// Overrides the TestSafeBrowsingDatabaseManager methods that are
-// expected to be called to eliminate error logs.
-class CustomTestSafeBrowsingDatabaseManager
-    : public safe_browsing::TestSafeBrowsingDatabaseManager {
- public:
-  bool IsSupported() const override { return false; }
-
- private:
-  ~CustomTestSafeBrowsingDatabaseManager() override = default;
 };
 
 // Simple throttle that sends page-level activation to the manager for a
@@ -176,42 +171,6 @@ class MockPageStateActivationThrottle : public content::NavigationThrottle {
   DISALLOW_COPY_AND_ASSIGN(MockPageStateActivationThrottle);
 };
 
-class TestSubresourceFilterClient : public SubresourceFilterClient {
- public:
-  TestSubresourceFilterClient() = default;
-  ~TestSubresourceFilterClient() override = default;
-
-  // SubresourceFilterClient:
-  void ShowNotification() override { ++disallowed_notification_count_; }
-  mojom::ActivationLevel OnPageActivationComputed(
-      content::NavigationHandle* navigation_handle,
-      mojom::ActivationLevel effective_activation_level,
-      ActivationDecision* decision) override {
-    return effective_activation_level;
-  }
-  void OnAdsViolationTriggered(
-      content::RenderFrameHost* rfh,
-      mojom::AdsViolation triggered_violation) override {}
-  const scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
-  GetSafeBrowsingDatabaseManager() override {
-    return database_manager_;
-  }
-  void OnReloadRequested() override {}
-
-  void CreateSafeBrowsingDatabaseManager() {
-    database_manager_ =
-        base::MakeRefCounted<CustomTestSafeBrowsingDatabaseManager>();
-  }
-
-  int disallowed_notification_count() const {
-    return disallowed_notification_count_;
-  }
-
- private:
-  scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager_;
-  int disallowed_notification_count_ = 0;
-};
-
 class ContentSubresourceFilterThrottleManagerTest
     : public content::RenderViewHostTestHarness,
       public content::WebContentsObserver,
@@ -247,35 +206,43 @@ class ContentSubresourceFilterThrottleManagerTest
                                              /*expected_checksum=*/0,
                                              base::DoNothing());
 
-    auto subresource_filter_client =
-        std::make_unique<TestSubresourceFilterClient>();
-    client_ = subresource_filter_client.get();
+    throttle_manager_test_support_ =
+        std::make_unique<ThrottleManagerTestSupport>(web_contents);
+
+    // Turn off smart UI to make it easier to reason about expectations on
+    // ShowNotification() being invoked.
+    throttle_manager_test_support_->SetShouldUseSmartUI(false);
+
     throttle_manager_ =
         std::make_unique<ContentSubresourceFilterThrottleManager>(
-            std::move(subresource_filter_client), dealer_handle_.get(),
-            web_contents);
+            throttle_manager_test_support_->profile_context(),
+            /*database_manager=*/nullptr, dealer_handle_.get(), web_contents);
 
     Observe(web_contents);
   }
 
   void TearDown() override {
-    client_ = nullptr;
     throttle_manager_.reset();
+    throttle_manager_test_support_.reset();
     dealer_handle_.reset();
     base::RunLoop().RunUntilIdle();
     content::RenderViewHostTestHarness::TearDown();
   }
 
-  void ExpectActivationSignalForFrame(content::RenderFrameHost* rfh,
-                                      bool expect_activation,
-                                      bool expect_is_ad_subframe = false) {
+  void ExpectActivationSignalForFrame(
+      content::RenderFrameHost* rfh,
+      bool expect_activation,
+      bool expect_is_ad_subframe = false,
+      bool expect_activation_sent_to_agent = true) {
     // In some cases we need to verify that messages were _not_ sent, in which
     // case using a Wait() idiom would cause hangs. RunUntilIdle instead to
     // ensure mojo calls make it to the fake agent.
     base::RunLoop().RunUntilIdle();
     FakeSubresourceFilterAgent* agent = agent_map_[rfh].get();
-    EXPECT_EQ(expect_activation, agent->LastActivated());
+    absl::optional<bool> last_activated = agent->LastActivated();
+    EXPECT_EQ(expect_activation, last_activated && *last_activated);
     EXPECT_EQ(expect_is_ad_subframe, agent->LastAdSubframe());
+    EXPECT_EQ(expect_activation_sent_to_agent, last_activated.has_value());
   }
 
   // Helper methods:
@@ -314,8 +281,28 @@ class ContentSubresourceFilterThrottleManagerTest
     return throttle_manager_->ruleset_handle_for_testing();
   }
 
-  int disallowed_notification_count() const {
-    return client_->disallowed_notification_count();
+  bool ads_blocked_in_content_settings() {
+    auto* content_settings =
+        content_settings::PageSpecificContentSettings::GetForFrame(
+            content::RenderViewHostTestHarness::web_contents()->GetMainFrame());
+
+    return content_settings->IsContentBlocked(ContentSettingsType::ADS);
+  }
+
+  bool presenting_ads_blocked_infobar() {
+    auto* infobar_manager = infobars::ContentInfoBarManager::FromWebContents(
+        content::RenderViewHostTestHarness::web_contents());
+    if (infobar_manager->infobar_count() == 0)
+      return false;
+
+    // No infobars other than the ads blocked infobar should be displayed in the
+    // context of these tests.
+    EXPECT_EQ(infobar_manager->infobar_count(), 1u);
+    auto* infobar = infobar_manager->infobar_at(0);
+    EXPECT_EQ(infobar->delegate()->GetIdentifier(),
+              infobars::InfoBarDelegate::ADS_BLOCKED_INFOBAR_DELEGATE_ANDROID);
+
+    return true;
   }
 
  protected:
@@ -324,7 +311,7 @@ class ContentSubresourceFilterThrottleManagerTest
     CreateAgentForHost(new_host);
   }
 
-  void FrameDeleted(content::RenderFrameHost* host) override {
+  void RenderFrameDeleted(content::RenderFrameHost* host) override {
     agent_map_.erase(host);
   }
 
@@ -374,7 +361,11 @@ class ContentSubresourceFilterThrottleManagerTest
   }
 
   void CreateSafeBrowsingDatabaseManager() {
-    client_->CreateSafeBrowsingDatabaseManager();
+    scoped_refptr<FakeSafeBrowsingDatabaseManager> database_manager =
+        base::MakeRefCounted<FakeSafeBrowsingDatabaseManager>();
+
+    throttle_manager_->set_database_manager_for_testing(
+        std::move(database_manager));
   }
 
   VerifiedRulesetDealer::Handle* dealer_handle() {
@@ -384,7 +375,7 @@ class ContentSubresourceFilterThrottleManagerTest
  private:
   testing::TestRulesetCreator test_ruleset_creator_;
   testing::TestRulesetPair test_ruleset_pair_;
-  TestSubresourceFilterClient* client_;
+  std::unique_ptr<ThrottleManagerTestSupport> throttle_manager_test_support_;
 
   std::unique_ptr<VerifiedRulesetDealer::Handle> dealer_handle_;
 
@@ -418,8 +409,32 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   EXPECT_EQ(content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,
             SimulateStartAndGetResult(navigation_simulator()));
 
-  EXPECT_EQ(1, disallowed_notification_count());
+  EXPECT_TRUE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(presenting_ads_blocked_infobar());
+#endif
 }
+
+#if defined(OS_ANDROID)
+TEST_P(ContentSubresourceFilterThrottleManagerTest,
+       NoCrashWhenInfoBarManagerIsNotPresent) {
+  auto* web_contents = RenderViewHostTestHarness::web_contents();
+  web_contents->RemoveUserData(infobars::ContentInfoBarManager::UserDataKey());
+
+  // Commit a navigation that triggers page level activation.
+  NavigateAndCommitMainFrame(GURL(kTestURLWithActivation));
+  ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */);
+
+  // A disallowed subframe navigation should be successfully filtered, and the
+  // lack of infobar manager should not cause a crash.
+  CreateSubframeWithTestNavigation(
+      GURL("https://www.example.com/disallowed.html"), main_rfh());
+  EXPECT_EQ(content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,
+            SimulateStartAndGetResult(navigation_simulator()));
+
+  EXPECT_TRUE(ads_blocked_in_content_settings());
+}
+#endif
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest, NoPageActivation) {
   // This test assumes that we're not in DryRun mode.
@@ -436,7 +451,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest, NoPageActivation) {
       GURL("https://www.example.com/disallowed.html"), main_rfh());
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
             SimulateCommitAndGetResult(navigation_simulator()));
-  EXPECT_EQ(0, disallowed_notification_count());
+  EXPECT_FALSE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(presenting_ads_blocked_infobar());
+#endif
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
@@ -458,7 +476,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   ExpectActivationSignalForFrame(child, true /* expect_activation */,
                                  true /* is_ad_subframe */);
 
-  EXPECT_EQ(0, disallowed_notification_count());
+  EXPECT_FALSE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(presenting_ads_blocked_infobar());
+#endif
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
@@ -477,7 +498,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
             SimulateRedirectAndGetResult(
                 navigation_simulator(),
                 GURL("https://www.example.com/disallowed.html")));
-  EXPECT_EQ(1, disallowed_notification_count());
+  EXPECT_TRUE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(presenting_ads_blocked_infobar());
+#endif
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
@@ -501,7 +525,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
       navigation_simulator()->GetFinalRenderFrameHost();
   ExpectActivationSignalForFrame(child, true /* expect_activation */);
 
-  EXPECT_EQ(0, disallowed_notification_count());
+  EXPECT_FALSE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(presenting_ads_blocked_infobar());
+#endif
 }
 
 // This should fail if the throttle manager notifies the delegate twice of a
@@ -518,14 +545,20 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   EXPECT_EQ(content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,
             SimulateStartAndGetResult(navigation_simulator()));
 
-  EXPECT_EQ(1, disallowed_notification_count());
+  EXPECT_TRUE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(presenting_ads_blocked_infobar());
+#endif
 
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/2/disallowed.html"), main_rfh());
   EXPECT_EQ(content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,
             SimulateStartAndGetResult(navigation_simulator()));
 
-  EXPECT_EQ(1, disallowed_notification_count());
+  EXPECT_TRUE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(presenting_ads_blocked_infobar());
+#endif
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
@@ -540,24 +573,35 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   EXPECT_EQ(content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,
             SimulateStartAndGetResult(navigation_simulator()));
 
-  EXPECT_EQ(1, disallowed_notification_count());
+  EXPECT_TRUE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(presenting_ads_blocked_infobar());
+#endif
 
   // Commit another navigation that triggers page level activation.
   NavigateAndCommitMainFrame(GURL(kTestURLWithActivation2));
   ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */);
+
+  EXPECT_FALSE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(presenting_ads_blocked_infobar());
+#endif
 
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/2/disallowed.html"), main_rfh());
   EXPECT_EQ(content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,
             SimulateStartAndGetResult(navigation_simulator()));
 
-  EXPECT_EQ(2, disallowed_notification_count());
+  EXPECT_TRUE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(presenting_ads_blocked_infobar());
+#endif
 }
 
-// Test that the disallow load notification will not be repeated for the first
-// disallowed load that follows a same-document navigation.
+// Test that once presented, the ads blocked infobar will remain present after a
+// same-document navigation.
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
-       ActivateMainFrameDoNotNotifyAfterSameDocumentNav) {
+       InfoBarStaysPresentAfterSameDocumentNav) {
   // Commit a navigation that triggers page level activation.
   NavigateAndCommitMainFrame(GURL(kTestURLWithActivation));
   ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */);
@@ -568,20 +612,36 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   EXPECT_EQ(content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,
             SimulateStartAndGetResult(navigation_simulator()));
 
-  EXPECT_EQ(1, disallowed_notification_count());
+  EXPECT_TRUE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(presenting_ads_blocked_infobar());
+#endif
 
   // Commit another navigation that triggers page level activation.
   GURL url2 = GURL(base::StringPrintf("%s#ref", kTestURLWithActivation));
   CreateTestNavigation(url2, main_rfh());
   navigation_simulator()->CommitSameDocument();
-  ExpectActivationSignalForFrame(main_rfh(), false /* expect_activation */);
+
+  // Same-document navigations do not pass through ReadyToCommitNavigation so no
+  // ActivateForNextCommittedLoad mojo call is expected.
+  ExpectActivationSignalForFrame(main_rfh(), false /* expect_activation */,
+                                 false /* expect_is_ad_subframe */,
+                                 false /* expect_activation_sent_to_agent */);
+
+  EXPECT_TRUE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(presenting_ads_blocked_infobar());
+#endif
 
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/2/disallowed.html"), main_rfh());
   EXPECT_EQ(content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,
             SimulateStartAndGetResult(navigation_simulator()));
 
-  EXPECT_EQ(1, disallowed_notification_count());
+  EXPECT_TRUE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(presenting_ads_blocked_infobar());
+#endif
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
@@ -604,7 +664,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
       navigation_simulator()->GetFinalRenderFrameHost();
   ExpectActivationSignalForFrame(child, false /* expect_activation */);
 
-  EXPECT_EQ(0, disallowed_notification_count());
+  EXPECT_FALSE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(presenting_ads_blocked_infobar());
+#endif
 }
 
 // Once there are no activated frames, the manager drops its ruleset handle. If
@@ -618,7 +681,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest, RulesetHandleRegeneration) {
   EXPECT_EQ(content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,
             SimulateStartAndGetResult(navigation_simulator()));
 
-  EXPECT_EQ(1, disallowed_notification_count());
+  EXPECT_TRUE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(presenting_ads_blocked_infobar());
+#endif
 
   // Simulate a renderer crash which should delete the frame.
   EXPECT_TRUE(ManagerHasRulesetHandle());
@@ -629,12 +695,20 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest, RulesetHandleRegeneration) {
   NavigateAndCommitMainFrame(GURL(kTestURLWithActivation));
   ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */);
 
+  EXPECT_FALSE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(presenting_ads_blocked_infobar());
+#endif
+
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/disallowed.html"), main_rfh());
   EXPECT_EQ(content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,
             SimulateStartAndGetResult(navigation_simulator()));
 
-  EXPECT_EQ(2, disallowed_notification_count());
+  EXPECT_TRUE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(presenting_ads_blocked_infobar());
+#endif
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
@@ -665,7 +739,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
       navigation_simulator()->GetFinalRenderFrameHost();
   ExpectActivationSignalForFrame(child, false /* expect_activation */);
 
-  EXPECT_EQ(0, disallowed_notification_count());
+  EXPECT_FALSE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(presenting_ads_blocked_infobar());
+#endif
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
@@ -680,7 +757,12 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   CreateTestNavigation(same_site_inactive_url, main_rfh());
   SimulateFailedNavigation(navigation_simulator(), net::ERR_ABORTED);
   EXPECT_TRUE(ManagerHasRulesetHandle());
-  ExpectActivationSignalForFrame(main_rfh(), false /* expect_activation */);
+
+  // The aborted navigation does not pass through ReadyToCommitNavigation so no
+  // ActivateForNextCommittedLoad mojo call is expected.
+  ExpectActivationSignalForFrame(main_rfh(), false /* expect_activation */,
+                                 false /* expect_is_ad_subframe */,
+                                 false /* expect_activation_sent_to_agent */);
 
   // A subframe navigation fail.
   CreateSubframeWithTestNavigation(
@@ -688,7 +770,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   EXPECT_EQ(content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,
             SimulateStartAndGetResult(navigation_simulator()));
 
-  EXPECT_EQ(1, disallowed_notification_count());
+  EXPECT_TRUE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(presenting_ads_blocked_infobar());
+#endif
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
@@ -715,7 +800,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
       navigation_simulator()->GetFinalRenderFrameHost();
   ExpectActivationSignalForFrame(child, false /* expect_activation */);
 
-  EXPECT_EQ(0, disallowed_notification_count());
+  EXPECT_FALSE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(presenting_ads_blocked_infobar());
+#endif
 }
 
 // Ensure activation propagates into great-grandchild frames, including cross
@@ -754,7 +842,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest, ActivationPropagation) {
   EXPECT_EQ(content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,
             SimulateStartAndGetResult(navigation_simulator()));
 
-  EXPECT_EQ(1, disallowed_notification_count());
+  EXPECT_TRUE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(presenting_ads_blocked_infobar());
+#endif
 }
 
 // Ensure activation propagates through allowlisted documents.
@@ -790,7 +881,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
       navigation_simulator()->GetFinalRenderFrameHost();
   ExpectActivationSignalForFrame(subframe2, true /* expect_activation */);
 
-  EXPECT_EQ(0, disallowed_notification_count());
+  EXPECT_FALSE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(presenting_ads_blocked_infobar());
+#endif
 
   // An identical series of events that don't match allowlist rules cause
   // filtering.
@@ -809,7 +903,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   EXPECT_EQ(content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,
             SimulateStartAndGetResult(navigation_simulator()));
 
-  EXPECT_EQ(1, disallowed_notification_count());
+  EXPECT_TRUE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(presenting_ads_blocked_infobar());
+#endif
 }
 
 // Same-site navigations within a single RFH do not persist activation.
@@ -838,7 +935,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
       navigation_simulator()->GetFinalRenderFrameHost();
   ExpectActivationSignalForFrame(child, false /* expect_activation */);
 
-  EXPECT_EQ(0, disallowed_notification_count());
+  EXPECT_FALSE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(presenting_ads_blocked_infobar());
+#endif
 }
 
 TEST_F(ContentSubresourceFilterThrottleManagerTest, CreateForWebContents) {
@@ -848,6 +948,10 @@ TEST_F(ContentSubresourceFilterThrottleManagerTest, CreateForWebContents) {
                 web_contents.get()),
             nullptr);
 
+  ThrottleManagerTestSupport throttle_manager_test_support(web_contents.get());
+  SubresourceFilterProfileContext* profile_context =
+      throttle_manager_test_support.profile_context();
+
   {
     base::test::ScopedFeatureList scoped_feature;
     scoped_feature.InitAndDisableFeature(kSafeBrowsingSubresourceFilter);
@@ -855,7 +959,7 @@ TEST_F(ContentSubresourceFilterThrottleManagerTest, CreateForWebContents) {
     // CreateForWebContents() should not do anything if the subresource filter
     // feature is not enabled.
     ContentSubresourceFilterThrottleManager::CreateForWebContents(
-        web_contents.get(), std::make_unique<TestSubresourceFilterClient>(),
+        web_contents.get(), profile_context, /*database_manager=*/nullptr,
         dealer_handle());
     EXPECT_EQ(ContentSubresourceFilterThrottleManager::FromWebContents(
                   web_contents.get()),
@@ -865,8 +969,8 @@ TEST_F(ContentSubresourceFilterThrottleManagerTest, CreateForWebContents) {
   // If the subresource filter feature is enabled (as it is by default),
   // CreateForWebContents() should create and attach an instance.
   ContentSubresourceFilterThrottleManager::CreateForWebContents(
-      web_contents.get(), std::make_unique<TestSubresourceFilterClient>(),
-      dealer_handle());
+      web_contents.get(), profile_context,
+      /*database_manager=*/nullptr, dealer_handle());
   auto* throttle_manager =
       ContentSubresourceFilterThrottleManager::FromWebContents(
           web_contents.get());
@@ -874,8 +978,8 @@ TEST_F(ContentSubresourceFilterThrottleManagerTest, CreateForWebContents) {
 
   // A second call should not attach a different instance.
   ContentSubresourceFilterThrottleManager::CreateForWebContents(
-      web_contents.get(), std::make_unique<TestSubresourceFilterClient>(),
-      dealer_handle());
+      web_contents.get(), profile_context,
+      /*database_manager=*/nullptr, dealer_handle());
   EXPECT_EQ(ContentSubresourceFilterThrottleManager::FromWebContents(
                 web_contents.get()),
             throttle_manager);
@@ -955,11 +1059,14 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   EXPECT_EQ(content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,
             SimulateStartAndGetResult(navigation_simulator()));
 
-  EXPECT_EQ(1, disallowed_notification_count());
+  EXPECT_TRUE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(presenting_ads_blocked_infobar());
+#endif
 }
 
-// If the RenderFrame determines that the frame is an ad, then any navigation
-// for that frame should be considered an ad.
+// If the RenderFrame determines that the frame is an ad due to creation by ad
+// script, then any navigation for that frame should be considered an ad.
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
        SubframeNavigationTaggedAsAdByRenderer) {
   NavigateAndCommitMainFrame(GURL(kTestURLWithDryRun));
@@ -970,8 +1077,8 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
       GURL("https://www.example.com/allowed.html"), main_rfh());
 
   EXPECT_FALSE(throttle_manager()->IsFrameTaggedAsAd(subframe));
+  throttle_manager()->OnSubframeWasCreatedByAdScript(subframe);
   throttle_manager()->OnFrameIsAdSubframe(subframe);
-  EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAd(subframe));
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
             SimulateStartAndGetResult(navigation_simulator()));
@@ -979,6 +1086,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
             SimulateCommitAndGetResult(navigation_simulator()));
   subframe = navigation_simulator()->GetFinalRenderFrameHost();
   EXPECT_TRUE(subframe);
+  EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAd(subframe));
   ExpectActivationSignalForFrame(subframe, true /* expect_activation */,
                                  true /* is_ad_subframe */);
 
@@ -992,8 +1100,9 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
                                  true /* is_ad_subframe */);
 }
 
-// If the RenderFrame determines that the frame is an ad, and the frame changes
-// processes, then the new frame host should still be considered an ad.
+// If the RenderFrame determines that the frame is an ad due to creation by ad
+// script, and the frame changes processes, then the frame should still be
+// considered an ad.
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
        AdTagCarriesAcrossProcesses) {
   content::IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
@@ -1008,13 +1117,13 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   content::RenderFrameHost* initial_subframe = CreateSubframeWithTestNavigation(
       GURL("https://www.example2.com/allowed.html"), main_rfh());
 
-  // Simulate the render process telling the manager that the frame is an ad.
+  // Simulate the render process telling the manager that the frame is an ad due
+  // to creation by ad script.
+  throttle_manager()->OnSubframeWasCreatedByAdScript(initial_subframe);
   throttle_manager()->OnFrameIsAdSubframe(initial_subframe);
-  EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAd(initial_subframe));
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
             SimulateStartAndGetResult(navigation_simulator()));
-
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
             SimulateCommitAndGetResult(navigation_simulator()));
   content::RenderFrameHost* final_subframe =
@@ -1023,13 +1132,12 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   EXPECT_NE(initial_subframe, final_subframe);
 
   EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAd(final_subframe));
-  EXPECT_FALSE(throttle_manager()->IsFrameTaggedAsAd(initial_subframe));
   ExpectActivationSignalForFrame(final_subframe, true /* expect_activation */,
                                  true /* is_ad_subframe */);
 }
 
-// If the RenderFrame determines that the frame is an ad, then its child frames
-// should also be considered ads.
+// If the RenderFrame determines that the frame was created by ad script, it
+// should be tagged and then its child frames should also be tagged as ads.
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
        GrandchildNavigationTaggedAsAdByRenderer) {
   NavigateAndCommitMainFrame(GURL(kTestURLWithDryRun));
@@ -1040,7 +1148,9 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   content::RenderFrameHost* subframe = CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/allowed.html"), main_rfh());
 
-  // Simulate the render process telling the manager that the frame is an ad.
+  // Simulate the render process telling the manager that the frame is an ad due
+  // to creation by ad script.
+  throttle_manager()->OnSubframeWasCreatedByAdScript(subframe);
   throttle_manager()->OnFrameIsAdSubframe(subframe);
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
@@ -1121,7 +1231,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
                                  true /* is_ad_subframe */);
   EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAd(greatGrandchild));
 
-  EXPECT_EQ(0, disallowed_notification_count());
+  EXPECT_FALSE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(presenting_ads_blocked_infobar());
+#endif
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
@@ -1157,7 +1270,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
                                  false /* is_ad_subframe */);
   EXPECT_FALSE(throttle_manager()->IsFrameTaggedAsAd(grandchild));
 
-  EXPECT_EQ(0, disallowed_notification_count());
+  EXPECT_FALSE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(presenting_ads_blocked_infobar());
+#endif
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
@@ -1169,7 +1285,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   // This could happen e.g. for cross-process navigations, which have no
   // ordering guarantees.
   throttle_manager()->DidDisallowFirstSubresource();
-  EXPECT_EQ(0, disallowed_notification_count());
+  EXPECT_FALSE(ads_blocked_in_content_settings());
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(presenting_ads_blocked_infobar());
+#endif
 }
 
 // TODO(csharrison): Make sure the following conditions are exercised in tests:

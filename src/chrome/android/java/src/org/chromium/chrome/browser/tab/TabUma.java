@@ -7,11 +7,15 @@ package org.chromium.chrome.browser.tab;
 import android.os.SystemClock;
 import android.text.format.DateUtils;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.UserData;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.net.NetError;
+import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 
 /**
  * Centralizes UMA data collection for Tab management.
@@ -260,7 +264,7 @@ public class TabUma extends EmptyTabObserver implements UserData {
 
     /** Called when the corresponding tab completes a page load. */
     @Override
-    public void onPageLoadFinished(Tab tab, String url) {
+    public void onPageLoadFinished(Tab tab, GURL url) {
         // Record only tab restores that the user became aware of. If the restore is triggered
         // speculatively and completes before the user switches to the tab, then this case is
         // reflected in Tab.StatusWhenSwitchedBackToForeground metric.
@@ -292,6 +296,11 @@ public class TabUma extends EmptyTabObserver implements UserData {
             //            renderer crashes and start to track that.
             mRestoreStartedAtMillis = -1;
         }
+    }
+
+    @Override
+    public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
+        // Intentionally do nothing to prevent automatic observer removal on detachment.
     }
 
     private static void increaseTabShowCount() {

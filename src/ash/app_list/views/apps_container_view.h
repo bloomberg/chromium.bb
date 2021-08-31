@@ -7,11 +7,9 @@
 
 #include <stddef.h>
 
-#include <vector>
-
-#include "ash/app_list/app_list_export.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/views/app_list_page.h"
+#include "ash/ash_export.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -31,7 +29,7 @@ class SuggestionChipContainerView;
 // AppsContainerView contains a root level AppsGridView to render the root level
 // app items, and a AppListFolderView to render the app items inside the
 // active folder.
-class APP_LIST_EXPORT AppsContainerView : public AppListPage {
+class ASH_EXPORT AppsContainerView : public AppListPage {
  public:
   AppsContainerView(ContentsView* contents_view, AppListModel* model);
   ~AppsContainerView() override;

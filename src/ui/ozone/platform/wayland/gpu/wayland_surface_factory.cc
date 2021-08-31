@@ -51,7 +51,7 @@ class GLOzoneEGLWayland : public GLOzoneEGL {
 
  protected:
   gl::EGLDisplayPlatform GetNativeDisplay() override;
-  bool LoadGLES2Bindings(gl::GLImplementation impl) override;
+  bool LoadGLES2Bindings(const gl::GLImplementationParts& impl) override;
 
  private:
   WaylandConnection* const connection_;
@@ -77,12 +77,13 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateViewGLSurface(
   auto egl_window = CreateWaylandEglWindow(window);
   if (!egl_window)
     return nullptr;
-  return gl::InitializeGLSurface(new GLSurfaceWayland(std::move(egl_window)));
+  return gl::InitializeGLSurface(
+      new GLSurfaceWayland(std::move(egl_window), window));
 }
 
 scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateSurfacelessViewGLSurface(
     gfx::AcceleratedWidget window) {
-  if (gl::GetGLImplementation() == gl::kGLImplementationSwiftShaderGL) {
+  if (gl::IsSoftwareGLImplementation(gl::GetGLImplementationParts())) {
     return gl::InitializeGLSurface(
         base::MakeRefCounted<GLSurfaceEglReadbackWayland>(window,
                                                           buffer_manager_));
@@ -116,7 +117,8 @@ gl::EGLDisplayPlatform GLOzoneEGLWayland::GetNativeDisplay() {
   return gl::EGLDisplayPlatform(EGL_DEFAULT_DISPLAY);
 }
 
-bool GLOzoneEGLWayland::LoadGLES2Bindings(gl::GLImplementation impl) {
+bool GLOzoneEGLWayland::LoadGLES2Bindings(
+    const gl::GLImplementationParts& impl) {
   // TODO: It may not be necessary to set this environment variable when using
   // swiftshader.
   setenv("EGL_PLATFORM", "wayland", 0);
@@ -151,8 +153,8 @@ WaylandSurfaceFactory::GetAllowedGLImplementations() {
 }
 
 GLOzone* WaylandSurfaceFactory::GetGLOzone(
-    gl::GLImplementation implementation) {
-  switch (implementation) {
+    const gl::GLImplementationParts& implementation) {
+  switch (implementation.gl) {
     case gl::kGLImplementationEGLGLES2:
     case gl::kGLImplementationSwiftShaderGL:
       return egl_implementation_.get();
@@ -163,10 +165,9 @@ GLOzone* WaylandSurfaceFactory::GetGLOzone(
 
 #if BUILDFLAG(ENABLE_VULKAN)
 std::unique_ptr<gpu::VulkanImplementation>
-WaylandSurfaceFactory::CreateVulkanImplementation(
-    bool allow_protected_memory,
-    bool enforce_protected_memory) {
-  return std::make_unique<VulkanImplementationWayland>();
+WaylandSurfaceFactory::CreateVulkanImplementation(bool use_swiftshader,
+                                                  bool allow_protected_memory) {
+  return std::make_unique<VulkanImplementationWayland>(use_swiftshader);
 }
 #endif
 
@@ -176,7 +177,7 @@ scoped_refptr<gfx::NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    base::Optional<gfx::Size> framebuffer_size) {
+    absl::optional<gfx::Size> framebuffer_size) {
   DCHECK(!framebuffer_size || framebuffer_size == size);
 #if defined(WAYLAND_GBM)
   scoped_refptr<GbmPixmapWayland> pixmap =

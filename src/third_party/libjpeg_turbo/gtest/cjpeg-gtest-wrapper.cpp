@@ -119,7 +119,7 @@ TEST(CJPEGTest, IFastProg420Q100) {
   EXPECT_EQ(cjpeg(12, command_line), 0);
 
   // Compare expected MD5 sum against that of test image.
-  const std::string EXPECTED_MD5 = "e59bb462016a8d9a748c330a3474bb55";
+  const std::string EXPECTED_MD5 = "0ba15f9dab81a703505f835f9dbbac6d";
   EXPECT_TRUE(CompareFileAndMD5(output_path, EXPECTED_MD5));
 }
 

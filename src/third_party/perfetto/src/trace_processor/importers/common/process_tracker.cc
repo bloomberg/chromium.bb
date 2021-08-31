@@ -289,6 +289,13 @@ void ProcessTracker::SetProcessNameIfUnset(UniquePid upid,
     process_table->mutable_name()->Set(upid, process_name_id);
 }
 
+void ProcessTracker::SetStartTsIfUnset(UniquePid upid,
+                                       int64_t start_ts_nanoseconds) {
+  auto* process_table = context_->storage->mutable_process_table();
+  if (!process_table->start_ts()[upid].has_value())
+    process_table->mutable_start_ts()->Set(upid, start_ts_nanoseconds);
+}
+
 void ProcessTracker::UpdateProcessNameFromThreadName(uint32_t tid,
                                                      StringId thread_name) {
   auto* thread_table = context_->storage->mutable_thread_table();
@@ -391,7 +398,8 @@ void ProcessTracker::ResolvePendingAssociations(UniqueTid utid_arg,
       pending_parent_assocs_.pop_back();
     }
 
-    for (auto it = pending_assocs_.begin(); it != pending_assocs_.end();) {
+    auto end = pending_assocs_.end();
+    for (auto it = pending_assocs_.begin(); it != end;) {
       UniqueTid other_utid;
       if (it->first == utid) {
         other_utid = it->second;
@@ -409,15 +417,20 @@ void ProcessTracker::ResolvePendingAssociations(UniqueTid utid_arg,
                       tt->upid()[other_utid] == upid);
       AssociateThreadToProcess(other_utid, upid);
 
-      // Erase the pair. The |pending_assocs_| vector is not sorted and swapping
-      // a std::pair<uint32_t, uint32_t> is cheap.
-      std::swap(*it, pending_assocs_.back());
-      pending_assocs_.pop_back();
+      // Swap the current element to the end of the list and move the end
+      // iterator back. This works because |pending_assocs_| is not sorted. We
+      // do it this way rather than modifying |pending_assocs_| directly to
+      // prevent undefined behaviour caused by modifying a vector while
+      // iterating through it.
+      std::swap(*it, *(--end));
 
       // Recurse into the newly resolved thread. Some other threads might have
       // been bound to that.
       resolved_utids.emplace_back(other_utid);
     }
+
+    // Make sure to actually erase the utids which have been resolved.
+    pending_assocs_.erase(end, pending_assocs_.end());
   }  // while (!resolved_utids.empty())
 }
 

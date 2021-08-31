@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/tether/active_host.h"
 #include "chromeos/components/tether/tether_connector.h"
@@ -74,8 +74,8 @@ void NetworkConnectionHandlerTetherDelegate::DisconnectFromNetwork(
       tether_network_guid,
       base::BindOnce(&NetworkConnectionHandlerTetherDelegate::OnRequestSuccess,
                      weak_ptr_factory_.GetWeakPtr(), request_num),
-      base::Bind(&NetworkConnectionHandlerTetherDelegate::OnRequestError,
-                 weak_ptr_factory_.GetWeakPtr(), request_num),
+      base::BindOnce(&NetworkConnectionHandlerTetherDelegate::OnRequestError,
+                     weak_ptr_factory_.GetWeakPtr(), request_num),
       TetherSessionCompletionLogger::SessionCompletionReason::
           USER_DISCONNECTED);
 }
@@ -101,9 +101,9 @@ void NetworkConnectionHandlerTetherDelegate::ConnectToNetwork(
                     << ", but there is already an active connection. "
                     << "Disconnecting from network with GUID "
                     << previous_host_guid << ".";
-    DisconnectFromNetwork(
-        previous_host_guid, base::DoNothing(),
-        base::Bind(&OnFailedDisconnectionFromPreviousHost, previous_host_guid));
+    DisconnectFromNetwork(previous_host_guid, base::DoNothing(),
+                          base::BindOnce(&OnFailedDisconnectionFromPreviousHost,
+                                         previous_host_guid));
   }
 
   int request_num = next_request_num_++;
@@ -114,8 +114,8 @@ void NetworkConnectionHandlerTetherDelegate::ConnectToNetwork(
       tether_network_guid,
       base::BindOnce(&NetworkConnectionHandlerTetherDelegate::OnRequestSuccess,
                      weak_ptr_factory_.GetWeakPtr(), request_num),
-      base::Bind(&NetworkConnectionHandlerTetherDelegate::OnRequestError,
-                 weak_ptr_factory_.GetWeakPtr(), request_num));
+      base::BindOnce(&NetworkConnectionHandlerTetherDelegate::OnRequestError,
+                     weak_ptr_factory_.GetWeakPtr(), request_num));
 }
 
 void NetworkConnectionHandlerTetherDelegate::OnRequestSuccess(int request_num) {

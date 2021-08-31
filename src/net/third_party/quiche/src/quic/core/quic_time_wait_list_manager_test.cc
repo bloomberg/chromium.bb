@@ -2,28 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_time_wait_list_manager.h"
+#include "quic/core/quic_time_wait_list_manager.h"
 
 #include <cerrno>
 #include <memory>
 #include <ostream>
 #include <utility>
 
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/quic_data_reader.h"
-#include "net/third_party/quiche/src/quic/core/quic_framer.h"
-#include "net/third_party/quiche/src/quic/core/quic_packet_writer.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_quic_session_visitor.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_time_wait_list_manager_peer.h"
+#include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/crypto/null_encrypter.h"
+#include "quic/core/crypto/quic_decrypter.h"
+#include "quic/core/crypto/quic_encrypter.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_data_reader.h"
+#include "quic/core/quic_framer.h"
+#include "quic/core/quic_packet_writer.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_expect_bug.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/mock_quic_session_visitor.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "quic/test_tools/quic_time_wait_list_manager_peer.h"
 
 using testing::_;
 using testing::Args;
@@ -40,6 +41,8 @@ namespace quic {
 namespace test {
 namespace {
 
+const size_t kTestPacketSize = 100;
+
 class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
  public:
   FramerVisitorCapturingPublicReset(QuicConnectionId connection_id)
@@ -54,7 +57,8 @@ class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
     return public_reset_packet_;
   }
 
-  bool IsValidStatelessResetToken(QuicUint128 token) const override {
+  bool IsValidStatelessResetToken(
+      const StatelessResetToken& token) const override {
     return token == QuicUtils::GenerateStatelessResetToken(connection_id_);
   }
 
@@ -154,7 +158,7 @@ class QuicTimeWaitListManagerTest : public QuicTest {
         new QuicEncryptedPacket(nullptr, 0, false)));
     time_wait_list_manager_.AddConnectionIdToTimeWait(
         connection_id, QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
-        TimeWaitConnectionInfo(false, &termination_packets));
+        TimeWaitConnectionInfo(false, &termination_packets, {connection_id}));
   }
 
   void AddConnectionId(
@@ -164,8 +168,8 @@ class QuicTimeWaitListManagerTest : public QuicTest {
       std::vector<std::unique_ptr<QuicEncryptedPacket>>* packets) {
     time_wait_list_manager_.AddConnectionIdToTimeWait(
         connection_id, action,
-        TimeWaitConnectionInfo(
-            VersionHasIetfInvariantHeader(version.transport_version), packets));
+        TimeWaitConnectionInfo(version.HasIetfInvariantHeader(), packets,
+                               {connection_id}));
   }
 
   bool IsConnectionIdInTimeWait(QuicConnectionId connection_id) {
@@ -175,7 +179,7 @@ class QuicTimeWaitListManagerTest : public QuicTest {
   void ProcessPacket(QuicConnectionId connection_id) {
     time_wait_list_manager_.ProcessPacket(
         self_address_, peer_address_, connection_id, GOOGLE_QUIC_PACKET,
-        std::make_unique<QuicPerPacketContext>());
+        kTestPacketSize, std::make_unique<QuicPerPacketContext>());
   }
 
   QuicEncryptedPacket* ConstructEncryptedPacket(
@@ -217,7 +221,7 @@ bool ValidPublicResetPacketPredicate(
   QuicIetfStatelessResetPacket stateless_reset =
       visitor.stateless_reset_packet();
 
-  QuicUint128 expected_stateless_reset_token =
+  StatelessResetToken expected_stateless_reset_token =
       QuicUtils::GenerateStatelessResetToken(expected_connection_id);
 
   bool stateless_reset_is_valid =
@@ -444,6 +448,46 @@ TEST_F(QuicTimeWaitListManagerTest, CleanUpOldConnectionIds) {
             time_wait_list_manager_.num_connections());
 }
 
+TEST_F(QuicTimeWaitListManagerTest,
+       CleanUpOldConnectionIdsForMultipleConnectionIdsPerConnection) {
+  if (!GetQuicRestartFlag(quic_time_wait_list_support_multiple_cid_v2)) {
+    return;
+  }
+
+  connection_id_ = TestConnectionId(7);
+  const size_t kConnectionCloseLength = 100;
+  EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id_));
+  EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(TestConnectionId(8)));
+  std::vector<std::unique_ptr<QuicEncryptedPacket>> termination_packets;
+  termination_packets.push_back(
+      std::unique_ptr<QuicEncryptedPacket>(new QuicEncryptedPacket(
+          new char[kConnectionCloseLength], kConnectionCloseLength, true)));
+
+  // Add a CONNECTION_CLOSE termination packet.
+  std::vector<QuicConnectionId> active_connection_ids{connection_id_,
+                                                      TestConnectionId(8)};
+  time_wait_list_manager_.AddConnectionIdToTimeWait(
+      connection_id_, QuicTimeWaitListManager::SEND_CONNECTION_CLOSE_PACKETS,
+      TimeWaitConnectionInfo(/*ietf_quic=*/true, &termination_packets,
+                             active_connection_ids, QuicTime::Delta::Zero()));
+
+  EXPECT_TRUE(
+      time_wait_list_manager_.IsConnectionIdInTimeWait(TestConnectionId(7)));
+  EXPECT_TRUE(
+      time_wait_list_manager_.IsConnectionIdInTimeWait(TestConnectionId(8)));
+
+  // Remove these IDs.
+  const QuicTime::Delta time_wait_period =
+      QuicTimeWaitListManagerPeer::time_wait_period(&time_wait_list_manager_);
+  clock_.AdvanceTime(time_wait_period);
+  time_wait_list_manager_.CleanUpOldConnectionIds();
+
+  EXPECT_FALSE(
+      time_wait_list_manager_.IsConnectionIdInTimeWait(TestConnectionId(7)));
+  EXPECT_FALSE(
+      time_wait_list_manager_.IsConnectionIdInTimeWait(TestConnectionId(8)));
+}
+
 TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
   QuicConnectionId connection_id = TestConnectionId(1);
   EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id));
@@ -632,7 +676,8 @@ TEST_F(QuicTimeWaitListManagerTest,
           new char[kConnectionCloseLength], kConnectionCloseLength, true)));
   time_wait_list_manager_.AddConnectionIdToTimeWait(
       connection_id_, QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
-      TimeWaitConnectionInfo(/*ietf_quic=*/true, &termination_packets));
+      TimeWaitConnectionInfo(/*ietf_quic=*/true, &termination_packets,
+                             {connection_id_}));
 
   // Termination packet is not encrypted, instead, send stateless reset.
   EXPECT_CALL(writer_,
@@ -642,7 +687,8 @@ TEST_F(QuicTimeWaitListManagerTest,
   // Processes IETF short header packet.
   time_wait_list_manager_.ProcessPacket(
       self_address_, peer_address_, connection_id_,
-      IETF_QUIC_SHORT_HEADER_PACKET, std::make_unique<QuicPerPacketContext>());
+      IETF_QUIC_SHORT_HEADER_PACKET, kTestPacketSize,
+      std::make_unique<QuicPerPacketContext>());
 }
 
 TEST_F(QuicTimeWaitListManagerTest,
@@ -656,7 +702,8 @@ TEST_F(QuicTimeWaitListManagerTest,
   // Add a CONNECTION_CLOSE termination packet.
   time_wait_list_manager_.AddConnectionIdToTimeWait(
       connection_id_, QuicTimeWaitListManager::SEND_CONNECTION_CLOSE_PACKETS,
-      TimeWaitConnectionInfo(/*ietf_quic=*/true, &termination_packets));
+      TimeWaitConnectionInfo(/*ietf_quic=*/true, &termination_packets,
+                             {connection_id_}));
   EXPECT_CALL(writer_, WritePacket(_, kConnectionCloseLength,
                                    self_address_.host(), peer_address_, _))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
@@ -664,7 +711,61 @@ TEST_F(QuicTimeWaitListManagerTest,
   // Processes IETF short header packet.
   time_wait_list_manager_.ProcessPacket(
       self_address_, peer_address_, connection_id_,
-      IETF_QUIC_SHORT_HEADER_PACKET, std::make_unique<QuicPerPacketContext>());
+      IETF_QUIC_SHORT_HEADER_PACKET, kTestPacketSize,
+      std::make_unique<QuicPerPacketContext>());
+}
+
+TEST_F(QuicTimeWaitListManagerTest,
+       SendConnectionClosePacketsForMultipleConnectionIds) {
+  if (!GetQuicRestartFlag(quic_time_wait_list_support_multiple_cid_v2)) {
+    return;
+  }
+
+  connection_id_ = TestConnectionId(7);
+  const size_t kConnectionCloseLength = 100;
+  EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id_));
+  EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(TestConnectionId(8)));
+  std::vector<std::unique_ptr<QuicEncryptedPacket>> termination_packets;
+  termination_packets.push_back(
+      std::unique_ptr<QuicEncryptedPacket>(new QuicEncryptedPacket(
+          new char[kConnectionCloseLength], kConnectionCloseLength, true)));
+
+  // Add a CONNECTION_CLOSE termination packet.
+  std::vector<QuicConnectionId> active_connection_ids{connection_id_,
+                                                      TestConnectionId(8)};
+  time_wait_list_manager_.AddConnectionIdToTimeWait(
+      connection_id_, QuicTimeWaitListManager::SEND_CONNECTION_CLOSE_PACKETS,
+      TimeWaitConnectionInfo(/*ietf_quic=*/true, &termination_packets,
+                             active_connection_ids, QuicTime::Delta::Zero()));
+
+  EXPECT_CALL(writer_, WritePacket(_, kConnectionCloseLength,
+                                   self_address_.host(), peer_address_, _))
+      .Times(2)
+      .WillRepeatedly(Return(WriteResult(WRITE_STATUS_OK, 1)));
+  // Processes IETF short header packet.
+  for (auto const& cid : active_connection_ids) {
+    time_wait_list_manager_.ProcessPacket(
+        self_address_, peer_address_, cid, IETF_QUIC_SHORT_HEADER_PACKET,
+        kTestPacketSize, std::make_unique<QuicPerPacketContext>());
+  }
+}
+
+// Regression test for b/184053898.
+TEST_F(QuicTimeWaitListManagerTest, DonotCrashOnNullStatelessReset) {
+  // Received a packet with length <
+  // QuicFramer::GetMinStatelessResetPacketLength(), and this will result in a
+  // null stateless reset.
+  time_wait_list_manager_.SendPublicReset(
+      self_address_, peer_address_, TestConnectionId(1),
+      /*ietf_quic=*/true,
+      /*received_packet_length=*/
+      QuicFramer::GetMinStatelessResetPacketLength() - 1,
+      /*packet_context=*/nullptr);
+}
+
+TEST_F(QuicTimeWaitListManagerTest, SendOrQueueNullPacket) {
+  QuicTimeWaitListManagerPeer::SendOrQueuePacket(&time_wait_list_manager_,
+                                                 nullptr, nullptr);
 }
 
 }  // namespace

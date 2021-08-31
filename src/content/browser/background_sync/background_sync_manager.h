@@ -18,12 +18,13 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "content/browser/background_sync/background_sync.pb.h"
+#include "content/browser/background_sync/background_sync_op_scheduler.h"
 #include "content/browser/background_sync/background_sync_proxy.h"
 #include "content/browser/background_sync/background_sync_status.h"
-#include "content/browser/cache_storage/cache_storage_scheduler.h"
 #include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -54,9 +55,8 @@ class ServiceWorkerContextWrapper;
 // registrations across all registered service workers for a profile.
 // Registrations are stored along with their associated Service Worker
 // registration in ServiceWorkerStorage. If the ServiceWorker is unregistered,
-// the sync registrations are removed. This class must be run on the service
-// worker core thread (ServiceWorkerContext::GetCoreThreadId()). The
-// asynchronous methods are executed sequentially.
+// the sync registrations are removed. This class runs on the UI thread.
+// The asynchronous methods are executed sequentially.
 class CONTENT_EXPORT BackgroundSyncManager
     : public ServiceWorkerContextCoreObserver {
  public:
@@ -125,12 +125,12 @@ class CONTENT_EXPORT BackgroundSyncManager
   }
 
   void set_clock(base::Clock* clock) {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     clock_ = clock;
   }
 
   void set_proxy_for_testing(std::unique_ptr<BackgroundSyncProxy> proxy) {
-    DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     proxy_ = std::move(proxy);
   }
 
@@ -318,10 +318,8 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   // DidResolveRegistration callbacks
   void DidResolveRegistrationImpl(
-      blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info,
-      CacheStorageSchedulerId id);
+      blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info);
   void ResolveRegistrationDidCreateKeepAlive(
-      CacheStorageSchedulerId id,
       std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive);
 
   // GetRegistrations callbacks
@@ -359,7 +357,6 @@ class CONTENT_EXPORT BackgroundSyncManager
   void FireReadyEventsImpl(
       blink::mojom::BackgroundSyncType sync_type,
       bool reschedule,
-      int scheduler_id,
       base::OnceClosure callback,
       std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive);
 
@@ -433,11 +430,13 @@ class CONTENT_EXPORT BackgroundSyncManager
   // associated with |origin|.
   void UnregisterForOriginImpl(const url::Origin& origin,
                                base::OnceClosure callback);
-  void UnregisterForOriginDidStore(base::OnceClosure done_closure,
-                                   blink::ServiceWorkerStatusCode status);
+  void UnregisterForOriginDidStore(
+      int64_t service_worker_registration_id_to_remove,
+      base::OnceClosure done_closure,
+      blink::ServiceWorkerStatusCode status);
   void UnregisterForOriginScheduleDelayedProcessing(base::OnceClosure callback);
 
-  base::OnceClosure MakeEmptyCompletion(CacheStorageSchedulerId id);
+  base::OnceClosure MakeEmptyCompletion();
 
   blink::ServiceWorkerStatusCode CanEmulateSyncEvent(
       scoped_refptr<ServiceWorkerVersion> active_version);
@@ -479,7 +478,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   // registrations.
   std::map<int64_t, BackgroundSyncRegistrations> active_registrations_;
 
-  CacheStorageScheduler op_scheduler_;
+  BackgroundSyncOpScheduler op_scheduler_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   std::unique_ptr<BackgroundSyncProxy> proxy_;
 
@@ -501,6 +500,8 @@ class CONTENT_EXPORT BackgroundSyncManager
   base::Clock* clock_;
 
   std::map<int64_t, int> emulated_offline_sw_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<BackgroundSyncManager> weak_ptr_factory_{this};
 

@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <mstcpip.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -28,6 +29,7 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
+#include "net/log/net_log_values.h"
 #include "net/socket/socket_descriptor.h"
 #include "net/socket/socket_net_log_params.h"
 #include "net/socket/socket_options.h"
@@ -314,7 +316,7 @@ int TCPSocketWin::AdoptConnectedSocket(SocketDescriptor socket,
   }
 
   core_ = new Core(this);
-  peer_address_.reset(new IPEndPoint(peer_address));
+  peer_address_ = std::make_unique<IPEndPoint>(peer_address);
 
   return OK;
 }
@@ -424,7 +426,7 @@ int TCPSocketWin::Connect(const IPEndPoint& address,
   if (!logging_multiple_connect_attempts_)
     LogConnectBegin(AddressList(address));
 
-  peer_address_.reset(new IPEndPoint(address));
+  peer_address_ = std::make_unique<IPEndPoint>(address);
 
   int rv = DoConnect();
   if (rv == ERR_IO_PENDING) {
@@ -524,7 +526,7 @@ int TCPSocketWin::ReadIfReady(IOBuffer* buf,
   } else {
     net_log_.AddByteTransferEvent(NetLogEventType::SOCKET_BYTES_RECEIVED, rv,
                                   buf->data());
-    NetworkActivityMonitor::GetInstance()->IncrementBytesReceived(rv);
+    activity_monitor::IncrementBytesReceived(rv);
     return rv;
   }
 
@@ -579,7 +581,6 @@ int TCPSocketWin::Write(
       }
       net_log_.AddByteTransferEvent(NetLogEventType::SOCKET_BYTES_SENT, rv,
                                     buf->data());
-      NetworkActivityMonitor::GetInstance()->IncrementBytesSent(rv);
       return rv;
     }
   } else {
@@ -849,6 +850,15 @@ int TCPSocketWin::DoConnect() {
   if (!peer_address_->ToSockAddr(storage.addr, &storage.addr_len))
     return ERR_ADDRESS_INVALID;
 
+  // Set option to choose a random port, if the socket is not already bound.
+  // Ignore failures, which may happen if the socket was already bound.
+  // Microsoft's documentation claims this is a uint16, but experimentally, this
+  // fails if passed a 16-bit value.
+  std::uint32_t randomize_port_value = 1;
+  setsockopt(socket_, SOL_SOCKET, SO_RANDOMIZE_PORT,
+             reinterpret_cast<const char*>(&randomize_port_value),
+             sizeof(randomize_port_value));
+
   if (!connect(socket_, storage.addr, storage.addr_len)) {
     // Connected without waiting!
     //
@@ -905,22 +915,15 @@ void TCPSocketWin::LogConnectEnd(int net_error) {
     return;
   }
 
-  struct sockaddr_storage source_address;
-  socklen_t addrlen = sizeof(source_address);
-  int rv = getsockname(
-      socket_, reinterpret_cast<struct sockaddr*>(&source_address), &addrlen);
-  int os_error = WSAGetLastError();
-  if (rv != 0) {
-    LOG(ERROR) << "getsockname() [rv: " << rv << "] error: " << os_error;
-    NOTREACHED();
-    net_log_.EndEventWithNetErrorCode(NetLogEventType::TCP_CONNECT, rv);
-    return;
-  }
-
   net_log_.EndEvent(NetLogEventType::TCP_CONNECT, [&] {
-    return CreateNetLogSourceAddressParams(
-        reinterpret_cast<const struct sockaddr*>(&source_address),
-        sizeof(source_address));
+    net::IPEndPoint local_address;
+    int net_error = GetLocalAddress(&local_address);
+    net::IPEndPoint remote_address;
+    if (net_error == net::OK)
+      net_error = GetPeerAddress(&remote_address);
+    if (net_error != net::OK)
+      return NetLogParamsWithInt("get_address_net_error", net_error);
+    return CreateNetLogAddressPairParams(local_address, remote_address);
   });
 }
 
@@ -995,7 +998,6 @@ void TCPSocketWin::DidCompleteWrite() {
     } else {
       net_log_.AddByteTransferEvent(NetLogEventType::SOCKET_BYTES_SENT,
                                     num_bytes, core_->write_iobuffer_->data());
-      NetworkActivityMonitor::GetInstance()->IncrementBytesSent(num_bytes);
     }
   }
 

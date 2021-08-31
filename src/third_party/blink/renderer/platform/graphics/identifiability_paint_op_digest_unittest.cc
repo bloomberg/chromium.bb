@@ -249,7 +249,7 @@ TEST(IdentifiabilityPaintOpDigestTest, BufferLeftoversDontAffectFutureDigests) {
                                                     /*num_ops_to_visit=*/1);
   identifiability_paintop_digest2.MaybeUpdateDigest(paint_record2,
                                                     /*num_ops_to_visit=*/1);
-  EXPECT_EQ(INT64_C(-1855817800596177722),
+  EXPECT_EQ(INT64_C(-8958477480441775589),
             identifiability_paintop_digest1.GetToken().ToUkmMetricValue());
   EXPECT_EQ(kScaleDigest,
             identifiability_paintop_digest2.GetToken().ToUkmMetricValue());
@@ -280,7 +280,7 @@ TEST(IdentifiabilityPaintOpDigestTest,
   paint_record->push<cc::ScaleOp>(kScaleX, kScaleY);
   identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
                                                    /*num_ops_to_visit=*/2);
-  EXPECT_EQ(INT64_C(-2635322358402873102),
+  EXPECT_EQ(INT64_C(4130836803240885894),
             identifiability_paintop_digest.GetToken().ToUkmMetricValue());
 
   EXPECT_FALSE(identifiability_paintop_digest.encountered_skipped_ops());
@@ -425,11 +425,10 @@ TEST(IdentifiabilityPaintOpDigestTest, DigestImageOp) {
   IdentifiabilityPaintOpDigest identifiability_paintop_digest(kSize);
   auto paint_record = sk_make_sp<cc::PaintRecord>();
   paint_record->push<cc::DrawImageOp>(
-      cc::CreateDiscardablePaintImage(gfx::Size(10, 10)), 10.0f, 10.0f,
-      nullptr);
+      cc::CreateDiscardablePaintImage(gfx::Size(10, 10)), 10.0f, 10.0f);
   identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
                                                    /*num_ops_to_visit=*/1);
-  EXPECT_EQ(INT64_C(72317288461381383),
+  EXPECT_EQ(INT64_C(-3447989221783743109),
             identifiability_paintop_digest.GetToken().ToUkmMetricValue());
 
   EXPECT_FALSE(identifiability_paintop_digest.encountered_skipped_ops());

@@ -4,7 +4,10 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
+import android.view.Window;
 
 import androidx.annotation.Nullable;
 
@@ -17,9 +20,12 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
+import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.feedback.ScreenshotMode;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
@@ -104,7 +110,7 @@ public class AutofillAssistantUiController {
     @CalledByNative
     private static AutofillAssistantUiController create(ChromeActivity activity,
             boolean allowTabSwitching, long nativeUiController,
-            @Nullable BaseOnboardingCoordinator onboardingCoordinator) {
+            @Nullable AssistantOverlayCoordinator overlayCoordinator) {
         BottomSheetController sheetController =
                 BottomSheetControllerProvider.from(activity.getWindowAndroid());
         assert activity != null;
@@ -119,17 +125,16 @@ public class AutofillAssistantUiController {
         //         than obtaining them from ChromeActivity getters.
         return new AutofillAssistantUiController(activity, sheetController,
                 activity.getTabObscuringHandler(), allowTabSwitching, nativeUiController,
-                onboardingCoordinator);
+                overlayCoordinator);
     }
 
     private AutofillAssistantUiController(ChromeActivity activity, BottomSheetController controller,
             TabObscuringHandler tabObscuringHandler, boolean allowTabSwitching,
-            long nativeUiController, @Nullable BaseOnboardingCoordinator onboardingCoordinator) {
+            long nativeUiController, @Nullable AssistantOverlayCoordinator overlayCoordinator) {
         mNativeUiController = nativeUiController;
         mActivity = activity;
         mCoordinator = new AssistantCoordinator(activity, controller, tabObscuringHandler,
-                onboardingCoordinator == null ? null : onboardingCoordinator.transferControls(),
-                this::safeNativeOnKeyboardVisibilityChanged);
+                overlayCoordinator, this::safeNativeOnKeyboardVisibilityChanged);
         mActivityTabObserver =
                 new ActivityTabProvider.ActivityTabTabObserver(
                         activity.getActivityTabProvider(), /* shouldTrigger = */ true) {
@@ -288,8 +293,8 @@ public class AutofillAssistantUiController {
     }
 
     @CalledByNative
-    private void showFeedback(String debugContext) {
-        mCoordinator.showFeedback(debugContext);
+    private void showFeedback(String debugContext, @ScreenshotMode int screenshotMode) {
+        mCoordinator.showFeedback(debugContext, screenshotMode);
     }
 
     @CalledByNative
@@ -336,9 +341,10 @@ public class AutofillAssistantUiController {
      */
     @CalledByNative
     private AssistantChip createActionButton(int icon, String text, int actionIndex,
-            boolean disabled, boolean sticky, boolean visible) {
-        AssistantChip chip =
-                AssistantChip.createHairlineAssistantChip(icon, text, disabled, sticky, visible);
+            boolean disabled, boolean sticky, boolean visible,
+            @Nullable String contentDescription) {
+        AssistantChip chip = AssistantChip.createHairlineAssistantChip(
+                icon, text, disabled, sticky, visible, contentDescription);
         chip.setSelectedListener(() -> safeNativeOnUserActionSelected(actionIndex));
         return chip;
     }
@@ -348,9 +354,10 @@ public class AutofillAssistantUiController {
      */
     @CalledByNative
     private AssistantChip createHighlightedActionButton(int icon, String text, int actionIndex,
-            boolean disabled, boolean sticky, boolean visible) {
-        AssistantChip chip =
-                AssistantChip.createHighlightedAssistantChip(icon, text, disabled, sticky, visible);
+            boolean disabled, boolean sticky, boolean visible,
+            @Nullable String contentDescription) {
+        AssistantChip chip = AssistantChip.createHighlightedAssistantChip(
+                icon, text, disabled, sticky, visible, contentDescription);
         chip.setSelectedListener(() -> safeNativeOnUserActionSelected(actionIndex));
         return chip;
     }
@@ -362,9 +369,10 @@ public class AutofillAssistantUiController {
      */
     @CalledByNative
     private AssistantChip createCancelButton(int icon, String text, int actionIndex,
-            boolean disabled, boolean sticky, boolean visible) {
-        AssistantChip chip =
-                AssistantChip.createHairlineAssistantChip(icon, text, disabled, sticky, visible);
+            boolean disabled, boolean sticky, boolean visible,
+            @Nullable String contentDescription) {
+        AssistantChip chip = AssistantChip.createHairlineAssistantChip(
+                icon, text, disabled, sticky, visible, contentDescription);
         chip.setSelectedListener(() -> safeNativeOnCancelButtonClicked(actionIndex));
         return chip;
     }
@@ -373,10 +381,10 @@ public class AutofillAssistantUiController {
      * Adds a close action button to the chip list, which shuts down Autofill Assistant.
      */
     @CalledByNative
-    private AssistantChip createCloseButton(
-            int icon, String text, boolean disabled, boolean sticky, boolean visible) {
-        AssistantChip chip =
-                AssistantChip.createHairlineAssistantChip(icon, text, disabled, sticky, visible);
+    private AssistantChip createCloseButton(int icon, String text, boolean disabled, boolean sticky,
+            boolean visible, @Nullable String contentDescription) {
+        AssistantChip chip = AssistantChip.createHairlineAssistantChip(
+                icon, text, disabled, sticky, visible, contentDescription);
         chip.setSelectedListener(() -> safeNativeOnCloseButtonClicked());
         return chip;
     }
@@ -387,9 +395,10 @@ public class AutofillAssistantUiController {
      */
     @CalledByNative
     private AssistantChip createFeedbackButton(int icon, String text, int actionIndex,
-            boolean disabled, boolean sticky, boolean visible) {
-        AssistantChip chip =
-                AssistantChip.createHairlineAssistantChip(icon, text, disabled, sticky, visible);
+            boolean disabled, boolean sticky, boolean visible,
+            @Nullable String contentDescription) {
+        AssistantChip chip = AssistantChip.createHairlineAssistantChip(
+                icon, text, disabled, sticky, visible, contentDescription);
         chip.setSelectedListener(() -> safeNativeOnFeedbackButtonClicked(actionIndex));
         return chip;
     }
@@ -425,6 +434,28 @@ public class AutofillAssistantUiController {
     @CalledByNative
     private Context getContext() {
         return mActivity;
+    }
+
+    @CalledByNative
+    private int[] getWindowSize() {
+        Activity activity = TabUtils.getActivity(TabUtils.fromWebContents(mWebContents));
+        if (activity == null) {
+            return null;
+        }
+        Window window = activity.getWindow();
+        if (window == null) {
+            return null;
+        }
+        return new int[] {window.getDecorView().getWidth(), window.getDecorView().getHeight()};
+    }
+
+    @CalledByNative
+    private int getScreenOrientation() {
+        Activity activity = TabUtils.getActivity(TabUtils.fromWebContents(mWebContents));
+        if (activity == null) {
+            return Configuration.ORIENTATION_UNDEFINED;
+        }
+        return activity.getResources().getConfiguration().orientation;
     }
 
     // Native methods.

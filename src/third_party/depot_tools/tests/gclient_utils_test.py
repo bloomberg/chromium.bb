@@ -318,6 +318,14 @@ class GClientUtilsTest(trial_dir.TestCase):
         ['ssh-svn://foo/bar/', 'ssh-svn://foo/bar/'],
         ['codereview.chromium.org', 'https://codereview.chromium.org'],
         ['codereview.chromium.org/', 'https://codereview.chromium.org/'],
+        [
+          'chromium-review.googlesource.com',
+          'https://chromium-review.googlesource.com'
+        ],
+        [
+          'chromium-review.googlesource.com/',
+          'https://chromium-review.googlesource.com/'
+        ],
         ['http://foo:10000', 'http://foo:10000'],
         ['http://foo:10000/bar', 'http://foo:10000/bar'],
         ['foo:10000', 'http://foo:10000'],

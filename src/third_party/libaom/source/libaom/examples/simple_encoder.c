@@ -163,6 +163,13 @@ int main(int argc, char **argv) {
   const char *infile_arg = NULL;
   const char *outfile_arg = NULL;
   const char *keyframe_interval_arg = NULL;
+#if CONFIG_REALTIME_ONLY
+  const int usage = 1;
+  const int speed = 7;
+#else
+  const int usage = 0;
+  const int speed = 2;
+#endif
 
   exec_name = argv[0];
 
@@ -204,7 +211,7 @@ int main(int argc, char **argv) {
 
   printf("Using %s\n", aom_codec_iface_name(encoder));
 
-  res = aom_codec_enc_config_default(encoder, &cfg, 0);
+  res = aom_codec_enc_config_default(encoder, &cfg, usage);
   if (res) die_codec(&codec, "Failed to get default codec config.");
 
   cfg.g_w = info.frame_width;
@@ -223,7 +230,7 @@ int main(int argc, char **argv) {
   if (aom_codec_enc_init(&codec, encoder, &cfg, 0))
     die("Failed to initialize encoder");
 
-  if (aom_codec_control(&codec, AOME_SET_CPUUSED, 2))
+  if (aom_codec_control(&codec, AOME_SET_CPUUSED, speed))
     die_codec(&codec, "Failed to set cpu-used");
 
   // Encode frames.

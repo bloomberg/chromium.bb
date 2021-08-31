@@ -73,13 +73,14 @@ class IdleDetectionPermissionContextTest
 // Tests auto-denial after a time delay in incognito.
 TEST_F(IdleDetectionPermissionContextTest, TestDenyInIncognitoAfterDelay) {
   TestIdleDetectionPermissionContext permission_context(
-      profile()->GetPrimaryOTRProfile());
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true));
   GURL url("https://www.example.com");
   NavigateAndCommit(url);
 
   const permissions::PermissionRequestID id(
       web_contents()->GetMainFrame()->GetProcess()->GetID(),
-      web_contents()->GetMainFrame()->GetRoutingID(), -1);
+      web_contents()->GetMainFrame()->GetRoutingID(),
+      permissions::PermissionRequestID::RequestLocalId());
 
   ASSERT_EQ(0, permission_context.permission_set_count());
   ASSERT_FALSE(permission_context.last_permission_set_persisted());
@@ -137,17 +138,19 @@ TEST_F(IdleDetectionPermissionContextTest, TestDenyInIncognitoAfterDelay) {
 // Tests how multiple parallel permission requests get auto-denied in incognito.
 TEST_F(IdleDetectionPermissionContextTest, TestParallelDenyInIncognito) {
   TestIdleDetectionPermissionContext permission_context(
-      profile()->GetPrimaryOTRProfile());
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true));
   GURL url("https://www.example.com");
   NavigateAndCommit(url);
   web_contents()->WasShown();
 
-  const permissions::PermissionRequestID id0(
-      web_contents()->GetMainFrame()->GetProcess()->GetID(),
-      web_contents()->GetMainFrame()->GetRoutingID(), 0);
   const permissions::PermissionRequestID id1(
       web_contents()->GetMainFrame()->GetProcess()->GetID(),
-      web_contents()->GetMainFrame()->GetRoutingID(), 1);
+      web_contents()->GetMainFrame()->GetRoutingID(),
+      permissions::PermissionRequestID::RequestLocalId(1));
+  const permissions::PermissionRequestID id2(
+      web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      web_contents()->GetMainFrame()->GetRoutingID(),
+      permissions::PermissionRequestID::RequestLocalId(2));
 
   ASSERT_EQ(0, permission_context.permission_set_count());
   ASSERT_FALSE(permission_context.last_permission_set_persisted());
@@ -155,9 +158,9 @@ TEST_F(IdleDetectionPermissionContextTest, TestParallelDenyInIncognito) {
             permission_context.last_permission_set_setting());
 
   permission_context.RequestPermission(
-      web_contents(), id0, url, /*user_gesture=*/true, base::DoNothing());
-  permission_context.RequestPermission(
       web_contents(), id1, url, /*user_gesture=*/true, base::DoNothing());
+  permission_context.RequestPermission(
+      web_contents(), id2, url, /*user_gesture=*/true, base::DoNothing());
 
   EXPECT_EQ(0, permission_context.permission_set_count());
   EXPECT_EQ(CONTENT_SETTING_ASK,

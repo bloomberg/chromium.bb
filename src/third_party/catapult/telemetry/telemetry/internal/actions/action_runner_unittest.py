@@ -2,6 +2,7 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from __future__ import absolute_import
 import unittest
 
 import mock
@@ -42,7 +43,7 @@ class ActionRunnerMeasureMemoryTest(tab_test_case.TabTestCase):
 
     expected_dump_ids = []
     try:
-      for _ in xrange(self._REQUESTED_DUMP_COUNT):
+      for _ in range(self._REQUESTED_DUMP_COUNT):
         dump_id = self.action_runner.MeasureMemory(deterministic_mode)
         expected_dump_ids.append(dump_id)
     finally:
@@ -345,8 +346,9 @@ class ActionRunnerTest(tab_test_case.TabTestCase):
             '(document.scrollingElement || document.body).scrollLeft') > 75)
 
   @decorators.Disabled(
-      'android',  # crbug.com/437065.
-      'chromeos')  # crbug.com/483212.
+      'android',   # crbug.com/437065.
+      'chromeos',  # crbug.com/483212.
+      'linux')     # crbug.com/1164657
   def testSwipe(self):
     if not page_action.IsGestureSourceTypeSupported(self._tab, 'touch'):
       return

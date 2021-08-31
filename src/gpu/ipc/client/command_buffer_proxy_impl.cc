@@ -11,9 +11,10 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/optional.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/gpu_control_client.h"
@@ -27,10 +28,13 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/command_buffer_id.h"
+#include "gpu/ipc/common/gpu_channel.mojom.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/gpu_param_traits.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence.h"
@@ -68,21 +72,20 @@ ContextResult CommandBufferProxyImpl::Initialize(
     const gpu::ContextCreationAttribs& attribs,
     const GURL& active_url) {
   DCHECK(!share_group || (stream_id_ == share_group->stream_id_));
-  TRACE_EVENT1("gpu", "GpuChannelHost::CreateViewCommandBuffer",
-               "surface_handle", surface_handle);
+  TRACE_EVENT0("gpu", "GpuChannelHost::CreateViewCommandBuffer");
 
   // Drop the |channel_| if this method does not succeed and early-outs, to
   // prevent cleanup on destruction.
   auto channel = std::move(channel_);
 
-  GPUCreateCommandBufferConfig init_params;
-  init_params.surface_handle = surface_handle;
-  init_params.share_group_id =
+  auto params = mojom::CreateCommandBufferParams::New();
+  params->surface_handle = surface_handle;
+  params->share_group_id =
       share_group ? share_group->route_id_ : MSG_ROUTING_NONE;
-  init_params.stream_id = stream_id_;
-  init_params.stream_priority = stream_priority;
-  init_params.attribs = attribs;
-  init_params.active_url = active_url;
+  params->stream_id = stream_id_;
+  params->stream_priority = stream_priority;
+  params->attribs = attribs;
+  params->active_url = active_url;
 
   TRACE_EVENT0("gpu", "CommandBufferProxyImpl::Initialize");
   std::tie(shared_state_shm_, shared_state_mapping_) =
@@ -115,16 +118,17 @@ ContextResult CommandBufferProxyImpl::Initialize(
   // so it won't cause additional jank.
   // TODO(piman): Make this asynchronous (http://crbug.com/125248).
   ContextResult result = ContextResult::kSuccess;
-  bool sent = channel->Send(new GpuChannelMsg_CreateCommandBuffer(
-      init_params, route_id_, std::move(region), &result, &capabilities_));
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
+  bool sent = channel->GetGpuChannel().CreateCommandBuffer(
+      std::move(params), route_id_, std::move(region), &result, &capabilities_);
   if (!sent) {
     channel->RemoveRoute(route_id_);
     LOG(ERROR) << "ContextResult::kTransientFailure: "
-                  "Failed to send GpuChannelMsg_CreateCommandBuffer.";
+                  "Failed to send GpuControl.CreateCommandBuffer.";
     return ContextResult::kTransientFailure;
   }
   if (result != ContextResult::kSuccess) {
-    DLOG(ERROR) << "Failure processing GpuChannelMsg_CreateCommandBuffer.";
+    DLOG(ERROR) << "Failure processing GpuControl.CreateCommandBuffer.";
     channel->RemoveRoute(route_id_);
     return result;
   }
@@ -197,7 +201,7 @@ void CommandBufferProxyImpl::OnGpuSwitched(
 void CommandBufferProxyImpl::AddDeletionObserver(DeletionObserver* observer) {
   std::unique_ptr<base::AutoLock> lock;
   if (lock_)
-    lock.reset(new base::AutoLock(*lock_));
+    lock = std::make_unique<base::AutoLock>(*lock_);
   deletion_observers_.AddObserver(observer);
 }
 
@@ -205,7 +209,7 @@ void CommandBufferProxyImpl::RemoveDeletionObserver(
     DeletionObserver* observer) {
   std::unique_ptr<base::AutoLock> lock;
   if (lock_)
-    lock.reset(new base::AutoLock(*lock_));
+    lock = std::make_unique<base::AutoLock>(*lock_);
   deletion_observers_.RemoveObserver(observer);
 }
 
@@ -298,9 +302,10 @@ gpu::CommandBuffer::State CommandBufferProxyImpl::WaitForTokenInRange(
   TryUpdateState();
   if (!InRange(start, end, last_state_.token) &&
       last_state_.error == gpu::error::kNoError) {
+    mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
     gpu::CommandBuffer::State state;
-    if (Send(new GpuCommandBufferMsg_WaitForTokenInRange(route_id_, start, end,
-                                                         &state))) {
+    if (channel_->GetGpuChannel().WaitForTokenInRange(route_id_, start, end,
+                                                      &state)) {
       SetStateFromMessageReply(state);
     }
   }
@@ -332,10 +337,12 @@ gpu::CommandBuffer::State CommandBufferProxyImpl::WaitForGetOffsetInRange(
   if (((set_get_buffer_count != last_state_.set_get_buffer_count) ||
        !InRange(start, end, last_state_.get_offset)) &&
       last_state_.error == gpu::error::kNoError) {
+    mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
     gpu::CommandBuffer::State state;
-    if (Send(new GpuCommandBufferMsg_WaitForGetOffsetInRange(
-            route_id_, set_get_buffer_count, start, end, &state)))
+    if (channel_->GetGpuChannel().WaitForGetOffsetInRange(
+            route_id_, set_get_buffer_count, start, end, &state)) {
       SetStateFromMessageReply(state);
+    }
   }
   if (((set_get_buffer_count != last_state_.set_get_buffer_count) ||
        !InRange(start, end, last_state_.get_offset)) &&
@@ -403,7 +410,10 @@ void CommandBufferProxyImpl::DestroyTransferBuffer(int32_t id) {
     return;
 
   last_flush_id_ = channel_->EnqueueDeferredMessage(
-      GpuCommandBufferMsg_DestroyTransferBuffer(route_id_, id));
+      mojom::DeferredRequestParams::NewCommandBufferRequest(
+          mojom::DeferredCommandBufferRequest::New(
+              route_id_, mojom::DeferredCommandBufferRequestParams::
+                             NewDestroyTransferBuffer(id))));
 }
 
 void CommandBufferProxyImpl::SetGpuControlClient(GpuControlClient* client) {
@@ -451,6 +461,7 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
   params.gpu_memory_buffer = std::move(handle);
   params.size = gfx::Size(width, height);
   params.format = gpu_memory_buffer->GetFormat();
+  params.plane = gfx::BufferPlane::DEFAULT;
   params.image_release_count = image_fence_sync;
 
   Send(new GpuCommandBufferMsg_CreateImage(route_id_, params));
@@ -485,8 +496,13 @@ void CommandBufferProxyImpl::SetLock(base::Lock* lock) {
 
 void CommandBufferProxyImpl::EnsureWorkVisible() {
   // Don't send messages once disconnected.
-  if (!disconnected_)
-    channel_->VerifyFlush(UINT32_MAX);
+  if (disconnected_)
+    return;
+
+  const base::ElapsedTimer elapsed_timer;
+  channel_->VerifyFlush(UINT32_MAX);
+  GetUMAHistogramEnsureWorkVisibleDuration()->Add(
+      elapsed_timer.Elapsed().InMicroseconds());
 }
 
 gpu::CommandBufferNamespace CommandBufferProxyImpl::GetNamespaceID() const {
@@ -641,7 +657,11 @@ void CommandBufferProxyImpl::TakeFrontBuffer(const gpu::Mailbox& mailbox) {
   // TakeFrontBuffer should be a deferred message so that it's sequenced
   // correctly with respect to preceding ReturnFrontBuffer messages.
   last_flush_id_ = channel_->EnqueueDeferredMessage(
-      GpuCommandBufferMsg_TakeFrontBuffer(route_id_, mailbox));
+      mojom::DeferredRequestParams::NewCommandBufferRequest(
+          mojom::DeferredCommandBufferRequest::New(
+              route_id_,
+              mojom::DeferredCommandBufferRequestParams::NewTakeFrontBuffer(
+                  mailbox))));
 }
 
 void CommandBufferProxyImpl::ReturnFrontBuffer(const gpu::Mailbox& mailbox,
@@ -653,7 +673,11 @@ void CommandBufferProxyImpl::ReturnFrontBuffer(const gpu::Mailbox& mailbox,
     return;
 
   last_flush_id_ = channel_->EnqueueDeferredMessage(
-      GpuCommandBufferMsg_ReturnFrontBuffer(route_id_, mailbox, is_lost),
+      mojom::DeferredRequestParams::NewCommandBufferRequest(
+          mojom::DeferredCommandBufferRequest::New(
+              route_id_,
+              mojom::DeferredCommandBufferRequestParams::NewReturnFrontBuffer(
+                  mojom::ReturnFrontBufferParams::New(mailbox, is_lost)))),
       {sync_token});
 }
 
@@ -755,6 +779,63 @@ gpu::CommandBufferSharedState* CommandBufferProxyImpl::shared_state() const {
       shared_state_mapping_.memory());
 }
 
+base::HistogramBase*
+CommandBufferProxyImpl::GetUMAHistogramEnsureWorkVisibleDuration() {
+  if (!uma_histogram_ensure_work_visible_duration_) {
+    // Combine two linear histograms:
+    // 1/4 ms buckets in 0..15ms = 60 buckets
+    // 1/4 s buckets in 25ms .. 30s = 120 buckets
+    // This gives good cardinality for both VSYNC intervals and 30s watchdog:
+    // 0.00 ms
+    // 0.25 ms
+    // 0.50 ms
+    // 0.75 ms
+    // 1.00 ms
+    // 1.25 ms
+    // 1.50 ms
+    // ...
+    // 14.00 ms
+    // 14.25 ms
+    // 14.50 ms
+    // 14.75 ms
+    // 15.00 ms
+    // 0.25 s
+    // 0.50 s
+    // 0.75 s
+    // 1.00 s
+    // 1.25 s
+    // 1.50 s
+    // ...
+    // 29.00 s
+    // 29.25 s
+    // 29.50 s
+    // 29.75 s
+    //
+    // Histogram values are in microseconds.
+
+    std::vector<base::HistogramBase::Sample> intervals;
+    constexpr base::HistogramBase::Sample k15Milliseconds = 15 * 1000;
+    constexpr base::HistogramBase::Sample k30Seconds = 30 * 1000 * 1000;
+    constexpr int kFirstPartCount = 60;
+    constexpr int kSecondPartCount = 120;
+    intervals.reserve(kFirstPartCount + kSecondPartCount);
+    for (int i = 0; i <= kFirstPartCount; ++i) {
+      intervals.push_back(k15Milliseconds /
+                          static_cast<float>(kFirstPartCount) * i);
+    }
+    // 0 index was already populated by the first part.
+    for (int i = 1; i < kSecondPartCount; ++i) {
+      intervals.push_back(k30Seconds / static_cast<float>(kSecondPartCount) *
+                          i);
+    }
+    uma_histogram_ensure_work_visible_duration_ =
+        base::CustomHistogram::FactoryGet(
+            "GPU.EnsureWorkVisibleDuration", intervals,
+            base::HistogramBase::kUmaTargetedHistogramFlag);
+  }
+  return uma_histogram_ensure_work_visible_duration_;
+}
+
 void CommandBufferProxyImpl::OnSwapBuffersCompleted(
     const SwapBuffersCompleteParams& params) {
   if (gpu_control_client_)
@@ -843,7 +924,10 @@ void CommandBufferProxyImpl::DisconnectChannel() {
     return;
   disconnected_ = true;
   channel_->VerifyFlush(UINT32_MAX);
-  channel_->Send(new GpuChannelMsg_DestroyCommandBuffer(route_id_));
+
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
+  channel_->GetGpuChannel().DestroyCommandBuffer(route_id_);
+
   channel_->RemoveRoute(route_id_);
   if (gpu_control_client_)
     gpu_control_client_->OnGpuControlLostContext();

@@ -78,9 +78,9 @@ using InstallTemplateFunction =
 using InstallRuntimeEnabledFeaturesFunction =
     void (*)(v8::Isolate*,
              const DOMWrapperWorld&,
-             v8::Local<v8::Object> instance,
-             v8::Local<v8::Object> prototype,
-             v8::Local<v8::Function> interface);
+             v8::Local<v8::Object> instance_object,
+             v8::Local<v8::Object> prototype_object,
+             v8::Local<v8::Function> interface_object);
 
 using InstallRuntimeEnabledFeaturesOnTemplateFunction = InstallTemplateFunction;
 
@@ -151,14 +151,14 @@ typename IDLSequence<T>::ImplType VariadicArgumentsToNativeValues(
   return std::move(result);
 }
 
-CORE_EXPORT base::Optional<size_t> FindIndexInEnumStringTable(
+CORE_EXPORT absl::optional<size_t> FindIndexInEnumStringTable(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
     base::span<const char* const> enum_value_table,
     const char* enum_type_name,
     ExceptionState& exception_state);
 
-CORE_EXPORT base::Optional<size_t> FindIndexInEnumStringTable(
+CORE_EXPORT absl::optional<size_t> FindIndexInEnumStringTable(
     const String& str_value,
     base::span<const char* const> enum_value_table);
 

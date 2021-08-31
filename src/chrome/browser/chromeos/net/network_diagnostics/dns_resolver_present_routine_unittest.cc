@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/net/network_diagnostics/dns_resolver_present_routine.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -17,6 +16,7 @@
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
+#include "chromeos/network/system_token_cert_db_storage.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "components/onc/onc_constants.h"
 #include "components/onc/onc_pref_names.h"
@@ -50,6 +50,7 @@ class DnsResolverPresentRoutineTest : public ::testing::Test {
  public:
   DnsResolverPresentRoutineTest() {
     LoginState::Initialize();
+    SystemTokenCertDbStorage::Initialize();
     NetworkCertLoader::Initialize();
     InitializeManagedNetworkConfigurationHandler();
     // Note that |cros_network_config_test_helper_| must be initialized before
@@ -73,6 +74,7 @@ class DnsResolverPresentRoutineTest : public ::testing::Test {
 
   ~DnsResolverPresentRoutineTest() override {
     NetworkCertLoader::Shutdown();
+    SystemTokenCertDbStorage::Shutdown();
     LoginState::Shutdown();
     managed_network_configuration_handler_.reset();
     ui_proxy_config_service_.reset();

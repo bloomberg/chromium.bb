@@ -7,7 +7,7 @@
 # Various functions to help build / test ffmpeg.
 
 import os
-from robo_lib import log
+from robo_lib import shell
 
 def ConfigureAndBuildFFmpeg(robo_configuration, platform, architecture):
   """Run FFmpeg's configure script, and build ffmpeg.
@@ -18,15 +18,15 @@ def ConfigureAndBuildFFmpeg(robo_configuration, platform, architecture):
     architecture: (optional) arch name (e.g., "ia32").  If omitted, then we
           build all of them for |platform|.
   """
-  log("Generating FFmpeg config and building for %s %s" %
+  shell.log("Generating FFmpeg config and building for %s %s" %
           (platform, architecture))
 
-  log("Starting FFmpeg build for %s %s" % (platform, architecture))
+  shell.log("Starting FFmpeg build for %s %s" % (platform, architecture))
   robo_configuration.chdir_to_ffmpeg_home();
-  command = ["./chromium/scripts/build_ffmpeg.py", platform]
+  command = ["python2", "./chromium/scripts/build_ffmpeg.py", platform]
   if architecture:
     command.append(architecture)
-  if robo_configuration.Call(command):
+  if robo_configuration.Call(command, stdout=None, stderr=None):
       raise Exception("FFmpeg build failed for %s %s" %
               (platform, architecture))
 
@@ -39,15 +39,18 @@ def ImportFFmpegConfigsIntoChromium(robo_configuration, write_git_file = False):
     with the appropriate git commands to add / rm autorenames.
   """
   robo_configuration.chdir_to_ffmpeg_home();
-  log("Copying FFmpeg configs")
+  shell.log("Copying FFmpeg configs")
   if robo_configuration.Call(["./chromium/scripts/copy_config.sh"]):
-      raise Exception("FFmpeg copy_config.sh failed")
-  log("Generating GN config for all ffmpeg versions")
+    raise Exception("FFmpeg copy_config.sh failed")
+  
+  # TODO... seems like there are some auto-generated files that generate_gn.py
+  # throws a nasty license check on, incorrectly. maybe they should be deleted
+  shell.log("Generating GN config for all ffmpeg versions")
   generate_cmd = ["./chromium/scripts/generate_gn.py"]
   if write_git_file:
     generate_cmd += ["-i", robo_configuration.autorename_git_file()]
   if robo_configuration.Call(generate_cmd):
-      raise Exception("FFmpeg generate_gn.sh failed")
+    raise Exception("FFmpeg generate_gn.sh failed")
 
 def BuildAndImportAllFFmpegConfigs(robo_configuration):
   """Build ffmpeg for all platforms that we can, and build the gn files.
@@ -97,7 +100,7 @@ def BuildChromeTargetASAN(robo_configuration, target, platform, architecture):
     architecture: arch to build it for (e.g., "x64").
   """
   robo_configuration.chdir_to_chrome_src()
-  if robo_configuration.Call(["ninja", "-j5000", "-C",
+  if robo_configuration.Call(["ninja", "-j500", "-C",
           robo_configuration.relative_asan_directory(), target]):
       raise Exception("Failed to build %s" % target)
 
@@ -111,15 +114,15 @@ def BuildAndRunChromeTargetASAN(robo_configuration, target, platform,
     platform: platform to build it for, which should probably be the host's.
     architecture: arch to build it for (e.g., "x64").
   """
-  log("Building and running %s" % target)
+  shell.log("Building and running %s" % target)
   BuildChromeTargetASAN(robo_configuration, target, platform, architecture)
   # TODO: we should be smarter about running things on android, for example.
-  log("Running %s" % target)
+  shell.log("Running %s" % target)
   robo_configuration.chdir_to_chrome_src()
   if robo_configuration.Call(
           [os.path.join(robo_configuration.absolute_asan_directory(), target)]):
     raise Exception("%s didn't complete successfully" % target)
-  log("%s ran successfully" % target)
+  shell.log("%s ran successfully" % target)
 
 def RunTests(robo_configuration):
   """Build all tests and run them locally.

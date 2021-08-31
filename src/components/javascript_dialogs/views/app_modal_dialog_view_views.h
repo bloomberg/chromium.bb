@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "build/chromeos_buildflags.h"
 #include "components/javascript_dialogs/app_modal_dialog_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -18,6 +19,10 @@ class MessageBoxView;
 namespace javascript_dialogs {
 
 class AppModalDialogController;
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+class LayerDimmer;
+#endif  // IS_CHROMEOS_LACROS
 
 class AppModalDialogViewViews : public AppModalDialogView,
                                 public views::DialogDelegate {
@@ -34,7 +39,7 @@ class AppModalDialogViewViews : public AppModalDialogView,
   bool IsShowing() const override;
 
   // views::DialogDelegate:
-  base::string16 GetWindowTitle() const override;
+  std::u16string GetWindowTitle() const override;
   ui::ModalType GetModalType() const override;
   views::View* GetContentsView() override;
   views::View* GetInitiallyFocusedView() override;
@@ -45,6 +50,10 @@ class AppModalDialogViewViews : public AppModalDialogView,
 
  private:
   std::unique_ptr<AppModalDialogController> controller_;
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  std::unique_ptr<LayerDimmer> layerDimmer_;
+#endif  // IS_CHROMEOS_LACROS
 
   // The message box view whose commands we handle.
   views::MessageBoxView* message_box_view_;

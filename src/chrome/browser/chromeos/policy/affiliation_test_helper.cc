@@ -8,27 +8,28 @@
 #include <memory>
 #include <string>
 
+#include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
+#include "chrome/browser/ash/login/existing_user_controller.h"
+#include "chrome/browser/ash/login/session/user_session_manager_test_api.h"
+#include "chrome/browser/ash/login/startup_utils.h"
+#include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
@@ -58,7 +59,7 @@ void SetUserKeys(const policy::UserPolicyBuilder& user_policy) {
   ASSERT_TRUE(base::PathService::Get(chromeos::dbus_paths::DIR_USER_POLICY_KEYS,
                                      &user_keys_dir));
   const std::string sanitized_username =
-      chromeos::CryptohomeClient::GetStubSanitizedUsername(
+      chromeos::UserDataAuthClient::GetStubSanitizedUsername(
           cryptohome::CreateAccountIdentifierFromAccountId(account_id));
   const base::FilePath user_key_file =
       user_keys_dir.AppendASCII(sanitized_username).AppendASCII("policy.pub");
@@ -168,8 +169,10 @@ void AffiliationTestHelper::SetUserAffiliationIDs(
 // static
 void AffiliationTestHelper::PreLoginUser(const AccountId& account_id) {
   ListPrefUpdate users_pref(g_browser_process->local_state(), "LoggedInUsers");
-  users_pref->AppendIfNotPresent(
-      std::make_unique<base::Value>(account_id.GetUserEmail()));
+  base::Value email_value(account_id.GetUserEmail());
+  if (!base::Contains(users_pref->GetList(), email_value))
+    users_pref->Append(std::move(email_value));
+
   if (user_manager::UserManager::IsInitialized())
     user_manager::known_user::SaveKnownUser(account_id);
 
@@ -178,8 +181,8 @@ void AffiliationTestHelper::PreLoginUser(const AccountId& account_id) {
 
 // static
 void AffiliationTestHelper::LoginUser(const AccountId& account_id) {
-  chromeos::test::UserSessionManagerTestApi session_manager_test_api(
-      chromeos::UserSessionManager::GetInstance());
+  ash::test::UserSessionManagerTestApi session_manager_test_api(
+      ash::UserSessionManager::GetInstance());
   session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
 
   const bool is_active_directory =

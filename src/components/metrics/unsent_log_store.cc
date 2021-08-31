@@ -58,7 +58,7 @@ void UnsentLogStore::LogInfo::Init(
     const std::string& log_data,
     const std::string& log_timestamp,
     const std::string& signing_key,
-    base::Optional<base::HistogramBase::Count> samples_count) {
+    absl::optional<base::HistogramBase::Count> samples_count) {
   DCHECK(!log_data.empty());
 
   if (!compression::GzipCompress(log_data, &compressed_log_data)) {
@@ -70,13 +70,7 @@ void UnsentLogStore::LogInfo::Init(
 
   hash = base::SHA1HashString(log_data);
 
-  // TODO(crbug.com/906202): Add an actual key for signing.
-  crypto::HMAC hmac(crypto::HMAC::SHA256);
-  const size_t digest_length = hmac.DigestLength();
-  unsigned char* hmac_data = reinterpret_cast<unsigned char*>(
-      base::WriteInto(&signature, digest_length + 1));
-  if (!hmac.Init(signing_key) ||
-      !hmac.Sign(log_data, hmac_data, digest_length)) {
+  if (!ComputeHMACForLog(log_data, signing_key, &signature)) {
     NOTREACHED() << "HMAC signing failed";
   }
 
@@ -141,6 +135,18 @@ const std::string& UnsentLogStore::staged_log_timestamp() const {
   return list_[staged_log_index_]->timestamp;
 }
 
+// static
+bool UnsentLogStore::ComputeHMACForLog(const std::string& log_data,
+                                       const std::string& signing_key,
+                                       std::string* signature) {
+  crypto::HMAC hmac(crypto::HMAC::SHA256);
+  const size_t digest_length = hmac.DigestLength();
+  unsigned char* hmac_data = reinterpret_cast<unsigned char*>(
+      base::WriteInto(signature, digest_length + 1));
+  return hmac.Init(signing_key) &&
+         hmac.Sign(log_data, hmac_data, digest_length);
+}
+
 void UnsentLogStore::StageNextLog() {
   // CHECK, rather than DCHECK, because swap()ing with an empty list causes
   // hard-to-identify crashes much later.
@@ -162,14 +168,10 @@ void UnsentLogStore::MarkStagedLogAsSent() {
   DCHECK_LT(static_cast<size_t>(staged_log_index_), list_.size());
   if (list_[staged_log_index_]->samples_count.has_value())
     total_samples_sent_ += list_[staged_log_index_]->samples_count.value();
-  metrics_->RecordSentLog();
 }
 
 void UnsentLogStore::TrimAndPersistUnsentLogs() {
   ListPrefUpdate update(local_state_, log_data_pref_name_);
-  // TODO(crbug.com/859477): Verify that the preference has been properly
-  // registered.
-  CHECK(update.Get());
   TrimLogs();
   WriteLogsToPrefList(update.Get());
 }
@@ -181,7 +183,7 @@ void UnsentLogStore::LoadPersistedUnsentLogs() {
 
 void UnsentLogStore::StoreLog(
     const std::string& log_data,
-    base::Optional<base::HistogramBase::Count> samples_count) {
+    absl::optional<base::HistogramBase::Count> samples_count) {
   LogInfo info;
   info.Init(metrics_.get(), log_data,
             base::NumberToString(base::Time::Now().ToTimeT()), signing_key_,
@@ -198,7 +200,7 @@ const std::string& UnsentLogStore::GetLogAtIndex(size_t index) {
 std::string UnsentLogStore::ReplaceLogAtIndex(
     size_t index,
     const std::string& new_log_data,
-    base::Optional<base::HistogramBase::Count> samples_count) {
+    absl::optional<base::HistogramBase::Count> samples_count) {
   DCHECK_GE(index, 0U);
   DCHECK_LT(index, list_.size());
 
@@ -304,7 +306,6 @@ void UnsentLogStore::TrimLogs() {
   size_t dropped_logs_count = list_.size() - trimmed_list.size();
   if (dropped_logs_count > 0)
     metrics_->RecordDroppedLogsNum(dropped_logs_count);
-  metrics_->RecordIntendingToSentLogs(trimmed_list.size());
 
   // Put the trimmed list in the correct place.
   list_.swap(trimmed_list);

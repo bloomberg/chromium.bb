@@ -13,13 +13,12 @@
 #import <CoreFoundation/CoreFoundation.h>
 #import <QuartzCore/QuartzCore.h>
 
-typedef enum {
+typedef NS_ENUM(unsigned int, CATransactionPhase) {
   kCATransactionPhasePreLayout,
   kCATransactionPhasePreCommit,
   kCATransactionPhasePostCommit,
-} CATransactionPhase;
+};
 
-API_AVAILABLE(macos(10.11))
 @interface CATransaction ()
 + (void)addCommitHandler:(void (^)(void))block
                 forPhase:(CATransactionPhase)phase;
@@ -116,8 +115,7 @@ CATransactionCoordinator::~CATransactionCoordinator() = default;
 void CATransactionCoordinator::Synchronize() {
   if (disabled_for_testing_)
     return;
-  if (@available(macos 10.11, *))
-    SynchronizeImpl();
+  SynchronizeImpl();
 }
 
 void CATransactionCoordinator::AddPreCommitObserver(

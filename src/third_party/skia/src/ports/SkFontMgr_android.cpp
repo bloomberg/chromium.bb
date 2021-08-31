@@ -358,18 +358,6 @@ protected:
         return sset->matchStyle(style);
     }
 
-    SkTypeface* onMatchFaceStyle(const SkTypeface* typeface,
-                                 const SkFontStyle& style) const override {
-        for (int i = 0; i < fStyleSets.count(); ++i) {
-            for (int j = 0; j < fStyleSets[i]->fStyles.count(); ++j) {
-                if (fStyleSets[i]->fStyles[j].get() == typeface) {
-                    return fStyleSets[i]->matchStyle(style);
-                }
-            }
-        }
-        return nullptr;
-    }
-
     static sk_sp<SkTypeface_AndroidSystem> find_family_style_character(
             const SkString& familyName,
             const SkTArray<NameToFamily, true>& fallbackNameToFamilyMap,
@@ -548,11 +536,9 @@ private:
         int familyIndex = 0;
         for (FontFamily* family : families) {
             addFamily(*family, isolated, familyIndex++);
-            family->fallbackFamilies.foreach([this, isolated, &familyIndex]
-                (SkString, std::unique_ptr<FontFamily>* fallbackFamily) {
-                    addFamily(**fallbackFamily, isolated, familyIndex++);
-                }
-            );
+            for (const auto& [unused, fallbackFamily] : family->fallbackFamilies) {
+                addFamily(*fallbackFamily, isolated, familyIndex++);
+            }
         }
     }
 

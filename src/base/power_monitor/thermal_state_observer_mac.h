@@ -6,7 +6,6 @@
 #define BASE_POWER_MONITOR_THERMAL_STATE_OBSERVER_MAC_H_
 
 #include <objc/objc.h>
-#include <memory>
 
 #include "base/base_export.h"
 #include "base/callback.h"
@@ -20,17 +19,17 @@ namespace base {
 class BASE_EXPORT ThermalStateObserverMac {
  public:
   using StateUpdateCallback =
-      base::RepeatingCallback<void(PowerObserver::DeviceThermalState)>;
+      base::RepeatingCallback<void(PowerThermalObserver::DeviceThermalState)>;
 
   explicit ThermalStateObserverMac(StateUpdateCallback state_update_callback);
   ~ThermalStateObserverMac();
 
-  PowerObserver::DeviceThermalState GetCurrentThermalState();
+  PowerThermalObserver::DeviceThermalState GetCurrentThermalState();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ThermalStateObserverMacTest, StateChange);
-  PowerObserver::DeviceThermalState state_for_testing_ =
-      PowerObserver::DeviceThermalState::kUnknown;
+  PowerThermalObserver::DeviceThermalState state_for_testing_ =
+      PowerThermalObserver::DeviceThermalState::kUnknown;
 
   id thermal_state_update_observer_;
 };

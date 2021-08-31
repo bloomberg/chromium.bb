@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_interval_set.h"
+#include "quic/core/quic_interval_set.h"
 
 #include <stdarg.h>
 
@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
+#include "quic/platform/api/quic_test.h"
 
 namespace quic {
 namespace test {
@@ -160,6 +160,21 @@ static void TestNotContainsAndFind(const QuicIntervalSet<int>& is,
   auto it = is.Find(min, max);
   EXPECT_EQ(it, is.end()) << "There is iterator to interval with min " << min
                           << "and max " << max;
+}
+
+TEST_F(QuicIntervalSetTest, AddInterval) {
+  QuicIntervalSet<int> s;
+  s.Add(QuicInterval<int>(0, 10));
+  EXPECT_TRUE(Check(s, 1, 0, 10));
+}
+
+TEST_F(QuicIntervalSetTest, DecrementIterator) {
+  auto it = is.end();
+  EXPECT_NE(it, is.begin());
+  --it;
+  EXPECT_EQ(*it, QuicInterval<int>(2100, 2200));
+  ++it;
+  EXPECT_EQ(it, is.end());
 }
 
 TEST_F(QuicIntervalSetTest, AddOptimizedForAppend) {
@@ -350,6 +365,11 @@ TEST_F(QuicIntervalSetTest, QuicIntervalSetBasic) {
   EXPECT_FALSE(iset.Contains(iset_contains));
   EXPECT_FALSE(iset.Contains(QuicInterval<int>()));
   EXPECT_FALSE(iset.Contains(QuicIntervalSet<int>()));
+
+  // Check the case where the query set isn't contained, but the spanning
+  // intervals do overlap.
+  QuicIntervalSet<int> i2({{220, 230}});
+  EXPECT_FALSE(iset.Contains(i2));
 }
 
 TEST_F(QuicIntervalSetTest, QuicIntervalSetContainsEmpty) {

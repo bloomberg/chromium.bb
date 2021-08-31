@@ -14,14 +14,14 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/help_app_launcher.h"
-#include "chrome/browser/chromeos/login/oobe_configuration.h"
-#include "chrome/browser/chromeos/login/version_info_updater.h"
+#include "chrome/browser/ash/login/help_app_launcher.h"
+#include "chrome/browser/ash/login/oobe_configuration.h"
+#include "chrome/browser/ash/login/version_info_updater.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/event_source.h"
 
 namespace base {
@@ -48,26 +48,19 @@ class CoreOobeView {
     MODE_NARROW,
   };
 
-  virtual ~CoreOobeView() {}
+  virtual ~CoreOobeView() = default;
 
-  virtual void ShowSignInError(int login_attempts,
-                               const std::string& error_text,
-                               const std::string& help_link_text,
-                               HelpAppLauncher::HelpTopic help_topic_id) = 0;
-  virtual void ShowSignInUI(const std::string& email) = 0;
   virtual void ResetSignInUI(bool force_online) = 0;
-  virtual void ClearUserPodPassword() = 0;
-  virtual void RefocusCurrentPod() = 0;
-  virtual void ClearErrors() = 0;
   virtual void ReloadContent(const base::DictionaryValue& dictionary) = 0;
-  virtual void ReloadEulaContent(const base::DictionaryValue& dictionary) = 0;
   virtual void SetVirtualKeyboardShown(bool shown) = 0;
   virtual void SetClientAreaSize(int width, int height) = 0;
   virtual void SetShelfHeight(int height) = 0;
   virtual void SetDialogPaddingMode(DialogPaddingMode mode) = 0;
-  virtual void ShowDeviceResetScreen() = 0;
-  virtual void ShowEnableAdbSideloadingScreen() = 0;
   virtual void UpdateKeyboardState() = 0;
+  virtual void FocusReturned(bool reverse) = 0;
+  virtual void SetOrientation(bool is_horizontal) = 0;
+  virtual void SetDialogSize(int width, int height) = 0;
+  virtual void UpdateClientAreaSize(const gfx::Size& size) = 0;
 };
 
 // The core handler for Javascript messages related to the "oobe" view.
@@ -123,23 +116,17 @@ class CoreOobeHandler : public BaseWebUIHandler,
 
  private:
   // CoreOobeView implementation:
-  void ShowSignInError(int login_attempts,
-                       const std::string& error_text,
-                       const std::string& help_link_text,
-                       HelpAppLauncher::HelpTopic help_topic_id) override;
-  void ShowSignInUI(const std::string& email) override;
   void ResetSignInUI(bool force_online) override;
-  void ClearUserPodPassword() override;
-  void RefocusCurrentPod() override;
-  void ClearErrors() override;
   void ReloadContent(const base::DictionaryValue& dictionary) override;
-  void ReloadEulaContent(const base::DictionaryValue& dictionary) override;
   void SetVirtualKeyboardShown(bool displayed) override;
   void SetClientAreaSize(int width, int height) override;
   void SetShelfHeight(int height) override;
   void SetDialogPaddingMode(CoreOobeView::DialogPaddingMode mode) override;
-  void ShowDeviceResetScreen() override;
-  void ShowEnableAdbSideloadingScreen() override;
+  void FocusReturned(bool reverse) override;
+  void SetOrientation(bool is_horizontal) override;
+  void SetDialogSize(int width, int height) override;
+  // Updates client area size based on the primary screen size.
+  void UpdateClientAreaSize(const gfx::Size& size) override;
 
   void UpdateKeyboardState() override;
 
@@ -152,6 +139,7 @@ class CoreOobeHandler : public BaseWebUIHandler,
 
   // Handlers for JS WebUI messages.
   void HandleHideOobeDialog();
+  void HandleEnableShelfButtons(bool enable);
   void HandleInitialized();
   void HandleUpdateCurrentScreen(const std::string& screen);
   void HandleSkipToLoginForTesting();
@@ -171,7 +159,7 @@ class CoreOobeHandler : public BaseWebUIHandler,
   // tpm_firmware_update in settings.
   void HandleToggleResetScreenCallback(
       bool is_reset_allowed,
-      base::Optional<tpm_firmware_update::Mode> tpm_firmware_update_mode);
+      absl::optional<tpm_firmware_update::Mode> tpm_firmware_update_mode);
 
   // When keyboard_utils.js arrow key down event is reached, raise it
   // to tab/shift-tab event.
@@ -182,9 +170,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
 
   // Updates label with specified id with specified text.
   void UpdateLabel(const std::string& id, const std::string& text);
-
-  // Updates client area size based on the primary screen size.
-  void UpdateClientAreaSize();
 
   // True if we should show OOBE instead of login.
   bool show_oobe_ui_ = false;

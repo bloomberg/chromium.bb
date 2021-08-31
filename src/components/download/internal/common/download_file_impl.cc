@@ -5,17 +5,18 @@
 #include "components/download/public/common/download_file_impl.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/download/internal/common/parallel_download_utils.h"
@@ -192,7 +193,7 @@ void DownloadFileImpl::Initialize(
     bool is_parallelizable) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  update_timer_.reset(new base::RepeatingTimer());
+  update_timer_ = std::make_unique<base::RepeatingTimer>();
   int64_t bytes_so_far = 0;
   cancel_request_callback_ = cancel_request_callback;
   received_slices_ = received_slices;

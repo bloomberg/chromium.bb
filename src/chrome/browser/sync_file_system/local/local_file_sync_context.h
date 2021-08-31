@@ -65,13 +65,13 @@ class LocalFileSyncContext
     SYNC_SNAPSHOT,
   };
 
-  typedef base::Callback<void(SyncStatusCode status,
-                              const LocalFileSyncInfo& sync_file_info,
-                              storage::ScopedFile snapshot)>
+  typedef base::OnceCallback<void(SyncStatusCode status,
+                                  const LocalFileSyncInfo& sync_file_info,
+                                  storage::ScopedFile snapshot)>
       LocalFileSyncInfoCallback;
 
-  typedef base::Callback<void(SyncStatusCode status,
-                              bool has_pending_changes)>
+  typedef base::OnceCallback<void(SyncStatusCode status,
+                                  bool has_pending_changes)>
       HasPendingLocalChangeCallback;
 
   LocalFileSyncContext(const base::FilePath& base_path,
@@ -86,7 +86,7 @@ class LocalFileSyncContext
   void MaybeInitializeFileSystemContext(
       const GURL& source_url,
       storage::FileSystemContext* file_system_context,
-      const SyncStatusCallback& callback);
+      SyncStatusCallback callback);
 
   // Called when the corresponding LocalFileSyncService exits.
   // This method must be called on UI thread.
@@ -96,7 +96,7 @@ class LocalFileSyncContext
   // for the file.
   // This method must be called on UI thread.
   void GetFileForLocalSync(storage::FileSystemContext* file_system_context,
-                           const LocalFileSyncInfoCallback& callback);
+                           LocalFileSyncInfoCallback callback);
 
   // TODO(kinuko): Make this private.
   // Clears all pending local changes for |url|. |done_callback| is called
@@ -104,7 +104,7 @@ class LocalFileSyncContext
   // This method must be called on UI thread.
   void ClearChangesForURL(storage::FileSystemContext* file_system_context,
                           const storage::FileSystemURL& url,
-                          const base::Closure& done_callback);
+                          base::OnceClosure done_callback);
 
   // Finalizes SnapshotSync, which must have been started by
   // PrepareForSync with SYNC_SNAPSHOT.
@@ -115,14 +115,14 @@ class LocalFileSyncContext
   void FinalizeSnapshotSync(storage::FileSystemContext* file_system_context,
                             const storage::FileSystemURL& url,
                             SyncStatusCode sync_finish_status,
-                            const base::Closure& done_callback);
+                            base::OnceClosure done_callback);
 
   // Finalizes ExclusiveSync, which must have been started by
   // PrepareForSync with SYNC_EXCLUSIVE.
   void FinalizeExclusiveSync(storage::FileSystemContext* file_system_context,
                              const storage::FileSystemURL& url,
                              bool clear_local_changes,
-                             const base::Closure& done_callback);
+                             base::OnceClosure done_callback);
 
   // Prepares for sync |url| by disabling writes on |url|.
   // If the target |url| is being written and cannot start sync it
@@ -142,7 +142,7 @@ class LocalFileSyncContext
   void PrepareForSync(storage::FileSystemContext* file_system_context,
                       const storage::FileSystemURL& url,
                       SyncMode sync_mode,
-                      const LocalFileSyncInfoCallback& callback);
+                      LocalFileSyncInfoCallback callback);
 
   // Registers |url| to wait until sync is enabled for |url|.
   // |on_syncable_callback| is to be called when |url| becomes syncable
@@ -154,7 +154,7 @@ class LocalFileSyncContext
   //
   // This method must be called on UI thread.
   void RegisterURLForWaitingSync(const storage::FileSystemURL& url,
-                                 const base::Closure& on_syncable_callback);
+                                 base::OnceClosure on_syncable_callback);
 
   // Applies a remote change.
   // This method must be called on UI thread.
@@ -162,30 +162,29 @@ class LocalFileSyncContext
                          const FileChange& change,
                          const base::FilePath& local_path,
                          const storage::FileSystemURL& url,
-                         const SyncStatusCallback& callback);
+                         SyncStatusCallback callback);
 
   // Records a fake local change in the local change tracker.
   void RecordFakeLocalChange(storage::FileSystemContext* file_system_context,
                              const storage::FileSystemURL& url,
                              const FileChange& change,
-                             const SyncStatusCallback& callback);
+                             SyncStatusCallback callback);
 
   // This must be called on UI thread.
   void GetFileMetadata(storage::FileSystemContext* file_system_context,
                        const storage::FileSystemURL& url,
-                       const SyncFileMetadataCallback& callback);
+                       SyncFileMetadataCallback callback);
 
   // Returns true via |callback| if the given file |url| has local pending
   // changes.
   void HasPendingLocalChanges(storage::FileSystemContext* file_system_context,
                               const storage::FileSystemURL& url,
-                              const HasPendingLocalChangeCallback& callback);
+                              HasPendingLocalChangeCallback callback);
 
   void PromoteDemotedChanges(const GURL& origin,
                              storage::FileSystemContext* file_system_context,
-                             const base::Closure& callback);
-  void UpdateChangesForOrigin(const GURL& origin,
-                              const base::Closure& callback);
+                             base::OnceClosure callback);
+  void UpdateChangesForOrigin(const GURL& origin, base::OnceClosure callback);
 
   // They must be called on UI thread.
   void AddOriginChangeObserver(LocalOriginChangeObserver* observer);
@@ -222,14 +221,14 @@ class LocalFileSyncContext
   // Starts a timer to eventually call NotifyAvailableChangesOnIOThread.
   // The caller is expected to update origins_with_pending_changes_ before
   // calling this.
-  void ScheduleNotifyChangesUpdatedOnIOThread(const base::Closure& callback);
+  void ScheduleNotifyChangesUpdatedOnIOThread(base::OnceClosure callback);
 
   // Called by the internal timer on IO thread to notify changes to UI thread.
   void NotifyAvailableChangesOnIOThread();
 
   // Called from NotifyAvailableChangesOnIOThread.
   void NotifyAvailableChanges(const std::set<GURL>& origins,
-                              const std::vector<base::Closure>& callbacks);
+                              std::vector<base::OnceClosure> callbacks);
 
   // Helper routines for MaybeInitializeFileSystemContext.
   void InitializeFileSystemContextOnIOThread(
@@ -256,12 +255,12 @@ class LocalFileSyncContext
   std::unique_ptr<FileSystemURLQueue> GetNextURLsForSyncOnFileThread(
       storage::FileSystemContext* file_system_context);
   void TryPrepareForLocalSync(storage::FileSystemContext* file_system_context,
-                              const LocalFileSyncInfoCallback& callback,
+                              LocalFileSyncInfoCallback callback,
                               std::unique_ptr<FileSystemURLQueue> urls);
   void DidTryPrepareForLocalSync(
       storage::FileSystemContext* file_system_context,
       std::unique_ptr<FileSystemURLQueue> remaining_urls,
-      const LocalFileSyncInfoCallback& callback,
+      LocalFileSyncInfoCallback callback,
       SyncStatusCode status,
       const LocalFileSyncInfo& sync_file_info,
       storage::ScopedFile snapshot);
@@ -278,7 +277,7 @@ class LocalFileSyncContext
       SyncStatusCode status,
       const storage::FileSystemURL& url,
       SyncMode sync_mode,
-      const LocalFileSyncInfoCallback& callback);
+      LocalFileSyncInfoCallback callback);
 
   // Helper routine for sync/writing flag handling.
   //
@@ -293,29 +292,28 @@ class LocalFileSyncContext
 
   void HandleRemoteDelete(storage::FileSystemContext* file_system_context,
                           const storage::FileSystemURL& url,
-                          const SyncStatusCallback& callback);
+                          SyncStatusCallback callback);
   void HandleRemoteAddOrUpdate(storage::FileSystemContext* file_system_context,
                                const FileChange& change,
                                const base::FilePath& local_path,
                                const storage::FileSystemURL& url,
-                               const SyncStatusCallback& callback);
+                               SyncStatusCallback callback);
   void DidRemoveExistingEntryForRemoteAddOrUpdate(
       storage::FileSystemContext* file_system_context,
       const FileChange& change,
       const base::FilePath& local_path,
       const storage::FileSystemURL& url,
-      const SyncStatusCallback& callback,
+      SyncStatusCallback callback,
       base::File::Error error);
 
   // Callback routine for ApplyRemoteChange.
   void DidApplyRemoteChange(const storage::FileSystemURL& url,
-                            const SyncStatusCallback& callback_on_ui,
+                            SyncStatusCallback callback_on_ui,
                             base::File::Error file_error);
 
-  void DidGetFileMetadata(
-      const SyncFileMetadataCallback& callback,
-      base::File::Error file_error,
-      const base::File::Info& file_info);
+  void DidGetFileMetadata(SyncFileMetadataCallback callback,
+                          base::File::Error file_error,
+                          const base::File::Info& file_info);
 
   base::TimeDelta NotifyChangesDuration();
 
@@ -355,12 +353,12 @@ class LocalFileSyncContext
   // A URL and associated callback waiting for sync is enabled.
   // Accessed only on IO thread.
   storage::FileSystemURL url_waiting_sync_on_io_;
-  base::Closure url_syncable_callback_;
+  base::OnceClosure url_syncable_callback_;
 
   // Used only on IO thread for available changes notifications.
   base::Time last_notified_changes_;
   std::unique_ptr<base::OneShotTimer> timer_on_io_;
-  std::vector<base::Closure> pending_completion_callbacks_;
+  std::vector<base::OnceClosure> pending_completion_callbacks_;
   std::set<GURL> origins_with_pending_changes_;
 
   // Populated while root directory deletion is being handled for

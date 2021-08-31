@@ -50,7 +50,7 @@ static INLINE int get_unsigned_bits(unsigned int num_values) {
 }
 
 #define CHECK_MEM_ERROR(cm, lval, expr) \
-  AOM_CHECK_MEM_ERROR(&cm->error, lval, expr)
+  AOM_CHECK_MEM_ERROR(cm->error, lval, expr)
 
 #define AOM_FRAME_MARKER 0x2
 

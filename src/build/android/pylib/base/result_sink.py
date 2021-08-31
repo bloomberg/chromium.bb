@@ -1,21 +1,20 @@
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from __future__ import absolute_import
 import base64
-import cgi
 import json
 import os
+
+import six
 
 from pylib.base import base_test_result
 import requests  # pylint: disable=import-error
 
-# Comes from luci/resultdb/pbutil/test_result.go
-MAX_REPORT_LEN = 4 * 1024
-
 # Maps base_test_results to the luci test-result.proto.
 # https://godoc.org/go.chromium.org/luci/resultdb/proto/v1#TestStatus
 RESULT_MAP = {
-    base_test_result.ResultType.UNKNOWN: 'STATUS_UNSPECIFIED',
+    base_test_result.ResultType.UNKNOWN: 'ABORT',
     base_test_result.ResultType.PASS: 'PASS',
     base_test_result.ResultType.FAIL: 'FAIL',
     base_test_result.ResultType.CRASH: 'CRASH',
@@ -48,15 +47,18 @@ class ResultSinkClient(object):
   server is listening.
   """
   def __init__(self, context):
-    self.url = ('http://%s/prpc/luci.resultsink.v1.Sink/ReportTestResults' %
-                context['address'])
+    base_url = 'http://%s/prpc/luci.resultsink.v1.Sink' % context['address']
+    self.test_results_url = base_url + '/ReportTestResults'
+    self.report_artifacts_url = base_url + '/ReportInvocationLevelArtifacts'
+
     self.headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'Authorization': 'ResultSink %s' % context['auth_token'],
     }
 
-  def Post(self, test_id, status, test_log, artifacts=None):
+  def Post(self, test_id, status, duration, test_log, test_file,
+           artifacts=None):
     """Uploads the test result to the ResultSink server.
 
     This assumes that the rdb stream has been called already and that
@@ -65,7 +67,9 @@ class ResultSinkClient(object):
     Args:
       test_id: A string representing the test's name.
       status: A string representing if the test passed, failed, etc...
+      duration: An int representing time in ms.
       test_log: A string representing the test's output.
+      test_file: A string representing the file location of the test.
       artifacts: An optional dict of artifacts to attach to the test.
 
     Returns:
@@ -74,30 +78,68 @@ class ResultSinkClient(object):
     assert status in RESULT_MAP
     expected = status in (base_test_result.ResultType.PASS,
                           base_test_result.ResultType.SKIP)
-    status = RESULT_MAP[status]
-
-    # Slightly smaller to allow addition of <pre> tags and message.
-    report_check_size = MAX_REPORT_LEN - 45
-    test_log_formatted = cgi.escape(test_log)
-    if len(test_log) > report_check_size:
-      test_log_formatted = ('<pre>' + test_log[:report_check_size] +
-                            '...Full output in Artifact.</pre>')
-    else:
-      test_log_formatted = '<pre>' + test_log + '</pre>'
+    result_db_status = RESULT_MAP[status]
 
     tr = {
-        'expected': expected,
-        'status': status,
-        'summaryHtml': test_log_formatted,
-        'testId': test_id,
+        'expected':
+        expected,
+        'status':
+        result_db_status,
+        'tags': [
+            {
+                'key': 'test_name',
+                'value': test_id,
+            },
+            {
+                # Status before getting mapped to result_db statuses.
+                'key': 'android_test_runner_status',
+                'value': status,
+            }
+        ],
+        'testId':
+        test_id,
     }
+
     artifacts = artifacts or {}
-    if len(test_log) > report_check_size:
-      artifacts.update({'Test Log': {'contents': base64.b64encode(test_log)}})
+    if test_log:
+      # Upload the original log without any modifications.
+      b64_log = six.ensure_str(base64.b64encode(six.ensure_binary(test_log)))
+      artifacts.update({'Test Log': {'contents': b64_log}})
+      tr['summaryHtml'] = '<text-artifact artifact-id="Test Log" />'
     if artifacts:
       tr['artifacts'] = artifacts
 
-    res = requests.post(url=self.url,
+    if duration is not None:
+      # Duration must be formatted to avoid scientific notation in case
+      # number is too small or too large. Result_db takes seconds, not ms.
+      # Need to use float() otherwise it does substitution first then divides.
+      tr['duration'] = '%.9fs' % float(duration / 1000.0)
+
+    if test_file and str(test_file).startswith('//'):
+      tr['testMetadata'] = {
+          'name': test_id,
+          'location': {
+              'file_name': test_file,
+              'repo': 'https://chromium.googlesource.com/chromium/src',
+          }
+      }
+
+    res = requests.post(url=self.test_results_url,
                         headers=self.headers,
                         data=json.dumps({'testResults': [tr]}))
+    res.raise_for_status()
+
+  def ReportInvocationLevelArtifacts(self, artifacts):
+    """Uploads invocation-level artifacts to the ResultSink server.
+
+    This is for artifacts that don't apply to a single test but to the test
+    invocation as a whole (eg: system logs).
+
+    Args:
+      artifacts: A dict of artifacts to attach to the invocation.
+    """
+    req = {'artifacts': artifacts}
+    res = requests.post(url=self.report_artifacts_url,
+                        headers=self.headers,
+                        data=json.dumps(req))
     res.raise_for_status()

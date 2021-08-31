@@ -17,14 +17,14 @@
 #include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/proto/send_tab_to_self.pb.h"
 #include "components/send_tab_to_self/target_device_info.h"
+#include "components/sync/engine/entity_data.h"
 #include "components/sync/model/entity_change.h"
-#include "components/sync/model/entity_data.h"
+#include "components/sync/model/in_memory_metadata_change_list.h"
 #include "components/sync/model/metadata_batch.h"
-#include "components/sync/model_impl/in_memory_metadata_change_list.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/test/model/mock_model_type_change_processor.h"
 #include "components/sync/test/model/model_type_store_test_util.h"
-#include "components/sync/test/test_matchers.h"
+#include "components/sync/test/model/test_matchers.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/device_info_util.h"
 #include "components/sync_device_info/fake_device_info_tracker.h"
@@ -83,9 +83,10 @@ std::unique_ptr<syncer::DeviceInfo> CreateDevice(
   return std::make_unique<syncer::DeviceInfo>(
       guid, name, "chrome_version", "user_agent",
       sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "scoped_id", "manufacturer",
-      "model", last_updated_timestamp,
+      "model", "full_hardware_class", last_updated_timestamp,
       syncer::DeviceInfoUtil::GetPulseInterval(),
-      send_tab_to_self_receiving_enabled, /*sharing_info=*/base::nullopt,
+      send_tab_to_self_receiving_enabled, /*sharing_info=*/absl::nullopt,
+      /*paask_info=*/absl::nullopt,
       /*fcm_registration_token=*/std::string(),
       /*interested_data_types=*/syncer::ModelTypeSet());
 }

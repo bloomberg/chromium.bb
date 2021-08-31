@@ -24,8 +24,11 @@
 
 #include <locale.h>
 #include <stdarg.h>
+
 #include <algorithm>
+
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa.h"
@@ -35,9 +38,11 @@
 #include "third_party/blink/renderer/platform/wtf/text/case_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/text/utf8.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value.h"
 
 namespace WTF {
 
@@ -418,8 +423,8 @@ std::string String::Ascii() const {
     return std::string();
 
   std::string ascii(length, '\0');
-  if (this->Is8Bit()) {
-    const LChar* characters = this->Characters8();
+  if (Is8Bit()) {
+    const LChar* characters = Characters8();
 
     for (unsigned i = 0; i < length; ++i) {
       LChar ch = characters[i];
@@ -428,7 +433,7 @@ std::string String::Ascii() const {
     return ascii;
   }
 
-  const UChar* characters = this->Characters16();
+  const UChar* characters = Characters16();
   for (unsigned i = 0; i < length; ++i) {
     UChar ch = characters[i];
     ascii[i] = ch && (ch < 0x20 || ch > 0x7f) ? '?' : static_cast<char>(ch);
@@ -446,11 +451,10 @@ std::string String::Latin1() const {
     return std::string();
 
   if (Is8Bit()) {
-    return std::string(reinterpret_cast<const char*>(this->Characters8()),
-                       length);
+    return std::string(reinterpret_cast<const char*>(Characters8()), length);
   }
 
-  const UChar* characters = this->Characters16();
+  const UChar* characters = Characters16();
   std::string latin1(length, '\0');
   for (unsigned i = 0; i < length; ++i) {
     UChar ch = characters[i];
@@ -492,7 +496,7 @@ std::string String::Utf8(UTF8ConversionMode mode) const {
   char* buffer = buffer_vector.data();
 
   if (Is8Bit()) {
-    const LChar* characters = this->Characters8();
+    const LChar* characters = Characters8();
 
     unicode::ConversionResult result =
         unicode::ConvertLatin1ToUTF8(&characters, characters + length, &buffer,
@@ -500,7 +504,7 @@ std::string String::Utf8(UTF8ConversionMode mode) const {
     // (length * 3) should be sufficient for any conversion
     DCHECK_NE(result, unicode::kTargetExhausted);
   } else {
-    const UChar* characters = this->Characters16();
+    const UChar* characters = Characters16();
 
     if (mode == kStrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD) {
       const UChar* characters_end = characters + length;
@@ -545,7 +549,7 @@ std::string String::Utf8(UTF8ConversionMode mode) const {
         // was as an unpaired high surrogate would have been handled in
         // the middle of a string with non-strict conversion - which is
         // to say, simply encode it to UTF-8.
-        DCHECK_EQ(characters + 1, this->Characters16() + length);
+        DCHECK_EQ(characters + 1, Characters16() + length);
         DCHECK_GE(*characters, 0xD800);
         DCHECK_LE(*characters, 0xDBFF);
         // There should be room left, since one UChar hasn't been
@@ -592,8 +596,9 @@ String String::FromUTF8(const LChar* string_start, size_t string_length) {
   if (!length)
     return g_empty_string;
 
-  if (CharactersAreAllASCII(string_start, length))
-    return StringImpl::Create(string_start, length);
+  ASCIIStringAttributes attributes = CharacterAttributes(string_start, length);
+  if (attributes.contains_only_ascii)
+    return StringImpl::Create(string_start, length, attributes);
 
   Vector<UChar, 1024> buffer(length);
   UChar* buffer_start = buffer.data();
@@ -638,5 +643,10 @@ void String::Show() const {
   DLOG(INFO) << *this;
 }
 #endif
+
+void String::WriteIntoTrace(perfetto::TracedValue context) const {
+  StringUTF8Adaptor adaptor(*this);
+  std::move(context).WriteString(adaptor.data(), adaptor.size());
+}
 
 }  // namespace WTF

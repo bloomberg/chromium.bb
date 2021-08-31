@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (C) 2017 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,11 +35,11 @@ MAC_BUILD_CONFIGS = {
 
 ANDROID_BUILD_CONFIGS = {
     'android_debug': ('target_os="android"', 'is_clang=true', 'is_debug=true'),
-    'android_release': ('target_os="android"', 'is_clang=true',
-                        'is_debug=false'),
-    'android_release_incl_heapprofd': ('target_os="android"', 'is_clang=true',
-                                       'is_debug=false',
-                                       'android_api_level=26'),
+    'android_release':
+        ('target_os="android"', 'is_clang=true', 'is_debug=false'),
+    'android_release_incl_heapprofd':
+        ('target_os="android"', 'is_clang=true', 'is_debug=false',
+         'extra_cflags="-funwind-tables"', 'android_api_level=29'),
     'android_asan': ('target_os="android"', 'is_clang=true', 'is_debug=false',
                      'is_asan=true'),
     'android_lsan': ('target_os="android"', 'is_clang=true', 'is_debug=false',
@@ -72,6 +72,8 @@ def main():
   parser.add_argument('--ccache', action='store_true', default=False)
   parser.add_argument('--host-only', action='store_true', default=False)
   parser.add_argument('--android', action='store_true', default=False)
+  parser.add_argument(
+      '--export-compile-commands', action="store_true", default=False)
   parser.add_argument('--build', metavar='TARGET')
   args = parser.parse_args()
 
@@ -115,6 +117,8 @@ def main():
     if not os.path.isdir(out_dir):
       os.mkdir(out_dir)
     gn_cmd = (gn, 'gen', out_dir, '--args=%s' % (' '.join(gn_args)), '--check')
+    if args.export_compile_commands:
+      gn_cmd += ('--export-compile-commands',)
     print(' '.join(quote(c) for c in gn_cmd))
     subprocess.check_call(gn_cmd, cwd=ROOT_DIR)
     if args.build:

@@ -11,8 +11,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace syncer {
@@ -69,7 +69,7 @@ class SharedClipboardContextMenuObserver
 
   SubMenuDelegate sub_menu_delegate_{this};
 
-  base::string16 text_;
+  std::u16string text_;
 
   std::unique_ptr<ui::SimpleMenuModel> sub_menu_model_;
 

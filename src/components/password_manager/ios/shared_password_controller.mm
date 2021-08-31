@@ -9,13 +9,13 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -24,8 +24,9 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
-#include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/browser/form_suggestion_provider_query.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
@@ -36,10 +37,9 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/ios/account_select_fill_data.h"
-#import "components/password_manager/ios/js_password_manager.h"
+#include "components/password_manager/ios/password_manager_ios_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/web/common/url_scheme_util.h"
-#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
 #include "ios/web/public/navigation/navigation_context.h"
@@ -52,26 +52,30 @@
 #error "This file requires ARC support."
 #endif
 
+using autofill::FieldDataManager;
+using autofill::FieldRendererId;
 using autofill::FormActivityObserverBridge;
 using autofill::FormData;
-using autofill::PasswordFormGenerationData;
 using autofill::FormRendererId;
-using autofill::FieldRendererId;
+using autofill::PasswordFormGenerationData;
+using autofill::password_generation::LogPasswordGenerationEvent;
+using autofill::password_generation::PasswordGenerationType;
 using base::SysNSStringToUTF16;
 using base::SysUTF16ToNSString;
+using base::SysUTF8ToNSString;
 using l10n_util::GetNSString;
 using l10n_util::GetNSStringF;
-using password_manager::metrics_util::LogPasswordDropdownShown;
-using password_manager::metrics_util::PasswordDropdownState;
 using password_manager::AccountSelectFillData;
 using password_manager::FillData;
 using password_manager::GetPageURLAndCheckTrustLevel;
+using password_manager::JsonStringToFormData;
+using password_manager::metrics_util::LogPasswordDropdownShown;
+using password_manager::metrics_util::PasswordDropdownState;
 using password_manager::PasswordFormManagerForUI;
 using password_manager::PasswordGenerationFrameHelper;
-using password_manager::PasswordManagerInterface;
 using password_manager::PasswordManagerClient;
 using password_manager::PasswordManagerDriver;
-using password_manager::SerializePasswordFormFillData;
+using password_manager::PasswordManagerInterface;
 
 namespace {
 
@@ -117,8 +121,17 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   // Form data for password generation on this page.
   std::map<FormRendererId, PasswordFormGenerationData> _formGenerationData;
 
+  // Identifier of the field that was last typed into.
   FieldRendererId _lastTypedfieldIdentifier;
+
+  // The value that was last typed by the user.
   NSString* _lastTypedValue;
+
+  // Identifier of the last focused form.
+  FormRendererId _lastFocusedFormIdentifier;
+
+  // Identifier of the last focused field.
+  FieldRendererId _lastFocusedFieldIdentifier;
 }
 
 - (instancetype)initWithWebState:(web::WebState*)webState
@@ -155,17 +168,36 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   return _delegate.passwordManagerClient->IsIncognito();
 }
 
+#pragma mark - PasswordGenerationProvider
+
+- (void)triggerPasswordGeneration {
+  if (!_lastFocusedFieldIdentifier) {
+    return;
+  }
+  LogPasswordGenerationEvent(
+      autofill::password_generation::PASSWORD_GENERATION_CONTEXT_MENU_PRESSED);
+  [self generatePasswordForFormId:_lastFocusedFormIdentifier
+                  fieldIdentifier:_lastFocusedFieldIdentifier
+              isManuallyTriggered:YES];
+}
+
 #pragma mark - CRWWebStateObserver
 
 - (void)webState:(web::WebState*)webState
     didFinishNavigation:(web::NavigationContext*)navigation {
   DCHECK_EQ(_webState, webState);
-  if (!navigation->HasCommitted() || navigation->IsSameDocument())
+  if (!navigation->HasCommitted() || navigation->IsSameDocument()) {
     return;
+  }
 
-  if (!GetPageURLAndCheckTrustLevel(webState, nullptr))
+  if (!GetPageURLAndCheckTrustLevel(webState, nullptr)) {
     return;
+  }
 
+  auto fieldDataManager =
+      UniqueIDDataTabHelper::FromWebState(_webState)->GetFieldDataManager();
+  _passwordManager->PropagateFieldDataManagerInfo(
+      *fieldDataManager, _delegate.passwordManagerDriver);
   // On non-iOS platforms navigations initiated by link click are excluded from
   // navigations which might be form submssions. On iOS there is no easy way to
   // check that the navigation is link initiated, so it is skipped. It should
@@ -173,6 +205,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   // after filling password form w/o submitting it.
   _passwordManager->DidNavigateMainFrame(
       /*form_may_be_submitted=*/navigation->IsRendererInitiated());
+  fieldDataManager->ClearData();
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
@@ -183,15 +216,15 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   // Retrieve the identity of the page. In case the page might be malicous,
   // returns early.
   GURL pageURL;
-  if (!GetPageURLAndCheckTrustLevel(webState, &pageURL))
+  if (!GetPageURLAndCheckTrustLevel(webState, &pageURL)) {
     return;
+  }
 
-  if (!web::UrlHasWebScheme(pageURL))
+  if (!web::UrlHasWebScheme(pageURL)) {
     return;
+  }
 
-  if (webState->ContentIsHTML()) {
-    [self findPasswordFormsAndSendThemToPasswordStore];
-  } else {
+  if (!webState->ContentIsHTML()) {
     // If the current page is not HTML, it does not contain any HTML forms.
     UniqueIDDataTabHelper* uniqueIDDataTabHelper =
         UniqueIDDataTabHelper::FromWebState(_webState);
@@ -205,27 +238,34 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     frameDidBecomeAvailable:(web::WebFrame*)web_frame {
   DCHECK_EQ(_webState, webState);
   DCHECK(web_frame);
-  if (!web_frame->CanCallJavaScriptFunction())
+  if (!web_frame->CanCallJavaScriptFunction()) {
     return;
+  }
   UniqueIDDataTabHelper* uniqueIDDataTabHelper =
       UniqueIDDataTabHelper::FromWebState(_webState);
   uint32_t nextAvailableRendererID =
       uniqueIDDataTabHelper->GetNextAvailableRendererID();
   [self.formHelper setUpForUniqueIDsWithInitialState:nextAvailableRendererID
                                              inFrame:web_frame];
+  // Form parsing is run via the main frame for all same origin iframes.
+  if (web_frame->IsMainFrame() && webState->ContentIsHTML()) {
+    [self findPasswordFormsAndSendThemToPasswordStore];
+  }
 }
 
 // Track detaching iframes.
 - (void)webState:(web::WebState*)webState
     frameWillBecomeUnavailable:(web::WebFrame*)web_frame {
   // No need to try to detect submissions when the webState is being destroyed.
-  if (webState->IsBeingDestroyed())
+  if (webState->IsBeingDestroyed()) {
     return;
-  if (web_frame->IsMainFrame() || !web_frame->CanCallJavaScriptFunction())
+  }
+  if (web_frame->IsMainFrame() || !web_frame->CanCallJavaScriptFunction()) {
     return;
+  }
   _passwordManager->OnIframeDetach(web_frame->GetFrameId(),
                                    _delegate.passwordManagerDriver,
-                                   self.formHelper.fieldDataManager.get());
+                                   *self.formHelper.fieldDataManager);
 }
 
 - (void)webStateDestroyed:(web::WebState*)webState {
@@ -240,6 +280,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   _isPasswordGenerated = NO;
   _lastTypedfieldIdentifier = FieldRendererId();
   _lastTypedValue = nil;
+  _lastFocusedFormIdentifier = FormRendererId();
+  _lastFocusedFieldIdentifier = FieldRendererId();
+  _passwordManager = nullptr;
 }
 
 #pragma mark - FormSuggestionProvider
@@ -251,8 +294,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
                                   webState:(web::WebState*)webState
                          completionHandler:
                              (SuggestionsAvailableCompletion)completion {
-  if (!GetPageURLAndCheckTrustLevel(webState, nullptr))
+  if (!GetPageURLAndCheckTrustLevel(webState, nullptr)) {
     return;
+  }
   [self.suggestionHelper
       checkIfSuggestionsAvailableForForm:formQuery
                              isMainFrame:isMainFrame
@@ -263,7 +307,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
                                     suggestionsAvailable);
                        }];
 
-  if ([formQuery.type isEqual:@"input"] && self.isPasswordGenerated &&
+  if (self.isPasswordGenerated &&
+      ([formQuery.type isEqual:@"input"] ||
+       [formQuery.type isEqual:@"keyup"]) &&
       formQuery.uniqueFieldID == self.passwordGeneratedIdentifier) {
     // On other platforms, when the user clicks on generation field, we show
     // password in clear text. And the user has the possibility to edit it. On
@@ -272,6 +318,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     // flow and avoid the manual flow, for a cleaner and simpler UI.
     if (formQuery.typedValue.length < kMinimumLengthForEditedPassword) {
       self.isPasswordGenerated = NO;
+      LogPasswordGenerationEvent(
+          autofill::password_generation::PASSWORD_DELETED);
       self.passwordGeneratedIdentifier = FieldRendererId();
       _passwordManager->OnPasswordNoLongerGenerated(
           _delegate.passwordManagerDriver);
@@ -290,22 +338,24 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     _lastTypedfieldIdentifier = formQuery.uniqueFieldID;
     _lastTypedValue = formQuery.typedValue;
 
-    if ([formQuery.type isEqual:@"input"]) {
+    if ([formQuery.type isEqual:@"input"] ||
+        [formQuery.type isEqual:@"keyup"]) {
       [self.formHelper updateFieldDataOnUserInput:formQuery.uniqueFieldID
                                        inputValue:formQuery.typedValue];
-    }
 
-    _passwordManager->UpdateStateOnUserInput(
-        _delegate.passwordManagerDriver, formQuery.uniqueFormID,
-        formQuery.uniqueFieldID, SysNSStringToUTF16(formQuery.typedValue));
+      _passwordManager->UpdateStateOnUserInput(
+          _delegate.passwordManagerDriver, formQuery.uniqueFormID,
+          formQuery.uniqueFieldID, SysNSStringToUTF16(formQuery.typedValue));
+    }
   }
 }
 
 - (void)retrieveSuggestionsForForm:(FormSuggestionProviderQuery*)formQuery
                           webState:(web::WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion {
-  if (!GetPageURLAndCheckTrustLevel(webState, nullptr))
+  if (!GetPageURLAndCheckTrustLevel(webState, nullptr)) {
     return;
+  }
   NSArray<FormSuggestion*>* rawSuggestions = [self.suggestionHelper
       retrieveSuggestionsWithFormID:formQuery.uniqueFormID
                     fieldIdentifier:formQuery.uniqueFieldID
@@ -338,9 +388,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
                              requiresReauth:requiresReauth];
     [suggestions addObject:suggestion];
   }
-  base::Optional<PasswordDropdownState> suggestion_state;
+  absl::optional<PasswordDropdownState> suggestionState;
   if (suggestions.count) {
-    suggestion_state = PasswordDropdownState::kStandard;
+    suggestionState = PasswordDropdownState::kStandard;
   }
 
   if ([self canGeneratePasswordForForm:formQuery.uniqueFormID
@@ -356,11 +406,11 @@ NSString* const kSuggestionSuffix = @" ••••••••";
              requiresReauth:NO];
 
     [suggestions addObject:suggestion];
-    suggestion_state = PasswordDropdownState::kStandardGenerate;
+    suggestionState = PasswordDropdownState::kStandardGenerate;
   }
 
-  if (suggestion_state) {
-    LogPasswordDropdownShown(*suggestion_state, [self isIncognito]);
+  if (suggestionState) {
+    LogPasswordDropdownShown(*suggestionState, [self isIncognito]);
   }
 
   completion([suggestions copy], self);
@@ -386,7 +436,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       // Don't call completion because current suggestion state should remain
       // whether user injects a generated password or cancels.
       [self generatePasswordForFormId:uniqueFormID
-                      fieldIdentifier:uniqueFieldID];
+                      fieldIdentifier:uniqueFieldID
+                  isManuallyTriggered:NO];
       password_manager::metrics_util::LogPasswordDropdownItemSelected(
           password_manager::metrics_util::PasswordDropdownSelectedOption::
               kGenerate,
@@ -410,6 +461,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       }
 
       [self.formHelper fillPasswordFormWithFillData:*fillData
+                                   triggeredOnField:uniqueFieldID
                                   completionHandler:^(BOOL success) {
                                     completion();
                                   }];
@@ -418,6 +470,10 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   }
 
   [_delegate sharedPasswordController:self didAcceptSuggestion:suggestion];
+}
+
+- (SuggestionProviderType)type {
+  return SuggestionProviderTypePassword;
 }
 
 #pragma mark - PasswordManagerDriverDelegate
@@ -460,8 +516,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   } else {
     // Show a save prompt immediately because for iframes it is very hard to
     // figure out correctness of password forms submission.
-    _passwordManager->OnPasswordFormSubmittedNoChecksForiOS(
-        _delegate.passwordManagerDriver, form);
+    _passwordManager->OnSubframeFormSubmission(_delegate.passwordManagerDriver,
+                                               form);
   }
 }
 
@@ -477,8 +533,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 - (void)didFinishPasswordFormExtraction:(const std::vector<FormData>&)forms
                         withMaxUniqueID:(uint32_t)maxID {
   // Do nothing if |self| has been detached.
-  if (!_passwordManager)
+  if (!_passwordManager) {
     return;
+  }
 
   if (!forms.empty()) {
     [self.suggestionHelper updateStateOnPasswordFormExtracted];
@@ -519,19 +576,22 @@ NSString* const kSuggestionSuffix = @" ••••••••";
                    fieldIdentifier:(FieldRendererId)fieldIdentifier
                          fieldType:(NSString*)fieldType {
   if ([self isIncognito] || !self.passwordGenerationHelper->IsGenerationEnabled(
-                                /*log_debug_data*/ true))
+                                /*log_debug_data*/ true)) {
     return NO;
+  }
   if (![fieldType isEqual:kPasswordFieldType])
     return NO;
-  const PasswordFormGenerationData* generation_data =
+  const PasswordFormGenerationData* generationData =
       [self formForGenerationFromFormID:formIdentifier];
-  if (!generation_data)
+  if (!generationData) {
     return NO;
+  }
 
   FieldRendererId newPasswordIdentifier =
-      generation_data->new_password_renderer_id;
-  if (fieldIdentifier == newPasswordIdentifier)
+      generationData->new_password_renderer_id;
+  if (fieldIdentifier == newPasswordIdentifier) {
     return YES;
+  }
 
   // Don't show password generation if the field is 'confirm password'.
   return NO;
@@ -546,12 +606,27 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 }
 
 - (void)generatePasswordForFormId:(FormRendererId)formIdentifier
-                  fieldIdentifier:(FieldRendererId)fieldIdentifier {
-  if (![self formForGenerationFromFormID:formIdentifier])
+                  fieldIdentifier:(FieldRendererId)fieldIdentifier
+              isManuallyTriggered:(BOOL)isManuallyTriggered {
+  const autofill::PasswordFormGenerationData* generationData =
+      [self formForGenerationFromFormID:formIdentifier];
+  if (!isManuallyTriggered && !generationData) {
     return;
+  }
+
+  BOOL shouldUpdateGenerationData =
+      !generationData ||
+      generationData->new_password_renderer_id != fieldIdentifier;
+  if (isManuallyTriggered && shouldUpdateGenerationData) {
+    PasswordFormGenerationData generationData = {
+        .form_renderer_id = formIdentifier,
+        .new_password_renderer_id = fieldIdentifier,
+    };
+    [self formEligibleForGenerationFound:generationData];
+  }
 
   // TODO(crbug.com/886583): pass correct |max_length|.
-  base::string16 generatedPassword =
+  std::u16string generatedPassword =
       self.passwordGenerationHelper->GeneratePassword(
           [self lastCommittedURL], autofill::FormSignature(0),
           autofill::FieldSignature(0), /*max_length=*/0);
@@ -567,6 +642,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
        showGeneratedPotentialPassword:self.generatedPotentialPassword
                       decisionHandler:^(BOOL accept) {
                         if (accept) {
+                          LogPasswordGenerationEvent(
+                              autofill::password_generation::PASSWORD_ACCEPTED);
                           [weakSelf
                               injectGeneratedPasswordForFormId:formIdentifier
                                              generatedPassword:
@@ -578,38 +655,36 @@ NSString* const kSuggestionSuffix = @" ••••••••";
                           completionHandler();
                         }
                       }];
+
+  _passwordManager->SetGenerationElementAndTypeForForm(
+      _delegate.passwordManagerDriver, formIdentifier, fieldIdentifier,
+      isManuallyTriggered ? PasswordGenerationType::kManual
+                          : PasswordGenerationType::kAutomatic);
 }
 
 - (void)injectGeneratedPasswordForFormId:(FormRendererId)formIdentifier
                        generatedPassword:(NSString*)generatedPassword
                        completionHandler:(void (^)())completionHandler {
-  const autofill::PasswordFormGenerationData* generation_data =
+  const autofill::PasswordFormGenerationData* generationData =
       [self formForGenerationFromFormID:formIdentifier];
-  if (!generation_data)
+  if (!generationData) {
     return;
+  }
   FieldRendererId newPasswordUniqueId =
-      generation_data->new_password_renderer_id;
+      generationData->new_password_renderer_id;
   FieldRendererId confirmPasswordUniqueId =
-      generation_data->confirmation_password_renderer_id;
+      generationData->confirmation_password_renderer_id;
 
+  __weak SharedPasswordController* weakSelf = self;
   auto generatedPasswordInjected = ^(BOOL success) {
-    auto passwordPresaved = ^(BOOL found, const autofill::FormData& form) {
-      if (found) {
-        _passwordManager->PresaveGeneratedPassword(
-            _delegate.passwordManagerDriver, form,
-            SysNSStringToUTF16(generatedPassword), newPasswordUniqueId);
-      }
-      // If the form isn't found, it disappeared between fillPasswordForm below
-      // and here. There isn't much that can be done.
-    };
     if (success) {
-      [self.formHelper extractPasswordFormData:formIdentifier
-                             completionHandler:passwordPresaved];
-      self.isPasswordGenerated = YES;
-      self.passwordGeneratedIdentifier = newPasswordUniqueId;
+      [weakSelf onFilledPasswordForm:formIdentifier
+               withGeneratedPassword:generatedPassword
+                    passwordUniqueId:newPasswordUniqueId];
     }
-    if (completionHandler)
+    if (completionHandler) {
       completionHandler();
+    }
   };
 
   [self.formHelper fillPasswordForm:formIdentifier
@@ -619,6 +694,39 @@ NSString* const kSuggestionSuffix = @" ••••••••";
                   completionHandler:generatedPasswordInjected];
 }
 
+- (void)onFilledPasswordForm:(FormRendererId)formIdentifier
+       withGeneratedPassword:(NSString*)generatedPassword
+            passwordUniqueId:(FieldRendererId)newPasswordUniqueId {
+  __weak SharedPasswordController* weakSelf = self;
+  auto passwordPresaved = ^(BOOL found, const autofill::FormData& form) {
+    // If the form isn't found, it disappeared between the call to
+    // [self.formHelper fillPasswordForm:newPasswordIdentifier:...]
+    // and here. There isn't much that can be done.
+    if (!found)
+      return;
+
+    [weakSelf presaveGeneratedPassword:generatedPassword
+                      passwordUniqueId:newPasswordUniqueId
+                              formData:form];
+  };
+
+  [self.formHelper extractPasswordFormData:formIdentifier
+                         completionHandler:passwordPresaved];
+  self.isPasswordGenerated = YES;
+  self.passwordGeneratedIdentifier = newPasswordUniqueId;
+}
+
+- (void)presaveGeneratedPassword:(NSString*)generatedPassword
+                passwordUniqueId:(FieldRendererId)newPasswordUniqueId
+                        formData:(const autofill::FormData&)formData {
+  if (!_passwordManager)
+    return;
+
+  _passwordManager->PresaveGeneratedPassword(
+      _delegate.passwordManagerDriver, formData,
+      SysNSStringToUTF16(generatedPassword), newPasswordUniqueId);
+}
+
 #pragma mark - FormActivityObserver
 
 - (void)webState:(web::WebState*)webState
@@ -626,27 +734,44 @@ NSString* const kSuggestionSuffix = @" ••••••••";
                     inFrame:(web::WebFrame*)frame {
   DCHECK_EQ(_webState, webState);
 
-  if (!GetPageURLAndCheckTrustLevel(webState, nullptr))
+  GURL pageURL;
+  if (!GetPageURLAndCheckTrustLevel(webState, &pageURL) || !frame ||
+      !frame->CanCallJavaScriptFunction() || params.input_missing) {
+    _lastFocusedFormIdentifier = FormRendererId();
+    _lastFocusedFieldIdentifier = FieldRendererId();
     return;
+  }
 
-  if (!frame || !frame->CanCallJavaScriptFunction())
-    return;
-
-  // Return early if |params| is not complete.
-  if (params.input_missing)
-    return;
+  if (params.type == "focus") {
+    _lastFocusedFormIdentifier = params.unique_form_id;
+    _lastFocusedFieldIdentifier = params.unique_field_id;
+  }
 
   // If there's a change in password forms on a page, they should be parsed
   // again.
-  if (params.type == "form_changed")
+  if (params.type == "form_changed") {
     [self findPasswordFormsAndSendThemToPasswordStore];
+  }
 
   // If the form was removed, PasswordManager should be informed to decide
   // whether the form was submitted.
   if (params.type == "password_form_removed") {
-    _passwordManager->OnPasswordFormRemoved(
-        _delegate.passwordManagerDriver, self.formHelper.fieldDataManager.get(),
-        params.unique_form_id);
+    _passwordManager->OnPasswordFormRemoved(_delegate.passwordManagerDriver,
+                                            *self.formHelper.fieldDataManager,
+                                            params.unique_form_id);
+  }
+
+  // If the form was cleared PasswordManager should be informed to decide
+  // whether it's a change password form that was submitted.
+  if (params.type == "password_form_cleared") {
+    FormData formData;
+    if (!JsonStringToFormData(SysUTF8ToNSString(params.value), &formData,
+                              pageURL)) {
+      return;
+    }
+
+    _passwordManager->OnPasswordFormCleared(_delegate.passwordManagerDriver,
+                                            formData);
   }
 }
 

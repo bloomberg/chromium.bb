@@ -19,6 +19,7 @@
 #include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_util.h"
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
+#include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
@@ -44,14 +45,14 @@ net::CookieList GetCookies(
 void SetCookie(
     const mojo::Remote<network::mojom::CookieManager>& cookie_manager) {
   base::Time t = base::Time::Now();
-  net::CanonicalCookie cookie(
+  auto cookie = net::CanonicalCookie::CreateUnsafeCookieForTesting(
       kCookieName, kCookieValue, "www.test.com", "/", t,
       t + base::TimeDelta::FromDays(1), base::Time(), true /* secure */,
       false /* http-only*/, net::CookieSameSite::NO_RESTRICTION,
       net::COOKIE_PRIORITY_DEFAULT, false /* same_party */);
   base::RunLoop run_loop;
   cookie_manager->SetCanonicalCookie(
-      cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"),
+      *cookie, net::cookie_util::SimulatedCookieSource(*cookie, "https"),
       net::CookieOptions(),
       base::BindLambdaForTesting(
           [&](net::CookieAccessResult result) { run_loop.Quit(); }));
@@ -89,7 +90,7 @@ class ChromeNetworkServiceBrowserTest
     context_params->cookie_path =
         browser()->profile()->GetPath().Append(FILE_PATH_LITERAL("cookies"));
     context_params->cert_verifier_params = content::GetCertVerifierParams(
-        network::mojom::CertVerifierCreationParams::New());
+        cert_verifier::mojom::CertVerifierCreationParams::New());
     GetNetworkService()->CreateNetworkContext(
         network_context.InitWithNewPipeAndPassReceiver(),
         std::move(context_params));

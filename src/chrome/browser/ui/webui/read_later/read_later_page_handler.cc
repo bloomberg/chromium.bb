@@ -17,11 +17,15 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/read_later/reading_list_model_factory.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/read_later/read_later_ui.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/reading_list/core/reading_list_entry.h"
-#include "components/reading_list/core/reading_list_model.h"
 #include "components/url_formatter/url_formatter.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/time_format.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -37,63 +41,73 @@ int64_t TimeToUS(const base::Time& time) {
   return (time - base::Time::UnixEpoch()).InMicroseconds();
 }
 
+bool IsActiveTabNTP(Browser* browser) {
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (web_contents) {
+    const GURL site_origin = web_contents->GetLastCommittedURL().GetOrigin();
+    // These are also the NTP urls checked for showing the bookmark bar on the
+    // NTP.
+    if (site_origin == GURL(chrome::kChromeUINewTabURL).GetOrigin() ||
+        site_origin == GURL(chrome::kChromeUINewTabPageURL).GetOrigin()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 ReadLaterPageHandler::ReadLaterPageHandler(
     mojo::PendingReceiver<read_later::mojom::PageHandler> receiver,
     mojo::PendingRemote<read_later::mojom::Page> page,
-    ReadLaterUI* read_later_ui)
+    ReadLaterUI* read_later_ui,
+    content::WebUI* web_ui)
     : receiver_(this, std::move(receiver)),
       page_(std::move(page)),
-      browser_(chrome::FindLastActive()),
       read_later_ui_(read_later_ui),
+      web_contents_(web_ui->GetWebContents()),
       clock_(base::DefaultClock::GetInstance()) {
-  DCHECK(browser_);
+  Profile* profile = Profile::FromWebUI(web_ui);
+  DCHECK(profile);
 
-  reading_list_model_ =
-      ReadingListModelFactory::GetForBrowserContext(browser_->profile());
+  reading_list_model_ = ReadingListModelFactory::GetForBrowserContext(profile);
+  reading_list_model_scoped_observation_.Observe(reading_list_model_);
 }
 
 ReadLaterPageHandler::~ReadLaterPageHandler() = default;
 
 void ReadLaterPageHandler::GetReadLaterEntries(
     GetReadLaterEntriesCallback callback) {
-  auto entries = read_later::mojom::ReadLaterEntriesByStatus::New();
-
-  for (const auto& url : reading_list_model_->Keys()) {
-    const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
-    DCHECK(entry);
-    if (entry->IsRead()) {
-      entries->read_entries.push_back(GetEntryData(entry));
-    } else {
-      entries->unread_entries.push_back(GetEntryData(entry));
-    }
-  }
-
-  std::sort(entries->read_entries.begin(), entries->read_entries.end(),
-            EntrySorter);
-  std::sort(entries->unread_entries.begin(), entries->unread_entries.end(),
-            EntrySorter);
-
-  std::move(callback).Run(std::move(entries));
+  std::move(callback).Run(CreateReadLaterEntriesByStatusData());
 }
 
-void ReadLaterPageHandler::OpenSavedEntry(const GURL& url) {
-  content::OpenURLParams params(url, content::Referrer(),
-                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
+void ReadLaterPageHandler::OpenURL(const GURL& url, bool mark_as_read) {
+  Browser* browser = chrome::FindLastActive();
+  if (!browser)
+    return;
+
+  // Open in active tab if the user is on the NTP.
+  WindowOpenDisposition open_location =
+      IsActiveTabNTP(browser) ||
+              base::FeatureList::IsEnabled(features::kSidePanel)
+          ? WindowOpenDisposition::CURRENT_TAB
+          : WindowOpenDisposition::NEW_FOREGROUND_TAB;
+
+  content::OpenURLParams params(url, content::Referrer(), open_location,
                                 ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
-  browser_->OpenURL(params);
-  reading_list_model_->SetReadStatus(url, true);
+  browser->OpenURL(params);
+
+  if (mark_as_read)
+    reading_list_model_->SetReadStatus(url, true);
 }
 
 void ReadLaterPageHandler::UpdateReadStatus(const GURL& url, bool read) {
   reading_list_model_->SetReadStatus(url, read);
-  page_->ItemsChanged();
 }
 
 void ReadLaterPageHandler::RemoveEntry(const GURL& url) {
   reading_list_model_->RemoveEntryByURL(url);
-  page_->ItemsChanged();
 }
 
 void ReadLaterPageHandler::ShowUI() {
@@ -106,6 +120,32 @@ void ReadLaterPageHandler::CloseUI() {
   auto embedder = read_later_ui_->embedder();
   if (embedder)
     embedder->CloseUI();
+}
+
+void ReadLaterPageHandler::ReadingListModelCompletedBatchUpdates(
+    const ReadingListModel* model) {
+  DCHECK(model == reading_list_model_);
+  if (web_contents_->GetVisibility() == content::Visibility::HIDDEN)
+    return;
+  page_->ItemsChanged(CreateReadLaterEntriesByStatusData());
+}
+
+void ReadLaterPageHandler::ReadingListModelBeingDeleted(
+    const ReadingListModel* model) {
+  DCHECK(model == reading_list_model_);
+  DCHECK(reading_list_model_scoped_observation_.IsObservingSource(
+      reading_list_model_));
+  reading_list_model_scoped_observation_.Reset();
+  reading_list_model_ = nullptr;
+}
+
+void ReadLaterPageHandler::ReadingListDidApplyChanges(ReadingListModel* model) {
+  DCHECK(model == reading_list_model_);
+  if (web_contents_->GetVisibility() == content::Visibility::HIDDEN ||
+      reading_list_model_->IsPerformingBatchUpdates()) {
+    return;
+  }
+  page_->ItemsChanged(CreateReadLaterEntriesByStatusData());
 }
 
 read_later::mojom::ReadLaterEntryPtr ReadLaterPageHandler::GetEntryData(
@@ -127,6 +167,28 @@ read_later::mojom::ReadLaterEntryPtr ReadLaterPageHandler::GetEntryData(
       GetTimeSinceLastUpdate(entry->UpdateTime());
 
   return entry_data;
+}
+
+read_later::mojom::ReadLaterEntriesByStatusPtr
+ReadLaterPageHandler::CreateReadLaterEntriesByStatusData() {
+  auto entries = read_later::mojom::ReadLaterEntriesByStatus::New();
+
+  for (const auto& url : reading_list_model_->Keys()) {
+    const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
+    DCHECK(entry);
+    if (entry->IsRead()) {
+      entries->read_entries.push_back(GetEntryData(entry));
+    } else {
+      entries->unread_entries.push_back(GetEntryData(entry));
+    }
+  }
+
+  std::sort(entries->read_entries.begin(), entries->read_entries.end(),
+            EntrySorter);
+  std::sort(entries->unread_entries.begin(), entries->unread_entries.end(),
+            EntrySorter);
+
+  return entries;
 }
 
 std::string ReadLaterPageHandler::GetTimeSinceLastUpdate(

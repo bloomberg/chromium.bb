@@ -18,9 +18,14 @@
 // UIImageRenderingModeAlwaysTemplate.
 @property(nonatomic, strong) UIImage* image;
 
-// Whether the image should be tinted as an icon or not (if it is already
-// colored). The tint color will match the text color.
-@property(nonatomic, assign) BOOL imageShouldBeTinted;
+// The image View's tint color.
+@property(nonatomic, strong) UIColor* imageViewTintColor;
+
+// If true, aligns the image with the first line of text.
+@property(nonatomic, assign) BOOL alignImageWithFirstLineOfText;
+
+// If true, sets imageView's content mode to UIViewContentModeLeft.
+@property(nonatomic, assign) BOOL leftAlignImage;
 
 // The title text to display.
 @property(nonatomic, copy) NSString* text;

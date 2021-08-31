@@ -9,8 +9,9 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/containers/contains.h"
 #include "base/i18n/char_iterator.h"
-#include "base/stl_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -27,6 +28,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "ui/accessibility/accessibility_features.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
@@ -121,15 +123,11 @@ void AXImageAnnotator::OnImageRemoved(blink::WebAXObject& image) {
 }
 
 // static
-bool AXImageAnnotator::ImageNameHasMostlyStopwords(
+int AXImageAnnotator::GetLengthAfterRemovingStopwords(
     const std::string& image_name) {
   // Split the image name into words by splitting on all whitespace and
   // punctuation. Reject any words that are classified as stopwords.
-  // If there are 3 or fewer unicode codepoints remaining, classify
-  // the string as "mostly stopwords".
-  //
-  // More details and analysis in this (Google-internal) design doc:
-  // http://goto.google.com/augment-existing-image-descriptions
+  // Return the number of remaining codepoints.
   const char* separators = "0123456789`~!@#$%^&*()[]{}\\|;:'\",.<>?/-_=+ ";
   std::vector<std::string> words = base::SplitString(
       image_name, separators, base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
@@ -142,6 +140,20 @@ bool AXImageAnnotator::ImageNameHasMostlyStopwords(
       remaining_codepoints++;
   }
 
+  return remaining_codepoints;
+}
+
+// static
+bool AXImageAnnotator::ImageNameHasMostlyStopwords(
+    const std::string& image_name) {
+  // Compute how many characters remain after removing stopwords.
+  int remaining_codepoints = GetLengthAfterRemovingStopwords(image_name);
+
+  // If there are 3 or fewer unicode codepoints remaining, classify
+  // the string as "mostly stopwords".
+  //
+  // More details and analysis in this (Google-internal) design doc:
+  // http://goto.google.com/augment-existing-image-descriptions
   return (remaining_codepoints <= 3);
 }
 
@@ -209,8 +221,7 @@ void AXImageAnnotator::MarkDirty(const blink::WebAXObject& image) const {
        parent = parent.ParentObject()) {
     if (!parent.AccessibilityIsIgnored()) {
       ++ancestor_count;
-      if (parent.Role() == ax::mojom::Role::kLink ||
-          parent.Role() == ax::mojom::Role::kRootWebArea) {
+      if (ui::IsLink(parent.Role()) || ui::IsPlatformDocument(parent.Role())) {
         render_accessibility_->MarkWebAXObjectDirty(parent,
                                                     false /* subtree */);
         return;
@@ -223,7 +234,7 @@ AXImageAnnotator::ImageInfo::ImageInfo(const blink::WebAXObject& image)
     : image_processor_(
           base::BindRepeating(&AXImageAnnotator::GetImageData, image)),
       status_(ax::mojom::ImageAnnotationStatus::kAnnotationPending),
-      annotation_(base::nullopt) {}
+      annotation_(absl::nullopt) {}
 
 AXImageAnnotator::ImageInfo::~ImageInfo() = default;
 
@@ -284,6 +295,62 @@ void AXImageAnnotator::OnImageAnnotated(
         .set_status(ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation);
     // We should not mark dirty a detached object.
     return;
+  }
+
+  if (features::IsAugmentExistingImageLabelsEnabled()) {
+    // Get the image size as minimum and maximum dimension.
+    blink::WebAXObject offset_container;
+    gfx::RectF bounds;
+    SkMatrix44 container_transform;
+    bool clips_children = false;
+    image.GetRelativeBounds(offset_container, bounds, container_transform,
+                            &clips_children);
+    int min_dimension =
+        static_cast<int>(std::min(bounds.width(), bounds.height()));
+    int max_dimension =
+        static_cast<int>(std::max(bounds.width(), bounds.height()));
+
+    // Collect some histograms on the number of characters in the
+    // image name, and also the image name after removing stopwords,
+    // and also the minimum and maximum dimension,
+    // as a function of whether the retrieved image label was
+    // a success, an error, or empty.
+    ax::mojom::NameFrom name_from;
+    blink::WebVector<blink::WebAXObject> name_objects;
+    blink::WebString web_name = image.GetName(name_from, name_objects);
+    int non_stop_length = GetLengthAfterRemovingStopwords(web_name.Utf8());
+
+    if (result->is_error_code()) {
+      base::UmaHistogramCounts100("Accessibility.ImageLabels.ErrorByNameLength",
+                                  web_name.length());
+      base::UmaHistogramCounts100(
+          "Accessibility.ImageLabels.ErrorByNonStopNameLength",
+          non_stop_length);
+      base::UmaHistogramCounts1000(
+          "Accessibility.ImageLabels.ErrorByMaxDimension", max_dimension);
+      base::UmaHistogramCounts1000(
+          "Accessibility.ImageLabels.ErrorByMinDimension", min_dimension);
+    } else if (!result->is_annotations()) {
+      base::UmaHistogramCounts100("Accessibility.ImageLabels.EmptyByNameLength",
+                                  web_name.length());
+      base::UmaHistogramCounts100(
+          "Accessibility.ImageLabels.EmptyByNonStopNameLength",
+          non_stop_length);
+      base::UmaHistogramCounts1000(
+          "Accessibility.ImageLabels.EmptyByMaxDimension", max_dimension);
+      base::UmaHistogramCounts1000(
+          "Accessibility.ImageLabels.EmptyByMinDimension", min_dimension);
+    } else {
+      base::UmaHistogramCounts100(
+          "Accessibility.ImageLabels.SuccessByNameLength", web_name.length());
+      base::UmaHistogramCounts100(
+          "Accessibility.ImageLabels.SuccessByNonStopNameLength",
+          non_stop_length);
+      base::UmaHistogramCounts1000(
+          "Accessibility.ImageLabels.SuccessByMaxDimension", max_dimension);
+      base::UmaHistogramCounts1000(
+          "Accessibility.ImageLabels.SuccessByMinDimension", min_dimension);
+    }
   }
 
   if (result->is_error_code()) {

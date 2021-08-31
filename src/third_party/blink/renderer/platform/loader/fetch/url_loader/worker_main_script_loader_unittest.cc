@@ -49,20 +49,6 @@ class WorkerMainScriptLoaderTest : public testing::Test {
   }
 
  protected:
-  class TestPlatform final : public TestingPlatformSupport {
-   public:
-    void PopulateURLResponse(const WebURL& url,
-                             const network::mojom::URLResponseHead& head,
-                             WebURLResponse* response,
-                             bool report_security_info,
-                             int request_id) override {
-      response->SetCurrentRequestUrl(url);
-      response->SetHttpStatusCode(head.headers.get()->response_code());
-      response->SetMimeType(WebString::FromUTF8(head.mime_type));
-      response->SetTextEncodingName(WebString::FromUTF8(head.charset));
-    }
-  };
-
   class TestClient final : public GarbageCollected<TestClient>,
                            public WorkerMainScriptLoaderClient {
 
@@ -107,7 +93,7 @@ class WorkerMainScriptLoaderTest : public testing::Test {
     void FollowRedirect(const std::vector<std::string>&,
                         const net::HttpRequestHeaders&,
                         const net::HttpRequestHeaders&,
-                        const base::Optional<GURL>&) override {}
+                        const absl::optional<GURL>&) override {}
     void SetPriority(net::RequestPriority priority,
                      int32_t intra_priority_value) override {}
     void PauseReadingBodyFromNet() override {}
@@ -161,11 +147,11 @@ class WorkerMainScriptLoaderTest : public testing::Test {
    public:
     MOCK_METHOD2(DidStartRequest, void(const FetchParameters&, ResourceType));
     MOCK_METHOD5(WillSendRequest,
-                 void(uint64_t identifier,
-                      const ResourceRequest&,
+                 void(const ResourceRequest&,
                       const ResourceResponse& redirect_response,
                       ResourceType,
-                      const FetchInitiatorInfo&));
+                      const ResourceLoaderOptions&,
+                      RenderBlockingBehavior));
     MOCK_METHOD3(DidChangePriority,
                  void(uint64_t identifier,
                       ResourceLoadPriority,
@@ -227,7 +213,7 @@ class WorkerMainScriptLoaderTest : public testing::Test {
     mojo::ScopedDataPipeConsumerHandle body_consumer;
     MojoCreateDataPipeOptions options = CreateDataPipeOptions();
     EXPECT_EQ(MOJO_RESULT_OK,
-              mojo::CreateDataPipe(&options, body_producer, &body_consumer));
+              mojo::CreateDataPipe(&options, *body_producer, body_consumer));
     worker_main_script_load_params->response_body = std::move(body_consumer);
 
     return worker_main_script_load_params;
@@ -261,7 +247,6 @@ class WorkerMainScriptLoaderTest : public testing::Test {
 
  protected:
   base::test::TaskEnvironment task_environment_;
-  ScopedTestingPlatformSupport<TestPlatform> platform_;
 
   mojo::PendingRemote<network::mojom::URLLoader> pending_remote_loader_;
   mojo::Remote<network::mojom::URLLoaderClient> loader_client_;

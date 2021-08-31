@@ -4,9 +4,13 @@
 
 #import "ios/chrome/browser/ui/image_util/image_saver.h"
 
+#import <Photos/Photos.h>
+
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
+#include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -16,7 +20,7 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
-#import "ios/chrome/browser/web/image_fetch_tab_helper.h"
+#import "ios/chrome/browser/web/image_fetch/image_fetch_tab_helper.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "net/base/mime_util.h"
@@ -25,6 +29,15 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+// Kill switch guarding a workaround for TCC violations before iOS14.  In case
+// iOS14 starts triggering violations too.  See crbug.com/1159431 for details.
+const base::Feature kPhotoLibrarySaveImage{"PhotoLibrarySaveImage",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+}  // namespace
 
 @interface ImageSaver ()
 // Base view controller for the alerts.
@@ -69,6 +82,8 @@
       return;
     }
 
+    // Use -imageWithData to validate |data|, but continue to pass the raw
+    // |data| to -savePhoto to ensure no data loss occurs.
     UIImage* savedImage = [UIImage imageWithData:data];
     if (!savedImage) {
       [strongSelf
@@ -77,9 +92,30 @@
       return;
     }
 
-    UIImageWriteToSavedPhotosAlbum(
-        savedImage, weakSelf,
-        @selector(image:didFinishSavingWithError:contextInfo:), nullptr);
+    if (base::FeatureList::IsEnabled(kPhotoLibrarySaveImage) &&
+        base::ios::IsRunningOnIOS14OrLater()) {
+      // Dump |data| into the photo library. Requires the usage of
+      // NSPhotoLibraryAddUsageDescription.
+      [[PHPhotoLibrary sharedPhotoLibrary]
+          performChanges:^{
+            PHAssetResourceCreationOptions* options =
+                [[PHAssetResourceCreationOptions alloc] init];
+            [[PHAssetCreationRequest creationRequestForAsset]
+                addResourceWithType:PHAssetResourceTypePhoto
+                               data:data
+                            options:options];
+          }
+          completionHandler:^(BOOL success, NSError* error) {
+            [weakSelf image:savedImage
+                didFinishSavingWithError:error
+                             contextInfo:nil];
+          }];
+    } else {
+      // Fallback for pre-iOS14.
+      UIImageWriteToSavedPhotosAlbum(
+          savedImage, weakSelf,
+          @selector(image:didFinishSavingWithError:contextInfo:), nullptr);
+    }
   });
 }
 
@@ -137,25 +173,31 @@
 
 // Called when Chrome has been denied access to the photos or videos and the
 // user cannot change it.
+- (void)displayPrivacyErrorAlertOnMainQueue:(NSString*)errorContent {
+  __weak ImageSaver* weakSelf = self;
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [weakSelf asyncDisplayPrivacyErrorAlertOnMainQueue:errorContent];
+  });
+}
+
+// Async helper implementation of displayPrivacyErrorAlertOnMainQueue.
 // Shows a privacy alert on the main queue, with errorContent as the message.
 // Dismisses previous alert if it has not been dismissed yet.
-- (void)displayPrivacyErrorAlertOnMainQueue:(NSString*)errorContent {
-  dispatch_async(dispatch_get_main_queue(), ^{
-    NSString* title =
-        l10n_util::GetNSString(IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_TITLE);
-    // Dismiss current alert.
-    [self.alertCoordinator stop];
+- (void)asyncDisplayPrivacyErrorAlertOnMainQueue:(NSString*)errorContent {
+  NSString* title =
+      l10n_util::GetNSString(IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_TITLE);
+  // Dismiss current alert.
+  [self.alertCoordinator stop];
 
-    self.alertCoordinator = [[AlertCoordinator alloc]
-        initWithBaseViewController:self.baseViewController
-                           browser:_browser
-                             title:title
-                           message:errorContent];
-    [self.alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_OK)
-                                     action:nil
-                                      style:UIAlertActionStyleDefault];
-    [self.alertCoordinator start];
-  });
+  self.alertCoordinator = [[AlertCoordinator alloc]
+      initWithBaseViewController:self.baseViewController
+                         browser:_browser
+                           title:title
+                         message:errorContent];
+  [self.alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_OK)
+                                   action:nil
+                                    style:UIAlertActionStyleDefault];
+  [self.alertCoordinator start];
 }
 
 // Called after the system attempts to write the image to the saved photos

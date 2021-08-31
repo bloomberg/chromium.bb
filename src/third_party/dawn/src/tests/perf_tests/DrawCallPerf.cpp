@@ -17,7 +17,6 @@
 #include "common/Assert.h"
 #include "common/Constants.h"
 #include "common/Math.h"
-#include "tests/ParamGenerator.h"
 #include "utils/ComboRenderPipelineDescriptor.h"
 #include "utils/WGPUHelpers.h"
 
@@ -33,34 +32,34 @@ namespace {
     };
 
     constexpr char kVertexShader[] = R"(
-                #version 450
-                layout(location = 0) in vec4 pos;
-                void main() {
-                    gl_Position = pos;
-                })";
+        [[stage(vertex)]] fn main(
+            [[location(0)]] pos : vec4<f32>
+        ) -> [[builtin(position)]] vec4<f32> {
+            return pos;
+        })";
 
     constexpr char kFragmentShaderA[] = R"(
-                #version 450
-                layout (std140, set = 0, binding = 0) uniform Uniforms {
-                    vec3 color;
-                };
-                layout(location = 0) out vec4 fragColor;
-                void main() {
-                    fragColor = vec4(color / 5000., 1.0);
-                })";
+        [[block]] struct Uniforms {
+            color : vec3<f32>;
+        };
+        [[group(0), binding(0)]] var<uniform> uniforms : Uniforms;
+        [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            return vec4<f32>(uniforms.color * (1.0 / 5000.0), 1.0);
+        })";
 
     constexpr char kFragmentShaderB[] = R"(
-                #version 450
-                layout (std140, set = 0, binding = 0) uniform Constants {
-                    vec3 colorA;
-                };
-                layout (std140, set = 1, binding = 0) uniform Uniforms {
-                    vec3 colorB;
-                };
-                layout(location = 0) out vec4 fragColor;
-                void main() {
-                    fragColor = vec4((colorA + colorB) / 5000., 1.0);
-                })";
+        [[block]] struct Constants {
+            color : vec3<f32>;
+        };
+        [[block]] struct Uniforms {
+            color : vec3<f32>;
+        };
+        [[group(0), binding(0)]] var<uniform> constants : Constants;
+        [[group(1), binding(0)]] var<uniform> uniforms : Uniforms;
+
+        [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            return vec4<f32>((constants.color + uniforms.color) * (1.0 / 5000.0), 1.0);
+        })";
 
     enum class Pipeline {
         Static,     // Keep the same pipeline for all draws.
@@ -284,7 +283,7 @@ void DrawCallPerf::SetUp() {
         descriptor.dimension = wgpu::TextureDimension::e2D;
         descriptor.size.width = kTextureSize;
         descriptor.size.height = kTextureSize;
-        descriptor.size.depth = 1;
+        descriptor.size.depthOrArrayLayers = 1;
         descriptor.usage = wgpu::TextureUsage::RenderAttachment;
 
         descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
@@ -330,7 +329,7 @@ void DrawCallPerf::SetUp() {
             mUniformBindGroupLayout = utils::MakeBindGroupLayout(
                 device,
                 {
-                    {0, wgpu::ShaderStage::Fragment, wgpu::BindingType::UniformBuffer, false},
+                    {0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::Uniform, false},
                 });
             break;
 
@@ -338,7 +337,7 @@ void DrawCallPerf::SetUp() {
             mUniformBindGroupLayout = utils::MakeBindGroupLayout(
                 device,
                 {
-                    {0, wgpu::ShaderStage::Fragment, wgpu::BindingType::UniformBuffer, true},
+                    {0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::Uniform, true},
                 });
             break;
 
@@ -348,14 +347,13 @@ void DrawCallPerf::SetUp() {
     }
 
     // Setup the base render pipeline descriptor.
-    utils::ComboRenderPipelineDescriptor renderPipelineDesc(device);
-    renderPipelineDesc.cVertexState.vertexBufferCount = 1;
-    renderPipelineDesc.cVertexState.cVertexBuffers[0].arrayStride = 4 * sizeof(float);
-    renderPipelineDesc.cVertexState.cVertexBuffers[0].attributeCount = 1;
-    renderPipelineDesc.cVertexState.cAttributes[0].format = wgpu::VertexFormat::Float4;
-    renderPipelineDesc.depthStencilState = &renderPipelineDesc.cDepthStencilState;
-    renderPipelineDesc.cDepthStencilState.format = wgpu::TextureFormat::Depth24PlusStencil8;
-    renderPipelineDesc.cColorStates[0].format = wgpu::TextureFormat::RGBA8Unorm;
+    utils::ComboRenderPipelineDescriptor2 renderPipelineDesc;
+    renderPipelineDesc.vertex.bufferCount = 1;
+    renderPipelineDesc.cBuffers[0].arrayStride = 4 * sizeof(float);
+    renderPipelineDesc.cBuffers[0].attributeCount = 1;
+    renderPipelineDesc.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
+    renderPipelineDesc.EnableDepthStencil(wgpu::TextureFormat::Depth24PlusStencil8);
+    renderPipelineDesc.cTargets[0].format = wgpu::TextureFormat::RGBA8Unorm;
 
     // Create the pipeline layout for the first pipeline.
     wgpu::PipelineLayoutDescriptor pipelineLayoutDesc = {};
@@ -364,16 +362,14 @@ void DrawCallPerf::SetUp() {
     wgpu::PipelineLayout pipelineLayout = device.CreatePipelineLayout(&pipelineLayoutDesc);
 
     // Create the shaders for the first pipeline.
-    wgpu::ShaderModule vsModule =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, kVertexShader);
-    wgpu::ShaderModule fsModule =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, kFragmentShaderA);
+    wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, kVertexShader);
+    wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, kFragmentShaderA);
 
     // Create the first pipeline.
     renderPipelineDesc.layout = pipelineLayout;
-    renderPipelineDesc.vertexStage.module = vsModule;
-    renderPipelineDesc.cFragmentStage.module = fsModule;
-    mPipelines[0] = device.CreateRenderPipeline(&renderPipelineDesc);
+    renderPipelineDesc.vertex.module = vsModule;
+    renderPipelineDesc.cFragment.module = fsModule;
+    mPipelines[0] = device.CreateRenderPipeline2(&renderPipelineDesc);
 
     // If the test is using a dynamic pipeline, create the second pipeline.
     if (GetParam().pipelineType == Pipeline::Dynamic) {
@@ -381,7 +377,7 @@ void DrawCallPerf::SetUp() {
         // all draws.
         mConstantBindGroupLayout = utils::MakeBindGroupLayout(
             device, {
-                        {0, wgpu::ShaderStage::Fragment, wgpu::BindingType::UniformBuffer, false},
+                        {0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::Uniform, false},
                     });
 
         // Create the pipeline layout.
@@ -395,13 +391,12 @@ void DrawCallPerf::SetUp() {
 
         // Create the fragment shader module. This shader matches the pipeline layout described
         // above.
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, kFragmentShaderB);
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, kFragmentShaderB);
 
         // Create the pipeline.
         renderPipelineDesc.layout = pipelineLayout;
-        renderPipelineDesc.cFragmentStage.module = fsModule;
-        mPipelines[1] = device.CreateRenderPipeline(&renderPipelineDesc);
+        renderPipelineDesc.cFragment.module = fsModule;
+        mPipelines[1] = device.CreateRenderPipeline2(&renderPipelineDesc);
 
         // Create the buffer and bind group to bind to the constant bind group layout slot.
         constexpr float kConstantData[] = {0.01, 0.02, 0.03};
@@ -459,8 +454,8 @@ void DrawCallPerf::SetUp() {
     if (GetParam().withRenderBundle == RenderBundle::Yes) {
         wgpu::RenderBundleEncoderDescriptor descriptor = {};
         descriptor.colorFormatsCount = 1;
-        descriptor.colorFormats = &renderPipelineDesc.cColorStates[0].format;
-        descriptor.depthStencilFormat = renderPipelineDesc.cDepthStencilState.format;
+        descriptor.colorFormats = &renderPipelineDesc.cTargets[0].format;
+        descriptor.depthStencilFormat = wgpu::TextureFormat::Depth24PlusStencil8;
 
         wgpu::RenderBundleEncoder encoder = device.CreateRenderBundleEncoder(&descriptor);
         RecordRenderCommands(encoder);
@@ -611,7 +606,7 @@ TEST_P(DrawCallPerf, Run) {
     RunTest();
 }
 
-DAWN_INSTANTIATE_PERF_TEST_SUITE_P(
+DAWN_INSTANTIATE_TEST_P(
     DrawCallPerf,
     {D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend(),
      VulkanBackend({"skip_validation"})},

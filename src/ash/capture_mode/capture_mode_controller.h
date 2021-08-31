@@ -19,11 +19,13 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/threading/sequence_bound.h"
 #include "base/timer/timer.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
 
@@ -32,10 +34,6 @@ class FilePath;
 class Time;
 class SequencedTaskRunner;
 }  // namespace base
-
-namespace cc {
-class LayerTreeFrameSink;
-}  // namespace cc
 
 namespace ash {
 
@@ -63,18 +61,23 @@ class ASH_EXPORT CaptureModeController
     return capture_mode_session_.get();
   }
   gfx::Rect user_capture_region() const { return user_capture_region_; }
-  void set_user_capture_region(const gfx::Rect& region) {
-    user_capture_region_ = region;
-  }
+  bool enable_audio_recording() const { return enable_audio_recording_; }
   bool is_recording_in_progress() const { return is_recording_in_progress_; }
 
-  // Returns true if a capture mode session is currently active.
-  bool IsActive() const { return !!capture_mode_session_; }
+  // Returns true if a capture mode session is currently active. If you only
+  // need to call this method, but don't need the rest of the controller, use
+  // capture_mode_util::IsCaptureModeActive().
+  bool IsActive() const;
 
   // Sets the capture source/type, which will be applied to an ongoing capture
   // session (if any), or to a future capture session when Start() is called.
   void SetSource(CaptureModeSource source);
   void SetType(CaptureModeType type);
+
+  // Sets the audio recording flag, which will be applied to any future
+  // recordings (cannot be set mid recording), or to a future capture mode
+  // session when Start() is called.
+  void EnableAudioRecording(bool enable_audio_recording);
 
   // Starts a new capture session with the most-recently used |type_| and
   // |source_|. Also records what |entry_type| that started capture mode.
@@ -82,6 +85,10 @@ class ASH_EXPORT CaptureModeController
 
   // Stops an existing capture session.
   void Stop();
+
+  // Sets the user capture region. If it's non-empty and changed by the user,
+  // update |last_capture_region_update_time_|.
+  void SetUserCaptureRegion(const gfx::Rect& region, bool by_user);
 
   // Full screen capture for each available display if no restricted
   // content exists on that display, each capture is saved as an individual
@@ -94,9 +101,6 @@ class ASH_EXPORT CaptureModeController
   void PerformCapture();
 
   void EndVideoRecording(EndRecordingReason reason);
-
-  // Called when the feedback button on the capture bar is pressed.
-  void OpenFeedbackDialog();
 
   // Sets the |protection_mask| that is currently set on the given |window|. If
   // the |protection_mask| is |display::CONTENT_PROTECTION_METHOD_NONE|, then
@@ -114,7 +118,7 @@ class ASH_EXPORT CaptureModeController
 
   // recording::mojom::RecordingServiceClient:
   void OnMuxerOutput(const std::string& chunk) override;
-  void OnRecordingEnded(bool success) override;
+  void OnRecordingEnded(bool success, const gfx::ImageSkia& thumbnail) override;
 
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
@@ -128,8 +132,36 @@ class ASH_EXPORT CaptureModeController
   // video recording right away for testing purposes.
   void StartVideoRecordingImmediatelyForTesting();
 
+  CaptureModeDelegate* delegate_for_testing() const { return delegate_.get(); }
+  VideoRecordingWatcher* video_recording_watcher_for_testing() const {
+    return video_recording_watcher_.get();
+  }
+
  private:
   friend class CaptureModeTestApi;
+  friend class VideoRecordingWatcher;
+
+  // Called by |video_recording_watcher_| when the display on which recording is
+  // happening changes its bounds such as on display rotation or device scale
+  // factor changes. In this case we push the new |root_size| in DIPs to the
+  // recording service so that it can update the video size. Note that we do
+  // this only when recording a window or a partial region. When recording a
+  // fullscreen, the capturer can handle these changes and would center and
+  // letter-box the video frames within the requested size.
+  void PushNewRootSizeToRecordingService(const gfx::Size& root_size);
+
+  // Called by |video_recording_watcher_| to inform us that the |window| being
+  // recorded (i.e. |is_recording_in_progress_| is true) is about to move to a
+  // |new_root|. This is needed so we can inform the recording service of this
+  // change so that it can switch its capture target to the new root's frame
+  // sink.
+  void OnRecordedWindowChangingRoot(aura::Window* window,
+                                    aura::Window* new_root);
+
+  // Called by |video_recording_watcher_| to inform us that the size of the
+  // |window| being recorded was changed to |new_size| in DIPs. This is pushed
+  // to the recording service in order to update the video dimensions.
+  void OnRecordedWindowSizeChanged(const gfx::Size& new_size);
 
   // Returns true if screen recording needs to be blocked due to protected
   // content. |window| is the window being recorded or desired to be recorded.
@@ -143,7 +175,7 @@ class ASH_EXPORT CaptureModeController
   // be performed (i.e. the window to be captured, and the capture bounds). If
   // nothing is to be captured (e.g. when there's no window selected in a
   // kWindow source, or no region is selected in a kRegion source), then a
-  // base::nullopt is returned.
+  // absl::nullopt is returned.
   struct CaptureParams {
     aura::Window* window = nullptr;
     // The capture bounds, either in root coordinates (in kFullscreen or kRegion
@@ -151,19 +183,26 @@ class ASH_EXPORT CaptureModeController
     // source).
     gfx::Rect bounds;
   };
-  base::Optional<CaptureParams> GetCaptureParams() const;
+  absl::optional<CaptureParams> GetCaptureParams() const;
 
   // Launches the mojo service that handles audio and video recording, and
-  // begins recording according to the given |capture_params|.
+  // begins recording according to the given |capture_params|. It creates an
+  // overlay on the video capturer so that can be used to record the mouse
+  // cursor. It gives the pending receiver end to that overlay on Viz, and the
+  // other end should be owned by the |video_recording_watcher_|.
   void LaunchRecordingServiceAndStartRecording(
-      const CaptureParams& capture_params);
+      const CaptureParams& capture_params,
+      mojo::PendingReceiver<viz::mojom::FrameSinkVideoCaptureOverlay>
+          cursor_overlay);
 
   // Called back when the mojo pipe to the recording service gets disconnected.
   void OnRecordingServiceDisconnected();
 
-  // Returns true if doing a screen capture is currently allowed, false
-  // otherwise.
-  bool IsCaptureAllowed(const CaptureParams& capture_params) const;
+  // Returns whether doing a screen capture is currently allowed by enterprise
+  // policies and a reason otherwise.
+  // ShouldBlockRecordingForContentProtection() should be used for HDCP checks.
+  CaptureAllowance IsCaptureAllowedByEnterprisePolicies(
+      const CaptureParams& capture_params) const;
 
   // Called to terminate |is_recording_in_progress_|, the stop-recording shelf
   // pod button, and the |video_recording_watcher_| when recording ends.
@@ -179,9 +218,11 @@ class ASH_EXPORT CaptureModeController
 
   // Called back when an image has been captured to trigger an attempt to save
   // the image as a file. |timestamp| is the time at which the capture was
-  // triggered, |png_bytes| is the buffer containing the captured image in a
-  // PNG format.
+  // triggered. |was_cursor_originally_blocked| is whether the cursor was
+  // blocked at the time the screenshot capture request was made. |png_bytes| is
+  // the buffer containing the captured image in a PNG format.
   void OnImageCaptured(const base::FilePath& path,
+                       bool was_cursor_originally_blocked,
                        scoped_refptr<base::RefCountedMemory> png_bytes);
 
   // Called back when an attempt to save the image file has been completed, with
@@ -200,8 +241,10 @@ class ASH_EXPORT CaptureModeController
   void OnVideoFileStatus(bool success);
 
   // Called back when the |video_file_handler_| flushes the remaining cached
-  // video chunks in its buffer. Called on the UI thread.
-  void OnVideoFileSaved(bool success);
+  // video chunks in its buffer. Called on the UI thread. |video_thumbnail| is
+  // an RGB image provided by the recording service that can be used as a
+  // thumbnail of the video in the notification.
+  void OnVideoFileSaved(const gfx::ImageSkia& video_thumbnail, bool success);
 
   // Shows a preview notification of the newly taken screenshot or screen
   // recording.
@@ -210,7 +253,7 @@ class ASH_EXPORT CaptureModeController
                                const CaptureModeType type);
   void HandleNotificationClicked(const base::FilePath& screen_capture_path,
                                  const CaptureModeType type,
-                                 base::Optional<int> button_index);
+                                 absl::optional<int> button_index);
 
   // Builds a path for a file of an image screenshot, or a video screen
   // recording, builds with display index if there are
@@ -278,8 +321,10 @@ class ASH_EXPORT CaptureModeController
 
   std::unique_ptr<CaptureModeSession> capture_mode_session_;
 
-  // Whether the service should record audio.
-  bool enable_audio_recording_ = true;
+  // Remember the user selected audio preference of whether to record audio or
+  // not for a video, between sessions. Initially, this value is set to false,
+  // ensuring that this is an opt-in feature.
+  bool enable_audio_recording_ = false;
 
   // True when video recording is in progress.
   bool is_recording_in_progress_ = false;
@@ -299,19 +344,13 @@ class ASH_EXPORT CaptureModeController
 
   // Tracks the windows that currently have content protection enabled, so that
   // we prevent them from being video recorded. Each window is mapped to its
-  // cureently-set protection_mask. Windows in this map are only the ones that
+  // currently-set protection_mask. Windows in this map are only the ones that
   // have protection masks other than |display::CONTENT_PROTECTION_METHOD_NONE|.
   base::flat_map<aura::Window*, /*protection_mask*/ uint32_t>
       protected_windows_;
 
   // If set, it will be called when either an image or video file is saved.
   base::OnceCallback<void(const base::FilePath&)> on_file_saved_callback_;
-
-  // Recording non-root windows require sending their FrameSinkIds to the
-  // recording service. Those windows won't have a valid ID unless we create
-  // LayerTreeFrameSinks for them. This remains alive while the window is being
-  // recorded.
-  std::unique_ptr<cc::LayerTreeFrameSink> window_frame_sink_;
 
   // Timers used to schedule recording of the number of screenshots taken.
   base::RepeatingTimer num_screenshots_taken_in_last_day_scheduler_;
@@ -331,6 +370,12 @@ class ASH_EXPORT CaptureModeController
   // started recording. It is used when video has finished recording for metrics
   // collection.
   base::TimeTicks recording_start_time_;
+
+  // The last time the user sets a non-empty capture region. It will be used to
+  // clear the user capture region from previous capture sessions if 8+ minutes
+  // has passed since the last time the user changes the capture region when the
+  // new capture session starts .
+  base::TimeTicks last_capture_region_update_time_;
 
   base::WeakPtrFactory<CaptureModeController> weak_ptr_factory_{this};
 };

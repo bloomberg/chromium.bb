@@ -6,6 +6,7 @@
 
 #include <sys/param.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -49,20 +50,20 @@ using content::DropData;
 
 @implementation WebDragSource
 
-- (id)initWithHost:(remote_cocoa::mojom::WebContentsNSViewHost*)host
-              view:(NSView*)contentsView
-          dropData:(const DropData*)dropData
-             image:(NSImage*)image
-            offset:(NSPoint)offset
-        pasteboard:(NSPasteboard*)pboard
- dragOperationMask:(NSDragOperation)dragOperationMask {
+- (instancetype)initWithHost:(remote_cocoa::mojom::WebContentsNSViewHost*)host
+                        view:(NSView*)contentsView
+                    dropData:(const DropData*)dropData
+                       image:(NSImage*)image
+                      offset:(NSPoint)offset
+                  pasteboard:(NSPasteboard*)pboard
+           dragOperationMask:(NSDragOperation)dragOperationMask {
   if ((self = [super init])) {
     _host = host;
 
     _contentsView = contentsView;
     DCHECK(_contentsView);
 
-    _dropData.reset(new DropData(*dropData));
+    _dropData = std::make_unique<DropData>(*dropData);
     DCHECK(_dropData.get());
 
     _dragImage.reset([image retain]);
@@ -91,8 +92,8 @@ using content::DropData;
 - (void)lazyWriteToPasteboard:(NSPasteboard*)pboard forType:(NSString*)type {
   // NSHTMLPboardType requires the character set to be declared. Otherwise, it
   // assumes US-ASCII. Awesome.
-  const base::string16 kHtmlHeader = base::ASCIIToUTF16(
-      "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\">");
+  static constexpr char16_t kHtmlHeader[] =
+      u"<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\">";
 
   // Be extra paranoid; avoid crashing.
   if (!_dropData) {
@@ -235,7 +236,7 @@ using content::DropData;
       gfx::PointF(screenPoint.x, screenFrame.size.height - screenPoint.y));
 
   // Make sure the pasteboard owner isn't us.
-  [_pasteboard declareTypes:[NSArray array] owner:nil];
+  [_pasteboard declareTypes:@[] owner:nil];
 }
 
 - (NSString*)dragPromisedFileTo:(NSString*)path {
@@ -282,14 +283,14 @@ using content::DropData;
     // TODO(https://crbug.com/898608): The |downloadFileName_| and
     // |downloadURL_| values should be computed by the caller.
     if (_dropData->download_metadata.empty()) {
-      base::Optional<base::FilePath> suggestedFilename =
+      absl::optional<base::FilePath> suggestedFilename =
           _dropData->GetSafeFilenameForImageFileContents();
       if (suggestedFilename) {
         _downloadFileName = std::move(*suggestedFilename);
         net::GetMimeTypeFromFile(_downloadFileName, &mimeType);
       }
     } else {
-      base::string16 mimeType16;
+      std::u16string mimeType16;
       base::FilePath fileName;
       if (content::ParseDownloadMetadata(
               _dropData->download_metadata,

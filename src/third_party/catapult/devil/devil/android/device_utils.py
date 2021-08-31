@@ -24,6 +24,8 @@ import time
 import threading
 import uuid
 
+import six
+
 from devil import base_error
 from devil import devil_env
 from devil.utils import cmd_helper
@@ -45,7 +47,8 @@ from devil.utils import reraiser_thread
 from devil.utils import timeout_retry
 from devil.utils import zip_utils
 
-from py_utils import tempfile_ext
+with devil_env.SysPath(devil_env.PY_UTILS_PATH):
+  from py_utils import tempfile_ext
 
 try:
   from devil.utils import reset_usb
@@ -104,6 +107,13 @@ _RESTART_ADBD_SCRIPT = """
   restart &
 """
 
+_UNZIP_AND_CHMOD_SCRIPT = """
+  {bin_dir}/unzip {zip_file} && (for dir in {dirs}
+  do
+    chmod -R 777 "$dir" || exit 1
+  done)
+"""
+
 # Not all permissions can be set.
 _PERMISSIONS_DENYLIST_RE = re.compile('|'.join(
     fnmatch.translate(p) for p in [
@@ -130,6 +140,7 @@ _PERMISSIONS_DENYLIST_RE = re.compile('|'.join(
         'android.permission.INTERNET',
         'android.permission.KILL_BACKGROUND_PROCESSES',
         'android.permission.MANAGE_ACCOUNTS',
+        'android.permission.MANAGE_EXTERNAL_STORAGE',
         'android.permission.MODIFY_AUDIO_SETTINGS',
         'android.permission.NFC',
         'android.permission.QUERY_ALL_PACKAGES',
@@ -313,30 +324,6 @@ def GetAVDs():
   return avds
 
 
-@decorators.WithExplicitTimeoutAndRetries(_DEFAULT_TIMEOUT, _DEFAULT_RETRIES)
-def RestartServer():
-  """Restarts the adb server.
-
-  Raises:
-    CommandFailedError if we fail to kill or restart the server.
-  """
-
-  def adb_killed():
-    return not adb_wrapper.AdbWrapper.IsServerOnline()
-
-  def adb_started():
-    return adb_wrapper.AdbWrapper.IsServerOnline()
-
-  adb_wrapper.AdbWrapper.KillServer()
-  if not timeout_retry.WaitFor(adb_killed, wait_period=1, max_tries=5):
-    # TODO(crbug.com/442319): Switch this to raise an exception if we
-    # figure out why sometimes not all adb servers on bots get killed.
-    logger.warning('Failed to kill adb server')
-  adb_wrapper.AdbWrapper.StartServer()
-  if not timeout_retry.WaitFor(adb_started, wait_period=1, max_tries=5):
-    raise device_errors.CommandFailedError('Failed to start adb server')
-
-
 def _ParseModeString(mode_str):
   """Parse a mode string, e.g. 'drwxrwxrwx', into a st_mode value.
 
@@ -375,7 +362,8 @@ def _CreateAdbWrapper(device):
 
 
 def _FormatPartialOutputError(output):
-  lines = output.splitlines() if isinstance(output, basestring) else output
+  lines = output.splitlines() \
+          if isinstance(output, six.string_types) else output
   message = ['Partial output found:']
   if len(lines) > 11:
     message.extend('- %s' % line for line in lines[:5])
@@ -467,7 +455,7 @@ class DeviceUtils(object):
         operation should be retried on failure if no explicit value is provided.
     """
     self.adb = None
-    if isinstance(device, basestring):
+    if isinstance(device, six.string_types):
       self.adb = _CreateAdbWrapper(device)
     elif isinstance(device, adb_wrapper.AdbWrapper):
       self.adb = device
@@ -480,7 +468,6 @@ class DeviceUtils(object):
     self._cache = {}
     self._client_caches = {}
     self._cache_lock = threading.RLock()
-    self._skip_root_user_build = None
     assert hasattr(self, decorators.DEFAULT_TIMEOUT_ATTR)
     assert hasattr(self, decorators.DEFAULT_RETRIES_ATTR)
 
@@ -1093,6 +1080,10 @@ class DeviceUtils(object):
              retries=None):
     """Reboot the device.
 
+    Note if the device has the root privilege, it will likely lose it after the
+    reboot. When |block| is True, it will try to restore the root status if
+    applicable.
+
     Args:
       block: A boolean indicating if we should wait for the reboot to complete.
       wifi: A boolean indicating if we should wait for wifi to be enabled after
@@ -1112,11 +1103,15 @@ class DeviceUtils(object):
     def device_offline():
       return not self.IsOnline()
 
+    # Only check the root when block is True
+    should_restore_root = self.HasRoot() if block else False
     self.adb.Reboot()
     self.ClearCache()
     timeout_retry.WaitFor(device_offline, wait_period=1)
     if block:
       self.WaitUntilFullyBooted(wifi=wifi, decrypt=decrypt)
+      if should_restore_root:
+        self.EnableRoot()
 
   INSTALL_DEFAULT_TIMEOUT = 8 * _DEFAULT_TIMEOUT
   MODULES_SRC_DIRECTORY_PATH = '/data/local/tmp/modules'
@@ -1313,6 +1308,7 @@ class DeviceUtils(object):
         apks_to_install = apk_paths
 
     if device_apk_paths and apks_to_install and not reinstall:
+      logger.info('Uninstalling package %s', package_name)
       self.Uninstall(package_name)
 
     if apks_to_install:
@@ -1323,6 +1319,8 @@ class DeviceUtils(object):
       streaming = None
       if self.product_name in _NO_STREAMING_DEVICE_LIST:
         streaming = False
+      logger.info('Installing package %s using APKs %s',
+                  package_name, apks_to_install)
       if len(apks_to_install) > 1 or partial:
         self.adb.InstallMultiple(
             apks_to_install,
@@ -1337,6 +1335,7 @@ class DeviceUtils(object):
             streaming=streaming,
             allow_downgrade=allow_downgrade)
     else:
+      logger.info('Skipping installation of package %s', package_name)
       # Running adb install terminates running instances of the app, so to be
       # consistent, we explicitly terminate it when skipping the install.
       self.ForceStop(package_name)
@@ -1521,7 +1520,7 @@ class DeviceUtils(object):
           else:
             raise
 
-    if isinstance(cmd, basestring):
+    if isinstance(cmd, six.string_types):
       if not shell:
         # TODO(crbug.com/1029769): Make this an error instead.
         logger.warning(
@@ -1531,31 +1530,16 @@ class DeviceUtils(object):
     else:
       cmd = ' '.join(cmd_helper.SingleQuote(s) for s in cmd)
     if env:
-      env = ' '.join(env_quote(k, v) for k, v in env.iteritems())
+      env = ' '.join(env_quote(k, v) for k, v in env.items())
       cmd = '%s %s' % (env, cmd)
     if cwd:
       cmd = 'cd %s && %s' % (cmd_helper.SingleQuote(cwd), cmd)
     if run_as:
       cmd = 'run-as %s sh -c %s' % (cmd_helper.SingleQuote(run_as),
                                     cmd_helper.SingleQuote(cmd))
-    if as_root:
-      # Explicitly check the root status as the device may have lost it after
-      # reboot.
-      # For devices with user build, if the first root attempt fails, a warning
-      # will be issued and the following root attempts will be skipped because
-      # some commands that set as_root as True may still work without the root
-      # privilege.
-      if not self.HasRoot() and not self._skip_root_user_build:
-        try:
-          self.EnableRoot()
-        except device_errors.RootUserBuildError as e:
-          logger.warning('%s The adb shell command to run may fail with '
-                         'permission issues.', str(e))
-          self._skip_root_user_build = True
-
-      if (as_root is _FORCE_SU) or self.NeedsSU():
-        # "su -c sh -c" allows using shell features in |cmd|
-        cmd = self._Su('sh -c %s' % cmd_helper.SingleQuote(cmd))
+    if (as_root is _FORCE_SU) or (as_root and self.NeedsSU()):
+      # "su -c sh -c" allows using shell features in |cmd|
+      cmd = self._Su('sh -c %s' % cmd_helper.SingleQuote(cmd))
 
     output = handle_large_output(cmd, large_output)
 
@@ -1743,7 +1727,7 @@ class DeviceUtils(object):
       cmd.append('-w')
     if raw:
       cmd.append('-r')
-    for k, v in extras.iteritems():
+    for k, v in extras.items():
       cmd.extend(['-e', str(k), str(v)])
     cmd.append(component)
 
@@ -2062,7 +2046,7 @@ class DeviceUtils(object):
         paths = paths_not_in_cache
       sums.update(dict(md5sum.CalculateDeviceMd5Sums(paths, self)))
       if self._enable_device_files_cache:
-        for path, checksum in sums.iteritems():
+        for path, checksum in sums.items():
           self._cache['device_path_checksums'][path] = checksum
       return sums
     try:
@@ -2121,7 +2105,7 @@ class DeviceUtils(object):
     host_checksums, device_checksums = reraiser_thread.RunAsync(
         (calculate_host_checksums, calculate_device_checksums))
     stale_apks = [
-        k for (k, v) in host_checksums.iteritems() if v not in device_checksums
+        k for (k, v) in host_checksums.items() if v not in device_checksums
     ]
     return stale_apks, set(host_checksums.values())
 
@@ -2226,13 +2210,19 @@ class DeviceUtils(object):
           self.adb, suffix='.zip') as device_temp:
         self.adb.Push(zip_path, device_temp.name)
 
-        quoted_dirs = ' '.join(cmd_helper.SingleQuote(d) for d in dirs)
-        self.RunShellCommand(
-            'unzip %s&&chmod -R 777 %s' % (device_temp.name, quoted_dirs),
-            shell=True,
-            as_root=True,
-            env={'PATH': '%s:$PATH' % install_commands.BIN_DIR},
-            check_return=True)
+        with device_temp_file.DeviceTempFile(self.adb, suffix='.sh') as script:
+          # Read dirs from temp file to avoid potential errors like
+          # "Argument list too long" (crbug.com/1174331) when the list
+          # is too long.
+          self.WriteFile(
+              script.name,
+              _UNZIP_AND_CHMOD_SCRIPT.format(bin_dir=install_commands.BIN_DIR,
+                                             zip_file=device_temp.name,
+                                             dirs=' '.join(dirs)))
+
+          self.RunShellCommand(['source', script.name],
+                               check_return=True,
+                               as_root=True)
 
     return True
 
@@ -2266,7 +2256,7 @@ class DeviceUtils(object):
       DeviceUnreachableError on missing device.
     """
     paths = device_paths
-    if isinstance(paths, basestring):
+    if isinstance(paths, six.string_types):
       paths = (paths, )
     if not paths:
       return True
@@ -2325,7 +2315,7 @@ class DeviceUtils(object):
       args.append('-f')
     if recursive:
       args.append('-r')
-    if isinstance(device_path, basestring):
+    if isinstance(device_path, six.string_types):
       args.append(device_path if not rename else _RenamePath(device_path))
     else:
       args.extend(
@@ -2599,7 +2589,7 @@ class DeviceUtils(object):
     """
     entries = self._ParseLongLsOutput(device_path, as_root=as_root, **kwargs)
     for d in entries:
-      for key, value in d.items():
+      for key, value in list(d.items()):
         if value is None:
           del d[key]  # Remove missing fields.
       d['st_mode'] = _ParseModeString(d['st_mode'])
@@ -2963,7 +2953,7 @@ class DeviceUtils(object):
     """
     assert isinstance(
         property_name,
-        basestring), ("property_name is not a string: %r" % property_name)
+        six.string_types), ("property_name is not a string: %r" % property_name)
 
     if cache:
       # It takes ~120ms to query a single property, and ~130ms to query all
@@ -3007,8 +2997,10 @@ class DeviceUtils(object):
     """
     assert isinstance(
         property_name,
-        basestring), ("property_name is not a string: %r" % property_name)
-    assert isinstance(value, basestring), "value is not a string: %r" % value
+        six.string_types), ("property_name is not a string: %r" % property_name)
+    assert isinstance(
+        value,
+        six.string_types), "value is not a string: %r" % value
 
     self.RunShellCommand(['setprop', property_name, value], check_return=True)
     prop_cache = self._cache['getprop']
@@ -3087,18 +3079,19 @@ class DeviceUtils(object):
     Returns:
       A list of ProcessInfo tuples with |name|, |pid|, and |ppid| fields.
     """
+    # pylint: disable=broad-except
     process_name = process_name or ''
     processes = []
     for line in self._GetPsOutput(process_name):
       row = line.split()
       try:
-        row = {k: row[i] for k, i in _PS_COLUMNS.iteritems()}
+        row = {k: row[i] for k, i in _PS_COLUMNS.items()}
         if row['pid'] == 'PID' or process_name not in row['name']:
           # Skip over header and non-matching processes.
           continue
         row['pid'] = int(row['pid'])
         row['ppid'] = int(row['ppid'])
-      except StandardError:  # e.g. IndexError, TypeError, ValueError.
+      except Exception:  # e.g. IndexError, TypeError, ValueError.
         logging.warning('failed to parse ps line: %r', line)
         continue
       processes.append(ProcessInfo(**row))
@@ -3251,11 +3244,12 @@ class DeviceUtils(object):
         WebViewPackages: Dict of installed WebView providers, mapping "package
             name" to "reason it's valid/invalid."
 
-    It may return an empty dictionary if device does not
-    support the "dumpsys webviewupdate" command.
+    The returned dictionary may not include all of the above keys: this depends
+    on the support of the platform's underlying WebViewUpdateService. This may
+    return an empty dictionary on OS versions which do not support querying the
+    WebViewUpdateService.
 
     Raises:
-      CommandFailedError on failure.
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
@@ -3294,12 +3288,6 @@ class DeviceUtils(object):
         result['MinimumWebViewVersionCode'] = int(match.group(1))
     if webview_packages:
       result['WebViewPackages'] = webview_packages
-
-    missing_fields = set(['CurrentWebViewPackage', 'FallbackLogicEnabled']) - \
-                     set(result.keys())
-    if len(missing_fields) > 0:
-      raise device_errors.CommandFailedError(
-          '%s not found in dumpsys webviewupdate' % str(list(missing_fields)))
     return result
 
   @decorators.WithTimeoutAndRetriesFromInstance()
@@ -3558,10 +3546,10 @@ class DeviceUtils(object):
     # When using a cache across script invokations, verify that apps have
     # not been uninstalled.
     self._cache['package_apk_paths_to_verify'] = set(
-        self._cache['package_apk_paths'].iterkeys())
+        self._cache['package_apk_paths'])
 
     package_apk_checksums = obj.get('package_apk_checksums', {})
-    for k, v in package_apk_checksums.iteritems():
+    for k, v in package_apk_checksums.items():
       package_apk_checksums[k] = set(v)
     self._cache['package_apk_checksums'] = package_apk_checksums
     device_path_checksums = obj.get('device_path_checksums', {})
@@ -3585,27 +3573,27 @@ class DeviceUtils(object):
     obj['package_apk_paths'] = self._cache['package_apk_paths']
     obj['package_apk_checksums'] = self._cache['package_apk_checksums']
     # JSON can't handle sets.
-    for k, v in obj['package_apk_checksums'].iteritems():
+    for k, v in obj['package_apk_checksums'].items():
       obj['package_apk_checksums'][k] = list(v)
     obj['device_path_checksums'] = self._cache['device_path_checksums']
     return json.dumps(obj, separators=(',', ':'))
 
   @classmethod
-  def parallel(cls, devices, async=False):
+  def parallel(cls, devices, asyn=False):
     """Creates a Parallelizer to operate over the provided list of devices.
 
     Args:
       devices: A list of either DeviceUtils instances or objects from
                from which DeviceUtils instances can be constructed. If None,
                all attached devices will be used.
-      async: If true, returns a Parallelizer that runs operations
+      asyn: If true, returns a Parallelizer that runs operations
              asynchronously.
 
     Returns:
       A Parallelizer operating over |devices|.
     """
     devices = [d if isinstance(d, cls) else cls(d) for d in devices]
-    if async:
+    if asyn:
       return parallelizer.Parallelizer(devices)
     else:
       return parallelizer.SyncParallelizer(devices)
@@ -3718,7 +3706,7 @@ class DeviceUtils(object):
       else:
         reset_usb.reset_all_android_devices()
 
-    for attempt in xrange(retries + 1):
+    for attempt in range(retries + 1):
       try:
         return _get_devices()
       except device_errors.NoDevicesError:
@@ -3736,7 +3724,7 @@ class DeviceUtils(object):
             'No devices found. Will try again after restarting adb server '
             'and a short nap of %d s.', sleep_s)
         time.sleep(sleep_s)
-        RestartServer()
+        adb_wrapper.RestartServer()
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def RestartAdbd(self, timeout=None, retries=None):
@@ -3753,6 +3741,17 @@ class DeviceUtils(object):
     if not permissions:
       return
 
+    # For Andorid-11(R), enable MANAGE_EXTERNAL_STORAGE for testing.
+    # See https://bit.ly/2MBjBIM for details.
+    if ('android.permission.MANAGE_EXTERNAL_STORAGE' in permissions
+        and self.build_version_sdk >= version_codes.R):
+      script_manage_ext_storage = [
+          'appops set {package} MANAGE_EXTERNAL_STORAGE allow',
+          'echo "{sep}MANAGE_EXTERNAL_STORAGE{sep}$?{sep}"',
+      ]
+    else:
+      script_manage_ext_storage = []
+
     permissions = set(p for p in permissions
                       if not _PERMISSIONS_DENYLIST_RE.match(p))
 
@@ -3760,10 +3759,15 @@ class DeviceUtils(object):
         and 'android.permission.READ_EXTERNAL_STORAGE' not in permissions):
       permissions.add('android.permission.READ_EXTERNAL_STORAGE')
 
-    script = ';'.join([
-        'p={package}', 'for q in {permissions}', 'do pm grant "$p" "$q"',
-        'echo "{sep}$q{sep}$?{sep}"', 'done'
-    ]).format(
+    script_raw = [
+        'p={package}',
+        'for q in {permissions}',
+        'do pm grant "$p" "$q"',
+        'echo "{sep}$q{sep}$?{sep}"',
+        'done',
+    ] + script_manage_ext_storage
+
+    script = ';'.join(script_raw).format(
         package=cmd_helper.SingleQuote(package),
         permissions=' '.join(
             cmd_helper.SingleQuote(p) for p in sorted(permissions)),

@@ -62,7 +62,8 @@ typedef struct Libgav1DecoderSettings {
   Libgav1GetFrameBufferCallback get_frame_buffer;
   // Release frame buffer callback.
   Libgav1ReleaseFrameBufferCallback release_frame_buffer;
-  // Release input frame buffer callback.
+  // Release input frame buffer callback. This callback must be set when
+  // |frame_parallel| is true.
   Libgav1ReleaseInputBufferCallback release_input_buffer;
   // Passed as the private_data argument to the callbacks.
   void* callback_private_data;
@@ -117,7 +118,8 @@ struct DecoderSettings {
   GetFrameBufferCallback get_frame_buffer = nullptr;
   // Release frame buffer callback.
   ReleaseFrameBufferCallback release_frame_buffer = nullptr;
-  // Release input frame buffer callback.
+  // Release input frame buffer callback. This callback must be set when
+  // |frame_parallel| is true.
   ReleaseInputBufferCallback release_input_buffer = nullptr;
   // Passed as the private_data argument to the callbacks.
   void* callback_private_data = nullptr;

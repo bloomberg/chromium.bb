@@ -33,6 +33,10 @@ version_info::Channel BrowserReportGeneratorIOS::GetChannel() {
   return ::GetChannel();
 }
 
+bool BrowserReportGeneratorIOS::IsExtendedStableChannel() {
+  return false;  // Not supported on iOS.
+}
+
 void BrowserReportGeneratorIOS::GenerateBuildStateInfo(
     em::BrowserReport* report) {
   // Not used on iOS because there is no in-app auto-update.
@@ -52,7 +56,7 @@ void BrowserReportGeneratorIOS::GenerateProfileInfo(ReportType report_type,
         report->add_chrome_user_profile_infos();
     profile->set_id(entry->GetStatePath().AsUTF8Unsafe());
     profile->set_name(entry->GetStatePath().BaseName().AsUTF8Unsafe());
-    profile->set_is_full_report(false);
+    profile->set_is_detail_available(false);
   }
 }
 

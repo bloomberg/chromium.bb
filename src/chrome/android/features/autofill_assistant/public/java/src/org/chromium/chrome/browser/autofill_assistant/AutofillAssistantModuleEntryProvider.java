@@ -30,6 +30,10 @@ public class AutofillAssistantModuleEntryProvider {
     static final AutofillAssistantModuleEntryProvider INSTANCE =
             new AutofillAssistantModuleEntryProvider();
 
+    boolean isInstalled() {
+        return AutofillAssistantModule.isInstalled();
+    }
+
     /* Returns the AA module entry, if it is already installed. */
     @Nullable
     /* package */
@@ -45,8 +49,6 @@ public class AutofillAssistantModuleEntryProvider {
     void getModuleEntry(Tab tab, Callback<AutofillAssistantModuleEntry> callback, boolean showUi) {
         AutofillAssistantModuleEntry entry = getModuleEntryIfInstalled();
         if (entry != null) {
-            AutofillAssistantMetrics.recordFeatureModuleInstallation(
-                    FeatureModuleInstallation.DFM_ALREADY_INSTALLED);
             callback.onResult(entry);
             return;
         }
@@ -92,8 +94,6 @@ public class AutofillAssistantModuleEntryProvider {
                         if (retry) {
                             loadDynamicModule(tab, callback, showUi);
                         } else {
-                            AutofillAssistantMetrics.recordFeatureModuleInstallation(
-                                    FeatureModuleInstallation.DFM_FOREGROUND_INSTALLATION_FAILED);
                             callback.onResult(null);
                         }
                     }
@@ -106,8 +106,6 @@ public class AutofillAssistantModuleEntryProvider {
         AutofillAssistantModule.install((success) -> {
             if (success) {
                 // Don't show success UI from DFM, transition to Autofill Assistant UI directly.
-                AutofillAssistantMetrics.recordFeatureModuleInstallation(
-                        FeatureModuleInstallation.DFM_FOREGROUND_INSTALLATION_SUCCEEDED);
                 callback.onResult(AutofillAssistantModule.getImpl());
                 return;
             } else if (showUi) {

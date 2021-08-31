@@ -145,11 +145,6 @@ TestingApplicationContext::GetVariationsService() {
   return nullptr;
 }
 
-rappor::RapporServiceImpl* TestingApplicationContext::GetRapporServiceImpl() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return nullptr;
-}
-
 net::NetLog* TestingApplicationContext::GetNetLog() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;
@@ -216,7 +211,7 @@ TestingApplicationContext::GetBrowserPolicyConnector() {
   return browser_policy_connector_.get();
 }
 
-BreadcrumbPersistentStorageManager*
+breadcrumbs::BreadcrumbPersistentStorageManager*
 TestingApplicationContext::GetBreadcrumbPersistentStorageManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;

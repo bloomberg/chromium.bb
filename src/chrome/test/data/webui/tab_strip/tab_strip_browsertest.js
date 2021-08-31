@@ -12,13 +12,6 @@ var TabStripBrowserTest = class extends testing.Test {
   get webuiHost() {
     return 'tab-strip';
   }
-
-  get extraLibraries() {
-    return [
-      '//third_party/mocha/mocha.js',
-      '//chrome/test/data/webui/mocha_adapter.js',
-    ];
-  }
 };
 
 var TabStripTabListTest = class extends TabStripBrowserTest {
@@ -27,7 +20,8 @@ var TabStripTabListTest = class extends TabStripBrowserTest {
   }
 };
 
-TEST_F('TabStripTabListTest', 'All', function() {
+// TODO(https://crbug.com/1181007): Test disabled by Sheriff due to flakiness.
+TEST_F('TabStripTabListTest', 'DISABLED_All', function() {
   mocha.run();
 });
 

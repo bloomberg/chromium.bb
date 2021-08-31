@@ -6,9 +6,9 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <utility>
 
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -32,6 +32,16 @@ constexpr int kLayoutExampleVerticalSpacing = 3;
 constexpr int kLayoutExampleLeftPadding = 8;
 constexpr gfx::Size kLayoutExampleDefaultChildSize(180, 90);
 
+class LayoutPanel : public View {
+ protected:
+  void OnThemeChanged() override {
+    View::OnThemeChanged();
+    SetBorder(CreateSolidBorder(
+        1, GetNativeTheme()->GetSystemColor(
+               ui::NativeTheme::kColorId_UnfocusedBorderColor)));
+  }
+};
+
 // This View holds two other views which consists of a view on the left onto
 // which the BoxLayout is attached for demonstrating its features. The view
 // on the right contains all the various controls which allow the user to
@@ -51,7 +61,7 @@ std::unique_ptr<Textfield> CreateCommonTextfield(
   auto textfield = std::make_unique<Textfield>();
   textfield->SetDefaultWidthInChars(3);
   textfield->SetTextInputType(ui::TEXT_INPUT_TYPE_NUMBER);
-  textfield->SetText(base::ASCIIToUTF16("0"));
+  textfield->SetText(u"0");
   textfield->set_controller(container);
   return textfield;
 }
@@ -65,7 +75,7 @@ LayoutExampleBase::ChildPanel::ChildPanel(LayoutExampleBase* example)
   margin_.right = CreateTextfield();
   margin_.bottom = CreateTextfield();
   flex_ = CreateTextfield();
-  flex_->SetText(base::string16());
+  flex_->SetText(std::u16string());
 }
 
 LayoutExampleBase::ChildPanel::~ChildPanel() = default;
@@ -131,7 +141,7 @@ void LayoutExampleBase::ChildPanel::OnThemeChanged() {
 
 void LayoutExampleBase::ChildPanel::ContentsChanged(
     Textfield* sender,
-    const base::string16& new_contents) {
+    const std::u16string& new_contents) {
   const gfx::Insets margins = LayoutExampleBase::TextfieldsToInsets(margin_);
   if (!margins.IsEmpty())
     SetProperty(kMarginsKey, margins);
@@ -144,7 +154,7 @@ Textfield* LayoutExampleBase::ChildPanel::CreateTextfield() {
   auto textfield = std::make_unique<Textfield>();
   textfield->SetDefaultWidthInChars(3);
   textfield->SizeToPreferredSize();
-  textfield->SetText(base::ASCIIToUTF16("0"));
+  textfield->SetText(u"0");
   textfield->set_controller(this);
   textfield->SetVisible(false);
   return AddChildView(std::move(textfield));
@@ -178,7 +188,7 @@ gfx::Insets LayoutExampleBase::TextfieldsToInsets(
 }
 
 Combobox* LayoutExampleBase::CreateAndAddCombobox(
-    const base::string16& label_text,
+    const std::u16string& label_text,
     const char* const* items,
     int count,
     base::RepeatingClosure combobox_callback) {
@@ -194,7 +204,7 @@ Combobox* LayoutExampleBase::CreateAndAddCombobox(
 }
 
 Textfield* LayoutExampleBase::CreateAndAddTextfield(
-    const base::string16& label_text) {
+    const std::u16string& label_text) {
   auto* const row = control_panel_->AddChildView(std::make_unique<View>());
   row->SetLayoutManager(std::make_unique<BoxLayout>(
       BoxLayout::Orientation::kHorizontal, gfx::Insets(),
@@ -204,7 +214,7 @@ Textfield* LayoutExampleBase::CreateAndAddTextfield(
 }
 
 void LayoutExampleBase::CreateMarginsTextFields(
-    const base::string16& label_text,
+    const std::u16string& label_text,
     InsetTextfields* textfields) {
   auto* const row = control_panel_->AddChildView(std::make_unique<View>());
   row->SetLayoutManager(std::make_unique<BoxLayout>(
@@ -229,7 +239,7 @@ void LayoutExampleBase::CreateMarginsTextFields(
 }
 
 Checkbox* LayoutExampleBase::CreateAndAddCheckbox(
-    const base::string16& label_text,
+    const std::u16string& label_text,
     base::RepeatingClosure checkbox_callback) {
   return control_panel_->AddChildView(
       std::make_unique<Checkbox>(label_text, std::move(checkbox_callback)));
@@ -241,10 +251,7 @@ void LayoutExampleBase::CreateExampleView(View* container) {
 
   auto* const manager = full_panel->SetLayoutManager(
       std::make_unique<BoxLayout>(views::BoxLayout::Orientation::kHorizontal));
-  layout_panel_ = full_panel->AddChildView(std::make_unique<View>());
-  layout_panel_->SetBorder(CreateSolidBorder(
-      1, layout_panel_->GetNativeTheme()->GetSystemColor(
-             ui::NativeTheme::kColorId_UnfocusedBorderColor)));
+  layout_panel_ = full_panel->AddChildView(std::make_unique<LayoutPanel>());
   manager->SetFlexForView(layout_panel_, 3);
 
   control_panel_ = full_panel->AddChildView(std::make_unique<View>());

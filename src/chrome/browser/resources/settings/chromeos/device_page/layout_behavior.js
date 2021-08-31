@@ -2,13 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {getDisplayApi} from './device_page_browser_proxy.m.js';
+// clang-format on
+
 /**
  * @fileoverview Behavior for handling display layout, specifically
  *     edge snapping and collisions.
  */
 
 /** @polymerBehavior */
-const LayoutBehavior = {
+/* #export */ const LayoutBehavior = {
   properties: {
     /**
      * Array of display layouts.
@@ -180,12 +185,13 @@ const LayoutBehavior = {
     this.updateOrphans_(orphanIds);
 
     // Send the updated layouts.
-    chrome.system.display.setDisplayLayout(this.layouts, function() {
-      if (chrome.runtime.lastError) {
-        console.error(
-            'setDisplayLayout Error: ' + chrome.runtime.lastError.message);
-      }
-    });
+    settings.getDisplayApi().setDisplayLayout(
+        this.layouts, function() {
+          if (chrome.runtime.lastError) {
+            console.error(
+                'setDisplayLayout Error: ' + chrome.runtime.lastError.message);
+          }
+        });
   },
 
   /**

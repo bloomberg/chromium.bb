@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
-#include "ash/autoclick/autoclick_controller.h"
+#include "ash/accessibility/autoclick/autoclick_controller.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -19,6 +19,8 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wm/always_on_top_controller.h"
+#include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/screen_pinning_controller.h"
@@ -30,6 +32,7 @@
 #include "ash/wm/workspace/backdrop_controller.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -140,7 +143,7 @@ WorkspaceLayoutManager::~WorkspaceLayoutManager() {
 void WorkspaceLayoutManager::OnWindowResized() {}
 
 void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
-  DCHECK_NE(aura::client::WINDOW_TYPE_CONTROL, child->type());
+  DCHECK_NE(aura::client::WINDOW_TYPE_CONTROL, child->GetType());
   WindowState* window_state = WindowState::Get(child);
   WMEvent event(WM_EVENT_ADDED_TO_WORKSPACE);
   window_state->OnWMEvent(&event);
@@ -315,6 +318,19 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(aura::Window* window,
   } else if (key == kWindowBackdropKey) {
     // kWindowBackdropKey is not supposed to be cleared.
     DCHECK(window->GetProperty(kWindowBackdropKey));
+  } else if (key == aura::client::kVisibleOnAllWorkspacesKey) {
+    auto* desks_controller = Shell::Get()->desks_controller();
+
+    if (window->GetType() != aura::client::WindowType::WINDOW_TYPE_NORMAL ||
+        window->GetProperty(aura::client::kZOrderingKey) !=
+            ui::ZOrderLevel::kNormal) {
+      return;
+    }
+
+    if (window->GetProperty(aura::client::kVisibleOnAllWorkspacesKey))
+      desks_controller->AddVisibleOnAllDesksWindow(window);
+    else
+      desks_controller->MaybeRemoveVisibleOnAllDesksWindow(window);
   }
 }
 
@@ -333,6 +349,7 @@ void WorkspaceLayoutManager::OnWindowDestroying(aura::Window* window) {
     settings_bubble_container_ = nullptr;
   if (accessibility_bubble_container_ == window)
     accessibility_bubble_container_ = nullptr;
+  Shell::Get()->desks_controller()->MaybeRemoveVisibleOnAllDesksWindow(window);
 }
 
 void WorkspaceLayoutManager::OnWindowBoundsChanged(
@@ -523,10 +540,25 @@ void WorkspaceLayoutManager::UpdateAlwaysOnTop(
   // of |windows_| to avoid invalidating an iterator. Since both workspace and
   // always_on_top containers' layouts are managed by this class all the
   // appropriate windows will be included in the iteration.
-  WindowSet windows(windows_);
-  for (aura::Window* window : windows) {
+  // Use an `aura::WindowTracker` since `OnWillRemoveWindowFromLayout()` may
+  // remove windows from `windows_`.
+  std::vector<aura::Window*> windows(windows_.begin(), windows_.end());
+  aura::WindowTracker tracker(windows);
+  while (!tracker.windows().empty()) {
+    aura::Window* window = tracker.Pop();
     if (window == active_desk_fullscreen_window)
       continue;
+
+    // TODO(crbug.com/1200594): Remove after fix.
+    int window_id = window->GetId();
+    int window_width = window->bounds().width();
+    int window_height = window->bounds().height();
+    base::debug::Alias(&window_id);
+    base::debug::Alias(&window_width);
+    base::debug::Alias(&window_height);
+    DEBUG_ALIAS_FOR_CSTR(window_name, window->GetName().c_str(), 128);
+    DEBUG_ALIAS_FOR_CSTR(window_title,
+                         base::UTF16ToUTF8(window->GetTitle()).c_str(), 128);
 
     WindowState* window_state = WindowState::Get(window);
     if (active_desk_fullscreen_window)

@@ -17,6 +17,7 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -34,9 +35,6 @@ const int kCaptionHeight = 25;
 }  // namespace
 
 namespace apps {
-
-const char AppWindowFrameView::kViewClassName[] =
-    "browser/ui/views/extensions/AppWindowFrameView";
 
 AppWindowFrameView::AppWindowFrameView(views::Widget* widget,
                                        extensions::NativeAppWindow* window,
@@ -251,8 +249,11 @@ gfx::Size AppWindowFrameView::CalculatePreferredSize() const {
 }
 
 void AppWindowFrameView::Layout() {
+  NonClientFrameView::Layout();
+
   if (!draw_frame_)
     return;
+
   gfx::Size close_size = close_button_->GetPreferredSize();
   const int kButtonOffsetY = 0;
   const int kButtonSpacing = 1;
@@ -325,8 +326,6 @@ void AppWindowFrameView::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawPath(path, flags);
 }
 
-const char* AppWindowFrameView::GetClassName() const { return kViewClassName; }
-
 gfx::Size AppWindowFrameView::GetMinimumSize() const {
   gfx::Size min_size = widget_->client_view()->GetMinimumSize();
   if (!draw_frame_) {
@@ -391,5 +390,8 @@ void AppWindowFrameView::SetButtonImagesForFrame() {
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MINIMIZE).ToImageSkia());
   }
 }
+
+BEGIN_METADATA(AppWindowFrameView, views::NonClientFrameView)
+END_METADATA
 
 }  // namespace apps

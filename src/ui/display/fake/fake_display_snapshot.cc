@@ -5,6 +5,7 @@
 #include "ui/display/fake/fake_display_snapshot.h"
 
 #include <inttypes.h>
+#include <stdint.h>
 
 #include <utility>
 #include <vector>
@@ -12,6 +13,7 @@
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -162,11 +164,11 @@ std::unique_ptr<FakeDisplaySnapshot> Builder::Build() {
       gfx::ScaleToRoundedSize(native_mode_->size(), PixelPitchMmFromDPI(dpi_));
 
   return std::make_unique<FakeDisplaySnapshot>(
-      id_, origin_, physical_size, type_, is_aspect_preserving_scaling_,
-      has_overscan_, privacy_screen_state_, has_color_correction_matrix_,
-      color_correction_in_linear_space_, name_, std::move(modes_),
-      current_mode_, native_mode_, product_code_, maximum_cursor_size_,
-      color_space_, bits_per_channel_);
+      id_, origin_, physical_size, type_, base_connector_id_, path_topology_,
+      is_aspect_preserving_scaling_, has_overscan_, privacy_screen_state_,
+      has_color_correction_matrix_, color_correction_in_linear_space_, name_,
+      std::move(modes_), current_mode_, native_mode_, product_code_,
+      maximum_cursor_size_, color_space_, bits_per_channel_);
 }
 
 Builder& Builder::SetId(int64_t id) {
@@ -211,6 +213,16 @@ Builder& Builder::SetOrigin(const gfx::Point& origin) {
 
 Builder& Builder::SetType(DisplayConnectionType type) {
   type_ = type;
+  return *this;
+}
+
+Builder& Builder::SetBaseConnectorId(uint64_t base_connector_id) {
+  base_connector_id_ = base_connector_id;
+  return *this;
+}
+
+Builder& Builder::SetPathTopology(const std::vector<uint64_t>& path_topology) {
+  path_topology_ = path_topology;
   return *this;
 }
 
@@ -308,6 +320,8 @@ FakeDisplaySnapshot::FakeDisplaySnapshot(
     const gfx::Point& origin,
     const gfx::Size& physical_size,
     DisplayConnectionType type,
+    uint64_t base_connector_id,
+    const std::vector<uint64_t>& path_topology,
     bool is_aspect_preserving_scaling,
     bool has_overscan,
     PrivacyScreenState privacy_screen_state,
@@ -325,6 +339,8 @@ FakeDisplaySnapshot::FakeDisplaySnapshot(
                       origin,
                       physical_size,
                       type,
+                      base_connector_id,
+                      path_topology,
                       is_aspect_preserving_scaling,
                       has_overscan,
                       privacy_screen_state,
@@ -358,7 +374,7 @@ std::unique_ptr<DisplaySnapshot> FakeDisplaySnapshot::CreateFromSpec(
 
   // Leftovers should be just the native mode at this point.
   std::unique_ptr<DisplayMode> native_mode =
-      ParseDisplayMode(leftover.as_string());
+      ParseDisplayMode(std::string(leftover));
 
   // Fail without valid native mode.
   if (!native_mode)

@@ -143,6 +143,11 @@ StackFrameAMD64* StackwalkerAMD64::GetCallerByCFIFrameInfo(
   if ((frame->context_validity & essentials) != essentials)
     return NULL;
 
+  if (!frame->context.rip || !frame->context.rsp) {
+    BPLOG(ERROR) << "invalid rip/rsp";
+    return NULL;
+  }
+
   frame->trust = StackFrame::FRAME_TRUST_CFI;
   return frame.release();
 }

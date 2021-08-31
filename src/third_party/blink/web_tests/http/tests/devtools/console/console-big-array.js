@@ -5,7 +5,7 @@
 (async function() {
   TestRunner.addResult('Tests that console logging dumps large arrays properly.\n');
 
-  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.loadModule('console'); await TestRunner.loadTestModule('console_test_runner');
   await TestRunner.showPanel('console');
 
   await TestRunner.evaluateInPagePromise(`
@@ -72,9 +72,11 @@
     var node = element.traverseNextNode(element);
 
     while (node) {
-      if (node._section) {
-        sections.push(node._section);
-        node._section.expand();
+      const section =
+          ObjectUI.ObjectPropertiesSection.getObjectPropertiesSectionFrom(node);
+      if (section) {
+        sections.push(section);
+        section.expand();
       }
 
       node = node.traverseNextNode(element);
@@ -96,7 +98,7 @@
 
       for (var j = 0; j < children.length; ++j) {
         for (var treeElement = children[j]; treeElement; treeElement = treeElement.traverseNextTreeElement(true, null, true)) {
-          if (treeElement.listItemElement.textContent.indexOf('__proto__') === -1)
+          if (treeElement.listItemElement.textContent.indexOf('[[Prototype]]') === -1)
             treeElement.expand();
         }
       }

@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/network_change_manager_client.h"
 
 #include "base/bind.h"
-#include "base/strings/stringprintf.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
@@ -40,8 +39,7 @@ NetworkChangeManagerClient::~NetworkChangeManagerClient() {
   PowerManagerClient::Get()->RemoveObserver(this);
 }
 
-void NetworkChangeManagerClient::SuspendDone(
-    const base::TimeDelta& sleep_duration) {
+void NetworkChangeManagerClient::SuspendDone(base::TimeDelta sleep_duration) {
   // Force invalidation of network resources on resume.
   network_change_notifier_->OnIPAddressChanged();
   if (network_change_manager_) {

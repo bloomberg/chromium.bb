@@ -5,14 +5,12 @@
 #ifndef ASH_APP_LIST_VIEWS_ASSISTANT_ASSISTANT_MAIN_VIEW_H_
 #define ASH_APP_LIST_VIEWS_ASSISTANT_ASSISTANT_MAIN_VIEW_H_
 
-#include <memory>
-
-#include "ash/app_list/app_list_export.h"
+#include "ash/ash_export.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -20,9 +18,9 @@ class AssistantDialogPlate;
 class AppListAssistantMainStage;
 class AssistantViewDelegate;
 
-class APP_LIST_EXPORT AssistantMainView : public views::View,
-                                          public AssistantControllerObserver,
-                                          public AssistantUiModelObserver {
+class ASH_EXPORT AssistantMainView : public views::View,
+                                     public AssistantControllerObserver,
+                                     public AssistantUiModelObserver {
  public:
   explicit AssistantMainView(AssistantViewDelegate* delegate);
   ~AssistantMainView() override;
@@ -40,8 +38,8 @@ class APP_LIST_EXPORT AssistantMainView : public views::View,
   void OnUiVisibilityChanged(
       AssistantVisibility new_visibility,
       AssistantVisibility old_visibility,
-      base::Optional<AssistantEntryPoint> entry_point,
-      base::Optional<AssistantExitPoint> exit_point) override;
+      absl::optional<AssistantEntryPoint> entry_point,
+      absl::optional<AssistantExitPoint> exit_point) override;
 
   // Returns the first focusable view or nullptr to defer to views::FocusSearch.
   views::View* FindFirstFocusableView();
@@ -54,8 +52,8 @@ class APP_LIST_EXPORT AssistantMainView : public views::View,
   AssistantDialogPlate* dialog_plate_;     // Owned by view hierarchy.
   AppListAssistantMainStage* main_stage_;  // Owned by view hierarchy.
 
-  ScopedObserver<AssistantController, AssistantControllerObserver>
-      assistant_controller_observer_{this};
+  base::ScopedObservation<AssistantController, AssistantControllerObserver>
+      assistant_controller_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantMainView);
 };

@@ -6,13 +6,14 @@
 #define CHROME_BROWSER_LITE_VIDEO_LITE_VIDEO_OBSERVER_H_
 
 #include "base/macros.h"
-#include "base/optional.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/lite_video/lite_video_navigation_metrics.h"
 #include "chrome/browser/lite_video/lite_video_user_blocklist.h"
+#include "chrome/common/lite_video_service.mojom.h"
 #include "content/public/browser/media_player_id.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 class NavigationHandle;
@@ -30,11 +31,15 @@ enum class OptimizationGuideDecision;
 
 class LiteVideoObserver
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<LiteVideoObserver> {
+      public content::WebContentsUserData<LiteVideoObserver>,
+      public lite_video::mojom::LiteVideoService {
  public:
   static void MaybeCreateForWebContents(content::WebContents* web_contents);
 
   ~LiteVideoObserver() override;
+
+  // Returns the total bytes estimated to be saved by LiteVideo.
+  uint64_t GetAndClearEstimatedDataSavingBytes();
 
  private:
   friend class content::WebContentsUserData<LiteVideoObserver>;
@@ -46,10 +51,13 @@ class LiteVideoObserver
   void MediaBufferUnderflow(const content::MediaPlayerId& id) override;
   void MediaPlayerSeek(const content::MediaPlayerId& id) override;
 
+  // mojom::LiteVideoService.
+  void NotifyThrottledDataUse(uint64_t response_bytes) override;
+
   // Determines the LiteVideoDecision based on |hint| and the coinflip
   // holdback state.
   lite_video::LiteVideoDecision MakeLiteVideoDecision(
-      base::Optional<lite_video::LiteVideoHint> hint) const;
+      absl::optional<lite_video::LiteVideoHint> hint) const;
 
   // Records the metrics for LiteVideos applied to any frames associated with
   // the current mainframe navigation id. Called once per mainframe.
@@ -64,7 +72,7 @@ class LiteVideoObserver
   // within the agent associated with |render_frame_host_routing_id|.
   void OnHintAvailable(
       const content::GlobalFrameRoutingId& render_frame_host_routing_id,
-      base::Optional<lite_video::LiteVideoHint> hint,
+      absl::optional<lite_video::LiteVideoHint> hint,
       lite_video::LiteVideoBlocklistReason blocklist_reason,
       optimization_guide::OptimizationGuideDecision opt_guide_decision);
 
@@ -80,7 +88,7 @@ class LiteVideoObserver
 
   // The current metrics about the navigation |this| is observing. Reset
   // after each time the metrics being held are recorded as a UKM event.
-  base::Optional<lite_video::LiteVideoNavigationMetrics> nav_metrics_;
+  absl::optional<lite_video::LiteVideoNavigationMetrics> nav_metrics_;
 
   // Whether the navigations currently being observed should have the LiteVideo
   // optimization heldback due to a coinflip, counterfactual experiment.
@@ -92,6 +100,12 @@ class LiteVideoObserver
   // for the decision of whether to throttle media requests that
   // occur within that frame.
   std::set<content::GlobalFrameRoutingId> routing_ids_to_notify_;
+
+  // Current response bytes that have been targeted for LiteVideo throttling.
+  uint64_t current_throttled_video_bytes_ = 0;
+
+  content::WebContentsFrameReceiverSet<lite_video::mojom::LiteVideoService>
+      receivers_;
 
   // Used to get a weak pointer to |this|.
   base::WeakPtrFactory<LiteVideoObserver> weak_ptr_factory_{this};

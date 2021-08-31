@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "chrome/browser/download/download_shelf.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/accessible_pane_view.h"
@@ -36,6 +37,7 @@ class DownloadShelfView : public DownloadShelf,
                           public views::AnimationDelegateViews,
                           public views::MouseWatcherListener {
  public:
+  METADATA_HEADER(DownloadShelfView);
   DownloadShelfView(Browser* browser, BrowserView* parent);
   DownloadShelfView(const DownloadShelfView&) = delete;
   DownloadShelfView& operator=(const DownloadShelfView&) = delete;
@@ -44,6 +46,8 @@ class DownloadShelfView : public DownloadShelf,
   // DownloadShelf:
   bool IsShowing() const override;
   bool IsClosing() const override;
+
+  views::View* GetView() override;
 
   // views::AccessiblePaneView:
   // TODO(crbug.com/1005568): Replace these with a LayoutManager

@@ -21,6 +21,8 @@ struct VectorIcon;
 namespace views {
 class BoxLayout;
 class Button;
+class ImageView;
+class Label;
 class ProgressBar;
 class ScrollView;
 class Separator;
@@ -48,6 +50,7 @@ class ASH_EXPORT TrayDetailedView : public views::View,
   void Layout() override;
   int GetHeightForWidth(int width) const override;
   const char* GetClassName() const override;
+  void OnThemeChanged() override;
 
   // Exposes the layout manager of this view to give control to subclasses.
   views::BoxLayout* box_layout() { return box_layout_; }
@@ -63,7 +66,7 @@ class ASH_EXPORT TrayDetailedView : public views::View,
 
   // Adds a targetable row to |scroll_content_| containing |icon| and |text|.
   HoverHighlightView* AddScrollListItem(const gfx::VectorIcon& icon,
-                                        const base::string16& text);
+                                        const std::u16string& text);
 
   // Add a child view to the scroll list.
   void AddScrollListChild(std::unique_ptr<views::View> child);
@@ -74,7 +77,7 @@ class ASH_EXPORT TrayDetailedView : public views::View,
   // managed icon for that item.
   HoverHighlightView* AddScrollListCheckableItem(
       const gfx::VectorIcon& icon,
-      const base::string16& text,
+      const std::u16string& text,
       bool checked,
       bool enterprise_managed = false);
 
@@ -83,7 +86,7 @@ class ASH_EXPORT TrayDetailedView : public views::View,
   // |enterprise_managed| determines whether or not there will be an enterprise
   // managed icon for that item.
   HoverHighlightView* AddScrollListCheckableItem(
-      const base::string16& text,
+      const std::u16string& text,
       bool checked,
       bool enterprise_managed = false);
 
@@ -94,7 +97,7 @@ class ASH_EXPORT TrayDetailedView : public views::View,
   // Adds connected sub label with the device's battery percentage to the |view|
   // with appropriate style and updates accessibility label.
   void SetupConnectedScrollListItem(HoverHighlightView* view,
-                                    base::Optional<uint8_t> battery_percentage);
+                                    absl::optional<uint8_t> battery_percentage);
 
   // Adds connecting sub label to the |view| with appropriate style and updates
   // accessibility label.
@@ -162,6 +165,10 @@ class ASH_EXPORT TrayDetailedView : public views::View,
 
   // The back button that appears in the material design title row. Not owned.
   views::Button* back_button_ = nullptr;
+
+  views::Label* sub_header_label_ = nullptr;
+  views::ImageView* sub_header_image_view_ = nullptr;
+  const gfx::VectorIcon* sub_header_icon_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TrayDetailedView);
 };

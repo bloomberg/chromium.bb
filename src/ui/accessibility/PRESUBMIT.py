@@ -34,6 +34,9 @@ def GetEnumsFromFile(fullpath):
     # Strip out comments
     line = re.sub('//.*', '', line)
 
+    # Strip out mojo annotations.
+    line = re.sub('\[(.*)\]', '', line)
+
     # Look for lines of the form "enum ENUM_NAME {" and get the enum_name
     m = re.search('enum ([\w]+) {', line)
     if m:
@@ -159,6 +162,10 @@ def CheckEnumsMatch(input_api, output_api):
                    'IntentMoveDirectionType', errs, output_api)
   CheckMatchingEnum(ax_enums, 'SortDirection', automation_enums,
                    'SortDirectionType', errs, output_api)
+  CheckMatchingEnum(ax_enums, 'HasPopup', automation_enums,
+                   'HasPopup', errs, output_api)
+  CheckMatchingEnum(ax_enums, 'AriaCurrentState', automation_enums,
+                   'AriaCurrentState', errs, output_api)
   return errs
 
 # Given a full path to c++ header, return an array of the first static

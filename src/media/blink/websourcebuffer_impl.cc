@@ -16,6 +16,7 @@
 #include "media/base/media_tracks.h"
 #include "media/base/timestamp_constants.h"
 #include "media/filters/chunk_demuxer.h"
+#include "media/filters/source_buffer_parse_warnings.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_source_buffer_client.h"
 
@@ -49,14 +50,11 @@ static base::TimeDelta DoubleToTimeDelta(double time) {
   if (time == std::numeric_limits<double>::infinity())
     return kInfiniteDuration;
 
-  // Don't use base::TimeDelta::Max() here, as we want the largest finite time
-  // delta.
-  base::TimeDelta max_time = base::TimeDelta::FromInternalValue(
-      std::numeric_limits<int64_t>::max() - 1);
-  double max_time_in_seconds = max_time.InSecondsF();
+  constexpr double max_time_in_seconds =
+      base::TimeDelta::FiniteMax().InSecondsF();
 
   if (time >= max_time_in_seconds)
-    return max_time;
+    return base::TimeDelta::FiniteMax();
 
   return base::TimeDelta::FromMicroseconds(
       time * base::Time::kMicrosecondsPerSecond);
@@ -140,6 +138,23 @@ bool WebSourceBufferImpl::Append(const unsigned char* data,
   // timestamp offset, report the new offset to the caller. Do not update the
   // caller's offset otherwise, to preserve any pre-existing value that may have
   // more than microsecond precision.
+  if (timestamp_offset && old_offset != timestamp_offset_)
+    *timestamp_offset = timestamp_offset_.InSecondsF();
+
+  return success;
+}
+
+bool WebSourceBufferImpl::AppendChunks(
+    std::unique_ptr<media::StreamParser::BufferQueue> buffer_queue,
+    double* timestamp_offset) {
+  base::TimeDelta old_offset = timestamp_offset_;
+  bool success =
+      demuxer_->AppendChunks(id_, std::move(buffer_queue), append_window_start_,
+                             append_window_end_, &timestamp_offset_);
+
+  // Like in ::Append, timestamp_offset may be updated by coded frame
+  // processing.
+  // TODO(crbug.com/1144908): Consider refactoring this common bit into helper.
   if (timestamp_offset && old_offset != timestamp_offset_)
     *timestamp_offset = timestamp_offset_.InSecondsF();
 

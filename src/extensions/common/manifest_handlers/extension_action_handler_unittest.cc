@@ -45,7 +45,8 @@ TEST(ExtensionActionHandlerTest, LoadInvisibleBrowserActionIconUnpacked) {
   file_util::SetReportErrorForInvisibleIconForTesting(true);
   std::string error;
   scoped_refptr<Extension> extension(file_util::LoadExtension(
-      extension_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
+      extension_dir, mojom::ManifestLocation::kUnpacked, Extension::NO_FLAGS,
+      &error));
   file_util::SetReportErrorForInvisibleIconForTesting(false);
   EXPECT_FALSE(extension);
   EXPECT_EQ(
@@ -63,7 +64,8 @@ TEST(ExtensionActionHandlerTest, LoadInvisiblePageActionIconUnpacked) {
   file_util::SetReportErrorForInvisibleIconForTesting(true);
   std::string error;
   scoped_refptr<Extension> extension(file_util::LoadExtension(
-      extension_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
+      extension_dir, mojom::ManifestLocation::kUnpacked, Extension::NO_FLAGS,
+      &error));
   file_util::SetReportErrorForInvisibleIconForTesting(false);
   EXPECT_FALSE(extension);
   EXPECT_EQ(
@@ -230,20 +232,20 @@ TEST_P(ExtensionActionManifestTest, DefaultState) {
     // The expected error, if parsing was unsuccessful.
     const char* expected_error;
     // The expected state, if parsing was successful.
-    base::Optional<ActionInfo::DefaultState> expected_state;
+    absl::optional<ActionInfo::DefaultState> expected_state;
   } test_cases[] = {
       {kDefaultStateDisabled,
        default_state_allowed ? nullptr : key_disallowed_error,
-       default_state_allowed ? base::make_optional(ActionInfo::STATE_DISABLED)
-                             : base::nullopt},
+       default_state_allowed ? absl::make_optional(ActionInfo::STATE_DISABLED)
+                             : absl::nullopt},
       {kDefaultStateEnabled,
        default_state_allowed ? nullptr : key_disallowed_error,
-       default_state_allowed ? base::make_optional(ActionInfo::STATE_ENABLED)
-                             : base::nullopt},
+       default_state_allowed ? absl::make_optional(ActionInfo::STATE_ENABLED)
+                             : absl::nullopt},
       {kDefaultStateInvalid,
        default_state_allowed ? manifest_errors::kInvalidActionDefaultState
                              : key_disallowed_error,
-       base::nullopt},
+       absl::nullopt},
   };
 
   for (const auto& test_case : test_cases) {

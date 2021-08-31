@@ -34,6 +34,8 @@ class SharedURLLoaderFactory;
 
 namespace device {
 
+class GeolocationManager;
+
 // Callback that returns the embedder's custom location provider. This callback
 // is provided to the Device Service by its embedder.
 using CustomLocationProviderCallback =
@@ -44,7 +46,7 @@ class GeolocationProviderImpl : public GeolocationProvider,
                                 public base::Thread {
  public:
   // GeolocationProvider implementation:
-  std::unique_ptr<GeolocationProvider::Subscription> AddLocationUpdateCallback(
+  base::CallbackListSubscription AddLocationUpdateCallback(
       const LocationUpdateCallback& callback,
       bool enable_high_accuracy) override;
   bool HighAccuracyLocationInUse() override;
@@ -66,13 +68,17 @@ class GeolocationProviderImpl : public GeolocationProvider,
   // |api_key| : a Google API key for network geolocation requests.
   // |custom_location_provider_getter| : a callback which returns a custom
   // location provider from embedder.
+  // |geolocation_manager| : An object that holds the macOS CLLocationManager
+  // object in order to avoid multiple initializations. Should be a nullptr
+  // on all other platforms.
   // |use_gms_core_location_provider| : For android only, a flag indicates
   // whether using the GMS core location provider.
   static void SetGeolocationConfiguration(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& api_key,
       const CustomLocationProviderCallback& custom_location_provider_getter,
-      bool use_gms_core_location_provider = false);
+      GeolocationManager* geolocation_manager,
+      bool use_gms_core_location_provider);
 
   void BindGeolocationControlReceiver(
       mojo::PendingReceiver<mojom::GeolocationControl> receiver);
@@ -121,8 +127,10 @@ class GeolocationProviderImpl : public GeolocationProvider,
   void Init() override;
   void CleanUp() override;
 
-  base::CallbackList<void(const mojom::Geoposition&)> high_accuracy_callbacks_;
-  base::CallbackList<void(const mojom::Geoposition&)> low_accuracy_callbacks_;
+  base::RepeatingCallbackList<void(const mojom::Geoposition&)>
+      high_accuracy_callbacks_;
+  base::RepeatingCallbackList<void(const mojom::Geoposition&)>
+      low_accuracy_callbacks_;
 
   bool user_did_opt_into_location_services_;
   mojom::Geoposition position_;

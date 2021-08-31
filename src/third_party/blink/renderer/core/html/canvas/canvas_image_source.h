@@ -65,6 +65,7 @@ class CORE_EXPORT CanvasImageSource {
   virtual bool IsSVGSource() const { return false; }
   virtual bool IsImageBitmap() const { return false; }
   virtual bool IsOffscreenCanvas() const { return false; }
+  virtual bool IsVideoFrame() const { return false; }
 
   virtual FloatSize ElementSize(const FloatSize& default_object_size,
                                 const RespectImageOrientationEnum) const = 0;
@@ -83,4 +84,4 @@ class CORE_EXPORT CanvasImageSource {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_CANVAS_IMAGE_SOURCE_H_

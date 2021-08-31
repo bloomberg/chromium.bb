@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 #
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -25,7 +25,17 @@ import test_helpers
 def parse_options(cli_args):
     parser = argparse.ArgumentParser(description='Run tests')
     parser.add_argument('--chrome-binary', dest='chrome_binary', help='path to Chromium binary')
-    parser.add_argument('--test-suite', dest='test_suite', help='path to test suite')
+    parser.add_argument(
+        '--test-suite',
+        dest='test_suite',
+        help=
+        'test suite name. DEPRECATED: please use --test-suite-path instead.')
+    parser.add_argument(
+        '--test-suite-path',
+        dest='test_suite_path',
+        help=
+        'path to test suite, starting from the out/TARGET directory. Should use Linux path separators.'
+    )
     parser.add_argument('--test-file', dest='test_file', help='an absolute path for the file to test')
     parser.add_argument(
         '--target',
@@ -37,6 +47,23 @@ def parse_options(cli_args):
         '--chrome-features',
         dest='chrome_features',
         help='comma separated list of strings passed to --enable-features on the chromium commandline')
+    parser.add_argument(
+        '--jobs',
+        default='1',
+        dest='jobs',
+        help=
+        'The number of parallel runners to use (if supported). Defaults to 1')
+    parser.add_argument('--cwd',
+                        dest='cwd',
+                        help='Path to the directory containing the out dir',
+                        default=devtools_paths.devtools_root_path())
+    parser.add_argument(
+        '--node_modules-path',
+        dest='node_modules_path',
+        help=
+        'Path to the node_modules directory for Node to use. Will use Node defaults if not set.',
+        default=None)
+    parser.add_argument('test_patterns', nargs='*')
     return parser.parse_args(cli_args)
 
 
@@ -44,21 +71,38 @@ def run_tests(chrome_binary,
               chrome_features,
               test_suite_path,
               test_suite,
-              test_file=None):
-    # Silence CI step in old branch
-    if test_suite == "interactions":
-        return False
+              jobs,
+              target,
+              cwd=None,
+              node_modules_path=None,
+              test_patterns=None):
     env = os.environ.copy()
     env['CHROME_BIN'] = chrome_binary
     if chrome_features:
         env['CHROME_FEATURES'] = chrome_features
 
-    if test_file is not None:
-        env['TEST_FILE'] = test_file
+    if test_patterns:
+        env['TEST_PATTERNS'] = ';'.join(test_patterns)
 
-    cwd = devtools_paths.devtools_root_path()
-    exec_command = [
-        devtools_paths.node_path(),
+    if jobs:
+        env['JOBS'] = jobs
+
+    if target:
+        env['TARGET'] = target
+
+    if node_modules_path is not None:
+        # Node requires the path to be absolute
+        env['NODE_PATH'] = os.path.abspath(node_modules_path)
+
+    if not cwd:
+        cwd = devtools_paths.devtools_root_path()
+
+    exec_command = [devtools_paths.node_path()]
+
+    if 'DEBUG' in env:
+        exec_command.append('--inspect')
+
+    exec_command = exec_command + [
         devtools_paths.mocha_path(),
         '--config',
         os.path.join(test_suite_path, '.mocharc.js'),
@@ -91,29 +135,56 @@ def run_test():
             sys.exit(1)
 
     if OPTIONS.chrome_features:
-        chrome_features = '--enable-features=%s' % OPTIONS.chrome_features
+        chrome_features = OPTIONS.chrome_features
 
     if (chrome_binary is None):
         print('Unable to run, no Chrome binary provided')
         sys.exit(1)
 
-    if (OPTIONS.test_suite is None):
-        print('Unable to run, no test suite provided')
-        sys.exit(1)
+    if OPTIONS.jobs:
+        jobs = OPTIONS.jobs
 
-    test_suite = OPTIONS.test_suite
     test_file = OPTIONS.test_file
+    test_patterns = OPTIONS.test_patterns
+    if test_file:
+        test_patterns.append(test_file)
 
-    print('Using Chromium binary ({}{})\n'.format(chrome_binary, ' ' + chrome_features if chrome_features else ''))
-    print('Using Test Suite (%s)\n' % test_suite)
+    print('Using Chromium binary ({}{})\n'.format(
+        chrome_binary, ' ' + chrome_features if chrome_features else ''))
     print('Using target (%s)\n' % OPTIONS.target)
 
     if test_file is not None:
-        print('Testing file (%s)' % test_file)
+        print(
+            'The test_file argument is obsolete, just pass the filename as positional argument'
+        )
+    if test_patterns:
+        print('Testing file(s) (%s)' % ', '.join(test_patterns))
 
-    cwd = devtools_paths.devtools_root_path()
-    test_suite_path = os.path.join(cwd, 'out', OPTIONS.target, 'gen', 'test',
-                                   test_suite)
+    cwd = OPTIONS.cwd
+    target = OPTIONS.target
+    node_modules_path = OPTIONS.node_modules_path
+
+    print('Running tests from %s\n' % cwd)
+
+    test_suite_path_input = OPTIONS.test_suite_path
+    test_suite = OPTIONS.test_suite
+    test_suite_parts = None
+    if test_suite:
+        # test-suite is deprecated and will be removed, but we support it for now to not break the bots until their recipes are updated.
+        test_suite_parts = ['gen', 'test', test_suite]
+    elif test_suite_path_input:
+        # We take the input with Linux path separators, but need to split and join to make sure this works on Windows.
+        test_suite_parts = test_suite_path_input.split('/')
+    else:
+        print(
+            'Unable to run, require one of --test-suite or --test-suite-path to be provided.'
+        )
+        sys.exit(1)
+
+    print('Using Test Suite (%s)\n' % os.path.join(*test_suite_parts))
+
+    test_suite_path = os.path.join(os.path.abspath(cwd), 'out', OPTIONS.target,
+                                   *test_suite_parts)
 
     errors_found = False
     try:
@@ -121,7 +192,11 @@ def run_test():
                                  chrome_features,
                                  test_suite_path,
                                  test_suite,
-                                 test_file=test_file)
+                                 jobs,
+                                 target,
+                                 cwd,
+                                 node_modules_path,
+                                 test_patterns=test_patterns)
     except Exception as err:
         print(err)
 

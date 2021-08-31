@@ -4,14 +4,18 @@
 
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/omnibox_result.h"
+#include "components/favicon/core/favicon_service.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/search_engines/omnibox_focus_type.h"
@@ -27,6 +31,14 @@ bool IsDriveUrl(const GURL& url) {
   return host == "drive.google.com" || host == "docs.google.com";
 }
 
+int ProviderTypes() {
+  // We use all the default providers except for the document provider, which
+  // suggests Drive files on enterprise devices. This is disabled to avoid
+  // duplication with search results from DriveFS.
+  return AutocompleteClassifier::DefaultOmniboxProviders() &
+         ~AutocompleteProvider::TYPE_DOCUMENT;
+}
+
 }  //  namespace
 
 OmniboxProvider::OmniboxProvider(Profile* profile,
@@ -35,13 +47,29 @@ OmniboxProvider::OmniboxProvider(Profile* profile,
       list_controller_(list_controller),
       controller_(std::make_unique<AutocompleteController>(
           std::make_unique<ChromeAutocompleteProviderClient>(profile),
-          AutocompleteClassifier::DefaultOmniboxProviders())) {
+          ProviderTypes())),
+      favicon_cache_(FaviconServiceFactory::GetForProfile(
+                         profile,
+                         ServiceAccessType::EXPLICIT_ACCESS),
+                     HistoryServiceFactory::GetForProfile(
+                         profile,
+                         ServiceAccessType::EXPLICIT_ACCESS)) {
   controller_->AddObserver(this);
+
+  // Normalize scores if the launcher search normalization experiment is
+  // enabled, but don't if the categorical search experiment is also enabled.
+  // This is because categorical search normalizes scores from all providers
+  // during ranking, and we don't want to do it twice.
+  if (base::FeatureList::IsEnabled(
+          app_list_features::kEnableLauncherSearchNormalization) &&
+      !app_list_features::IsCategoricalSearchEnabled()) {
+    normalizer_.emplace("omnibox_provider", profile, 25);
+  }
 }
 
 OmniboxProvider::~OmniboxProvider() {}
 
-void OmniboxProvider::Start(const base::string16& query) {
+void OmniboxProvider::Start(const std::u16string& query) {
   controller_->Stop(false);
   // The new page classification value(CHROMEOS_APP_LIST) is introduced
   // to differentiate the suggest requests initiated by ChromeOS app_list from
@@ -73,18 +101,25 @@ void OmniboxProvider::PopulateFromACResult(const AutocompleteResult& result) {
   for (const AutocompleteMatch& match : result) {
     // Do not return a match in any of these cases:
     // - The URL is invalid.
-    // - The URL points to Drive Web. The LauncherSearchProvider surfaces Drive
-    //   results.
-    // - The URL points to a local file. The LauncherSearchProvider also handles
-    //   files results, even if they've been opened in the browser.
+    // - The URL points to Drive Web. The Drive search and zero-state
+    //   providers surface Drive results.
+    // - The URL points to a local file. The Local file search and zero-state
+    //   providers handle local file results, even if they've been opened in
+    //   the browser.
     if (!match.destination_url.is_valid() ||
         IsDriveUrl(match.destination_url) ||
         match.destination_url.SchemeIsFile()) {
       continue;
     }
+
     new_results.emplace_back(std::make_unique<OmniboxResult>(
-        profile_, list_controller_, controller_.get(), match,
+        profile_, list_controller_, controller_.get(), &favicon_cache_, match,
         is_zero_state_input_));
+  }
+
+  if (normalizer_.has_value()) {
+    normalizer_->RecordResults(new_results);
+    normalizer_->NormalizeResults(&new_results);
   }
 
   SwapResults(&new_results);

@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "base/optional.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 
@@ -48,10 +48,19 @@ struct NET_EXPORT DohProviderEntry {
  public:
   using List = std::vector<const DohProviderEntry*>;
 
+  enum class LoggingLevel {
+    // Indicates the normal amount of logging, monitoring, and metrics.
+    kNormal,
+
+    // Indicates that a provider is of extra interest and eligible for
+    // additional logging, monitoring, and metrics.
+    kExtra,
+  };
+
   std::string provider;
   // A provider_id_for_histogram is required for entries that are intended to
   // be visible in the UI.
-  base::Optional<DohProviderIdForHistogram> provider_id_for_histogram;
+  absl::optional<DohProviderIdForHistogram> provider_id_for_histogram;
   std::set<IPAddress> ip_addresses;
   std::set<std::string> dns_over_tls_hostnames;
   std::string dns_over_https_template;
@@ -59,6 +68,7 @@ struct NET_EXPORT DohProviderEntry {
   std::string privacy_policy;
   bool display_globally;
   std::set<std::string> display_countries;
+  LoggingLevel logging_level;
 
   // Returns the full list of DoH providers. A subset of this list may be used
   // to support upgrade in automatic mode or to populate the dropdown menu for
@@ -67,14 +77,15 @@ struct NET_EXPORT DohProviderEntry {
 
   static DohProviderEntry ConstructForTesting(
       std::string provider,
-      base::Optional<DohProviderIdForHistogram> provider_id_for_histogram,
+      absl::optional<DohProviderIdForHistogram> provider_id_for_histogram,
       std::set<base::StringPiece> ip_strs,
       std::set<std::string> dns_over_tls_hostnames,
       std::string dns_over_https_template,
       std::string ui_name,
       std::string privacy_policy,
       bool display_globally,
-      std::set<std::string> display_countries);
+      std::set<std::string> display_countries,
+      LoggingLevel logging_level = LoggingLevel::kNormal);
 
   // Entries are move-only.  This allows tests to construct a List but ensures
   // that |const DohProviderEntry*| is a safe type for application code.
@@ -85,14 +96,15 @@ struct NET_EXPORT DohProviderEntry {
  private:
   DohProviderEntry(
       std::string provider,
-      base::Optional<DohProviderIdForHistogram> provider_id_for_histogram,
+      absl::optional<DohProviderIdForHistogram> provider_id_for_histogram,
       std::set<base::StringPiece> ip_strs,
       std::set<std::string> dns_over_tls_hostnames,
       std::string dns_over_https_template,
       std::string ui_name,
       std::string privacy_policy,
       bool display_globally,
-      std::set<std::string> display_countries);
+      std::set<std::string> display_countries,
+      LoggingLevel logging_level);
 };
 
 }  // namespace net

@@ -73,7 +73,6 @@ class PickerIndicatorElement final : public HTMLDivElement,
   void DidEndChooser() override;
 
  private:
-  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
   void DefaultEventHandler(Event&) override;
   void DetachLayoutTree(bool performing_reattach) override;
   bool IsPickerIndicatorElement() const override;
@@ -92,4 +91,4 @@ struct DowncastTraits<PickerIndicatorElement> {
 };
 
 }  // namespace blink
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_PICKER_INDICATOR_ELEMENT_H_

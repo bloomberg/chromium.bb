@@ -29,6 +29,8 @@
 #include "targets/font-drivers/cidtype1-render.h"
 #include "targets/font-drivers/cidtype1-render-ftengine.h"
 
+#include "targets/font-drivers/colrv1.h"
+
 #include "targets/font-drivers/pcf.h"
 #include "targets/font-drivers/pcf-render.h"
 
@@ -82,6 +84,8 @@
     (void) add<CidType1FtEngineFuzzTarget>(       "cidtype1-ftengine" );
     (void) add<CidType1RenderFuzzTarget>(         "cidtype1-render" );
     (void) add<CidType1RenderFtEngineFuzzTarget>( "cidtype1-render-ftengine" );
+
+    (void) add<ColrV1FuzzTarget>( "colrv1" );
 
     (void) add<PcfFuzzTarget>(       "pcf" );
     (void) add<PcfRenderFuzzTarget>( "pcf-render" );

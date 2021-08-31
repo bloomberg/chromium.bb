@@ -25,6 +25,13 @@
 #include <stdint.h>
 
 namespace perfetto {
+
+namespace protos {
+namespace pbzero {
+class QueryResult;
+}  // namespace pbzero
+}  // namespace protos
+
 namespace trace_processor {
 
 class Iterator;
@@ -53,10 +60,13 @@ class QueryResultSerializer {
   QueryResultSerializer(const QueryResultSerializer&) = delete;
   QueryResultSerializer& operator=(const QueryResultSerializer&) = delete;
 
-  // Appends the data to the passed vector (note: does NOT clear() the vector
-  // before starting). It returns true if more chunks are available (i.e.
-  // it returns NOT(|eof_reached_||)). The caller is supposed to keep calling
-  // this function until it returns false.
+  // Appends the data to the passed protozero message. It returns true if more
+  // chunks are available (i.e. it returns NOT(|eof_reached_||)). The caller is
+  // supposed to keep calling this function until it returns false.
+  bool Serialize(protos::pbzero::QueryResult*);
+
+  // Like the above but stitches everything together in a vector. Incurs in
+  // extra copies.
   bool Serialize(std::vector<uint8_t>*);
 
   void set_batch_size_for_testing(uint32_t cells_per_batch, uint32_t thres) {
@@ -65,9 +75,9 @@ class QueryResultSerializer {
   }
 
  private:
-  void SerializeColumnNames(std::vector<uint8_t>*);
-  void SerializeBatch(std::vector<uint8_t>*);
-  void MaybeSerializeError(std::vector<uint8_t>*);
+  void SerializeColumnNames(protos::pbzero::QueryResult*);
+  void SerializeBatch(protos::pbzero::QueryResult*);
+  void MaybeSerializeError(protos::pbzero::QueryResult*);
 
   std::unique_ptr<IteratorImpl> iter_;
   const uint32_t num_cols_;
@@ -75,9 +85,14 @@ class QueryResultSerializer {
   bool eof_reached_ = false;
   uint32_t col_ = UINT32_MAX;
 
+  // These params specify the thresholds for splitting the results in batches,
+  // in terms of: (1) max cells (row x cols); (2) serialized batch size in
+  // bytes, whichever is reached first. Note also that the byte limit is not
+  // 100% accurate and can occasionally yield to batches slighly larger than
+  // the limit (it splits on the next row *after* the limit is hit).
   // Overridable for testing only.
-  uint32_t cells_per_batch_ = 2048;
-  uint32_t batch_split_threshold_ = 1024 * 32;
+  uint32_t cells_per_batch_ = 50000;
+  uint32_t batch_split_threshold_ = 1024 * 128;
 };
 
 }  // namespace trace_processor

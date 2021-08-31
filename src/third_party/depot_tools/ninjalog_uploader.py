@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -15,8 +15,8 @@ The log will be used to analyze user side build performance.
 """
 
 import argparse
-import cStringIO
 import gzip
+import io
 import json
 import logging
 import multiprocessing
@@ -26,7 +26,8 @@ import subprocess
 import sys
 import time
 
-import httplib2
+from third_party.six.moves.urllib import error
+from third_party.six.moves.urllib import request
 
 # These build configs affect build performance a lot.
 # TODO(https://crbug.com/900161): Add 'blink_symbol_level' and
@@ -39,10 +40,9 @@ WHITELISTED_CONFIGS = ('symbol_level', 'use_goma', 'is_debug',
 def IsGoogler(server):
   """Check whether this script run inside corp network."""
   try:
-    h = httplib2.Http()
-    _, content = h.request('https://' + server + '/should-upload', 'GET')
-    return content == 'Success'
-  except httplib2.HttpLib2Error:
+    resp = request.urlopen('https://' + server + '/should-upload')
+    return resp.read() == b'Success'
+  except error.URLError:
     return False
 
 
@@ -193,7 +193,7 @@ def main():
 
   ninjalog = args.ninjalog or GetNinjalog(args.cmdline)
   if not os.path.isfile(ninjalog):
-    logging.warn("ninjalog is not found in %s", ninjalog)
+    logging.warning("ninjalog is not found in %s", ninjalog)
     return 1
 
   # We assume that each ninja invocation interval takes at least 2 seconds.
@@ -202,30 +202,28 @@ def main():
     logging.info("ninjalog is not updated recently %s", ninjalog)
     return 0
 
-  output = cStringIO.StringIO()
+  output = io.BytesIO()
 
   with open(ninjalog) as f:
     with gzip.GzipFile(fileobj=output, mode='wb') as g:
-      g.write(f.read())
-      g.write('# end of ninja log\n')
+      g.write(f.read().encode())
+      g.write(b'# end of ninja log\n')
 
       metadata = GetMetadata(args.cmdline, ninjalog)
       logging.info('send metadata: %s', json.dumps(metadata))
-      g.write(json.dumps(metadata))
+      g.write(json.dumps(metadata).encode())
 
-  h = httplib2.Http()
-  resp_headers, content = h.request('https://' + args.server +
-                                    '/upload_ninja_log/',
-                                    'POST',
-                                    body=output.getvalue(),
-                                    headers={'Content-Encoding': 'gzip'})
+  resp = request.urlopen(
+      request.Request('https://' + args.server + '/upload_ninja_log/',
+                      data=output.getvalue(),
+                      headers={'Content-Encoding': 'gzip'}))
 
-  if resp_headers.status != 200:
-    logging.warn("unexpected status code for response: %s", resp_headers.status)
+  if resp.status != 200:
+    logging.warning("unexpected status code for response: %s", resp.status)
     return 1
 
-  logging.info('response header: %s', resp_headers)
-  logging.info('response content: %s', content)
+  logging.info('response header: %s', resp.headers)
+  logging.info('response content: %s', resp.read())
   return 0
 
 

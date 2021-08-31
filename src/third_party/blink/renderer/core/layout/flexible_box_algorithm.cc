@@ -30,11 +30,11 @@
 
 #include "third_party/blink/renderer/core/layout/flexible_box_algorithm.h"
 
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 namespace {
@@ -79,7 +79,7 @@ FlexItem::FlexItem(const FlexLayoutAlgorithm* algorithm,
                    const ComputedStyle& style,
                    LayoutUnit flex_base_content_size,
                    MinMaxSizes min_max_main_sizes,
-                   base::Optional<MinMaxSizes> min_max_cross_sizes,
+                   absl::optional<MinMaxSizes> min_max_cross_sizes,
                    LayoutUnit main_axis_border_padding,
                    LayoutUnit cross_axis_border_padding,
                    NGPhysicalBoxStrut physical_margins,
@@ -268,7 +268,7 @@ void FlexItem::ComputeStretchedSize() {
       cross_axis_size_ = box_->ConstrainLogicalHeightByMinMax(
           stretched_size, box_->IntrinsicContentLogicalHeight());
     } else if (!MainAxisIsInlineAxis() && style_.LogicalWidth().IsAuto()) {
-      const LayoutFlexibleBox* flexbox = ToLayoutFlexibleBox(box_->Parent());
+      const auto* flexbox = To<LayoutFlexibleBox>(box_->Parent());
       cross_axis_size_ = box_->ConstrainLogicalWidthByMinMax(
           stretched_size, flexbox->CrossAxisContentExtent(), flexbox);
     }
@@ -589,17 +589,18 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_start_offset,
 LayoutUnit FlexLayoutAlgorithm::GapBetweenItems(
     const ComputedStyle& style,
     LogicalSize percent_resolution_sizes) {
-  DCHECK_GE(percent_resolution_sizes.inline_size, 0);
   if (IsColumnFlow(style)) {
-    if (const base::Optional<Length>& row_gap = style.RowGap()) {
+    if (const absl::optional<Length>& row_gap = style.RowGap()) {
       return MinimumValueForLength(
-          *row_gap, percent_resolution_sizes.block_size.ClampNegativeToZero());
+          *row_gap,
+          percent_resolution_sizes.block_size.ClampIndefiniteToZero());
     }
     return LayoutUnit();
   }
-  if (const base::Optional<Length>& column_gap = style.ColumnGap()) {
-    return MinimumValueForLength(*column_gap,
-                                 percent_resolution_sizes.inline_size);
+  if (const absl::optional<Length>& column_gap = style.ColumnGap()) {
+    return MinimumValueForLength(
+        *column_gap,
+        percent_resolution_sizes.inline_size.ClampIndefiniteToZero());
   }
   return LayoutUnit();
 }
@@ -608,17 +609,18 @@ LayoutUnit FlexLayoutAlgorithm::GapBetweenItems(
 LayoutUnit FlexLayoutAlgorithm::GapBetweenLines(
     const ComputedStyle& style,
     LogicalSize percent_resolution_sizes) {
-  DCHECK_GE(percent_resolution_sizes.inline_size, 0);
   if (!IsColumnFlow(style)) {
-    if (const base::Optional<Length>& row_gap = style.RowGap()) {
+    if (const absl::optional<Length>& row_gap = style.RowGap()) {
       return MinimumValueForLength(
-          *row_gap, percent_resolution_sizes.block_size.ClampNegativeToZero());
+          *row_gap,
+          percent_resolution_sizes.block_size.ClampIndefiniteToZero());
     }
     return LayoutUnit();
   }
-  if (const base::Optional<Length>& column_gap = style.ColumnGap()) {
-    return MinimumValueForLength(*column_gap,
-                                 percent_resolution_sizes.inline_size);
+  if (const absl::optional<Length>& column_gap = style.ColumnGap()) {
+    return MinimumValueForLength(
+        *column_gap,
+        percent_resolution_sizes.inline_size.ClampIndefiniteToZero());
   }
   return LayoutUnit();
 }
@@ -773,13 +775,8 @@ LayoutUnit FlexLayoutAlgorithm::IntrinsicContentBlockSize() const {
 
   if (IsColumnFlow()) {
     LayoutUnit max_size;
-    for (const FlexLine& line : flex_lines_) {
-      // Subtract main_axis_offset to remove border/padding
-      max_size =
-          std::max(line.main_axis_extent_ - line.sum_justify_adjustments_ -
-                       line.main_axis_offset_,
-                   max_size);
-    }
+    for (const FlexLine& line : flex_lines_)
+      max_size = std::max(line.sum_hypothetical_main_size_, max_size);
     return max_size;
   }
 

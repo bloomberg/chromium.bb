@@ -4,6 +4,8 @@
 
 #include "ui/views/widget/desktop_aura/desktop_screen_win.h"
 
+#include <memory>
+
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
@@ -28,10 +30,15 @@ gfx::NativeWindow DesktopScreenWin::GetNativeWindowFromHWND(HWND hwnd) const {
              : gfx::kNullNativeWindow;
 }
 
+bool DesktopScreenWin::IsNativeWindowOccluded(gfx::NativeWindow window) const {
+  return window->GetHost()->GetNativeWindowOcclusionState() ==
+         aura::Window::OcclusionState::OCCLUDED;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
-display::Screen* CreateDesktopScreen() {
-  return new DesktopScreenWin;
+std::unique_ptr<display::Screen> CreateDesktopScreen() {
+  return std::make_unique<DesktopScreenWin>();
 }
 
 }  // namespace views

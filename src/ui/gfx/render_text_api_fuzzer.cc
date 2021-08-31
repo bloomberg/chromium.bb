@@ -14,10 +14,13 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/render_text.h"
 
-#if defined(OS_ANDROID) || defined(OS_LINUX)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_ANDROID) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 #include "base/test/test_discardable_memory_allocator.h"
 #endif
 
@@ -37,7 +40,9 @@ struct Environment {
                           TestTimeouts::Initialize(),
                           base::test::TaskEnvironment::MainThreadType::UI)) {
     logging::SetMinLogLevel(logging::LOG_FATAL);
-#if defined(OS_ANDROID) || defined(OS_LINUX)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_ANDROID) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
     // Some platforms require discardable memory to use bitmap fonts.
     base::DiscardableMemoryAllocator::SetInstance(
         &discardable_memory_allocator);
@@ -46,7 +51,9 @@ struct Environment {
     gfx::FontList::SetDefaultFontDescription(kFontDescription);
   }
 
-#if defined(OS_ANDROID) || defined(OS_LINUX)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_ANDROID) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
   base::TestDiscardableMemoryAllocator discardable_memory_allocator;
 #endif
 
@@ -141,14 +148,13 @@ gfx::TextStyle ConsumeStyle(FuzzedDataProvider* fdp) {
 }
 
 gfx::WordWrapBehavior ConsumeWordWrap(FuzzedDataProvider* fdp) {
-  switch (fdp->ConsumeIntegralInRange(0, 4)) {
+  // TODO(1150235): ELIDE_LONG_WORDS is not supported.
+  switch (fdp->ConsumeIntegralInRange(0, 3)) {
     case 0:
       return gfx::IGNORE_LONG_WORDS;
     case 1:
       return gfx::TRUNCATE_LONG_WORDS;
     case 2:
-      return gfx::ELIDE_LONG_WORDS;
-    case 3:
       return gfx::WRAP_LONG_WORDS;
     default:
       return gfx::IGNORE_LONG_WORDS;

@@ -54,9 +54,6 @@ class LayoutSVGInline : public LayoutInline {
   void MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                           TransformState&,
                           MapCoordinatesFlags) const final;
-  const LayoutObject* PushMappingToContainer(
-      const LayoutBoxModelObject* ancestor_to_stop_at,
-      LayoutGeometryMap&) const final;
   void AbsoluteQuads(Vector<FloatQuad>&,
                      MapCoordinatesFlags mode = 0) const final;
 
@@ -72,6 +69,8 @@ class LayoutSVGInline : public LayoutInline {
 
   void InsertedIntoTree() override;
   void WillBeRemovedFromTree() override;
+
+  bool IsObjectBoundingBoxValid() const;
 };
 
 template <>
@@ -83,4 +82,4 @@ struct DowncastTraits<LayoutSVGInline> {
 
 }  // namespace blink
 
-#endif  // LayoutSVGInline_H
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_INLINE_H_

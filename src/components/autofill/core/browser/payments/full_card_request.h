@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -19,7 +18,7 @@
 
 namespace autofill {
 
-class AutofillManagerTest;
+class BrowserAutofillManagerTest;
 class AutofillMetricsTest;
 class CreditCardAccessManagerTest;
 class CreditCardCVCAuthenticatorTest;
@@ -32,6 +31,24 @@ namespace payments {
 // TODO(crbug/1061638): Refactor to use base::WaitableEvent where possible.
 class FullCardRequest final : public CardUnmaskDelegate {
  public:
+  // The type of failure.
+  enum FailureType {
+    // The user closed the prompt. The following scenarios are possible:
+    // 1) The user declined to enter their CVC and closed the prompt.
+    // 2) The user provided their CVC, got auth declined and then closed the
+    //    prompt without attempting a second time.
+    // 3) The user provided their CVC and closed the prompt before waiting for
+    //    the result.
+    PROMPT_CLOSED,
+
+    // The card could not be looked up due to card auth declined or failed.
+    VERIFICATION_DECLINED,
+
+    // The request failed for technical reasons, such as a closing page or lack
+    // of network connection.
+    GENERIC_FAILURE
+  };
+
   // The interface for receiving the full card details.
   class ResultDelegate {
    public:
@@ -39,8 +56,8 @@ class FullCardRequest final : public CardUnmaskDelegate {
     virtual void OnFullCardRequestSucceeded(
         const payments::FullCardRequest& full_card_request,
         const CreditCard& card,
-        const base::string16& cvc) = 0;
-    virtual void OnFullCardRequestFailed() = 0;
+        const std::u16string& cvc) = 0;
+    virtual void OnFullCardRequestFailed(FailureType failure_type) = 0;
   };
 
   // The delegate responsible for displaying the unmask prompt UI.
@@ -126,7 +143,7 @@ class FullCardRequest final : public CardUnmaskDelegate {
   }
 
  private:
-  friend class autofill::AutofillManagerTest;
+  friend class autofill::BrowserAutofillManagerTest;
   friend class autofill::AutofillMetricsTest;
   friend class autofill::CreditCardAccessManagerTest;
   friend class autofill::CreditCardCVCAuthenticatorTest;
@@ -146,7 +163,7 @@ class FullCardRequest final : public CardUnmaskDelegate {
                    AutofillClient::UnmaskCardReason reason,
                    base::WeakPtr<ResultDelegate> result_delegate,
                    base::WeakPtr<UIDelegate> ui_delegate,
-                   base::Optional<base::Value> fido_assertion_info);
+                   absl::optional<base::Value> fido_assertion_info);
 
   // CardUnmaskDelegate:
   void OnUnmaskPromptAccepted(

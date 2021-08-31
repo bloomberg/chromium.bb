@@ -54,6 +54,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) ClipboardFormatType {
   static ClipboardFormatType GetType(const std::string& format_string);
 
   // Get format identifiers for various types.
+  static const ClipboardFormatType& GetFilenamesType();
   static const ClipboardFormatType& GetUrlType();
   static const ClipboardFormatType& GetPlainTextType();
   static const ClipboardFormatType& GetWebKitSmartPasteType();
@@ -61,6 +62,8 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) ClipboardFormatType {
   static const ClipboardFormatType& GetHtmlType();
   static const ClipboardFormatType& GetSvgType();
   static const ClipboardFormatType& GetRtfType();
+  static const ClipboardFormatType& GetPngType();
+  // TODO(crbug.com/1201018): Remove this type.
   static const ClipboardFormatType& GetBitmapType();
   static const ClipboardFormatType& GetWebCustomDataType();
 
@@ -115,7 +118,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) ClipboardFormatType {
   // these format types can be used by drag and drop code as well.
   //
   // In all platforms, format names may be ASCII or UTF8/16.
-  // TODO(huangdarwin): Convert interfaces to base::string16.
+  // TODO(huangdarwin): Convert interfaces to std::u16string.
 #if defined(OS_WIN)
   // When there are multiple files in the data store and they are described
   // using a file group descriptor, the file contents are retrieved by

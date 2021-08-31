@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
@@ -17,6 +19,7 @@
 #include "base/no_destructor.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/synchronization/lock.h"
 #include "base/task/current_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
@@ -153,8 +156,7 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
       force_immediate_dispatch_(!EnableTaskPerMessage()),
       outgoing_serialization_mode_(g_default_outgoing_serialization_mode),
       incoming_serialization_mode_(g_default_incoming_serialization_mode),
-      interface_name_(interface_name),
-      nesting_observer_(RunLoopNestingObserver::GetForThread()) {
+      interface_name_(interface_name) {
   if (config == MULTI_THREADED_SEND)
     lock_.emplace();
 
@@ -164,9 +166,17 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
 #endif
 
   weak_self_ = weak_factory_.GetWeakPtr();
+
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+
   // Even though we don't have an incoming receiver, we still want to monitor
   // the message pipe to know if is closed or encounters an error.
-  WaitToReadMore();
+  if (task_runner_->RunsTasksInCurrentSequence()) {
+    WaitToReadMore();
+  } else {
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&Connector::WaitToReadMore, weak_self_));
+  }
 }
 
 Connector::~Connector() {
@@ -281,11 +291,22 @@ void Connector::ResumeIncomingMethodCallProcessing() {
 }
 
 bool Connector::PrefersSerializedMessages() {
-  if (outgoing_serialization_mode_ == OutgoingSerializationMode::kEager)
+  if (outgoing_serialization_mode_ != OutgoingSerializationMode::kLazy)
     return true;
-  DCHECK_EQ(OutgoingSerializationMode::kLazy, outgoing_serialization_mode_);
-  return peer_remoteness_tracker_ &&
-         peer_remoteness_tracker_->last_known_state().peer_remote();
+
+  // In lazy serialization mode (the default) we prefer to send unserialized
+  // messages. Note that most interfaces don't support lazy serialization
+  // though, so they'll still only send serialized messages. As such, in most
+  // cases this return value is ignored.
+  if (!peer_remoteness_tracker_)
+    return false;
+
+  // If we have set up a remoteness tracker however, that means we've actually
+  // seen at least one unserialized message (see Accept()). In that case we
+  // consult the tracker. The point of this is to avoid the redundant work of
+  // deferred serialization if we're reasonably certain the message is going to
+  // end up serialized anyway.
+  return peer_remoteness_tracker_->last_known_state().peer_remote();
 }
 
 bool Connector::Accept(Message* message) {
@@ -306,6 +327,17 @@ bool Connector::Accept(Message* message) {
     DCHECK(dump_result);
   }
 #endif
+
+  if (!message->is_serialized()) {
+    // The caller is sending an unserialized message. If we haven't set up a
+    // remoteness tracker yet, do so now. See PrefersSerializedMessages() above
+    // for more details.
+    DCHECK_EQ(outgoing_serialization_mode_, OutgoingSerializationMode::kLazy);
+    if (!peer_remoteness_tracker_) {
+      peer_remoteness_tracker_.emplace(
+          message_pipe_.get(), MOJO_HANDLE_SIGNAL_PEER_REMOTE, task_runner_);
+    }
+  }
 
   if (quota_checker_)
     quota_checker_->BeforeWrite();
@@ -408,6 +440,9 @@ void Connector::WaitToReadMore() {
   CHECK(!paused_);
   DCHECK(!handle_watcher_);
 
+  if (!nesting_observer_)
+    nesting_observer_ = RunLoopNestingObserver::GetForThread();
+
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   handle_watcher_ = std::make_unique<SimpleWatcher>(
       FROM_HERE, SimpleWatcher::ArmingPolicy::MANUAL, task_runner_,
@@ -416,11 +451,6 @@ void Connector::WaitToReadMore() {
       message_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE,
       base::BindRepeating(&Connector::OnWatcherHandleReady,
                           base::Unretained(this)));
-
-  if (message_pipe_.is_valid()) {
-    peer_remoteness_tracker_.emplace(
-        message_pipe_.get(), MOJO_HANDLE_SIGNAL_PEER_REMOTE, task_runner_);
-  }
 
   if (rv != MOJO_RESULT_OK) {
     // If the watch failed because the handle is invalid or its conditions can
@@ -463,9 +493,10 @@ MojoResult Connector::ReadMessage(Message* message) {
     // We include |interface_name_| in the error message since it usually
     // (via this Connector's owner) provides useful information about which
     // binding interface is using this Connector.
-    NotifyBadMessage(handle.get(),
-                     std::string(interface_name_) +
-                         "One or more handle attachments were invalid.");
+    NotifyBadMessage(
+        handle.get(),
+        base::StrCat({interface_name_,
+                      " One or more handle attachments were invalid."}));
     return MOJO_RESULT_ABORTED;
   }
 
@@ -476,7 +507,7 @@ bool Connector::DispatchMessage(Message message) {
   DCHECK(!paused_);
 
   base::WeakPtr<Connector> weak_self = weak_self_;
-  base::Optional<ActiveDispatchTracker> dispatch_tracker;
+  absl::optional<ActiveDispatchTracker> dispatch_tracker;
   if (!is_dispatching_ && nesting_observer_) {
     is_dispatching_ = true;
     dispatch_tracker.emplace(weak_self);
@@ -638,10 +669,10 @@ void Connector::HandleError(bool force_pipe_reset, bool force_async_handler) {
 void Connector::EnsureSyncWatcherExists() {
   if (sync_watcher_)
     return;
-  sync_watcher_.reset(new SyncHandleWatcher(
+  sync_watcher_ = std::make_unique<SyncHandleWatcher>(
       message_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE,
       base::BindRepeating(&Connector::OnSyncHandleWatcherHandleReady,
-                          base::Unretained(this))));
+                          base::Unretained(this)));
 }
 
 }  // namespace mojo

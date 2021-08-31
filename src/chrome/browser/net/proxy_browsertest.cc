@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/net/proxy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -42,9 +43,9 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/net/dhcp_wpad_url_client.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
 
@@ -53,14 +54,12 @@ void VerifyProxyScript(Browser* browser) {
   ui_test_utils::NavigateToURL(browser, GURL("http://google.com"));
 
   // Verify we get the ERR_PROXY_CONNECTION_FAILED screen.
-  bool result = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      browser->tab_strip_model()->GetActiveWebContents(),
-      "var textContent = document.body.textContent;"
-      "var hasError = textContent.indexOf('ERR_PROXY_CONNECTION_FAILED') >= 0;"
-      "domAutomationController.send(hasError);",
-      &result));
-  EXPECT_TRUE(result);
+  EXPECT_EQ(true, content::EvalJs(
+                      browser->tab_strip_model()->GetActiveWebContents(),
+                      "var textContent = document.body.textContent;"
+                      "var hasError = "
+                      "textContent.indexOf('ERR_PROXY_CONNECTION_FAILED') >= 0;"
+                      "hasError;"));
 }
 
 // This class observes chrome::NOTIFICATION_AUTH_NEEDED and supplies
@@ -78,8 +77,7 @@ class LoginPromptObserver : public content::NotificationObserver {
           content::Details<LoginNotificationDetails>(details).ptr();
       // |login_details->handler()| is the associated LoginHandler object.
       // SetAuth() will close the login dialog.
-      login_details->handler()->SetAuth(base::ASCIIToUTF16("foo"),
-                                        base::ASCIIToUTF16("bar"));
+      login_details->handler()->SetAuth(u"foo", u"bar");
       auth_handled_ = true;
     }
   }
@@ -111,8 +109,8 @@ IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, BasicAuthWSConnect) {
   registrar.Add(&observer, chrome::NOTIFICATION_AUTH_NEEDED,
                 content::Source<content::NavigationController>(controller));
 
-  content::TitleWatcher watcher(tab, base::ASCIIToUTF16("PASS"));
-  watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
+  content::TitleWatcher watcher(tab, u"PASS");
+  watcher.AlsoWaitForTitle(u"FAIL");
 
   // Visit a page that tries to establish WebSocket connection. The title
   // of the page will be 'PASS' on success.
@@ -122,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, BasicAuthWSConnect) {
                                ws_server.GetURL("proxied_request_check.html")
                                    .ReplaceComponents(replacements));
 
-  const base::string16 result = watcher.WaitAndGetTitle();
+  const std::u16string result = watcher.WaitAndGetTitle();
   EXPECT_TRUE(base::EqualsASCII(result, "PASS"));
   EXPECT_TRUE(observer.auth_handled());
 }
@@ -175,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(HttpProxyScriptBrowserTest, Verify) {
   VerifyProxyScript(browser());
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Tests the use of a PAC script set via Web Proxy Autodiscovery Protocol.
 // TODO(crbug.com/991867): Add a test case for when DhcpWpadUrlClient
 // returns an empty PAC URL.
@@ -208,7 +206,7 @@ class WPADHttpProxyScriptBrowserTest : public HttpProxyScriptBrowserTest {
 IN_PROC_BROWSER_TEST_F(WPADHttpProxyScriptBrowserTest, Verify) {
   VerifyProxyScript(browser());
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Tests the use of a PAC script that rejects requests to http://www.google.com/
 // when myIpAddress() and myIpAddressEx() appear to be working.
@@ -287,8 +285,7 @@ IN_PROC_BROWSER_TEST_F(HangingPacRequestProxyScriptBrowserTest, Shutdown) {
   auto simple_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  auto* storage_partition =
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
+  auto* storage_partition = browser()->profile()->GetDefaultStoragePartition();
   auto url_loader_factory =
       storage_partition->GetURLLoaderFactoryForBrowserProcess();
   simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(

@@ -9,7 +9,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/strings/string16.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/validation.h"
@@ -33,7 +32,6 @@ CreditCardFormEventLogger::~CreditCardFormEventLogger() = default;
 void CreditCardFormEventLogger::set_suggestions(
     std::vector<Suggestion> suggestions) {
   suggestions_.clear();
-  card_selected_has_offer_ = false;
   for (auto suggestion : suggestions) {
     suggestions_.emplace_back(suggestion);
 
@@ -49,6 +47,7 @@ void CreditCardFormEventLogger::OnDidSelectCardSuggestion(
     AutofillSyncSigninState sync_state) {
   sync_state_ = sync_state;
 
+  card_selected_has_offer_ = false;
   if (has_eligible_offer_) {
     card_selected_has_offer_ = DoesCardHaveOffer(credit_card);
     base::UmaHistogramBoolean("Autofill.Offer.SelectedCardHasOffer",
@@ -161,7 +160,7 @@ void CreditCardFormEventLogger::LogFormSubmitted(const FormStructure& form) {
     Log(FORM_EVENT_LOCAL_SUGGESTION_SUBMITTED_ONCE, form);
   }
 
-  if (has_eligible_offer_) {
+  if (has_logged_suggestion_filled_ && has_eligible_offer_) {
     base::UmaHistogramBoolean("Autofill.Offer.SubmittedCardHasOffer",
                               card_selected_has_offer_);
   }
@@ -208,7 +207,7 @@ void CreditCardFormEventLogger::OnLog(const std::string& name,
 
 FormEvent CreditCardFormEventLogger::GetCardNumberStatusFormEvent(
     const CreditCard& credit_card) {
-  const base::string16 number = credit_card.number();
+  const std::u16string number = credit_card.number();
   FormEvent form_event =
       FORM_EVENT_SUBMIT_WITHOUT_SELECTING_SUGGESTIONS_UNKNOWN_CARD;
 

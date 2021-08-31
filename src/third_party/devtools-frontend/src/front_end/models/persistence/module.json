@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    "ui/legacy/components/utils"
+  ],
+    "resources": [
+    "editFileSystemView.css",
+    "workspaceSettingsTab.css"
+  ]
+}

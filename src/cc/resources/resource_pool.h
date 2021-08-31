@@ -10,11 +10,11 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "base/containers/circular_deque.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/tick_clock.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/trace_event/memory_dump_provider.h"
@@ -24,6 +24,7 @@
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
@@ -336,7 +337,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
     bool avoid_reuse_ = false;
 
     // An id used to name the backing for transfer to the display compositor.
-    viz::ResourceId resource_id_ = 0;
+    viz::ResourceId resource_id_ = viz::kInvalidResourceId;
 
     // The backing for gpu resources. Initially null for resources given
     // out by ResourcePool, to be filled in by the client. Is destroyed on the

@@ -124,6 +124,10 @@ VizCompositorThreadRunnerImpl::~VizCompositorThreadRunnerImpl() {
   thread_->Stop();
 }
 
+base::PlatformThreadId VizCompositorThreadRunnerImpl::thread_id() {
+  return thread_->GetThreadId();
+}
+
 base::SingleThreadTaskRunner* VizCompositorThreadRunnerImpl::task_runner() {
   return task_runner_.get();
 }
@@ -134,13 +138,14 @@ void VizCompositorThreadRunnerImpl::CreateFrameSinkManager(
       FROM_HERE, base::BindOnce(&VizCompositorThreadRunnerImpl::
                                     CreateFrameSinkManagerOnCompositorThread,
                                 base::Unretained(this), std::move(params),
-                                nullptr, nullptr));
+                                nullptr, nullptr, nullptr));
 }
 
 void VizCompositorThreadRunnerImpl::CreateFrameSinkManager(
     mojom::FrameSinkManagerParamsPtr params,
     gpu::CommandBufferTaskExecutor* task_executor,
-    GpuServiceImpl* gpu_service) {
+    GpuServiceImpl* gpu_service,
+    gfx::RenderingPipeline* gpu_pipeline) {
   // All of the unretained objects are owned on the GPU thread and destroyed
   // after VizCompositorThread has been shutdown.
   task_runner_->PostTask(
@@ -148,7 +153,8 @@ void VizCompositorThreadRunnerImpl::CreateFrameSinkManager(
                                     CreateFrameSinkManagerOnCompositorThread,
                                 base::Unretained(this), std::move(params),
                                 base::Unretained(task_executor),
-                                base::Unretained(gpu_service)));
+                                base::Unretained(gpu_service),
+                                base::Unretained(gpu_pipeline)));
 }
 
 #if BUILDFLAG(USE_VIZ_DEVTOOLS)
@@ -164,20 +170,11 @@ void VizCompositorThreadRunnerImpl::CreateVizDevTools(
 }
 #endif
 
-void VizCompositorThreadRunnerImpl::CleanupForShutdown(
-    base::OnceClosure cleanup_finished_callback) {
-  task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(
-          &VizCompositorThreadRunnerImpl::CleanupForShutdownOnCompositorThread,
-          base::Unretained(this)),
-      std::move(cleanup_finished_callback));
-}
-
 void VizCompositorThreadRunnerImpl::CreateFrameSinkManagerOnCompositorThread(
     mojom::FrameSinkManagerParamsPtr params,
     gpu::CommandBufferTaskExecutor* task_executor,
-    GpuServiceImpl* gpu_service) {
+    GpuServiceImpl* gpu_service,
+    gfx::RenderingPipeline* gpu_pipeline) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!frame_sink_manager_);
   if (features::IsUsingSkiaRenderer())
@@ -214,7 +211,7 @@ void VizCompositorThreadRunnerImpl::CreateFrameSinkManagerOnCompositorThread(
   FrameSinkManagerImpl::InitParams init_params;
   init_params.shared_bitmap_manager = server_shared_bitmap_manager_.get();
   // Set default activation deadline to infinite if client doesn't provide one.
-  init_params.activation_deadline_in_frames = base::nullopt;
+  init_params.activation_deadline_in_frames = absl::nullopt;
   if (params->use_activation_deadline) {
     init_params.activation_deadline_in_frames =
         params->activation_deadline_in_frames;
@@ -226,6 +223,7 @@ void VizCompositorThreadRunnerImpl::CreateFrameSinkManagerOnCompositorThread(
   init_params.log_capture_pipeline_in_webrtc =
       features::ShouldWebRtcLogCapturePipeline();
   init_params.debug_renderer_settings = params->debug_renderer_settings;
+  init_params.gpu_pipeline = gpu_pipeline;
 
   frame_sink_manager_ = std::make_unique<FrameSinkManagerImpl>(init_params);
   frame_sink_manager_->BindAndSetClient(
@@ -267,13 +265,6 @@ void VizCompositorThreadRunnerImpl::InitVizDevToolsOnCompositorThread(
   devtools_server_->AttachClient(std::move(devtools_client));
 }
 #endif
-
-void VizCompositorThreadRunnerImpl::CleanupForShutdownOnCompositorThread() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  if (frame_sink_manager_)
-    frame_sink_manager_->ForceShutdown();
-}
 
 void VizCompositorThreadRunnerImpl::TearDownOnCompositorThread() {
   DCHECK(task_runner_->BelongsToCurrentThread());

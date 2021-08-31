@@ -15,7 +15,9 @@ NetworkInfo::NetworkInfo(const std::string& guid)
       connection_state(
           chromeos::network_config::mojom::ConnectionStateType::kNotConnected),
       type(chromeos::network_config::mojom::NetworkType::kWiFi),
-      source(chromeos::network_config::mojom::OncSource::kNone) {}
+      source(chromeos::network_config::mojom::OncSource::kNone),
+      activation_state(
+          chromeos::network_config::mojom::ActivationStateType::kUnknown) {}
 
 NetworkInfo::~NetworkInfo() = default;
 
@@ -23,8 +25,11 @@ bool NetworkInfo::operator==(const NetworkInfo& other) const {
   return guid == other.guid && label == other.label &&
          tooltip == other.tooltip && image.BackedBySameObjectAs(other.image) &&
          type == other.type && disable == other.disable &&
+         sim_locked == other.sim_locked &&
          connection_state == other.connection_state && source == other.source &&
-         battery_percentage == other.battery_percentage;
+         activation_state == other.activation_state &&
+         battery_percentage == other.battery_percentage &&
+         inhibited == other.inhibited;
 }
 
 }  // namespace ash

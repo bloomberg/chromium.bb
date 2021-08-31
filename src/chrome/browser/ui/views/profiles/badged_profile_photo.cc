@@ -6,6 +6,8 @@
 
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
@@ -30,14 +32,18 @@ constexpr int kBadgedProfilePhotoHeight = BadgedProfilePhoto::kImageSize;
 // including the (transparent) border.
 class CustomImageView : public views::ImageView {
  public:
+  METADATA_HEADER(CustomImageView);
   CustomImageView() = default;
+  CustomImageView(const CustomImageView&) = delete;
+  CustomImageView& operator=(const CustomImageView&) = delete;
 
  private:
   // views::ImageView:
   void OnPaint(gfx::Canvas* canvas) override;
-
-  DISALLOW_COPY_AND_ASSIGN(CustomImageView);
 };
+
+BEGIN_METADATA(CustomImageView, views::ImageView)
+END_METADATA
 
 void CustomImageView::OnPaint(gfx::Canvas* canvas) {
   // Remove the part of the ImageView that contains the badge.
@@ -114,9 +120,6 @@ class BadgeView : public ::views::ImageView {
 
 }  // namespace
 
-// static
-const char BadgedProfilePhoto::kViewClassName[] = "BadgedProfilePhoto";
-
 // BadgedProfilePhoto -------------------------------------------------
 
 BadgedProfilePhoto::BadgedProfilePhoto(BadgeType badge_type,
@@ -140,6 +143,5 @@ BadgedProfilePhoto::BadgedProfilePhoto(BadgeType badge_type,
       gfx::Size(kBadgedProfilePhotoWidth, kBadgedProfilePhotoHeight));
 }
 
-const char* BadgedProfilePhoto::GetClassName() const {
-  return kViewClassName;
-}
+BEGIN_METADATA(BadgedProfilePhoto, views::View)
+END_METADATA

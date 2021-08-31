@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_METRICS_OBSERVER_DELEGATE_H_
 #define COMPONENTS_PAGE_LOAD_METRICS_BROWSER_PAGE_LOAD_METRICS_OBSERVER_DELEGATE_H_
 
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/page_load_metrics/browser/observers/core/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/resource_tracker.h"
 #include "components/page_load_metrics/common/page_end_reason.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/scoped_visibility_tracker.h"
 
 namespace content {
@@ -43,10 +43,18 @@ class PageLoadMetricsObserverDelegate {
     // The first time when the page becomes backgrounded after the page is
     // restored. The time is relative to the navigation start of bfcache restore
     // avigation.
-    base::Optional<base::TimeDelta> first_background_time;
+    absl::optional<base::TimeDelta> first_background_time;
 
     // True if the page was in foreground when the page is restored.
     bool was_in_foreground = false;
+  };
+
+  // Distinguishes metric variants by how they react to bfcache events.
+  enum class BfcacheStrategy {
+    // Accumulate the metric over the lifetime of the PageLoadTracker.
+    ACCUMULATE,
+    // Reset the metric when the page enters the bfcache.
+    RESET
   };
 
   virtual content::WebContents* GetWebContents() const = 0;
@@ -55,11 +63,11 @@ class PageLoadMetricsObserverDelegate {
   virtual base::TimeTicks GetNavigationStart() const = 0;
 
   // The first time that the page was backgrounded since the navigation started.
-  virtual const base::Optional<base::TimeDelta>& GetFirstBackgroundTime()
+  virtual const absl::optional<base::TimeDelta>& GetFirstBackgroundTime()
       const = 0;
 
   // The first time that the page was foregrounded since the navigation started.
-  virtual const base::Optional<base::TimeDelta>& GetFirstForegroundTime()
+  virtual const absl::optional<base::TimeDelta>& GetFirstForegroundTime()
       const = 0;
 
   // The state of index-th restore from the back-forward cache.
@@ -111,7 +119,7 @@ class PageLoadMetricsObserverDelegate {
   // * a new navigation which later commits is initiated in the same tab
   // This field will not be set if the page is still active and hasn't yet
   // finished.
-  virtual base::Optional<base::TimeDelta> GetPageEndTime() const = 0;
+  virtual absl::optional<base::TimeDelta> GetPageEndTime() const = 0;
 
   // Extra information supplied to the page load metrics system from the
   // renderer for the main frame.
@@ -122,7 +130,8 @@ class PageLoadMetricsObserverDelegate {
   // such as subframe intersections is initialized to defaults.
   virtual const mojom::FrameMetadata& GetSubframeMetadata() const = 0;
   virtual const PageRenderData& GetPageRenderData() const = 0;
-  virtual const NormalizedCLSData& GetNormalizedCLSData() const = 0;
+  virtual const NormalizedCLSData& GetNormalizedCLSData(
+      BfcacheStrategy bfcache_strategy) const = 0;
   // InputTiming data accumulated across all frames.
   virtual const mojom::InputTiming& GetPageInputTiming() const = 0;
   virtual const blink::MobileFriendliness& GetMobileFriendliness() const = 0;

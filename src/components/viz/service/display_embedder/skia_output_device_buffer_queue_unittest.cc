@@ -169,6 +169,7 @@ class TestSharedImageBackingFactory : public gpu::SharedImageBackingFactory {
       int client_id,
       gfx::GpuMemoryBufferHandle handle,
       gfx::BufferFormat format,
+      gfx::BufferPlane plane,
       gpu::SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
@@ -262,7 +263,8 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
   void SetUpOnMain() override {
     gpu::SurfaceHandle surface_handle_ = gpu::kNullSurfaceHandle;
     dependency_ = std::make_unique<SkiaOutputSurfaceDependencyImpl>(
-        gpu_service_holder_->gpu_service(), surface_handle_);
+        gpu_service_holder_->gpu_service(),
+        gpu_service_holder_->task_executor(), surface_handle_);
   }
 
   void SetUpOnGpu() override {
@@ -283,7 +285,7 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
 
     auto present_callback =
         base::DoNothing::Repeatedly<gpu::SwapBuffersCompleteParams,
-                                    const gfx::Size&>();
+                                    const gfx::Size&, gfx::GpuFenceHandle>();
 
     output_device_ = std::make_unique<SkiaOutputDeviceBufferQueue>(
         std::make_unique<OutputPresenterGL>(
@@ -369,7 +371,7 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
   }
 
   void ScheduleNoPrimaryPlane() {
-    base::Optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>
+    absl::optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>
         no_plane;
     output_device_->SchedulePrimaryPlane(no_plane);
   }
@@ -379,7 +381,7 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
         base::DoNothing::Once<const gfx::PresentationFeedback&>();
 
     output_device_->SwapBuffers(std::move(present_callback),
-                                std::vector<ui::LatencyInfo>());
+                                OutputSurfaceFrame());
   }
 
   void CommitOverlayPlanes() {
@@ -387,7 +389,7 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
         base::DoNothing::Once<const gfx::PresentationFeedback&>();
 
     output_device_->CommitOverlayPlanes(std::move(present_callback),
-                                        std::vector<ui::LatencyInfo>());
+                                        OutputSurfaceFrame());
   }
 
   void PageFlipComplete() { gl_surface_->SwapComplete(); }
@@ -633,8 +635,9 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, ReshapeWithInFlightSurfaces) {
 
   SwapBuffers();
 
-  output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), kDefaultFormat,
-                          gfx::OVERLAY_TRANSFORM_NONE);
+  output_device_->Reshape(
+      gfx::Size(screen_size.width() - 1, screen_size.height() - 1), 1.0f,
+      gfx::ColorSpace(), kDefaultFormat, gfx::OVERLAY_TRANSFORM_NONE);
 
   // swap completion callbacks should not be cleared.
   EXPECT_EQ(1u, swap_completion_callbacks().size());

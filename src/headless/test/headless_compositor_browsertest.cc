@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/switches.h"
+#include "content/public/common/content_switches.h"
 #include "third_party/blink/public/common/switches.h"
 
 namespace headless {
@@ -157,5 +158,7 @@ HEADLESS_COMPOSITOR_TEST(RendererOpacityAnimation,
                          "sanity/renderer-opacity-animation.js")
 HEADLESS_COMPOSITOR_TEST(ScreenshotAfterMetricsOverride,
                          "sanity/screenshot-after-metrics-override.js")
+HEADLESS_COMPOSITOR_TEST(ScreenshotDeviceScaleFactor,
+                         "emulation/screenshot-device-scale-factor.js")
 
 }  // namespace headless

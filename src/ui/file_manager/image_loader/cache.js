@@ -6,7 +6,7 @@
  * Persistent cache storing images in an indexed database on the hard disk.
  * @constructor
  */
-function ImageCache() {
+/* #export */ function ImageCache() {
   /**
    * IndexedDB database handle.
    * @type {IDBDatabase}
@@ -27,7 +27,7 @@ ImageCache.DB_NAME = 'image-loader';
  * @type {number}
  * @const
  */
-ImageCache.DB_VERSION = 14;
+ImageCache.DB_VERSION = 15;
 
 /**
  * Memory limit for images data in bytes.

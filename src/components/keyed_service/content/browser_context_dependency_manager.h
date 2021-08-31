@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_DEPENDENCY_MANAGER_H_
 #define COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_DEPENDENCY_MANAGER_H_
 
-#include <memory>
-
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/compiler_specific.h"
@@ -66,8 +64,7 @@ class KEYED_SERVICE_EXPORT BrowserContextDependencyManager
   // CreateBrowserContextServices() or CreateBrowserContextServicesForTest().
   // This can be useful in browser tests which wish to substitute test or mock
   // builders for the keyed services.
-  std::unique_ptr<CreateServicesCallbackList::Subscription>
-  RegisterCreateServicesCallbackForTesting(
+  base::CallbackListSubscription RegisterCreateServicesCallbackForTesting(
       const CreateServicesCallback& callback) WARN_UNUSED_RESULT;
 
   // Runtime assertion called as a part of GetServiceForBrowserContext() to

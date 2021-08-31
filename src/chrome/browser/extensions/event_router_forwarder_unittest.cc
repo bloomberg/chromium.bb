@@ -7,8 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/power_monitor/power_monitor.h"
-#include "base/power_monitor/power_monitor_device_source.h"
 #include "base/run_loop.h"
 #include "base/test/thread_test_helper.h"
 #include "build/build_config.h"
@@ -87,13 +85,6 @@ class EventRouterForwarderTest : public testing::Test {
   EventRouterForwarderTest()
       : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {
-    std::unique_ptr<base::PowerMonitorSource> power_monitor_source(
-        new base::PowerMonitorDeviceSource());
-    base::PowerMonitor::Initialize(std::move(power_monitor_source));
-  }
-
-  ~EventRouterForwarderTest() override {
-    base::PowerMonitor::ShutdownForTesting();
   }
 
   void SetUp() override {
@@ -128,7 +119,8 @@ TEST_F(EventRouterForwarderTest, BroadcastRendererUIIncognito) {
       new MockEventRouterForwarder);
   using ::testing::_;
   GURL url;
-  Profile* incognito = profile1_->GetPrimaryOTRProfile();
+  Profile* incognito =
+      profile1_->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   EXPECT_CALL(*event_router, CallEventRouter(profile1_, "", kHistogramValue,
                                              kEventName, profile1_, url));
   EXPECT_CALL(*event_router, CallEventRouter(incognito, _, _, _, _, _))
@@ -145,8 +137,10 @@ TEST_F(EventRouterForwarderTest,
       new MockEventRouterForwarder);
   using ::testing::_;
   GURL url;
-  Profile* incognito1 = profile1_->GetPrimaryOTRProfile();
-  Profile* incognito2 = profile2_->GetPrimaryOTRProfile();
+  Profile* incognito1 =
+      profile1_->GetPrimaryOTRProfile(/*create_if_needed=*/true);
+  Profile* incognito2 =
+      profile2_->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   EXPECT_CALL(*event_router, CallEventRouter(profile1_, "", kHistogramValue,
                                              kEventName, profile1_, url));
   EXPECT_CALL(*event_router, CallEventRouter(incognito1, _, _, _, _, _));
@@ -197,7 +191,8 @@ TEST_F(EventRouterForwarderTest, UnicastRendererUIRestricted) {
 TEST_F(EventRouterForwarderTest, UnicastRendererUIRestrictedIncognito1) {
   scoped_refptr<MockEventRouterForwarder> event_router(
       new MockEventRouterForwarder);
-  Profile* incognito = profile1_->GetPrimaryOTRProfile();
+  Profile* incognito =
+      profile1_->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   using ::testing::_;
   GURL url;
   EXPECT_CALL(*event_router, CallEventRouter(profile1_, "", kHistogramValue,
@@ -215,8 +210,10 @@ TEST_F(
     UnicastRendererUIRestrictedIncognito1WithDispatchToOffTheRecordProfiles) {
   scoped_refptr<MockEventRouterForwarder> event_router(
       new MockEventRouterForwarder);
-  Profile* incognito1 = profile1_->GetPrimaryOTRProfile();
-  Profile* incognito2 = profile2_->GetPrimaryOTRProfile();
+  Profile* incognito1 =
+      profile1_->GetPrimaryOTRProfile(/*create_if_needed=*/true);
+  Profile* incognito2 =
+      profile2_->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   using ::testing::_;
   GURL url;
   EXPECT_CALL(*event_router, CallEventRouter(profile1_, "", kHistogramValue,
@@ -233,7 +230,8 @@ TEST_F(
 TEST_F(EventRouterForwarderTest, UnicastRendererUIRestrictedIncognito2) {
   scoped_refptr<MockEventRouterForwarder> event_router(
       new MockEventRouterForwarder);
-  Profile* incognito = profile1_->GetPrimaryOTRProfile();
+  Profile* incognito =
+      profile1_->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   using ::testing::_;
   GURL url;
   EXPECT_CALL(*event_router, CallEventRouter(profile1_, _, _, _, _, _))
@@ -262,7 +260,8 @@ TEST_F(EventRouterForwarderTest, UnicastRendererUIUnrestricted) {
 TEST_F(EventRouterForwarderTest, UnicastRendererUIUnrestrictedIncognito) {
   scoped_refptr<MockEventRouterForwarder> event_router(
       new MockEventRouterForwarder);
-  Profile* incognito = profile1_->GetPrimaryOTRProfile();
+  Profile* incognito =
+      profile1_->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   using ::testing::_;
   GURL url;
   EXPECT_CALL(*event_router, CallEventRouter(profile1_, "", kHistogramValue,

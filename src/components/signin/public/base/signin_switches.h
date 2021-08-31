@@ -6,6 +6,8 @@
 #define COMPONENTS_SIGNIN_PUBLIC_BASE_SIGNIN_SWITCHES_H_
 
 #include "base/feature_list.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/signin/public/base/signin_buildflags.h"
 
 namespace switches {
@@ -19,10 +21,27 @@ namespace switches {
 extern const char kClearTokenService[];
 extern const char kDisableSigninScopedDeviceId[];
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const base::Feature kAccountIdMigration;
+#else
+extern const base::Feature kForceAccountIdMigration;
 #endif
 
+#if defined(OS_ANDROID)
+// This feature flag is for the deprecating of the Android profile data
+// Menagerie API.
+extern const base::Feature kDeprecateMenagerieAPI;
+// This feature flag is used to wipe device data on child account signin.
+extern const base::Feature kWipeDataOnChildAccountSignin;
+#endif  // defined(OS_ANDROID)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Killswitch for PO2TS migration to AccountManagerFacade.
+extern const base::Feature kUseAccountManagerFacade;
+#endif
+
+// Support for the minor mode.
+extern const base::Feature kMinorModeSupport;
 }  // namespace switches
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_BASE_SIGNIN_SWITCHES_H_

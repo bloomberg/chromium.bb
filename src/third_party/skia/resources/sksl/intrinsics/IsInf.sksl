@@ -1,0 +1,1 @@
+uniform half a; void main() { sk_FragColor.x = isinf(a) ? 1 : 0; }

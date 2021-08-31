@@ -223,7 +223,8 @@ bool WifiLan::IsAcceptingConnectionsLocked(const std::string& service_id) {
 }
 
 WifiLanSocket WifiLan::Connect(WifiLanService& wifi_lan_service,
-                               const std::string& service_id) {
+                               const std::string& service_id,
+                               CancellationFlag* cancellation_flag) {
   MutexLock lock(&mutex_);
   NEARBY_LOGS(INFO) << "WifiLan::Connect: wifi_lan_service="
                     << &wifi_lan_service << ", service_info_name="
@@ -246,7 +247,12 @@ WifiLanSocket WifiLan::Connect(WifiLanService& wifi_lan_service,
     return socket;
   }
 
-  socket = medium_.Connect(wifi_lan_service, service_id);
+  if (cancellation_flag->Cancelled()) {
+    NEARBY_LOGS(INFO) << "Can't create client WifiLan socket due to cancel.";
+    return socket;
+  }
+
+  socket = medium_.Connect(wifi_lan_service, service_id, cancellation_flag);
   if (!socket.IsValid()) {
     NEARBY_LOG(INFO, "Failed to Connect via WifiLan [service_id=%s]",
                service_id.c_str());

@@ -9,17 +9,10 @@
 
 #include "tests/Test.h"
 
-// Note that the optimizer will aggressively kill dead code and substitute constants in place of
-// variables, so we have to jump through a few hoops to ensure that the code in these tests has the
-// necessary side-effects to remain live. In some cases we rely on the optimizer not (yet) being
-// smart enough to optimize around certain constructs; as the optimizer gets smarter it will
-// undoubtedly end up breaking some of these tests. That is a good thing, as long as the new code is
-// equivalent!
-
 static void test(skiatest::Reporter* r,
                  const GrShaderCaps& caps,
                  const char* src,
-                 SkSL::Program::Kind kind = SkSL::Program::kFragment_Kind) {
+                 SkSL::ProgramKind kind = SkSL::ProgramKind::kFragment) {
     SkSL::Compiler compiler(&caps);
     SkSL::Program::Settings settings;
     SkSL::String output;

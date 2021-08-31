@@ -8,7 +8,6 @@
 // The exact format of this tool's output to stdout is important, to match
 // what the run-webkit-tests script expects.
 
-#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -38,7 +37,7 @@ constexpr uint32_t RGBA_ALPHA = 0xff000000;
 
 class Image {
  public:
-  Image() : w_(0), h_(0) {}
+  Image() = default;
   Image(const Image& image) : w_(image.w_), h_(image.h_), data_(image.data_) {}
 
   bool has_image() const { return w_ > 0 && h_ > 0; }
@@ -109,8 +108,8 @@ class Image {
   size_t pixel_address(int x, int y) const { return (y * w_ + x) * 4; }
 
   // Pixel dimensions of the image.
-  int w_;
-  int h_;
+  int w_ = 0;
+  int h_ = 0;
 
   std::vector<uint8_t> data_;
 };

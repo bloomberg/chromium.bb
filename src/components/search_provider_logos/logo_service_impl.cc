@@ -5,9 +5,11 @@
 #include "components/search_provider_logos/logo_service_impl.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
@@ -51,31 +53,30 @@ const int kDecodeLogoTimeoutSeconds = 30;
 // out a better way, now that it isn't.
 class ImageDecodedHandlerWithTimeout {
  public:
-  static base::RepeatingCallback<void(const gfx::Image&)> Wrap(
-      const base::RepeatingCallback<void(const SkBitmap&)>&
-          image_decoded_callback) {
-    auto* handler = new ImageDecodedHandlerWithTimeout(image_decoded_callback);
+  static base::OnceCallback<void(const gfx::Image&)> Wrap(
+      base::OnceCallback<void(const SkBitmap&)> image_decoded_callback) {
+    auto* handler =
+        new ImageDecodedHandlerWithTimeout(std::move(image_decoded_callback));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&ImageDecodedHandlerWithTimeout::OnImageDecoded,
                        handler->weak_ptr_factory_.GetWeakPtr(), gfx::Image()),
         base::TimeDelta::FromSeconds(kDecodeLogoTimeoutSeconds));
-    return base::BindRepeating(&ImageDecodedHandlerWithTimeout::OnImageDecoded,
-                               handler->weak_ptr_factory_.GetWeakPtr());
+    return base::BindOnce(&ImageDecodedHandlerWithTimeout::OnImageDecoded,
+                          handler->weak_ptr_factory_.GetWeakPtr());
   }
 
  private:
   explicit ImageDecodedHandlerWithTimeout(
-      const base::RepeatingCallback<void(const SkBitmap&)>&
-          image_decoded_callback)
-      : image_decoded_callback_(image_decoded_callback) {}
+      base::OnceCallback<void(const SkBitmap&)> image_decoded_callback)
+      : image_decoded_callback_(std::move(image_decoded_callback)) {}
 
   void OnImageDecoded(const gfx::Image& decoded_image) {
-    image_decoded_callback_.Run(decoded_image.AsBitmap());
+    std::move(image_decoded_callback_).Run(decoded_image.AsBitmap());
     delete this;
   }
 
-  base::RepeatingCallback<void(const SkBitmap&)> image_decoded_callback_;
+  base::OnceCallback<void(const SkBitmap&)> image_decoded_callback_;
   base::WeakPtrFactory<ImageDecodedHandlerWithTimeout> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecodedHandlerWithTimeout);
@@ -84,7 +85,7 @@ class ImageDecodedHandlerWithTimeout {
 void ObserverOnLogoAvailable(LogoObserver* observer,
                              bool from_cache,
                              LogoCallbackReason type,
-                             const base::Optional<Logo>& logo) {
+                             const absl::optional<Logo>& logo) {
   switch (type) {
     case LogoCallbackReason::DISABLED:
     case LogoCallbackReason::CANCELED:
@@ -107,19 +108,19 @@ void ObserverOnLogoAvailable(LogoObserver* observer,
 void RunCallbacksWithDisabled(LogoCallbacks callbacks) {
   if (callbacks.on_cached_encoded_logo_available) {
     std::move(callbacks.on_cached_encoded_logo_available)
-        .Run(LogoCallbackReason::DISABLED, base::nullopt);
+        .Run(LogoCallbackReason::DISABLED, absl::nullopt);
   }
   if (callbacks.on_cached_decoded_logo_available) {
     std::move(callbacks.on_cached_decoded_logo_available)
-        .Run(LogoCallbackReason::DISABLED, base::nullopt);
+        .Run(LogoCallbackReason::DISABLED, absl::nullopt);
   }
   if (callbacks.on_fresh_encoded_logo_available) {
     std::move(callbacks.on_fresh_encoded_logo_available)
-        .Run(LogoCallbackReason::DISABLED, base::nullopt);
+        .Run(LogoCallbackReason::DISABLED, absl::nullopt);
   }
   if (callbacks.on_fresh_decoded_logo_available) {
     std::move(callbacks.on_fresh_decoded_logo_available)
-        .Run(LogoCallbackReason::DISABLED, base::nullopt);
+        .Run(LogoCallbackReason::DISABLED, absl::nullopt);
   }
 }
 
@@ -160,14 +161,14 @@ void NotifyAndClear(std::vector<EncodedLogoCallback>* encoded_callbacks,
                     const EncodedLogo* encoded_logo,
                     const Logo* decoded_logo) {
   auto opt_encoded_logo =
-      encoded_logo ? base::Optional<EncodedLogo>(*encoded_logo) : base::nullopt;
+      encoded_logo ? absl::optional<EncodedLogo>(*encoded_logo) : absl::nullopt;
   for (EncodedLogoCallback& callback : *encoded_callbacks) {
     std::move(callback).Run(type, opt_encoded_logo);
   }
   encoded_callbacks->clear();
 
   auto opt_decoded_logo =
-      decoded_logo ? base::Optional<Logo>(*decoded_logo) : base::nullopt;
+      decoded_logo ? absl::optional<Logo>(*decoded_logo) : absl::nullopt;
   for (LogoCallback& callback : *decoded_callbacks) {
     std::move(callback).Run(type, opt_decoded_logo);
   }
@@ -399,9 +400,9 @@ void LogoServiceImpl::OnCachedLogoRead(
         cached_logo->encoded_image;
     image_decoder_->DecodeImage(
         encoded_image->data(), gfx::Size(),  // No particular size desired.
-        ImageDecodedHandlerWithTimeout::Wrap(base::BindRepeating(
+        ImageDecodedHandlerWithTimeout::Wrap(base::BindOnce(
             &LogoServiceImpl::OnLightCachedImageDecoded,
-            weak_ptr_factory_.GetWeakPtr(), base::Passed(&cached_logo))));
+            weak_ptr_factory_.GetWeakPtr(), std::move(cached_logo))));
   } else if (cached_logo) {
     OnCachedLogoAvailable(std::move(cached_logo), SkBitmap(), SkBitmap());
   } else {
@@ -438,9 +439,9 @@ void LogoServiceImpl::OnLightCachedImageDecoded(
 
   image_decoder_->DecodeImage(
       dark_encoded_image->data(), gfx::Size(),  // No particular size desired.
-      ImageDecodedHandlerWithTimeout::Wrap(base::BindRepeating(
+      ImageDecodedHandlerWithTimeout::Wrap(base::BindOnce(
           &LogoServiceImpl::OnCachedLogoAvailable,
-          weak_ptr_factory_.GetWeakPtr(), base::Passed(&cached_logo), image)));
+          weak_ptr_factory_.GetWeakPtr(), std::move(cached_logo), image)));
 }
 
 void LogoServiceImpl::OnCachedLogoAvailable(
@@ -532,9 +533,9 @@ void LogoServiceImpl::OnFreshLogoParsed(bool* parsing_failed,
 
     image_decoder_->DecodeImage(
         encoded_image->data(), gfx::Size(),  // No particular size desired.
-        ImageDecodedHandlerWithTimeout::Wrap(base::BindRepeating(
+        ImageDecodedHandlerWithTimeout::Wrap(base::BindOnce(
             &LogoServiceImpl::OnLightFreshImageDecoded,
-            weak_ptr_factory_.GetWeakPtr(), base::Passed(&logo),
+            weak_ptr_factory_.GetWeakPtr(), std::move(logo),
             /*download_failed=*/false, *parsing_failed, from_http_cache)));
   }
 }
@@ -559,9 +560,9 @@ void LogoServiceImpl::OnLightFreshImageDecoded(
 
   image_decoder_->DecodeImage(
       dark_encoded_image->data(), gfx::Size(),  // No particular size desired.
-      ImageDecodedHandlerWithTimeout::Wrap(base::BindRepeating(
+      ImageDecodedHandlerWithTimeout::Wrap(base::BindOnce(
           &LogoServiceImpl::OnFreshLogoAvailable,
-          weak_ptr_factory_.GetWeakPtr(), base::Passed(&logo), download_failed,
+          weak_ptr_factory_.GetWeakPtr(), std::move(logo), download_failed,
           parsing_failed, from_http_cache, image)));
 }
 
@@ -610,7 +611,7 @@ void LogoServiceImpl::OnFreshLogoAvailable(
       UMA_HISTOGRAM_BOOLEAN("NewTabPage.LogoImageDownloaded", from_http_cache);
 
       DCHECK(!encoded_logo->encoded_image || !image.isNull());
-      logo.reset(new Logo());
+      logo = std::make_unique<Logo>();
       logo->metadata = encoded_logo->metadata;
       logo->image = image;
       logo->dark_image = dark_image;

@@ -218,14 +218,19 @@ static_library("test_support") {
     "//gpu/skia_bindings:skia_bindings",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/angle:translator",
     "//ui/gfx:test_support",
     "//ui/gl:gl_unittest_utils",
     "//ui/gl:test_support",
   ]
+
+  if (use_static_angle) {
+    deps += [ "//third_party/angle:translator" ]
+  } else {
+    deps += [ "//third_party/angle:translator_gl_d3d_only" ]
+  }
 }
 
-if (!is_android && !is_fuchsia && !is_ash) {
+if (!is_android && !is_fuchsia && !is_chromeos_ash) {
   proto_library("gl_lpm_fuzzer_proto") {
     sources = [ "command_buffer/tests/lpm/gl_lpm_fuzzer.proto" ]
 
@@ -365,7 +370,6 @@ test("gl_tests") {
     sources += [
       "command_buffer/service/webgpu_decoder_unittest.cc",
       "command_buffer/tests/shared_image_gl_backing_produce_dawn_unittest.cc",
-      "command_buffer/tests/webgpu_fence_unittest.cc",
       "command_buffer/tests/webgpu_mailbox_unittest.cc",
       "command_buffer/tests/webgpu_test.cc",
       "command_buffer/tests/webgpu_test.h",
@@ -475,7 +479,6 @@ test("gpu_unittests") {
     "command_buffer/client/webgpu_implementation_unittest.cc",
     "command_buffer/client/webgpu_implementation_unittest_autogen.h",
     "command_buffer/common/activity_flags_unittest.cc",
-    "command_buffer/common/bitfield_helpers_test.cc",
     "command_buffer/common/buffer_unittest.cc",
     "command_buffer/common/command_buffer_shared_test.cc",
     "command_buffer/common/debug_marker_manager_unittest.cc",
@@ -589,7 +592,7 @@ test("gpu_unittests") {
     "ipc/service/gpu_watchdog_thread_unittest.cc",
   ]
 
-  if (is_ash) {
+  if (is_chromeos_ash) {
     # Image decode acceleration with hardware is only supported in Chrome OS.
     # The intention is to run this test in the linux-chromeos build.
     sources += [ "ipc/service/image_decode_accelerator_stub_unittest.cc" ]
@@ -663,6 +666,7 @@ test("gpu_unittests") {
     "//gpu/ipc/client",
     "//gpu/ipc/common",
     "//gpu/ipc/common:test_interfaces",
+    "//gpu/ipc/common:test_support",
     "//gpu/ipc/host",
     "//gpu/ipc/service",
     "//ipc:test_support",

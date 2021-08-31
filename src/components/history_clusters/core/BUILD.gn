@@ -1,0 +1,60 @@
+# Copyright 2021 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/tools/bindings/mojom.gni")
+
+static_library("core") {
+  sources = [
+    "history_clusters_service.cc",
+    "history_clusters_service.h",
+    "memories_features.cc",
+    "memories_features.h",
+    "memories_remote_model_helper.cc",
+    "memories_remote_model_helper.h",
+    "visit_data.h",
+  ]
+  deps = [
+    ":mojo_bindings",
+    "//base",
+    "//components/history/core/browser",
+    "//components/history_clusters/core/proto",
+    "//components/keyed_service/core",
+    "//components/query_parser",
+    "//services/network/public/cpp",
+    "//url",
+  ]
+}
+
+mojom("mojo_bindings") {
+  sources = [ "memories.mojom" ]
+  webui_module_path = "/components/history_clusters/core"
+  public_deps = [
+    "//mojo/public/mojom/base",
+    "//url/mojom:url_mojom_gurl",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "history_clusters_service_unittest.cc" ]
+  deps = [
+    ":core",
+    ":test_support",
+    "//base/test:test_support",
+    "//components/history/core/browser",
+    "//components/history/core/test",
+    "//components/history_clusters/core/proto",
+    "//services/network:test_support",
+    "//testing/gtest",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [ "history_clusters_service_test_api.h" ]
+  deps = [
+    ":core",
+    "//components/history/core/browser",
+  ]
+}

@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/sessions/sessions_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -39,8 +40,8 @@
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/common/extension_builder.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_switches.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
 #endif
 
 namespace utils = extension_function_test_utils;
@@ -174,7 +175,7 @@ class ExtensionSessionsTest : public InProcessBrowserTest {
 };
 
 void ExtensionSessionsTest::SetUpCommandLine(base::CommandLine* command_line) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   command_line->AppendSwitch(
       chromeos::switches::kIgnoreUserProfileMappingForTests);
 #endif
@@ -187,7 +188,7 @@ void ExtensionSessionsTest::SetUpOnMainThread() {
 void ExtensionSessionsTest::CreateTestExtension() {
   extension_ = ExtensionBuilder("Test")
                    .AddPermissions({"sessions", "tabs"})
-                   .SetLocation(Manifest::INTERNAL)
+                   .SetLocation(mojom::ManifestLocation::kInternal)
                    .Build();
 }
 
@@ -358,8 +359,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetRecentlyClosedIncognito) {
 
 // http://crbug.com/251199
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_SessionsApis) {
-  ASSERT_TRUE(RunExtensionSubtest("sessions",
-                                  "sessions.html")) << message_;
+  ASSERT_TRUE(
+      RunExtensionTest({.name = "sessions", .page_url = "sessions.html"}))
+      << message_;
 }
 
 }  // namespace extensions

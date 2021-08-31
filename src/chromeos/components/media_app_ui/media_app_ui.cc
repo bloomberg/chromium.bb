@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "chromeos/components/media_app_ui/media_app_guest_ui.h"
 #include "chromeos/components/media_app_ui/media_app_page_handler.h"
 #include "chromeos/components/media_app_ui/url_constants.h"
+#include "chromeos/components/web_applications/webui_test_prod_util.h"
 #include "chromeos/grit/chromeos_media_app_bundle_resources.h"
 #include "chromeos/grit/chromeos_media_app_resources.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -29,12 +29,7 @@ content::WebUIDataSource* CreateHostDataSource() {
 
   // Add resources from chromeos_media_app_resources.pak.
   source->SetDefaultResource(IDR_MEDIA_APP_INDEX_HTML);
-  source->AddResourcePath("mojo_api_bootstrap.js",
-                          IDR_MEDIA_APP_MOJO_API_BOOTSTRAP_JS);
-  source->AddResourcePath("media_app.mojom-lite.js",
-                          IDR_MEDIA_APP_MEDIA_APP_MOJOM_JS);
-  source->AddResourcePath("media_app_index_scripts.js",
-                          IDR_MEDIA_APP_INDEX_SCRIPTS_JS);
+  source->AddResourcePath("launch.js", IDR_MEDIA_APP_LAUNCH_JS);
   source->AddLocalizedString("appTitle", IDS_MEDIA_APP_APP_NAME);
 
   // Redirects "system_assets/app_icon_*.png" (from manifest.json) to the icons
@@ -75,6 +70,15 @@ MediaAppUI::MediaAppUI(content::WebUI* web_ui,
   std::string csp = std::string("frame-src ") + kChromeUIMediaAppGuestURL + ";";
   host_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::FrameSrc, csp);
+  // Allow use of SharedArrayBuffer (required by wasm code in the iframe guest).
+  host_source->OverrideCrossOriginOpenerPolicy("same-origin");
+  host_source->OverrideCrossOriginEmbedderPolicy("require-corp");
+
+  if (MaybeConfigureTestableDataSource(host_source)) {
+    host_source->OverrideContentSecurityPolicy(
+        network::mojom::CSPDirectiveName::TrustedTypes,
+        std::string("trusted-types test-harness;"));
+  }
 
   // Register auto-granted permissions.
   auto* allowlist = WebUIAllowlist::GetOrCreate(browser_context);
@@ -83,17 +87,13 @@ MediaAppUI::MediaAppUI(content::WebUI* web_ui,
   allowlist->RegisterAutoGrantedPermissions(
       host_origin, {
                        ContentSettingsType::COOKIES,
+                       ContentSettingsType::FILE_HANDLING,
                        ContentSettingsType::FILE_SYSTEM_READ_GUARD,
                        ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
                        ContentSettingsType::IMAGES,
                        ContentSettingsType::JAVASCRIPT,
                        ContentSettingsType::SOUND,
                    });
-
-  content::WebUIDataSource* untrusted_source =
-      CreateMediaAppUntrustedDataSource(delegate_.get());
-  content::WebUIDataSource::Add(browser_context, untrusted_source);
-
   // Add ability to request chrome-untrusted: URLs.
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
 }
@@ -110,6 +110,12 @@ void MediaAppUI::CreatePageHandler(
     mojo::PendingReceiver<media_app_ui::mojom::PageHandler> receiver) {
   page_handler_ =
       std::make_unique<MediaAppPageHandler>(this, std::move(receiver));
+}
+
+bool MediaAppUI::IsJavascriptErrorReportingEnabled() {
+  // JavaScript errors are reported via CrashReportPrivate.reportError. Don't
+  // send duplicate reports via WebUI.
+  return false;
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(MediaAppUI)

@@ -197,7 +197,7 @@ void CALLBACK PerformPostSigninActionsW(HWND /*hwnd*/,
   // Don't log |buffer| since it contains sensitive info like password.
 
   HRESULT hr = S_OK;
-  base::Optional<base::Value> properties =
+  absl::optional<base::Value> properties =
       base::JSONReader::Read(buffer.data(), base::JSON_ALLOW_TRAILING_COMMAS);
 
   credential_provider::SecurelyClearBuffer(buffer.data(), buffer.size());
@@ -237,7 +237,7 @@ void CALLBACK RunAsCrashpadHandlerW(HWND /*hwnd*/,
   DCHECK_EQ(cmd_line->GetSwitchValueASCII(switches::kProcessType),
             crash_reporter::switches::kCrashpadHandler);
 
-  base::string16 entrypoint_arg;
+  std::wstring entrypoint_arg;
   credential_provider::GetEntryPointArgumentForRunDll(
       CURRENT_MODULE(), credential_provider::kRunAsCrashpadHandlerEntryPoint,
       &entrypoint_arg);

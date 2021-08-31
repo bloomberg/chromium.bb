@@ -22,19 +22,20 @@
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/gfx/range/range.h"
 
 namespace tab_strip_ui {
 
-base::Optional<tab_groups::TabGroupId> GetTabGroupIdFromString(
+absl::optional<tab_groups::TabGroupId> GetTabGroupIdFromString(
     TabGroupModel* tab_group_model,
     std::string group_id_string) {
   for (tab_groups::TabGroupId candidate : tab_group_model->ListTabGroups()) {
     if (candidate.ToString() == group_id_string) {
-      return base::Optional<tab_groups::TabGroupId>{candidate};
+      return absl::optional<tab_groups::TabGroupId>{candidate};
     }
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 Browser* GetBrowserWithGroupId(Profile* profile, std::string group_id_string) {
@@ -43,7 +44,7 @@ Browser* GetBrowserWithGroupId(Profile* profile, std::string group_id_string) {
       continue;
     }
 
-    base::Optional<tab_groups::TabGroupId> group_id = GetTabGroupIdFromString(
+    absl::optional<tab_groups::TabGroupId> group_id = GetTabGroupIdFromString(
         browser->tab_strip_model()->group_model(), group_id_string);
     if (group_id.has_value()) {
       return browser;
@@ -57,7 +58,7 @@ void MoveTabAcrossWindows(Browser* source_browser,
                           int from_index,
                           Browser* target_browser,
                           int to_index,
-                          base::Optional<tab_groups::TabGroupId> to_group_id) {
+                          absl::optional<tab_groups::TabGroupId> to_group_id) {
   bool was_active =
       source_browser->tab_strip_model()->active_index() == from_index;
   bool was_pinned = source_browser->tab_strip_model()->IsTabPinned(from_index);
@@ -107,8 +108,8 @@ bool DropTabsInNewBrowser(Browser* new_browser,
   drop_data.GetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(),
                            &pickle);
 
-  base::string16 tab_id_str;
-  base::string16 group_id_str;
+  std::u16string tab_id_str;
+  std::u16string group_id_str;
   ui::ReadCustomDataForType(pickle.data(), pickle.size(),
                             base::ASCIIToUTF16(kWebUITabIdDataType),
                             &tab_id_str);
@@ -122,8 +123,8 @@ bool DropTabsInNewBrowser(Browser* new_browser,
     return false;
 
   Browser* source_browser = nullptr;
-  std::vector<int> tab_indices_to_move;
-  base::Optional<tab_groups::TabGroupId> source_group_id;
+  gfx::Range tab_indices_to_move;
+  absl::optional<tab_groups::TabGroupId> source_group_id;
 
   // TODO(https://crbug.com/1069869): de-duplicate with
   // TabStripUIHandler::HandleMoveTab and
@@ -141,7 +142,7 @@ bool DropTabsInNewBrowser(Browser* new_browser,
             /* contents = */ nullptr, &source_index)) {
       return false;
     }
-    tab_indices_to_move.push_back(source_index);
+    tab_indices_to_move = gfx::Range(source_index, source_index + 1);
   } else {
     std::string group_id_utf8 = base::UTF16ToUTF8(group_id_str);
     source_browser =
@@ -162,8 +163,8 @@ bool DropTabsInNewBrowser(Browser* new_browser,
         *source_group_id, *source_group->visual_data());
   }
 
-  for (size_t i = 0; i < tab_indices_to_move.size(); ++i) {
-    int source_index = tab_indices_to_move[i] - i;
+  const int source_index = tab_indices_to_move.start();
+  for (size_t i = 0; i < tab_indices_to_move.length(); ++i) {
     MoveTabAcrossWindows(source_browser, source_index, new_browser, i,
                          source_group_id);
   }

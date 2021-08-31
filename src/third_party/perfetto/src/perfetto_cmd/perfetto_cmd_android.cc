@@ -21,11 +21,11 @@
 
 #include "perfetto/base/build_config.h"
 #include "perfetto/base/logging.h"
+#include "perfetto/ext/base/file_utils.h"
 #include "perfetto/ext/base/uuid.h"
 #include "perfetto/tracing/core/trace_config.h"
 #include "src/android_internal/incident_service.h"
 #include "src/android_internal/lazy_library_loader.h"
-#include "src/android_internal/statsd_logging.h"
 
 namespace perfetto {
 namespace {
@@ -35,7 +35,7 @@ constexpr int64_t kSendfileTimeoutNs = 10UL * 1000 * 1000 * 1000;  // 10s
 }  // namespace
 
 void PerfettoCmd::SaveTraceIntoDropboxAndIncidentOrCrash() {
-  PERFETTO_CHECK(is_uploading_);
+  PERFETTO_CHECK(save_to_incidentd_);
   PERFETTO_CHECK(
       !trace_config_->incident_report_config().destination_package().empty());
 
@@ -122,21 +122,13 @@ void PerfettoCmd::SaveOutputToIncidentTraceOrCrash() {
 }
 
 // static
-base::ScopedFile PerfettoCmd::OpenDropboxTmpFile() {
+base::ScopedFile PerfettoCmd::CreateUnlinkedTmpFile() {
   // If we are tracing to DropBox, there's no need to make a
   // filesystem-visible temporary file.
   auto fd = base::OpenFile(kStateDir, O_TMPFILE | O_RDWR, 0600);
   if (!fd)
     PERFETTO_PLOG("Could not create a temporary trace file in %s", kStateDir);
   return fd;
-}
-
-void PerfettoCmd::LogUploadEventAndroid(PerfettoStatsdAtom atom) {
-  if (!is_uploading_)
-    return;
-  PERFETTO_LAZY_LOAD(android_internal::StatsdLogEvent, log_event_fn);
-  base::Uuid uuid(uuid_);
-  log_event_fn(atom, uuid.lsb(), uuid.msb());
 }
 
 }  // namespace perfetto

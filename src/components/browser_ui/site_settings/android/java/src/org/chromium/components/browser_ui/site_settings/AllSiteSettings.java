@@ -97,7 +97,7 @@ public class AllSiteSettings extends SiteSettingsPreferenceFragment
 
     private void getInfoForOrigins() {
         WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher(
-                getSiteSettingsClient().getBrowserContextHandle(), false);
+                getSiteSettingsDelegate().getBrowserContextHandle(), false);
         fetcher.fetchPreferencesForCategory(mCategory, new ResultsPopulator());
     }
 
@@ -106,7 +106,7 @@ public class AllSiteSettings extends SiteSettingsPreferenceFragment
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Read which category we should be showing.
         BrowserContextHandle browserContextHandle =
-                getSiteSettingsClient().getBrowserContextHandle();
+                getSiteSettingsDelegate().getBrowserContextHandle();
         if (getArguments() != null) {
             mCategory = SiteSettingsCategory.createFromPreferenceKey(
                     browserContextHandle, getArguments().getString(EXTRA_CATEGORY, ""));
@@ -156,7 +156,7 @@ public class AllSiteSettings extends SiteSettingsPreferenceFragment
         for (int i = 0; i < mWebsites.size(); i++) {
             WebsitePreference preference = mWebsites.get(i);
             preference.site().clearAllStoredData(
-                    getSiteSettingsClient().getBrowserContextHandle(), () -> {
+                    getSiteSettingsDelegate().getBrowserContextHandle(), () -> {
                         if (--numLeft[0] <= 0) getInfoForOrigins();
                     });
         }
@@ -165,12 +165,12 @@ public class AllSiteSettings extends SiteSettingsPreferenceFragment
     /** OnClickListener for the clear button. We show an alert dialog to confirm the action */
     @Override
     public void onClick(View v) {
-        if (getActivity() == null || v != mClearButton) return;
+        if (getContext() == null || v != mClearButton) return;
 
         long totalUsage = 0;
         boolean includesApps = false;
         Set<String> originsWithInstalledApp =
-                getSiteSettingsClient().getWebappSettingsClient().getOriginsWithInstalledApp();
+                getSiteSettingsDelegate().getOriginsWithInstalledApp();
         if (mWebsites != null) {
             for (WebsitePreference preference : mWebsites) {
                 totalUsage += preference.site().getTotalUsage();
@@ -181,9 +181,10 @@ public class AllSiteSettings extends SiteSettingsPreferenceFragment
             }
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        View dialogView =
-                getActivity().getLayoutInflater().inflate(R.layout.clear_data_dialog, null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        LayoutInflater inflater =
+                (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View dialogView = inflater.inflate(R.layout.clear_data_dialog, null);
         TextView message = dialogView.findViewById(android.R.id.message);
         TextView signedOutText = dialogView.findViewById(R.id.signed_out_text);
         TextView offlineText = dialogView.findViewById(R.id.offline_text);
@@ -192,7 +193,7 @@ public class AllSiteSettings extends SiteSettingsPreferenceFragment
         String dialogFormattedText =
                 getString(includesApps ? R.string.webstorage_clear_data_dialog_message_with_app
                                        : R.string.webstorage_clear_data_dialog_message,
-                        Formatter.formatShortFileSize(getActivity(), totalUsage));
+                        Formatter.formatShortFileSize(getContext(), totalUsage));
         message.setText(dialogFormattedText);
         builder.setView(dialogView);
         builder.setPositiveButton(R.string.storage_clear_dialog_clear_storage_option,
@@ -242,20 +243,18 @@ public class AllSiteSettings extends SiteSettingsPreferenceFragment
             if (queryHasChanged) getInfoForOrigins();
         });
 
-        if (getSiteSettingsClient().getSiteSettingsHelpClient().isHelpAndFeedbackEnabled()) {
+        if (getSiteSettingsDelegate().isHelpAndFeedbackEnabled()) {
             MenuItem help = menu.add(
                     Menu.NONE, R.id.menu_id_site_settings_help, Menu.NONE, R.string.menu_help);
             help.setIcon(VectorDrawableCompat.create(
-                    getResources(), R.drawable.ic_help_and_feedback, getActivity().getTheme()));
+                    getResources(), R.drawable.ic_help_and_feedback, getContext().getTheme()));
         }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_id_site_settings_help) {
-            getSiteSettingsClient()
-                    .getSiteSettingsHelpClient()
-                    .launchSettingsHelpAndFeedbackActivity(getActivity());
+            getSiteSettingsDelegate().launchSettingsHelpAndFeedbackActivity(getActivity());
 
             return true;
         }
@@ -317,7 +316,7 @@ public class AllSiteSettings extends SiteSettingsPreferenceFragment
         for (Website site : sites) {
             if (mSearch == null || mSearch.isEmpty() || site.getTitle().contains(mSearch)) {
                 websites.add(new WebsitePreference(
-                        getStyledContext(), getSiteSettingsClient(), site, mCategory));
+                        getStyledContext(), getSiteSettingsDelegate(), site, mCategory));
             }
         }
 

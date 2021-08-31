@@ -6,7 +6,6 @@
 #define CHROME_SERVICES_UTIL_WIN_UTIL_READ_ICON_H_
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "chrome/services/util_win/public/mojom/util_read_icon.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -21,6 +20,7 @@ class UtilReadIcon : public chrome::mojom::UtilReadIcon {
   // chrome::mojom::UtilReadIcon:
   void ReadIcon(const base::FilePath& filename,
                 chrome::mojom::IconSize icon_size,
+                float scale,
                 ReadIconCallback callback) override;
 
   mojo::Receiver<chrome::mojom::UtilReadIcon> receiver_;

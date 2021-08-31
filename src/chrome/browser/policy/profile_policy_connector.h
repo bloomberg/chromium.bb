@@ -9,19 +9,21 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 namespace user_manager {
 class User;
 }
 
 namespace policy {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 namespace internal {
 class ProxiedPoliciesPropagatedWatcher;
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 class CloudPolicyStore;
 class ConfigurationPolicyProvider;
@@ -74,11 +76,15 @@ class ProfilePolicyConnector final {
   // higher-level provider.
   bool IsProfilePolicy(const char* policy_key) const;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Triggers the time out handling of waiting for the proxied primary user
   // policies to propagate. May be only called form tests.
   void TriggerProxiedPoliciesWaitTimeoutForTesting();
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  // Returns affiliation IDs contained in the PolicyData corresponding to the
+  // profile.
+  base::flat_set<std::string> user_affiliation_ids() const;
 
  private:
   // Returns the policy store which is actually used.
@@ -96,7 +102,7 @@ class ProfilePolicyConnector final {
   ConfigurationPolicyProvider* GetPlatformProvider(
       policy::ChromeBrowserPolicyConnector* browser_policy_connector);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // On Chrome OS, primary Profile user policies are forwarded to the
   // device-global PolicyService[1] using a ProxyPolicyProvider.
   // When that is done, signaling that |policy_service_| is initialized should
@@ -142,7 +148,7 @@ class ProfilePolicyConnector final {
   std::unique_ptr<internal::ProxiedPoliciesPropagatedWatcher>
       proxied_policies_propagated_watcher_;
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   std::unique_ptr<ConfigurationPolicyProvider>
       wrapped_platform_policy_provider_;

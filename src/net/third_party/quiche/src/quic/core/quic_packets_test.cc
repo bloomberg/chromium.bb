@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
+#include "quic/core/quic_packets.h"
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/common/test_tools/quiche_test_utils.h"
+#include "absl/memory/memory.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "common/test_tools/quiche_test_utils.h"
 
 namespace quic {
 namespace test {
@@ -86,7 +86,7 @@ TEST_F(QuicPacketsTest, CopySerializedPacket) {
   packet.nonretransmittable_frames.push_back(QuicFrame(&ack_frame));
   packet.nonretransmittable_frames.push_back(QuicFrame(QuicPaddingFrame(-1)));
 
-  std::unique_ptr<SerializedPacket> copy = QuicWrapUnique<SerializedPacket>(
+  std::unique_ptr<SerializedPacket> copy = absl::WrapUnique<SerializedPacket>(
       CopySerializedPacket(packet, &allocator, /*copy_buffer=*/true));
   EXPECT_EQ(quic::QuicPacketNumber(1), copy->packet_number);
   EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER, copy->packet_number_length);
@@ -102,7 +102,7 @@ TEST_F(QuicPacketsTest, CopySerializedPacket) {
       "encrypted_buffer", copy->encrypted_buffer, copy->encrypted_length,
       packet.encrypted_buffer, packet.encrypted_length);
 
-  std::unique_ptr<SerializedPacket> copy2 = QuicWrapUnique<SerializedPacket>(
+  std::unique_ptr<SerializedPacket> copy2 = absl::WrapUnique<SerializedPacket>(
       CopySerializedPacket(packet, &allocator, /*copy_buffer=*/false));
   EXPECT_EQ(packet.encrypted_buffer, copy2->encrypted_buffer);
   EXPECT_EQ(1000u, copy2->encrypted_length);

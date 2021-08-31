@@ -6,7 +6,7 @@
 #define UI_VIEWS_WIDGET_WIDGET_UTILS_H_
 
 #include "base/callback.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -37,9 +37,9 @@ class VIEWS_EXPORT WidgetOpenTimer : public WidgetObserver {
   Callback callback_;
 
   // Time the bubble has been open. Used for UMA metrics collection.
-  base::Optional<base::ElapsedTimer> open_timer_;
+  absl::optional<base::ElapsedTimer> open_timer_;
 
-  ScopedObserver<Widget, WidgetObserver> observed_widget_{this};
+  base::ScopedObservation<Widget, WidgetObserver> observed_widget_{this};
 };
 
 // Returns the root window for |widget|.  On non-Aura, this is equivalent to

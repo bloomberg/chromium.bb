@@ -4,6 +4,7 @@
 
 #include "content/public/common/drop_data.h"
 
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
@@ -15,7 +16,7 @@ DropData::Metadata::Metadata() {}
 // static
 DropData::Metadata DropData::Metadata::CreateForMimeType(
     const Kind& kind,
-    const base::string16& mime_type) {
+    const std::u16string& mime_type) {
   Metadata metadata;
   metadata.kind = kind;
   metadata.mime_type = mime_type;
@@ -52,7 +53,7 @@ DropData::DropData(const DropData& other) = default;
 
 DropData::~DropData() {}
 
-base::Optional<base::FilePath> DropData::GetSafeFilenameForImageFileContents()
+absl::optional<base::FilePath> DropData::GetSafeFilenameForImageFileContents()
     const {
   base::FilePath file_name = net::GenerateFileName(
       file_contents_source_url, file_contents_content_disposition,
@@ -67,7 +68,7 @@ base::Optional<base::FilePath> DropData::GetSafeFilenameForImageFileContents()
                        base::CompareCase::INSENSITIVE_ASCII)) {
     return file_name.ReplaceExtension(file_contents_filename_extension);
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 // static

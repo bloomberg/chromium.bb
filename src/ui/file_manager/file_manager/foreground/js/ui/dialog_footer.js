@@ -2,10 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+// #import {FileType} from '../../../common/js/file_type.m.js';
+// #import {FileListModel} from '../file_list_model.m.js';
+// #import {DialogType} from '../dialog_type.m.js';
+// #import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
+// #import {util, str} from '../../../common/js/util.m.js';
+
 /**
  * Footer shown when the Files app is opened as a file/folder selecting dialog.
  */
-class DialogFooter {
+/* #export */ class DialogFooter {
   /**
    * @param {DialogType} dialogType Dialog type.
    * @param {!Element} container Container of the dialog footer.
@@ -57,30 +64,26 @@ class DialogFooter {
      * TODO(adanilo) Replace annotation HTMLSelectElement when we can style
      * them.
      */
-    if (util.isFilesNg()) {
-      this.fileTypeSelector = container.querySelector('div.file-type');
-      // TODO(adanilo) Work out why this is needed to satisfy Closure.
-      const selectorReference = /** @type {!Object} */ (this.fileTypeSelector);
-      Object.defineProperty(selectorReference, 'value', {
-        get() {
-          return this.getSelectValue();
-        },
-        enumerable: true,
-        configurable: true
-      });
-      this.fileTypeSelector.getSelectValue = this.getSelectValue_.bind(this);
-      this.fileTypeSelector.addEventListener(
-          'activate', this.onActivate_.bind(this));
-      this.fileTypeSelector.addEventListener(
-          'click', this.onActivate_.bind(this));
-      this.fileTypeSelector.addEventListener('blur', this.onBlur_.bind(this));
-      this.fileTypeSelector.addEventListener(
-          'keydown', this.onKeyDown_.bind(this));
+    this.fileTypeSelector = container.querySelector('div.file-type');
+    // TODO(adanilo) Work out why this is needed to satisfy Closure.
+    const selectorReference = /** @type {!Object} */ (this.fileTypeSelector);
+    Object.defineProperty(selectorReference, 'value', {
+      get() {
+        return this.getSelectValue();
+      },
+      enumerable: true,
+      configurable: true
+    });
+    this.fileTypeSelector.getSelectValue = this.getSelectValue_.bind(this);
+    this.fileTypeSelector.addEventListener(
+        'activate', this.onActivate_.bind(this));
+    this.fileTypeSelector.addEventListener(
+        'click', this.onActivate_.bind(this));
+    this.fileTypeSelector.addEventListener('blur', this.onBlur_.bind(this));
+    this.fileTypeSelector.addEventListener(
+        'keydown', this.onKeyDown_.bind(this));
 
-      this.fileTypeSelectorText = this.fileTypeSelector.querySelector('span');
-    } else {
-      this.fileTypeSelector = container.querySelector('select.file-type');
-    }
+    this.fileTypeSelectorText = this.fileTypeSelector.querySelector('span');
 
     /** @public @const {!CrInputElement} */
     this.filenameInput = /** @type {!CrInputElement} */ (filenameInput);
@@ -291,24 +294,22 @@ class DialogFooter {
   setOptionSelected(option) {
     option.selected = true;
     // Update our fake 'select' HTMLDivElement.
-    if (util.isFilesNg()) {
-      const existingSelected =
-          this.fileTypeSelector.querySelector('.options .selected');
-      if (existingSelected) {
-        existingSelected.removeAttribute('class');
-      }
-      option.setAttribute('class', 'selected');
-      this.fileTypeSelectorText.innerText = option.innerText;
-      this.fileTypeSelectorText.parentElement.setAttribute(
-          'aria-activedescendant', option.id);
-      // Force the width of the file-type selector div to be the width
-      // of the options area to stop it jittering on selection change.
-      if (option.parentNode) {
-        let optionsWidth = option.parentNode.getBoundingClientRect().width;
-        optionsWidth -= 16 + 12;  // Padding of 16 + 12 px.
-        this.fileTypeSelector.setAttribute(
-            'style', 'width: ' + optionsWidth + 'px');
-      }
+    const existingSelected =
+        this.fileTypeSelector.querySelector('.options .selected');
+    if (existingSelected) {
+      existingSelected.removeAttribute('class');
+    }
+    option.setAttribute('class', 'selected');
+    this.fileTypeSelectorText.innerText = option.innerText;
+    this.fileTypeSelectorText.parentElement.setAttribute(
+        'aria-activedescendant', option.id);
+    // Force the width of the file-type selector div to be the width
+    // of the options area to stop it jittering on selection change.
+    if (option.parentNode) {
+      let optionsWidth = option.parentNode.getBoundingClientRect().width;
+      optionsWidth -= 16 + 12;  // Padding of 16 + 12 px.
+      this.fileTypeSelector.setAttribute(
+          'style', 'width: ' + optionsWidth + 'px');
     }
   }
 
@@ -321,9 +322,7 @@ class DialogFooter {
    */
   initFileTypeFilter(fileTypes, includeAllFiles) {
     let optionHost = this.fileTypeSelector;
-    if (util.isFilesNg()) {
-      optionHost = optionHost.querySelector('.options');
-    }
+    optionHost = optionHost.querySelector('.options');
     for (let i = 0; i < fileTypes.length; i++) {
       const fileType = fileTypes[i];
       const option =
@@ -376,7 +375,7 @@ class DialogFooter {
     }
 
     const options = this.fileTypeSelector.querySelectorAll('option');
-    if (options.length > 0 && util.isFilesNg()) {
+    if (options.length > 0) {
       // Make sure one of the options is selected to match real <select>.
       let selectedOption =
           this.fileTypeSelector.querySelector('.options .selected');

@@ -2,8 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://wicg.github.io/native-file-system/#dictdef-filepickeroptions
+enum WellKnownDirectory {
+  "desktop",
+  "documents",
+  "downloads",
+  "music",
+  "pictures",
+  "videos",
+};
+
+// https://wicg.github.io/file-system-access/#dictdef-filepickeroptions
 dictionary FilePickerOptions {
   sequence<FilePickerAcceptType> types;
   boolean excludeAcceptAllOption = false;
+  DOMString id;
+  (WellKnownDirectory or FileSystemHandle) startIn;
 };

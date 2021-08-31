@@ -96,15 +96,15 @@ bool KeyframeEffectModelBase::Sample(
 
 namespace {
 
-static const size_t num_compositable_properties = 7;
+static const size_t num_compositable_properties = 8;
 
 const CSSProperty** CompositableProperties() {
   static const CSSProperty*
       kCompositableProperties[num_compositable_properties] = {
-          &GetCSSPropertyOpacity(),       &GetCSSPropertyRotate(),
-          &GetCSSPropertyScale(),         &GetCSSPropertyTransform(),
-          &GetCSSPropertyTranslate(),     &GetCSSPropertyFilter(),
-          &GetCSSPropertyBackdropFilter()};
+          &GetCSSPropertyOpacity(),        &GetCSSPropertyRotate(),
+          &GetCSSPropertyScale(),          &GetCSSPropertyTransform(),
+          &GetCSSPropertyTranslate(),      &GetCSSPropertyFilter(),
+          &GetCSSPropertyBackdropFilter(), &GetCSSPropertyBackgroundColor()};
   return kCompositableProperties;
 }
 
@@ -238,7 +238,7 @@ Vector<double> KeyframeEffectModelBase::GetComputedOffsets(
   result.ReserveCapacity(keyframes.size());
 
   for (const auto& keyframe : keyframes) {
-    base::Optional<double> offset = keyframe->Offset();
+    absl::optional<double> offset = keyframe->Offset();
     if (offset) {
       DCHECK_GE(offset.value(), 0);
       DCHECK_LE(offset.value(), 1);
@@ -351,11 +351,13 @@ void KeyframeEffectModelBase::EnsureKeyframeGroups() const {
   }
 }
 
-bool KeyframeEffectModelBase::HasNonVariableProperty() const {
+bool KeyframeEffectModelBase::RequiresPropertyNode() const {
   for (const auto& keyframe : keyframes_) {
     for (const auto& property : keyframe->Properties()) {
       if (!property.IsCSSProperty() ||
-          property.GetCSSProperty().PropertyID() != CSSPropertyID::kVariable)
+          (property.GetCSSProperty().PropertyID() != CSSPropertyID::kVariable &&
+           property.GetCSSProperty().PropertyID() !=
+               CSSPropertyID::kBackgroundColor))
         return true;
     }
   }

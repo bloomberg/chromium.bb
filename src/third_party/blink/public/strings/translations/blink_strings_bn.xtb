@@ -19,6 +19,7 @@
 <translation id="1359897965706325498">ব্যানার</translation>
 <translation id="145015347812617860"><ph name="COUNT" />টি আইটেম</translation>
 <translation id="1480676835519562650">অনেক বিকল্প বেছে নেওয়ার সুবিধা, <ph name="COUNT" />টির মধ্যে <ph name="SELECTED" />টি বেছে নেওয়া হয়েছে।</translation>
+<translation id="1588438908519853928">সাধারণ</translation>
 <translation id="1589122976691792535">অঞ্চল</translation>
 <translation id="1591562245178063882">এই মাস</translation>
 <translation id="1637811476055996098">ফাইল বেছে নিন</translation>
@@ -84,6 +85,7 @@
 <translation id="3175736971608411871">টাইমার</translation>
 <translation id="3199563858620722075">কম্বো বাক্স</translation>
 <translation id="3220661731597678625">বর্তমান ধাপ</translation>
+<translation id="3321030238473337787">প্লেব্যাক স্পিড</translation>
 <translation id="3329013043687509092">পরিপৃক্তি</translation>
 <translation id="3450233048674729344">মানটি অবশ্যই <ph name="MAXIMUM" />এর চেয়ে কম বা সমান হবে৷</translation>
 <translation id="3486220673238053218">সংজ্ঞা</translation>
@@ -111,11 +113,12 @@
 <translation id="4248100235867064564">মেনু বার</translation>
 <translation id="4293574643247337246">পৃষ্ঠার হেডার</translation>
 <translation id="4360991593054037559">দয়া করে একটি বৈধ মান লিখুন৷ দুটি কাছাকাছির বৈধ মান হল <ph name="VALID_VALUE_LOW" /> এবং <ph name="VALID_VALUE_HIGHER" />৷</translation>
+<translation id="4371899966896349864">প্লেব্যাক স্পিড মেনু লুকান</translation>
 <translation id="4384249794467006333">এই ছবিটি লেবেল করা হয়নি। ছবির বিবরণ পেতে, স্ক্রিনের সবচেয়ে উপরে ডানদিকে 'আরও বিকল্প' মেনু খুলুন।</translation>
 <translation id="4384583879834880242">প্রশ্ন এবং উত্তর</translation>
 <translation id="4444765639179266822">মনে হচ্ছে বলতে চাইছে: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">শব্দকোষের রেফারেন্স</translation>
-<translation id="4522570452068850558">বিশদ বিবরণ</translation>
+<translation id="4522570452068850558">বিবরণগুলি</translation>
 <translation id="4576178047100686001">এই ছবিটি লেবেল করা হয়নি। ছবির বিবরণ পেতে, স্ক্রিনের সবচেয়ে উপরে বাঁদিকে 'আরও বিকল্প' মেনু খুলুন।</translation>
 <translation id="4597532268155981612">ফর্ম</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -147,15 +150,18 @@
 <translation id="512758898067543763">সারি শিরোলেখ</translation>
 <translation id="5143125788380636750">উপসংহার</translation>
 <translation id="5164977714490026579">মানটি অবশ্যই <ph name="MINIMUM" />এর চেয়ে বেশি বা সমান হবে৷</translation>
+<translation id="5196716972587102051">২</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' অনুসরণ করে একটি অংশ লিখুন৷ '<ph name="INVALIDADDRESS" />' অসম্পূর্ণ৷</translation>
 <translation id="5334352251556557839">মিডিয়া চালানো যাচ্ছে না।</translation>
 <translation id="537648784377940524">আগের তারিখ (<ph name="MIN_DATE_OR_TIME" />) অবশ্যই পরের তারিখের (<ph name="MAX_DATE_OR_TIME" />) আগে লিখতে হবে।</translation>
+<translation id="5378437566635403538">বড় করা হয়েছে, ডায়ালগ খোলা হয়েছে।</translation>
 <translation id="5406322316791861025">আকার</translation>
 <translation id="5425179576310518467">বর্তমান তারিখ</translation>
 <translation id="5453733299334684579">ট্রি আইটেম</translation>
 <translation id="5466621249238537318">অনুগ্রহ করে এক বা একাধিক ফাইল নির্বাচন করুন৷</translation>
 <translation id="5468998798572797635">পূর্ণ স্ক্রিন বন্ধ করুন</translation>
+<translation id="5516235301412634559">0.75</translation>
 <translation id="5516424706154626233">তারিখ চয়নকারি</translation>
 <translation id="5537725057119320332">কাস্ট করুন</translation>
 <translation id="5546461542133609677">সশব্দ</translation>
@@ -167,6 +173,8 @@
 <translation id="5677946354068040947">আরও বিকল্প</translation>
 <translation id="576709008726043716">পরিচয়</translation>
 <translation id="57838592816432529">মিউট করুন</translation>
+<translation id="5786442179789148008">প্লেব্যাক স্পিডের মেনু দেখুন</translation>
+<translation id="5787939484346677755">বড় করা হয়েছে, অটোমেটিক সম্পূর্ণ করার বিকল্প উপলভ্য আছে।</translation>
 <translation id="5860033963881614850">বন্ধ করুন</translation>
 <translation id="588258955323874662">সম্পূর্নস্ক্রীণ</translation>
 <translation id="5888666972993069672"><ph name="DEVICE_FRIENDLY_NAME" /> এ কাস্ট করা হচ্ছে</translation>
@@ -174,12 +182,14 @@
 <translation id="5916664084637901428">চালু</translation>
 <translation id="5939518447894949180">রিসেট করুন</translation>
 <translation id="5966707198760109579">সপ্তাহ</translation>
+<translation id="5985507339671257014">০.৫</translation>
 <translation id="5987525920412732405">ঘোড়ানোর বোতাম</translation>
 <translation id="6011459053400940133">ভলিউম স্লাইডার</translation>
 <translation id="6015796118275082299">বছর</translation>
 <translation id="6023896073578205740">তালিকা বাক্স</translation>
 <translation id="6150588977291308318">বিবলিওগ্রাফি</translation>
 <translation id="6164829606128959761">মিটার</translation>
+<translation id="6165053282446038410">বড় করা হয়েছে, <ph name="COUNT" />টি অটোমেটিক সম্পূর্ণ করার বিকল্প উপলভ্য আছে।</translation>
 <translation id="6166809985690652833">পরিশিষ্ট</translation>
 <translation id="6209276755895393898">মনে হচ্ছে: <ph name="DESCRIPTION" /></translation>
 <translation id="6212595056017402527">বর্তমান পৃষ্ঠা</translation>
@@ -200,6 +210,7 @@
 <translation id="6643016212128521049">সাফ করুন</translation>
 <translation id="668171684555832681">অন্যান্য...</translation>
 <translation id="6692633176391053278">পদক্ষেপকারী</translation>
+<translation id="6696580792574109116">মান্থ পিকার</translation>
 <translation id="6709093583001123835">মান অবশ্যই <ph name="VALUE" /> হতে হবে।</translation>
 <translation id="6709570249143506788">প্লেব্যাকের গুণমান খারাপ</translation>
 <translation id="6755330956360078551">সরঞ্জামটিপ</translation>
@@ -210,16 +221,19 @@
 <translation id="6843725295806269523">মিউট</translation>
 <translation id="6885760532393684712">ডিরেক্টরি</translation>
 <translation id="689129560213475294">বইটির সম্পর্কে</translation>
+<translation id="6919891270253167948">1.5</translation>
 <translation id="6934078000481955284">ব্লক উদ্ধৃতি</translation>
 <translation id="693476918119313863">হেডার</translation>
 <translation id="6941933287844615239">মিডিয়া ডাউনলোড করুন</translation>
 <translation id="6981594929165378967">যোগ করা হচ্ছে</translation>
+<translation id="698788488269350478">বড় করা হয়েছে।</translation>
 <translation id="6989848892321993519">দয়া করে এই পাঠ্যকে ন্যূনতম <ph name="MIN_CHARACTERS" /> অক্ষরের বা তার বেশি দৈর্ঘ্যের করুন (আপনি বর্তমানে ১টি অক্ষর ব্যবহার করেছেন)।</translation>
 <translation id="7034405885550056553">সাজেশন</translation>
 <translation id="709897737746224366">দয়া করে অনুরোধ হওয়া বিন্যাসটি মেলান৷</translation>
 <translation id="7102274145889307184">বর্তমান লোকেশন</translation>
 <translation id="7118469954320184356">কোনও বিবরণ নেই।</translation>
 <translation id="7139483182332611405">মুখবন্ধ</translation>
+<translation id="7198226213493847604">পপ-আপ মেনু খোলার বোতাম</translation>
 <translation id="7214187073215825913">কন্টেন্টের তথ্য</translation>
 <translation id="7238347055216017155">জোর দেওয়া</translation>
 <translation id="7263440858009898357">তালিকা থেকে একটি আইটেম নির্বাচন করুন৷ </translation>
@@ -244,6 +258,7 @@
 <translation id="7745230546936012372">ছবির বিবরণ অনুপস্থিত থাকলে, সেটি জানতে সংশ্লিষ্ট মেনু খুলুন।</translation>
 <translation id="7750228210027921155">ছবির-মধ্যে-ছবি</translation>
 <translation id="775297008183122718">নির্ভুল নয়</translation>
+<translation id="7782515065589691344">১.২৫</translation>
 <translation id="7789962463072032349">বিরাম</translation>
 <translation id="7802800022689234070">উম্মোচন ত্রিভুজ</translation>
 <translation id="7852167693871241274">হিউ স্লাইডার</translation>
@@ -257,6 +272,7 @@
 <translation id="8105797009065549151">নোটের রেফারেন্স</translation>
 <translation id="811583516810654505">বিবরণ খোঁজা হচ্ছে…</translation>
 <translation id="8117451130807776954">এই সপ্তাহ</translation>
+<translation id="8131955114056917397">0.25</translation>
 <translation id="8199524924445686405">yyyy</translation>
 <translation id="8208673686607688524">স্থানীয় তারিখ ও সময় চয়নকারি</translation>
 <translation id="8261464734335370856">ভুল বানান</translation>
@@ -281,11 +297,14 @@
 <translation id="8613126697340063924">রিমোট প্লেব্যাক নিয়ন্ত্রণ করুন</translation>
 <translation id="862370744433916922">সাবটাইটেল</translation>
 <translation id="8634971699417195529">মাস বাছাইকারী দেখুন</translation>
+<translation id="8637593834423658414">1.75</translation>
+<translation id="8668988909814782445">লাইন র‍্যাপ করা</translation>
 <translation id="8711688047404765493">আউটপুট</translation>
 <translation id="8750798805984357768">দয়া করে বিকল্পগুলির একটি নির্বাচন করুন৷</translation>
 <translation id="8808573423886751634">অধ্যায়</translation>
 <translation id="8845239796550121995">এখন আপনার TV তে কাস্ট করা হচ্ছে</translation>
 <translation id="8851136666856101339">প্রধান</translation>
+<translation id="8861621546968757188">পপ-আপ ডায়ালগ খোলার বোতাম</translation>
 <translation id="8875657656876809964">ভিডিও প্লেব্যাকে সমস্যা</translation>
 <translation id="8889402386540077796">রঙ বিন্যাস</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> কেবি</translation>

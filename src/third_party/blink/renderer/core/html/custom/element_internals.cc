@@ -4,13 +4,14 @@
 
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_file_formdata_usvstring.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_validity_state_flags.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
-#include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
+#include "third_party/blink/renderer/core/html/custom/custom_state_set.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
@@ -32,20 +33,6 @@ bool IsValidityStateFlagsValid(const ValidityStateFlags* flags) {
 }
 }  // anonymous namespace
 
-class CustomStatesTokenList : public DOMTokenList {
- public:
-  CustomStatesTokenList(Element& element)
-      : DOMTokenList(element, g_null_name) {}
-
-  AtomicString value() const override { return TokenSet().SerializeToString(); }
-
-  void setValue(const AtomicString& new_value) override {
-    DidUpdateAttributeValue(value(), new_value);
-    // Should we have invalidation set for each of state tokens?
-    GetElement().PseudoStateChanged(CSSSelector::kPseudoState);
-  }
-};
-
 ElementInternals::ElementInternals(HTMLElement& target) : target_(target) {
 }
 
@@ -60,6 +47,43 @@ void ElementInternals::Trace(Visitor* visitor) const {
   ListedElement::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }
+
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+
+void ElementInternals::setFormValue(const V8ControlValue* value,
+                                    ExceptionState& exception_state) {
+  setFormValue(value, value, exception_state);
+}
+
+void ElementInternals::setFormValue(const V8ControlValue* value,
+                                    const V8ControlValue* state,
+                                    ExceptionState& exception_state) {
+  if (!IsTargetFormAssociated()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "The target element is not a form-associated custom element.");
+    return;
+  }
+
+  if (value && value->IsFormData()) {
+    value_ = MakeGarbageCollected<V8ControlValue>(
+        MakeGarbageCollected<FormData>(*value->GetAsFormData()));
+  } else {
+    value_ = value;
+  }
+
+  if (value == state) {
+    state_ = value_;
+  } else if (state && state->IsFormData()) {
+    state_ = MakeGarbageCollected<V8ControlValue>(
+        MakeGarbageCollected<FormData>(*state->GetAsFormData()));
+  } else {
+    state_ = state;
+  }
+  NotifyFormStateChanged();
+}
+
+#else  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void ElementInternals::setFormValue(const ControlValue& value,
                                     ExceptionState& exception_state) {
@@ -93,6 +117,8 @@ void ElementInternals::setFormValue(const ControlValue& value,
   }
   NotifyFormStateChanged();
 }
+
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 HTMLFormElement* ElementInternals::form(ExceptionState& exception_state) const {
   if (!IsTargetFormAssociated()) {
@@ -228,14 +254,14 @@ LabelsNodeList* ElementInternals::labels(ExceptionState& exception_state) {
   return Target().labels();
 }
 
-DOMTokenList* ElementInternals::states() {
+CustomStateSet* ElementInternals::states() {
   if (!custom_states_)
-    custom_states_ = MakeGarbageCollected<CustomStatesTokenList>(Target());
+    custom_states_ = MakeGarbageCollected<CustomStateSet>(Target());
   return custom_states_;
 }
 
 bool ElementInternals::HasState(const AtomicString& state) const {
-  return custom_states_ && custom_states_->contains(state);
+  return custom_states_ && custom_states_->Has(state);
 }
 
 ShadowRoot* ElementInternals::shadowRoot() const {
@@ -291,40 +317,65 @@ void ElementInternals::SetElementAttribute(const QualifiedName& name,
   auto result = explicitly_set_attr_elements_map_.insert(name, nullptr);
   if (result.is_new_entry) {
     result.stored_value->value =
-        MakeGarbageCollected<HeapVector<Member<Element>>>();
+        MakeGarbageCollected<HeapLinkedHashSet<WeakMember<Element>>>();
   } else {
     result.stored_value->value->clear();
   }
-  result.stored_value->value->push_back(element);
+  result.stored_value->value->insert(element);
 }
 
 Element* ElementInternals::GetElementAttribute(const QualifiedName& name) {
-  HeapVector<Member<Element>>* element_vector =
+  HeapLinkedHashSet<WeakMember<Element>>* stored_elements =
       explicitly_set_attr_elements_map_.at(name);
-  if (!element_vector)
+  if (!stored_elements)
     return nullptr;
-  DCHECK_EQ(element_vector->size(), 1u);
-  return element_vector->at(0);
+  DCHECK_EQ(stored_elements->size(), 1u);
+  return *(stored_elements->begin());
 }
 
-base::Optional<HeapVector<Member<Element>>>
+absl::optional<HeapVector<Member<Element>>>
 ElementInternals::GetElementArrayAttribute(const QualifiedName& name) const {
   const auto& iter = explicitly_set_attr_elements_map_.find(name);
-  if (iter != explicitly_set_attr_elements_map_.end()) {
-    return *(iter->value);
+  if (iter == explicitly_set_attr_elements_map_.end()) {
+    return absl::nullopt;
   }
-  return base::nullopt;
+
+  // Convert from our internal HeapLinkedHashSet of weak references to a
+  // HeapVector of strong references so that V8 can implicitly convert to a
+  // FrozenArray.
+  HeapVector<Member<Element>>* results =
+      MakeGarbageCollected<HeapVector<Member<Element>>>();
+
+  blink::HeapLinkedHashSet<blink::WeakMember<blink::Element>>* stored_elements =
+      iter->value;
+  for (auto item : *stored_elements) {
+    results->push_back(item);
+  }
+
+  return *results;
 }
 
 void ElementInternals::SetElementArrayAttribute(
     const QualifiedName& name,
-    const base::Optional<HeapVector<Member<Element>>>& elements) {
-  if (elements) {
-    explicitly_set_attr_elements_map_.Set(
-        name,
-        MakeGarbageCollected<HeapVector<Member<Element>>>(elements.value()));
-  } else {
+    const absl::optional<HeapVector<Member<Element>>>& given_elements) {
+  if (!given_elements) {
     explicitly_set_attr_elements_map_.erase(name);
+    return;
+  }
+
+  // Otherwise convert from our external strong references to our internal weak
+  // references.
+  auto stored_elements =
+      explicitly_set_attr_elements_map_.insert(name, nullptr);
+  if (stored_elements.is_new_entry) {
+    stored_elements.stored_value->value =
+        MakeGarbageCollected<HeapLinkedHashSet<WeakMember<Element>>>();
+  } else {
+    stored_elements.stored_value->value->clear();
+  }
+
+  for (auto element : given_elements.value()) {
+    stored_elements.stored_value->value->insert(element);
   }
 }
 
@@ -362,6 +413,39 @@ bool ElementInternals::IsEnumeratable() const {
   return true;
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+void ElementInternals::AppendToFormData(FormData& form_data) {
+  if (Target().IsDisabledFormControl())
+    return;
+
+  if (!value_)
+    return;
+
+  const AtomicString& name = Target().FastGetAttribute(html_names::kNameAttr);
+  if (!value_->IsFormData() && name.IsEmpty())
+    return;
+
+  switch (value_->GetContentType()) {
+    case V8ControlValue::ContentType::kFile: {
+      form_data.AppendFromElement(name, value_->GetAsFile());
+      break;
+    }
+    case V8ControlValue::ContentType::kUSVString: {
+      form_data.AppendFromElement(name, value_->GetAsUSVString());
+      break;
+    }
+    case V8ControlValue::ContentType::kFormData: {
+      for (const auto& entry : value_->GetAsFormData()->Entries()) {
+        if (entry->isFile())
+          form_data.append(entry->name(), entry->GetFile());
+        else
+          form_data.append(entry->name(), entry->Value());
+      }
+      break;
+    }
+  }
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 void ElementInternals::AppendToFormData(FormData& form_data) {
   if (Target().IsDisabledFormControl())
     return;
@@ -383,6 +467,7 @@ void ElementInternals::AppendToFormData(FormData& form_data) {
       form_data.append(entry->name(), entry->Value());
   }
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void ElementInternals::DidChangeForm() {
   ListedElement::DidChangeForm();
@@ -446,6 +531,33 @@ bool ElementInternals::ShouldSaveAndRestoreFormControlState() const {
   return Target().isConnected() && (!Form() || Form()->ShouldAutocomplete());
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+FormControlState ElementInternals::SaveFormControlState() const {
+  FormControlState state;
+
+  if (!value_)
+    return state;
+
+  switch (value_->GetContentType()) {
+    case V8ControlValue::ContentType::kFile: {
+      state.Append("File");
+      value_->GetAsFile()->AppendToControlState(state);
+      break;
+    }
+    case V8ControlValue::ContentType::kFormData: {
+      state.Append("FormData");
+      value_->GetAsFormData()->AppendToControlState(state);
+      break;
+    }
+    case V8ControlValue::ContentType::kUSVString: {
+      state.Append("USVString");
+      state.Append(value_->GetAsUSVString());
+      break;
+    }
+  }
+  return state;
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 FormControlState ElementInternals::SaveFormControlState() const {
   FormControlState state;
   if (value_.IsUSVString()) {
@@ -462,7 +574,27 @@ FormControlState ElementInternals::SaveFormControlState() const {
   // Add nothing if value_.IsNull().
   return state;
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+void ElementInternals::RestoreFormControlState(const FormControlState& state) {
+  if (state.ValueSize() < 2)
+    return;
+  if (state[0] == "USVString") {
+    value_ = MakeGarbageCollected<V8ControlValue>(state[1]);
+  } else if (state[0] == "File") {
+    wtf_size_t i = 1;
+    if (auto* file = File::CreateFromControlState(state, i))
+      value_ = MakeGarbageCollected<V8ControlValue>(file);
+  } else if (state[0] == "FormData") {
+    wtf_size_t i = 1;
+    if (auto* form_data = FormData::CreateFromControlState(state, i))
+      value_ = MakeGarbageCollected<V8ControlValue>(form_data);
+  }
+  if (value_)
+    CustomElement::EnqueueFormStateRestoreCallback(Target(), value_, "restore");
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 void ElementInternals::RestoreFormControlState(const FormControlState& state) {
   if (state.ValueSize() < 2)
     return;
@@ -480,5 +612,6 @@ void ElementInternals::RestoreFormControlState(const FormControlState& state) {
   if (!value_.IsNull())
     CustomElement::EnqueueFormStateRestoreCallback(Target(), value_, "restore");
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 }  // namespace blink

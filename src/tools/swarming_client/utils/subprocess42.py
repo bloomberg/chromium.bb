@@ -61,6 +61,10 @@ if sys.platform == 'win32':
 
   # Windows processes constants.
 
+  # The return code for WaitForSingleObject function that represents time out.
+  # https://docs.microsoft.com/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject
+  _WAIT_TIMEOUT = 0x102
+
   # Subset of process priority classes.
   # https://docs.microsoft.com/windows/desktop/api/processthreadsapi/nf-processthreadsapi-getpriorityclass
   BELOW_NORMAL_PRIORITY_CLASS = 0x4000
@@ -680,43 +684,45 @@ class Popen(subprocess.Popen):
     elif six.PY3:
       super(Popen, self).wait(timeout)
     elif self.returncode is None:
-      if sys.platform == 'win32':
-        WAIT_TIMEOUT = 258
-        result = subprocess._subprocess.WaitForSingleObject(
-            self._handle, int(timeout * 1000))
-        if result == WAIT_TIMEOUT:
+      # If you think the following code is horrible, it's because it is
+      # inspired by python3's stdlib.
+      end = time.time() + timeout
+      delay = poll_initial_interval
+      wait = self._wait_win if sys.platform == 'win32' else self._wait_non_win
+      while not wait(delay):
+        remaining = end - time.time()
+        if remaining <= 0:
           raise TimeoutExpired(self.args, timeout)
-        self.returncode = subprocess._subprocess.GetExitCodeProcess(
-            self._handle)
-      else:
-        # If you think the following code is horrible, it's because it is
-        # inspired by python3's stdlib.
-        end = time.time() + timeout
-        delay = poll_initial_interval
-        while True:
-          try:
-            pid, sts = subprocess._eintr_retry_call(os.waitpid, self.pid,
-                                                    os.WNOHANG)
-          except OSError as e:
-            if e.errno != errno.ECHILD:
-              raise
-            pid = self.pid
-            sts = 0
-          if pid == self.pid:
-            # This sets self.returncode.
-            self._handle_exitstatus(sts)
-            break
-          remaining = end - time.time()
-          if remaining <= 0:
-            raise TimeoutExpired(self.args, timeout)
-          delay = min(delay * 2, remaining, poll_max_interval)
-          time.sleep(delay)
+        delay = min(delay * 2, remaining, poll_max_interval)
 
     if not self.end:
       # communicate() uses wait() internally.
       self.end = time.time()
     self._cleanup()
     return self.returncode
+
+  def _wait_win(self, wait_time):
+    result = subprocess._subprocess.WaitForSingleObject(self._handle,
+                                                        int(wait_time * 1000))
+    if result != _WAIT_TIMEOUT:
+      self.returncode = subprocess._subprocess.GetExitCodeProcess(self._handle)
+      return True
+    return False
+
+  def _wait_non_win(self, wait_time):
+    time.sleep(wait_time)
+    try:
+      pid, sts = subprocess._eintr_retry_call(os.waitpid, self.pid, os.WNOHANG)
+    except OSError as e:
+      if e.errno != errno.ECHILD:
+        raise
+      pid = self.pid
+      sts = 0
+    if pid == self.pid:
+      # This sets self.returncode.
+      self._handle_exitstatus(sts)
+      return True
+    return False
 
   def poll(self):
     ret = super(Popen, self).poll()

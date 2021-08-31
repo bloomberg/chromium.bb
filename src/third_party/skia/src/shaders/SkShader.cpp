@@ -21,6 +21,7 @@
 #include "src/shaders/SkBitmapProcShader.h"
 #include "src/shaders/SkColorShader.h"
 #include "src/shaders/SkEmptyShader.h"
+#include "src/shaders/SkImageShader.h"
 #include "src/shaders/SkPictureShader.h"
 #include "src/shaders/SkShaderBase.h"
 
@@ -102,7 +103,7 @@ SkShaderBase::Context::Context(const SkShaderBase& shader, const ContextRec& rec
     // invertible.
     SkAssertResult(fShader.computeTotalInverse(*rec.fMatrix, rec.fLocalMatrix, &fTotalInverse));
 
-    fPaintAlpha = rec.fPaint->getAlpha();
+    fPaintAlpha = rec.fPaintAlpha;
 }
 
 SkShaderBase::Context::~Context() {}
@@ -137,15 +138,14 @@ sk_sp<SkShader> SkShaderBase::makeAsALocalMatrixShader(SkMatrix*) const {
 sk_sp<SkShader> SkShaders::Empty() { return sk_make_sp<SkEmptyShader>(); }
 sk_sp<SkShader> SkShaders::Color(SkColor color) { return sk_make_sp<SkColorShader>(color); }
 
-sk_sp<SkShader> SkBitmap::makeShader(SkTileMode tmx, SkTileMode tmy, const SkMatrix* lm) const {
+sk_sp<SkShader> SkBitmap::makeShader(SkTileMode tmx, SkTileMode tmy,
+                                     const SkSamplingOptions& sampling,
+                                     const SkMatrix* lm) const {
     if (lm && !lm->invert(nullptr)) {
         return nullptr;
     }
-    return SkMakeBitmapShader(*this, tmx, tmy, lm, kIfMutable_SkCopyPixelsMode);
-}
-
-sk_sp<SkShader> SkBitmap::makeShader(const SkMatrix* lm) const {
-    return this->makeShader(SkTileMode::kClamp, SkTileMode::kClamp, lm);
+    return SkImageShader::Make(SkMakeImageFromRasterBitmap(*this, kIfMutable_SkCopyPixelsMode),
+                               tmx, tmy, sampling, lm);
 }
 
 bool SkShaderBase::appendStages(const SkStageRec& rec) const {
@@ -198,7 +198,7 @@ bool SkShaderBase::onAppendStages(const SkStageRec& rec) const {
 skvm::Color SkShaderBase::program(skvm::Builder* p,
                                   skvm::Coord device, skvm::Coord local, skvm::Color paint,
                                   const SkMatrixProvider& matrices, const SkMatrix* localM,
-                                  SkFilterQuality quality, const SkColorInfo& dst,
+                                  const SkColorInfo& dst,
                                   skvm::Uniforms* uniforms, SkArenaAlloc* alloc) const {
     // Shader subclasses should always act as if the destination were premul or opaque.
     // SkVMBlitter handles all the coordination of unpremul itself, via premul.
@@ -218,22 +218,13 @@ skvm::Color SkShaderBase::program(skvm::Builder* p,
     // shader program hash and blitter Key.  This makes it safe for us to use
     // that bit to make decisions when constructing an SkVMBlitter, like doing
     // SrcOver -> Src strength reduction.
-    if (auto color = this->onProgram(p, device,local, paint, matrices,localM, quality,tweaked,
+    if (auto color = this->onProgram(p, device,local, paint, matrices,localM, tweaked,
                                      uniforms,alloc)) {
         if (this->isOpaque()) {
             color.a = p->splat(1.0f);
         }
         return color;
     }
-    return {};
-}
-
-skvm::Color SkShaderBase::onProgram(skvm::Builder*,
-                                    skvm::Coord device, skvm::Coord local, skvm::Color paint,
-                                    const SkMatrixProvider&, const SkMatrix* localM,
-                                    SkFilterQuality quality, const SkColorInfo& dst,
-                                    skvm::Uniforms* uniforms, SkArenaAlloc* alloc) const {
-    // SkDebugf("cannot onProgram %s\n", this->getTypeName());
     return {};
 }
 
@@ -274,8 +265,7 @@ skvm::Coord SkShaderBase::ApplyMatrix(skvm::Builder* p, const SkMatrix& m,
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 skvm::Color SkEmptyShader::onProgram(skvm::Builder*, skvm::Coord, skvm::Coord, skvm::Color,
-                                     const SkMatrixProvider&, const SkMatrix*,
-                                     SkFilterQuality, const SkColorInfo&,
+                                     const SkMatrixProvider&, const SkMatrix*, const SkColorInfo&,
                                      skvm::Uniforms*, SkArenaAlloc*) const {
     return {};  // signal failure
 }

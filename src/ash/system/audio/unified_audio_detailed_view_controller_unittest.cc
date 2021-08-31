@@ -4,57 +4,30 @@
 
 #include "ash/system/audio/unified_audio_detailed_view_controller.h"
 
+#include "ash/components/audio/audio_devices_pref_handler.h"
+#include "ash/components/audio/audio_devices_pref_handler_stub.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/system/audio/audio_detailed_view.h"
 #include "ash/system/audio/mic_gain_slider_controller.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/test/ash_test_base.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/audio/audio_devices_pref_handler.h"
-#include "chromeos/audio/audio_devices_pref_handler_stub.h"
+#include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/audio/fake_cras_audio_client.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "services/media_session/public/mojom/media_controller.mojom-test-utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/views/test/button_test_api.h"
 
-using chromeos::AudioDevice;
-using chromeos::AudioDeviceList;
 using chromeos::AudioNode;
 using chromeos::AudioNodeList;
-using chromeos::CrasAudioHandler;
 
 namespace ash {
 namespace {
-
-class FakeMediaControllerManager
-    : public media_session::mojom::MediaControllerManagerInterceptorForTesting {
- public:
-  FakeMediaControllerManager() = default;
-
-  mojo::PendingRemote<media_session::mojom::MediaControllerManager>
-  MakeRemote() {
-    mojo::PendingRemote<media_session::mojom::MediaControllerManager> remote;
-    receivers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
-    return remote;
-  }
-
-  // media_session::mojom::MediaControllerManagerInterceptorForTesting:
-  media_session::mojom::MediaControllerManager* GetForwardingInterface()
-      override {
-    NOTREACHED();
-    return nullptr;
-  }
-
-  void CreateActiveMediaController(
-      mojo::PendingReceiver<media_session::mojom::MediaController> receiver)
-      override {}
-
-  MOCK_METHOD0(SuspendAllSessions, void());
-
- private:
-  mojo::ReceiverSet<media_session::mojom::MediaControllerManager> receivers_;
-};
 
 constexpr uint64_t kMicJackId = 10010;
 constexpr uint64_t kInternalMicId = 10003;
@@ -67,22 +40,24 @@ struct AudioNodeInfo {
   const char* const device_name;
   const char* const type;
   const char* const name;
+  const uint32_t audio_effect;
 };
 
 const uint32_t kInputMaxSupportedChannels = 1;
 const uint32_t kOutputMaxSupportedChannels = 2;
 
 const AudioNodeInfo kMicJack[] = {
-    {true, kMicJackId, "Fake Mic Jack", "MIC", "Mic Jack"}};
+    {true, kMicJackId, "Fake Mic Jack", "MIC", "Mic Jack", 0}};
 
-const AudioNodeInfo kInternalMic[] = {
-    {true, kInternalMicId, "Fake Mic", "INTERNAL_MIC", "Internal Mic"}};
+const AudioNodeInfo kInternalMic[] = {{true, kInternalMicId, "Fake Mic",
+                                       "INTERNAL_MIC", "Internal Mic",
+                                       cras::EFFECT_TYPE_NOISE_CANCELLATION}};
 
 const AudioNodeInfo kFrontMic[] = {
-    {true, kFrontMicId, "Fake Front Mic", "FRONT_MIC", "Front Mic"}};
+    {true, kFrontMicId, "Fake Front Mic", "FRONT_MIC", "Front Mic", 0}};
 
 const AudioNodeInfo kRearMic[] = {
-    {true, kRearMicId, "Fake Rear Mic", "REAR_MIC", "Rear Mic"}};
+    {true, kRearMicId, "Fake Rear Mic", "REAR_MIC", "Rear Mic", 0}};
 
 AudioNode GenerateAudioNode(const AudioNodeInfo* node_info) {
   uint64_t stable_device_id_v2 = 0;
@@ -92,7 +67,8 @@ AudioNode GenerateAudioNode(const AudioNodeInfo* node_info) {
                    node_info->device_name, node_info->type, node_info->name,
                    false /* is_active*/, 0 /* pluged_time */,
                    node_info->is_input ? kInputMaxSupportedChannels
-                                       : kOutputMaxSupportedChannels);
+                                       : kOutputMaxSupportedChannels,
+                   node_info->audio_effect);
 }
 
 AudioNodeList GenerateAudioNodeList(
@@ -116,10 +92,10 @@ class UnifiedAudioDetailedViewControllerTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kSystemTrayMicGainSetting);
+    audio_pref_handler_ = base::MakeRefCounted<AudioDevicesPrefHandlerStub>();
+    cras_audio_handler_ = CrasAudioHandler::Get();
+    cras_audio_handler_->SetPrefHandlerForTesting(audio_pref_handler_);
 
-    fake_manager_ = std::make_unique<FakeMediaControllerManager>();
     tray_model_ = std::make_unique<UnifiedSystemTrayModel>(nullptr);
     tray_controller_ =
         std::make_unique<UnifiedSystemTrayController>(tray_model_.get());
@@ -132,6 +108,13 @@ class UnifiedAudioDetailedViewControllerTest : public AshTestBase {
         base::Unretained(this));
     MicGainSliderController::SetMapDeviceSliderCallbackForTest(
         &map_device_sliders_callback_);
+
+    noise_cancellation_toggle_callback_ =
+        base::BindRepeating(&UnifiedAudioDetailedViewControllerTest::
+                                AddViewToNoiseCancellationToggleMap,
+                            base::Unretained(this));
+    tray::AudioDetailedView::SetMapNoiseCancellationToggleCallbackForTest(
+        &noise_cancellation_toggle_callback_);
   }
 
   void TearDown() override {
@@ -142,24 +125,16 @@ class UnifiedAudioDetailedViewControllerTest : public AshTestBase {
     tray_controller_.reset();
     tray_model_.reset();
 
-    fake_manager_.reset();
     AshTestBase::TearDown();
-  }
-
-  void SetUpCrasAudioHandler(const AudioNodeList& audio_nodes) {
-    // Shutdown previous instance in case there is one.
-    if (CrasAudioHandler::Get())
-      CrasAudioHandler::Shutdown();
-
-    fake_cras_audio_client()->SetAudioNodesForTesting(audio_nodes);
-    audio_pref_handler_ = new chromeos::AudioDevicesPrefHandlerStub();
-    CrasAudioHandler::Initialize(fake_manager_->MakeRemote(),
-                                 audio_pref_handler_);
-    cras_audio_handler_ = CrasAudioHandler::Get();
   }
 
   void AddViewToSliderDeviceMap(uint64_t device_id, views::View* view) {
     sliders_map_[device_id] = view;
+  }
+
+  void AddViewToNoiseCancellationToggleMap(uint64_t device_id,
+                                           views::View* view) {
+    toggles_map_[device_id] = view;
   }
 
  protected:
@@ -168,10 +143,12 @@ class UnifiedAudioDetailedViewControllerTest : public AshTestBase {
   }
 
   std::map<uint64_t, views::View*> sliders_map_;
+  std::map<uint64_t, views::View*> toggles_map_;
   MicGainSliderController::MapDeviceSliderCallback map_device_sliders_callback_;
+  tray::AudioDetailedView::NoiseCancellationCallback
+      noise_cancellation_toggle_callback_;
   CrasAudioHandler* cras_audio_handler_ = nullptr;  // Not owned.
-  scoped_refptr<chromeos::AudioDevicesPrefHandlerStub> audio_pref_handler_;
-  std::unique_ptr<FakeMediaControllerManager> fake_manager_;
+  scoped_refptr<AudioDevicesPrefHandlerStub> audio_pref_handler_;
   std::unique_ptr<UnifiedAudioDetailedViewController>
       audio_detailed_view_controller_;
   std::unique_ptr<UnifiedSystemTrayModel> tray_model_;
@@ -180,8 +157,9 @@ class UnifiedAudioDetailedViewControllerTest : public AshTestBase {
 };
 
 TEST_F(UnifiedAudioDetailedViewControllerTest, OnlyOneVisibleSlider) {
-  SetUpCrasAudioHandler(GenerateAudioNodeList({kInternalMic, kMicJack}));
   audio_detailed_view_controller_->CreateView();
+  fake_cras_audio_client()->SetAudioNodesAndNotifyObserversForTesting(
+      GenerateAudioNodeList({kInternalMic, kMicJack}));
 
   // Only slider corresponding to the Internal Mic should be visible initially.
   cras_audio_handler_->SwitchToDevice(
@@ -203,7 +181,8 @@ TEST_F(UnifiedAudioDetailedViewControllerTest, OnlyOneVisibleSlider) {
 
 TEST_F(UnifiedAudioDetailedViewControllerTest,
        DualInternalMicHasSingleVisibleSlider) {
-  SetUpCrasAudioHandler(GenerateAudioNodeList({kFrontMic, kRearMic}));
+  fake_cras_audio_client()->SetAudioNodesAndNotifyObserversForTesting(
+      GenerateAudioNodeList({kFrontMic, kRearMic}));
 
   // Verify the device has dual internal mics.
   EXPECT_TRUE(cras_audio_handler_->HasDualInternalMic());
@@ -215,6 +194,127 @@ TEST_F(UnifiedAudioDetailedViewControllerTest,
 
   // Verify the slider is visible.
   EXPECT_TRUE(sliders_map_.begin()->second->GetVisible());
+}
+
+TEST_F(UnifiedAudioDetailedViewControllerTest,
+       NoiseCancellationToggleNotDisplayedIfNotSupported) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kEnableInputNoiseCancellationUi);
+  fake_cras_audio_client()->SetAudioNodesAndNotifyObserversForTesting(
+      GenerateAudioNodeList({kInternalMic, kMicJack, kFrontMic, kRearMic}));
+  fake_cras_audio_client()->SetNoiseCancellationSupported(false);
+
+  cras_audio_handler_->SwitchToDevice(
+      AudioDevice(GenerateAudioNode(kInternalMic)), true,
+      CrasAudioHandler::ACTIVATE_BY_USER);
+
+  audio_detailed_view_controller_->CreateView();
+  EXPECT_EQ(0u, toggles_map_.size());
+}
+
+TEST_F(UnifiedAudioDetailedViewControllerTest,
+       NoiseCancellationToggleDisplayedIfSupportedAndInternal) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kEnableInputNoiseCancellationUi);
+
+  fake_cras_audio_client()->SetAudioNodesAndNotifyObserversForTesting(
+      GenerateAudioNodeList({kInternalMic, kMicJack, kFrontMic, kRearMic}));
+  fake_cras_audio_client()->SetNoiseCancellationSupported(true);
+
+  auto internal_mic = AudioDevice(GenerateAudioNode(kInternalMic));
+  cras_audio_handler_->SwitchToDevice(internal_mic, true,
+                                      CrasAudioHandler::ACTIVATE_BY_USER);
+
+  audio_detailed_view_controller_->CreateView();
+  EXPECT_EQ(1u, toggles_map_.size());
+
+  views::ToggleButton* toggle =
+      (views::ToggleButton*)toggles_map_[internal_mic.id]->children()[1];
+  EXPECT_FALSE(toggle->GetIsOn());
+}
+
+TEST_F(UnifiedAudioDetailedViewControllerTest,
+       NoiseCancellationToggleChangesPrefAndSendsDbusSignal) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kEnableInputNoiseCancellationUi);
+
+  audio_pref_handler_->SetNoiseCancellationState(true);
+
+  fake_cras_audio_client()->SetAudioNodesAndNotifyObserversForTesting(
+      GenerateAudioNodeList({kInternalMic, kMicJack, kFrontMic, kRearMic}));
+  fake_cras_audio_client()->SetNoiseCancellationSupported(true);
+
+  auto internal_mic = AudioDevice(GenerateAudioNode(kInternalMic));
+  cras_audio_handler_->SwitchToDevice(internal_mic, true,
+                                      CrasAudioHandler::ACTIVATE_BY_USER);
+
+  audio_detailed_view_controller_->CreateView();
+  EXPECT_EQ(1u, toggles_map_.size());
+
+  views::ToggleButton* toggle =
+      (views::ToggleButton*)toggles_map_[internal_mic.id]->children()[1];
+
+  // The toggle loaded the pref correctly.
+  EXPECT_TRUE(toggle->GetIsOn());
+  EXPECT_TRUE(audio_pref_handler_->GetNoiseCancellationState());
+
+  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, gfx::PointF(), gfx::PointF(),
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                       ui::EF_NONE);
+
+  // Flipping the toggle.
+  views::test::ButtonTestApi(toggle).NotifyClick(press);
+  // The new state of the toggle must be saved to the prefs.
+  EXPECT_FALSE(audio_pref_handler_->GetNoiseCancellationState());
+
+  // Flipping back and checking the prefs again.
+  views::test::ButtonTestApi(toggle).NotifyClick(press);
+  EXPECT_TRUE(audio_pref_handler_->GetNoiseCancellationState());
+}
+
+// TODO(1205197): Remove this test once the flag is removed.
+TEST_F(UnifiedAudioDetailedViewControllerTest,
+       NoiseCancellationToggleNotDisplayedIfFlagIsOff) {
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kEnableInputNoiseCancellationUi);
+  fake_cras_audio_client()->SetAudioNodesAndNotifyObserversForTesting(
+      GenerateAudioNodeList({kInternalMic, kMicJack, kFrontMic, kRearMic}));
+  fake_cras_audio_client()->SetNoiseCancellationSupported(true);
+
+  cras_audio_handler_->SwitchToDevice(
+      AudioDevice(GenerateAudioNode(kInternalMic)), true,
+      CrasAudioHandler::ACTIVATE_BY_USER);
+
+  audio_detailed_view_controller_->CreateView();
+  EXPECT_EQ(0u, toggles_map_.size());
+}
+
+TEST_F(UnifiedAudioDetailedViewControllerTest,
+       NoiseCancellationUpdatedWhenDeviceChanges) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kEnableInputNoiseCancellationUi);
+
+  fake_cras_audio_client()->SetAudioNodesAndNotifyObserversForTesting(
+      GenerateAudioNodeList({kInternalMic, kMicJack, kFrontMic, kRearMic}));
+  fake_cras_audio_client()->SetNoiseCancellationSupported(true);
+
+  cras_audio_handler_->SwitchToDevice(
+      AudioDevice(GenerateAudioNode(kInternalMic)), true,
+      CrasAudioHandler::ACTIVATE_BY_USER);
+
+  EXPECT_EQ(0u, fake_cras_audio_client()->GetNoiseCancellationEnabledCount());
+
+  audio_detailed_view_controller_->CreateView();
+
+  EXPECT_EQ(1u, toggles_map_.size());
+  // audio_detailed_view_controller_->CreateView() calls
+  // AudioDetailedView::Update() twice, so SetNoiseCancellationEnabled is called
+  // twice.
+  EXPECT_EQ(2u, fake_cras_audio_client()->GetNoiseCancellationEnabledCount());
+
+  cras_audio_handler_->SwitchToDevice(AudioDevice(GenerateAudioNode(kMicJack)),
+                                      true, CrasAudioHandler::ACTIVATE_BY_USER);
+  EXPECT_EQ(3u, fake_cras_audio_client()->GetNoiseCancellationEnabledCount());
 }
 
 }  // namespace ash

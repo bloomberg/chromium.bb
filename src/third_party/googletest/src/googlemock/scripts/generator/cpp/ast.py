@@ -36,6 +36,7 @@ except ImportError:
   # Python 2.x
   import __builtin__ as builtins
 
+import collections
 import sys
 import traceback
 
@@ -335,7 +336,7 @@ class Class(_GenericDeclaration):
     # TODO(nnorwitz): handle namespaces, etc.
     if self.bases:
       for token_list in self.bases:
-        # TODO(nnorwitz): bases are tokens, do name comparision.
+        # TODO(nnorwitz): bases are tokens, do name comparison.
         for token in token_list:
           if token.name == node.name:
             return True
@@ -378,7 +379,7 @@ class Function(_GenericDeclaration):
 
   def Requires(self, node):
     if self.parameters:
-      # TODO(nnorwitz): parameters are tokens, do name comparision.
+      # TODO(nnorwitz): parameters are tokens, do name comparison.
       for p in self.parameters:
         if p.name == node.name:
           return True
@@ -894,7 +895,7 @@ class AstBuilder(object):
         nesting -= 1
     return tokens, last_token
 
-  # TODO(nnorwitz): remove _IgnoreUpTo() it shouldn't be necesary.
+  # TODO(nnorwitz): remove _IgnoreUpTo() it shouldn't be necessary.
   def _IgnoreUpTo(self, token_type, token):
     unused_tokens = self._GetTokensUpTo(token_type, token)
 
@@ -1433,7 +1434,7 @@ class AstBuilder(object):
     pass  # Not needed yet.
 
   def _GetTemplatedTypes(self):
-    result = {}
+    result = collections.OrderedDict()
     tokens = list(self._GetMatchingChar('<', '>'))
     len_tokens = len(tokens) - 1    # Ignore trailing '>'.
     i = 0
@@ -1599,12 +1600,11 @@ class AstBuilder(object):
                       bases, templated_types, body, self.namespace_stack)
 
   def handle_namespace(self):
-    token = self._GetNextToken()
     # Support anonymous namespaces.
     name = None
-    if token.token_type == tokenize.NAME:
-      name = token.name
-      token = self._GetNextToken()
+    name_tokens, token = self.GetName()
+    if name_tokens:
+      name = ''.join([t.name for t in name_tokens])
     self.namespace_stack.append(name)
     assert token.token_type == tokenize.SYNTAX, token
     # Create an internal token that denotes when the namespace is complete.

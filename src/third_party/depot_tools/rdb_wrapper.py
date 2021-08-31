@@ -16,52 +16,65 @@ STATUS_CRASH = 'CRASH'
 STATUS_ABORT = 'ABORT'
 STATUS_SKIP = 'SKIP'
 
-class ResultSinkStatus(object):
-  def __init__(self):
-    self.status = STATUS_PASS
+
+class ResultSink(object):
+  def __init__(self, session, url, prefix):
+    self._session = session
+    self._url = url
+    self._prefix = prefix
+
+  def report(self, function_name, status, elapsed_time):
+    """Reports the result and elapsed time of a presubmit function call.
+
+    Args:
+      function_name (str): The name of the presubmit function
+      status: the status to report the function call with
+      elapsed_time: the time taken to invoke the presubmit function
+    """
+    tr = {
+        'testId': self._prefix + function_name,
+        'status': status,
+        'expected': status == STATUS_PASS,
+        'duration': '{:.9f}s'.format(elapsed_time)
+    }
+    self._session.post(self._url, json={'testResults': [tr]})
+
 
 @contextlib.contextmanager
-def setup_rdb(function_name, prefix):
-  """Context Manager function for ResultDB reporting.
+def client(prefix):
+  """Returns a client for ResultSink.
+
+  This is a context manager that returns a client for ResultSink,
+  if LUCI_CONTEXT with a section of result_sink is present. When the context
+  is closed, all the connetions to the SinkServer are closed.
 
   Args:
-    function_name (str): The name of the function we are about to run.
-    prefix (str): The prefix for the name of the test. The format for this is
-        presubmit:gerrit_host/folder/to/repo:path/to/file/
+    prefix: A prefix to be added to the test ID of reported function names.
+      The format for this is
+          presubmit:gerrit_host/folder/to/repo:path/to/file/
       for example,
-        presubmit:chromium-review.googlesource.com/chromium/src/:services/viz/
+          presubmit:chromium-review.googlesource.com/chromium/src/:services/viz/
+  Returns:
+    An instance of ResultSink() if the luci context is present. None, otherwise.
   """
-  sink = None
-  if 'LUCI_CONTEXT' in os.environ:
-    with open(os.environ['LUCI_CONTEXT']) as f:
-      j = json.load(f)
-      if 'result_sink' in j:
-        sink = j['result_sink']
+  luci_ctx = os.environ.get('LUCI_CONTEXT')
+  if not luci_ctx:
+    yield None
+    return
 
-  my_status = ResultSinkStatus()
-  start_time = time.time()
-  try:
-    yield my_status
-  except Exception:
-    my_status.status = STATUS_FAIL
-    raise
-  finally:
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    if sink != None:
-      tr = {
-          'testId': '{0}:{1}'.format(prefix, function_name),
-          'status': my_status.status,
-          'expected': (my_status.status == STATUS_PASS),
-          'duration': '{:.9f}s'.format(elapsed_time)
-      }
-      requests.post(
-          url='http://{0}/prpc/luci.resultsink.v1.Sink/ReportTestResults'
-                  .format(sink['address']),
-          headers={
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'ResultSink {0}'.format(sink['auth_token'])
-          },
-          data=json.dumps({'testResults': [tr]})
-    )
+  sink_ctx = None
+  with open(luci_ctx) as f:
+    sink_ctx = json.load(f).get('result_sink')
+    if not sink_ctx:
+      yield None
+      return
+
+  url = 'http://{0}/prpc/luci.resultsink.v1.Sink/ReportTestResults'.format(
+      sink_ctx['address'])
+  with requests.Session() as s:
+    s.headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'ResultSink {0}'.format(sink_ctx['auth_token'])
+    }
+    yield ResultSink(s, url, prefix)

@@ -22,6 +22,9 @@ from dashboard.services import swarming
 
 _TESTER_SERVICE_ACCOUNT = (
     'chrome-tester@chops-service-accounts.iam.gserviceaccount.com')
+_CAS_DEFAULT_INSTANCE = (
+    'projects/chromium-swarm/instances/default_instance'
+)
 
 
 def SwarmingTagsFromJob(job):
@@ -257,14 +260,20 @@ class _RunTestExecution(execution_module.Execution):
           'url': self._swarming_server + '/task?id=' + self._task_id,
       })
     if self._result_arguments:
+      cas_root_ref = self._result_arguments.get('cas_root_ref')
+      if cas_root_ref is not None:
+        digest = cas_root_ref['digest']
+        url = 'https://cas-viewer.appspot.com/{}/blobs/{}/{}/tree'.format(
+            cas_root_ref['cas_instance'], digest['hash'], digest['size_bytes'])
+        value = '{}/{}'.format(digest['hash'], digest['size_bytes'])
+      else:
+        url = (self._result_arguments['isolate_server'] + '/browse?digest=' +
+               self._result_arguments['isolate_hash'])
+        value = self._result_arguments['isolate_hash']
       details.append({
-          'key':
-              'isolate',
-          'value':
-              self._result_arguments['isolate_hash'],
-          'url':
-              self._result_arguments['isolate_server'] + '/browse?digest=' +
-              self._result_arguments['isolate_hash'],
+          'key': 'isolate',
+          'value': value,
+          'url': url,
       })
     return details
 
@@ -302,12 +311,21 @@ class _RunTestExecution(execution_module.Execution):
             result['outputs_ref']['isolated'])
         raise errors.SwarmingTaskFailed('%s' % (isolate_output_url,))
 
-    result_arguments = {
-        'isolate_server': result['outputs_ref']['isolatedserver'],
-        'isolate_hash': result['outputs_ref']['isolated'],
-    }
+    if 'cas_output_root' in result:
+      result_arguments = {
+          'cas_root_ref': result['cas_output_root'],
+      }
+    else:
+      result_arguments = {
+          'isolate_server': result['outputs_ref']['isolatedserver'],
+          'isolate_hash': result['outputs_ref']['isolated'],
+      }
 
     self._Complete(result_arguments=result_arguments)
+
+  @staticmethod
+  def _IsCasDigest(d):
+    return '/' in d
 
   def _StartTask(self):
     """Kick off a Swarming task to run a test."""
@@ -315,16 +333,34 @@ class _RunTestExecution(execution_module.Execution):
         and self._previous_execution.failed):
       raise errors.SwarmingNoBots()
 
+    # TODO(fancl): Seperate cas input from isolate (including endpoint and
+    # datastore module)
+    if self._IsCasDigest(self._isolate_hash):
+      cas_hash, cas_size = self._isolate_hash.split('/', 1)
+      input_ref = {
+          'cas_input_root': {
+              'cas_instance': _CAS_DEFAULT_INSTANCE,
+              'digest': {
+                  'hash': cas_hash,
+                  'size_bytes': int(cas_size),
+              }
+          }
+      }
+    else:
+      input_ref = {
+          'inputs_ref': {
+              'isolatedserver': self._isolate_server,
+              'isolated': self._isolate_hash,
+          }
+      }
+
     properties = {
-        'inputs_ref': {
-            'isolatedserver': self._isolate_server,
-            'isolated': self._isolate_hash,
-        },
         'extra_args': self._extra_args,
         'dimensions': self._dimensions,
         'execution_timeout_secs': str(self.execution_timeout_secs or 2700),
         'io_timeout_secs': str(self.execution_timeout_secs or 2700),
     }
+    properties.update(**input_ref)
 
     if self.command:
       properties.update({

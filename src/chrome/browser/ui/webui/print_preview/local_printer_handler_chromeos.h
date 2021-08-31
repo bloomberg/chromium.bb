@@ -9,9 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
@@ -26,6 +25,7 @@ class Profile;
 
 namespace printing {
 
+// This class must be created and used on the UI thread.
 class LocalPrinterHandlerChromeos : public PrinterHandler {
  public:
   static std::unique_ptr<LocalPrinterHandlerChromeos> CreateDefault(
@@ -39,6 +39,9 @@ class LocalPrinterHandlerChromeos : public PrinterHandler {
       std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer,
       scoped_refptr<chromeos::PpdProvider> ppd_provider);
 
+  LocalPrinterHandlerChromeos(const LocalPrinterHandlerChromeos&) = delete;
+  LocalPrinterHandlerChromeos& operator=(const LocalPrinterHandlerChromeos&) =
+      delete;
   ~LocalPrinterHandlerChromeos() override;
 
   // PrinterHandler implementation
@@ -48,7 +51,7 @@ class LocalPrinterHandlerChromeos : public PrinterHandler {
                         GetPrintersDoneCallback done_callback) override;
   void StartGetCapability(const std::string& printer_name,
                           GetCapabilityCallback cb) override;
-  void StartPrint(const base::string16& job_title,
+  void StartPrint(const std::u16string& job_title,
                   base::Value settings,
                   scoped_refptr<base::RefCountedMemory> print_data,
                   PrintCallback callback) override;
@@ -71,24 +74,8 @@ class LocalPrinterHandlerChromeos : public PrinterHandler {
 
   // Creates a value dictionary containing the printing policies set by
   // |profile_|.
+  // This function must be called from the UI thread.
   base::Value GetNativePrinterPolicies() const;
-
-  void OnPrinterInstalled(const chromeos::Printer& printer,
-                          GetCapabilityCallback cb,
-                          chromeos::PrinterSetupResult result);
-
-  void OnResolvedEulaUrl(GetEulaUrlCallback cb,
-                         chromeos::PpdProvider::CallbackResultCode result,
-                         const std::string& license);
-
-  void HandlePrinterSetup(const chromeos::Printer& printer,
-                          GetCapabilityCallback cb,
-                          bool record_usb_setup_source,
-                          chromeos::PrinterSetupResult result);
-
-  void OnPrinterStatusUpdated(
-      PrinterStatusRequestCallback callback,
-      const chromeos::CupsPrinterStatus& cups_printers_status);
 
   Profile* const profile_;
   content::WebContents* const preview_web_contents_;
@@ -96,8 +83,6 @@ class LocalPrinterHandlerChromeos : public PrinterHandler {
   std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer_;
   const scoped_refptr<chromeos::PpdProvider> ppd_provider_;
   base::WeakPtrFactory<LocalPrinterHandlerChromeos> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LocalPrinterHandlerChromeos);
 };
 
 }  // namespace printing

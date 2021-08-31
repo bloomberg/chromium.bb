@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "extensions/browser/api/declarative_net_request/index_helper.h"
@@ -24,9 +23,11 @@
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/json_file_sanitizer.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/mojom/manifest.mojom-shared.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class SkBitmap;
 
@@ -140,7 +141,7 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // TODO(devlin): SKIP_ON_SHUTDOWN is also not quite sufficient for this. We
   // should probably instead be using base::ImportantFileWriter or similar.
   SandboxedUnpacker(
-      Manifest::Location location,
+      mojom::ManifestLocation location,
       int creation_flags,
       const base::FilePath& extensions_dir,
       const scoped_refptr<base::SequencedTaskRunner>& unpacker_io_task_runner,
@@ -166,7 +167,7 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   bool CreateTempDirectory();
 
   // Helper functions to simplify calling ReportFailure.
-  base::string16 FailureReasonToString16(
+  std::u16string FailureReasonToString16(
       const SandboxedUnpackerFailureReason reason);
   void FailWithPackageError(const SandboxedUnpackerFailureReason reason);
 
@@ -183,10 +184,20 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
                  const base::FilePath& unzip_dir,
                  const std::string& error);
 
+  // Callback which is called after the verified contents are uncompressed.
+  void OnVerifiedContentsUncompressed(
+      const base::FilePath& unzip_dir,
+      data_decoder::DataDecoder::ResultOrError<mojo_base::BigBuffer> result);
+
+  // Verifies the decompressed verified contents fetched from the header of CRX
+  // and stores them if the verification of these contents is successful.
+  bool StoreVerifiedContentsInExtensionDir(
+      base::span<const uint8_t> verified_contents);
+
   // Unpacks the extension in directory and returns the manifest.
   void Unpack(const base::FilePath& directory);
-  void ReadManifestDone(base::Optional<base::Value> manifest,
-                        const base::Optional<std::string>& error);
+  void ReadManifestDone(absl::optional<base::Value> manifest,
+                        const absl::optional<std::string>& error);
   void UnpackExtensionSucceeded(base::Value manifest);
 
   // Helper which calls ReportFailure.
@@ -210,11 +221,11 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // Puts a sanboxed unpacker failure in histogram
   // Extensions.SandboxUnpackFailureReason.
   void ReportFailure(const SandboxedUnpackerFailureReason reason,
-                     const base::string16& error);
+                     const std::u16string& error);
 
   // Overwrites original manifest with safe result from utility process.
   // Returns nullopt on error.
-  base::Optional<base::Value> RewriteManifestFile(const base::Value& manifest);
+  absl::optional<base::Value> RewriteManifestFile(const base::Value& manifest);
 
   // Cleans up temp directory artifacts.
   void Cleanup();
@@ -263,13 +274,16 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // Parsed original manifest of the extension. Set after unpacking the
   // extension and working with its manifest, so after UnpackExtensionSucceeded
   // is called.
-  base::Optional<base::Value> manifest_;
+  absl::optional<base::Value> manifest_;
 
   // Install prefs needed for the Declarative Net Request API.
   declarative_net_request::RulesetInstallPrefs ruleset_install_prefs_;
 
   // Represents the extension we're unpacking.
   scoped_refptr<Extension> extension_;
+
+  // The compressed verified contents extracted from the CRX header.
+  std::vector<uint8_t> compressed_verified_contents_;
 
   // The public key that was extracted from the CRX header.
   std::string public_key_;
@@ -279,7 +293,7 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   std::string extension_id_;
 
   // Location to use for the unpacked extension.
-  Manifest::Location location_;
+  mojom::ManifestLocation location_;
 
   // Creation flags to use for the extension. These flags will be used
   // when calling Extension::Create() by the CRX installer.

@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_connection_observer.h"
@@ -41,9 +41,6 @@ class HeartbeatScheduler : public gcm::GCMAppHandler,
  public:
   // Default interval for how often we send up a heartbeat.
   static const base::TimeDelta kDefaultHeartbeatInterval;
-
-  // UMA histogram name.
-  static const char* const kHeartbeatSignalHistogram;
 
   // Constructor. |cloud_policy_client| will be used to send registered GCM id
   // to DM server, and can be null. |driver| can be null for tests.
@@ -129,17 +126,15 @@ class HeartbeatScheduler : public gcm::GCMAppHandler,
   // Cached copy of the current heartbeat interval, in milliseconds.
   base::TimeDelta heartbeat_interval_;
 
-  // Observers to changes in the heartbeat settings.
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      heartbeat_frequency_observer_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      heartbeat_enabled_observer_;
+  // Subscriptions for callbacks for changes in the heartbeat settings.
+  base::CallbackListSubscription heartbeat_frequency_subscription_;
+  base::CallbackListSubscription heartbeat_enabled_subscription_;
 
   // The time the last heartbeat was sent.
   base::Time last_heartbeat_;
 
   // Callback invoked via a delay to send a heartbeat.
-  base::CancelableClosure heartbeat_callback_;
+  base::CancelableOnceClosure heartbeat_callback_;
 
   policy::CloudPolicyClient* cloud_policy_client_;
 

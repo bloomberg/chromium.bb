@@ -8,16 +8,19 @@
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
+#include "services/device/public/mojom/battery_monitor.mojom-forward.h"
 #include "services/device/public/mojom/vibration_manager.mojom-forward.h"
 #include "url/origin.h"
 
 namespace content {
 
+class AgentSchedulingGroupHost;
 class RenderFrameHost;
 class RenderFrameHostImpl;
 class DedicatedWorkerHost;
 class SharedWorkerHost;
 class ServiceWorkerHost;
+struct ServiceWorkerVersionBaseInfo;
 
 namespace internal {
 
@@ -55,10 +58,23 @@ url::Origin GetContextForHost(SharedWorkerHost* host);
 void PopulateBinderMap(ServiceWorkerHost* host, mojo::BinderMap* map);
 void PopulateBinderMapWithContext(
     ServiceWorkerHost* host,
-    mojo::BinderMapWithContext<const ServiceWorkerVersionInfo&>* map);
+    mojo::BinderMapWithContext<const ServiceWorkerVersionBaseInfo&>* map);
 ServiceWorkerVersionInfo GetContextForHost(ServiceWorkerHost* host);
 
+// Registers the handlers for interfaces requested by `AgentSchedulingGroup`s.
+void PopulateBinderMap(AgentSchedulingGroupHost* host, mojo::BinderMap* map);
+void PopulateBinderMapWithContext(
+    AgentSchedulingGroupHost* host,
+    mojo::BinderMapWithContext<AgentSchedulingGroupHost*>* map);
+AgentSchedulingGroupHost* GetContextForHost(AgentSchedulingGroupHost* host);
+
 }  // namespace internal
+
+// Allows tests to override how frame hosts bind BatteryMonitor receivers.
+using BatteryMonitorBinder = base::RepeatingCallback<void(
+    mojo::PendingReceiver<device::mojom::BatteryMonitor>)>;
+CONTENT_EXPORT void OverrideBatteryMonitorBinderForTesting(
+    BatteryMonitorBinder binder);
 
 // Allows tests to override how frame hosts bind VibrationManager receivers.
 using VibrationManagerBinder = base::RepeatingCallback<void(

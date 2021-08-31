@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.RectF;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.AndroidRuntimeException;
@@ -29,6 +30,8 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.cc.input.BrowserControlsState;
 import org.chromium.components.autofill.AutofillActionModeCallback;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.browser_ui.display_cutout.DisplayCutoutController;
@@ -44,6 +47,8 @@ import org.chromium.components.find_in_page.FindMatchRectsDetails;
 import org.chromium.components.find_in_page.FindResultBar;
 import org.chromium.components.infobars.InfoBar;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.components.webapps.AddToHomescreenCoordinator;
+import org.chromium.components.webapps.AppBannerManager;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListenerWithScroll;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -54,13 +59,11 @@ import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.Visibility;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
-import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IContextMenuParams;
-import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
 import org.chromium.weblayer_private.interfaces.IErrorPageCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFaviconFetcher;
 import org.chromium.weblayer_private.interfaces.IFaviconFetcherClient;
@@ -207,27 +210,23 @@ public final class TabImpl extends ITab.Stub {
 
         @Override
         public void onBackgroundColorChanged(int color) {
-            if (WebLayerFactoryImpl.getClientMajorVersion() >= 85) {
-                try {
-                    mClient.onBackgroundColorChanged(color);
-                } catch (RemoteException e) {
-                    throw new APICallException(e);
-                }
+            try {
+                mClient.onBackgroundColorChanged(color);
+            } catch (RemoteException e) {
+                throw new APICallException(e);
             }
         }
 
         @Override
         protected void onVerticalScrollDirectionChanged(
                 boolean directionUp, float currentScrollRatio) {
-            if (WebLayerFactoryImpl.getClientMajorVersion() >= 85) {
-                try {
-                    mClient.onScrollNotification(directionUp
-                                    ? ScrollNotificationType.DIRECTION_CHANGED_UP
-                                    : ScrollNotificationType.DIRECTION_CHANGED_DOWN,
-                            currentScrollRatio);
-                } catch (RemoteException e) {
-                    throw new APICallException(e);
-                }
+            try {
+                mClient.onScrollNotification(directionUp
+                                ? ScrollNotificationType.DIRECTION_CHANGED_UP
+                                : ScrollNotificationType.DIRECTION_CHANGED_DOWN,
+                        currentScrollRatio);
+            } catch (RemoteException e) {
+                throw new APICallException(e);
             }
         }
     }
@@ -311,13 +310,8 @@ public final class TabImpl extends ITab.Stub {
         // addObserver() calls to observer when added.
         WebLayerAccessibilityUtil.get().addObserver(mAccessibilityObserver);
 
-        // MediaSession only works if the client is new enough. Sadly, passing
-        // kDisableMediaSessionAPI does not fully disable the API, so a check is also necessary
-        // before installing this observer.
-        if (WebLayerFactoryImpl.getClientMajorVersion() >= 85) {
-            mMediaSessionHelper = new MediaSessionHelper(
-                    mWebContents, MediaSessionManager.createMediaSessionHelperDelegate(this));
-        }
+        mMediaSessionHelper = new MediaSessionHelper(
+                mWebContents, MediaSessionManager.createMediaSessionHelperDelegate(this));
     }
 
     private void doInitAfterSettingContainerView() {
@@ -365,8 +359,10 @@ public final class TabImpl extends ITab.Stub {
             if (mBrowser.getContext() == null) {
                 // The Context and ViewContainer in which Autofill was previously operating have
                 // gone away, so tear down |mAutofillProvider|.
-                mAutofillProvider = null;
-                TabImplJni.get().onAutofillProviderChanged(mNativeTab, null);
+                if (mAutofillProvider != null) {
+                    mAutofillProvider.destroy();
+                    mAutofillProvider = null;
+                }
                 selectionController.setNonSelectionActionModeCallback(null);
             } else {
                 if (mAutofillProvider == null) {
@@ -374,8 +370,9 @@ public final class TabImpl extends ITab.Stub {
                     // the context won't change unless it is first nulled out, since the fragment
                     // must be detached before it can be reattached to a new Context.
                     mAutofillProvider = new AutofillProvider(mBrowser.getContext(),
-                            mBrowser.getViewAndroidDelegateContainerView(), "WebLayer");
-                    TabImplJni.get().onAutofillProviderChanged(mNativeTab, mAutofillProvider);
+                            mBrowser.getViewAndroidDelegateContainerView(), mWebContents,
+                            "WebLayer");
+                    TabImplJni.get().initializeAutofillIfNecessary(mNativeTab);
                 }
                 mAutofillProvider.onContainerViewChanged(
                         mBrowser.getViewAndroidDelegateContainerView());
@@ -385,6 +382,12 @@ public final class TabImpl extends ITab.Stub {
                         new AutofillActionModeCallback(mBrowser.getContext(), mAutofillProvider));
             }
         }
+    }
+
+    @VisibleForTesting
+    public AutofillProvider getAutofillProviderForTesting() {
+        // The test needs to make sure the |mAutofillProvider| is not null.
+        return mAutofillProvider;
     }
 
     public void updateViewAttachedStateFromBrowser() {
@@ -463,9 +466,7 @@ public final class TabImpl extends ITab.Stub {
      * Returns whether this Tab is visible.
      */
     public boolean isVisible() {
-        return isActiveTab()
-                && ((mBrowser.isStarted() && mBrowser.isViewAttachedToWindow())
-                        || mBrowser.isInConfigurationChangeAndWasAttached());
+        return isActiveTab() && mBrowser.isActiveTabVisible();
     }
 
     @CalledByNative
@@ -504,6 +505,11 @@ public final class TabImpl extends ITab.Stub {
         String url = loadUrlParams.getUrl();
         if (url == null || url.isEmpty()) return;
 
+        // TODO(https://crbug.com/783819): Don't fix up all URLs. Documentation on FixupURL
+        // explicitly says not to use it on URLs coming from untrustworthy sources, like other apps.
+        // Once migrations of Java code to GURL are complete and incoming URLs are converted to
+        // GURLs at their source, we can make decisions of whether or not to fix up GURLs on a
+        // case-by-case basis based on trustworthiness of the incoming URL.
         GURL fixedUrl = UrlFormatter.fixupUrl(url);
         if (!fixedUrl.isValid()) return;
 
@@ -513,6 +519,10 @@ public final class TabImpl extends ITab.Stub {
 
     public WebContents getWebContents() {
         return mWebContents;
+    }
+
+    public NavigationControllerImpl getNavigationControllerImpl() {
+        return mNavigationController;
     }
 
     // Public for tests.
@@ -541,12 +551,6 @@ public final class TabImpl extends ITab.Stub {
         mClient = client;
         mTabCallbackProxy = new TabCallbackProxy(mNativeTab, client);
         mActionModeCallback.setTabClient(mClient);
-    }
-
-    @Override
-    public void setDownloadCallbackClient(IDownloadCallbackClient client) {
-        StrictModeWorkaround.apply();
-        mProfile.setDownloadCallbackClient(client);
     }
 
     @Override
@@ -679,6 +683,19 @@ public final class TabImpl extends ITab.Stub {
     private void continueDownload(NativeContextMenuParamsHolder nativeContextMenuParamsHolder) {
         TabImplJni.get().download(
                 mNativeTab, nativeContextMenuParamsHolder.mNativeContextMenuParams);
+    }
+
+    @Override
+    public void addToHomescreen() {
+        // TODO(estade): should it be verified that |this| is the active tab?
+
+        // This is used for UMA, and is only meaningful for Chrome. TODO(estade): remove.
+        Bundle menuItemData = new Bundle();
+        menuItemData.putInt(AppBannerManager.MENU_TITLE_KEY, 0);
+        // TODO(estade): simplify these parameters.
+        AddToHomescreenCoordinator.showForAppMenu(mBrowser.getContext(),
+                mBrowser.getWindowAndroid(), mBrowser.getWindowAndroid().getModalDialogManager(),
+                mWebContents, menuItemData);
     }
 
     public void removeFaviconCallbackProxy(FaviconCallbackProxy proxy) {
@@ -911,10 +928,6 @@ public final class TabImpl extends ITab.Stub {
 
     @CalledByNative
     private void handleCloseFromWebContents() throws RemoteException {
-        // On clients < 84 WebContents-initiated tab closing was delegated to the client; this flow
-        // should not be used, as the client will not be expecting it.
-        assert WebLayerFactoryImpl.getClientMajorVersion() >= 84;
-
         if (getBrowser() == null) return;
         getBrowser().destroyTab(this);
     }
@@ -951,14 +964,12 @@ public final class TabImpl extends ITab.Stub {
 
         TabImplJni.get().removeTabFromBrowserBeforeDestroying(mNativeTab);
 
-        if (WebLayerFactoryImpl.getClientMajorVersion() >= 84) {
-            // Notify the client that this instance is being destroyed to prevent it from calling
-            // back into this object if the embedder mistakenly tries to do so.
-            try {
-                mClient.onTabDestroyed();
-            } catch (RemoteException e) {
-                throw new APICallException(e);
-            }
+        // Notify the client that this instance is being destroyed to prevent it from calling
+        // back into this object if the embedder mistakenly tries to do so.
+        try {
+            mClient.onTabDestroyed();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
         }
 
         if (mDisplayCutoutController != null) {
@@ -1003,6 +1014,11 @@ public final class TabImpl extends ITab.Stub {
         if (mMediaSessionHelper != null) {
             mMediaSessionHelper.destroy();
             mMediaSessionHelper = null;
+        }
+
+        if (mAutofillProvider != null) {
+            mAutofillProvider.destroy();
+            mAutofillProvider = null;
         }
 
         // Destroying FaviconCallbackProxy removes from mFaviconCallbackProxies. Copy to avoid
@@ -1101,13 +1117,12 @@ public final class TabImpl extends ITab.Stub {
     @CalledByNative
     private void showContextMenu(ContextMenuParams params, long nativeContextMenuParams)
             throws RemoteException {
-        if (WebLayerFactoryImpl.getClientMajorVersion() < 82) return;
         if (WebLayerFactoryImpl.getClientMajorVersion() < 88) {
-            mClient.showContextMenu(ObjectWrapper.wrap(params.getPageUrl()),
-                    ObjectWrapper.wrap(nonEmptyOrNull(params.getLinkUrl())),
+            mClient.showContextMenu(ObjectWrapper.wrap(params.getPageUrl().getSpec()),
+                    ObjectWrapper.wrap(nonEmptyOrNull(params.getLinkUrl().getSpec())),
                     ObjectWrapper.wrap(nonEmptyOrNull(params.getLinkText())),
                     ObjectWrapper.wrap(nonEmptyOrNull(params.getTitleText())),
-                    ObjectWrapper.wrap(nonEmptyOrNull(params.getSrcUrl())));
+                    ObjectWrapper.wrap(nonEmptyOrNull(params.getSrcUrl().getSpec())));
             return;
         }
 
@@ -1116,11 +1131,11 @@ public final class TabImpl extends ITab.Stub {
                 || (params.isVideo() && UrlUtilities.isDownloadableScheme(params.getSrcUrl())
                         && params.canSaveMedia())
                 || (params.isAnchor() && UrlUtilities.isDownloadableScheme(params.getLinkUrl()));
-        mClient.showContextMenu2(ObjectWrapper.wrap(params.getPageUrl()),
-                ObjectWrapper.wrap(nonEmptyOrNull(params.getLinkUrl())),
+        mClient.showContextMenu2(ObjectWrapper.wrap(params.getPageUrl().getSpec()),
+                ObjectWrapper.wrap(nonEmptyOrNull(params.getLinkUrl().getSpec())),
                 ObjectWrapper.wrap(nonEmptyOrNull(params.getLinkText())),
                 ObjectWrapper.wrap(nonEmptyOrNull(params.getTitleText())),
-                ObjectWrapper.wrap(nonEmptyOrNull(params.getSrcUrl())), params.isImage(),
+                ObjectWrapper.wrap(nonEmptyOrNull(params.getSrcUrl().getSpec())), params.isImage(),
                 params.isVideo(), canDownload,
                 new NativeContextMenuParamsHolder(nativeContextMenuParams));
     }
@@ -1185,12 +1200,24 @@ public final class TabImpl extends ITab.Stub {
 
                     @Override
                     public InsetObserverView getInsetObserverView() {
-                        return mBrowser.getViewController().getInsetObserverView();
+                        BrowserViewController controller = mBrowser.getPossiblyNullViewController();
+                        return controller != null ? controller.getInsetObserverView() : null;
+                    }
+
+                    @Override
+                    public ObservableSupplier<Integer> getBrowserDisplayCutoutModeSupplier() {
+                        // No activity-wide display cutout mode override.
+                        return null;
                     }
 
                     @Override
                     public boolean isInteractable() {
                         return isVisible();
+                    }
+
+                    @Override
+                    public boolean isInBrowserFullscreen() {
+                        return false;
                     }
                 });
     }
@@ -1239,7 +1266,7 @@ public final class TabImpl extends ITab.Stub {
         void removeTabFromBrowserBeforeDestroying(long nativeTabImpl);
         void deleteTab(long tab);
         void setJavaImpl(long nativeTabImpl, TabImpl impl);
-        void onAutofillProviderChanged(long nativeTabImpl, AutofillProvider autofillProvider);
+        void initializeAutofillIfNecessary(long nativeTabImpl);
         void setBrowserControlsContainerViews(long nativeTabImpl,
                 long nativeTopBrowserControlsContainerView,
                 long nativeBottomBrowserControlsContainerView);

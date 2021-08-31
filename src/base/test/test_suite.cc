@@ -24,12 +24,14 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/tagging.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
+#include "base/strings/string_piece.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/gtest_xml_unittest_result_printer.h"
 #include "base/test/gtest_xml_util.h"
@@ -252,37 +254,6 @@ class CheckProcessPriority : public testing::EmptyTestEventListener {
 };
 #endif  // !defined(OS_IOS)
 
-class CheckThreadPriority : public testing::EmptyTestEventListener {
- public:
-  CheckThreadPriority(bool check_thread_priority_at_test_end)
-      : check_thread_priority_at_test_end_(check_thread_priority_at_test_end) {
-    CHECK_EQ(base::PlatformThread::GetCurrentThreadPriority(),
-             base::ThreadPriority::NORMAL)
-        << " -- The thread priority of this process is not the default. This "
-           "usually indicates nice has been used, which is not supported.";
-  }
-
-  void OnTestStart(const testing::TestInfo& test) override {
-    EXPECT_EQ(base::PlatformThread::GetCurrentThreadPriority(),
-              base::ThreadPriority::NORMAL)
-        << " -- The thread priority of this process is not the default. This "
-           "usually indicates nice has been used, which is not supported.";
-  }
-  void OnTestEnd(const testing::TestInfo& test) override {
-    if (check_thread_priority_at_test_end_) {
-      EXPECT_EQ(base::PlatformThread::GetCurrentThreadPriority(),
-                base::ThreadPriority::NORMAL)
-          << " -- The thread priority of this process is not the default. This "
-             "usually indicates nice has been used, which is not supported.";
-    }
-  }
-
- private:
-  const bool check_thread_priority_at_test_end_;
-
-  DISALLOW_COPY_AND_ASSIGN(CheckThreadPriority);
-};
-
 const std::string& GetProfileName() {
   static const NoDestructor<std::string> profile_name([]() {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -295,33 +266,16 @@ const std::string& GetProfileName() {
 }
 
 void InitializeLogging() {
-#if defined(OS_ANDROID)
-  InitAndroidTestLogging();
-#else
+  CHECK(logging::InitLogging({.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG |
+                                              logging::LOG_TO_STDERR}));
 
-  FilePath log_filename;
-  FilePath exe;
-  PathService::Get(FILE_EXE, &exe);
-
-#if defined(OS_FUCHSIA)
-  // Write logfiles to /data, because the default log location alongside the
-  // executable (/pkg) is read-only.
-  FilePath data_dir;
-  PathService::Get(DIR_APP_DATA, &data_dir);
-  log_filename = data_dir.Append(exe.BaseName())
-                     .ReplaceExtension(FILE_PATH_LITERAL("log"));
-#else
-  log_filename = exe.ReplaceExtension(FILE_PATH_LITERAL("log"));
-#endif  // defined(OS_FUCHSIA)
-
-  logging::LoggingSettings settings;
-  settings.log_file_path = log_filename.value().c_str();
-  settings.logging_dest = logging::LOG_TO_ALL;
-  settings.delete_old = logging::DELETE_OLD_LOG_FILE;
-  logging::InitLogging(settings);
   // We want process and thread IDs because we may have multiple processes.
-  // Note: temporarily enabled timestamps in an effort to catch bug 6361.
-  logging::SetLogItems(true, true, true, true);
+#if defined(OS_ANDROID)
+  // To view log output with IDs and timestamps use "adb logcat -v threadtime".
+  logging::SetLogItems(false, false, false, false);
+#else
+  // We want process and thread IDs because we may have multiple processes.
+  logging::SetLogItems(true, true, false, false);
 #endif  // !defined(OS_ANDROID)
 }
 
@@ -378,6 +332,21 @@ void TestSuite::InitializeFromCommandLine(int argc, wchar_t** argv) {
 void TestSuite::PreInitialize() {
   DCHECK(!is_initialized_);
 
+  // The default death_test_style of "fast" is a frequent source of subtle test
+  // flakiness. And on some platforms like macOS, use of system libraries after
+  // fork() but before exec() is unsafe. Using the threadsafe style by default
+  // alleviates these concerns.
+  //
+  // However, the threasafe style does not work reliably on Android, so that
+  // will keep the default of "fast". See https://crbug.com/815537,
+  // https://github.com/google/googletest/issues/1496, and
+  // https://github.com/google/googletest/issues/2093.
+  // TODO(danakj): Determine if all death tests should be skipped on Android
+  // (many already are, such as for DCHECK-death tests).
+#if !defined(OS_ANDROID)
+  testing::GTEST_FLAG(death_test_style) = "threadsafe";
+#endif
+
 #if defined(OS_WIN)
   testing::GTEST_FLAG(catch_exceptions) = false;
 #endif
@@ -394,7 +363,7 @@ void TestSuite::PreInitialize() {
   // On Android, AtExitManager is created in
   // testing/android/native_test_wrapper.cc before main() is called.
 #if !defined(OS_ANDROID)
-  at_exit_manager_.reset(new AtExitManager);
+  at_exit_manager_ = std::make_unique<AtExitManager>();
 #endif
 
   // Don't add additional code to this function.  Instead add it to
@@ -477,6 +446,19 @@ int TestSuite::Run() {
   test_listener_ios::RegisterTestEndListener();
 #endif
 
+#if defined(OS_LINUX)
+  // There's no standard way to opt processes into MTE on Linux just yet,
+  // so this call explicitly opts this test into synchronous MTE mode, where
+  // pointer mismatches are detected immediately.
+  base::memory::ChangeMemoryTaggingModeForCurrentThread(
+      base::memory::TagViolationReportingMode::kSynchronous);
+#elif defined(OS_ANDROID)
+    // On Android, the tests are opted into synchronous MTE mode by the
+    // memtagMode attribute in an AndroidManifest.xml file or via an `am compat`
+    // command, so and explicit call to ChangeMemoryTaggingModeForCurrentThread
+    // is not needed.
+#endif
+
   int result = RUN_ALL_TESTS();
 
 #if defined(OS_APPLE)
@@ -524,8 +506,8 @@ void TestSuite::UnitTestAssertHandler(const char* file,
   // logged text, concatenated with stack trace of assert.
   // Concatenate summary and stack_trace here, to pass it as a message.
   if (printer_) {
-    const std::string summary_str = summary.as_string();
-    const std::string stack_trace_str = summary_str + stack_trace.as_string();
+    const std::string summary_str(summary);
+    const std::string stack_trace_str = summary_str + std::string(stack_trace);
     printer_->OnAssert(file, line, summary_str, stack_trace_str);
   }
 

@@ -81,12 +81,6 @@ ContentSettingsContentSettingClearFunction::Run() {
   std::unique_ptr<Clear::Params> params(Clear::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  if (content_type == ContentSettingsType::PLUGINS) {
-    return RespondNow(
-        Error(content_settings_api_constants::
-                  kSettingPluginContentSettingsClearIsDisallowed));
-  }
-
   ExtensionPrefsScope scope = kExtensionPrefsScopeRegular;
   bool incognito = false;
   if (params->details.scope ==
@@ -121,10 +115,6 @@ ContentSettingsContentSettingGetFunction::Run() {
   std::unique_ptr<Get::Params> params(Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  if (content_type == ContentSettingsType::PLUGINS) {
-    return RespondNow(Error(content_settings_api_constants::
-                                kSettingPluginContentSettingsGetIsDisallowed));
-  }
 
   GURL primary_url(params->details.primary_url);
   if (!primary_url.is_valid()) {
@@ -158,22 +148,21 @@ ContentSettingsContentSettingGetFunction::Run() {
           Error(content_settings_api_constants::kIncognitoSessionOnlyError));
     }
     map = HostContentSettingsMapFactory::GetForProfile(
-        profile->GetPrimaryOTRProfile());
+        profile->GetPrimaryOTRProfile(/*create_if_needed=*/true));
     cookie_settings =
-        CookieSettingsFactory::GetForProfile(profile->GetPrimaryOTRProfile())
+        CookieSettingsFactory::GetForProfile(
+            profile->GetPrimaryOTRProfile(/*create_if_needed=*/true))
             .get();
   } else {
     map = HostContentSettingsMapFactory::GetForProfile(profile);
     cookie_settings = CookieSettingsFactory::GetForProfile(profile).get();
   }
 
-  ContentSetting setting;
-  if (content_type == ContentSettingsType::COOKIES) {
-    cookie_settings->GetCookieSetting(primary_url, secondary_url, nullptr,
-                                      &setting);
-  } else {
-    setting = map->GetContentSetting(primary_url, secondary_url, content_type);
-  }
+  ContentSetting setting =
+      content_type == ContentSettingsType::COOKIES
+          ? cookie_settings->GetCookieSetting(primary_url, secondary_url,
+                                              nullptr)
+          : map->GetContentSetting(primary_url, secondary_url, content_type);
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   std::string setting_string =
@@ -304,11 +293,6 @@ ContentSettingsContentSettingSetFunction::Run() {
     return RespondNow(Error(pref_keys::kIncognitoSessionOnlyErrorMessage));
   }
 
-  if (content_type == ContentSettingsType::PLUGINS) {
-      return RespondNow(Error(content_settings_api_constants::
-                                  kSettingPluginContentSettingsIsDisallowed));
-  }
-
   scoped_refptr<ContentSettingsStore> store =
       ContentSettingsService::Get(browser_context())->content_settings_store();
   store->SetExtensionContentSetting(extension_id(), primary_pattern,
@@ -320,20 +304,11 @@ ContentSettingsContentSettingSetFunction::Run() {
 
 ExtensionFunction::ResponseAction
 ContentSettingsContentSettingGetResourceIdentifiersFunction::Run() {
-  ContentSettingsType content_type;
-  EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
-
-  if (content_type != ContentSettingsType::PLUGINS) {
-    return RespondNow(NoArguments());
-  }
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-  return RespondNow(
-      Error(content_settings_api_constants::
-                kSettingPluginContentSettingsResourceIdentifierIsDisallowed));
-#endif
-
-  return RespondLater();
+  // The only setting that supported resource identifiers was plugins. Since
+  // plugins have been deprecated since Chrome 87, there are no resource
+  // identifiers for existing settings (but we retain the function for
+  // backwards and potential forwards compatibility).
+  return RespondNow(NoArguments());
 }
 
 }  // namespace extensions

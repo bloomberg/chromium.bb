@@ -126,6 +126,10 @@ class CORE_EXPORT DisplayLockDocumentState final
     Member<DisplayLockUtilities::ScopedForcedUpdate::Impl> chain;
   };
 
+  void NotifyPrintingOrPreviewChanged();
+
+  base::TimeTicks GetLockUpdateTimestamp();
+
  private:
   IntersectionObserver& EnsureIntersectionObserver();
 
@@ -150,6 +154,10 @@ class CORE_EXPORT DisplayLockDocumentState final
   // Contains all of the currently forced node infos, each of which represents
   // the node that caused the scope to be created.
   HeapVector<ForcedNodeInfo> forced_node_info_;
+
+  bool printing_ = false;
+
+  base::TimeTicks last_lock_update_timestamp_ = base::TimeTicks();
 };
 
 }  // namespace blink

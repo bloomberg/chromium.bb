@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/stl_util.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -29,8 +30,8 @@ namespace {
 constexpr size_t kMinPasswordLengthToCheck = 8;
 
 // Returns true iff |suffix_candidate| is a suffix of |str|.
-bool IsSuffix(const base::string16& str,
-              const base::string16& suffix_candidate) {
+bool IsSuffix(const std::u16string& str,
+              const std::u16string& suffix_candidate) {
   if (str.size() < suffix_candidate.size())
     return false;
   return std::equal(suffix_candidate.rbegin(), suffix_candidate.rend(),
@@ -39,16 +40,16 @@ bool IsSuffix(const base::string16& str,
 
 // Helper function to returns matching PasswordHashData from a list that has
 // the longest password length.
-base::Optional<PasswordHashData> FindPasswordReuse(
-    const base::string16& input,
+absl::optional<PasswordHashData> FindPasswordReuse(
+    const std::u16string& input,
     const std::vector<PasswordHashData>& password_hash_list) {
-  base::Optional<PasswordHashData> longest_match = base::nullopt;
+  absl::optional<PasswordHashData> longest_match = absl::nullopt;
   size_t longest_match_size = 0;
   for (const PasswordHashData& hash_data : password_hash_list) {
     if (input.size() < hash_data.length)
       continue;
     size_t offset = input.size() - hash_data.length;
-    base::string16 reuse_candidate = input.substr(offset);
+    std::u16string reuse_candidate = input.substr(offset);
     // It is possible that input matches multiple passwords in the list,
     // we only return the first match due to simplicity.
     if (CalculatePasswordHash(reuse_candidate, hash_data.salt) ==
@@ -63,8 +64,8 @@ base::Optional<PasswordHashData> FindPasswordReuse(
 
 }  // namespace
 
-bool ReverseStringLess::operator()(const base::string16& lhs,
-                                   const base::string16& rhs) const {
+bool ReverseStringLess::operator()(const std::u16string& lhs,
+                                   const std::u16string& rhs) const {
   return std::lexicographical_compare(lhs.rbegin(), lhs.rend(), rhs.rbegin(),
                                       rhs.rend());
 }
@@ -97,26 +98,28 @@ void PasswordReuseDetector::OnLoginsChanged(
     if (change.type() == PasswordStoreChange::ADD ||
         change.type() == PasswordStoreChange::UPDATE)
       AddPassword(change.form());
+    if (change.type() == PasswordStoreChange::REMOVE)
+      RemovePassword(change.form());
   }
 }
 
 void PasswordReuseDetector::CheckReuse(
-    const base::string16& input,
+    const std::u16string& input,
     const std::string& domain,
     PasswordReuseDetectorConsumer* consumer) {
   DCHECK(consumer);
   if (input.size() < kMinPasswordLengthToCheck) {
-    consumer->OnReuseCheckDone(false, 0, base::nullopt, {}, saved_passwords_);
+    consumer->OnReuseCheckDone(false, 0, absl::nullopt, {}, saved_passwords_);
     return;
   }
 
-  base::Optional<PasswordHashData> reused_gaia_password_hash =
+  absl::optional<PasswordHashData> reused_gaia_password_hash =
       CheckGaiaPasswordReuse(input, domain);
   size_t gaia_reused_password_length = reused_gaia_password_hash.has_value()
                                            ? reused_gaia_password_hash->length
                                            : 0;
 
-  base::Optional<PasswordHashData> reused_enterprise_password_hash =
+  absl::optional<PasswordHashData> reused_enterprise_password_hash =
       CheckNonGaiaEnterprisePasswordReuse(input, domain);
   size_t enterprise_reused_password_length =
       reused_enterprise_password_hash.has_value()
@@ -132,12 +135,12 @@ void PasswordReuseDetector::CheckReuse(
                 enterprise_reused_password_length});
 
   if (max_reused_password_length == 0) {
-    consumer->OnReuseCheckDone(false, 0, base::nullopt, {}, saved_passwords_);
+    consumer->OnReuseCheckDone(false, 0, absl::nullopt, {}, saved_passwords_);
     return;
   }
 
-  base::Optional<PasswordHashData> reused_protected_password_hash =
-      base::nullopt;
+  absl::optional<PasswordHashData> reused_protected_password_hash =
+      absl::nullopt;
   if (gaia_reused_password_length > enterprise_reused_password_length) {
     reused_protected_password_hash = std::move(reused_gaia_password_hash);
   } else if (enterprise_reused_password_length != 0) {
@@ -148,30 +151,30 @@ void PasswordReuseDetector::CheckReuse(
                              matching_reused_credentials, saved_passwords_);
 }
 
-base::Optional<PasswordHashData> PasswordReuseDetector::CheckGaiaPasswordReuse(
-    const base::string16& input,
+absl::optional<PasswordHashData> PasswordReuseDetector::CheckGaiaPasswordReuse(
+    const std::u16string& input,
     const std::string& domain) {
   if (!gaia_password_hash_data_list_.has_value() ||
       gaia_password_hash_data_list_->empty()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   // Skips password reuse check if |domain| matches Gaia origin.
   const Origin gaia_origin =
       Origin::Create(GaiaUrls::GetInstance()->gaia_url().GetOrigin());
   if (Origin::Create(GURL(domain)).IsSameOriginWith(gaia_origin))
-    return base::nullopt;
+    return absl::nullopt;
 
   return FindPasswordReuse(input, gaia_password_hash_data_list_.value());
 }
 
-base::Optional<PasswordHashData>
+absl::optional<PasswordHashData>
 PasswordReuseDetector::CheckNonGaiaEnterprisePasswordReuse(
-    const base::string16& input,
+    const std::u16string& input,
     const std::string& domain) {
   if (!enterprise_password_hash_data_list_.has_value() ||
       enterprise_password_hash_data_list_->empty()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   // Skips password reuse check if |domain| matches enterprise login URL or
@@ -180,14 +183,14 @@ PasswordReuseDetector::CheckNonGaiaEnterprisePasswordReuse(
   if (enterprise_password_urls_.has_value() &&
       safe_browsing::MatchesURLList(page_url,
                                     enterprise_password_urls_.value())) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return FindPasswordReuse(input, enterprise_password_hash_data_list_.value());
 }
 
 size_t PasswordReuseDetector::CheckSavedPasswordReuse(
-    const base::string16& input,
+    const std::u16string& input,
     const std::string& domain,
     std::vector<MatchingReusedCredential>* matching_reused_credentials_out) {
   const std::string registry_controlled_domain =
@@ -232,18 +235,18 @@ size_t PasswordReuseDetector::CheckSavedPasswordReuse(
 }
 
 void PasswordReuseDetector::UseGaiaPasswordHash(
-    base::Optional<std::vector<PasswordHashData>> password_hash_data_list) {
+    absl::optional<std::vector<PasswordHashData>> password_hash_data_list) {
   gaia_password_hash_data_list_ = std::move(password_hash_data_list);
 }
 
 void PasswordReuseDetector::UseNonGaiaEnterprisePasswordHash(
-    base::Optional<std::vector<PasswordHashData>> password_hash_data_list) {
+    absl::optional<std::vector<PasswordHashData>> password_hash_data_list) {
   enterprise_password_hash_data_list_ = std::move(password_hash_data_list);
 }
 
 void PasswordReuseDetector::UseEnterprisePasswordURLs(
-    base::Optional<std::vector<GURL>> enterprise_login_urls,
-    base::Optional<GURL> enterprise_change_password_url) {
+    absl::optional<std::vector<GURL>> enterprise_login_urls,
+    absl::optional<GURL> enterprise_change_password_url) {
   enterprise_password_urls_ = std::move(enterprise_login_urls);
   if (!enterprise_change_password_url.has_value() ||
       !enterprise_change_password_url->is_valid()) {
@@ -251,7 +254,7 @@ void PasswordReuseDetector::UseEnterprisePasswordURLs(
   }
 
   if (!enterprise_password_urls_)
-    enterprise_password_urls_ = base::make_optional<std::vector<GURL>>();
+    enterprise_password_urls_ = absl::make_optional<std::vector<GURL>>();
   enterprise_password_urls_->push_back(enterprise_change_password_url.value());
 }
 
@@ -297,8 +300,21 @@ void PasswordReuseDetector::AddPassword(const PasswordForm& form) {
   }
 }
 
+void PasswordReuseDetector::RemovePassword(const PasswordForm& form) {
+  if (form.password_value.size() < kMinPasswordLengthToCheck)
+    return;
+
+  const auto result =
+      passwords_with_matching_reused_credentials_.find(form.password_value);
+  if (!(result == passwords_with_matching_reused_credentials_.end()) ||
+      !result->second.empty()) {
+    passwords_with_matching_reused_credentials_.erase(form.password_value);
+    saved_passwords_--;
+  }
+}
+
 PasswordReuseDetector::passwords_iterator
-PasswordReuseDetector::FindFirstSavedPassword(const base::string16& input) {
+PasswordReuseDetector::FindFirstSavedPassword(const std::u16string& input) {
   // Keys in |passwords_with_matching_reused_credentials_| are ordered by
   // lexicographical order of reversed strings. In order to check a password
   // reuse a key of |passwords_with_matching_reused_credentials_| that is a
@@ -323,7 +339,7 @@ PasswordReuseDetector::FindFirstSavedPassword(const base::string16& input) {
 
 PasswordReuseDetector::passwords_iterator
 PasswordReuseDetector::FindNextSavedPassword(
-    const base::string16& input,
+    const std::u16string& input,
     PasswordReuseDetector::passwords_iterator it) {
   if (it == passwords_with_matching_reused_credentials_.begin())
     return passwords_with_matching_reused_credentials_.end();

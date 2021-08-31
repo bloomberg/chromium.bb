@@ -13,7 +13,7 @@
 #include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind.h"
 #include "base/test/icu_test_util.h"
@@ -48,12 +48,13 @@ constexpr int kVersion = 1;
 
 #define EXPECT_VISIBLE_NOTIFICATIONS_BY_PREFIXED_ID(prefix_)                  \
   {                                                                           \
-    if (!FindVisibleNotificationsByPrefixedId(prefix_).empty())               \
+    if (!FindVisibleNotificationsByPrefixedId(prefix_).empty()) {             \
       return;                                                                 \
-                                                                              \
+    }                                                                         \
     MockMessageCenterObserver mock;                                           \
-    ScopedObserver<MessageCenter, MessageCenterObserver> observer_{&mock};    \
-    observer_.Add(MessageCenter::Get());                                      \
+    base::ScopedObservation<MessageCenter, MessageCenterObserver>             \
+        observation_{&mock};                                                  \
+    observation_.Observe(MessageCenter::Get());                               \
                                                                               \
     base::RunLoop run_loop;                                                   \
     EXPECT_CALL(mock, OnNotificationAdded)                                    \
@@ -188,9 +189,7 @@ class MockMessageCenterObserver
 
 class AssistantTimersBrowserTest : public MixinBasedInProcessBrowserTest {
  public:
-  AssistantTimersBrowserTest() {
-    feature_list_.InitAndEnableFeature(features::kAssistantTimersV2);
-  }
+  AssistantTimersBrowserTest() = default;
 
   AssistantTimersBrowserTest(const AssistantTimersBrowserTest&) = delete;
   AssistantTimersBrowserTest& operator=(const AssistantTimersBrowserTest&) =
@@ -206,7 +205,6 @@ class AssistantTimersBrowserTest : public MixinBasedInProcessBrowserTest {
   AssistantTestMixin* tester() { return &tester_; }
 
  private:
-  base::test::ScopedFeatureList feature_list_;
   base::test::ScopedRestoreICUDefaultLocale locale_{"en_US"};
   AssistantTestMixin tester_{&mixin_host_, this, embedded_test_server(), kMode,
                              kVersion};
@@ -215,8 +213,10 @@ class AssistantTimersBrowserTest : public MixinBasedInProcessBrowserTest {
 // Tests -----------------------------------------------------------------------
 
 // Timer notifications should be dismissed when disabling Assistant in settings.
-IN_PROC_BROWSER_TEST_F(AssistantTimersBrowserTest,
-                       ShouldDismissTimerNotificationsWhenDisablingAssistant) {
+// Flaky. See https://crbug.com/1196564.
+IN_PROC_BROWSER_TEST_F(
+    AssistantTimersBrowserTest,
+    DISABLED_ShouldDismissTimerNotificationsWhenDisablingAssistant) {
   tester()->StartAssistantAndWaitForReady();
 
   ShowAssistantUi();
@@ -244,8 +244,9 @@ IN_PROC_BROWSER_TEST_F(AssistantTimersBrowserTest,
 
 // Pressing the "STOP" action button in a timer notification should result in
 // the timer being removed.
+// Flaky. See https://crbug.com/1196564.
 IN_PROC_BROWSER_TEST_F(AssistantTimersBrowserTest,
-                       ShouldRemoveTimerWhenStoppingViaNotification) {
+                       DISABLED_ShouldRemoveTimerWhenStoppingViaNotification) {
   tester()->StartAssistantAndWaitForReady();
 
   ShowAssistantUi();
@@ -256,13 +257,7 @@ IN_PROC_BROWSER_TEST_F(AssistantTimersBrowserTest,
 
   // Start a timer for five minutes.
   tester()->SendTextQuery("Set a timer for 5 minutes");
-  tester()->ExpectAnyOfTheseTextResponses({
-      "Alright, 5 min. Starting… now.",
-      "OK, 5 min. And we're starting… now.",
-      "OK, 5 min. Starting… now.",
-      "Sure, 5 min. And that's starting… now.",
-      "Sure, 5 min. Starting now.",
-  });
+  tester()->ExpectTextResponse("5 min.");
 
   // Tap status area widget (to show notifications in the Message Center).
   TapOnAndWait(FindStatusAreaWidget());
@@ -277,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(AssistantTimersBrowserTest,
   EXPECT_EQ(2u, action_buttons.size());
 
   // Tap the "CANCEL" action button in the notification.
-  EXPECT_EQ(base::UTF8ToUTF16("CANCEL"), action_buttons.at(1)->GetText());
+  EXPECT_EQ(u"CANCEL", action_buttons.at(1)->GetText());
   TapOnAndWait(action_buttons.at(1));
 
   ShowAssistantUi();
@@ -295,8 +290,9 @@ IN_PROC_BROWSER_TEST_F(AssistantTimersBrowserTest,
                        ShouldTickNotificationsAtRegularIntervals) {
   // Observe notifications.
   MockMessageCenterObserver mock;
-  ScopedObserver<MessageCenter, MessageCenterObserver> scoped_observer{&mock};
-  scoped_observer.Add(MessageCenter::Get());
+  base::ScopedObservation<MessageCenter, MessageCenterObserver>
+      scoped_observation{&mock};
+  scoped_observation.Observe(MessageCenter::Get());
 
   // Show Assistant UI (once ready).
   tester()->StartAssistantAndWaitForReady();
@@ -339,6 +335,7 @@ IN_PROC_BROWSER_TEST_F(AssistantTimersBrowserTest,
   std::deque<std::string> expected_titles = {"0:04",  "0:03",  "0:02",  "0:01",
                                              "0:00",  "-0:01", "-0:02", "-0:03",
                                              "-0:04", "-0:05"};
+  bool is_first_update = true;
 
   auto* title_label =
       FindTitleLabelForNotification(*FindAssistantNotifications().begin());
@@ -350,9 +347,19 @@ IN_PROC_BROWSER_TEST_F(AssistantTimersBrowserTest,
         base::Time now = base::Time::Now();
 
         // Assert that the update was received within our expected time frame.
-        EXPECT_NEAR((now - last_update).InMilliseconds(),
-                    kExpectedMillisBetweenUpdates,
-                    kMillisBetweenUpdatesTolerance);
+        if (is_first_update) {
+          is_first_update = false;
+          // Our updates are synced to the nearest full second, meaning our
+          // first update can come anywhere from 1 ms to 1000 ms from the time
+          // our notification was shown.
+          EXPECT_LE((now - last_update).InMilliseconds(),
+                    1000 + kMillisBetweenUpdatesTolerance);
+        } else {
+          // Consecutive updates must come regularly.
+          EXPECT_NEAR((now - last_update).InMilliseconds(),
+                      kExpectedMillisBetweenUpdates,
+                      kMillisBetweenUpdatesTolerance);
+        }
 
         // Assert that the notification has the expected title.
         auto title = base::UTF16ToUTF8(title_label->GetText());

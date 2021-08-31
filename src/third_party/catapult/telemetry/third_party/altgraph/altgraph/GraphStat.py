@@ -2,9 +2,14 @@
 altgraph.GraphStat - Functions providing various graph statistics
 =================================================================
 '''
+from __future__ import division
+from __future__ import absolute_import
 import sys
 
-def degree_dist(graph, limits=(0,0), bin_num=10, mode='out'):
+# 2To3-division: the / operations here are not converted to // as the results
+# are expected floats.
+
+def degree_dist(graph, limits=(0, 0), bin_num=10, mode='out'):
     '''
     Computes the degree distribution for a graph.
 
@@ -33,8 +38,8 @@ def degree_dist(graph, limits=(0,0), bin_num=10, mode='out'):
 
     return results
 
-_EPS = 1.0/(2.0**32)
-def _binning(values, limits=(0,0), bin_num=10):
+_EPS = 1.0 / (2.0**32)
+def _binning(values, limits=(0, 0), bin_num=10):
     '''
     Bins data that falls between certain limits, if the limits are (0, 0) the
     minimum and maximum values are used.
@@ -48,7 +53,7 @@ def _binning(values, limits=(0,0), bin_num=10):
         min_val, max_val = limits
 
     # get bin size
-    bin_size = (max_val - min_val)/float(bin_num)
+    bin_size = (max_val - min_val) / float(bin_num)
     bins = [0] * (bin_num)
 
     # will ignore these outliers for now
@@ -58,16 +63,16 @@ def _binning(values, limits=(0,0), bin_num=10):
             if (value - min_val) < 0:
                 out_points += 1
             else:
-                index = int((value - min_val)/float(bin_size))
+                index = int((value - min_val) / float(bin_size))
                 bins[index] += 1
         except IndexError:
             out_points += 1
 
     # make it ready for an x,y plot
     result = []
-    center = (bin_size/2) + min_val
+    center = (bin_size / 2) + min_val
     for i, y in enumerate(bins):
         x = center + bin_size * i
-        result.append( (x,y) )
+        result.append( (x, y) )
 
     return result

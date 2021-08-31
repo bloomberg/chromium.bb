@@ -91,7 +91,7 @@ class WaylandDataSourceDelegate : public DataSourceDelegate {
     return surface &&
            wl_resource_get_client(GetSurfaceResource(surface)) == client_;
   }
-  void OnTarget(const base::Optional<std::string>& mime_type) override {
+  void OnTarget(const absl::optional<std::string>& mime_type) override {
     wl_data_source_send_target(data_source_resource_,
                                mime_type ? mime_type->c_str() : nullptr);
     wl_client_flush(wl_resource_get_client(data_source_resource_));
@@ -249,7 +249,7 @@ class WaylandDataDeviceDelegate : public DataDeviceDelegate {
   // Overridden from DataDeviceDelegate:
   void OnDataDeviceDestroying(DataDevice* device) override { delete this; }
   bool CanAcceptDataEventsForSurface(Surface* surface) const override {
-    return surface &&
+    return surface && GetSurfaceResource(surface) &&
            wl_resource_get_client(GetSurfaceResource(surface)) == client_;
   }
   DataOffer* OnDataOffer() override {
@@ -302,13 +302,10 @@ class WaylandDataDeviceDelegate : public DataDeviceDelegate {
                  Surface* origin,
                  Surface* icon,
                  uint32_t serial) {
-    base::Optional<wayland::SerialTracker::EventType> event_type =
+    absl::optional<wayland::SerialTracker::EventType> event_type =
         serial_tracker_->GetEventType(serial);
-    if (event_type == base::nullopt) {
+    if (event_type == absl::nullopt) {
       LOG(ERROR) << "The serial passed to StartDrag does not exist.";
-      if (source) {
-        source->Cancelled();
-      }
       return;
     }
     if (event_type == wayland::SerialTracker::EventType::POINTER_BUTTON_DOWN &&
@@ -324,22 +321,16 @@ class WaylandDataDeviceDelegate : public DataDeviceDelegate {
     } else {
       LOG(ERROR) << "The serial passed to StartDrag does not match its "
                     "expected types.";
-      if (source) {
-        source->Cancelled();
-      }
     }
   }
 
   void SetSelection(DataDevice* data_device,
                     DataSource* source,
                     uint32_t serial) {
-    base::Optional<wayland::SerialTracker::EventType> event_type =
+    absl::optional<wayland::SerialTracker::EventType> event_type =
         serial_tracker_->GetEventType(serial);
-    if (event_type == base::nullopt) {
+    if (event_type == absl::nullopt) {
       LOG(ERROR) << "The serial passed to SetSelection does not exist.";
-      if (source) {
-        source->Cancelled();
-      }
       return;
     }
     DCHECK(data_device);

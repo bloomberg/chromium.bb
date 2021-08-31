@@ -456,8 +456,8 @@ public:
         SkScalar w = r.width();
         SkScalar h = r.height();
 
-        SkM44 camera = Sk3LookAt(fEye, fCOA, fUp),
-              perspective = Sk3Perspective(fNear, fFar, fAngle),
+        SkM44 camera = SkM44::LookAt(fEye, fCOA, fUp),
+              perspective = SkM44::Perspective(fNear, fFar, fAngle),
               translate = SkM44::Translate(fTrans.x, fTrans.y, fTrans.z),
               viewport = SkM44::Translate(r.centerX(), r.centerY(), 0) *
                          SkM44::Scale(w*0.5f, h*0.5f, 1);
@@ -498,7 +498,7 @@ class HalfPlaneView3 : public SampleCameraView {
     void onOnceBeforeDraw() override {
         fPath = make_path();
         fShader = GetResourceAsImage("images/mandrill_128.png")
-                        ->makeShader(SkMatrix::Scale(3, 3));
+                        ->makeShader(SkSamplingOptions(), SkMatrix::Scale(3, 3));
     }
 
     bool onChar(SkUnichar uni) override {
@@ -571,7 +571,7 @@ class HalfPlaneCoons : public SampleCameraView {
         fPatch[10] = {  0, 200 };
         fPatch[11] = {  0, 100 };
 
-        fShader = GetResourceAsImage("images/mandrill_256.png")->makeShader();
+        fShader = GetResourceAsImage("images/mandrill_256.png")->makeShader(SkSamplingOptions());
     }
 
     void onDrawContent(SkCanvas* canvas) override {

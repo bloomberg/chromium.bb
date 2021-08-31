@@ -14,11 +14,10 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/strings/string16.h"
 #include "device/fido/authenticator_get_info_response.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_transport_protocol.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
 
@@ -38,7 +37,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   static constexpr CancelToken kInvalidCancelToken = 0;
 
   using DeviceCallback =
-      base::OnceCallback<void(base::Optional<std::vector<uint8_t>>)>;
+      base::OnceCallback<void(absl::optional<std::vector<uint8_t>>)>;
 
   // Internal state machine states.
   enum class State {
@@ -79,8 +78,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   // cancel may be unsuccessful and that the request may complete normally.
   // It is safe to attempt to cancel an operation that has already completed.
   virtual void Cancel(CancelToken token) = 0;
+  // GetId returns a unique string representing this device. This string should
+  // be distinct from all other devices concurrently discovered.
   virtual std::string GetId() const = 0;
-  virtual base::string16 GetDisplayName() const;
+  // GetDisplayName returns a string identifying a device to a human, which
+  // might not be unique. For example, |GetDisplayName| could return the VID:PID
+  // of a HID device, but |GetId| could not because two devices can share the
+  // same VID:PID. It defaults to returning the value of |GetId|.
+  virtual std::string GetDisplayName() const;
   virtual FidoTransportProtocol DeviceTransport() const = 0;
 
   // These must only be called on Bluetooth devices.
@@ -107,7 +112,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   }
 
   ProtocolVersion supported_protocol() const { return supported_protocol_; }
-  const base::Optional<AuthenticatorGetInfoResponse>& device_info() const {
+  const absl::optional<AuthenticatorGetInfoResponse>& device_info() const {
     return device_info_;
   }
   bool is_in_error_state() const {
@@ -119,12 +124,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
 
  protected:
   void OnDeviceInfoReceived(base::OnceClosure done,
-                            base::Optional<std::vector<uint8_t>> response);
+                            absl::optional<std::vector<uint8_t>> response);
   void SetDeviceInfo(AuthenticatorGetInfoResponse device_info);
 
   State state_ = State::kInit;
   ProtocolVersion supported_protocol_ = ProtocolVersion::kUnknown;
-  base::Optional<AuthenticatorGetInfoResponse> device_info_;
+  absl::optional<AuthenticatorGetInfoResponse> device_info_;
   // If `true`, the device needs to be sent a specific wink command to flash
   // when user presence is required.
   bool needs_explicit_wink_ = false;

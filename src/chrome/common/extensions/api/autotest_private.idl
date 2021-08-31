@@ -15,9 +15,10 @@ namespace autotestPrivate {
 
   // A mapping of ash::ShelfItemType.
   enum ShelfItemType {
-    App,
     PinnedApp,
     BrowserShortcut,
+    App,
+    UnpinnedBrowserShortcut,
     Dialog
   };
 
@@ -37,7 +38,7 @@ namespace autotestPrivate {
     Web,
     MacOS,
     PluginVm,
-    Lacros,
+    StandaloneBrowser,
     Remote,
     Borealis
   };
@@ -60,7 +61,9 @@ namespace autotestPrivate {
     DisabledByPolicy,
     DisabledByUser,
     Terminated,
-    UninstalledByUser
+    UninstalledByUser,
+    Removed,
+    UninstalledByMigration
   };
 
   // A subset of Window State types in ash::WindowStateType. We may add more
@@ -106,8 +109,8 @@ namespace autotestPrivate {
   };
 
   enum OverviewStateType {
-   Shown,
-   Hidden
+    Shown,
+    Hidden
   };
 
   enum MouseButton {
@@ -136,17 +139,19 @@ namespace autotestPrivate {
     // Is the screen ready for password?
     boolean isReadyForPassword;
 
-    // Is the logged-in user a regular user?
-    boolean isRegularUser;
-    // Are we logged into the guest account?
-    boolean isGuest;
-    // Are we logged into kiosk-app mode?
-    boolean isKiosk;
+    // Is the logged-in user a regular user? Set only if `isLoggedIn`.
+    boolean? isRegularUser;
+    // Are we logged into the guest account? Set only if `isLoggedIn`.
+    boolean? isGuest;
+    // Are we logged into kiosk-app mode? Set only if `isLoggedIn`.
+    boolean? isKiosk;
 
-    DOMString email;
-    DOMString displayEmail;
-    // User image: 'file', 'profile' or a number.
-    DOMString userImage;
+    // User email. Set only if `isLoggedIn`.
+    DOMString? email;
+    // User display email. Set only if `isLoggedIn`.
+    DOMString? displayEmail;
+    // User image: 'file', 'profile' or a number. Set only if `isLoggedIn`.
+    DOMString? userImage;
   };
   callback LoginStatusCallback = void (LoginStatusDict status);
 
@@ -200,13 +205,17 @@ namespace autotestPrivate {
   };
   callback PrinterArrayCallback = void (Printer[] printers);
 
-  callback ArcStartTimeCallback = void (double startTime);
+  callback ArcStartTimeCallback = void (double startTicks);
 
   dictionary ArcState {
     // Whether the ARC is provisioned.
     boolean provisioned;
     // Whether ARC Terms of Service needs to be shown.
     boolean tosNeeded;
+    // ARC pre-start time (mini-ARC) or 0 if not pre-started.
+    double preStartTime;
+    // ARC start time or 0 if not started.
+    double startTime;
   };
   callback ArcStateCallback = void (ArcState result);
 
@@ -223,13 +232,8 @@ namespace autotestPrivate {
   dictionary AssistantQueryResponse {
     // Text response returned from server.
     DOMString? text;
-    // HTML response returned from server, usually accompanied with
-    // fallback text.
+    // HTML response returned from server.
     DOMString? htmlResponse;
-    // Text messages used as the "fallback" for HTML card rendering.
-    // Generally the fallback text is similar to transcribed TTS,
-    // e.g. "It's exactly 6 o'clock." or "Turning bluetooth off.".
-    DOMString? htmlFallback;
   };
   dictionary AssistantQueryStatus {
     // Indicates whether this might be a voice interaction.
@@ -318,6 +322,7 @@ namespace autotestPrivate {
     DOMString appId;
     DOMString name;
     DOMString shortName;
+    DOMString publisherId;
     AppType? type;
     AppInstallSource? installSource;
     AppReadiness? readiness;
@@ -585,6 +590,8 @@ namespace autotestPrivate {
   callback GetRegisteredSystemWebAppsCallback = void
       (SystemApp[] systemApps);
 
+  callback IsSystemWebAppOpenCallback = void (boolean isOpen);
+
   interface Functions {
     // Must be called to allow autotestPrivateAPI events to be fired.
     static void initializeEvents();
@@ -659,7 +666,7 @@ namespace autotestPrivate {
     // Remove all notifications.
     static void removeAllNotifications(VoidCallback callback);
 
-    // Get ARC start time.
+    // Get ARC start time in ticks.
     static void getArcStartTime(ArcStartTimeCallback callback);
 
     // Get state of the ARC session.
@@ -691,6 +698,10 @@ namespace autotestPrivate {
     // Returns the number of system web apps that should be installed.
     static void getRegisteredSystemWebApps(
         GetRegisteredSystemWebAppsCallback callback);
+
+    // Returns whether the system web app is currently open or not.
+    static void isSystemWebAppOpen(DOMString appId,
+                                   IsSystemWebAppOpenCallback callback);
 
     // Launches ARC app with optional intent. Returns true if ARC is active,
     // app exists and launch request is passed to Android.
@@ -763,6 +774,10 @@ namespace autotestPrivate {
 
     // Shows the Plugin VM installer. Does not start installation.
     static void showPluginVMInstaller();
+
+    // Installs Borealis without showing the normal installer UI.
+    // |callback|: Called when the operation has completed.
+    static void installBorealis(VoidCallback callback);
 
     // Register a component with CrOSComponentManager.
     // |name|: The name of the component.
@@ -940,9 +955,14 @@ namespace autotestPrivate {
                                   WindowStateChangeDict change,
                                   WindowStateCallback callback);
 
+    // Activate app window given by "id".
+    // |id|: the id of the window
+    // |callback|: called when the window is requested to activate.
+    static void activateAppWindow(long id, VoidCallback callback);
+
     // Closes an app window given by "id".
     // |id|: the id of the window
-    // |callback|: called when the window state is requested to close.
+    // |callback|: called when the window is requested to close.
     static void closeAppWindow(long id, VoidCallback callback);
 
     // Installs the Progressive Web App (PWA) that is in the current URL.
@@ -1017,8 +1037,8 @@ namespace autotestPrivate {
 
     // Create mouse events to move a mouse cursor to the location. This can
     // cause a dragging if a button is pressed. It starts from the last mouse
-    // location. It does not support the move or drag across display boundaries.
-    // |location|: the target location (in display's coordinate).
+    // location.
+    // |location|: the target location (in screen coordinate).
     // |duration_in_ms|: the duration (in milliseconds) for the mouse movement.
     //    The mouse will move linearly. 0 means moving immediately.
     // |callback|: called after the mouse move finishes.

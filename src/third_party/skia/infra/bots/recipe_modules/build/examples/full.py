@@ -64,12 +64,11 @@ TEST_BUILDERS = [
   'Build-Debian10-EMCC-wasm-Debug-PathKit',
   'Build-Debian10-EMCC-wasm-Release-CanvasKit_CPU',
   'Build-Debian10-EMCC-wasm-Release-PathKit',
-  "Build-Mac10.15.5-Clang-arm64-Debug-iOS",
-  'Build-Mac10.15.7-Clang-x86_64-Debug-CommandBuffer',
-  'Build-Mac-Clang-arm-Debug-iOS',
   'Build-Mac-Clang-arm64-Debug-Android_Vulkan',
   'Build-Mac-Clang-arm64-Debug-iOS',
+  'Build-Mac-Xcode11.4.1-arm64-Debug-iOS',
   'Build-Mac-Clang-x86_64-Debug-ASAN',
+  'Build-Mac-Clang-x86_64-Debug-CommandBuffer',
   'Build-Mac-Clang-x86_64-Debug-Metal',
   'Build-Win-Clang-arm64-Release-Android',
   'Build-Win-Clang-x86-Debug-Exceptions',
@@ -99,7 +98,7 @@ def GenTests(api):
       api.test(buildername) +
       api.properties(**defaultProps(buildername))
     )
-    if 'Win' in buildername and not 'LenovoYogaC630' in buildername:
+    if 'Win' in buildername:
       test += api.platform('win', 64)
     yield test
 

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
@@ -57,12 +58,14 @@ class SetSinkIdResolver : public ScriptPromiseResolver {
   ~SetSinkIdResolver() override = default;
   void StartAsync();
 
+  void Start();
+
   void Trace(Visitor*) const override;
 
  private:
   void DoSetSinkId();
 
-  void OnSetSinkIdComplete(base::Optional<WebSetSinkIdError> error);
+  void OnSetSinkIdComplete(absl::optional<WebSetSinkIdError> error);
 
   Member<HTMLMediaElement> element_;
   String sink_id_;
@@ -95,13 +98,34 @@ void SetSinkIdResolver::StartAsync() {
                                       WrapWeakPersistent(this)));
 }
 
+void SetSinkIdResolver::Start() {
+  auto* context = GetExecutionContext();
+  if (!context || context->IsContextDestroyed())
+    return;
+
+  if (LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(context)) {
+    if (window->document()->IsPrerendering()) {
+      window->document()->AddPostPrerenderingActivationStep(
+          WTF::Bind(&SetSinkIdResolver::Start, WrapWeakPersistent(this)));
+      return;
+    }
+  }
+
+  if (sink_id_ == HTMLMediaElementAudioOutputDevice::sinkId(*element_))
+    Resolve();
+  else
+    StartAsync();
+}
+
 void SetSinkIdResolver::DoSetSinkId() {
   auto set_sink_id_completion_callback =
       WTF::Bind(&SetSinkIdResolver::OnSetSinkIdComplete, WrapPersistent(this));
   WebMediaPlayer* web_media_player = element_->GetWebMediaPlayer();
   if (web_media_player) {
-    web_media_player->SetSinkId(sink_id_,
-                                std::move(set_sink_id_completion_callback));
+    if (web_media_player->SetSinkId(
+            sink_id_, std::move(set_sink_id_completion_callback))) {
+      element_->DidAudioOutputSinkChanged(sink_id_);
+    }
     return;
   }
 
@@ -130,7 +154,7 @@ void SetSinkIdResolver::DoSetSinkId() {
 }
 
 void SetSinkIdResolver::OnSetSinkIdComplete(
-    base::Optional<WebSetSinkIdError> error) {
+    absl::optional<WebSetSinkIdError> error) {
   if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed())
     return;
 
@@ -152,7 +176,22 @@ void SetSinkIdResolver::Trace(Visitor* visitor) const {
 
 }  // namespace
 
-HTMLMediaElementAudioOutputDevice::HTMLMediaElementAudioOutputDevice() {}
+HTMLMediaElementAudioOutputDevice::HTMLMediaElementAudioOutputDevice(
+    HTMLMediaElement& element)
+    : AudioOutputDeviceController(element) {}
+
+// static
+HTMLMediaElementAudioOutputDevice& HTMLMediaElementAudioOutputDevice::From(
+    HTMLMediaElement& element) {
+  HTMLMediaElementAudioOutputDevice* self =
+      static_cast<HTMLMediaElementAudioOutputDevice*>(
+          AudioOutputDeviceController::From(element));
+  if (!self) {
+    self = MakeGarbageCollected<HTMLMediaElementAudioOutputDevice>(element);
+    AudioOutputDeviceController::ProvideTo(element, self);
+  }
+  return *self;
+}
 
 String HTMLMediaElementAudioOutputDevice::sinkId(HTMLMediaElement& element) {
   HTMLMediaElementAudioOutputDevice& aod_element =
@@ -171,31 +210,26 @@ ScriptPromise HTMLMediaElementAudioOutputDevice::setSinkId(
   SetSinkIdResolver* resolver =
       SetSinkIdResolver::Create(script_state, element, sink_id);
   ScriptPromise promise = resolver->Promise();
-  if (sink_id == HTMLMediaElementAudioOutputDevice::sinkId(element))
-    resolver->Resolve();
-  else
-    resolver->StartAsync();
-
+  resolver->Start();
   return promise;
 }
 
-const char HTMLMediaElementAudioOutputDevice::kSupplementName[] =
-    "HTMLMediaElementAudioOutputDevice";
+void HTMLMediaElementAudioOutputDevice::SetSinkId(const String& sink_id) {
+  // No need to call WebFrameClient::CheckIfAudioSinkExistsAndIsAuthorized as
+  // this call is not coming from content and should already be allowed.
+  HTMLMediaElement* html_media_element = GetSupplementable();
+  WebMediaPlayer* web_media_player = html_media_element->GetWebMediaPlayer();
+  if (!web_media_player)
+    return;
 
-HTMLMediaElementAudioOutputDevice& HTMLMediaElementAudioOutputDevice::From(
-    HTMLMediaElement& element) {
-  HTMLMediaElementAudioOutputDevice* supplement =
-      Supplement<HTMLMediaElement>::From<HTMLMediaElementAudioOutputDevice>(
-          element);
-  if (!supplement) {
-    supplement = MakeGarbageCollected<HTMLMediaElementAudioOutputDevice>();
-    ProvideTo(element, supplement);
-  }
-  return *supplement;
+  sink_id_ = sink_id;
+
+  if (web_media_player->SetSinkId(sink_id_, base::DoNothing()))
+    html_media_element->DidAudioOutputSinkChanged(sink_id_);
 }
 
 void HTMLMediaElementAudioOutputDevice::Trace(Visitor* visitor) const {
-  Supplement<HTMLMediaElement>::Trace(visitor);
+  AudioOutputDeviceController::Trace(visitor);
 }
 
 }  // namespace blink

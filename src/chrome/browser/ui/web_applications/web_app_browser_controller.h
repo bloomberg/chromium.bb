@@ -10,19 +10,19 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
-#include "base/strings/string16.h"
+#include "base/scoped_observation.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "components/services/app_service/public/mojom/types.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image_skia.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/installable/digital_asset_links/digital_asset_links_handler.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "components/digital_asset_links/digital_asset_links_handler.h"  // nogncheck
 #endif
 
 class Browser;
@@ -55,23 +55,24 @@ class WebAppBrowserController : public AppBrowserController,
   bool HasMinimalUiButtons() const override;
   gfx::ImageSkia GetWindowAppIcon() const override;
   gfx::ImageSkia GetWindowIcon() const override;
-  base::Optional<SkColor> GetThemeColor() const override;
-  base::Optional<SkColor> GetBackgroundColor() const override;
-  base::string16 GetTitle() const override;
-  base::string16 GetAppShortName() const override;
-  base::string16 GetFormattedUrlOrigin() const override;
+  absl::optional<SkColor> GetThemeColor() const override;
+  absl::optional<SkColor> GetBackgroundColor() const override;
+  std::u16string GetTitle() const override;
+  std::u16string GetAppShortName() const override;
+  std::u16string GetFormattedUrlOrigin() const override;
   GURL GetAppStartUrl() const override;
   bool IsUrlInAppScope(const GURL& url) const override;
   WebAppBrowserController* AsWebAppBrowserController() override;
-  bool CanUninstall() const override;
-  void Uninstall() override;
+  bool CanUserUninstall() const override;
+  void Uninstall(
+      webapps::WebappUninstallSource webapp_uninstall_source) override;
   bool IsInstalled() const override;
   bool IsHostedApp() const override;
   bool IsWindowControlsOverlayEnabled() const override;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   bool ShouldShowCustomTabBar() const override;
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // AppRegistrarObserver:
   void OnWebAppUninstalled(const AppId& app_id) override;
@@ -95,24 +96,25 @@ class WebAppBrowserController : public AppBrowserController,
   void OnReadIcon(const SkBitmap& bitmap);
   void PerformDigitalAssetLinkVerification(Browser* browser);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void OnRelationshipCheckComplete(
       digital_asset_links::RelationshipCheckResult result);
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   WebAppProvider& provider_;
-  mutable base::Optional<gfx::ImageSkia> app_icon_;
+  mutable absl::optional<gfx::ImageSkia> app_icon_;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // The result of digital asset link verification of the web app.
   // Only used for web-only TWAs installed through the Play Store.
-  base::Optional<bool> is_verified_;
+  absl::optional<bool> is_verified_;
 
   std::unique_ptr<digital_asset_links::DigitalAssetLinksHandler>
       asset_link_handler_;
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-  ScopedObserver<AppRegistrar, AppRegistrarObserver> registrar_observer_{this};
+  base::ScopedObservation<AppRegistrar, AppRegistrarObserver>
+      registrar_observation_{this};
 
   base::OnceClosure callback_for_testing_;
   mutable base::WeakPtrFactory<WebAppBrowserController> weak_ptr_factory_{this};

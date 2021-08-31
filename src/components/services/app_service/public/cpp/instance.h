@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/time/time.h"
 #include "content/public/browser/browser_context.h"
@@ -27,7 +28,26 @@ enum InstanceState {
 // Instance is used to represent an App Instance, or a running app.
 class Instance {
  public:
-  Instance(const std::string& app_id, aura::Window* window);
+  // InstanceKey is the unique key for the instance.
+  class InstanceKey {
+   public:
+    explicit InstanceKey(aura::Window* window);
+    ~InstanceKey() = default;
+    aura::Window* Window() const { return window_; }
+    bool operator<(const InstanceKey& other) const;
+    bool operator==(const InstanceKey& other) const;
+    bool operator!=(const InstanceKey& other) const;
+
+   private:
+    // window_ is owned by ash and will be deleted when the user closes the
+    // window. Instance itself doesn't observe the window. The window's observer
+    // is responsible to delete Instance from InstanceRegistry when the window
+    // is destroyed.
+    aura::Window* window_;
+  };
+
+  Instance(const std::string& app_id,
+           std::unique_ptr<InstanceKey> instance_key);
   ~Instance();
 
   Instance(const Instance&) = delete;
@@ -40,7 +60,8 @@ class Instance {
   void SetBrowserContext(content::BrowserContext* browser_context);
 
   const std::string& AppId() const { return app_id_; }
-  aura::Window* Window() const { return window_; }
+  const InstanceKey& GetInstanceKey() const { return *instance_key_; }
+  aura::Window* Window() const { return instance_key_->Window(); }
   const std::string& LaunchId() const { return launch_id_; }
   InstanceState State() const { return state_; }
   const base::Time& LastUpdatedTime() const { return last_updated_time_; }
@@ -48,12 +69,7 @@ class Instance {
 
  private:
   std::string app_id_;
-
-  // window_ is owned by ash and will be deleted when the user closes the
-  // window. Instance itself doesn't observe the window. The window's observer
-  // is responsible to delete Instance from InstanceRegistry when the window is
-  // destroyed.
-  aura::Window* window_;
+  std::unique_ptr<InstanceKey> instance_key_;
   std::string launch_id_;
   InstanceState state_;
   base::Time last_updated_time_;
@@ -61,5 +77,12 @@ class Instance {
 };
 
 }  // namespace apps
+
+std::ostream& operator<<(std::ostream& os,
+                         const apps::Instance::InstanceKey& instance_key);
+
+struct InstanceKeyHash {
+  size_t operator()(const apps::Instance::InstanceKey& key) const;
+};
 
 #endif  // COMPONENTS_SERVICES_APP_SERVICE_PUBLIC_CPP_INSTANCE_H_

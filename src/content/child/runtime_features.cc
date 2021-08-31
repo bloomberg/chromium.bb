@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "cc/base/features.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_features.h"
@@ -66,6 +67,7 @@ void SetRuntimeFeatureDefaultsForPlatform(
     WebRuntimeFeatures::EnableWebBluetooth(true);
     WebRuntimeFeatures::EnableWebBluetoothRemoteCharacteristicNewWriteValue(
         true);
+    WebRuntimeFeatures::EnableWebBluetoothManufacturerDataFilter(true);
   }
 #endif
 
@@ -127,6 +129,14 @@ void SetRuntimeFeatureDefaultsForPlatform(
 #if defined(OS_ANDROID)
   WebRuntimeFeatures::EnableMediaControlsExpandGesture(
       base::FeatureList::IsEnabled(media::kMediaControlsExpandGesture));
+#endif
+
+#if defined(OS_ANDROID)
+  WebRuntimeFeatures::EnableCSSColorSchemeUARendering(
+      // Combining form-controls-refresh and form-controls-dark-mode
+      // to be launched together on Android. Only one about flags
+      // for both features.
+      base::FeatureList::IsEnabled(features::kFormControlsRefresh));
 #endif
 }
 
@@ -195,58 +205,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
   // in the next list.
   const RuntimeFeatureToChromiumFeatureMap<void (*)(bool)>
       blinkFeatureToBaseFeatureMapping[] =
-  {
-    // TODO(rodneyding): Sort features in alphabetical order
-    {wf::EnableWebUsb, features::kWebUsb},
-    {wf::EnableBlockingFocusWithoutUserActivation,
-     blink::features::kBlockingFocusWithoutUserActivation},
-    {wf::EnableNotificationContentImage, features::kNotificationContentImage,
-     kSetOnlyIfOverridden},
-    {wf::EnablePeriodicBackgroundSync, features::kPeriodicBackgroundSync},
-    {wf::EnableWebXR, features::kWebXr},
-    {wf::EnableWebXRARModule, features::kWebXrArModule},
-    {wf::EnableWebXRHitTest, features::kWebXrHitTest},
-    {wf::EnableWebXRAnchors, features::kWebXrIncubations},
-    {wf::EnableWebXRCameraAccess, features::kWebXrIncubations},
-    {wf::EnableWebXRDepth, features::kWebXrIncubations},
-    {wf::EnableWebXRImageTracking, features::kWebXrIncubations},
-    {wf::EnableWebXRLightEstimation, features::kWebXrIncubations},
-    {wf::EnableWebXRPlaneDetection, features::kWebXrIncubations},
-    {wf::EnableWebXRViewportScale, features::kWebXrIncubations},
-    {wf::EnableUserActivationSameOriginVisibility,
-     features::kUserActivationSameOriginVisibility},
-    {wf::EnableExpensiveBackgroundTimerThrottling,
-     features::kExpensiveBackgroundTimerThrottling},
-    {wf::EnableTimerThrottlingForHiddenFrames,
-     features::kTimerThrottlingForHiddenFrames},
-    {wf::EnableSendBeaconThrowForBlobWithNonSimpleType,
-     features::kSendBeaconThrowForBlobWithNonSimpleType},
-    {wf::EnablePaymentRequest, features::kWebPayments},
-    {wf::EnableSecurePaymentConfirmationDebug,
-     features::kSecurePaymentConfirmationDebug},
-    {wf::EnablePaymentHandlerMinimalUI, features::kWebPaymentsMinimalUI},
-    {wf::EnablePaymentApp, features::kServiceWorkerPaymentApps},
-    {wf::EnablePushSubscriptionChangeEvent,
-     features::kPushSubscriptionChangeEvent},
-    {wf::EnableGenericSensorExtraClasses, features::kGenericSensorExtraClasses},
-    {wf::EnableMediaCastOverlayButton, media::kMediaCastOverlayButton},
-    {wf::EnableLazyInitializeMediaControls,
-     features::kLazyInitializeMediaControls},
-    {wf::EnableMediaEngagementBypassAutoplayPolicies,
-     media::kMediaEngagementBypassAutoplayPolicies},
-    {wf::EnableAllowActivationDelegationAttr,
-     features::kAllowActivationDelegationAttr},
-    {wf::EnableLazyFrameLoading, features::kLazyFrameLoading},
-    {wf::EnableLazyFrameVisibleLoadTimeMetrics,
-     features::kLazyFrameVisibleLoadTimeMetrics},
-    {wf::EnableLazyImageLoading, features::kLazyImageLoading},
-    {wf::EnableLazyImageVisibleLoadTimeMetrics,
-     features::kLazyImageVisibleLoadTimeMetrics},
-    {wf::EnablePictureInPicture, media::kPictureInPicture},
-    {wf::EnableCacheInlineScriptCode, features::kCacheInlineScriptCode},
-    {wf::EnableExperimentalProductivityFeatures,
-     features::kExperimentalProductivityFeatures},
-    {wf::EnableFeaturePolicyForSandbox, features::kFeaturePolicyForSandbox},
+  { {wf::EnableAccessibilityAriaVirtualContent,
+     features::kEnableAccessibilityAriaVirtualContent},
     {wf::EnableAccessibilityExposeDisplayNone,
      features::kEnableAccessibilityExposeDisplayNone},
     {wf::EnableAccessibilityExposeHTMLElement,
@@ -255,69 +215,124 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      features::kEnableAccessibilityExposeIgnoredNodes},
     {wf::EnableAccessibilityUseAXPositionForDocumentMarkers,
      features::kUseAXPositionForDocumentMarkers},
+    {wf::EnableAllowActivationDelegationAttr,
+     features::kAllowActivationDelegationAttr},
     {wf::EnableAllowSyncXHRInPageDismissal,
      blink::features::kAllowSyncXHRInPageDismissal},
+    {wf::EnableAOMAriaRelationshipProperties,
+     features::kEnableAriaElementReflection},
     {wf::EnableAutoplayIgnoresWebAudio, media::kAutoplayIgnoreWebAudio},
-    {wf::EnablePortals, blink::features::kPortals, kSetOnlyIfOverridden},
-    {wf::EnableImplicitRootScroller, blink::features::kImplicitRootScroller},
-    {wf::EnableTextFragmentAnchor, blink::features::kTextFragmentAnchor},
     {wf::EnableBackgroundFetch, features::kBackgroundFetch},
-    {wf::EnableForcedColors, features::kForcedColors},
-    {wf::EnableFractionalScrollOffsets, features::kFractionalScrollOffsets},
-#if defined(OS_ANDROID)
-    {wf::EnableGetDisplayMedia, features::kUserMediaScreenCapturing},
-#endif
-    {wf::EnableGetCurrentBrowsingContextMedia,
-     blink::features::kRTCGetCurrentBrowsingContextMedia},
-    {wf::EnableSignedExchangePrefetchCacheForNavigations,
-     features::kSignedExchangePrefetchCacheForNavigations},
-    {wf::EnableSignedExchangeSubresourcePrefetch,
-     features::kSignedExchangeSubresourcePrefetch},
-    {wf::EnableIdleDetection, features::kIdleDetection, kSetOnlyIfOverridden},
-    {wf::EnableSkipTouchEventFilter, blink::features::kSkipTouchEventFilter},
-    {wf::EnableWebOTP, features::kWebOTP, kSetOnlyIfOverridden},
-    {wf::EnableClickPointerEvent, features::kClickPointerEvent},
-    {wf::EnableConsolidatedMovementXY, features::kConsolidatedMovementXY},
-    {wf::EnableCooperativeScheduling, features::kCooperativeScheduling},
-    {wf::EnableMouseSubframeNoImplicitCapture,
-     features::kMouseSubframeNoImplicitCapture},
-    {wf::EnableSubresourceWebBundles, features::kSubresourceWebBundles},
-    {wf::EnableCookieDeprecationMessages, features::kCookieDeprecationMessages},
-    {wf::EnableSameSiteByDefaultCookies,
-     net::features::kSameSiteByDefaultCookies},
-    {wf::EnableCookiesWithoutSameSiteMustBeSecure,
-     net::features::kCookiesWithoutSameSiteMustBeSecure},
-    {wf::EnablePointerLockOptions, features::kPointerLockOptions,
-     kSetOnlyIfOverridden},
-    {wf::EnableDocumentPolicy, features::kDocumentPolicy},
-    {wf::EnableDocumentPolicyNegotiation, features::kDocumentPolicyNegotiation},
-    {wf::EnableScrollUnification, features::kScrollUnification},
-    {wf::EnableNeverSlowMode, features::kNeverSlowMode},
-    {wf::EnableVideoPlaybackQuality, features::kVideoPlaybackQuality},
+    {wf::EnableBlockingFocusWithoutUserActivation,
+     blink::features::kBlockingFocusWithoutUserActivation},
     {wf::EnableBrowserVerifiedUserActivationKeyboard,
      features::kBrowserVerifiedUserActivationKeyboard},
     {wf::EnableBrowserVerifiedUserActivationMouse,
      features::kBrowserVerifiedUserActivationMouse},
+    {wf::EnableCacheInlineScriptCode, features::kCacheInlineScriptCode},
+    {wf::EnableCapabilityDelegationPaymentRequest,
+     features::kCapabilityDelegationPaymentRequest},
+    {wf::EnableClickPointerEvent, features::kClickPointerEvent},
+    {wf::EnableCompositeBGColorAnimation, features::kCompositeBGColorAnimation},
+    {wf::EnableConsolidatedMovementXY, features::kConsolidatedMovementXY},
+    {wf::EnableConversionMeasurementInfraSupport,
+     features::kConversionMeasurement},
+    {wf::EnableCookiesWithoutSameSiteMustBeSecure,
+     net::features::kCookiesWithoutSameSiteMustBeSecure},
+    {wf::EnableCooperativeScheduling, features::kCooperativeScheduling},
+    {wf::EnableDocumentPolicy, features::kDocumentPolicy},
+    {wf::EnableDocumentPolicyNegotiation, features::kDocumentPolicyNegotiation},
+    {wf::EnableExpensiveBackgroundTimerThrottling,
+     features::kExpensiveBackgroundTimerThrottling},
+    {wf::EnableFencedFrames, blink::features::kFencedFrames,
+     kSetOnlyIfOverridden},
+    {wf::EnableForcedColors, features::kForcedColors},
+    {wf::EnableFractionalScrollOffsets, features::kFractionalScrollOffsets},
+    {wf::EnableGenericSensorExtraClasses, features::kGenericSensorExtraClasses},
+#if defined(OS_ANDROID)
+    {wf::EnableGetDisplayMedia, features::kUserMediaScreenCapturing},
+#endif
+    {wf::EnableIdleDetection, features::kIdleDetection, kSetOnlyIfOverridden},
+    {wf::EnableInstalledApp, features::kInstalledApp},
+    {wf::EnableLazyInitializeMediaControls,
+     features::kLazyInitializeMediaControls},
+    {wf::EnableLazyFrameLoading, features::kLazyFrameLoading},
+    {wf::EnableLazyFrameVisibleLoadTimeMetrics,
+     features::kLazyFrameVisibleLoadTimeMetrics},
+    {wf::EnableLazyImageLoading, features::kLazyImageLoading},
+    {wf::EnableLazyImageVisibleLoadTimeMetrics,
+     features::kLazyImageVisibleLoadTimeMetrics},
+    {wf::EnableMediaCastOverlayButton, media::kMediaCastOverlayButton},
+    {wf::EnableMediaEngagementBypassAutoplayPolicies,
+     media::kMediaEngagementBypassAutoplayPolicies},
+    {wf::EnableMediaSessionWebRTC, media::kMediaSessionWebRTC},
+    {wf::EnableMouseSubframeNoImplicitCapture,
+     features::kMouseSubframeNoImplicitCapture},
+    {wf::EnableNeverSlowMode, features::kNeverSlowMode},
+    {wf::EnableNotificationContentImage, features::kNotificationContentImage,
+     kSetOnlyIfOverridden},
+    {wf::EnableParseUrlProtocolHandler,
+     blink::features::kWebAppEnableProtocolHandlers},
+    {wf::EnablePaymentApp, features::kServiceWorkerPaymentApps},
+    {wf::EnablePaymentHandlerMinimalUI, features::kWebPaymentsMinimalUI},
+    {wf::EnablePaymentRequest, features::kWebPayments},
     {wf::EnablePercentBasedScrolling, features::kPercentBasedScrolling},
+    {wf::EnablePeriodicBackgroundSync, features::kPeriodicBackgroundSync},
+    {wf::EnablePictureInPicture, media::kPictureInPicture},
+    {wf::EnablePointerLockOptions, features::kPointerLockOptions},
+    {wf::EnablePortals, blink::features::kPortals, kSetOnlyIfOverridden},
+    {wf::EnablePrerender2, blink::features::kPrerender2},
+    {wf::EnablePushSubscriptionChangeEvent,
+     features::kPushSubscriptionChangeEvent},
+    {wf::EnableRestrictGamepadAccess, features::kRestrictGamepadAccess},
+    {wf::EnableSameSiteByDefaultCookies,
+     net::features::kSameSiteByDefaultCookies},
+    {wf::EnableScrollUnification, features::kScrollUnification},
+    {wf::EnableSecurePaymentConfirmationDebug,
+     features::kSecurePaymentConfirmationDebug},
+    {wf::EnableSendBeaconThrowForBlobWithNonSimpleType,
+     features::kSendBeaconThrowForBlobWithNonSimpleType},
+    {wf::EnableSharedArrayBuffer, features::kSharedArrayBuffer},
+    {wf::EnableSharedArrayBufferOnDesktop,
+     features::kSharedArrayBufferOnDesktop},
+    {wf::EnableSharedAutofill, autofill::features::kAutofillAcrossIframes},
+    {wf::EnableSignedExchangePrefetchCacheForNavigations,
+     features::kSignedExchangePrefetchCacheForNavigations},
+    {wf::EnableSignedExchangeSubresourcePrefetch,
+     features::kSignedExchangeSubresourcePrefetch},
+    {wf::EnableSkipTouchEventFilter, blink::features::kSkipTouchEventFilter},
+    {wf::EnableSubresourceWebBundles, features::kSubresourceWebBundles},
+    {wf::EnableTextFragmentAnchor, blink::features::kTextFragmentAnchor},
+    {wf::EnableTimerThrottlingForHiddenFrames,
+     features::kTimerThrottlingForHiddenFrames},
+    {wf::EnableTransformInterop, blink::features::kTransformInterop},
+    {wf::EnableUserActivationSameOriginVisibility,
+     features::kUserActivationSameOriginVisibility},
+    {wf::EnableVideoPlaybackQuality, features::kVideoPlaybackQuality},
+    {wf::EnableVideoWakeLockOptimisationHiddenMuted,
+     media::kWakeLockOptimisationHiddenMuted},
+    {wf::EnableWebID, features::kWebID},
 #if defined(OS_ANDROID)
     {wf::EnableWebNfc, features::kWebNfc, kSetOnlyIfOverridden},
 #endif
-    {wf::EnableInstalledApp, features::kInstalledApp},
-    {wf::EnableWebAuthenticationGetAssertionFeaturePolicy,
-     device::kWebAuthGetAssertionFeaturePolicy},
-    {wf::EnableTransformInterop, blink::features::kTransformInterop},
-    {wf::EnableVideoWakeLockOptimisationHiddenMuted,
-     media::kWakeLockOptimisationHiddenMuted},
-    {wf::EnableMediaFeeds, media::kMediaFeeds},
-    {wf::EnableRestrictGamepadAccess, features::kRestrictGamepadAccess},
-    {wf::EnableCompositingOptimizations,
-     blink::features::kCompositingOptimizations},
-    {wf::EnableConversionMeasurementInfraSupport,
-     features::kConversionMeasurement},
-    {wf::EnableParseUrlProtocolHandler,
-     blink::features::kWebAppEnableProtocolHandlers},
-    {wf::EnableWebID, features::kWebID},
+    {wf::EnableWebOTP, features::kWebOTP, kSetOnlyIfOverridden},
+    {wf::EnableWebOTPAssertionFeaturePolicy,
+     features::kWebOTPAssertionFeaturePolicy, kSetOnlyIfOverridden},
+    {wf::EnableWebUsb, features::kWebUsb},
+    {wf::EnableWebXR, features::kWebXr},
+    {wf::EnableWebXRAnchors, features::kWebXrIncubations},
+    {wf::EnableWebXRARModule, features::kWebXrArModule},
+    {wf::EnableWebXRCameraAccess, features::kWebXrIncubations},
+    {wf::EnableWebXRDepth, features::kWebXrIncubations},
+    {wf::EnableWebXRHandInput, features::kWebXrHandInput},
+    {wf::EnableWebXRHitTest, features::kWebXrHitTest},
+    {wf::EnableWebXRImageTracking, features::kWebXrIncubations},
+    {wf::EnableWebXRLightEstimation, features::kWebXrIncubations},
+    {wf::EnableWebXRPlaneDetection, features::kWebXrIncubations},
+    {wf::EnableWebXRViewportScale, features::kWebXrIncubations},
     {wf::EnableWheelEventRegions, features::kWheelEventRegions},
+    {wf::EnableRemoveMobileViewportDoubleTap,
+     features::kRemoveMobileViewportDoubleTap},
   };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(
@@ -328,55 +343,63 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
   // function and using feature string name with EnableFeatureFromString.
   const RuntimeFeatureToChromiumFeatureMap<const char*>
       runtimeFeatureNameToChromiumFeatureMapping[] = {
-          {"AddressSpace", features::kBlockInsecurePrivateNetworkRequests},
           {"AllowContentInitiatedDataUrlNavigations",
            features::kAllowContentInitiatedDataUrlNavigations},
           {"AndroidDownloadableFontsMatching",
            features::kAndroidDownloadableFontsMatching},
-          {"AudioWorkletRealtimeThread",
-           blink::features::kAudioWorkletRealtimeThread},
           {"BlockCredentialedSubresources",
            features::kBlockCredentialedSubresources},
-          {"BlockHTMLParserOnStyleSheets",
-           blink::features::kBlockHTMLParserOnStyleSheets},
+          {"COLRV1Fonts", blink::features::kCOLRV1Fonts},
+          {"CSSContainerQueries", blink::features::kCSSContainerQueries},
+          {"CompositeAfterPaint", blink::features::kCompositeAfterPaint},
+          {"ComputePressure", blink::features::kComputePressure,
+           kSetOnlyIfOverridden},
           {"CSSColorSchemeUARendering", features::kCSSColorSchemeUARendering},
-          {"CSSReducedFontLoadingLayoutInvalidations",
-           blink::features::kCSSReducedFontLoadingLayoutInvalidations},
-          {"CSSMatchedPropertiesCacheDependencies",
-           blink::features::kCSSMatchedPropertiesCacheDependencies},
+          {"DeclarativeShadowDOM", blink::features::kDeclarativeShadowDOM},
+          {"DocumentTransition", blink::features::kDocumentTransition},
           {"FeaturePolicyForClientHints",
            features::kFeaturePolicyForClientHints},
           {"EditingNG", blink::features::kEditingNG},
-          {"FlexAspectRatio", blink::features::kFlexAspectRatio},
+          {"FileHandling", blink::features::kFileHandlingAPI},
           {"FontAccess", blink::features::kFontAccess},
+          {"FontAccessPersistent", blink::features::kFontAccessPersistent},
           {"FontSrcLocalMatching", features::kFontSrcLocalMatching},
+          {"FledgeInterestGroupAPI", blink::features::kFledgeInterestGroupAPI},
           {"ForceSynchronousHTMLParsing",
            blink::features::kForceSynchronousHTMLParsing},
           {"IgnoreCrossOriginWindowWhenNamedAccessOnWindow",
            blink::features::kIgnoreCrossOriginWindowWhenNamedAccessOnWindow},
+          {"InterestCohortFeaturePolicy",
+           blink::features::kInterestCohortFeaturePolicy},
           {"LangClientHintHeader", features::kLangClientHintHeader},
           {"LayoutNG", blink::features::kLayoutNG},
-          {"LayoutNGFieldset", blink::features::kLayoutNGFieldset},
-          {"LayoutNGFragmentItem", blink::features::kFragmentItem},
+          {"LayoutNGTable", blink::features::kLayoutNGTable},
           {"LegacyWindowsDWriteFontFallback",
            features::kLegacyWindowsDWriteFontFallback},
-          {"LinkDisabledNewSpecBehavior",
-           blink::features::kLinkDisabledNewSpecBehavior},
+          {"ManagedConfiguration", blink::features::kManagedConfiguration},
+          // TODO(crbug.com/920069): Remove OffsetParentNewSpecBehavior after
+          // the feature is in stable with no issues.
+          {"OffsetParentNewSpecBehavior",
+           blink::features::kOffsetParentNewSpecBehavior},
           {"OriginPolicy", features::kOriginPolicy},
           {"OriginIsolationHeader", features::kOriginIsolationHeader},
-          {"ParentNodeReplaceChildren",
-           blink::features::kParentNodeReplaceChildren},
+          {"PrefersColorSchemeClientHintHeader",
+           features::kPrefersColorSchemeClientHintHeader},
           {"RawClipboard", blink::features::kRawClipboard},
+          {"SanitizerAPI", blink::features::kSanitizerAPI},
           {"StorageAccessAPI", blink::features::kStorageAccessAPI},
           {"TargetBlankImpliesNoOpener",
            blink::features::kTargetBlankImpliesNoOpener},
+          {"TextFragmentColorChange",
+           blink::features::kTextFragmentColorChange},
+          {"ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
+           blink::features::
+               kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes},
           {"TrustedDOMTypes", features::kTrustedDOMTypes},
           {"UserAgentClientHint", features::kUserAgentClientHint},
-          {"WebAppManifestDisplayOverride",
-           features::kWebAppManifestDisplayOverride},
           {"WebAppWindowControlsOverlay",
            features::kWebAppWindowControlsOverlay},
-          {"WebXRMultiGpu", blink::features::kWebXrMultiGpu},
+          {"WebAuthenticationConditionalUI", features::kWebAuthConditionalUI},
       };
   for (const auto& mapping : runtimeFeatureNameToChromiumFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(
@@ -404,7 +427,7 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
   // SwitchToFeatureMap entry to the initializer list below.
   // Note: command line switches are now discouraged, please consider
   // using base::Feature instead.
-  // https://chromium.googlesource.com/chromium/src/+/refs/heads/master/docs/configuration.md#switches
+  // https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/configuration.md#switches
   using wrf = WebRuntimeFeatures;
   const SwitchToFeatureMap switchToFeatureMapping[] = {
       // Stable Features
@@ -417,34 +440,34 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
       {wrf::EnableTimerThrottlingForBackgroundTabs,
        switches::kDisableBackgroundTimerThrottling, false},
       // End of Stable Features
+      {wrf::EnableAccessibilityObjectModel,
+       switches::kEnableAccessibilityObjectModel, true},
+      {wrf::EnableAllowSyncXHRInPageDismissal,
+       switches::kAllowSyncXHRInPageDismissal, true},
+      {wrf::EnableAutomationControlled, switches::kEnableAutomation, true},
+      {wrf::EnableAutomationControlled, switches::kHeadless, true},
+      {wrf::EnableAutomationControlled, switches::kRemoteDebuggingPipe, true},
       {wrf::EnableDatabase, switches::kDisableDatabases, false},
+      {wrf::EnableFileSystem, switches::kDisableFileSystem, false},
+      {wrf::EnableNetInfoDownlinkMax,
+       switches::kEnableNetworkInformationDownlinkMax, true},
       {wrf::EnableNotifications, switches::kDisableNotifications, false},
+      {wrf::EnablePreciseMemoryInfo, switches::kEnablePreciseMemoryInfo, true},
       // Chrome's Push Messaging implementation relies on Web Notifications.
       {wrf::EnablePushMessaging, switches::kDisableNotifications, false},
-      {wrf::EnableSharedWorker, switches::kDisableSharedWorkers, false},
       {wrf::EnableScriptedSpeechRecognition, switches::kDisableSpeechAPI,
        false},
       {wrf::EnableScriptedSpeechSynthesis, switches::kDisableSpeechAPI, false},
       {wrf::EnableScriptedSpeechSynthesis, switches::kDisableSpeechSynthesisAPI,
        false},
-      {wrf::EnableFileSystem, switches::kDisableFileSystem, false},
-      {wrf::EnableWebGLDraftExtensions, switches::kEnableWebGLDraftExtensions,
-       true},
-      {wrf::EnableAutomationControlled, switches::kEnableAutomation, true},
-      {wrf::EnableAutomationControlled, switches::kHeadless, true},
-      {wrf::EnableAutomationControlled, switches::kRemoteDebuggingPipe, true},
-      {wrf::ForceOverlayFullscreenVideo, switches::kForceOverlayFullscreenVideo,
-       true},
-      {wrf::EnablePreciseMemoryInfo, switches::kEnablePreciseMemoryInfo, true},
-      {wrf::EnableNetInfoDownlinkMax,
-       switches::kEnableNetworkInformationDownlinkMax, true},
-      {wrf::EnableWebGPU, switches::kEnableUnsafeWebGPU, true},
+      {wrf::EnableSharedWorker, switches::kDisableSharedWorkers, false},
       {wrf::EnableTextFragmentAnchor, switches::kDisableScrollToTextFragment,
        false},
-      {wrf::EnableAccessibilityObjectModel,
-       switches::kEnableAccessibilityObjectModel, true},
-      {wrf::EnableAllowSyncXHRInPageDismissal,
-       switches::kAllowSyncXHRInPageDismissal, true},
+      {wrf::EnableWebGLDraftExtensions, switches::kEnableWebGLDraftExtensions,
+       true},
+      {wrf::EnableWebGPU, switches::kEnableUnsafeWebGPU, true},
+      {wrf::ForceOverlayFullscreenVideo, switches::kForceOverlayFullscreenVideo,
+       true},
   };
   for (const auto& mapping : switchToFeatureMapping) {
     if (command_line.HasSwitch(mapping.switch_name))
@@ -522,17 +545,9 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
     WebRuntimeFeatures::EnableDecodeLossyWebPImagesToYUV(true);
   }
 
-  WebRuntimeFeatures::EnableSharedArrayBuffer(
-      base::FeatureList::IsEnabled(features::kSharedArrayBuffer) ||
-      base::FeatureList::IsEnabled(features::kWebAssemblyThreads));
-
   // These checks are custom wrappers around base::FeatureList::IsEnabled
   // They're moved here to distinguish them from actual base checks
   WebRuntimeFeatures::EnableOverlayScrollbars(ui::IsOverlayScrollbarEnabled());
-
-  if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI)) {
-    WebRuntimeFeatures::EnableFeatureFromString("FileHandling", true);
-  }
 
   // TODO(rodneyding): This is a rare case for a stable feature
   // Need to investigate more to determine whether to refactor it.
@@ -602,6 +617,16 @@ void ResolveInvalidConfigurations() {
         << switches::kEnableFeatures << "=" << blink::features::kPortals.name
         << " instead.";
     WebRuntimeFeatures::EnablePortals(false);
+  }
+
+  // Fenced frames, like Portals, cannot be enabled without the support of the
+  // browser process.
+  if (!base::FeatureList::IsEnabled(blink::features::kFencedFrames)) {
+    LOG_IF(WARNING, WebRuntimeFeatures::IsFencedFramesEnabled())
+        << "Fenced frames cannot be enabled in this configuration. Use --"
+        << switches::kEnableFeatures << "="
+        << blink::features::kFencedFrames.name << " instead.";
+    WebRuntimeFeatures::EnableFencedFrames(false);
   }
 }
 

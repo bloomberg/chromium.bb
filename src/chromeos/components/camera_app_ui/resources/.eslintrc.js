@@ -373,10 +373,21 @@ module.exports = {
   'globals': {
     'arc': 'readable',
     'chromeosCamera': 'readable',
-    'blink': 'readable',
     'cros': 'readable',
     'trustedTypes': 'readable',
-    'webkitRequestFileSystem': 'readable',
+    'BarcodeDetector': 'readable',
+    'FileSystemFileHandle': 'readable',
+    'FileSystemDirectoryHandle': 'readable',
+
+    // TODO(b/172879638): Remove this once we have
+    // https://github.com/sindresorhus/globals/pull/171 merged in ESLint and
+    // Chromium.
+    'OffscreenCanvasRenderingContext2D': 'readable',
+
+    // TODO(b/168894537): Remove this once we have
+    // https://github.com/sindresorhus/globals/pull/175 merged in ESlint and
+    // Chromium.
+    'OverconstrainedError': 'readable',
   },
   // Generally, the rules should be compatible to both bundled and the newest
   // stable eslint, so it's easier to upgrade and develop without the full

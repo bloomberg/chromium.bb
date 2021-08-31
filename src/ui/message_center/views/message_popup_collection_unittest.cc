@@ -166,7 +166,7 @@ class MockMessagePopupView : public MessagePopupView {
 
   void set_expandable(bool expandable) { expandable_ = expandable; }
 
-  void set_height_after_update(base::Optional<int> height_after_update) {
+  void set_height_after_update(absl::optional<int> height_after_update) {
     height_after_update_ = height_after_update;
   }
 
@@ -178,7 +178,7 @@ class MockMessagePopupView : public MessagePopupView {
   bool expandable_ = false;
   std::string title_;
 
-  base::Optional<int> height_after_update_;
+  absl::optional<int> height_after_update_;
 };
 
 MessagePopupView* MockMessagePopupCollection::CreatePopup(
@@ -240,9 +240,9 @@ class MessagePopupCollectionTest : public views::ViewsTestBase,
                                                    const std::string& title) {
     return std::make_unique<Notification>(
         NOTIFICATION_TYPE_BASE_FORMAT, id, base::UTF8ToUTF16(title),
-        base::UTF8ToUTF16("test message"), gfx::Image(),
-        base::string16() /* display_source */, GURL(), NotifierId(),
-        RichNotificationData(), new NotificationDelegate());
+        u"test message", gfx::Image(), std::u16string() /* display_source */,
+        GURL(), NotifierId(), RichNotificationData(),
+        new NotificationDelegate());
   }
 
   std::string AddNotification() {
@@ -431,20 +431,13 @@ TEST_F(MessagePopupCollectionTest, UpdateContents) {
   EXPECT_FALSE(GetPopup(id)->updated());
 
   auto updated_notification = CreateNotification(id);
-  updated_notification->set_message(base::ASCIIToUTF16("updated"));
+  updated_notification->set_message(u"updated");
   MessageCenter::Get()->UpdateNotification(id, std::move(updated_notification));
   EXPECT_EQ(1u, GetPopupCounts());
   EXPECT_TRUE(GetPopup(id)->updated());
 }
 
-// Failiing on MacOS 10.10. https://crbug.com/1047503
-#if defined(OS_APPLE)
-#define MAYBE_UpdateContentsCausesPopupClose \
-  DISABLED_UpdateContentsCausesPopupClose
-#else
-#define MAYBE_UpdateContentsCausesPopupClose UpdateContentsCausesPopupClose
-#endif
-TEST_F(MessagePopupCollectionTest, MAYBE_UpdateContentsCausesPopupClose) {
+TEST_F(MessagePopupCollectionTest, UpdateContentsCausesPopupClose) {
   std::string id = AddNotification();
   AnimateToEnd();
   RunPendingMessages();
@@ -455,7 +448,7 @@ TEST_F(MessagePopupCollectionTest, MAYBE_UpdateContentsCausesPopupClose) {
   GetPopup(id)->set_height_after_update(2048);
 
   auto updated_notification = CreateNotification(id);
-  updated_notification->set_message(base::ASCIIToUTF16("updated"));
+  updated_notification->set_message(u"updated");
   MessageCenter::Get()->UpdateNotification(id, std::move(updated_notification));
   RunPendingMessages();
   EXPECT_EQ(0u, GetPopupCounts());

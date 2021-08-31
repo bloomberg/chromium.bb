@@ -10,6 +10,9 @@
 const kDefaultAccessPointName = 'NONE';
 const kOtherAccessPointName = 'Other';
 
+const USE_ATTACH_APN_ON_SAVE_METRIC_NAME =
+    'Network.Cellular.Apn.UseAttachApnOnSave';
+
 Polymer({
   is: 'network-apnlist',
 
@@ -20,6 +23,11 @@ Polymer({
     managedProperties: {
       type: Object,
       observer: 'managedPropertiesChanged_',
+    },
+
+    disabled: {
+      type: Boolean,
+      value: false,
     },
 
     /**
@@ -90,6 +98,21 @@ Polymer({
         };
       },
       readOnly: true
+    },
+
+    /** @private */
+    isAttachApnAllowed_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.valueExists('useAttachApn') &&
+            loadTimeData.getBoolean('useAttachApn');
+      }
+    },
+
+    /** @private */
+    isAttachApnToggleEnabled_: {
+      type: Boolean,
+      value: false,
     },
   },
 
@@ -183,15 +206,11 @@ Polymer({
    * @private
    */
   setApnSelectList_(activeApn) {
-    assert(!activeApn || activeApn.accessPointName);
-    // The generated APN list ensures nonempty accessPointName and name
-    // properties.
     const apnList = this.generateApnList_();
-    if (apnList === undefined) {
-      // No APNList property indicates that the network is not in a
-      // connectable state. Disable the UI.
-      this.apnSelectList_ = [];
-      this.set('selectedApn_', '');
+    if (apnList === undefined || apnList.length === 0) {
+      // Show other APN when no APN list property is available.
+      this.apnSelectList_ = [this.otherApn_];
+      this.set('selectedApn_', kOtherAccessPointName);
       return;
     }
     // Get the list entry for activeApn if it exists. It will have 'name' set.
@@ -210,6 +229,8 @@ Polymer({
       // If the active APN is not in the list, copy it to otherApn.
       otherApn = activeApn;
     }
+    this.isAttachApnToggleEnabled_ =
+        otherApn.attach === OncMojo.USE_ATTACH_APN_NAME;
     this.otherApn_ = {
       accessPointName: otherApn.accessPointName,
       name: kOtherAccessPointName,
@@ -295,16 +316,19 @@ Polymer({
 
   /**
    * Event triggered when the Other APN 'Save' button is tapped.
-   * @param {!Event} event
    * @private
    */
-  onSaveOtherTap_(event) {
-    this.sendApnChange_(this.selectedApn_);
+  onSaveOtherTap_() {
+    if (this.sendApnChange_(this.selectedApn_) && this.isAttachApnAllowed_) {
+      chrome.metricsPrivate.recordBoolean(
+          USE_ATTACH_APN_ON_SAVE_METRIC_NAME, this.isAttachApnToggleEnabled_);
+    }
   },
 
   /**
-   * Send the apn-change event.
+   * Attempts to send the apn-change event. Returns true if it succeeds.
    * @param {string} name The APN name property.
+   * @return {boolean}
    * @private
    */
   sendApnChange_(name) {
@@ -313,22 +337,25 @@ Polymer({
       if (!this.otherApn_.accessPointName ||
           this.otherApn_.accessPointName === kDefaultAccessPointName) {
         // No valid APN set, do nothing.
-        return;
+        return false;
       }
       apn = {
         accessPointName: this.otherApn_.accessPointName,
         username: this.otherApn_.username,
         password: this.otherApn_.password,
+        attach: this.isAttachApnToggleEnabled_ ? OncMojo.USE_ATTACH_APN_NAME :
+                                                 '',
       };
     } else {
       apn = this.apnSelectList_.find(a => a.name === name);
       if (apn === undefined) {
         // Potential edge case if an update is received before this is invoked.
         console.error('Selected APN not in list');
-        return;
+        return false;
       }
     }
     this.fire('apn-change', apn);
+    return true;
   },
 
   /**
@@ -336,7 +363,7 @@ Polymer({
    * @private
    */
   isDisabled_() {
-    return this.selectedApn_ === '';
+    return this.disabled || this.selectedApn_ === '';
   },
 
   /**

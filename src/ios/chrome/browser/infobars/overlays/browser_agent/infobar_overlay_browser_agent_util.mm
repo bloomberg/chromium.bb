@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/infobar_overlay_browser_agent.h"
+#import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/autofill_address_profile/save_address_profile_infobar_interaction_handler.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/confirm/confirm_infobar_interaction_handler.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/passwords/password_infobar_interaction_handler.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/passwords/update_password_infobar_interaction_handler.h"
@@ -33,4 +34,6 @@ void AttachInfobarOverlayBrowserAgent(Browser* browser) {
       std::make_unique<TranslateInfobarInteractionHandler>());
   browser_agent->AddInfobarInteractionHandler(
       std::make_unique<SaveCardInfobarInteractionHandler>());
+  browser_agent->AddInfobarInteractionHandler(
+      std::make_unique<SaveAddressProfileInfobarInteractionHandler>());
 }

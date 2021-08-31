@@ -4,6 +4,7 @@
 
 #include "components/cronet/url_request_context_config.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/json/json_reader.h"
@@ -22,7 +23,6 @@
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
-#include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
 #include "net/dns/context_host_resolver.h"
 #include "net/dns/host_resolver.h"
@@ -157,6 +157,8 @@ const char kSSLKeyLogFile[] = "ssl_key_log_file";
 
 const char kGoAwayOnPathDegrading[] = "go_away_on_path_degrading";
 
+const char kAllowPortMigration[] = "allow_port_migration";
+
 // "goaway_sessions_on_ip_change" is default on for iOS unless overrided via
 // experimental options explicitly.
 #if defined(OS_IOS)
@@ -248,7 +250,7 @@ URLRequestContextConfig::URLRequestContextConfig(
     std::unique_ptr<net::CertVerifier> mock_cert_verifier,
     bool enable_network_quality_estimator,
     bool bypass_public_key_pinning_for_local_trust_anchors,
-    base::Optional<double> network_thread_priority)
+    absl::optional<double> network_thread_priority)
     : enable_quic(enable_quic),
       quic_user_agent_id(quic_user_agent_id),
       enable_spdy(enable_spdy),
@@ -517,6 +519,12 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
             quic_race_stale_dns_on_connection;
       }
 
+      bool quic_allow_port_migration = false;
+      if (quic_args->GetBoolean(kAllowPortMigration,
+                                &quic_allow_port_migration)) {
+        quic_params->allow_port_migration = quic_allow_port_migration;
+      }
+
       bool quic_disable_bidirectional_streams = false;
       if (quic_args->GetBoolean(kQuicDisableBidirectionalStreams,
                                 &quic_disable_bidirectional_streams)) {
@@ -552,6 +560,27 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       if (quic_args->GetInteger(kQuicIOSNetworkServiceType,
                                 &quic_ios_network_service_type)) {
         quic_params->ios_network_service_type = quic_ios_network_service_type;
+      }
+
+      // Do not enable IETF QUIC when connection migration is enabled because
+      // our current connection migration code does not yet fully support the
+      // version of connection migration in the IETF spec.
+      // TODO(dschinazi) remove this once we support the spec.
+      if ((quic_migrate_sessions_on_network_change_v2 ||
+           quic_migrate_idle_sessions || quic_migrate_sessions_early_v2) &&
+          quic_version_string.empty()) {
+        quic::ParsedQuicVersionVector migration_versions;
+        for (const quic::ParsedQuicVersion& version :
+             quic_params->supported_versions) {
+          if (!version.UsesHttp3()) {
+            migration_versions.push_back(version);
+          }
+        }
+        quic_params->supported_versions = migration_versions;
+        if (quic_params->supported_versions.empty()) {
+          quic_params->supported_versions =
+              quic::ParsedQuicVersionVector{quic::ParsedQuicVersion::Q050()};
+        }
       }
 
     } else if (it.key() == kAsyncDnsFieldTrialName) {
@@ -638,12 +667,13 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
             preloaded_nel_headers_config->GetList());
       }
     } else if (it.key() == kDisableIPv6OnWifi) {
-      if (!it.value().GetAsBoolean(&disable_ipv6_on_wifi)) {
+      if (!it.value().is_bool()) {
         LOG(ERROR) << "\"" << it.key() << "\" config params \"" << it.value()
                    << "\" is not a bool";
         effective_experimental_options->Remove(it.key(), nullptr);
         continue;
       }
+      disable_ipv6_on_wifi = it.value().GetBool();
     } else if (it.key() == kSSLKeyLogFile) {
       std::string ssl_key_log_file_string;
       if (it.value().GetAsString(&ssl_key_log_file_string)) {
@@ -697,10 +727,10 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
     // Cronet HostResolvers.
     if (stale_dns_enable) {
       DCHECK(!disable_ipv6_on_wifi);
-      host_resolver.reset(new StaleHostResolver(
+      host_resolver = std::make_unique<StaleHostResolver>(
           net::HostResolver::CreateStandaloneContextResolver(
               net::NetLog::Get(), std::move(host_resolver_manager_options)),
-          stale_dns_options));
+          stale_dns_options);
     } else {
       host_resolver = net::HostResolver::CreateStandaloneResolver(
           net::NetLog::Get(), std::move(host_resolver_manager_options));
@@ -773,8 +803,6 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
     context_builder->SetCertVerifier(std::move(mock_cert_verifier));
   // Certificate Transparency is intentionally ignored in Cronet.
   // See //net/docs/certificate-transparency.md for more details.
-  context_builder->set_ct_verifier(
-      std::make_unique<net::DoNothingCTVerifier>());
   context_builder->set_ct_policy_enforcer(
       std::make_unique<net::DefaultCTPolicyEnforcer>());
   // TODO(mef): Use |config| to set cookies.

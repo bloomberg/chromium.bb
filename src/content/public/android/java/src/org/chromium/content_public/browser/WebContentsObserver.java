@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.blink.mojom.ViewportFit;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -32,20 +33,16 @@ public abstract class WebContentsObserver {
     /**
      * Called when a RenderFrame for renderFrameHost is created in the
      * renderer process.
-     * To avoid creating a RenderFrameHost object without necessity, only process id and frame id
-     * are passed. Call WebContents#getRenderFrameHostFromId() to get the RenderFrameHostImpl object
-     * if needed.
+     * To avoid creating a RenderFrameHost object without necessity, only its id is passed. Call
+     * WebContents#getRenderFrameHostFromId() to get the RenderFrameHost object if needed.
      */
-    public void renderFrameCreated(int renderProcessId, int renderFrameId) {}
+    public void renderFrameCreated(GlobalFrameRoutingId id) {}
 
     /**
      * Called when a RenderFrame for renderFrameHost is deleted in the
      * renderer process.
-     * To avoid creating a RenderFrameHost object without necessity, only process id and frame id
-     * are passed. Call WebContents#getRenderFrameHostFromId() to get the RenderFrameHostImpl object
-     * if needed.
      */
-    public void renderFrameDeleted(int renderProcessId, int renderFrameId) {}
+    public void renderFrameDeleted(GlobalFrameRoutingId id) {}
 
     /**
      * Called when the RenderView of the current RenderViewHost is ready, e.g. because we recreated
@@ -87,13 +84,17 @@ public abstract class WebContentsObserver {
      * Called when the a page starts loading.
      * @param url The validated url for the loading page.
      */
-    public void didStartLoading(String url) {}
+    public void didStartLoading(GURL url) {}
 
     /**
      * Called when the a page finishes loading.
-     * @param url The validated url for the page.
+     * @param url The url for the page.
+     * @param isKnownValid Whether the url is known to be valid.
+     * TODO(yfriedman): There's currently a layering violation and this is needed for aw/
+     *     For chrome, the url will always be valid.
+     *
      */
-    public void didStopLoading(String url) {}
+    public void didStopLoading(GURL url, boolean isKnownValid) {}
 
     /**
      * Called when a page's load progress has changed.
@@ -112,7 +113,7 @@ public abstract class WebContentsObserver {
      * @param errorCode Error code for the occurring error.
      * @param failingUrl The url that was loading when the error occurred.
      */
-    public void didFailLoad(boolean isMainFrame, int errorCode, String failingUrl) {}
+    public void didFailLoad(boolean isMainFrame, int errorCode, GURL failingUrl) {}
 
     /**
      * Called when the page had painted something non-empty.
@@ -143,10 +144,11 @@ public abstract class WebContentsObserver {
     /**
      * Notifies that a load has finished for a given frame.
      * @param frameId A positive, non-zero integer identifying the navigating frame.
-     * @param validatedUrl The validated URL that is being navigated to.
+     * @param url The validated URL that is being navigated to.
+     * @param isKnownValid Whether the URL is known to be valid.
      * @param isMainFrame Whether the load is happening for the main frame.
      */
-    public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {}
+    public void didFinishLoad(long frameId, GURL url, boolean isKnownValid, boolean isMainFrame) {}
 
     /**
      * Notifies that the document has finished loading for the given frame.
@@ -156,8 +158,9 @@ public abstract class WebContentsObserver {
 
     /**
      * Notifies that a navigation entry has been committed.
+     * @param details Details of committed navigation entry.
      */
-    public void navigationEntryCommitted() {}
+    public void navigationEntryCommitted(LoadCommittedDetails details) {}
 
     /**
      * Called when navigation entries were removed.
@@ -175,10 +178,17 @@ public abstract class WebContentsObserver {
     public void didChangeThemeColor() {}
 
     /**
-     * Called when the Web Contents leaves or enters fullscreen mode.
+     * Called when Media in the Web Contents leaves or enters fullscreen mode.
      * @param isFullscreen whether fullscreen is being entered or left.
      */
     public void hasEffectivelyFullscreenVideoChange(boolean isFullscreen) {}
+
+    /**
+     * Called when the Web Contents is toggled into or out of fullscreen mode by the renderer.
+     * @param enteredFullscreen whether fullscreen is being entered or left.
+     * @param willCauseResize whether the change to fullscreen will cause the contents to resize.
+     */
+    public void didToggleFullscreenModeForTab(boolean enteredFullscreen, boolean willCauseResize) {}
 
     /**
      * The Viewport Fit Type passed to viewportFitChanged. This is mirrored

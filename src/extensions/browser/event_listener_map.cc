@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "content/public/browser/render_process_host.h"
@@ -77,7 +78,7 @@ bool EventListener::Equals(const EventListener* other) const {
          service_worker_version_id_ == other->service_worker_version_id_ &&
          worker_thread_id_ == other->worker_thread_id_ &&
          ((!!filter_.get()) == (!!other->filter_.get())) &&
-         (!filter_.get() || filter_->Equals(other->filter_.get()));
+         (!filter_.get() || *filter_ == *other->filter_);
 }
 
 std::unique_ptr<EventListener> EventListener::Copy() const {

@@ -60,7 +60,7 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::Start() {
     return;
   partition_->GetURLLoaderFactoryForBrowserProcessWithCORBEnabled()
       ->CreateLoaderAndStart(
-          url_loader_.BindNewPipeAndPassReceiver(), -1, -1,
+          url_loader_.BindNewPipeAndPassReceiver(), -1,
           network::mojom::kURLLoadOptionSendSSLInfoWithResponse, request_,
           client_receiver_.BindNewPipeAndPassRemote(),
           net::MutableNetworkTrafficAnnotationTag(kAppCacheTrafficAnnotation));
@@ -93,7 +93,7 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::SetSiteForCookies(
 }
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::SetInitiator(
-    const base::Optional<url::Origin>& initiator) {
+    const absl::optional<url::Origin>& initiator) {
   request_.request_initiator = initiator;
 }
 
@@ -143,6 +143,9 @@ int AppCacheUpdateJob::UpdateURLLoaderRequest::Cancel() {
   read_requested_ = false;
   return 0;
 }
+
+void AppCacheUpdateJob::UpdateURLLoaderRequest::OnReceiveEarlyHints(
+    network::mojom::EarlyHintsPtr early_hints) {}
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr response_head) {

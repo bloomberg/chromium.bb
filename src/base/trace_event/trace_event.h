@@ -13,10 +13,10 @@
 #include <stdint.h>
 
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "base/atomicops.h"
+#include "base/base_export.h"
 #include "base/debug/debugging_buildflags.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
@@ -27,7 +27,10 @@
 #include "base/trace_event/trace_arguments.h"
 #include "base/trace_event/trace_category.h"
 #include "base/trace_event/trace_log.h"
-#include "build/build_config.h"
+#include "base/trace_event/traced_value_support.h"
+#include "base/tracing_buildflags.h"
+
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
 // By default, const char* argument values are assumed to have long-lived scope
 // and will not be copied. Use this macro to force a const char* to be copied.
@@ -93,6 +96,10 @@
 // unsigned int TRACE_EVENT_API_GET_NUM_TRACES_RECORDED()
 #define TRACE_EVENT_API_GET_NUM_TRACES_RECORDED \
   trace_event_internal::GetNumTracesRecorded
+
+#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+
+// Legacy TRACE_EVENT_API entrypoints. Do not use from new code.
 
 // Add a trace event to the platform tracing system.
 // base::trace_event::TraceEventHandle TRACE_EVENT_API_ADD_TRACE_EVENT(
@@ -181,6 +188,7 @@
 // Implementation detail: trace event macros create temporary variables
 // to keep instrumentation overhead low. These macros give each temporary
 // variable a unique name based on the line number to prevent name collisions.
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 #define INTERNAL_TRACE_EVENT_UID3(a, b) trace_event_unique_##a##b
 #define INTERNAL_TRACE_EVENT_UID2(a, b) INTERNAL_TRACE_EVENT_UID3(a, b)
 #define INTERNAL_TRACE_EVENT_UID(name_prefix) \
@@ -388,6 +396,7 @@
           ##__VA_ARGS__);                                            \
     }                                                                \
   } while (0)
+#endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
 namespace trace_event_internal {
 
@@ -443,32 +452,33 @@ class BASE_EXPORT TraceID {
     unsigned int id_flags_ = TRACE_EVENT_FLAG_HAS_ID;
   };
 
-  TraceID(const void* raw_id) : raw_id_(static_cast<unsigned long long>(
-                                        reinterpret_cast<uintptr_t>(raw_id))) {
+  explicit TraceID(const void* raw_id)
+      : raw_id_(static_cast<unsigned long long>(
+            reinterpret_cast<uintptr_t>(raw_id))) {
     id_flags_ = TRACE_EVENT_FLAG_HAS_LOCAL_ID;
   }
-  TraceID(unsigned long long raw_id) : raw_id_(raw_id) {}
-  TraceID(unsigned long raw_id) : raw_id_(raw_id) {}
-  TraceID(unsigned int raw_id) : raw_id_(raw_id) {}
-  TraceID(unsigned short raw_id) : raw_id_(raw_id) {}
-  TraceID(unsigned char raw_id) : raw_id_(raw_id) {}
-  TraceID(long long raw_id)
+  explicit TraceID(unsigned long long raw_id) : raw_id_(raw_id) {}
+  explicit TraceID(unsigned long raw_id) : raw_id_(raw_id) {}
+  explicit TraceID(unsigned int raw_id) : raw_id_(raw_id) {}
+  explicit TraceID(unsigned short raw_id) : raw_id_(raw_id) {}
+  explicit TraceID(unsigned char raw_id) : raw_id_(raw_id) {}
+  explicit TraceID(long long raw_id)
       : raw_id_(static_cast<unsigned long long>(raw_id)) {}
-  TraceID(long raw_id)
+  explicit TraceID(long raw_id)
       : raw_id_(static_cast<unsigned long long>(raw_id)) {}
-  TraceID(int raw_id)
+  explicit TraceID(int raw_id)
       : raw_id_(static_cast<unsigned long long>(raw_id)) {}
-  TraceID(short raw_id)
+  explicit TraceID(short raw_id)
       : raw_id_(static_cast<unsigned long long>(raw_id)) {}
-  TraceID(signed char raw_id)
+  explicit TraceID(signed char raw_id)
       : raw_id_(static_cast<unsigned long long>(raw_id)) {}
-  TraceID(LocalId raw_id) : raw_id_(raw_id.raw_id()) {
+  explicit TraceID(LocalId raw_id) : raw_id_(raw_id.raw_id()) {
     id_flags_ = TRACE_EVENT_FLAG_HAS_LOCAL_ID;
   }
-  TraceID(GlobalId raw_id) : raw_id_(raw_id.raw_id()) {
+  explicit TraceID(GlobalId raw_id) : raw_id_(raw_id.raw_id()) {
     id_flags_ = TRACE_EVENT_FLAG_HAS_GLOBAL_ID;
   }
-  TraceID(WithScope scoped_id)
+  explicit TraceID(WithScope scoped_id)
       : scope_(scoped_id.scope()),
         raw_id_(scoped_id.raw_id()),
         id_flags_(scoped_id.id_flags()) {}
@@ -578,12 +588,12 @@ void BASE_EXPORT UpdateTraceEventDurationExplicit(
 
 // These AddTraceEvent and AddTraceEventWithThreadIdAndTimestamp template
 // functions are defined here instead of in the macro, because the arg_values
-// could be temporary objects, such as std::string. In order to store
+// could be temporary objects, such as `std::string`. In order to store
 // pointers to the internal c_str and pass through to the tracing API,
 // the arg_values must live throughout these procedures.
 
 template <class ARG1_TYPE>
-static inline base::trace_event::TraceEventHandle
+inline base::trace_event::TraceEventHandle
 AddTraceEventWithThreadIdAndTimestamp(
     char phase,
     const unsigned char* category_group_enabled,
@@ -604,7 +614,7 @@ AddTraceEventWithThreadIdAndTimestamp(
 }
 
 template <class ARG1_TYPE, class ARG2_TYPE>
-static inline base::trace_event::TraceEventHandle
+inline base::trace_event::TraceEventHandle
 AddTraceEventWithThreadIdAndTimestamp(
     char phase,
     const unsigned char* category_group_enabled,
@@ -627,7 +637,7 @@ AddTraceEventWithThreadIdAndTimestamp(
       timestamp, &args, flags);
 }
 
-static inline base::trace_event::TraceEventHandle
+inline base::trace_event::TraceEventHandle
 AddTraceEventWithThreadIdAndTimestamp(
     char phase,
     const unsigned char* category_group_enabled,
@@ -643,7 +653,7 @@ AddTraceEventWithThreadIdAndTimestamp(
       timestamp, nullptr, flags);
 }
 
-static inline base::trace_event::TraceEventHandle AddTraceEvent(
+inline base::trace_event::TraceEventHandle AddTraceEvent(
     char phase,
     const unsigned char* category_group_enabled,
     const char* name,
@@ -659,7 +669,7 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
 }
 
 template <class ARG1_TYPE>
-static inline base::trace_event::TraceEventHandle AddTraceEvent(
+inline base::trace_event::TraceEventHandle AddTraceEvent(
     char phase,
     const unsigned char* category_group_enabled,
     const char* name,
@@ -677,7 +687,7 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
 }
 
 template <class ARG1_TYPE, class ARG2_TYPE>
-static inline base::trace_event::TraceEventHandle AddTraceEvent(
+inline base::trace_event::TraceEventHandle AddTraceEvent(
     char phase,
     const unsigned char* category_group_enabled,
     const char* name,
@@ -707,6 +717,8 @@ static void AddMetadataEvent(const unsigned char* category_group_enabled,
   trace_event_internal::AddMetadataEvent(category_group_enabled, event_name,
                                          &args, TRACE_EVENT_FLAG_NONE);
 }
+
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
 // Used by TRACE_EVENTx macros. Do not use directly.
 class TRACE_EVENT_API_CLASS_EXPORT ScopedTracer {
@@ -757,6 +769,8 @@ class TRACE_EVENT_API_CLASS_EXPORT ScopedTraceBinaryEfficient {
 #define TRACE_EVENT_BINARY_EFFICIENT0(category_group, name) \
     trace_event_internal::ScopedTraceBinaryEfficient \
         INTERNAL_TRACE_EVENT_UID(scoped_trace)(category_group, name);
+
+#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
 }  // namespace trace_event_internal
 

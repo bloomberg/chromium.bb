@@ -17,148 +17,58 @@
 #include "common/Constants.h"
 #include "common/Log.h"
 
-#include <shaderc/shaderc.hpp>
+#include "spirv-tools/optimizer.hpp"
 
 #include <cstring>
 #include <iomanip>
+#include <limits>
 #include <mutex>
 #include <sstream>
 
 namespace utils {
 
-    namespace {
+    wgpu::ShaderModule CreateShaderModuleFromASM(const wgpu::Device& device, const char* source) {
+        // Use SPIRV-Tools's C API to assemble the SPIR-V assembly text to binary. Because the types
+        // aren't RAII, we don't return directly on success and instead always go through the code
+        // path that destroys the SPIRV-Tools objects.
+        wgpu::ShaderModule result = nullptr;
 
-        shaderc_shader_kind ShadercShaderKind(SingleShaderStage stage) {
-            switch (stage) {
-                case SingleShaderStage::Vertex:
-                    return shaderc_glsl_vertex_shader;
-                case SingleShaderStage::Fragment:
-                    return shaderc_glsl_fragment_shader;
-                case SingleShaderStage::Compute:
-                    return shaderc_glsl_compute_shader;
-                default:
-                    UNREACHABLE();
-            }
-        }
+        spv_context context = spvContextCreate(SPV_ENV_UNIVERSAL_1_3);
+        ASSERT(context != nullptr);
 
-        wgpu::ShaderModule CreateShaderModuleFromResult(
-            const wgpu::Device& device,
-            const shaderc::SpvCompilationResult& result) {
-            // result.cend and result.cbegin return pointers to uint32_t.
-            const uint32_t* resultBegin = result.cbegin();
-            const uint32_t* resultEnd = result.cend();
-            // So this size is in units of sizeof(uint32_t).
-            ptrdiff_t resultSize = resultEnd - resultBegin;
-            // SetSource takes data as uint32_t*.
+        spv_binary spirv = nullptr;
+        spv_diagnostic diagnostic = nullptr;
+        if (spvTextToBinary(context, source, strlen(source), &spirv, &diagnostic) == SPV_SUCCESS) {
+            ASSERT(spirv != nullptr);
+            ASSERT(spirv->wordCount <= std::numeric_limits<uint32_t>::max());
 
             wgpu::ShaderModuleSPIRVDescriptor spirvDesc;
-            spirvDesc.codeSize = static_cast<uint32_t>(resultSize);
-            spirvDesc.code = result.cbegin();
+            spirvDesc.codeSize = static_cast<uint32_t>(spirv->wordCount);
+            spirvDesc.code = spirv->code;
 
             wgpu::ShaderModuleDescriptor descriptor;
             descriptor.nextInChain = &spirvDesc;
-
-            return device.CreateShaderModule(&descriptor);
+            result = device.CreateShaderModule(&descriptor);
+        } else {
+            ASSERT(diagnostic != nullptr);
+            dawn::WarningLog() << "CreateShaderModuleFromASM SPIRV assembly error:"
+                               << diagnostic->position.line + 1 << ":"
+                               << diagnostic->position.column + 1 << ": " << diagnostic->error;
         }
 
-        class CompilerSingleton {
-          public:
-            static shaderc::Compiler* Get() {
-                std::call_once(mInitFlag, &CompilerSingleton::Initialize);
-                return mCompiler;
-            }
+        spvDiagnosticDestroy(diagnostic);
+        spvBinaryDestroy(spirv);
+        spvContextDestroy(context);
 
-          private:
-            CompilerSingleton() = default;
-            ~CompilerSingleton() = default;
-            CompilerSingleton(const CompilerSingleton&) = delete;
-            CompilerSingleton& operator=(const CompilerSingleton&) = delete;
-
-            static shaderc::Compiler* mCompiler;
-            static std::once_flag mInitFlag;
-
-            static void Initialize() {
-                mCompiler = new shaderc::Compiler();
-            }
-        };
-
-        shaderc::Compiler* CompilerSingleton::mCompiler = nullptr;
-        std::once_flag CompilerSingleton::mInitFlag;
-
-    }  // anonymous namespace
-
-    wgpu::ShaderModule CreateShaderModule(const wgpu::Device& device,
-                                          SingleShaderStage stage,
-                                          const char* source) {
-        shaderc_shader_kind kind = ShadercShaderKind(stage);
-
-        shaderc::Compiler* compiler = CompilerSingleton::Get();
-        auto result = compiler->CompileGlslToSpv(source, strlen(source), kind, "myshader?");
-        if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-            dawn::ErrorLog() << result.GetErrorMessage();
-            return {};
-        }
-#ifdef DUMP_SPIRV_ASSEMBLY
-        {
-            shaderc::CompileOptions options;
-            auto resultAsm = compiler->CompileGlslToSpvAssembly(source, strlen(source), kind,
-                                                                "myshader?", options);
-            size_t sizeAsm = (resultAsm.cend() - resultAsm.cbegin());
-
-            char* buffer = reinterpret_cast<char*>(malloc(sizeAsm + 1));
-            memcpy(buffer, resultAsm.cbegin(), sizeAsm);
-            buffer[sizeAsm] = '\0';
-            printf("SPIRV ASSEMBLY DUMP START\n%s\nSPIRV ASSEMBLY DUMP END\n", buffer);
-            free(buffer);
-        }
-#endif
-
-#ifdef DUMP_SPIRV_JS_ARRAY
-        printf("SPIRV JS ARRAY DUMP START\n");
-        for (size_t i = 0; i < size; i++) {
-            printf("%#010x", result.cbegin()[i]);
-            if ((i + 1) % 4 == 0) {
-                printf(",\n");
-            } else {
-                printf(", ");
-            }
-        }
-        printf("\n");
-        printf("SPIRV JS ARRAY DUMP END\n");
-#endif
-
-        return CreateShaderModuleFromResult(device, result);
+        return result;
     }
 
-    wgpu::ShaderModule CreateShaderModuleFromASM(const wgpu::Device& device, const char* source) {
-        shaderc::Compiler* compiler = CompilerSingleton::Get();
-        shaderc::SpvCompilationResult result = compiler->AssembleToSpv(source, strlen(source));
-        if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-            dawn::ErrorLog() << result.GetErrorMessage();
-            return {};
-        }
-
-        return CreateShaderModuleFromResult(device, result);
-    }
-
-    wgpu::ShaderModule CreateShaderModuleFromWGSL(const wgpu::Device& device, const char* source) {
+    wgpu::ShaderModule CreateShaderModule(const wgpu::Device& device, const char* source) {
         wgpu::ShaderModuleWGSLDescriptor wgslDesc;
         wgslDesc.source = source;
         wgpu::ShaderModuleDescriptor descriptor;
         descriptor.nextInChain = &wgslDesc;
         return device.CreateShaderModule(&descriptor);
-    }
-
-    std::vector<uint32_t> CompileGLSLToSpirv(SingleShaderStage stage, const char* source) {
-        shaderc_shader_kind kind = ShadercShaderKind(stage);
-
-        shaderc::Compiler* compiler = CompilerSingleton::Get();
-        auto result = compiler->CompileGlslToSpv(source, strlen(source), kind, "myshader?");
-        if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-            dawn::ErrorLog() << result.GetErrorMessage();
-            return {};
-        }
-        return {result.cbegin(), result.cend()};
     }
 
     wgpu::Buffer CreateBufferFromData(const wgpu::Device& device,
@@ -170,7 +80,7 @@ namespace utils {
         descriptor.usage = usage | wgpu::BufferUsage::CopyDst;
         wgpu::Buffer buffer = device.CreateBuffer(&descriptor);
 
-        device.GetDefaultQueue().WriteBuffer(buffer, 0, data, size);
+        device.GetQueue().WriteBuffer(buffer, 0, data, size);
         return buffer;
     }
 
@@ -194,14 +104,14 @@ namespace utils {
         uint32_t colorAttachmentIndex = 0;
         for (const wgpu::TextureView& colorAttachment : colorAttachmentInfo) {
             if (colorAttachment.Get() != nullptr) {
-                cColorAttachments[colorAttachmentIndex].attachment = colorAttachment;
+                cColorAttachments[colorAttachmentIndex].view = colorAttachment;
             }
             ++colorAttachmentIndex;
         }
         colorAttachments = cColorAttachments.data();
 
         if (depthStencil.Get() != nullptr) {
-            cDepthStencilAttachmentInfo.attachment = depthStencil;
+            cDepthStencilAttachmentInfo.view = depthStencil;
             depthStencilAttachment = &cDepthStencilAttachmentInfo;
         } else {
             depthStencilAttachment = nullptr;
@@ -258,7 +168,7 @@ namespace utils {
         descriptor.dimension = wgpu::TextureDimension::e2D;
         descriptor.size.width = width;
         descriptor.size.height = height;
-        descriptor.size.depth = 1;
+        descriptor.size.depthOrArrayLayers = 1;
         descriptor.sampleCount = 1;
         descriptor.format = BasicRenderPass::kDefaultColorFormat;
         descriptor.mipLevelCount = 1;
@@ -268,28 +178,28 @@ namespace utils {
         return BasicRenderPass(width, height, color);
     }
 
-    wgpu::BufferCopyView CreateBufferCopyView(wgpu::Buffer buffer,
-                                              uint64_t offset,
-                                              uint32_t bytesPerRow,
-                                              uint32_t rowsPerImage) {
-        wgpu::BufferCopyView bufferCopyView = {};
-        bufferCopyView.buffer = buffer;
-        bufferCopyView.layout = CreateTextureDataLayout(offset, bytesPerRow, rowsPerImage);
+    wgpu::ImageCopyBuffer CreateImageCopyBuffer(wgpu::Buffer buffer,
+                                                uint64_t offset,
+                                                uint32_t bytesPerRow,
+                                                uint32_t rowsPerImage) {
+        wgpu::ImageCopyBuffer imageCopyBuffer = {};
+        imageCopyBuffer.buffer = buffer;
+        imageCopyBuffer.layout = CreateTextureDataLayout(offset, bytesPerRow, rowsPerImage);
 
-        return bufferCopyView;
+        return imageCopyBuffer;
     }
 
-    wgpu::TextureCopyView CreateTextureCopyView(wgpu::Texture texture,
-                                                uint32_t mipLevel,
-                                                wgpu::Origin3D origin,
-                                                wgpu::TextureAspect aspect) {
-        wgpu::TextureCopyView textureCopyView;
-        textureCopyView.texture = texture;
-        textureCopyView.mipLevel = mipLevel;
-        textureCopyView.origin = origin;
-        textureCopyView.aspect = aspect;
+    wgpu::ImageCopyTexture CreateImageCopyTexture(wgpu::Texture texture,
+                                                  uint32_t mipLevel,
+                                                  wgpu::Origin3D origin,
+                                                  wgpu::TextureAspect aspect) {
+        wgpu::ImageCopyTexture imageCopyTexture;
+        imageCopyTexture.texture = texture;
+        imageCopyTexture.mipLevel = mipLevel;
+        imageCopyTexture.origin = origin;
+        imageCopyTexture.aspect = aspect;
 
-        return textureCopyView;
+        return imageCopyTexture;
     }
 
     wgpu::TextureDataLayout CreateTextureDataLayout(uint64_t offset,
@@ -301,19 +211,6 @@ namespace utils {
         textureDataLayout.rowsPerImage = rowsPerImage;
 
         return textureDataLayout;
-    }
-
-    wgpu::SamplerDescriptor GetDefaultSamplerDescriptor() {
-        wgpu::SamplerDescriptor desc = {};
-
-        desc.minFilter = wgpu::FilterMode::Linear;
-        desc.magFilter = wgpu::FilterMode::Linear;
-        desc.mipmapFilter = wgpu::FilterMode::Linear;
-        desc.addressModeU = wgpu::AddressMode::Repeat;
-        desc.addressModeV = wgpu::AddressMode::Repeat;
-        desc.addressModeW = wgpu::AddressMode::Repeat;
-
-        return desc;
     }
 
     wgpu::PipelineLayout MakeBasicPipelineLayout(const wgpu::Device& device,
@@ -329,11 +226,19 @@ namespace utils {
         return device.CreatePipelineLayout(&descriptor);
     }
 
+    wgpu::PipelineLayout MakePipelineLayout(const wgpu::Device& device,
+                                            std::vector<wgpu::BindGroupLayout> bgls) {
+        wgpu::PipelineLayoutDescriptor descriptor;
+        descriptor.bindGroupLayoutCount = uint32_t(bgls.size());
+        descriptor.bindGroupLayouts = bgls.data();
+        return device.CreatePipelineLayout(&descriptor);
+    }
+
     wgpu::BindGroupLayout MakeBindGroupLayout(
         const wgpu::Device& device,
-        std::initializer_list<wgpu::BindGroupLayoutEntry> entriesInitializer) {
+        std::initializer_list<BindingLayoutEntryInitializationHelper> entriesInitializer) {
         std::vector<wgpu::BindGroupLayoutEntry> entries;
-        for (const wgpu::BindGroupLayoutEntry& entry : entriesInitializer) {
+        for (const BindingLayoutEntryInitializationHelper& entry : entriesInitializer) {
             entries.push_back(entry);
         }
 
@@ -341,6 +246,78 @@ namespace utils {
         descriptor.entryCount = static_cast<uint32_t>(entries.size());
         descriptor.entries = entries.data();
         return device.CreateBindGroupLayout(&descriptor);
+    }
+
+    BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
+        uint32_t entryBinding,
+        wgpu::ShaderStage entryVisibility,
+        wgpu::BufferBindingType bufferType,
+        bool bufferHasDynamicOffset,
+        uint64_t bufferMinBindingSize) {
+        binding = entryBinding;
+        visibility = entryVisibility;
+        buffer.type = bufferType;
+        buffer.hasDynamicOffset = bufferHasDynamicOffset;
+        buffer.minBindingSize = bufferMinBindingSize;
+    }
+
+    BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
+        uint32_t entryBinding,
+        wgpu::ShaderStage entryVisibility,
+        wgpu::SamplerBindingType samplerType) {
+        binding = entryBinding;
+        visibility = entryVisibility;
+        sampler.type = samplerType;
+    }
+
+    BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
+        uint32_t entryBinding,
+        wgpu::ShaderStage entryVisibility,
+        wgpu::TextureSampleType textureSampleType,
+        wgpu::TextureViewDimension textureViewDimension,
+        bool textureMultisampled) {
+        binding = entryBinding;
+        visibility = entryVisibility;
+        texture.sampleType = textureSampleType;
+        texture.viewDimension = textureViewDimension;
+        texture.multisampled = textureMultisampled;
+    }
+
+    BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
+        uint32_t entryBinding,
+        wgpu::ShaderStage entryVisibility,
+        wgpu::StorageTextureAccess storageTextureAccess,
+        wgpu::TextureFormat format,
+        wgpu::TextureViewDimension textureViewDimension) {
+        binding = entryBinding;
+        visibility = entryVisibility;
+        storageTexture.access = storageTextureAccess;
+        storageTexture.format = format;
+        storageTexture.viewDimension = textureViewDimension;
+    }
+
+    BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
+        uint32_t entryBinding,
+        wgpu::ShaderStage entryVisibility,
+        wgpu::BindingType entryType,
+        bool bufferHasDynamicOffset,
+        uint64_t bufferMinBindingSize,
+        wgpu::TextureViewDimension textureViewDimension,
+        wgpu::TextureComponentType textureComponent,
+        wgpu::TextureFormat storageFormat) {
+        binding = entryBinding;
+        visibility = entryVisibility;
+        type = entryType;
+        hasDynamicOffset = bufferHasDynamicOffset;
+        minBufferBindingSize = bufferMinBindingSize;
+        viewDimension = textureViewDimension;
+        textureComponentType = textureComponent;
+        storageTextureFormat = storageFormat;
+    }
+
+    BindingLayoutEntryInitializationHelper::BindingLayoutEntryInitializationHelper(
+        const wgpu::BindGroupLayoutEntry& entry)
+        : wgpu::BindGroupLayoutEntry(entry) {
     }
 
     BindingInitializationHelper::BindingInitializationHelper(uint32_t binding,

@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -16,7 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/signin/signin_ui_error.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension_builder.h"
@@ -92,17 +94,17 @@ TEST_F(LoginUIServiceTest, CanSetMultipleLoginUIs) {
   EXPECT_EQ(nullptr, service.current_login_ui());
 }
 
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(LoginUIServiceTest, SetProfileBlockingErrorMessage) {
   LoginUIService service(profile_);
 
   service.SetProfileBlockingErrorMessage();
 
-  EXPECT_EQ(base::string16(), service.GetLastLoginResult());
-  EXPECT_EQ(base::string16(), service.GetLastLoginErrorEmail());
-  EXPECT_TRUE(service.IsDisplayingProfileBlockedErrorMessage());
+  EXPECT_EQ(service.GetLastLoginError(), SigninUIError::ProfileIsBlocked());
 }
+#endif
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 class LoginUIServiceExtensionLoginPromptTest
     : public BrowserWithTestWindowTest {
  public:
@@ -156,10 +158,11 @@ TEST_F(LoginUIServiceExtensionLoginPromptTest, Show) {
 }
 
 TEST_F(LoginUIServiceExtensionLoginPromptTest, AsLockedProfile) {
-  ProfileAttributesEntry* entry;
-  ASSERT_TRUE(g_browser_process->profile_manager()
-                  ->GetProfileAttributesStorage()
-                  .GetProfileAttributesWithPath(profile()->GetPath(), &entry));
+  ProfileAttributesEntry* entry =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile()->GetPath());
+  ASSERT_NE(entry, nullptr);
   entry->SetIsSigninRequired(true);
   service_->ShowExtensionLoginPrompt(/*restricted_to_primary_account=*/true,
                                      /*email_hint=*/std::string());

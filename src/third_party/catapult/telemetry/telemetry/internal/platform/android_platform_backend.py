@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import logging
 import os
 import posixpath
@@ -9,6 +10,7 @@ import re
 import subprocess
 import threading
 import time
+import six
 
 from telemetry.core import android_platform
 from telemetry.core import exceptions
@@ -100,7 +102,7 @@ class _VideoRecorder(object):
     # Start recording the video in parallel to running the story, so that the
     # video recording here does not block running the story (which involve
     # executing additional commands in parallel on the device).
-    parallel_devices = device_utils.DeviceUtils.parallel([device], async=True)
+    parallel_devices = device_utils.DeviceUtils.parallel([device], asyn=True)
     self._runner = parallel_devices.pMap(record_video, self)
 
   def Stop(self, video_path):
@@ -418,7 +420,7 @@ class AndroidPlatformBackend(
     Args:
       application: The full package name string of the application to kill.
     """
-    assert isinstance(application, basestring)
+    assert isinstance(application, six.string_types)
     self._device.KillAll(application, blocking=True, quiet=True, as_root=True)
 
   def LaunchApplication(
@@ -472,7 +474,8 @@ class AndroidPlatformBackend(
 
   def RunCommand(self, command):
     return '\n'.join(self._device.RunShellCommand(
-        command, shell=isinstance(command, basestring), check_return=True))
+        command,
+        shell=isinstance(command, six.string_types), check_return=True))
 
   def SetRelaxSslCheck(self, value):
     old_flag = self._device.GetProp('socket.relaxsslcheck')
@@ -484,7 +487,7 @@ class AndroidPlatformBackend(
 
     Limit the number in case we have an error loop or we are failing to dismiss.
     """
-    for _ in xrange(10):
+    for _ in range(10):
       if not self._device.DismissCrashDialogIfNeeded():
         break
 
@@ -620,7 +623,7 @@ class AndroidPlatformBackend(
     """
     def decode_line(line):
       try:
-        uline = unicode(line, encoding='utf-8')
+        uline = six.text_type(line, encoding='utf-8')
         return uline.encode('ascii', 'backslashreplace')
       except Exception: # pylint: disable=broad-except
         logging.error('Error encoding UTF-8 logcat line as ASCII.')

@@ -12,6 +12,8 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
+#import "ios/chrome/browser/ui/main/scene_state.h"
+#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_controller.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_view.h"
 #import "ios/chrome/browser/ui/tabs/tab_view.h"
@@ -19,8 +21,8 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/web/public/navigation/navigation_item.h"
-#import "ios/web/public/test/fakes/test_navigation_manager.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_navigation_manager.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -36,6 +38,9 @@ namespace {
 
 class TabStripControllerTest : public PlatformTest {
  protected:
+  TabStripControllerTest()
+      : scene_state_([[SceneState alloc] initWithAppState:nil]) {}
+
   void SetUp() override {
     if (!IsIPadIdiom())
       return;
@@ -58,6 +63,8 @@ class TabStripControllerTest : public PlatformTest {
         startDispatchingToTarget:mock_popup_menu_commands_handler_
                      forProtocol:@protocol(PopupMenuCommands)];
 
+    SceneStateBrowserAgent::CreateForBrowser(&browser_, scene_state_);
+
     controller_ = [[TabStripController alloc] initWithBrowser:&browser_
                                                         style:NORMAL];
   }
@@ -69,14 +76,13 @@ class TabStripControllerTest : public PlatformTest {
   }
 
   void AddWebStateForTesting(std::string title) {
-    auto test_web_state = std::make_unique<web::TestWebState>();
-    test_web_state->SetTitle(base::UTF8ToUTF16(title));
-    auto test_navigation_manager =
-        std::make_unique<web::TestNavigationManager>();
-    test_navigation_manager->SetVisibleItem(visible_navigation_item_.get());
-    test_web_state->SetNavigationManager(std::move(test_navigation_manager));
+    auto web_state = std::make_unique<web::FakeWebState>();
+    web_state->SetTitle(base::UTF8ToUTF16(title));
+    auto navigation_manager = std::make_unique<web::FakeNavigationManager>();
+    navigation_manager->SetVisibleItem(visible_navigation_item_.get());
+    web_state->SetNavigationManager(std::move(navigation_manager));
     browser_.GetWebStateList()->InsertWebState(
-        /*index=*/0, std::move(test_web_state), WebStateList::INSERT_NO_FLAGS,
+        /*index=*/0, std::move(web_state), WebStateList::INSERT_NO_FLAGS,
         WebStateOpener());
   }
 
@@ -88,6 +94,7 @@ class TabStripControllerTest : public PlatformTest {
   id mock_application_settings_commands_handler_;
   TabStripController* controller_;
   UIWindow* window_;
+  SceneState* scene_state_;
 };
 
 TEST_F(TabStripControllerTest, LoadAndDisplay) {

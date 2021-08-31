@@ -70,7 +70,7 @@ class SourcePackage (Source):
 		Source.clean(self)
 		self.removeArchives()
 
-	def update (self, cmdProtocol = None):
+	def update (self, cmdProtocol = None, force = False):
 		if not self.isArchiveUpToDate():
 			self.fetchAndVerifyArchive()
 
@@ -182,7 +182,7 @@ class SourceFile (Source):
 		self.filename		= filename
 		self.checksum		= checksum
 
-	def update (self, cmdProtocol = None):
+	def update (self, cmdProtocol = None, force = False):
 		if not self.isFileUpToDate():
 			Source.clean(self)
 			self.fetchAndVerifyFile()
@@ -273,7 +273,7 @@ class GitRepo (Source):
 		assert url != None
 		return url
 
-	def update (self, cmdProtocol = None):
+	def update (self, cmdProtocol = None, force = False):
 		fullDstPath = os.path.join(EXTERNAL_DIR, self.baseDir, self.extractDir)
 
 		url = self.selectUrl(cmdProtocol)
@@ -287,8 +287,9 @@ class GitRepo (Source):
 				(stdout, stderr) = proc.communicate()
 				if proc.returncode == 0:
 					execute(["git", "tag", "-d",tag])
-			execute(["git", "fetch", "--tags", url, "+refs/heads/*:refs/remotes/origin/*"])
-			execute(["git", "checkout", self.revision])
+			force_arg = ['--force'] if force else []
+			execute(["git", "fetch"] + force_arg + ["--tags", url, "+refs/heads/*:refs/remotes/origin/*"])
+			execute(["git", "checkout"] + force_arg + [self.revision])
 		finally:
 			popWorkingDir()
 
@@ -316,23 +317,23 @@ PACKAGES = [
 	GitRepo(
 		"https://github.com/KhronosGroup/SPIRV-Tools.git",
 		None,
-		"4b07d50cd9a0a537ccb28252227f87d36273cf53",
+		"dc72924cb31cd9f3dbc3eb47e9d926cf641e3a07",
 		"spirv-tools"),
 	GitRepo(
 		"https://github.com/KhronosGroup/glslang.git",
 		None,
-		"f05c076e26b04cbcc9bf2df815bbdc9c620d89ad",
+		"60ce877de03ff03bb87fb9ef6b744ee33d076034",
 		"glslang",
 		removeTags = ["master-tot"]),
 	GitRepo(
 		"https://github.com/KhronosGroup/SPIRV-Headers.git",
 		None,
-		"d4e76fb323745e81677ee4181986c983bf5e4d88",
+		"dafead1765f6c1a5f9f8a76387dcb2abe4e54acd",
 		"spirv-headers"),
 	GitRepo(
 		"https://github.com/google/amber.git",
 		None,
-		"f02ecc0f5f7844c8c8557a3b773e1fab12a64747",
+		"8797ee109e7a6ea4d1f58f387f757545fa35325b",
 		"amber"),
 ]
 
@@ -348,6 +349,8 @@ def parseArgs ():
 						" Minimum python version required " + versionsForInsecureStr)
 	parser.add_argument('--protocol', dest='protocol', default=None, choices=['ssh', 'https'],
 						help="Select protocol to checkout git repositories.")
+	parser.add_argument('--force', dest='force', action='store_true', default=False,
+						help="Pass --force to git fetch and checkout commands")
 
 	args = parser.parse_args()
 
@@ -368,4 +371,4 @@ if __name__ == "__main__":
 		if args.clean:
 			pkg.clean()
 		else:
-			pkg.update(args.protocol)
+			pkg.update(args.protocol, args.force)

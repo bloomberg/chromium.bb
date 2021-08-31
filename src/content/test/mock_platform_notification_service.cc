@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/guid.h"
-#include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -32,6 +31,7 @@ MockPlatformNotificationService::~MockPlatformNotificationService() = default;
 void MockPlatformNotificationService::DisplayNotification(
     const std::string& notification_id,
     const GURL& origin,
+    const GURL& document_url,
     const blink::PlatformNotificationData& notification_data,
     const blink::NotificationResources& notification_resources) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -101,8 +101,8 @@ void MockPlatformNotificationService::ScheduleTrigger(base::Time timestamp) {
   if (timestamp > base::Time::Now())
     return;
 
-  BrowserContext::ForEachStoragePartition(
-      context_, base::BindRepeating([](content::StoragePartition* partition) {
+  context_->ForEachStoragePartition(
+      base::BindRepeating([](content::StoragePartition* partition) {
         partition->GetPlatformNotificationContext()->TriggerNotifications();
       }));
 }
@@ -120,8 +120,8 @@ void MockPlatformNotificationService::RecordNotificationUkmEvent(
 
 void MockPlatformNotificationService::SimulateClick(
     const std::string& title,
-    const base::Optional<int>& action_index,
-    const base::Optional<base::string16>& reply) {
+    const absl::optional<int>& action_index,
+    const absl::optional<std::u16string>& reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const auto notification_id_iter = notification_id_map_.find(title);
   if (notification_id_iter == notification_id_map_.end())

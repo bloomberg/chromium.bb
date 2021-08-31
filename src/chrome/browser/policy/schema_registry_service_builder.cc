@@ -4,23 +4,25 @@
 
 #include "chrome/browser/policy/schema_registry_service_builder.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/check.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "content/public/browser/browser_context.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -28,7 +30,7 @@
 
 namespace policy {
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 namespace {
 
 DeviceLocalAccountPolicyBroker* GetBroker(content::BrowserContext* context) {
@@ -58,7 +60,7 @@ DeviceLocalAccountPolicyBroker* GetBroker(content::BrowserContext* context) {
 }
 
 }  // namespace
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 std::unique_ptr<SchemaRegistryService> BuildSchemaRegistryServiceForProfile(
     content::BrowserContext* context,
@@ -68,21 +70,22 @@ std::unique_ptr<SchemaRegistryService> BuildSchemaRegistryServiceForProfile(
 
   std::unique_ptr<SchemaRegistry> registry;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   DeviceLocalAccountPolicyBroker* broker = GetBroker(context);
   if (broker) {
     // The SchemaRegistry for a device-local account is owned by its
     // DeviceLocalAccountPolicyBroker, which uses the registry to fetch and
     // cache policy even if there is no active session for that account.
     // Use a ForwardingSchemaRegistry that wraps this SchemaRegistry.
-    registry.reset(new ForwardingSchemaRegistry(broker->schema_registry()));
+    registry =
+        std::make_unique<ForwardingSchemaRegistry>(broker->schema_registry());
   }
 #endif
 
   if (!registry)
-    registry.reset(new SchemaRegistry);
+    registry = std::make_unique<SchemaRegistry>();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   Profile* const profile = Profile::FromBrowserContext(context);
   if (chromeos::ProfileHelper::IsSigninProfile(profile)) {
     // Pass the SchemaRegistry of the signin profile to the device policy

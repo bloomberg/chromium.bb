@@ -12,6 +12,7 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_interaction_manager.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service_constants.h"
 #include "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -123,7 +124,6 @@ NSString* FakeGetHostedDomainForIdentity(ChromeIdentity* identity) {
 @end
 
 namespace ios {
-NSString* const kManagedIdentityEmailSuffix = @"@google.com";
 NSString* const kIdentityEmailFormat = @"%@@gmail.com";
 NSString* const kIdentityGaiaIDFormat = @"%@ID";
 
@@ -159,14 +159,12 @@ FakeChromeIdentityService::PresentAccountDetailsController(
 
 ChromeIdentityInteractionManager*
 FakeChromeIdentityService::CreateChromeIdentityInteractionManager(
-    ChromeBrowserState* browser_state,
     id<ChromeIdentityInteractionManagerDelegate> delegate) const {
-  return CreateFakeChromeIdentityInteractionManager(browser_state, delegate);
+  return CreateFakeChromeIdentityInteractionManager(delegate);
 }
 
 FakeChromeIdentityInteractionManager*
 FakeChromeIdentityService::CreateFakeChromeIdentityInteractionManager(
-    ChromeBrowserState* browser_state,
     id<ChromeIdentityInteractionManagerDelegate> delegate) const {
   FakeChromeIdentityInteractionManager* manager =
       [[FakeChromeIdentityInteractionManager alloc] init];
@@ -196,11 +194,13 @@ bool FakeChromeIdentityService::HasIdentities() {
   return [identities_ count] > 0;
 }
 
-NSArray* FakeChromeIdentityService::GetAllIdentities() {
+NSArray* FakeChromeIdentityService::GetAllIdentities(
+    PrefService* pref_service) {
   return identities_;
 }
 
-NSArray* FakeChromeIdentityService::GetAllIdentitiesSortedForDisplay() {
+NSArray* FakeChromeIdentityService::GetAllIdentitiesSortedForDisplay(
+    PrefService* prefService) {
   return identities_;
 }
 
@@ -208,7 +208,7 @@ void FakeChromeIdentityService::ForgetIdentity(
     ChromeIdentity* identity,
     ForgetIdentityCallback callback) {
   [identities_ removeObject:identity];
-  FireIdentityListChanged();
+  FireIdentityListChanged(false);
   if (callback) {
     // Forgetting an identity is normally an asynchronous operation (that
     // require some network calls), this is replicated here by dispatching
@@ -299,12 +299,34 @@ NSString* FakeChromeIdentityService::GetCachedHostedDomainForIdentity(
   return FakeGetHostedDomainForIdentity(identity);
 }
 
+absl::optional<bool>
+FakeChromeIdentityService::IsSubjectToMinorModeRestrictions(
+    ChromeIdentity* identity) {
+  if (![identities_ containsObject:identity]) {
+    return absl::nullopt;
+  }
+  return absl::make_optional(
+      [identity.userEmail hasSuffix:kMinorModeIdentityEmailSuffix]);
+}
+
 void FakeChromeIdentityService::SetUpForIntegrationTests() {}
 
 void FakeChromeIdentityService::AddManagedIdentities(NSArray* identitiesNames) {
   for (NSString* name in identitiesNames) {
     NSString* email =
         [NSString stringWithFormat:@"%@%@", name, kManagedIdentityEmailSuffix];
+    NSString* gaiaID = [NSString stringWithFormat:kIdentityGaiaIDFormat, name];
+    [identities_ addObject:[FakeChromeIdentity identityWithEmail:email
+                                                          gaiaID:gaiaID
+                                                            name:name]];
+  }
+}
+
+void FakeChromeIdentityService::AddMinorModeIdentities(
+    NSArray* identitiesNames) {
+  for (NSString* name in identitiesNames) {
+    NSString* email = [NSString
+        stringWithFormat:@"%@%@", name, kMinorModeIdentityEmailSuffix];
     NSString* gaiaID = [NSString stringWithFormat:kIdentityGaiaIDFormat, name];
     [identities_ addObject:[FakeChromeIdentity identityWithEmail:email
                                                           gaiaID:gaiaID
@@ -326,7 +348,7 @@ void FakeChromeIdentityService::AddIdentity(ChromeIdentity* identity) {
   if (![identities_ containsObject:identity]) {
     [identities_ addObject:identity];
   }
-  FireIdentityListChanged();
+  FireIdentityListChanged(false);
 }
 
 void FakeChromeIdentityService::SetFakeMDMError(bool fakeMDMError) {
@@ -338,6 +360,11 @@ bool FakeChromeIdentityService::WaitForServiceCallbacksToComplete() {
     return _pendingCallback == 0;
   };
   return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition);
+}
+
+void FakeChromeIdentityService::TriggerIdentityUpdateNotification(
+    ChromeIdentity* identity) {
+  FireProfileDidUpdate(identity);
 }
 
 }  // namespace ios

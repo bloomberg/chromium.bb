@@ -15,15 +15,13 @@
 #ifndef VK_DEVICE_MEMORY_EXTERNAL_ANDROID_HPP_
 #define VK_DEVICE_MEMORY_EXTERNAL_ANDROID_HPP_
 
-#if SWIFTSHADER_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER
+#include "VkBuffer.hpp"
+#include "VkDevice.hpp"
+#include "VkDeviceMemory.hpp"
+#include "VkDeviceMemoryExternalBase.hpp"
+#include "VkImage.hpp"
 
-#	include "VkBuffer.hpp"
-#	include "VkDevice.hpp"
-#	include "VkDeviceMemory.hpp"
-#	include "VkDeviceMemoryExternalBase.hpp"
-#	include "VkImage.hpp"
-
-#	include <android/hardware_buffer.h>
+#include <vndk/hardware_buffer.h>
 
 class AHardwareBufferExternalMemory : public vk::DeviceMemory::ExternalBase
 {
@@ -35,9 +33,9 @@ public:
 	{
 		bool importAhb = false;
 		bool exportAhb = false;
-		struct AHardwareBuffer *ahb = nullptr;
-		vk::Image *imageHandle = nullptr;
-		vk::Buffer *bufferHandle = nullptr;
+		AHardwareBuffer *ahb = nullptr;
+		vk::Image *dedicatedImageHandle = nullptr;
+		vk::Buffer *dedicatedBufferHandle = nullptr;
 
 		AllocateInfo() = default;
 
@@ -50,7 +48,7 @@ public:
 	static bool SupportsAllocateInfo(const VkMemoryAllocateInfo *pAllocateInfo)
 	{
 		AllocateInfo info(pAllocateInfo);
-		return (info.importAhb || info.exportAhb) && (info.bufferHandle || info.imageHandle);
+		return info.importAhb || info.exportAhb;
 	}
 
 	explicit AHardwareBufferExternalMemory(const VkMemoryAllocateInfo *pAllocateInfo);
@@ -61,28 +59,37 @@ public:
 
 	VkExternalMemoryHandleTypeFlagBits getFlagBit() const override { return typeFlagBit; }
 
-	VkResult exportAndroidHardwareBuffer(struct AHardwareBuffer **pAhb) const override;
+	VkResult exportAndroidHardwareBuffer(AHardwareBuffer **pAhb) const;
 
 	void setDevicePtr(vk::Device *pDevice) override { device = pDevice; }
-	bool isAndroidHardwareBuffer() override { return true; }
 
+	static VkFormat GetVkFormatFromAHBFormat(uint32_t ahbFormat);
 	static VkResult GetAndroidHardwareBufferFormatProperties(const AHardwareBuffer_Desc &ahbDesc, VkAndroidHardwareBufferFormatPropertiesANDROID *pFormat);
-	static VkResult GetAndroidHardwareBufferProperties(VkDevice &device, const struct AHardwareBuffer *buffer, VkAndroidHardwareBufferPropertiesANDROID *pProperties);
+	static VkResult GetAndroidHardwareBufferProperties(VkDevice &device, const AHardwareBuffer *buffer, VkAndroidHardwareBufferPropertiesANDROID *pProperties);
 
 	bool hasExternalImageProperties() const override final { return true; }
-	int externalImageRowPitchBytes() const override final;
+	int externalImageRowPitchBytes(VkImageAspectFlagBits aspect) const override final;
+	VkDeviceSize externalImageMemoryOffset(VkImageAspectFlagBits aspect) const override final;
+
+#ifdef SWIFTSHADER_DEVICE_MEMORY_REPORT
+	bool isImport() const override
+	{
+		return allocateInfo.importAhb;
+	}
+	uint64_t getMemoryObjectId() const override;
+#endif  // SWIFTSHADER_DEVICE_MEMORY_REPORT
 
 private:
-	VkResult importAndroidHardwareBuffer(struct AHardwareBuffer *buffer, void **pBuffer);
-	VkResult allocateAndroidHardwareBuffer(void **pBuffer);
+	VkResult importAndroidHardwareBuffer(AHardwareBuffer *buffer, void **pBuffer);
+	VkResult allocateAndroidHardwareBuffer(size_t size, void **pBuffer);
 	VkResult lockAndroidHardwareBuffer(void **pBuffer);
 	VkResult unlockAndroidHardwareBuffer();
 
-	struct AHardwareBuffer *ahb = nullptr;
+	AHardwareBuffer *ahb = nullptr;
 	AHardwareBuffer_Desc ahbDesc = {};
+	AHardwareBuffer_Planes ahbPlanes = {};
 	vk::Device *device = nullptr;
 	AllocateInfo allocateInfo;
 };
 
-#endif  // SWIFTSHADER_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER
 #endif  // VK_DEVICE_MEMORY_EXTERNAL_ANDROID_HPP_

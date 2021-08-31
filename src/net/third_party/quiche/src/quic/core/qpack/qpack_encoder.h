@@ -11,16 +11,16 @@
 #include <vector>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_blocking_manager.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder_stream_receiver.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder_stream_sender.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_header_table.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_instructions.h"
-#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_exported_stats.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
+#include "quic/core/qpack/qpack_blocking_manager.h"
+#include "quic/core/qpack/qpack_decoder_stream_receiver.h"
+#include "quic/core/qpack/qpack_encoder_stream_sender.h"
+#include "quic/core/qpack/qpack_header_table.h"
+#include "quic/core/qpack/qpack_instructions.h"
+#include "quic/core/quic_error_codes.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_exported_stats.h"
+#include "spdy/core/spdy_header_block.h"
 
 namespace quic {
 
@@ -105,27 +105,27 @@ class QUIC_EXPORT_PRIVATE QpackEncoder
  private:
   friend class test::QpackEncoderPeer;
 
-  using Instructions = std::vector<QpackInstructionWithValues>;
+  using Representation = QpackInstructionWithValues;
+  using Representations = std::vector<Representation>;
 
-  // Generate indexed header field instruction
+  // Generate indexed header field representation
   // and optionally update |*referred_indices|.
-  static QpackInstructionWithValues EncodeIndexedHeaderField(
+  static Representation EncodeIndexedHeaderField(
       bool is_static,
       uint64_t index,
       QpackBlockingManager::IndexSet* referred_indices);
 
-  // Generate literal header field with name reference instruction
+  // Generate literal header field with name reference representation
   // and optionally update |*referred_indices|.
-  static QpackInstructionWithValues EncodeLiteralHeaderFieldWithNameReference(
+  static Representation EncodeLiteralHeaderFieldWithNameReference(
       bool is_static,
       uint64_t index,
       absl::string_view value,
       QpackBlockingManager::IndexSet* referred_indices);
 
-  // Generate literal header field instruction.
-  static QpackInstructionWithValues EncodeLiteralHeaderField(
-      absl::string_view name,
-      absl::string_view value);
+  // Generate literal header field representation.
+  static Representation EncodeLiteralHeaderField(absl::string_view name,
+                                                 absl::string_view value);
 
   // Performs first pass of two-pass encoding: represent each header field in
   // |*header_list| as a reference to an existing entry, the name of an existing
@@ -136,23 +136,24 @@ class QUIC_EXPORT_PRIVATE QpackEncoder
   // sets |*encoder_stream_sent_byte_count| to the number of bytes sent on the
   // encoder stream to insert dynamic table entries.  Returns list of header
   // field representations, with all dynamic table entries referred to with
-  // absolute indices.  Returned Instructions object may have
+  // absolute indices.  Returned representation objects may have
   // absl::string_views pointing to strings owned by |*header_list|.
-  Instructions FirstPassEncode(QuicStreamId stream_id,
-                               const spdy::Http2HeaderBlock& header_list,
-                               QpackBlockingManager::IndexSet* referred_indices,
-                               QuicByteCount* encoder_stream_sent_byte_count);
+  Representations FirstPassEncode(
+      QuicStreamId stream_id,
+      const spdy::Http2HeaderBlock& header_list,
+      QpackBlockingManager::IndexSet* referred_indices,
+      QuicByteCount* encoder_stream_sent_byte_count);
 
   // Performs second pass of two-pass encoding: serializes representations
   // generated in first pass, transforming absolute indices of dynamic table
   // entries to relative indices.
-  std::string SecondPassEncode(Instructions instructions,
+  std::string SecondPassEncode(Representations representations,
                                uint64_t required_insert_count) const;
 
   DecoderStreamErrorDelegate* const decoder_stream_error_delegate_;
   QpackDecoderStreamReceiver decoder_stream_receiver_;
   QpackEncoderStreamSender encoder_stream_sender_;
-  QpackHeaderTable header_table_;
+  QpackEncoderHeaderTable header_table_;
   uint64_t maximum_blocked_streams_;
   QpackBlockingManager blocking_manager_;
   int header_list_count_;

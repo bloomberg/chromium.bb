@@ -13,15 +13,12 @@
 
 namespace history {
 
-InMemoryDatabase::InMemoryDatabase() {}
+InMemoryDatabase::InMemoryDatabase()
+    : db_({.exclusive_locking = true, .page_size = 4096, .cache_size = 500}) {}
 
-InMemoryDatabase::~InMemoryDatabase() {
-}
+InMemoryDatabase::~InMemoryDatabase() = default;
 
 bool InMemoryDatabase::InitDB() {
-  // Set the database page size to 4K for better performance.
-  db_.set_page_size(4096);
-
   if (!db_.OpenInMemory()) {
     NOTREACHED() << "Cannot open databse " << GetDB().GetErrorMessage();
     return false;
@@ -100,7 +97,6 @@ bool InMemoryDatabase::InitFromDisk(const base::FilePath& history_name) {
                           db_.GetLastChangeCount());
 
   // Insert keyword search related URLs.
-  begin_load = base::TimeTicks::Now();
   if (!db_.Execute("INSERT OR IGNORE INTO urls SELECT u.id, u.url, u.title, "
                    "u.visit_count, u.typed_count, u.last_visit_time, u.hidden "
                    "FROM history.urls u JOIN history.keyword_search_terms kst "
@@ -112,7 +108,6 @@ bool InMemoryDatabase::InitFromDisk(const base::FilePath& history_name) {
                           db_.GetLastChangeCount());
 
   // Copy search terms to memory.
-  begin_load = base::TimeTicks::Now();
   if (!db_.Execute(
       "INSERT INTO keyword_search_terms SELECT * FROM "
       "history.keyword_search_terms")) {

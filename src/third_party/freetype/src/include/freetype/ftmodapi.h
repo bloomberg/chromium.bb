@@ -4,7 +4,7 @@
  *
  *   FreeType modules public interface (specification).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -88,6 +88,7 @@ FT_BEGIN_HEADER
    *   FT_Remove_Module
    *   FT_Add_Default_Modules
    *
+   *   FT_FACE_DRIVER_NAME
    *   FT_Property_Set
    *   FT_Property_Get
    *   FT_Set_Default_Properties
@@ -328,6 +329,23 @@ FT_BEGIN_HEADER
   FT_EXPORT( FT_Error )
   FT_Remove_Module( FT_Library  library,
                     FT_Module   module );
+
+
+  /**************************************************************************
+   *
+   * @macro:
+   *   FT_FACE_DRIVER_NAME
+   *
+   * @description:
+   *   A macro that retrieves the name of a font driver from a face object.
+   *
+   * @note:
+   *   The font driver name is a valid `module_name` for @FT_Property_Set
+   *   and @FT_Property_Get.  This is not the same as @FT_Get_Font_Format.
+   *
+   */
+#define FT_FACE_DRIVER_NAME( face ) \
+          ( ( *(FT_Module_Class**)( ( face )->driver ) )->module_name )
 
 
   /**************************************************************************

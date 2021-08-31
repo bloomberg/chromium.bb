@@ -14,7 +14,6 @@
 #include "base/component_export.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/connection_group.h"
@@ -23,6 +22,7 @@
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/handle_signal_tracker.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class Lock;
@@ -87,6 +87,8 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
             scoped_refptr<base::SequencedTaskRunner> runner,
             const char* interface_name = "unknown interface");
   ~Connector() override;
+
+  const char* interface_name() const { return interface_name_; }
 
   // Sets outgoing serialization mode.
   void SetOutgoingSerializationMode(OutgoingSerializationMode mode);
@@ -271,7 +273,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<SimpleWatcher> handle_watcher_;
-  base::Optional<HandleSignalTracker> peer_remoteness_tracker_;
+  absl::optional<HandleSignalTracker> peer_remoteness_tracker_;
 
   std::atomic<bool> error_;
   bool drop_writes_ = false;
@@ -287,7 +289,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
 
   // If sending messages is allowed from multiple sequences, |lock_| is used to
   // protect modifications to |message_pipe_| and |drop_writes_|.
-  base::Optional<base::Lock> lock_;
+  absl::optional<base::Lock> lock_;
 
   std::unique_ptr<SyncHandleWatcher> sync_watcher_;
 
@@ -310,7 +312,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
 
   // A cached pointer to the RunLoopNestingObserver for the thread on which this
   // Connector was created.
-  RunLoopNestingObserver* const nesting_observer_;
+  RunLoopNestingObserver* nesting_observer_ = nullptr;
 
   // |true| iff the Connector is currently dispatching a message. Used to detect
   // nested dispatch operations.

@@ -7,7 +7,6 @@
 #ifndef CORE_FXCRT_FX_SYSTEM_H_
 #define CORE_FXCRT_FX_SYSTEM_H_
 
-#include <assert.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -48,14 +47,6 @@ extern "C" {
 #else
 #define FX_FILESIZE off_t
 #endif  // defined(OS_WIN)
-
-#ifndef ASSERT
-#ifndef NDEBUG
-#define ASSERT assert
-#else
-#define ASSERT(a)
-#endif  // NDEBUG
-#endif  // ASSERT
 
 // M_PI not universally present on all platforms.
 #define FX_PI 3.1415926535897932384626433832795f

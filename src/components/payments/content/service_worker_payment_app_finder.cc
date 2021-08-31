@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/supports_user_data.h"
@@ -436,8 +437,8 @@ void ServiceWorkerPaymentAppFinder::GetAllPaymentApps(
   } else {
     downloader = std::make_unique<payments::PaymentManifestDownloader>(
         std::make_unique<DeveloperConsoleLogger>(web_contents),
-        content::BrowserContext::GetDefaultStoragePartition(
-            rfh->GetBrowserContext())
+        rfh->GetBrowserContext()
+            ->GetDefaultStoragePartition()
             ->GetURLLoaderFactoryForBrowserProcess());
   }
 

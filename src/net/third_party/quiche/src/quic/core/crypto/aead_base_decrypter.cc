@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/crypto/aead_base_decrypter.h"
+#include "quic/core/crypto/aead_base_decrypter.h"
 
 #include <cstdint>
 #include <string>
@@ -12,9 +12,9 @@
 #include "third_party/boringssl/src/include/openssl/crypto.h"
 #include "third_party/boringssl/src/include/openssl/err.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -60,17 +60,17 @@ AeadBaseDecrypter::AeadBaseDecrypter(const EVP_AEAD* (*aead_getter)(),
       nonce_size_(nonce_size),
       use_ietf_nonce_construction_(use_ietf_nonce_construction),
       have_preliminary_key_(false) {
-  DCHECK_GT(256u, key_size);
-  DCHECK_GT(256u, auth_tag_size);
-  DCHECK_GT(256u, nonce_size);
-  DCHECK_LE(key_size_, sizeof(key_));
-  DCHECK_LE(nonce_size_, sizeof(iv_));
+  QUICHE_DCHECK_GT(256u, key_size);
+  QUICHE_DCHECK_GT(256u, auth_tag_size);
+  QUICHE_DCHECK_GT(256u, nonce_size);
+  QUICHE_DCHECK_LE(key_size_, sizeof(key_));
+  QUICHE_DCHECK_LE(nonce_size_, sizeof(iv_));
 }
 
 AeadBaseDecrypter::~AeadBaseDecrypter() {}
 
 bool AeadBaseDecrypter::SetKey(absl::string_view key) {
-  DCHECK_EQ(key.size(), key_size_);
+  QUICHE_DCHECK_EQ(key.size(), key_size_);
   if (key.size() != key_size_) {
     return false;
   }
@@ -88,10 +88,11 @@ bool AeadBaseDecrypter::SetKey(absl::string_view key) {
 
 bool AeadBaseDecrypter::SetNoncePrefix(absl::string_view nonce_prefix) {
   if (use_ietf_nonce_construction_) {
-    QUIC_BUG << "Attempted to set nonce prefix on IETF QUIC crypter";
+    QUIC_BUG(quic_bug_10709_1)
+        << "Attempted to set nonce prefix on IETF QUIC crypter";
     return false;
   }
-  DCHECK_EQ(nonce_prefix.size(), nonce_size_ - sizeof(QuicPacketNumber));
+  QUICHE_DCHECK_EQ(nonce_prefix.size(), nonce_size_ - sizeof(QuicPacketNumber));
   if (nonce_prefix.size() != nonce_size_ - sizeof(QuicPacketNumber)) {
     return false;
   }
@@ -101,10 +102,10 @@ bool AeadBaseDecrypter::SetNoncePrefix(absl::string_view nonce_prefix) {
 
 bool AeadBaseDecrypter::SetIV(absl::string_view iv) {
   if (!use_ietf_nonce_construction_) {
-    QUIC_BUG << "Attempted to set IV on Google QUIC crypter";
+    QUIC_BUG(quic_bug_10709_2) << "Attempted to set IV on Google QUIC crypter";
     return false;
   }
-  DCHECK_EQ(iv.size(), nonce_size_);
+  QUICHE_DCHECK_EQ(iv.size(), nonce_size_);
   if (iv.size() != nonce_size_) {
     return false;
   }
@@ -113,7 +114,7 @@ bool AeadBaseDecrypter::SetIV(absl::string_view iv) {
 }
 
 bool AeadBaseDecrypter::SetPreliminaryKey(absl::string_view key) {
-  DCHECK(!have_preliminary_key_);
+  QUICHE_DCHECK(!have_preliminary_key_);
   SetKey(key);
   have_preliminary_key_ = true;
 
@@ -139,7 +140,7 @@ bool AeadBaseDecrypter::SetDiversificationNonce(
   if (!SetKey(key) ||
       (!use_ietf_nonce_construction_ && !SetNoncePrefix(nonce_prefix)) ||
       (use_ietf_nonce_construction_ && !SetIV(nonce_prefix))) {
-    DCHECK(false);
+    QUICHE_DCHECK(false);
     return false;
   }
 
@@ -158,7 +159,8 @@ bool AeadBaseDecrypter::DecryptPacket(uint64_t packet_number,
   }
 
   if (have_preliminary_key_) {
-    QUIC_BUG << "Unable to decrypt while key diversification is pending";
+    QUIC_BUG(quic_bug_10709_3)
+        << "Unable to decrypt while key diversification is pending";
     return false;
   }
 

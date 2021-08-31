@@ -14,6 +14,7 @@
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/ui/input_method_menu_item.h"
 #include "chrome/browser/chromeos/input_method/ui/input_method_menu_manager.h"
@@ -74,6 +75,30 @@ InputMethodEngine::InputMethodEngine() = default;
 
 InputMethodEngine::~InputMethodEngine() = default;
 
+void InputMethodEngine::FocusIn(
+    const ui::IMEEngineHandlerInterface::InputContext& input_context) {
+  current_input_type_ = input_context.type;
+
+  if (!IsActive() || current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
+    return;
+
+  context_id_ = next_context_id_;
+  ++next_context_id_;
+
+  observer_->OnFocus(active_component_id_, context_id_, input_context);
+}
+
+void InputMethodEngine::FocusOut() {
+  if (!IsActive() || current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
+    return;
+
+  current_input_type_ = ui::TEXT_INPUT_TYPE_NONE;
+
+  int context_id = context_id_;
+  context_id_ = -1;
+  observer_->OnBlur(active_component_id_, context_id);
+}
+
 void InputMethodEngine::Enable(const std::string& component_id) {
   InputMethodEngineBase::Enable(component_id);
   EnableInputView();
@@ -120,16 +145,15 @@ void InputMethodEngine::SetCastingEnabled(bool casting_enabled) {
   }
 }
 
-ui::InputMethodKeyboardController*
-InputMethodEngine::GetInputMethodKeyboardController() const {
+ui::VirtualKeyboardController* InputMethodEngine::GetVirtualKeyboardController()
+    const {
   // Callers expect a nullptr when the keyboard is disabled. See
   // https://crbug.com/850020.
   if (!keyboard::KeyboardUIController::HasInstance() ||
       !keyboard::KeyboardUIController::Get()->IsEnabled()) {
     return nullptr;
   }
-  return keyboard::KeyboardUIController::Get()
-      ->input_method_keyboard_controller();
+  return keyboard::KeyboardUIController::Get()->virtual_keyboard_controller();
 }
 
 void InputMethodEngine::OnSuggestionsChanged(
@@ -164,7 +188,7 @@ void InputMethodEngine::ClickButton(
 
 bool InputMethodEngine::AcceptSuggestionCandidate(
     int context_id,
-    const base::string16& suggestion,
+    const std::u16string& suggestion,
     std::string* error) {
   if (!IsActive()) {
     *error = kErrorNotActive;
@@ -175,7 +199,7 @@ bool InputMethodEngine::AcceptSuggestionCandidate(
     return false;
   }
 
-  CommitText(context_id, base::UTF16ToUTF8(suggestion).c_str(), error);
+  CommitText(context_id, suggestion, error);
 
   IMEAssistiveWindowHandlerInterface* aw_handler =
       ui::IMEBridge::Get()->GetAssistiveWindowHandler();
@@ -358,7 +382,7 @@ bool InputMethodEngine::AcceptSuggestion(int context_id, std::string* error) {
   IMEAssistiveWindowHandlerInterface* aw_handler =
       ui::IMEBridge::Get()->GetAssistiveWindowHandler();
   if (aw_handler) {
-    base::string16 suggestion_text = aw_handler->GetSuggestionText();
+    std::u16string suggestion_text = aw_handler->GetSuggestionText();
     if (suggestion_text.empty()) {
       *error = kSuggestionNotFound;
       return false;
@@ -368,8 +392,7 @@ bool InputMethodEngine::AcceptSuggestion(int context_id, std::string* error) {
       DeleteSurroundingText(context_id_, -confirmed_length, confirmed_length,
                             error);
     }
-    CommitText(context_id_, (base::UTF16ToUTF8(suggestion_text)).c_str(),
-               error);
+    CommitText(context_id_, suggestion_text, error);
     aw_handler->HideSuggestion();
   }
   return true;
@@ -479,15 +502,12 @@ gfx::Rect InputMethodEngine::GetAutocorrectCharacterBounds() {
   return input_context->GetAutocorrectCharacterBounds();
 }
 
-bool InputMethodEngine::SetAutocorrectRange(
-    const base::string16& autocorrect_text,
-    uint32_t start,
-    uint32_t end) {
+bool InputMethodEngine::SetAutocorrectRange(const gfx::Range& range) {
   ui::IMEInputContextHandlerInterface* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
   if (!input_context)
     return false;
-  return input_context->SetAutocorrectRange(autocorrect_text, start, end);
+  return input_context->SetAutocorrectRange(range);
 }
 
 bool InputMethodEngine::SetSelectionRange(uint32_t start, uint32_t end) {
@@ -499,29 +519,27 @@ bool InputMethodEngine::SetSelectionRange(uint32_t start, uint32_t end) {
 }
 
 void InputMethodEngine::CommitTextToInputContext(int context_id,
-                                                 const std::string& text) {
+                                                 const std::u16string& text) {
   ui::IMEInputContextHandlerInterface* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
   if (!input_context)
     return;
 
   const bool had_composition_text = input_context->HasCompositionText();
-  input_context->CommitText(text);
+  input_context->CommitText(
+      text,
+      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
 
   if (had_composition_text) {
     // Records histograms for committed characters with composition text.
-    base::string16 wtext = base::UTF8ToUTF16(text);
-    UMA_HISTOGRAM_CUSTOM_COUNTS("InputMethod.CommitLength", wtext.length(), 1,
+    UMA_HISTOGRAM_CUSTOM_COUNTS("InputMethod.CommitLength", text.length(), 1,
                                 25, 25);
   }
 }
 
-bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
-                                     const std::string& code,
+bool InputMethodEngine::SendKeyEvent(const ui::KeyEvent& event,
                                      std::string* error) {
-  DCHECK(event);
-  if (event->key_code() == ui::VKEY_UNKNOWN)
-    event->set_key_code(ui::DomKeycodeToKeyboardCode(code));
+  ui::KeyEvent event_copy = event;
 
   // Marks the simulated key event is from the Virtual Keyboard.
   ui::Event::Properties properties;
@@ -529,23 +547,17 @@ bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
       std::vector<uint8_t>(ui::kPropertyFromVKSize);
   properties[ui::kPropertyFromVK][ui::kPropertyFromVKIsMirroringIndex] =
       (uint8_t)is_mirroring_;
-  event->SetProperties(properties);
+  event_copy.SetProperties(properties);
 
   ui::IMEInputContextHandlerInterface* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
   if (input_context) {
-    input_context->SendKeyEvent(event);
+    input_context->SendKeyEvent(&event_copy);
     return true;
   }
 
   *error = kErrorWrongContext;
   return false;
-}
-
-bool InputMethodEngine::IsValidKeyEvent(const ui::KeyEvent* ui_event) {
-  // TODO(CRBUG/1070517): Update this check to verify that this KeyEvent should
-  // be allowed on this page, instead of assuming that it should be allowed.
-  return true;
 }
 
 void InputMethodEngine::EnableInputView() {

@@ -4,15 +4,15 @@
 
 #include "third_party/blink/renderer/core/html/html_meta_element.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/media_query_list.h"
 #include "third_party/blink/renderer/core/css/media_query_matcher.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
@@ -249,32 +248,19 @@ TEST_F(HTMLMetaElementTest, ReferrerPolicyWithoutContent) {
     <meta name="referrer" >
   )HTML");
   EXPECT_EQ(network::mojom::ReferrerPolicy::kStrictOrigin,
-            GetDocument().GetReferrerPolicy());
+            GetFrame().DomWindow()->GetReferrerPolicy());
+  EXPECT_EQ(network::mojom::ReferrerPolicy::kStrictOrigin,
+            GetFrame().DomWindow()->GetPolicyContainer()->GetReferrerPolicy());
 }
 
 TEST_F(HTMLMetaElementTest, ReferrerPolicyUpdatesPolicyContainer) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(blink::features::kPolicyContainer);
-
-  MockPolicyContainerHost policy_container_host;
-  mojo::PendingAssociatedRemote<mojom::blink::PolicyContainerHost>
-      stub_policy_container_remote =
-          policy_container_host.BindNewEndpointAndPassDedicatedRemote();
-  auto policy_container = std::make_unique<PolicyContainer>(
-      std::move(stub_policy_container_remote),
-      mojom::blink::PolicyContainerDocumentPolicies::New());
-
-  GetFrame().SetPolicyContainer(std::move(policy_container));
-  EXPECT_CALL(policy_container_host,
-              SetReferrerPolicy(network::mojom::ReferrerPolicy::kStrictOrigin));
   GetDocument().head()->setInnerHTML(R"HTML(
     <meta name="referrer" content="strict-origin">
   )HTML");
   EXPECT_EQ(network::mojom::ReferrerPolicy::kStrictOrigin,
-            GetFrame().GetPolicyContainer()->GetReferrerPolicy());
-
-  // Wait for mojo messages to be received.
-  policy_container_host.FlushForTesting();
+            GetFrame().DomWindow()->GetReferrerPolicy());
+  EXPECT_EQ(network::mojom::ReferrerPolicy::kStrictOrigin,
+            GetFrame().DomWindow()->GetPolicyContainer()->GetReferrerPolicy());
 }
 
 // This tests whether Web Monetization counter is properly triggered.

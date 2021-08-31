@@ -13,8 +13,8 @@ group("fuzzers") {
 
 source_set("fuzzer_support") {
   public = [ "fuzzer_utils.h" ]
+  public_deps = [ "//base" ]
   deps = [
-    "//base",
     "//base:i18n",
     "//third_party/icu",
   ]

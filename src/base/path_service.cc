@@ -284,7 +284,7 @@ bool PathService::OverrideAndCreateIfNeeded(int key,
 }
 
 // static
-bool PathService::RemoveOverride(int key) {
+bool PathService::RemoveOverrideForTests(int key) {
   PathData* path_data = GetPathData();
   DCHECK(path_data);
 
@@ -300,6 +300,16 @@ bool PathService::RemoveOverride(int key) {
   path_data->overrides.erase(key);
 
   return true;
+}
+
+// static
+bool PathService::IsOverriddenForTests(int key) {
+  PathData* path_data = GetPathData();
+  DCHECK(path_data);
+
+  AutoLock scoped_lock(path_data->lock);
+
+  return path_data->overrides.find(key) != path_data->overrides.end();
 }
 
 // static

@@ -43,6 +43,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) AuthFailure {
     MISSING_CRYPTOHOME = 13,          // cryptohome missing from disk.
     AUTH_DISABLED = 14,               // Authentication disabled for user.
     TPM_UPDATE_REQUIRED = 15,         // TPM firmware update is required.
+    UNRECOVERABLE_CRYPTOHOME = 16,    // cryptohome is corrupted.
     NUM_FAILURE_REASONS,              // This has to be the last item.
   };
 
@@ -101,6 +102,8 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) AuthFailure {
         return "Critical TPM error encountered.";
       case TPM_UPDATE_REQUIRED:
         return "TPM firmware update required.";
+      case UNRECOVERABLE_CRYPTOHOME:
+        return "Cryptohome is corrupted.";
       default:
         NOTREACHED();
         return std::string();
@@ -148,5 +151,12 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) AuthStatusConsumer
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::AuthFailure;
+using ::chromeos::AuthStatusConsumer;
+}  // namespace ash
 
 #endif  // CHROMEOS_LOGIN_AUTH_AUTH_STATUS_CONSUMER_H_

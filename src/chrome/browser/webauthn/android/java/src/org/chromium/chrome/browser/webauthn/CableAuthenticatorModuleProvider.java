@@ -4,19 +4,23 @@
 
 package org.chromium.chrome.browser.webauthn;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
+import android.app.KeyguardManager;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.modules.cablev2_authenticator.Cablev2AuthenticatorModule;
@@ -31,6 +35,9 @@ import org.chromium.chrome.modules.cablev2_authenticator.Cablev2AuthenticatorMod
  * settings UI, while {@link ModuleInstallUi} assumes that the UI does in a {@link Tab}.
  */
 public class CableAuthenticatorModuleProvider extends Fragment {
+    // TAG is subject to a 20 character limit.
+    private static final String TAG = "CableAuthModuleProv";
+
     // NETWORK_CONTEXT_KEY is the key under which a pointer to a NetworkContext
     // is passed (as a long) in the arguments {@link Bundle} to the {@link
     // Fragment} in the module.
@@ -38,39 +45,27 @@ public class CableAuthenticatorModuleProvider extends Fragment {
             "org.chromium.chrome.modules.cablev2_authenticator.NetworkContext";
     private static final String REGISTRATION_KEY =
             "org.chromium.chrome.modules.cablev2_authenticator.Registration";
-    private static final String ACTIVITY_CLASS_NAME_KEY =
-            "org.chromium.chrome.modules.cablev2_authenticator.ActivityClassName";
     private static final String ACTIVITY_CLASS_NAME =
             "org.chromium.chrome.browser.webauth.authenticator.CableAuthenticatorActivity";
-    private TextView mStatus;
+    private static final String SECRET_KEY =
+            "org.chromium.chrome.modules.cablev2_authenticator.Secret";
 
     @Override
-    @SuppressLint("SetTextI18n")
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final Context context = getContext();
 
-        // This UI is a placeholder for development, has not been reviewed by
-        // UX, and thus just uses untranslated strings for now.
-        getActivity().setTitle("Installing");
-
-        mStatus = new TextView(context);
-        mStatus.setPadding(0, 60, 0, 60);
-
         LinearLayout layout = new LinearLayout(context);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setGravity(Gravity.CENTER_HORIZONTAL);
-        layout.addView(mStatus,
-                new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT));
 
         if (Cablev2AuthenticatorModule.isInstalled()) {
             showModule();
         } else {
-            mStatus.setText("Installing security key functionality…");
             Cablev2AuthenticatorModule.install((success) -> {
                 if (!success) {
-                    mStatus.setText("Failed to install.");
+                    Log.e(TAG, "Failed to install caBLE DFM");
+                    getActivity().finish();
                     return;
                 }
                 showModule();
@@ -80,10 +75,7 @@ public class CableAuthenticatorModuleProvider extends Fragment {
         return layout;
     }
 
-    @SuppressLint("SetTextI18n")
     private void showModule() {
-        mStatus.setText("Installed.");
-
         FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
         Fragment fragment = Cablev2AuthenticatorModule.getImpl().getFragment();
         Bundle arguments = getArguments();
@@ -94,7 +86,7 @@ public class CableAuthenticatorModuleProvider extends Fragment {
                 CableAuthenticatorModuleProviderJni.get().getSystemNetworkContext());
         arguments.putLong(
                 REGISTRATION_KEY, CableAuthenticatorModuleProviderJni.get().getRegistration());
-        arguments.putString(ACTIVITY_CLASS_NAME_KEY, ACTIVITY_CLASS_NAME);
+        arguments.putByteArray(SECRET_KEY, CableAuthenticatorModuleProviderJni.get().getSecret());
         fragment.setArguments(arguments);
         transaction.replace(getId(), fragment);
         // This fragment is deliberately not added to the back-stack here so
@@ -113,10 +105,11 @@ public class CableAuthenticatorModuleProvider extends Fragment {
         final long networkContext =
                 CableAuthenticatorModuleProviderJni.get().getSystemNetworkContext();
         final long registration = CableAuthenticatorModuleProviderJni.get().getRegistration();
+        final byte[] secret = CableAuthenticatorModuleProviderJni.get().getSecret();
 
         if (Cablev2AuthenticatorModule.isInstalled()) {
             Cablev2AuthenticatorModule.getImpl().onCloudMessage(
-                    event, networkContext, registration, ACTIVITY_CLASS_NAME);
+                    event, networkContext, registration, ACTIVITY_CLASS_NAME, secret);
             return;
         }
 
@@ -126,8 +119,30 @@ public class CableAuthenticatorModuleProvider extends Fragment {
                 return;
             }
             Cablev2AuthenticatorModule.getImpl().onCloudMessage(
-                    event, networkContext, registration, ACTIVITY_CLASS_NAME);
+                    event, networkContext, registration, ACTIVITY_CLASS_NAME, secret);
         });
+    }
+
+    @CalledByNative
+    public static boolean canDeviceSupportCable() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N
+                || BluetoothAdapter.getDefaultAdapter() == null) {
+            return false;
+        }
+
+        // GMSCore will immediately fail all requests if a screenlock
+        // isn't configured.
+        return hasScreenLockConfigured();
+    }
+
+    // canDeviceSupportCable has checked that the system is >= N (API level 24)
+    // before calling this function.
+    @TargetApi(24)
+    private static boolean hasScreenLockConfigured() {
+        KeyguardManager km =
+                (KeyguardManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.KEYGUARD_SERVICE);
+        return km.isDeviceSecure();
     }
 
     @NativeMethods
@@ -141,6 +156,9 @@ public class CableAuthenticatorModuleProvider extends Fragment {
         // getRegistration returns a pointer to the global
         // device::cablev2::authenticator::Registration.
         long getRegistration();
+        // getSecret returns a 32-byte secret from which can be derived the
+        // key and shared secret that were advertised via Sync.
+        byte[] getSecret();
         // freeEvent releases resources used by the given event.
         void freeEvent(long event);
     }

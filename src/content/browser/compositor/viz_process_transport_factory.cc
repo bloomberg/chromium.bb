@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/single_thread_task_runner.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "components/viz/common/features.h"
@@ -29,6 +30,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/gpu_stream_constants.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -108,7 +110,9 @@ class HostDisplayClient : public viz::HostDisplayClient {
   HostDisplayClient& operator=(const HostDisplayClient&) = delete;
 
   // viz::HostDisplayClient:
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   void DidCompleteSwapWithNewSize(const gfx::Size& size) override {
     compositor_->OnCompleteSwapWithNewSize(size);
   }
@@ -163,49 +167,29 @@ void VizProcessTransportFactory::ConnectHostFrameSinkManager() {
       std::move(frame_sink_manager_client_receiver), resize_task_runner_,
       std::move(frame_sink_manager));
 
-  if (GpuDataManagerImpl::GetInstance()->GpuProcessStartAllowed()) {
-    // Hop to the IO thread, then send the other side of interface to viz
-    // process.
-    auto connect_on_io_thread =
-        [](mojo::PendingReceiver<viz::mojom::FrameSinkManager> receiver,
-           mojo::PendingRemote<viz::mojom::FrameSinkManagerClient> client,
-           const viz::DebugRendererSettings& debug_renderer_settings) {
-          // There should always be a GpuProcessHost instance, and GPU process,
-          // for running the compositor thread. The exception is during shutdown
-          // the GPU process won't be restarted and GpuProcessHost::Get() can
-          // return null.
-          auto* gpu_process_host = GpuProcessHost::Get();
-          if (gpu_process_host) {
-            gpu_process_host->gpu_host()->ConnectFrameSinkManager(
-                std::move(receiver), std::move(client),
-                debug_renderer_settings);
-          }
-        };
-    GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(connect_on_io_thread,
-                       std::move(frame_sink_manager_receiver),
-                       std::move(frame_sink_manager_client),
-                       GetHostFrameSinkManager()->debug_renderer_settings()));
+  // Hop to the IO thread, then send the other side of interface to viz process.
+  auto connect_on_io_thread =
+      [](mojo::PendingReceiver<viz::mojom::FrameSinkManager> receiver,
+         mojo::PendingRemote<viz::mojom::FrameSinkManagerClient> client,
+         const viz::DebugRendererSettings& debug_renderer_settings) {
+        // There should always be a GpuProcessHost instance, and GPU process,
+        // for running the compositor thread. The exception is during shutdown
+        // the GPU process won't be restarted and GpuProcessHost::Get() can
+        // return null.
+        auto* gpu_process_host = GpuProcessHost::Get();
+        if (gpu_process_host) {
+          gpu_process_host->gpu_host()->ConnectFrameSinkManager(
+              std::move(receiver), std::move(client), debug_renderer_settings);
+        }
+      };
+  auto task = base::BindOnce(
+      connect_on_io_thread, std::move(frame_sink_manager_receiver),
+      std::move(frame_sink_manager_client),
+      GetHostFrameSinkManager()->debug_renderer_settings());
+  if (base::FeatureList::IsEnabled(features::kProcessHostOnUI)) {
+    std::move(task).Run();
   } else {
-    DCHECK(!viz_compositor_thread_);
-
-    // GPU process access is disabled. Start a new thread to run the display
-    // compositor in-process and connect HostFrameSinkManager to it.
-    viz_compositor_thread_ =
-        std::make_unique<viz::VizCompositorThreadRunnerImpl>();
-
-    viz::mojom::FrameSinkManagerParamsPtr params =
-        viz::mojom::FrameSinkManagerParams::New();
-    params->restart_id = viz::BeginFrameSource::kNotRestartableId;
-    base::Optional<uint32_t> activation_deadline_in_frames =
-        switches::GetDeadlineToSynchronizeSurfaces();
-    params->use_activation_deadline = activation_deadline_in_frames.has_value();
-    params->activation_deadline_in_frames =
-        activation_deadline_in_frames.value_or(0u);
-    params->frame_sink_manager = std::move(frame_sink_manager_receiver);
-    params->frame_sink_manager_client = std::move(frame_sink_manager_client);
-    viz_compositor_thread_->CreateFrameSinkManager(std::move(params));
+    GetIOThreadTaskRunner({})->PostTask(FROM_HERE, std::move(task));
   }
 }
 
@@ -278,6 +262,10 @@ viz::FrameSinkId VizProcessTransportFactory::AllocateFrameSinkId() {
   return frame_sink_id_allocator_.NextFrameSinkId();
 }
 
+viz::SubtreeCaptureId VizProcessTransportFactory::AllocateSubtreeCaptureId() {
+  return subtree_capture_id_allocator_.NextSubtreeCaptureId();
+}
+
 viz::HostFrameSinkManager*
 VizProcessTransportFactory::GetHostFrameSinkManager() {
   return host_frame_sink_manager_;
@@ -294,7 +282,7 @@ ui::ContextFactory* VizProcessTransportFactory::GetContextFactory() {
 
 void VizProcessTransportFactory::DisableGpuCompositing(
     ui::Compositor* guilty_compositor) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ALLOW_UNUSED_LOCAL(compositing_mode_reporter_);
   // A fatal error has occurred and we can't fall back to software compositing
   // on CrOS. These can be unrecoverable hardware errors, or bugs that should
@@ -431,8 +419,6 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
 
   root_params->use_preferred_interval_for_video =
       features::IsUsingPreferredIntervalForVideo();
-  root_params->num_of_frames_to_toggle_interval =
-      features::NumOfFramesToToggleInterval();
 #if defined(OS_WIN)
   root_params->set_present_duration_allowed =
       features::ShouldUseSetPresentDuration();
@@ -486,7 +472,7 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
 
   const auto& gpu_feature_info = gpu_channel_host->gpu_feature_info();
   // Fallback to software compositing if GPU compositing is blacklisted.
-  // TODO(sgilhuly): For now assume that if GL is blacklisted, then Vulkan is
+  // TODO(rivr): For now assume that if GL is blacklisted, then Vulkan is
   // also. Just check GL to see if GPU compositing is disabled.
   auto gpu_compositing_status =
       gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_GL];

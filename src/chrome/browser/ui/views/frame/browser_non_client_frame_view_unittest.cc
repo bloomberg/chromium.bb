@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -60,12 +61,15 @@ class BrowserNonClientFrameViewPopupTest
 #define MAYBE_HitTestPopupTopChrome HitTestPopupTopChrome
 #endif
 TEST_F(BrowserNonClientFrameViewPopupTest, MAYBE_HitTestPopupTopChrome) {
-  EXPECT_FALSE(frame_view_->HitTestRect(gfx::Rect(-1, 4, 1, 1)));
-  EXPECT_FALSE(frame_view_->HitTestRect(gfx::Rect(4, -1, 1, 1)));
+  constexpr gfx::Rect kLeftOfFrame(-1, 4, 1, 1);
+  EXPECT_FALSE(frame_view_->HitTestRect(kLeftOfFrame));
+
+  constexpr gfx::Rect kAboveFrame(4, -1, 1, 1);
+  EXPECT_FALSE(frame_view_->HitTestRect(kAboveFrame));
+
   const int top_inset = frame_view_->GetTopInset(false);
-  EXPECT_FALSE(frame_view_->HitTestRect(gfx::Rect(4, top_inset, 1, 1)));
-  if (top_inset > 0)
-    EXPECT_TRUE(frame_view_->HitTestRect(gfx::Rect(4, top_inset - 1, 1, 1)));
+  const gfx::Rect in_browser_view(4, top_inset, 1, 1);
+  EXPECT_TRUE(frame_view_->HitTestRect(in_browser_view));
 }
 
 class BrowserNonClientFrameViewTabbedTest
@@ -76,7 +80,9 @@ class BrowserNonClientFrameViewTabbedTest
 };
 
 // TODO(crbug.com/1011339): Flaky on Linux TSAN.
-#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(THREAD_SANITIZER)
+#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH) || \
+     BUILDFLAG(IS_CHROMEOS_LACROS)) &&                  \
+    defined(THREAD_SANITIZER)
 #define MAYBE_HitTestTabstrip DISABLED_HitTestTabstrip
 #else
 #define MAYBE_HitTestTabstrip HitTestTabstrip
@@ -105,14 +111,16 @@ TEST_F(BrowserNonClientFrameViewTabbedTest, MAYBE_HitTestTabstrip) {
 
   // Hits client portions of the tabstrip (near the bottom left corner of the
   // first tab).
-  EXPECT_FALSE(frame_view_->HitTestRect(gfx::Rect(
+  EXPECT_TRUE(frame_view_->HitTestRect(gfx::Rect(
+      tabstrip_bounds.x() + 10, tabstrip_bounds.bottom() - 10, 1, 1)));
+  EXPECT_TRUE(frame_view_->browser_view()->HitTestRect(gfx::Rect(
       tabstrip_bounds.x() + 10, tabstrip_bounds.bottom() - 10, 1, 1)));
 
 // Tabs extend to the top of the tabstrip everywhere in this test context on
 // ChromeOS, so there is no non-client area in the tab strip to test for.
 // TODO (tbergquist): Investigate whether we can key off this condition in an
 // OS-agnostic way.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   // Hits non-client portions of the tab strip (the top left corner of the
   // first tab).
   EXPECT_TRUE(frame_view_->HitTestRect(

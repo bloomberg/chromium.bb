@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/tab_sharing/tab_sharing_infobar_delegate.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/tab_sharing/tab_sharing_ui.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar.h"
 #include "components/vector_icons/vector_icons.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -18,8 +18,8 @@
 
 namespace {
 
-const base::string16 kSharedTabName = base::UTF8ToUTF16("example.com");
-const base::string16 kAppName = base::UTF8ToUTF16("sharing.com");
+const std::u16string kSharedTabName = u"example.com";
+const std::u16string kAppName = u"sharing.com";
 
 class MockTabSharingUIViews : public TabSharingUI {
  public:
@@ -32,8 +32,6 @@ class MockTabSharingUIViews : public TabSharingUI {
       content::MediaStreamUI::SourceCallback source_callback) override {
     return 0;
   }
-
-  void SetStopCallback(base::OnceClosure stop_callback) override {}
 };
 
 }  // namespace
@@ -42,20 +40,20 @@ class TabSharingInfoBarDelegateTest : public BrowserWithTestWindowTest {
  public:
   TabSharingInfoBarDelegateTest() {}
 
-  infobars::InfoBar* CreateInfobar(base::string16 shared_tab_name,
-                                   base::string16 app_name,
+  infobars::InfoBar* CreateInfobar(std::u16string shared_tab_name,
+                                   std::u16string app_name,
                                    bool shared_tab,
                                    bool can_share,
                                    int tab_index = 0) {
     return TabSharingInfoBarDelegate::Create(
-        InfoBarService::FromWebContents(
+        infobars::ContentInfoBarManager::FromWebContents(
             browser()->tab_strip_model()->GetWebContentsAt(tab_index)),
         shared_tab_name, app_name, shared_tab, can_share,
         tab_sharing_mock_ui());
   }
 
-  ConfirmInfoBarDelegate* CreateDelegate(base::string16 shared_tab_name,
-                                         base::string16 app_name,
+  ConfirmInfoBarDelegate* CreateDelegate(std::u16string shared_tab_name,
+                                         std::u16string app_name,
                                          bool shared_tab,
                                          bool can_share,
                                          int tab_index = 0) {
@@ -93,7 +91,7 @@ TEST_F(TabSharingInfoBarDelegateTest, StopSharingOnAccept) {
 TEST_F(TabSharingInfoBarDelegateTest, InfobarOnSharedTab) {
   AddTab(browser(), GURL("about:blank"));
   ConfirmInfoBarDelegate* delegate =
-      CreateDelegate(base::string16(), kAppName, true, true);
+      CreateDelegate(std::u16string(), kAppName, true, true);
   EXPECT_STREQ(delegate->GetVectorIcon().name,
                vector_icons::kScreenShareIcon.name);
   EXPECT_EQ(delegate->GetMessageText(),
@@ -132,7 +130,7 @@ TEST_F(TabSharingInfoBarDelegateTest, InfobarWhenSharingNotAllowed) {
   // Create infobar for shared tab.
   AddTab(browser(), GURL("about:blank"));
   ConfirmInfoBarDelegate* delegate_shared_tab = CreateDelegate(
-      base::string16(), kAppName, true, false /* can_share */, 0);
+      std::u16string(), kAppName, true, false /* can_share */, 0);
   EXPECT_EQ(delegate_shared_tab->GetButtons(),
             ConfirmInfoBarDelegate::BUTTON_OK);
 
@@ -146,24 +144,25 @@ TEST_F(TabSharingInfoBarDelegateTest, InfobarWhenSharingNotAllowed) {
 // Test that multiple infobars can be created on the same tab.
 TEST_F(TabSharingInfoBarDelegateTest, MultipleInfobarsOnSameTab) {
   AddTab(browser(), GURL("about:blank"));
-  InfoBarService* infobar_service = InfoBarService::FromWebContents(
-      browser()->tab_strip_model()->GetWebContentsAt(0));
-  EXPECT_EQ(infobar_service->infobar_count(), 0u);
+  infobars::ContentInfoBarManager* infobar_manager =
+      infobars::ContentInfoBarManager::FromWebContents(
+          browser()->tab_strip_model()->GetWebContentsAt(0));
+  EXPECT_EQ(infobar_manager->infobar_count(), 0u);
   CreateInfobar(kSharedTabName, kAppName, false, true);
-  EXPECT_EQ(infobar_service->infobar_count(), 1u);
+  EXPECT_EQ(infobar_manager->infobar_count(), 1u);
   CreateInfobar(kSharedTabName, kAppName, false, true);
-  EXPECT_EQ(infobar_service->infobar_count(), 2u);
+  EXPECT_EQ(infobar_manager->infobar_count(), 2u);
 }
 
 TEST_F(TabSharingInfoBarDelegateTest, InfobarNotDismissedOnNavigation) {
   AddTab(browser(), GURL("http://foo"));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(0);
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
+  infobars::ContentInfoBarManager* infobar_manager =
+      infobars::ContentInfoBarManager::FromWebContents(web_contents);
   CreateInfobar(kSharedTabName, kAppName, false, true);
-  EXPECT_EQ(infobar_service->infobar_count(), 1u);
+  EXPECT_EQ(infobar_manager->infobar_count(), 1u);
   content::NavigationController* controller = &web_contents->GetController();
   NavigateAndCommit(controller, GURL("http://bar"));
-  EXPECT_EQ(infobar_service->infobar_count(), 1u);
+  EXPECT_EQ(infobar_manager->infobar_count(), 1u);
 }

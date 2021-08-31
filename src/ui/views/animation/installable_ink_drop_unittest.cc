@@ -10,6 +10,7 @@
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/animation/ink_drop_state.h"
@@ -99,13 +100,6 @@ TEST_F(InstallableInkDropTest, HighlightStates) {
 
   ink_drop.SetHovered(false);
   EXPECT_FALSE(ink_drop.IsHighlightFadingInOrVisible());
-}
-
-TEST_F(InstallableInkDropTest, InstallOnHostView) {
-  InkDropHostView host_view;
-  InstallableInkDrop ink_drop(&host_view);
-
-  EXPECT_TRUE(ink_drop.SupportsGestureEvents());
 }
 
 TEST_F(InstallableInkDropTest, Paint) {

@@ -135,16 +135,15 @@ TEST_F(SharedImageGLBackingProduceDawnTest, Basic) {
   gl()->GenUnverifiedSyncTokenCHROMIUM(gl_op_token.GetData());
   webgpu()->WaitSyncTokenCHROMIUM(gl_op_token.GetConstData());
 
-  DeviceAndClientID device_and_id = GetNewDeviceAndClientID();
-  wgpu::Device device = device_and_id.device;
-  webgpu::DawnDeviceClientID device_client_id = device_and_id.client_id;
+  wgpu::Device device = GetNewDevice();
 
   {
     // Register the shared image as a Dawn texture in the wire.
     gpu::webgpu::ReservedTexture reservation =
-        webgpu()->ReserveTexture(device_client_id);
+        webgpu()->ReserveTexture(device.Get());
 
-    webgpu()->AssociateMailbox(device_client_id, 0, reservation.id,
+    webgpu()->AssociateMailbox(reservation.deviceId,
+                               reservation.deviceGeneration, reservation.id,
                                reservation.generation, WGPUTextureUsage_CopySrc,
                                reinterpret_cast<GLbyte*>(&gl_mailbox));
     wgpu::Texture texture = wgpu::Texture::Acquire(reservation.texture);
@@ -172,11 +171,10 @@ TEST_F(SharedImageGLBackingProduceDawnTest, Basic) {
     encoder.CopyTextureToBuffer(&copy_src, &copy_dst, &copy_size);
     wgpu::CommandBuffer commands = encoder.Finish();
 
-    wgpu::Queue queue = device.GetDefaultQueue();
+    wgpu::Queue queue = device.GetQueue();
     queue.Submit(1, &commands);
 
-    webgpu()->DissociateMailbox(device_client_id, reservation.id,
-                                reservation.generation);
+    webgpu()->DissociateMailbox(reservation.id, reservation.generation);
 
     // Map the buffer and assert the pixel is the correct value.
     readback_buffer.MapAsync(wgpu::MapMode::Read, 0, 4, ToMockBufferMapCallback,

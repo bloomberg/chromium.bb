@@ -218,25 +218,28 @@ ErrorOr<bssl::UniquePtr<EVP_PKEY>> ImportRSAPrivateKey(
 }
 
 std::string GetSpkiTlv(X509* cert) {
-  int len = i2d_X509_PUBKEY(cert->cert_info->key, nullptr);
+  X509_PUBKEY* key = X509_get_X509_PUBKEY(cert);
+  int len = i2d_X509_PUBKEY(key, nullptr);
   if (len <= 0) {
     return {};
   }
   std::string x(len, 0);
   uint8_t* data = reinterpret_cast<uint8_t*>(&x[0]);
-  if (!i2d_X509_PUBKEY(cert->cert_info->key, &data)) {
+  if (!i2d_X509_PUBKEY(key, &data)) {
     return {};
   }
   return x;
 }
 
-ErrorOr<uint64_t> ParseDerUint64(ASN1_INTEGER* asn1int) {
-  if (asn1int->length > 8 || asn1int->length == 0) {
+ErrorOr<uint64_t> ParseDerUint64(const ASN1_INTEGER* asn1int) {
+  const uint8_t* data = ASN1_STRING_get0_data(asn1int);
+  int length = ASN1_STRING_length(asn1int);
+  if (length > 8 || length <= 0) {
     return Error::Code::kParameterInvalid;
   }
   uint64_t result = 0;
-  for (int i = 0; i < asn1int->length; ++i) {
-    result = (result << 8) | asn1int->data[i];
+  for (int i = 0; i < length; ++i) {
+    result = (result << 8) | data[i];
   }
   return result;
 }

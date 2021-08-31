@@ -2,10 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/apple/convert_plist.gni")
 import("//build/config/chrome_build.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
-import("//build/config/mac/base_rules.gni")
 import("//build/config/python.gni")
+import("//build/timestamp.gni")
 import("//build/toolchain/toolchain.gni")
 import("//components/policy/resources/policy_templates.gni")
 import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
@@ -23,7 +25,7 @@ gen_policy_templates_win = is_win
 gen_policy_templates_linux = is_linux || is_chromeos
 gen_policy_templates_android = is_android
 gen_policy_templates_mac = is_mac
-gen_policy_templates_chromeos = is_chromeos
+gen_policy_templates_chromeos = is_chromeos_ash
 gen_policy_templates_ios = is_ios
 
 # The zip file is grabbed from the Windows build right now.
@@ -124,9 +126,9 @@ python2_action("policy_code_generate") {
   args = [
     # Input information
     "--chrome-version-file=" + chrome_version_path,
-    "--target-platform=" + target_os,
     "--policy-templates-file=" +
         rebase_path("resources/policy_templates.json", root_build_dir),
+    "--target-platform=" + target_os,
 
     # Output files to be generated
     "--policy-constants-header=" +
@@ -165,6 +167,7 @@ python2_action("full_runtime_code_generate") {
     "--target-platform=" + target_os,
     "--policy-templates-file=" +
         rebase_path("resources/policy_templates.json", root_build_dir),
+    "--target-platform=" + target_os,
 
     # Output files to be generated
     "--cloud-policy-full-runtime-protobuf=" +
@@ -455,6 +458,8 @@ if (gen_policy_templates_zip) {
     args = [
       "--output",
       rebase_path(output_zip_file, root_build_dir),
+      "--timestamp",
+      build_timestamp,
       "--base_dir",
       rebase_path(policy_templates_base_dir, root_build_dir),
       "--languages",

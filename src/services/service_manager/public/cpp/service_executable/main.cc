@@ -5,6 +5,7 @@
 #include "base/at_exit.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/debug/debugger.h"
 #include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
@@ -13,7 +14,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/process/launch.h"
-#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -47,8 +47,8 @@ void WaitForDebuggerIfNecessary() {
     }
     if (apps_to_debug.empty() || base::Contains(apps_to_debug, app)) {
 #if defined(OS_WIN)
-      base::string16 appw = base::UTF8ToUTF16(app);
-      base::string16 message = base::UTF8ToUTF16(
+      std::wstring appw = base::UTF8ToWide(app);
+      std::wstring message = base::UTF8ToWide(
           base::StringPrintf("%s - %ld", app.c_str(), GetCurrentProcessId()));
       MessageBox(NULL, message.c_str(), appw.c_str(), MB_OK | MB_SETFOREGROUND);
 #else

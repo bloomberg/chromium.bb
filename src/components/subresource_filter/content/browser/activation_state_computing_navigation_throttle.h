@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_FRAME_ACTIVATION_NAVIGATION_THROTTLE_H_
-#define COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_FRAME_ACTIVATION_NAVIGATION_THROTTLE_H_
+#ifndef COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_ACTIVATION_STATE_COMPUTING_NAVIGATION_THROTTLE_H_
+#define COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_ACTIVATION_STATE_COMPUTING_NAVIGATION_THROTTLE_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
 #include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace subresource_filter {
 
@@ -97,11 +97,11 @@ class ActivationStateComputingNavigationThrottle
 
   ActivationStateComputingNavigationThrottle(
       content::NavigationHandle* navigation_handle,
-      const base::Optional<mojom::ActivationState> parent_activation_state,
+      const absl::optional<mojom::ActivationState> parent_activation_state,
       VerifiedRuleset::Handle* ruleset_handle);
 
   // Optional to allow for DCHECKing.
-  base::Optional<mojom::ActivationState> parent_activation_state_;
+  absl::optional<mojom::ActivationState> parent_activation_state_;
 
   std::unique_ptr<AsyncDocumentSubresourceFilter> async_filter_;
 
@@ -126,4 +126,4 @@ class ActivationStateComputingNavigationThrottle
 
 }  // namespace subresource_filter
 
-#endif  // COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_FRAME_ACTIVATION_NAVIGATION_THROTTLE_H_
+#endif  // COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_ACTIVATION_STATE_COMPUTING_NAVIGATION_THROTTLE_H_

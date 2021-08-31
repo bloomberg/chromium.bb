@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
@@ -121,7 +120,7 @@ void PolicyCertService::GetPolicyCertificatesForStoragePartition(
   // corresponds to |partition_path|.
 
   base::FilePath default_storage_partition_path =
-      content::BrowserContext::GetDefaultStoragePartition(profile_)->GetPath();
+      profile_->GetDefaultStoragePartition()->GetPath();
   // Among the extension IDs that have policy-provided certificates, attempt to
   // find the extension ID which corresponds to |partition_path|.
   // This is done by iterating the extension IDs because there's no trivial

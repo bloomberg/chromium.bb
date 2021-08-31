@@ -7,10 +7,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <limits>
 #include <memory>
+#include <string>
 
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_features.h"
@@ -23,6 +28,10 @@
 #include "ui/events/test/keyboard_layout.h"
 #include "ui/events/test/test_event_target.h"
 #include "ui/gfx/transform.h"
+
+#if defined(OS_WIN)
+#include "ui/events/win/events_win_utils.h"
+#endif
 
 namespace ui {
 
@@ -647,13 +656,14 @@ TEST(EventTest, OrdinalMotionConversion) {
   EXPECT_FALSE(mouseev3.flags() & EF_UNADJUSTED_MOUSE);
 }
 
-// Checks that Event.Latency.OS.MOUSE_WHEEL histogram is computed properly.
+// Checks that Event.Latency.OS2.MOUSE_WHEEL histogram is computed properly.
 TEST(EventTest, EventLatencyOSMouseWheelHistogram) {
 #if defined(OS_WIN)
   base::HistogramTester histogram_tester;
   MSG event = {nullptr, WM_MOUSEWHEEL, 0, 0};
   MouseWheelEvent mouseWheelEvent(event);
   histogram_tester.ExpectTotalCount("Event.Latency.OS.MOUSE_WHEEL", 1);
+  histogram_tester.ExpectTotalCount("Event.Latency.OS2.MOUSE_WHEEL", 1);
 #endif
 }
 
@@ -661,6 +671,8 @@ TEST(EventTest, UpdateForRootTransformation) {
   gfx::Transform identity_transform;
   const gfx::Point location(10, 10);
   const gfx::Point root_location(20, 20);
+  const gfx::PointF f_location(10, 10);
+  const gfx::PointF f_root_location(20, 20);
 
   // A mouse event that is untargeted should reset the root location when
   // transformed. Though the events start out with different locations and
@@ -672,6 +684,74 @@ TEST(EventTest, UpdateForRootTransformation) {
   EXPECT_EQ(location, untargeted.root_location());
 
   ui::test::TestEventTarget target;
+
+  // A touch event should behave the same way as others.
+  {
+    PointerDetails pointer_details(EventPointerType::kTouch, 0 /* pointer id */,
+                                   3, 4, 50, 0 /* twist */, 0, 0);
+    ui::TouchEvent targeted(ET_TOUCH_PRESSED, f_location, f_root_location,
+                            EventTimeForNow(), pointer_details);
+    targeted.UpdateForRootTransform(identity_transform, identity_transform);
+    EXPECT_EQ(location, targeted.location());
+    EXPECT_EQ(location, targeted.root_location());
+    EXPECT_EQ(pointer_details, targeted.pointer_details());
+  }
+
+  // A touch event should scale the same way as others.
+  {
+    // Targeted event with 2x and 3x scales.
+    gfx::Transform transform2x;
+    transform2x.Scale(2, 2);
+    gfx::Transform transform3x;
+    transform3x.Scale(3, 3);
+    PointerDetails pointer_details(EventPointerType::kTouch, 0 /* pointer id */,
+                                   3, 4, 50, 0 /* twist */, 17.2 /* tilt_x */,
+                                   -28.3 /* tilt_y */);
+
+    ui::TouchEvent targeted(ET_TOUCH_PRESSED, f_location, f_root_location,
+                            EventTimeForNow(), pointer_details);
+    targeted.UpdateForRootTransform(transform2x, transform3x);
+    auto updated_location = ScalePoint(f_location, 2.0f);
+    EXPECT_EQ(updated_location, targeted.location_f());
+    EXPECT_EQ(updated_location, targeted.root_location_f());
+    auto updated_pointer_details(pointer_details);
+    updated_pointer_details.radius_x *= 2;
+    updated_pointer_details.radius_y *= 2;
+    EXPECT_EQ(updated_pointer_details, targeted.pointer_details())
+        << " orig: " << pointer_details.ToString() << " vs "
+        << targeted.pointer_details().ToString();
+  }
+
+  // A touch event should rotate appropriately.
+  {
+    // Rotate by 90 degrees, then scale by a half or 0.75 (depending on axis),
+    // and then offset by 720/1080. Note that the offset should have no impact
+    // on vectors, i.e. radius.
+    // The scale happens after rotation, so x should be 0.75 * the y.
+    gfx::Transform rotate90;
+    rotate90.Rotate(90.0f);
+    rotate90.Translate(gfx::Vector2dF(720.0f, 1080.0f));
+    rotate90.Scale(0.5, 0.75);
+    gfx::Transform transform3x;
+    transform3x.Scale(3, 3);
+    PointerDetails pointer_details(EventPointerType::kTouch, 0 /* pointer id */,
+                                   3, 4, 50, 0 /* twist */, -17.4 /* tilt_x */,
+                                   31.2 /* tilt_y */);
+
+    ui::TouchEvent targeted(ET_TOUCH_PRESSED, f_location, f_root_location,
+                            EventTimeForNow(), pointer_details);
+    Event::DispatcherApi(&targeted).set_target(&target);
+    targeted.UpdateForRootTransform(rotate90, transform3x);
+    auto updated_pointer_details(pointer_details);
+    updated_pointer_details.radius_x = pointer_details.radius_y * 0.75;
+    updated_pointer_details.radius_y = pointer_details.radius_x * 0.5;
+    updated_pointer_details.tilt_x = -31.2;
+    updated_pointer_details.tilt_y = -17.4;
+
+    EXPECT_EQ(updated_pointer_details, targeted.pointer_details())
+        << " orig: " << updated_pointer_details.ToString() << " vs "
+        << targeted.pointer_details().ToString();
+  }
 
   // A mouse event that is targeted should not set the root location to the
   // local location. They start with different locations and should stay
@@ -829,6 +909,196 @@ INSTANTIATE_TEST_SUITE_P(
     AltGraphEventTest,
     ::testing::Combine(::testing::Values(WM_CHAR),
                        ::testing::ValuesIn(kAltGraphEventTestCases)));
+
+// Tests for ComputeEventLatencyOS variants.
+
+class EventLatencyTest : public ::testing::Test {
+ public:
+  EventLatencyTest() { SetEventLatencyTickClockForTesting(&tick_clock_); }
+
+  ~EventLatencyTest() override { SetEventLatencyTickClockForTesting(nullptr); }
+
+ protected:
+  void UpdateTickClock(DWORD timestamp) {
+    tick_clock_.SetNowTicks(base::TimeTicks() +
+                            base::TimeDelta::FromMilliseconds(timestamp));
+  }
+
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+
+  // |task_environment_| mocks the base::TimeTicks clock while |tick_clock_|
+  // mocks ::GetTickCount.
+  base::SimpleTestTickClock tick_clock_;
+};
+
+TEST_F(EventLatencyTest, ComputeEventLatencyOSFromTickCount) {
+  // Create events whose timestamps are very close to the max range of
+  // ::GetTickCount.
+  constexpr DWORD timestamp_msec = std::numeric_limits<DWORD>::max() - 10;
+  constexpr TOUCHINPUT touch_input = {
+      .dwTime = timestamp_msec,
+  };
+  constexpr POINTER_INFO pointer_info = {
+      .dwTime = timestamp_msec,
+      .PerformanceCount = 0UL,
+  };
+
+  // This test will create several events with the same timestamp, and change
+  // the mocked result of ::GetTickCount for each measurement. This makes it
+  // easier to test the edge case when the 32-bit ::GetTickCount overflows.
+
+  // Measure the latency of an event that's processed not long after the OS
+  // timestamp.
+  UpdateTickClock(timestamp_msec + 5);
+  {
+    base::HistogramTester histogram_tester;
+    ComputeEventLatencyOSFromTOUCHINPUT(ET_TOUCH_PRESSED, touch_input,
+                                        base::TimeTicks::Now());
+    ComputeEventLatencyOSFromPOINTER_INFO(ET_TOUCH_PRESSED, pointer_info,
+                                          base::TimeTicks::Now());
+    histogram_tester.ExpectUniqueSample(
+        "Event.Latency.OS.TOUCH_PRESSED",
+        base::TimeDelta::FromMilliseconds(5).InMicroseconds(), 2);
+    histogram_tester.ExpectUniqueTimeSample(
+        "Event.Latency.OS2.TOUCH_PRESSED", base::TimeDelta::FromMilliseconds(5),
+        2);
+  }
+
+  // Simulate ::GetTickCount advancing 15 msec, which wraps around past 0.
+  constexpr DWORD wrapped_timestamp_msec = timestamp_msec + 15;
+  static_assert(wrapped_timestamp_msec == 4,
+                "timestamp should have wrapped around");
+  UpdateTickClock(wrapped_timestamp_msec);
+  {
+    base::HistogramTester histogram_tester;
+    ComputeEventLatencyOSFromTOUCHINPUT(ET_TOUCH_PRESSED, touch_input,
+                                        base::TimeTicks::Now());
+    ComputeEventLatencyOSFromPOINTER_INFO(ET_TOUCH_PRESSED, pointer_info,
+                                          base::TimeTicks::Now());
+    histogram_tester.ExpectUniqueSample(
+        "Event.Latency.OS.TOUCH_PRESSED",
+        base::TimeDelta::FromMilliseconds(15).InMicroseconds(), 2);
+    histogram_tester.ExpectUniqueTimeSample(
+        "Event.Latency.OS2.TOUCH_PRESSED",
+        base::TimeDelta::FromMilliseconds(15), 2);
+  }
+
+  // Simulate an event with a bogus timestamp. The delta should be recorded as
+  // 0.
+  UpdateTickClock(timestamp_msec - 1000);
+  {
+    base::HistogramTester histogram_tester;
+    ComputeEventLatencyOSFromTOUCHINPUT(ET_TOUCH_PRESSED, touch_input,
+                                        base::TimeTicks::Now());
+    ComputeEventLatencyOSFromPOINTER_INFO(ET_TOUCH_PRESSED, pointer_info,
+                                          base::TimeTicks::Now());
+    histogram_tester.ExpectUniqueSample("Event.Latency.OS.TOUCH_PRESSED", 0, 2);
+    histogram_tester.ExpectUniqueTimeSample("Event.Latency.OS2.TOUCH_PRESSED",
+                                            base::TimeDelta(), 2);
+  }
+}
+
+TEST_F(EventLatencyTest, ComputeEventLatencyOSFromPerformanceCounter) {
+  // Make sure there's enough time before Now() to create an event that's
+  // several minutes old.
+  task_environment_.AdvanceClock(base::TimeDelta::FromMinutes(5));
+
+  // Convert the current time to units directly compatible with the Performance
+  // Counter.
+  LARGE_INTEGER ticks_per_sec = {};
+  if (!::QueryPerformanceFrequency(&ticks_per_sec) ||
+      ticks_per_sec.QuadPart <= 0 || !base::TimeTicks::IsHighResolution()) {
+    // Skip this test when the performance counter is unavailable or
+    // unreliable. (It's unlikely, but possible, that IsHighResolution is false
+    // even if the performance counter works - see InitializeNowFunctionPointer
+    // in time_win.cc - so also skip the test in this case.)
+    return;
+  }
+  const auto ticks_per_second = ticks_per_sec.QuadPart;
+  UINT64 current_timestamp =
+      base::TimeTicks::Now().since_origin().InSecondsF() * ticks_per_second;
+
+  // Event created shortly before now.
+  {
+    const POINTER_INFO pointer_info = {
+        .dwTime = 0U,
+        .PerformanceCount = current_timestamp - ticks_per_second,
+    };
+    base::HistogramTester histogram_tester;
+    ComputeEventLatencyOSFromPOINTER_INFO(ET_TOUCH_PRESSED, pointer_info,
+                                          base::TimeTicks::Now());
+    histogram_tester.ExpectUniqueSample(
+        "Event.Latency.OS.TOUCH_PRESSED",
+        base::TimeDelta::FromSeconds(1).InMicroseconds(), 1);
+    histogram_tester.ExpectUniqueTimeSample("Event.Latency.OS2.TOUCH_PRESSED",
+                                            base::TimeDelta::FromSeconds(1), 1);
+  }
+
+  // Event created several minutes before now (IsValidTimebase should return
+  // false). The delta should be recorded as 0.
+  {
+    const POINTER_INFO pointer_info = {
+        .dwTime = 0U,
+        .PerformanceCount = current_timestamp - 5 * 60 * ticks_per_second,
+    };
+    base::HistogramTester histogram_tester;
+    ComputeEventLatencyOSFromPOINTER_INFO(ET_TOUCH_PRESSED, pointer_info,
+                                          base::TimeTicks::Now());
+    histogram_tester.ExpectUniqueSample("Event.Latency.OS.TOUCH_PRESSED", 0, 1);
+    histogram_tester.ExpectUniqueTimeSample("Event.Latency.OS2.TOUCH_PRESSED",
+                                            base::TimeDelta(), 1);
+  }
+
+  // Event created in the future (IsValidTimebase should return false). The
+  // delta should be recorded as 0.
+  {
+    const POINTER_INFO pointer_info = {
+        .dwTime = 0U,
+        .PerformanceCount = current_timestamp + ticks_per_second,
+    };
+    base::HistogramTester histogram_tester;
+    ComputeEventLatencyOSFromPOINTER_INFO(ET_TOUCH_PRESSED, pointer_info,
+                                          base::TimeTicks::Now());
+    histogram_tester.ExpectUniqueSample("Event.Latency.OS.TOUCH_PRESSED", 0, 1);
+    histogram_tester.ExpectUniqueTimeSample("Event.Latency.OS2.TOUCH_PRESSED",
+                                            base::TimeDelta(), 1);
+  }
+
+  // Invalid event with no timestamp.
+  {
+    const POINTER_INFO pointer_info = {
+        .dwTime = 0U,
+        .PerformanceCount = 0UL,
+    };
+    base::HistogramTester histogram_tester;
+    ComputeEventLatencyOSFromPOINTER_INFO(ET_TOUCH_PRESSED, pointer_info,
+                                          base::TimeTicks::Now());
+    histogram_tester.ExpectTotalCount("Event.Latency.OS.TOUCH_PRESSED", 0);
+    histogram_tester.ExpectTotalCount("Event.Latency.OS2.TOUCH_PRESSED", 0);
+  }
+
+  // Invalid event with 2 timestamps should take the higher-precision one.
+  {
+    const DWORD now_msec = 1000;
+    UpdateTickClock(now_msec);
+
+    const POINTER_INFO pointer_info = {
+        // 10 milliseconds ago.
+        .dwTime = now_msec - 10,
+        // 1 second ago.
+        .PerformanceCount = current_timestamp - ticks_per_second,
+    };
+    base::HistogramTester histogram_tester;
+    ComputeEventLatencyOSFromPOINTER_INFO(ET_TOUCH_PRESSED, pointer_info,
+                                          base::TimeTicks::Now());
+    histogram_tester.ExpectUniqueSample(
+        "Event.Latency.OS.TOUCH_PRESSED",
+        base::TimeDelta::FromSeconds(1).InMicroseconds(), 1);
+    histogram_tester.ExpectUniqueTimeSample("Event.Latency.OS2.TOUCH_PRESSED",
+                                            base::TimeDelta::FromSeconds(1), 1);
+  }
+}
 
 #endif  // defined(OS_WIN)
 

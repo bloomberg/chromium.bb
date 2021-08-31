@@ -25,9 +25,9 @@
 
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "cc/input/scrollbar.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 #if !defined(OS_MAC)
 #include "third_party/blink/public/platform/web_theme_engine.h"
@@ -161,7 +160,7 @@ void ScrollbarTheme::PaintTickmarks(GraphicsContext& context,
     const int y_pos = rect.Y() + (rect.Height() * percent);
 
     FloatRect tick_rect(rect.X(), y_pos, rect.Width(), 3);
-    context.FillRect(tick_rect, Color(0xCC, 0xAA, 0x00, 0xFF));
+    context.FillRect(tick_rect, Color(0xB0, 0x60, 0x00, 0xFF));
 
     FloatRect tick_stroke(rect.X() + TickmarkBorderWidth(), y_pos + 1,
                           rect.Width() - 2 * TickmarkBorderWidth(), 1);

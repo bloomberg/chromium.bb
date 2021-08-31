@@ -9,6 +9,7 @@
 #include "chromeos/components/phonehub/mutable_phone_model.h"
 #include "chromeos/components/phonehub/phone_model_test_util.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
+#include "components/sync/driver/mock_sync_service.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -32,15 +33,14 @@ class SessionSyncServiceMock : public sync_sessions::SessionSyncService {
 
   MOCK_CONST_METHOD0(GetGlobalIdMapper, syncer::GlobalIdMapper*());
   MOCK_METHOD0(GetOpenTabsUIDelegate, sync_sessions::OpenTabsUIDelegate*());
-  MOCK_METHOD1(SubscribeToForeignSessionsChanged,
-               std::unique_ptr<base::CallbackList<void()>::Subscription>(
-                   const base::RepeatingClosure& cb));
+  MOCK_METHOD1(
+      SubscribeToForeignSessionsChanged,
+      base::CallbackListSubscription(const base::RepeatingClosure& cb));
   MOCK_METHOD0(ScheduleGarbageCollection, void());
   MOCK_METHOD0(GetControllerDelegate,
                base::WeakPtr<syncer::ModelTypeControllerDelegate>());
   MOCK_METHOD1(ProxyTabsStateChanged,
                void(syncer::DataTypeController::State state));
-  MOCK_METHOD1(SetSyncSessionsGUID, void(const std::string& guid));
 };
 
 class OpenTabsUIDelegateMock : public sync_sessions::OpenTabsUIDelegate {
@@ -119,7 +119,8 @@ class BrowserTabsModelProviderImplTest
                                         MockSubscribeToForeignSessionsChanged));
 
     provider_ = std::make_unique<BrowserTabsModelProviderImpl>(
-        &fake_multidevice_setup_client_, &mock_session_sync_service_,
+        &fake_multidevice_setup_client_, &mock_sync_service_,
+        &mock_session_sync_service_,
         std::make_unique<FakeBrowserTabsMetadataFetcher>());
     provider_->AddObserver(this);
   }
@@ -130,10 +131,10 @@ class BrowserTabsModelProviderImplTest
         CreatePhoneDevice(/*pii_name=*/pii_free_name)));
   }
 
-  std::unique_ptr<base::CallbackList<void()>::Subscription>
-  MockSubscribeToForeignSessionsChanged(const base::RepeatingClosure& cb) {
+  base::CallbackListSubscription MockSubscribeToForeignSessionsChanged(
+      const base::RepeatingClosure& cb) {
     foreign_sessions_changed_callback_ = std::move(cb);
-    return nullptr;
+    return {};
   }
 
   bool MockGetAllForeignSessions(
@@ -165,6 +166,7 @@ class BrowserTabsModelProviderImplTest
 
   MutablePhoneModel phone_model_;
   multidevice_setup::FakeMultiDeviceSetupClient fake_multidevice_setup_client_;
+  testing::NiceMock<syncer::MockSyncService> mock_sync_service_;
   testing::NiceMock<SessionSyncServiceMock> mock_session_sync_service_;
   std::unique_ptr<BrowserTabsModelProviderImpl> provider_;
 

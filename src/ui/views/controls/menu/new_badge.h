@@ -5,7 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_MENU_NEW_BADGE_H_
 #define UI_VIEWS_CONTROLS_MENU_NEW_BADGE_H_
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "ui/views/views_export.h"
 
 namespace gfx {
@@ -47,7 +48,7 @@ class VIEWS_EXPORT NewBadge {
 
   // Gets the accessible description of the new badge, which can be added to
   // tooltip/screen reader text.
-  static base::string16 GetNewBadgeAccessibleDescription();
+  static std::u16string GetNewBadgeAccessibleDescription();
 
   // Layout Constants
   //
@@ -67,7 +68,7 @@ class VIEWS_EXPORT NewBadge {
   static constexpr int kNewBadgeInternalPaddingTopMac = 1;
 
   // The baseline offset of the "new" badge image to the menu text baseline.
-  static constexpr int kNewBadgeBaslineOffsetMac = -4;
+  static constexpr int kNewBadgeBaselineOffsetMac = -4;
 
   // The corner radius of the rounded rect for the "new" badge.
   static constexpr int kNewBadgeCornerRadius = 3;

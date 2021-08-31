@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/qpack/qpack_encoder_peer.h"
+#include "quic/test_tools/qpack/qpack_encoder_peer.h"
 
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder.h"
+#include "quic/core/qpack/qpack_encoder.h"
 
 namespace quic {
 namespace test {
 
 // static
-QpackHeaderTable* QpackEncoderPeer::header_table(QpackEncoder* encoder) {
+QpackEncoderHeaderTable* QpackEncoderPeer::header_table(QpackEncoder* encoder) {
   return &encoder->header_table_;
 }
 

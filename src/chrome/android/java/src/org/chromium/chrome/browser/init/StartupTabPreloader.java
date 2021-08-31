@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.lifecycle.DestroyObserver;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -42,7 +42,7 @@ import org.chromium.url.GURL;
  * This class attempts to preload the tab if the url is known from the intent when the profile
  * is created. This is done to improve startup latency.
  */
-public class StartupTabPreloader implements ProfileManager.Observer, Destroyable {
+public class StartupTabPreloader implements ProfileManager.Observer, DestroyObserver {
     private static final String EXTRA_DISABLE_STARTUP_TAB_PRELOADER =
             "org.chromium.chrome.browser.init.DISABLE_STARTUP_TAB_PRELOADER";
 
@@ -70,7 +70,7 @@ public class StartupTabPreloader implements ProfileManager.Observer, Destroyable
     }
 
     @Override
-    public void destroy() {
+    public void onDestroy() {
         if (mTab != null) mTab.destroy();
         mTab = null;
 
@@ -197,7 +197,8 @@ public class StartupTabPreloader implements ProfileManager.Observer, Destroyable
 
         ChromeTabCreator chromeTabCreator =
                 (ChromeTabCreator) mTabCreatorManager.getTabCreator(false);
-        WebContents webContents = WebContentsFactory.createWebContents(false, false);
+        WebContents webContents =
+                WebContentsFactory.createWebContents(Profile.getLastUsedRegularProfile(), false);
 
         mLoadUrlParams = new LoadUrlParams(url.getValidSpecOrEmpty());
         String referrer = IntentHandler.getReferrerUrlIncludingExtraHeaders(intent);
@@ -242,7 +243,7 @@ public class StartupTabPreloader implements ProfileManager.Observer, Destroyable
     private class StartupTabObserver extends EmptyTabObserver {
         @Override
         public void onCrash(Tab tab) {
-            destroy();
+            onDestroy();
         }
     }
 }

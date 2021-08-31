@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -27,6 +28,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
@@ -53,6 +55,9 @@ namespace {
 
 const char kUptime[] = "uptime";
 const char kDisk[] = "disk";
+
+// The pointer to this object is used as a perfetto async event id.
+static const char kBootTimes[] = "BootTimes";
 
 RenderWidgetHost* GetRenderWidgetHost(NavigationController* tab) {
   WebContents* web_contents = tab->GetWebContents();
@@ -226,12 +231,12 @@ void BootTimesRecorder::Stats::RecordStats(const std::string& name) const {
 
 void BootTimesRecorder::Stats::RecordStatsWithCallback(
     const std::string& name,
-    const base::Closure& callback) const {
+    base::OnceClosure callback) const {
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&BootTimesRecorder::Stats::RecordStatsAsync,
                      base::Owned(new Stats(*this)), name),
-      callback);
+      std::move(callback));
 }
 
 void BootTimesRecorder::Stats::RecordStatsAsync(
@@ -291,6 +296,16 @@ void BootTimesRecorder::WriteTimes(const std::string base_name,
   std::string output =
       base::StringPrintf("%s: %.2f", uma_name.c_str(), total.InSecondsF());
   base::Time prev = first;
+  // Convert base::Time to base::TimeTicks for tracing.
+  auto time2timeticks = [](const base::Time& ts) {
+    return base::TimeTicks::Now() - (base::Time::Now() - ts);
+  };
+  // Send first event to name the track:
+  // "In Chrome, we usually don't bother setting explicit track names. If none
+  // is provided, the track is named after the first event on the track."
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+      "startup", kBootTimes, TRACE_ID_LOCAL(kBootTimes), time2timeticks(prev));
+
   for (unsigned int i = 0; i < login_times.size(); ++i) {
     TimeMarker tm = login_times[i];
     base::TimeDelta since_first = tm.time() - first;
@@ -315,9 +330,17 @@ void BootTimesRecorder::WriteTimes(const std::string base_name,
             since_first.InSecondsF(),
             since_prev.InSecondsF(),
             name.data());
+    TRACE_EVENT_COPY_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+        "startup", name.c_str(), TRACE_ID_LOCAL(kBootTimes),
+        time2timeticks(prev));
+    TRACE_EVENT_COPY_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+        "startup", name.c_str(), TRACE_ID_LOCAL(kBootTimes),
+        time2timeticks(tm.time()));
     prev = tm.time();
   }
   output += '\n';
+  TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+      "startup", kBootTimes, TRACE_ID_LOCAL(kBootTimes), time2timeticks(prev));
 
   base::WriteFile(log_path.Append(base_name), output.data(), output.size());
 }
@@ -337,13 +360,7 @@ void BootTimesRecorder::LoginDone(bool is_user_new) {
     registrar_.Remove(this,
                       content::NOTIFICATION_LOAD_STOP,
                       content::NotificationService::AllSources());
-    registrar_.Remove(this,
-                      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                      content::NotificationService::AllSources());
-    registrar_.Remove(
-        this,
-        content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES,
-        content::NotificationService::AllSources());
+    render_widget_host_observations_.RemoveAllObservations();
   }
   // Don't swamp the background thread right away.
   base::ThreadPool::PostDelayedTask(
@@ -405,7 +422,7 @@ void BootTimesRecorder::OnChromeProcessStart() {
   const char kLogoutStarted[] = "logout-started";
   logout_started_last_stats.RecordStatsWithCallback(
       kLogoutStarted,
-      base::Bind(&BootTimesRecorder::ClearLogoutStartedLastPreference));
+      base::BindOnce(&BootTimesRecorder::ClearLogoutStartedLastPreference));
 }
 
 void BootTimesRecorder::OnLogoutStarted(PrefService* state) {
@@ -439,12 +456,6 @@ void BootTimesRecorder::RecordLoginAttempted() {
                    content::NotificationService::AllSources());
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                    content::NotificationService::AllSources());
-    registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                   content::NotificationService::AllSources());
-    registrar_.Add(
-        this,
-        content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES,
-        content::NotificationService::AllSources());
   }
 }
 
@@ -496,39 +507,34 @@ void BootTimesRecorder::Observe(int type,
       RenderWidgetHost* rwh = GetRenderWidgetHost(tab);
       DCHECK(rwh);
       AddLoginTimeMarker("TabLoad-Start: " + GetTabUrl(rwh), false);
-      render_widget_hosts_loading_.insert(rwh);
+      if (!render_widget_host_observations_.IsObservingSource(rwh))
+        render_widget_host_observations_.AddObservation(rwh);
       break;
     }
     case content::NOTIFICATION_LOAD_STOP: {
       NavigationController* tab =
           content::Source<NavigationController>(source).ptr();
       RenderWidgetHost* rwh = GetRenderWidgetHost(tab);
-      if (render_widget_hosts_loading_.find(rwh) !=
-          render_widget_hosts_loading_.end()) {
+      if (render_widget_host_observations_.IsObservingSource(rwh)) {
         AddLoginTimeMarker("TabLoad-End: " + GetTabUrl(rwh), false);
       }
-      break;
-    }
-    case content::
-        NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES: {
-      RenderWidgetHost* rwh = content::Source<RenderWidgetHost>(source).ptr();
-      if (render_widget_hosts_loading_.find(rwh) !=
-          render_widget_hosts_loading_.end()) {
-        AddLoginTimeMarker("TabPaint: " + GetTabUrl(rwh), false);
-        LoginDone(user_manager::UserManager::Get()->IsCurrentUserNew());
-      }
-      break;
-    }
-    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
-      WebContents* web_contents = content::Source<WebContents>(source).ptr();
-      RenderWidgetHost* render_widget_host =
-          GetRenderWidgetHost(&web_contents->GetController());
-      render_widget_hosts_loading_.erase(render_widget_host);
       break;
     }
     default:
       break;
   }
+}
+
+void BootTimesRecorder::RenderWidgetHostDidUpdateVisualProperties(
+    content::RenderWidgetHost* widget_host) {
+  DCHECK(have_registered_);
+  AddLoginTimeMarker("TabPaint: " + GetTabUrl(widget_host), false);
+  LoginDone(user_manager::UserManager::Get()->IsCurrentUserNew());
+}
+
+void BootTimesRecorder::RenderWidgetHostDestroyed(
+    content::RenderWidgetHost* widget_host) {
+  render_widget_host_observations_.RemoveObservation(widget_host);
 }
 
 }  // namespace chromeos

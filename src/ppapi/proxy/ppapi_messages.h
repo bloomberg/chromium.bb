@@ -22,7 +22,6 @@
 
 #include "base/files/file_path.h"
 #include "base/process/process.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_id.h"
@@ -31,6 +30,7 @@
 #include "gpu/ipc/common/gpu_command_buffer_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_message_start.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/dev/pp_video_capture_dev.h"
@@ -131,7 +131,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(PP_VideoFrame_Format, PP_VIDEOFRAME_FORMAT_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_HardwareAcceleration, PP_HARDWAREACCELERATION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_VideoProfile, PP_VIDEOPROFILE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_PrivateDirection, PP_PRIVATEDIRECTION_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(PP_TextRenderingMode, PP_TEXTRENDERINGMODE_LAST)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(PP_TextRenderingMode,
+                              PP_TEXTRENDERINGMODE_FIRST,
+                              PP_TEXTRENDERINGMODE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_PdfAccessibilityAction,
                           PP_PDF_ACCESSIBILITYACTION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_PdfAccessibilityScrollAlignment,
@@ -631,9 +633,6 @@ IPC_SYNC_MESSAGE_CONTROL1_1(PpapiMsg_SupportsInterface,
                             std::string /* interface_name */,
                             bool /* result */)
 
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_LogInterfaceUsage,
-                     int /* interface_hash */)
-
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
 // Network state notification from the browser for implementing
 // PPP_NetworkState_Dev.
@@ -800,6 +799,7 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPPdf_HasEditableText,
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPPPdf_ReplaceSelection,
                     PP_Instance /* instance */,
                     std::string /* text */)
+IPC_MESSAGE_ROUTED1(PpapiMsg_PPPPdf_SelectAll, PP_Instance /* instance */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPPdf_CanUndo,
                            PP_Instance /* instance */,
                            PP_Bool /* result */)
@@ -1278,12 +1278,6 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPPVideoDecoder_NotifyError,
                     ppapi::HostResource /* video_decoder */,
                     PP_VideoDecodeError_Dev /* error */)
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
-
-// PPB_X509Certificate_Private
-IPC_SYNC_MESSAGE_CONTROL1_2(PpapiHostMsg_PPBX509Certificate_ParseDER,
-                            std::vector<char> /* der */,
-                            bool /* succeeded */,
-                            ppapi::PPB_X509Certificate_Fields /* result */)
 
 //-----------------------------------------------------------------------------
 // Resource call/reply messages.
@@ -2118,7 +2112,7 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_PDF_SaveAs)
 
 // Called by the plugin when its selection changes.
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_SetSelectedText,
-                     base::string16 /* selected_text */)
+                     std::u16string /* selected_text */)
 
 // Called by the plugin to set the link under the cursor.
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_SetLinkUnderCursor,

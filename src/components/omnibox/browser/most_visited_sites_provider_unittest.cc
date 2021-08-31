@@ -88,7 +88,7 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
   bool IsPersonalizedUrlDataCollectionActive() const override { return true; }
 
   void Classify(
-      const base::string16& text,
+      const std::u16string& text,
       bool prefer_keyword,
       bool allow_exact_keyword_match,
       metrics::OmniboxEventProto::PageClassification page_classification,
@@ -145,7 +145,7 @@ class MostVisitedSitesProviderTest : public testing::Test,
     // Use NTP as the page classification, since REMOTE_NO_URL is enabled by
     // default for the NTP.
     AutocompleteInput input(
-        base::string16(),
+        std::u16string(),
         metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
         TestSchemeClassifier());
     input.set_focus_type(OmniboxFocusType::ON_FOCUS);
@@ -162,6 +162,7 @@ void MostVisitedSitesProviderTest::OnProviderUpdate(bool updated_matches) {}
 
 TEST_F(MostVisitedSitesProviderTest, AllowMostVisitedSitesSuggestions) {
   std::string input_url = "https://example.com/";
+  std::string start_surface_url = "chrome://newtab";
 
   AutocompleteInput prefix_input(base::ASCIIToUTF16(input_url),
                                  metrics::OmniboxEventProto::OTHER,
@@ -174,17 +175,38 @@ TEST_F(MostVisitedSitesProviderTest, AllowMostVisitedSitesSuggestions) {
   on_focus_input.set_current_url(GURL(input_url));
   on_focus_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
 
-  AutocompleteInput on_clobber_input(base::string16(),
+  AutocompleteInput on_clobber_input(std::u16string(),
                                      metrics::OmniboxEventProto::OTHER,
                                      TestSchemeClassifier());
   on_clobber_input.set_current_url(GURL(input_url));
   on_clobber_input.set_focus_type(OmniboxFocusType::DELETED_PERMANENT_TEXT);
+
+  AutocompleteInput start_surface_input(
+      std::u16string(), metrics::OmniboxEventProto::START_SURFACE_HOMEPAGE,
+      TestSchemeClassifier());
+  start_surface_input.set_current_url(GURL(start_surface_url));
+  start_surface_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+
+  AutocompleteInput start_surface_new_tab_input(
+      std::u16string(), metrics::OmniboxEventProto::START_SURFACE_NEW_TAB,
+      TestSchemeClassifier());
+  start_surface_new_tab_input.set_current_url(GURL());
+  start_surface_new_tab_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
 
   // MostVisited should never deal with prefix suggestions.
   EXPECT_FALSE(provider_->AllowMostVisitedSitesSuggestions(prefix_input));
 
   // This should always be true, as otherwise we will break MostVisited.
   EXPECT_TRUE(provider_->AllowMostVisitedSitesSuggestions(on_focus_input));
+
+  // Verifies that metrics::OmniboxEventProto::START_SURFACE_HOMEPAGE is allowed
+  // for MostVisited.
+  EXPECT_TRUE(provider_->AllowMostVisitedSitesSuggestions(start_surface_input));
+
+  // Verifies that metrics::OmniboxEventProto::START_SURFACE_NEW_TAB is allowed
+  // for MostVisited.
+  EXPECT_TRUE(
+      provider_->AllowMostVisitedSitesSuggestions(start_surface_new_tab_input));
 }
 
 TEST_F(MostVisitedSitesProviderTest, TestMostVisitedCallback) {
@@ -196,8 +218,7 @@ TEST_F(MostVisitedSitesProviderTest, TestMostVisitedCallback) {
   input.set_current_url(GURL(current_url));
   input.set_focus_type(OmniboxFocusType::ON_FOCUS);
   history::MostVisitedURLList urls;
-  history::MostVisitedURL url(GURL("http://foo.com/"),
-                              base::ASCIIToUTF16("Foo"));
+  history::MostVisitedURL url(GURL("http://foo.com/"), u"Foo");
   urls.push_back(url);
 
   provider_->Start(input, false);
@@ -216,10 +237,8 @@ TEST_F(MostVisitedSitesProviderTest, TestMostVisitedCallback) {
   EXPECT_TRUE(provider_->matches().empty());
 
   history::MostVisitedURLList urls2;
-  urls2.push_back(history::MostVisitedURL(GURL("http://bar.com/"),
-                                          base::ASCIIToUTF16("Bar")));
-  urls2.push_back(history::MostVisitedURL(GURL("http://zinga.com/"),
-                                          base::ASCIIToUTF16("Zinga")));
+  urls2.push_back(history::MostVisitedURL(GURL("http://bar.com/"), u"Bar"));
+  urls2.push_back(history::MostVisitedURL(GURL("http://zinga.com/"), u"Zinga"));
   provider_->Start(input, false);
   provider_->Stop(false, false);
   provider_->Start(input, false);
@@ -240,8 +259,7 @@ TEST_F(MostVisitedSitesProviderTest, TestMostVisitedNavigateToSearchPage) {
   input.set_current_url(GURL(current_url));
   input.set_focus_type(OmniboxFocusType::ON_FOCUS);
   history::MostVisitedURLList urls;
-  history::MostVisitedURL url(GURL("http://foo.com/"),
-                              base::ASCIIToUTF16("Foo"));
+  history::MostVisitedURL url(GURL("http://foo.com/"), u"Foo");
   urls.push_back(url);
 
   provider_->Start(input, false);

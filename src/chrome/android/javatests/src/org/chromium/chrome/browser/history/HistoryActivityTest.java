@@ -5,14 +5,16 @@
 package org.chromium.chrome.browser.history;
 
 import static androidx.test.espresso.intent.Intents.intended;
+import static androidx.test.espresso.intent.Intents.intending;
 import static androidx.test.espresso.intent.Intents.times;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
-import static androidx.test.espresso.intent.matcher.IntentMatchers.hasData;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
+import android.app.Activity;
+import android.app.Instrumentation.ActivityResult;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -23,9 +25,11 @@ import android.view.View;
 
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
+import androidx.test.espresso.intent.matcher.IntentMatchers;
 import androidx.test.espresso.intent.rule.IntentsTestRule;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matcher;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -46,7 +50,7 @@ import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
@@ -55,13 +59,13 @@ import org.chromium.components.browser_ui.widget.RecyclerViewTestUtils;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemViewHolder;
 import org.chromium.components.signin.base.CoreAccountInfo;
-import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.test.util.UiRestriction;
+import org.chromium.url.GURL;
 
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
@@ -90,6 +94,10 @@ public class HistoryActivityTest {
 
     private HistoryItem mItem1;
     private HistoryItem mItem2;
+
+    public static Matcher<Intent> hasData(GURL uri) {
+        return IntentMatchers.hasData(uri.getSpec());
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -122,7 +130,7 @@ public class HistoryActivityTest {
         mTestObserver = new TestObserver();
         mHistoryManager.getSelectionDelegateForTests().addObserver(mTestObserver);
         mAdapter.registerAdapterDataObserver(mTestObserver);
-        mRecyclerView = activity.findViewById(R.id.recycler_view);
+        mRecyclerView = activity.findViewById(R.id.selectable_list_recycler_view);
     }
 
     @Test
@@ -178,7 +186,7 @@ public class HistoryActivityTest {
     @Test
     @SmallTest
     public void testPrivacyDisclaimers_SignedIn() {
-        mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
+        mAccountManagerTestRule.addTestAccountThenSignin();
 
         setHasOtherFormsOfBrowsingData(false);
 
@@ -208,18 +216,23 @@ public class HistoryActivityTest {
     @Test
     @SmallTest
     public void testOpenItem() throws Exception {
+        intending(allOf(hasAction(equalTo(Intent.ACTION_VIEW)), hasData(mItem1.getUrl())))
+                .respondWith(new ActivityResult(Activity.RESULT_OK, null));
+
         clickItem(2);
-        // Match history item open intent twice (once for launcher, once for tab activity)
-        intended(
-            allOf(
-                hasAction(equalTo(Intent.ACTION_VIEW)),
-                hasData(mItem1.getUrl())),
-            times(2));
+
+        intended(allOf(hasAction(equalTo(Intent.ACTION_VIEW)), hasData(mItem1.getUrl())), times(1));
     }
 
     @Test
     @SmallTest
     public void testOpenSelectedItems() throws Exception {
+        // Stub out intent responses to prevent them from actually being sent.
+        intending(allOf(hasAction(equalTo(Intent.ACTION_VIEW)), hasData(mItem1.getUrl())))
+                .respondWith(new ActivityResult(Activity.RESULT_OK, null));
+        intending(allOf(hasAction(equalTo(Intent.ACTION_VIEW)), hasData(mItem2.getUrl())))
+                .respondWith(new ActivityResult(Activity.RESULT_OK, null));
+
         toggleItemSelection(2);
         toggleItemSelection(3);
 
@@ -229,30 +242,22 @@ public class HistoryActivityTest {
                             R.id.selection_mode_open_in_incognito, 0));
         });
 
-        intended(
-            allOf(
-                hasAction(equalTo(Intent.ACTION_VIEW)),
-                hasData(mItem1.getUrl())),
-            times(2));
-        intended(
-            allOf(
-                hasAction(equalTo(Intent.ACTION_VIEW)),
-                hasData(mItem2.getUrl())),
-            times(2));
+        intended(allOf(hasAction(equalTo(Intent.ACTION_VIEW)), hasData(mItem1.getUrl())), times(1));
+        intended(allOf(hasAction(equalTo(Intent.ACTION_VIEW)), hasData(mItem2.getUrl())), times(1));
     }
 
     @Test
     @SmallTest
     public void testOpenItemIntent() {
         Intent intent = mHistoryManager.getOpenUrlIntent(mItem1.getUrl(), null, false);
-        Assert.assertEquals(mItem1.getUrl(), intent.getDataString());
+        Assert.assertEquals(mItem1.getUrl().getSpec(), intent.getDataString());
         Assert.assertFalse(intent.hasExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB));
         Assert.assertFalse(intent.hasExtra(Browser.EXTRA_CREATE_NEW_TAB));
         Assert.assertEquals(PageTransition.AUTO_BOOKMARK,
                 intent.getIntExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE, -1));
 
         intent = mHistoryManager.getOpenUrlIntent(mItem2.getUrl(), true, true);
-        Assert.assertEquals(mItem2.getUrl(), intent.getDataString());
+        Assert.assertEquals(mItem2.getUrl().getSpec(), intent.getDataString());
         Assert.assertTrue(
                 intent.getBooleanExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false));
         Assert.assertTrue(intent.getBooleanExtra(Browser.EXTRA_CREATE_NEW_TAB, false));
@@ -513,8 +518,9 @@ public class HistoryActivityTest {
                                             .getMenu()
                                             .performIdentifierAction(
                                                     R.id.selection_mode_copy_link, 0)));
-            CriteriaHelper.pollUiThread(
-                    () -> Criteria.checkThat(mItem1.getUrl(), is(clipboardManager.getText())));
+            CriteriaHelper.pollUiThread(()
+                                                -> Criteria.checkThat(mItem1.getUrl().getSpec(),
+                                                        is(clipboardManager.getText())));
 
             // Check that the copy link item is not visible when more than one item is selected.
             toggleItemSelection(2);
@@ -555,21 +561,15 @@ public class HistoryActivityTest {
             mPrefChangeRegistrar = new PrefChangeRegistrar();
             mPrefChangeRegistrar.addObserver(Pref.ALLOW_DELETING_BROWSER_HISTORY, mTestObserver);
             mPrefChangeRegistrar.addObserver(Pref.INCOGNITO_MODE_AVAILABILITY, mTestObserver);
+            IdentityServicesProvider.get()
+                    .getSigninManager(Profile.getLastUsedRegularProfile())
+                    .addSignInStateObserver(mTestObserver);
         });
 
         // Sign in to account. Note that if supervised user is set before sign in, the supervised
         // user setting will be reset.
         final CoreAccountInfo coreAccountInfo =
-                mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Profile profile = Profile.getLastUsedRegularProfile();
-            IdentityServicesProvider.get().getSigninManager(profile).onFirstRunCheckDone();
-            IdentityServicesProvider.get().getSigninManager(profile).addSignInStateObserver(
-                    mTestObserver);
-            IdentityServicesProvider.get().getSigninManager(profile).signinAndEnableSync(
-                    SigninAccessPoint.UNKNOWN, coreAccountInfo, null);
-        });
-
+                mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();
         mTestObserver.onSigninStateChangedCallback.waitForCallback(
                 0, 1, SyncTestUtil.TIMEOUT_MS, TimeUnit.MILLISECONDS);
         Assert.assertEquals(coreAccountInfo, mAccountManagerTestRule.getCurrentSignedInAccount());

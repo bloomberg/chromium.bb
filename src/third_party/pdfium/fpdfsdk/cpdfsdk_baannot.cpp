@@ -18,6 +18,7 @@
 #include "core/fpdfapi/parser/cpdf_string.h"
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
+#include "third_party/base/check.h"
 
 CPDFSDK_BAAnnot::CPDFSDK_BAAnnot(CPDF_Annot* pAnnot,
                                  CPDFSDK_PageView* pPageView)
@@ -50,8 +51,8 @@ CPDF_Dictionary* CPDFSDK_BAAnnot::GetAPDict() const {
 }
 
 void CPDFSDK_BAAnnot::SetRect(const CFX_FloatRect& rect) {
-  ASSERT(rect.right - rect.left >= 1.0f);
-  ASSERT(rect.top - rect.bottom >= 1.0f);
+  DCHECK(rect.right - rect.left >= 1.0f);
+  DCHECK(rect.top - rect.bottom >= 1.0f);
   GetAnnotDict()->SetRectFor(pdfium::annotation::kRect, rect);
 }
 
@@ -96,12 +97,9 @@ uint32_t CPDFSDK_BAAnnot::GetFlags() const {
   return GetAnnotDict()->GetIntegerFor(pdfium::annotation::kF);
 }
 
-void CPDFSDK_BAAnnot::SetAppState(const ByteString& str) {
+void CPDFSDK_BAAnnot::SetAppStateOff() {
   CPDF_Dictionary* pDict = GetAnnotDict();
-  if (str.IsEmpty())
-    pDict->RemoveFor(pdfium::annotation::kAS);
-  else
-    pDict->SetNewFor<CPDF_String>(pdfium::annotation::kAS, str, false);
+  pDict->SetNewFor<CPDF_String>(pdfium::annotation::kAS, "Off", false);
 }
 
 ByteString CPDFSDK_BAAnnot::GetAppState() const {

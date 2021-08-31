@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/tabs/tab_strip_container_view.h"
 
 #import "ios/chrome/browser/ui/tabs/tab_strip_view.h"
+#include "ios/chrome/browser/ui/util/rtl_geometry.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,10 +14,25 @@
 @implementation TabStripContainerView
 
 - (UIView*)screenshotForAnimation {
+  // The tab strip snapshot should have a clear background color. When using
+  // smooth scrolling, the background color is black, because the web content
+  // extends behind the tab strip. Switch out the background color for the
+  // snapshot and restore it afterwards.
+  UIColor* backgroundColor = self.tabStripView.backgroundColor;
+  self.tabStripView.backgroundColor = UIColor.clearColor;
   UIView* tabStripSnapshot =
       [self.tabStripView snapshotViewAfterScreenUpdates:YES];
-  tabStripSnapshot.frame = self.frame;
+  self.tabStripView.backgroundColor = backgroundColor;
+  tabStripSnapshot.transform =
+      [self adjustTransformForRTL:tabStripSnapshot.transform];
   return tabStripSnapshot;
+}
+
+- (CGAffineTransform)adjustTransformForRTL:(CGAffineTransform)transform {
+  if (!UseRTLLayout()) {
+    return transform;
+  }
+  return CGAffineTransformConcat(transform, CGAffineTransformMakeScale(-1, 1));
 }
 
 @end

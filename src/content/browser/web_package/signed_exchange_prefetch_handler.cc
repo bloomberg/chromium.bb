@@ -46,7 +46,7 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
       network_isolation_key, frame_tree_node_id);
   auto devtools_proxy = std::make_unique<SignedExchangeDevToolsProxy>(
       resource_request.url, response_head.Clone(), frame_tree_node_id,
-      base::nullopt /* devtools_navigation_token */,
+      absl::nullopt /* devtools_navigation_token */,
       resource_request.report_raw_headers);
   signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
       resource_request, std::move(response_head), std::move(response_body),
@@ -76,6 +76,11 @@ std::unique_ptr<PrefetchedSignedExchangeCacheEntry>
 SignedExchangePrefetchHandler::TakePrefetchedSignedExchangeCacheEntry() {
   DCHECK(signed_exchange_loader_);
   return signed_exchange_loader_->TakePrefetchedSignedExchangeCacheEntry();
+}
+
+void SignedExchangePrefetchHandler::OnReceiveEarlyHints(
+    network::mojom::EarlyHintsPtr early_hints) {
+  NOTREACHED();
 }
 
 void SignedExchangePrefetchHandler::OnReceiveResponse(

@@ -145,7 +145,7 @@ void AppCacheURLLoader::FollowRedirect(
     const std::vector<std::string>& modified_headers,
     const net::HttpRequestHeaders& removed_headers,
     const net::HttpRequestHeaders& removed_cors_exempt_headers,
-    const base::Optional<GURL>& new_url) {
+    const absl::optional<GURL>& new_url) {
   NOTREACHED() << "appcache never produces redirects";
 }
 
@@ -175,7 +175,7 @@ void AppCacheURLLoader::Start(
       base::BindOnce(&AppCacheURLLoader::DeleteSoon, GetWeakPtr()));
 
   MojoResult result =
-      mojo::CreateDataPipe(nullptr, &response_body_stream_, &consumer_handle_);
+      mojo::CreateDataPipe(nullptr, response_body_stream_, consumer_handle_);
   if (result != MOJO_RESULT_OK) {
     NotifyCompleted(net::ERR_INSUFFICIENT_RESOURCES);
     return;

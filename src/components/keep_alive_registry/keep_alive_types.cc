@@ -14,6 +14,8 @@ std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {
       return out << "BROWSER";
     case KeepAliveOrigin::BROWSER_PROCESS_CHROMEOS:
       return out << "BROWSER_PROCESS_CHROMEOS";
+    case KeepAliveOrigin::BROWSER_PROCESS_LACROS:
+      return out << "BROWSER_PROCESS_LACROS";
     case KeepAliveOrigin::SESSION_RESTORE:
       return out << "SESSION_RESTORE";
     case KeepAliveOrigin::BACKGROUND_MODE_MANAGER:
@@ -24,6 +26,8 @@ std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {
       return out << "BACKGROUND_MODE_MANAGER_FORCE_INSTALLED_EXTENSIONS";
     case KeepAliveOrigin::BACKGROUND_SYNC:
       return out << "BACKGROUND_SYNC";
+    case KeepAliveOrigin::BROWSING_DATA_LIFETIME_MANAGER:
+      return out << "BROWSING_DATA_LIFETIME_MANAGER";
     case KeepAliveOrigin::LOGIN_DISPLAY_HOST_WEBUI:
       return out << "LOGIN_DISPLAY_HOST_WEBUI";
     case KeepAliveOrigin::PIN_MIGRATION:
@@ -42,6 +46,8 @@ std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {
       return out << "APP_LIST_SERVICE_VIEWS";
     case KeepAliveOrigin::APP_LIST_SHOWER:
       return out << "APP_LIST_SHOWER";
+    case KeepAliveOrigin::APP_START_URL_MIGRATION:
+      return out << "APP_START_URL_MIGRATION";
     case KeepAliveOrigin::CHROME_APP_DELEGATE:
       return out << "CHROME_APP_DELEGATE";
     case KeepAliveOrigin::CHROME_VIEWS_DELEGATE:
@@ -60,6 +66,12 @@ std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {
       return out << "CREDENTIAL_PROVIDER_SIGNIN_DIALOG";
     case KeepAliveOrigin::NATIVE_MESSAGING_HOST_ERROR_REPORT:
       return out << "NATIVE_MESSAGING_HOST_ERROR_REPORT";
+    case KeepAliveOrigin::WEB_APP_INTENT_PICKER:
+      return out << "WEB_APP_INTENT_PICKER";
+    case KeepAliveOrigin::WEB_APP_PROTOCOL_HANDLER_LAUNCH:
+      return out << "WEB_APP_PROTOCOL_HANDLER_LAUNCH";
+    case KeepAliveOrigin::SESSION_DATA_DELETER:
+      return out << "SESSION_DATA_DELETER";
   }
 
   NOTREACHED();

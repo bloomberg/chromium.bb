@@ -5,13 +5,15 @@
 #include "chromecast/ui/media_control_ui.h"
 
 #include <algorithm>
+#include <string>
 
 #include "base/bind.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
 #include "chromecast/graphics/cast_window_manager.h"
 #include "ui/aura/window.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -37,8 +39,11 @@ void SetButtonImage(views::ImageButton* button, const gfx::VectorIcon& icon) {
 // A view that invokes an |on_tapped| closure whenever it detects a tap gesture.
 class TouchView : public views::View {
  public:
+  METADATA_HEADER(TouchView);
   explicit TouchView(base::RepeatingClosure on_tapped)
       : on_tapped_(std::move(on_tapped)) {}
+  TouchView(const TouchView&) = delete;
+  TouchView& operator=(const TouchView&) = delete;
 
  private:
   // views::View implementation:
@@ -49,9 +54,10 @@ class TouchView : public views::View {
   }
 
   base::RepeatingClosure on_tapped_;
-
-  DISALLOW_COPY_AND_ASSIGN(TouchView);
 };
+
+BEGIN_METADATA(TouchView, views::View)
+END_METADATA
 
 }  // namespace
 
@@ -96,9 +102,9 @@ MediaControlUi::MediaControlUi(CastWindowManager* window_manager)
 
   // Labels.
   lbl_title_ =
-      view_->AddChildView(std::make_unique<views::Label>(base::string16()));
+      view_->AddChildView(std::make_unique<views::Label>(std::u16string()));
   lbl_meta_ =
-      view_->AddChildView(std::make_unique<views::Label>(base::string16()));
+      view_->AddChildView(std::make_unique<views::Label>(std::u16string()));
 
   // Progress Bar.
   progress_bar_ = view_->AddChildView(std::make_unique<views::ProgressBar>());

@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -30,7 +29,8 @@ class COMPONENT_EXPORT(HERMES_CLIENT) HermesManagerClient {
     // Adds a new Euicc object with given path and properties.
     virtual void AddEuicc(const dbus::ObjectPath& path,
                           const std::string& eid,
-                          bool is_actve) = 0;
+                          bool is_actve,
+                          uint32_t physical_slot) = 0;
 
     // Clears all Euicc objects and associated profiles.
     virtual void ClearEuiccs() = 0;

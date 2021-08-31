@@ -956,6 +956,7 @@ class NamedCache(Cache):
     Raises NamedCacheError if cannot uninstall the cache.
     """
     logging.info('NamedCache.uninstall(%r, %r)', src, name)
+    start = time.time()
     with self._lock:
       try:
         if not fs.isdir(src):
@@ -1021,6 +1022,8 @@ class NamedCache(Cache):
         # - uninstall() sometimes throws due to file locking on Windows or
         #   access rights on Linux. We want to keep as many as possible.
         self._save()
+        logging.info('NamedCache.uninstall(%r, %r) took %d seconds', src, name,
+                     time.time() - start)
 
   # Cache interface implementation.
 

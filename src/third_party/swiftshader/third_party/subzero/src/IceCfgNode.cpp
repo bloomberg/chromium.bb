@@ -610,28 +610,6 @@ void CfgNode::doAddressOpt() {
   }
 }
 
-void CfgNode::doNopInsertion(RandomNumberGenerator &RNG) {
-  TargetLowering *Target = Func->getTarget();
-  LoweringContext &Context = Target->getContext();
-  Context.init(this);
-  Context.setInsertPoint(Context.getCur());
-  // Do not insert nop in bundle locked instructions.
-  bool PauseNopInsertion = false;
-  while (!Context.atEnd()) {
-    if (llvm::isa<InstBundleLock>(Context.getCur())) {
-      PauseNopInsertion = true;
-    } else if (llvm::isa<InstBundleUnlock>(Context.getCur())) {
-      PauseNopInsertion = false;
-    }
-    if (!PauseNopInsertion)
-      Target->doNopInsertion(RNG);
-    // Ensure Cur=Next, so that the nops are inserted before the current
-    // instruction rather than after.
-    Context.advanceCur();
-    Context.advanceNext();
-  }
-}
-
 // Drives the target lowering. Passes the current instruction and the next
 // non-deleted instruction for target lowering.
 void CfgNode::genCode() {
@@ -1462,33 +1440,6 @@ void CfgNode::dump(Cfg *Func) const {
     }
     Str << "\n";
   }
-}
-
-void CfgNode::profileExecutionCount(VariableDeclaration *Var) {
-  GlobalContext *Ctx = Func->getContext();
-  GlobalString RMW_I64 = Ctx->getGlobalString("llvm.nacl.atomic.rmw.i64");
-
-  bool BadIntrinsic = false;
-  const Intrinsics::FullIntrinsicInfo *Info =
-      Ctx->getIntrinsicsInfo().find(RMW_I64, BadIntrinsic);
-  assert(!BadIntrinsic);
-  assert(Info != nullptr);
-
-  Operand *RMWI64Name = Ctx->getConstantExternSym(RMW_I64);
-  constexpr RelocOffsetT Offset = 0;
-  Constant *Counter = Ctx->getConstantSym(Offset, Var->getName());
-  Constant *AtomicRMWOp = Ctx->getConstantInt32(Intrinsics::AtomicAdd);
-  Constant *One = Ctx->getConstantInt64(1);
-  Constant *OrderAcquireRelease =
-      Ctx->getConstantInt32(Intrinsics::MemoryOrderAcquireRelease);
-
-  auto *Instr = InstIntrinsicCall::create(
-      Func, 5, Func->makeVariable(IceType_i64), RMWI64Name, Info->Info);
-  Instr->addArg(AtomicRMWOp);
-  Instr->addArg(Counter);
-  Instr->addArg(One);
-  Instr->addArg(OrderAcquireRelease);
-  Insts.push_front(Instr);
 }
 
 void CfgNode::removeInEdge(CfgNode *In) {

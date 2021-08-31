@@ -43,6 +43,7 @@ class Event;
 class EventTarget;
 class LocalDOMWindow;
 class MediaQueryListListener;
+class PageAnimator;
 
 class CORE_EXPORT ScriptedAnimationController
     : public GarbageCollected<ScriptedAnimationController>,
@@ -94,9 +95,6 @@ class CORE_EXPORT ScriptedAnimationController
 
   void DispatchEventsAndCallbacksForPrinting();
 
-  bool CurrentFrameHadRAF() const { return current_frame_had_raf_; }
-  bool NextFrameHasPendingRAF() const { return next_frame_has_pending_raf_; }
-
  private:
   void ScheduleAnimationIfNeeded();
 
@@ -111,6 +109,9 @@ class CORE_EXPORT ScriptedAnimationController
 
   LocalDOMWindow* GetWindow() const;
 
+  // A helper function that is called by more than one callsite.
+  PageAnimator* GetPageAnimator();
+
   ALWAYS_INLINE bool InsertToPerFrameEventsMap(const Event* event);
   ALWAYS_INLINE void EraseFromPerFrameEventsMap(const Event* event);
 
@@ -121,15 +122,13 @@ class CORE_EXPORT ScriptedAnimationController
   using PerFrameEventsMap =
       HeapHashMap<Member<const EventTarget>, HashSet<const StringImpl*>>;
   PerFrameEventsMap per_frame_events_;
-  using MediaQueryListListeners =
-      HeapListHashSet<Member<MediaQueryListListener>>;
+  using MediaQueryListListeners = HeapVector<Member<MediaQueryListListener>>;
   MediaQueryListListeners media_query_list_listeners_;
+  // This is used to quickly lookup if a listener exists in
+  // media_query_list_listeners_. The contents should be exactly the same.
+  HeapHashSet<Member<MediaQueryListListener>> media_query_list_listeners_set_;
   double current_frame_time_ms_ = 0.0;
   double current_frame_legacy_time_ms_ = 0.0;
-
-  // Used for animation metrics; see cc::CompositorTimingHistory::DidDraw.
-  bool current_frame_had_raf_;
-  bool next_frame_has_pending_raf_;
 };
 
 }  // namespace blink

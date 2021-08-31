@@ -6,14 +6,15 @@
 
 #include <stddef.h>
 
-#include <set>
-
+#include "base/containers/flat_set.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/accelerators.h"
 #endif
 
@@ -34,10 +35,8 @@ struct Cmp {
 }  // namespace
 
 TEST(AcceleratorTableTest, CheckDuplicatedAccelerators) {
-  std::set<AcceleratorMapping, Cmp> accelerators;
-  const std::vector<AcceleratorMapping> accelerator_list(GetAcceleratorList());
-  for (auto it = accelerator_list.begin(); it != accelerator_list.end(); ++it) {
-    const AcceleratorMapping& entry = *it;
+  base::flat_set<AcceleratorMapping, Cmp> accelerators;
+  for (const auto& entry : GetAcceleratorList()) {
     EXPECT_TRUE(accelerators.insert(entry).second)
         << "Duplicated accelerator: " << entry.keycode << ", "
         << (entry.modifiers & ui::EF_SHIFT_DOWN) << ", "
@@ -47,15 +46,9 @@ TEST(AcceleratorTableTest, CheckDuplicatedAccelerators) {
   }
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
-  std::set<AcceleratorMapping, Cmp> accelerators;
-  const std::vector<AcceleratorMapping> accelerator_list(GetAcceleratorList());
-  for (std::vector<AcceleratorMapping>::const_iterator it =
-           accelerator_list.begin(); it != accelerator_list.end(); ++it) {
-    const AcceleratorMapping& entry = *it;
-    accelerators.insert(entry);
-  }
+  base::flat_set<AcceleratorMapping, Cmp> accelerators(GetAcceleratorList());
   for (size_t i = 0; i < ash::kAcceleratorDataLength; ++i) {
     const ash::AcceleratorData& ash_entry = ash::kAcceleratorData[i];
     if (!ash_entry.trigger_on_press)
@@ -104,6 +97,42 @@ TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
         << (ash_entry.action);
   }
 }
-#endif  // OS_CHROMEOS
+
+TEST(AcceleratorTableTest, DontUseKeysWithUnstablePositions) {
+  // Some punctuation keys are problematic on international keyboard
+  // layouts and should not be used as shortcuts. Two existing shortcuts
+  // do use these keys and are excluded (Page Zoom In/Out), and help also
+  // uses this key, however it is overridden on Chrome OS in ash.
+  // See crbug.com/1174326 for more information.
+  for (const auto& entry : GetAcceleratorList()) {
+    if (entry.command_id == IDC_ZOOM_MINUS ||
+        entry.command_id == IDC_ZOOM_PLUS ||
+        entry.command_id == IDC_HELP_PAGE_VIA_KEYBOARD) {
+      continue;
+    }
+
+    switch (entry.keycode) {
+      case ui::VKEY_OEM_PLUS:
+      case ui::VKEY_OEM_MINUS:
+      case ui::VKEY_OEM_1:
+      case ui::VKEY_OEM_2:
+      case ui::VKEY_OEM_3:
+      case ui::VKEY_OEM_4:
+      case ui::VKEY_OEM_5:
+      case ui::VKEY_OEM_6:
+      case ui::VKEY_OEM_7:
+      case ui::VKEY_OEM_8:
+      case ui::VKEY_OEM_COMMA:
+      case ui::VKEY_OEM_PERIOD:
+        FAIL() << "Accelerator command " << entry.command_id
+               << " is using a disallowed punctuation key " << entry.keycode
+               << ". Prefer to use alphanumeric keys for new shortcuts.";
+        break;
+      default:
+        break;
+    }
+  }
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace chrome

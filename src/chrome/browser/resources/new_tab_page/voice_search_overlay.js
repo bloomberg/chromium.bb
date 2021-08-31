@@ -7,9 +7,11 @@ import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {BrowserProxy} from './browser_proxy.js';
+import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {I18nBehavior, loadTimeData} from './i18n_setup.js';
+import {NewTabPageProxy} from './new_tab_page_proxy.js';
+import {WindowProxy} from './window_proxy.js';
 
 /**
  * Threshold for considering an interim speech transcript result as "confident
@@ -91,9 +93,46 @@ const State = {
   RESULT_FINAL: 5,
 };
 
+/**
+ * Action the user can perform while using voice search. This enum must match
+ * the numbering for NewTabPageVoiceAction in enums.xml. These values are
+ * persisted to logs. Entries should not be renumbered, removed or reused.
+ * @enum {number}
+ */
+export const Action = {
+  kActivateSearchBox: 0,
+  kActivateKeyboard: 1,
+  kCloseOverlay: 2,
+  kQuerySubmitted: 3,
+  kSupportLinkClicked: 4,
+  kTryAgainLink: 5,
+  kTryAgainMicButton: 6,
+};
 
-/** @typedef {newTabPage.mojom.VoiceSearchError} */
-const Error = newTabPage.mojom.VoiceSearchError;
+/**
+ * Errors than can occur while using voice search. This enum must match the
+ * numbering for NewTabPageVoiceError in enums.xml. These values are persisted
+ * to logs. Entries should not be renumbered, removed or reused.
+ * @enum {number}
+ */
+export const Error = {
+  kAborted: 0,
+  kAudioCapture: 1,
+  kBadGrammar: 2,
+  kLanguageNotSupported: 3,
+  kNetwork: 4,
+  kNoMatch: 5,
+  kNoSpeech: 6,
+  kNotAllowed: 7,
+  kOther: 8,
+  kServiceNotAllowed: 9,
+};
+
+/** @param {!Action} action */
+export function recordVoiceAction(action) {
+  chrome.metricsPrivate.recordEnumerationValue(
+      'NewTabPage.VoiceActions', action, Object.keys(Action).length);
+}
 
 /**
  * Returns the error type based on the error string received from the webkit
@@ -143,8 +182,13 @@ function getErrorTimeout(error) {
   }
 }
 
-// Overlay that lats the user perform voice searches.
-class VoiceSearchOverlayElement extends PolymerElement {
+/**
+ * Overlay that lats the user perform voice searches.
+ * @polymer
+ * @extends {PolymerElement}
+ */
+class VoiceSearchOverlayElement extends mixinBehaviors
+([I18nBehavior], PolymerElement) {
   static get is() {
     return 'ntp-voice-search-overlay';
   }
@@ -195,7 +239,7 @@ class VoiceSearchOverlayElement extends PolymerElement {
   constructor() {
     super();
     /** @private {newTabPage.mojom.PageHandlerRemote} */
-    this.pageHandler_ = BrowserProxy.getInstance().handler;
+    this.pageHandler_ = NewTabPageProxy.getInstance().handler;
     /** @private {webkitSpeechRecognition} */
     this.voiceRecognition_ = new webkitSpeechRecognition();
     this.voiceRecognition_.continuous = false;
@@ -211,8 +255,8 @@ class VoiceSearchOverlayElement extends PolymerElement {
     this.voiceRecognition_.onnomatch = () => {
       this.onError_(Error.kNoMatch);
     };
-    /** @private {number|undefined} */
-    this.timerId_ = undefined;
+    /** @private {?number} */
+    this.timerId_ = null;
   }
 
   /** @override */
@@ -238,8 +282,7 @@ class VoiceSearchOverlayElement extends PolymerElement {
   /** @private */
   onOverlayClick_() {
     this.$.dialog.close();
-    this.pageHandler_.onVoiceSearchAction(
-        newTabPage.mojom.VoiceSearchAction.kCloseOverlay);
+    recordVoiceAction(Action.kCloseOverlay);
   }
 
   /**
@@ -273,8 +316,7 @@ class VoiceSearchOverlayElement extends PolymerElement {
 
   /** @private */
   onLearnMoreClick_() {
-    this.pageHandler_.onVoiceSearchAction(
-        newTabPage.mojom.VoiceSearchAction.kSupportLinkClicked);
+    recordVoiceAction(Action.kSupportLinkClicked);
   }
 
   /**
@@ -285,8 +327,7 @@ class VoiceSearchOverlayElement extends PolymerElement {
     // Otherwise, we close the overlay.
     e.stopPropagation();
     this.start();
-    this.pageHandler_.onVoiceSearchAction(
-        newTabPage.mojom.VoiceSearchAction.kTryAgainLink);
+    recordVoiceAction(Action.kTryAgainLink);
   }
 
   /**
@@ -301,14 +342,13 @@ class VoiceSearchOverlayElement extends PolymerElement {
     // Otherwise, we close the overlay.
     e.stopPropagation();
     this.start();
-    this.pageHandler_.onVoiceSearchAction(
-        newTabPage.mojom.VoiceSearchAction.kTryAgainMicButton);
+    recordVoiceAction(Action.kTryAgainMicButton);
   }
 
   /** @private */
   resetIdleTimer_() {
-    BrowserProxy.getInstance().clearTimeout(this.timerId_);
-    this.timerId_ = BrowserProxy.getInstance().setTimeout(
+    WindowProxy.getInstance().clearTimeout(this.timerId_);
+    this.timerId_ = WindowProxy.getInstance().setTimeout(
         this.onIdleTimeout_.bind(this), IDLE_TIMEOUT_MS);
   }
 
@@ -332,8 +372,8 @@ class VoiceSearchOverlayElement extends PolymerElement {
    * @private
    */
   resetErrorTimer_(duration) {
-    BrowserProxy.getInstance().clearTimeout(this.timerId_);
-    this.timerId_ = BrowserProxy.getInstance().setTimeout(() => {
+    WindowProxy.getInstance().clearTimeout(this.timerId_);
+    this.timerId_ = WindowProxy.getInstance().setTimeout(() => {
       this.$.dialog.close();
     }, duration);
   }
@@ -424,9 +464,8 @@ class VoiceSearchOverlayElement extends PolymerElement {
     const queryUrl =
         new URL('/search', loadTimeData.getString('googleBaseUrl'));
     queryUrl.search = searchParams.toString();
-    this.pageHandler_.onVoiceSearchAction(
-        newTabPage.mojom.VoiceSearchAction.kQuerySubmitted);
-    BrowserProxy.getInstance().navigate(queryUrl.href);
+    recordVoiceAction(Action.kQuerySubmitted);
+    WindowProxy.getInstance().navigate(queryUrl.href);
   }
 
   /** @private */
@@ -456,7 +495,8 @@ class VoiceSearchOverlayElement extends PolymerElement {
    * @private
    */
   onError_(error) {
-    this.pageHandler_.onVoiceSearchError(error);
+    chrome.metricsPrivate.recordEnumerationValue(
+        'NewTabPage.VoiceErrors', error, Object.keys(Error).length);
     if (error === Error.kAborted) {
       // We are in the process of closing voice search.
       return;
@@ -474,12 +514,12 @@ class VoiceSearchOverlayElement extends PolymerElement {
         this.state_ !== State.RESULT_RECEIVED) {
       return;
     }
-    this.micVolumeLevel_ = BrowserProxy.getInstance().random();
+    this.micVolumeLevel_ = WindowProxy.getInstance().random();
     this.micVolumeDuration_ = Math.round(
         VOLUME_ANIMATION_DURATION_MIN_MS +
-        BrowserProxy.getInstance().random() *
+        WindowProxy.getInstance().random() *
             VOLUME_ANIMATION_DURATION_RANGE_MS);
-    BrowserProxy.getInstance().setTimeout(
+    WindowProxy.getInstance().setTimeout(
         this.animateVolume_.bind(this), this.micVolumeDuration_);
   }
 

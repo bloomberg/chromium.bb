@@ -4,10 +4,12 @@
 
 #include "components/metrics/data_use_tracker.h"
 
+#include <memory>
 #include <string>
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -37,7 +39,7 @@ std::unique_ptr<DataUseTracker> DataUseTracker::Create(
 // Instantiate DataUseTracker only on Android. UpdateMetricsUsagePrefs() honors
 // this rule too.
 #if defined(OS_ANDROID)
-  data_use_tracker.reset(new DataUseTracker(local_state));
+  data_use_tracker = std::make_unique<DataUseTracker>(local_state);
 #endif
   return data_use_tracker;
 }
@@ -138,7 +140,8 @@ void DataUseTracker::RemoveExpiredEntriesForPref(const std::string& pref_name) {
     base::Time key_date;
     if (base::Time::FromUTCString(it.key().c_str(), &key_date) &&
         key_date > week_ago)
-      user_pref_new_dict.Set(it.key(), it.value().CreateDeepCopy());
+      user_pref_new_dict.Set(it.key(),
+                             base::Value::ToUniquePtrValue(it.value().Clone()));
   }
   local_state_->Set(pref_name, user_pref_new_dict);
 }
@@ -155,9 +158,7 @@ int DataUseTracker::ComputeTotalDataUse(const std::string& pref_name) {
       local_state_->GetDictionary(pref_name);
   for (base::DictionaryValue::Iterator it(*pref_dict); !it.IsAtEnd();
        it.Advance()) {
-    int value = 0;
-    it.value().GetAsInteger(&value);
-    total_data_use += value;
+    total_data_use += it.value().GetIfInt().value_or(0);
   }
   return total_data_use;
 }

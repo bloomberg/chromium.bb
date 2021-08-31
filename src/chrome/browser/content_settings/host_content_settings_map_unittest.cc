@@ -23,7 +23,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
-#include "components/content_settings/core/browser/content_settings_ephemeral_provider.h"
 #include "components/content_settings/core/browser/content_settings_pref_provider.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
@@ -702,7 +701,8 @@ TEST_F(HostContentSettingsMapTest, IncognitoInheritInitialAllow) {
   // The cookie setting has an initial value of ALLOW, so all changes should be
   // inherited from regular to incognito mode.
   TestingProfile profile;
-  Profile* otr_profile = profile.GetPrimaryOTRProfile();
+  Profile* otr_profile =
+      profile.GetPrimaryOTRProfile(/*create_if_needed=*/true);
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
   HostContentSettingsMap* otr_map =
@@ -795,7 +795,8 @@ TEST_F(HostContentSettingsMapTest, IncognitoInheritPopups) {
   // The popup setting has an initial value of BLOCK, but it is allowed
   // to inherit ALLOW settings because it doesn't provide access to user data.
   TestingProfile profile;
-  Profile* otr_profile = profile.GetPrimaryOTRProfile();
+  Profile* otr_profile =
+      profile.GetPrimaryOTRProfile(/*create_if_needed=*/true);
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
   HostContentSettingsMap* otr_map =
@@ -840,7 +841,8 @@ TEST_F(HostContentSettingsMapTest, IncognitoPartialInheritPref) {
   // ContentSettingsRegistry only inherit BLOCK and ASK settings from regular
   // to incognito if the initial value is ASK.
   TestingProfile profile;
-  Profile* otr_profile = profile.GetPrimaryOTRProfile();
+  Profile* otr_profile =
+      profile.GetPrimaryOTRProfile(/*create_if_needed=*/true);
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
   HostContentSettingsMap* otr_map =
@@ -925,7 +927,8 @@ TEST_F(HostContentSettingsMapTest, IncognitoPartialInheritDefault) {
   // ContentSettingsRegistry only inherit BLOCK and ASK settings from regular
   // to incognito if the initial value is ASK.
   TestingProfile profile;
-  Profile* otr_profile = profile.GetPrimaryOTRProfile();
+  Profile* otr_profile =
+      profile.GetPrimaryOTRProfile(/*create_if_needed=*/true);
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
   HostContentSettingsMap* otr_map =
@@ -982,7 +985,8 @@ TEST_F(HostContentSettingsMapTest, IncognitoDontInheritSetting) {
   // WebsiteSettingsRegistry (e.g. usb chooser data) don't inherit any values
   // from from regular to incognito.
   TestingProfile profile;
-  Profile* otr_profile = profile.GetPrimaryOTRProfile();
+  Profile* otr_profile =
+      profile.GetPrimaryOTRProfile(/*create_if_needed=*/true);
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
   HostContentSettingsMap* otr_map =
@@ -1091,8 +1095,9 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
 
     auto dummy_payload = std::make_unique<base::DictionaryValue>();
     dummy_payload->SetInteger("setting", CONTENT_SETTING_ALLOW);
-    all_settings_dictionary->SetWithoutPathExpansion("[*.]\xC4\x87ira.com,*",
-                                                     std::move(dummy_payload));
+    all_settings_dictionary->SetKey(
+        "[*.]\xC4\x87ira.com,*",
+        base::Value::FromUniquePtrValue(std::move(dummy_payload)));
   }
 
   HostContentSettingsMapFactory::GetForProfile(&profile);
@@ -1392,9 +1397,9 @@ TEST_P(GuestHostContentSettingsMapTest, GuestProfile) {
       profile->GetPrefs()->GetDictionary(
           GetPrefName(ContentSettingsType::COOKIES));
   if (is_ephemeral())
-    EXPECT_FALSE(all_settings_dictionary->empty());
+    EXPECT_FALSE(all_settings_dictionary->DictEmpty());
   else
-    EXPECT_TRUE(all_settings_dictionary->empty());
+    EXPECT_TRUE(all_settings_dictionary->DictEmpty());
 }
 
 // Default settings should not be modifiable for OTR-Guest profile (there is no
@@ -1821,8 +1826,8 @@ TEST_F(HostContentSettingsMapTest,
             host_settings[0].secondary_pattern);
 }
 
-// Creates new instances of PrefProvider and EphemeralProvider and overrides
-// them in |host_content_settings_map|.
+// Creates new instance of PrefProvider and overrides it in
+// |host_content_settings_map|.
 void ReloadProviders(PrefService* pref_service,
                      HostContentSettingsMap* host_content_settings_map) {
   auto pref_provider = std::make_unique<content_settings::PrefProvider>(
@@ -1830,111 +1835,6 @@ void ReloadProviders(PrefService* pref_service,
   content_settings::TestUtils::OverrideProvider(
       host_content_settings_map, std::move(pref_provider),
       HostContentSettingsMap::PREF_PROVIDER);
-
-  auto ephemeral_provider =
-      std::make_unique<content_settings::EphemeralProvider>(true);
-  content_settings::TestUtils::OverrideProvider(
-      host_content_settings_map, std::move(ephemeral_provider),
-      HostContentSettingsMap::EPHEMERAL_PROVIDER);
-}
-
-// Tests that restarting only removes ephemeral permissions.
-TEST_F(HostContentSettingsMapTest, MixedEphemeralAndPersistentPermissions) {
-  TestingProfile profile;
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(&profile);
-
-  content_settings::ContentSettingsRegistry::GetInstance()->ResetForTest();
-  ReloadProviders(profile.GetPrefs(), map);
-
-  // The following two types are used as samples of ephemeral and persistent
-  // permission types. They can be replaced with any other type if required.
-  const ContentSettingsType ephemeral_type =
-      ContentSettingsType::PERIODIC_BACKGROUND_SYNC;
-  const ContentSettingsType persistent_type = ContentSettingsType::GEOLOCATION;
-
-  EXPECT_EQ(content_settings::ContentSettingsInfo::EPHEMERAL,
-            content_settings::ContentSettingsRegistry::GetInstance()
-                ->Get(ephemeral_type)
-                ->storage_behavior());
-  EXPECT_EQ(content_settings::ContentSettingsInfo::PERSISTENT,
-            content_settings::ContentSettingsRegistry::GetInstance()
-                ->Get(persistent_type)
-                ->storage_behavior());
-
-  const GURL url("https://example.com");
-
-  // |PERIODIC_BACKGROUND_SYNC| does not support ASK, set to ALLOW.
-  map->SetDefaultContentSetting(ephemeral_type, CONTENT_SETTING_ALLOW);
-  map->SetDefaultContentSetting(persistent_type, CONTENT_SETTING_ASK);
-
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            map->GetContentSetting(url, url, ephemeral_type));
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            map->GetContentSetting(url, url, persistent_type));
-
-  // Set permission for both types and expect receiving it correctly.
-  map->SetContentSettingDefaultScope(url, url, ephemeral_type,
-                                     CONTENT_SETTING_BLOCK);
-  map->SetContentSettingDefaultScope(url, url, persistent_type,
-                                     CONTENT_SETTING_BLOCK);
-
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            map->GetContentSetting(url, url, ephemeral_type));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            map->GetContentSetting(url, url, persistent_type));
-
-  // Restart and expect reset of ephemeral permission to |ALLOW|, while keeping
-  // the permission of persistent type.
-  ReloadProviders(profile.GetPrefs(), map);
-
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            map->GetContentSetting(url, url, ephemeral_type));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            map->GetContentSetting(url, url, persistent_type));
-}
-
-// Test that directly writing a value to PrefProvider doesn't affect ephmeral
-// types.
-TEST_F(HostContentSettingsMapTest, EphemeralTypeDoesntReadFromPrefProvider) {
-  TestingProfile profile;
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(&profile);
-
-  content_settings::ContentSettingsRegistry::GetInstance()->ResetForTest();
-  ReloadProviders(profile.GetPrefs(), map);
-
-  // ContentSettingsType::PERIODIC_BACKGROUND_SYNC is used as a sample of
-  // ephemeral permission type. It can be replaced with any other type if
-  // required.
-  const ContentSettingsType ephemeral_type =
-      ContentSettingsType::PERIODIC_BACKGROUND_SYNC;
-
-  EXPECT_EQ(content_settings::ContentSettingsInfo::EPHEMERAL,
-            content_settings::ContentSettingsRegistry::GetInstance()
-                ->Get(ephemeral_type)
-                ->storage_behavior());
-
-  const GURL url("https://example.com");
-  const ContentSettingsPattern pattern = ContentSettingsPattern::FromURL(url);
-
-  map->SetDefaultContentSetting(ephemeral_type, CONTENT_SETTING_ALLOW);
-
-  content_settings::PrefProvider pref_provider(profile.GetPrefs(), true, true,
-                                               false);
-  pref_provider.SetWebsiteSetting(
-      pattern, pattern, ephemeral_type,
-      std::make_unique<base::Value>(CONTENT_SETTING_BLOCK), {});
-
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            map->GetContentSetting(url, url, ephemeral_type));
-
-  ReloadProviders(profile.GetPrefs(), map);
-
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            map->GetContentSetting(url, url, ephemeral_type));
-
-  pref_provider.ShutdownOnUIThread();
 }
 
 TEST_F(HostContentSettingsMapTest, GetPatternsFromScopingType) {
@@ -2004,7 +1904,7 @@ TEST_F(HostContentSettingsMapTest, IncognitoChangesDoNotPersist) {
   TestingProfile profile;
   auto* regular_map = HostContentSettingsMapFactory::GetForProfile(&profile);
   auto* incognito_map = HostContentSettingsMapFactory::GetForProfile(
-      profile.GetPrimaryOTRProfile());
+      profile.GetPrimaryOTRProfile(/*create_if_needed=*/true));
   auto* registry = content_settings::WebsiteSettingsRegistry::GetInstance();
   auto* content_setting_registry =
       content_settings::ContentSettingsRegistry::GetInstance();
@@ -2024,15 +1924,13 @@ TEST_F(HostContentSettingsMapTest, IncognitoChangesDoNotPersist) {
     if (content_setting_registry->Get(info->type())) {
       // If no original value is available, the settings does not have any valid
       // values and no more steps are required.
-      if (!original_value)
+      if (!original_value || !original_value->is_int())
         continue;
-      int current_value;
-      original_value->GetAsInteger(&current_value);
 
       for (int another_value = 0;
            another_value < ContentSetting::CONTENT_SETTING_NUM_SETTINGS;
            another_value++) {
-        if (another_value != current_value &&
+        if (another_value != original_value->GetInt() &&
             content_setting_registry->Get(info->type())
                 ->IsSettingValid(static_cast<ContentSetting>(another_value))) {
           new_value = std::make_unique<base::Value>(another_value);
@@ -2180,7 +2078,7 @@ TEST_F(HostContentSettingsMapTest, GetSettingsForOneTypeWithSessionModel) {
   ASSERT_EQ(3u, settings.size());
 
   // Validate that using no SessionModel functions the exact same way.
-  map->GetSettingsForOneType(persistent_type, &settings, base::nullopt);
+  map->GetSettingsForOneType(persistent_type, &settings, absl::nullopt);
   ASSERT_EQ(3u, settings.size());
 
   // Each one/type of settings we set should be retrievable by specifying the

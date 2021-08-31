@@ -11,10 +11,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/ranges.h"
 #include "base/synchronization/lock.h"
+#include "build/chromeos_buildflags.h"
 #include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/gpu/vp8_picture.h"
 #include "media/gpu/vp8_reference_frame_vector.h"
+#include "third_party/libva_protected_content/va_protected_content.h"
 
 namespace media {
 
@@ -79,7 +81,7 @@ std::unique_ptr<ScopedVABuffer> ScopedVABuffer::Create(
   DCHECK(lock);
   DCHECK(va_display);
   DCHECK_NE(va_context_id, VA_INVALID_ID);
-  DCHECK_LT(va_buffer_type, VABufferTypeMax);
+  DCHECK(IsValidVABufferType(va_buffer_type));
   DCHECK_NE(size, 0u);
   lock->AssertAcquired();
   unsigned int va_buffer_size;
@@ -347,4 +349,15 @@ void FillVP8DataStructures(const Vp8FrameHeader& frame_header,
   for (size_t i = 0; i < frame_header.num_of_dct_partitions; ++i)
     slice_param->partition_size[i + 1] = frame_header.dct_partition_sizes[i];
 }
+
+bool IsValidVABufferType(VABufferType type) {
+  return type < VABufferTypeMax ||
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+         // TODO(jkardatzke): Remove this once we update to libva 2.0.10 in
+         // ChromeOS.
+         type == VAEncryptionParameterBufferType ||
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+         type == VACencStatusParameterBufferType;
+}
+
 }  // namespace media

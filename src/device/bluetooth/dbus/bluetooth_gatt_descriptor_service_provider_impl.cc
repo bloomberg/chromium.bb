@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_attribute_helpers.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -269,18 +270,15 @@ void BluetoothGattDescriptorServiceProviderImpl::ReadValue(
   }
 
   // GetValue() promises to only call either the success or error callback.
-  auto response_sender_adapted =
-      base::AdaptCallbackForRepeating(std::move(response_sender));
+  auto split_response_sender =
+      base::SplitOnceCallback(std::move(response_sender));
 
   DCHECK(delegate_);
   delegate_->GetValue(
       device_path,
       base::BindOnce(&BluetoothGattDescriptorServiceProviderImpl::OnReadValue,
                      weak_ptr_factory_.GetWeakPtr(), method_call,
-                     response_sender_adapted),
-      base::BindOnce(&BluetoothGattDescriptorServiceProviderImpl::OnFailure,
-                     weak_ptr_factory_.GetWeakPtr(), method_call,
-                     response_sender_adapted));
+                     std::move(split_response_sender.first)));
 }
 
 void BluetoothGattDescriptorServiceProviderImpl::WriteValue(
@@ -318,18 +316,19 @@ void BluetoothGattDescriptorServiceProviderImpl::WriteValue(
   }
 
   // SetValue() promises to only call either the success or error callback.
-  auto response_sender_adapted =
-      base::AdaptCallbackForRepeating(std::move(response_sender));
+  auto split_response_sender =
+      base::SplitOnceCallback(std::move(response_sender));
 
   DCHECK(delegate_);
   delegate_->SetValue(
       device_path, value,
       base::BindOnce(&BluetoothGattDescriptorServiceProviderImpl::OnWriteValue,
                      weak_ptr_factory_.GetWeakPtr(), method_call,
-                     response_sender_adapted),
-      base::BindOnce(&BluetoothGattDescriptorServiceProviderImpl::OnFailure,
-                     weak_ptr_factory_.GetWeakPtr(), method_call,
-                     response_sender_adapted));
+                     std::move(split_response_sender.first)),
+      base::BindOnce(
+          &BluetoothGattDescriptorServiceProviderImpl::OnWriteFailure,
+          weak_ptr_factory_.GetWeakPtr(), method_call,
+          std::move(split_response_sender.second)));
 }
 
 void BluetoothGattDescriptorServiceProviderImpl::OnExported(
@@ -343,7 +342,17 @@ void BluetoothGattDescriptorServiceProviderImpl::OnExported(
 void BluetoothGattDescriptorServiceProviderImpl::OnReadValue(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender,
+    absl::optional<device::BluetoothGattService::GattErrorCode> error_code,
     const std::vector<uint8_t>& value) {
+  if (error_code.has_value()) {
+    DVLOG(2) << "Failed to get descriptor value. Report error.";
+    std::unique_ptr<dbus::ErrorResponse> error_response =
+        dbus::ErrorResponse::FromMethodCall(method_call, kErrorFailed,
+                                            "Failed to get descriptor value.");
+    std::move(response_sender).Run(std::move(error_response));
+    return;
+  }
+
   DVLOG(3) << "Descriptor value obtained from delegate. Responding to "
               "ReadValue.";
 
@@ -396,13 +405,13 @@ void BluetoothGattDescriptorServiceProviderImpl::WriteProperties(
   writer->CloseContainer(&array_writer);
 }
 
-void BluetoothGattDescriptorServiceProviderImpl::OnFailure(
+void BluetoothGattDescriptorServiceProviderImpl::OnWriteFailure(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  DVLOG(2) << "Failed to get/set descriptor value. Report error.";
+  DVLOG(2) << "Failed to set descriptor value. Report error.";
   std::unique_ptr<dbus::ErrorResponse> error_response =
-      dbus::ErrorResponse::FromMethodCall(
-          method_call, kErrorFailed, "Failed to get/set descriptor value.");
+      dbus::ErrorResponse::FromMethodCall(method_call, kErrorFailed,
+                                          "Failed to set descriptor value.");
   std::move(response_sender).Run(std::move(error_response));
 }
 

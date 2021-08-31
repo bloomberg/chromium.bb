@@ -10,10 +10,9 @@
 #include <windows.ui.notifications.h>
 #include <wrl/client.h>
 
-#include "base/optional.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/win/notification_launch_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class CommandLine;
@@ -50,8 +49,8 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   // notification-launch-id switch.
   static bool HandleActivation(const base::CommandLine& command_line);
 
-  // Checks if native notification is enabled.
-  static bool NativeNotificationEnabled();
+  // Checks if system notifications are enabled.
+  static bool SystemNotificationEnabled();
 
   // Struct used to build the key to identify the notifications.
   struct NotificationKeyType {
@@ -87,7 +86,7 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
       NotificationCommon::Operation operation,
       ABI::Windows::UI::Notifications::IToastNotification* notification,
       ABI::Windows::UI::Notifications::IToastActivatedEventArgs* args,
-      const base::Optional<bool>& by_user);
+      const absl::optional<bool>& by_user);
 
   // Initializes the expected displayed notification map. For testing use only.
   void SetExpectedDisplayedNotificationsForTesting(
@@ -113,7 +112,7 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotification>
   GetToastNotificationForTesting(
       const message_center::Notification& notification,
-      const base::string16& xml_template,
+      const std::wstring& xml_template,
       const std::string& profile_id,
       bool incognito);
 

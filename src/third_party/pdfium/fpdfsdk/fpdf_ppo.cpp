@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <sstream>
 #include <utility>
 #include <vector>
 
@@ -31,6 +32,7 @@
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "public/cpp/fpdf_scopers.h"
+#include "third_party/base/check.h"
 
 namespace {
 
@@ -86,10 +88,10 @@ NupState::NupState(const CFX_SizeF& pagesize,
       m_nPagesOnXAxis(nPagesOnXAxis),
       m_nPagesOnYAxis(nPagesOnYAxis),
       m_nPagesPerSheet(nPagesOnXAxis * nPagesOnYAxis) {
-  ASSERT(m_nPagesOnXAxis > 0);
-  ASSERT(m_nPagesOnYAxis > 0);
-  ASSERT(m_destPageSize.width > 0);
-  ASSERT(m_destPageSize.height > 0);
+  DCHECK(m_nPagesOnXAxis > 0);
+  DCHECK(m_nPagesOnYAxis > 0);
+  DCHECK(m_destPageSize.width > 0);
+  DCHECK(m_destPageSize.height > 0);
 
   m_subPageSize.width = m_destPageSize.width / m_nPagesOnXAxis;
   m_subPageSize.height = m_destPageSize.height / m_nPagesOnYAxis;
@@ -145,11 +147,9 @@ const CPDF_Object* PageDictGetInheritableTag(const CPDF_Dictionary* pDict,
     return nullptr;
   }
 
-  const CPDF_Object* pType =
-      pDict->GetObjectFor(pdfium::page_object::kType)->GetDirect();
-  if (!ToName(pType))
-    return nullptr;
-  if (pType->GetString().Compare("Page"))
+  const CPDF_Name* pName =
+      ToName(pDict->GetObjectFor(pdfium::page_object::kType)->GetDirect());
+  if (!pName || pName->GetString() != "Page")
     return nullptr;
 
   const CPDF_Dictionary* pp = ToDictionary(
@@ -201,73 +201,16 @@ bool CopyInheritable(CPDF_Dictionary* pDestPageDict,
   return true;
 }
 
-bool ParsePageRangeString(const ByteString& bsPageRange,
-                          uint32_t nCount,
-                          std::vector<uint32_t>* pageArray) {
-  ByteString bsStrippedPageRange = bsPageRange;
-  bsStrippedPageRange.Remove(' ');
-  size_t nLength = bsStrippedPageRange.GetLength();
-  if (nLength == 0)
-    return true;
-
-  static const ByteString cbCompareString("0123456789-,");
-  for (size_t i = 0; i < nLength; ++i) {
-    if (!cbCompareString.Contains(bsStrippedPageRange[i]))
-      return false;
-  }
-
-  ByteString cbMidRange;
-  size_t nStringFrom = 0;
-  size_t nStringTo = 0;
-  while (nStringTo < nLength) {
-    nStringTo = bsStrippedPageRange.Find(',', nStringFrom).value_or(nLength);
-    cbMidRange =
-        bsStrippedPageRange.Substr(nStringFrom, nStringTo - nStringFrom);
-    Optional<size_t> nDashPosition = cbMidRange.Find('-');
-    if (nDashPosition) {
-      size_t nMid = nDashPosition.value();
-      uint32_t nStartPageNum = pdfium::base::checked_cast<uint32_t>(
-          atoi(cbMidRange.First(nMid).c_str()));
-      if (nStartPageNum == 0)
-        return false;
-
-      ++nMid;
-      size_t nEnd = cbMidRange.GetLength() - nMid;
-      if (nEnd == 0)
-        return false;
-
-      uint32_t nEndPageNum = pdfium::base::checked_cast<uint32_t>(
-          atoi(cbMidRange.Substr(nMid, nEnd).c_str()));
-      if (nStartPageNum < 0 || nStartPageNum > nEndPageNum ||
-          nEndPageNum > nCount) {
-        return false;
-      }
-      for (uint32_t i = nStartPageNum; i <= nEndPageNum; ++i) {
-        pageArray->push_back(i);
-      }
-    } else {
-      uint32_t nPageNum =
-          pdfium::base::checked_cast<uint32_t>(atoi(cbMidRange.c_str()));
-      if (nPageNum <= 0 || nPageNum > nCount)
-        return false;
-      pageArray->push_back(nPageNum);
-    }
-    nStringFrom = nStringTo + 1;
-  }
-  return true;
-}
-
 std::vector<uint32_t> GetPageNumbers(const CPDF_Document& doc,
                                      const ByteString& bsPageRange) {
-  std::vector<uint32_t> page_numbers;
   uint32_t nCount = doc.GetPageCount();
-  if (bsPageRange.IsEmpty()) {
-    for (uint32_t i = 1; i <= nCount; ++i)
-      page_numbers.push_back(i);
-  } else {
-    if (!ParsePageRangeString(bsPageRange, nCount, &page_numbers))
-      page_numbers.clear();
-  }
+  if (!bsPageRange.IsEmpty())
+    return ParsePageRangeString(bsPageRange, nCount);
+
+  std::vector<uint32_t> page_numbers;
+  for (uint32_t i = 1; i <= nCount; ++i)
+    page_numbers.push_back(i);
+
   return page_numbers;
 }
 
@@ -310,8 +253,8 @@ CPDF_PageOrganizer::CPDF_PageOrganizer(CPDF_Document* pDestDoc,
 CPDF_PageOrganizer::~CPDF_PageOrganizer() = default;
 
 bool CPDF_PageOrganizer::Init() {
-  ASSERT(m_pDestDoc);
-  ASSERT(m_pSrcDoc);
+  DCHECK(m_pDestDoc);
+  DCHECK(m_pSrcDoc);
 
   CPDF_Dictionary* pNewRoot = dest()->GetRoot();
   if (!pNewRoot)
@@ -658,7 +601,7 @@ ByteString CPDF_NPageToOneExporter::AddSubPage(
 
 ByteString CPDF_NPageToOneExporter::MakeXObjectFromPage(
     const CPDF_Dictionary* pSrcPageDict) {
-  ASSERT(pSrcPageDict);
+  DCHECK(pSrcPageDict);
 
   const CPDF_Object* pSrcContentObj =
       pSrcPageDict->GetDirectObjectFor(pdfium::page_object::kContents);
@@ -711,7 +654,7 @@ ByteString CPDF_NPageToOneExporter::MakeXObjectFromPage(
 
 void CPDF_NPageToOneExporter::FinishPage(CPDF_Dictionary* pDestPageDict,
                                          const ByteString& bsContent) {
-  ASSERT(pDestPageDict);
+  DCHECK(pDestPageDict);
 
   CPDF_Dictionary* pRes =
       pDestPageDict->GetDictFor(pdfium::page_object::kResources);
@@ -777,7 +720,7 @@ FPDF_ImportNPagesToOne(FPDF_DOCUMENT src_doc,
     return nullptr;
 
   CPDF_Document* pDestDoc = CPDFDocumentFromFPDFDocument(output_doc.get());
-  ASSERT(pDestDoc);
+  DCHECK(pDestDoc);
 
   std::vector<uint32_t> page_numbers = GetPageNumbers(*pSrcDoc, ByteString());
   if (page_numbers.empty())

@@ -6,13 +6,14 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/crostini/crostini_features.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -38,7 +39,10 @@ void crostini::ShowCrostiniUpdateComponentView(
 }
 
 void CrostiniUpdateComponentView::Show(Profile* profile) {
-  DCHECK(crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
+  if (!crostini::CrostiniFeatures::Get()->IsAllowedNow(profile)) {
+    return;
+  }
+
   if (!g_crostini_upgrade_view) {
     g_crostini_upgrade_view = new CrostiniUpdateComponentView;
     CreateDialogWidget(g_crostini_upgrade_view, nullptr, nullptr);
@@ -65,7 +69,7 @@ CrostiniUpdateComponentView::CrostiniUpdateComponentView() {
       provider->GetInsetsMetric(views::InsetsMetric::INSETS_DIALOG),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
-  const base::string16 message =
+  const std::u16string message =
       l10n_util::GetStringUTF16(IDS_CROSTINI_TERMINA_UPDATE_OFFLINE);
   views::Label* message_label = new views::Label(message);
   message_label->SetMultiLine(true);
@@ -78,3 +82,6 @@ CrostiniUpdateComponentView::CrostiniUpdateComponentView() {
 CrostiniUpdateComponentView::~CrostiniUpdateComponentView() {
   g_crostini_upgrade_view = nullptr;
 }
+
+BEGIN_METADATA(CrostiniUpdateComponentView, views::BubbleDialogDelegateView)
+END_METADATA

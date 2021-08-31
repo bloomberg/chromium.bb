@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/inspector/dev_tools_host.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -65,9 +66,7 @@ const char DevToolsFrontendImpl::kSupplementName[] = "DevToolsFrontendImpl";
 DevToolsFrontendImpl::DevToolsFrontendImpl(
     LocalFrame& frame,
     mojo::PendingAssociatedReceiver<mojom::blink::DevToolsFrontend> receiver)
-    : Supplement<LocalFrame>(frame),
-      host_(frame.DomWindow()),
-      receiver_(this, frame.DomWindow()) {
+    : Supplement<LocalFrame>(frame) {
   receiver_.Bind(std::move(receiver),
                  frame.GetTaskRunner(TaskType::kMiscPlatformAPI));
 }
@@ -83,6 +82,8 @@ void DevToolsFrontendImpl::DidClearWindowObject() {
     ScriptState* script_state = ToScriptStateForMainWorld(GetSupplementable());
     DCHECK(script_state);
     ScriptState::Scope scope(script_state);
+    v8::MicrotasksScope microtasks_scope(
+        isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
     if (devtools_host_)
       devtools_host_->DisconnectClient();
     devtools_host_ =
@@ -106,7 +107,10 @@ void DevToolsFrontendImpl::DidClearWindowObject() {
 void DevToolsFrontendImpl::SetupDevToolsFrontend(
     const String& api_script,
     mojo::PendingAssociatedRemote<mojom::blink::DevToolsFrontendHost> host) {
-  DCHECK(GetSupplementable()->IsMainFrame());
+  LocalFrame* frame = GetSupplementable();
+  DCHECK(frame->IsMainFrame());
+  frame->GetWidgetForLocalRoot()->SetLayerTreeDebugState(
+      cc::LayerTreeDebugState());
   api_script_ = api_script;
   host_.Bind(std::move(host),
              GetSupplementable()->GetTaskRunner(TaskType::kMiscPlatformAPI));
@@ -121,9 +125,9 @@ void DevToolsFrontendImpl::SetupDevToolsExtensionAPI(
   api_script_ = extension_api;
 }
 
-void DevToolsFrontendImpl::SendMessageToEmbedder(const String& message) {
+void DevToolsFrontendImpl::SendMessageToEmbedder(base::Value message) {
   if (host_.is_bound())
-    host_->DispatchEmbedderMessage(message);
+    host_->DispatchEmbedderMessage(std::move(message));
 }
 
 void DevToolsFrontendImpl::DestroyOnHostGone() {

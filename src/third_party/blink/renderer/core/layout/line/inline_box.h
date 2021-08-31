@@ -22,6 +22,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_BOX_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_BOX_H_
 
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_box_model.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
@@ -43,12 +44,7 @@ enum MarkLineBoxes { kMarkLineBoxesDirty, kDontMarkLineBoxes };
 // some LayoutObject (i.e., it represents a portion of that LayoutObject).
 class CORE_EXPORT InlineBox : public DisplayItemClient {
  public:
-  InlineBox(LineLayoutItem obj)
-      : next_(nullptr),
-        prev_(nullptr),
-        parent_(nullptr),
-        line_layout_item_(obj),
-        logical_width_() {}
+  InlineBox(LineLayoutItem obj) : line_layout_item_(obj), logical_width_() {}
 
   InlineBox(LineLayoutItem item,
             LayoutPoint top_left,
@@ -462,10 +458,10 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
  private:
   void SetLineLayoutItemShouldDoFullPaintInvalidationIfNeeded();
 
-  InlineBox* next_;  // The next element on the same line as us.
-  InlineBox* prev_;  // The previous element on the same line as us.
+  InlineBox* next_ = nullptr;  // The next element on the same line as us.
+  InlineBox* prev_ = nullptr;  // The previous element on the same line as us.
 
-  InlineFlowBox* parent_;  // The box that contains us.
+  InlineFlowBox* parent_ = nullptr;  // The box that contains us.
   LineLayoutItem line_layout_item_;
 
  protected:

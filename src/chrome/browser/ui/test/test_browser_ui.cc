@@ -8,9 +8,12 @@
 #include "base/test/gtest_util.h"
 #include "base/test/test_switches.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
 #if defined(OS_WIN) || defined(OS_MAC) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+    (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 #include "chrome/test/pixel/browser_skia_gold_pixel_diff.h"
 #include "ui/base/test/skia_gold_matching_algorithm.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
@@ -32,7 +35,9 @@ std::string NameFromTestCase() {
 }  // namespace
 
 TestBrowserUi::TestBrowserUi() {
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
   // Default to fuzzy diff. The magic number is chosen based on
   // past experiments.
   SetPixelMatchAlgorithm(
@@ -43,8 +48,17 @@ TestBrowserUi::TestBrowserUi() {
 TestBrowserUi::~TestBrowserUi() = default;
 
 // TODO(https://crbug.com/958242) support Mac for pixel tests.
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 bool TestBrowserUi::VerifyPixelUi(views::Widget* widget,
+                                  const std::string& screenshot_prefix,
+                                  const std::string& screenshot_name) {
+  return VerifyPixelUi(widget->GetContentsView(), screenshot_prefix,
+                       screenshot_name);
+}
+
+bool TestBrowserUi::VerifyPixelUi(views::View* view,
                                   const std::string& screenshot_prefix,
                                   const std::string& screenshot_name) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -52,13 +66,13 @@ bool TestBrowserUi::VerifyPixelUi(views::Widget* widget,
     return true;
 
   // Wait for painting complete.
-  auto* compositor = widget->GetCompositor();
+  auto* compositor = view->GetWidget()->GetCompositor();
   ui::DrawWaiterForTest::WaitForCompositingEnded(compositor);
 
   BrowserSkiaGoldPixelDiff pixel_diff;
-  pixel_diff.Init(widget, screenshot_prefix);
-  return pixel_diff.CompareScreenshot(
-      screenshot_name, widget->GetContentsView(), GetPixelMatchAlgorithm());
+  pixel_diff.Init(view->GetWidget(), screenshot_prefix);
+  return pixel_diff.CompareScreenshot(screenshot_name, view,
+                                      GetPixelMatchAlgorithm());
 }
 
 void TestBrowserUi::SetPixelMatchAlgorithm(

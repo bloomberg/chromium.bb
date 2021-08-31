@@ -308,7 +308,7 @@ bool RdpSession::Initialize(const ScreenResolution& resolution) {
   Microsoft::WRL::ComPtr<IRdpDesktopSessionEventHandler> event_handler(
       new EventHandler(weak_factory_.GetWeakPtr()));
   terminal_id_ = base::GenerateGUID();
-  base::win::ScopedBstr terminal_id(base::UTF8ToUTF16(terminal_id_));
+  base::win::ScopedBstr terminal_id(base::UTF8ToWide(terminal_id_));
   result = rdp_desktop_session_->Connect(
       host_size.width(), host_size.height(), kDefaultRdpDpi, kDefaultRdpDpi,
       terminal_id.Get(), server_port, event_handler.Get());
@@ -652,7 +652,8 @@ void DesktopSessionWin::OnSessionAttached(uint32_t session_id) {
   }
 
   // Create a launcher for the desktop process, using the per-session delegate.
-  launcher_.reset(new WorkerProcessLauncher(std::move(delegate), this));
+  launcher_ =
+      std::make_unique<WorkerProcessLauncher>(std::move(delegate), this);
   session_id_ = session_id;
 }
 

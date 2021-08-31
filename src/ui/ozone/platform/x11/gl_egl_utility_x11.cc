@@ -38,4 +38,8 @@ bool GLEGLUtilityX11::X11DoesVisualHaveAlphaForTest() const {
   return ui::DoesVisualHaveAlphaForTest();
 }
 
+bool GLEGLUtilityX11::HasVisualManager() {
+  return true;
+}
+
 }  // namespace ui

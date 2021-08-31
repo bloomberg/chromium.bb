@@ -51,13 +51,21 @@ export interface Area {
 
 export const MAX_TIME = 180;
 
-export const STATE_VERSION = 2;
+// 3: TrackKindPriority and related sorting changes.
+export const STATE_VERSION = 3;
 
 export const SCROLLING_TRACK_GROUP = 'ScrollingTracks';
 
 export type EngineMode = 'WASM'|'HTTP_RPC';
 
 export type NewEngineMode = 'USE_HTTP_RPC_IF_AVAILABLE'|'FORCE_BUILTIN_WASM';
+
+export enum TrackKindPriority {
+  'MAIN_THREAD' = 0,
+  'RENDER_THREAD' = 1,
+  'GPU_COMPLETION' = 2,
+  'ORDINARY' = 3
+}
 
 export type HeapProfileFlamegraphViewingOption =
     'SPACE'|'ALLOC_SPACE'|'OBJECTS'|'ALLOC_OBJECTS';
@@ -83,6 +91,7 @@ export interface TraceArrayBufferSource {
   type: 'ARRAY_BUFFER';
   title: string;
   url?: string;
+  fileName?: string;
   buffer: ArrayBuffer;
 }
 
@@ -103,7 +112,7 @@ export interface TrackState {
   engineId: string;
   kind: string;
   name: string;
-  isMainThread: boolean;
+  trackKindPriority: TrackKindPriority;
   trackGroup?: string;
   config: {};
 }
@@ -295,6 +304,7 @@ export interface State {
   currentSelection: Selection|null;
   currentHeapProfileFlamegraph: HeapProfileFlamegraph|null;
   logsPagination: LogsPagination;
+  traceConversionInProgress: boolean;
 
   /**
    * This state is updated on the frontend at 60Hz and eventually syncronised to
@@ -364,6 +374,17 @@ export function isAdbTarget(target: RecordingTarget):
   return false;
 }
 
+export function hasActiveProbes(config: RecordConfig) {
+  const fieldsWithEmptyResult = new Set<string>(['hpBlockClient']);
+  for (const key in config) {
+    if (typeof (config[key]) === 'boolean' && config[key] === true &&
+        !fieldsWithEmptyResult.has(key)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export interface RecordConfig {
   [key: string]: null|number|boolean|string|string[];
 
@@ -395,6 +416,7 @@ export interface RecordConfig {
   ftraceDrainPeriodMs: number;
   androidLogs: boolean;
   androidLogBuffers: string[];
+  androidFrameTimeline: boolean;
 
   batteryDrain: boolean;
   batteryDrainPollMs: number;
@@ -416,6 +438,8 @@ export interface RecordConfig {
   hpContinuousDumpsPhase: number;
   hpContinuousDumpsInterval: number;
   hpSharedMemoryBuffer: number;
+  hpBlockClient: boolean;
+  hpAllHeaps: boolean;
 
   javaHeapDump: boolean;
   jpProcesses: string;
@@ -455,6 +479,7 @@ export function createEmptyRecordConfig(): RecordConfig {
     ftraceDrainPeriodMs: 250,
     androidLogs: false,
     androidLogBuffers: [],
+    androidFrameTimeline: false,
 
     cpuCoarse: false,
     cpuCoarsePollMs: 1000,
@@ -479,6 +504,8 @@ export function createEmptyRecordConfig(): RecordConfig {
     hpContinuousDumpsPhase: 0,
     hpContinuousDumpsInterval: 0,
     hpSharedMemoryBuffer: 8 * 1048576,
+    hpBlockClient: true,
+    hpAllHeaps: false,
 
     javaHeapDump: false,
     jpProcesses: '',
@@ -511,11 +538,13 @@ export function getBuiltinChromeCategoryList(): string[] {
     'accessibility',
     'AccountFetcherService',
     'android_webview',
+    'aogh',
     'audio',
     'base',
     'benchmark',
     'blink',
     'blink.animations',
+    'blink.bindings',
     'blink.console',
     'blink_gc',
     'blink.net',
@@ -526,8 +555,13 @@ export function getBuiltinChromeCategoryList(): string[] {
     'browser',
     'browsing_data',
     'CacheStorage',
+    'Calculators',
+    'CameraStream',
     'camera',
+    'cast_app',
     'cast_perf_test',
+    'cast.mdns',
+    'cast.mdns.socket',
     'cast.stream',
     'cc',
     'cc.debug',
@@ -537,15 +571,17 @@ export function getBuiltinChromeCategoryList(): string[] {
     'compositor',
     'content',
     'content_capture',
+    'device',
     'devtools',
+    'devtools.contrast',
     'devtools.timeline',
-    'devtools.timeline.async',
+    'disk_cache',
     'download',
     'download_service',
     'drm',
     'drmcursor',
     'dwrite',
-    'DXVA Decoding',
+    'DXVA_Decoding',
     'EarlyJava',
     'evdev',
     'event',
@@ -556,10 +592,12 @@ export function getBuiltinChromeCategoryList(): string[] {
     'fonts',
     'GAMEPAD',
     'gpu',
+    'gpu.angle',
     'gpu.capture',
     'headless',
     'hwoverlays',
     'identity',
+    'ime',
     'IndexedDB',
     'input',
     'io',
@@ -587,12 +625,17 @@ export function getBuiltinChromeCategoryList(): string[] {
     'omnibox',
     'oobe',
     'ozone',
+    'partition_alloc',
     'passwords',
     'p2p',
     'page-serialization',
+    'paint_preview',
     'pepper',
+    'PlatformMalloc',
+    'power',
     'ppapi',
-    'ppapi proxy',
+    'ppapi_proxy',
+    'print',
     'rail',
     'renderer',
     'renderer_host',
@@ -603,21 +646,26 @@ export function getBuiltinChromeCategoryList(): string[] {
     'sequence_manager',
     'service_manager',
     'ServiceWorker',
+    'sharing',
     'shell',
     'shortcut_viewer',
     'shutdown',
     'SiteEngagement',
     'skia',
+    'sql',
+    'stadia_media',
+    'stadia_rtc',
     'startup',
     'sync',
     'sync_lock_contention',
-    'thread_pool',
     'test_gpu',
-    'test_tracing',
+    'thread_pool',
     'toplevel',
+    'toplevel.flow',
     'ui',
     'v8',
     'v8.execute',
+    'v8.wasm',
     'ValueStoreFrontend::Backend',
     'views',
     'views.frame',
@@ -630,6 +678,7 @@ export function getBuiltinChromeCategoryList(): string[] {
     'webrtc',
     'xr',
     'disabled-by-default-animation-worklet',
+    'disabled-by-default-audio',
     'disabled-by-default-audio-worklet',
     'disabled-by-default-blink.debug',
     'disabled-by-default-blink.debug.display_lock',
@@ -647,6 +696,7 @@ export function getBuiltinChromeCategoryList(): string[] {
     'disabled-by-default-cc.debug.scheduler',
     'disabled-by-default-cc.debug.scheduler.frames',
     'disabled-by-default-cc.debug.scheduler.now',
+    'disabled-by-default-content.verbose',
     'disabled-by-default-cpu_profiler',
     'disabled-by-default-cpu_profiler.debug',
     'disabled-by-default-devtools.screenshot',
@@ -661,34 +711,41 @@ export function getBuiltinChromeCategoryList(): string[] {
     'disabled-by-default-gpu_cmd_queue',
     'disabled-by-default-gpu.dawn',
     'disabled-by-default-gpu.debug',
-    'disabled-by-default-gpu_decoder',
+    'disabled-by-default-gpu.decoder',
     'disabled-by-default-gpu.device',
     'disabled-by-default-gpu.service',
+    'disabled-by-default-gpu.vulkan.vma',
     'disabled-by-default-histogram_samples',
     'disabled-by-default-ipc.flow',
     'disabled-by-default-java-heap-profiler',
     'disabled-by-default-layer-element',
+    'disabled-by-default-layout_shift.debug',
     'disabled-by-default-lifecycles',
     'disabled-by-default-loading',
+    'disabled-by-default-mediastream',
     'disabled-by-default-memory-infra',
     'disabled-by-default-memory-infra.v8.code_stats',
+    'disabled-by-default-mojom',
     'disabled-by-default-net',
     'disabled-by-default-network',
     'disabled-by-default-paint-worklet',
     'disabled-by-default-power',
     'disabled-by-default-renderer.scheduler',
     'disabled-by-default-renderer.scheduler.debug',
+    'disabled-by-default-sandbox',
     'disabled-by-default-sequence_manager',
     'disabled-by-default-sequence_manager.debug',
     'disabled-by-default-sequence_manager.verbose_snapshots',
     'disabled-by-default-skia',
     'disabled-by-default-skia.gpu',
     'disabled-by-default-skia.gpu.cache',
+    'disabled-by-default-skia.shaders',
     'disabled-by-default-SyncFileSystem',
     'disabled-by-default-system_stats',
     'disabled-by-default-thread_pool_diagnostics',
     'disabled-by-default-toplevel.flow',
     'disabled-by-default-toplevel.ipc',
+    'disabled-by-default-user_action_samples',
     'disabled-by-default-v8.compile',
     'disabled-by-default-v8.cpu_profiler',
     'disabled-by-default-v8.cpu_profiler.hires',
@@ -698,17 +755,24 @@ export function getBuiltinChromeCategoryList(): string[] {
     'disabled-by-default-v8.runtime',
     'disabled-by-default-v8.runtime_stats',
     'disabled-by-default-v8.runtime_stats_sampling',
+    'disabled-by-default-v8.stack_trace',
     'disabled-by-default-v8.turbofan',
     'disabled-by-default-v8.wasm',
+    'disabled-by-default-v8.wasm.detailed',
+    'disabled-by-default-v8.wasm.turbofan',
     'disabled-by-default-video_and_image_capture',
     'disabled-by-default-viz.debug.overlay_planes',
+    'disabled-by-default-viz.gpu_composite_time',
     'disabled-by-default-viz.hit_testing_flow',
     'disabled-by-default-viz.overdraw',
     'disabled-by-default-viz.quads',
     'disabled-by-default-viz.surface_id_flow',
     'disabled-by-default-viz.surface_lifetime',
     'disabled-by-default-viz.triangles',
+    'disabled-by-default-webaudio.audionode',
+    'disabled-by-default-webrtc',
     'disabled-by-default-worker.scheduler',
+    'disabled-by-default-xr.debug',
   ];
 }
 
@@ -759,6 +823,7 @@ export function createEmptyState(): State {
     status: {msg: '', timestamp: 0},
     currentSelection: null,
     currentHeapProfileFlamegraph: null,
+    traceConversionInProgress: false,
 
     video: null,
     videoEnabled: false,

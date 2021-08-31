@@ -28,17 +28,21 @@ public:
         (void)bias;
         auto scale = _outer.scale;
         (void)scale;
-        biasVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag, kHalf_GrSLType,
-                                                   "bias");
-        scaleVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag, kHalf_GrSLType,
-                                                    "scale");
+        biasVar = args.fUniformHandler->addUniform(
+                &_outer, kFragment_GrShaderFlag, kHalf_GrSLType, "bias");
+        scaleVar = args.fUniformHandler->addUniform(
+                &_outer, kFragment_GrShaderFlag, kHalf_GrSLType, "scale");
         fragBuilder->codeAppendf(
                 R"SkSL(half angle = sk_Caps.atan2ImplementedAsAtanYOverX ? half(2.0 * atan(-%s.y, length(%s) - %s.x)) : half(atan(-%s.y, -%s.x));
 half t = ((angle * 0.15915493667125702 + 0.5) + %s) * %s;
 return half4(t, 1.0, 0.0, 0.0);
 )SkSL",
-                args.fSampleCoord, args.fSampleCoord, args.fSampleCoord, args.fSampleCoord,
-                args.fSampleCoord, args.fUniformHandler->getUniformCStr(biasVar),
+                args.fSampleCoord,
+                args.fSampleCoord,
+                args.fSampleCoord,
+                args.fSampleCoord,
+                args.fSampleCoord,
+                args.fUniformHandler->getUniformCStr(biasVar),
                 args.fUniformHandler->getUniformCStr(scaleVar));
     }
 
@@ -47,25 +51,15 @@ private:
                    const GrFragmentProcessor& _proc) override {
         const GrSweepGradientLayout& _outer = _proc.cast<GrSweepGradientLayout>();
         {
-            float biasValue = _outer.bias;
-            if (biasPrev != biasValue) {
-                biasPrev = biasValue;
-                pdman.set1f(biasVar, biasValue);
-            }
-            float scaleValue = _outer.scale;
-            if (scalePrev != scaleValue) {
-                scalePrev = scaleValue;
-                pdman.set1f(scaleVar, scaleValue);
-            }
+            pdman.set1f(biasVar, _outer.bias);
+            pdman.set1f(scaleVar, _outer.scale);
         }
     }
-    float biasPrev = SK_FloatNaN;
-    float scalePrev = SK_FloatNaN;
     UniformHandle biasVar;
     UniformHandle scaleVar;
 };
-GrGLSLFragmentProcessor* GrSweepGradientLayout::onCreateGLSLInstance() const {
-    return new GrGLSLSweepGradientLayout();
+std::unique_ptr<GrGLSLFragmentProcessor> GrSweepGradientLayout::onMakeProgramImpl() const {
+    return std::make_unique<GrGLSLSweepGradientLayout>();
 }
 void GrSweepGradientLayout::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                                   GrProcessorKeyBuilder* b) const {}
@@ -76,7 +70,6 @@ bool GrSweepGradientLayout::onIsEqual(const GrFragmentProcessor& other) const {
     if (scale != that.scale) return false;
     return true;
 }
-bool GrSweepGradientLayout::usesExplicitReturn() const { return true; }
 GrSweepGradientLayout::GrSweepGradientLayout(const GrSweepGradientLayout& src)
         : INHERITED(kGrSweepGradientLayout_ClassID, src.optimizationFlags())
         , bias(src.bias)
@@ -96,16 +89,22 @@ GR_DEFINE_FRAGMENT_PROCESSOR_TEST(GrSweepGradientLayout);
 #if GR_TEST_UTILS
 std::unique_ptr<GrFragmentProcessor> GrSweepGradientLayout::TestCreate(GrProcessorTestData* d) {
     SkScalar scale = GrGradientShader::RandomParams::kGradientScale;
-    SkPoint center = {d->fRandom->nextRangeScalar(0.0f, scale),
-                      d->fRandom->nextRangeScalar(0.0f, scale)};
+    SkPoint center;
+    center.fX = d->fRandom->nextRangeScalar(0.0f, scale);
+    center.fY = d->fRandom->nextRangeScalar(0.0f, scale);
 
     GrGradientShader::RandomParams params(d->fRandom);
-    auto shader = params.fUseColors4f
-                          ? SkGradientShader::MakeSweep(center.fX, center.fY, params.fColors4f,
-                                                        params.fColorSpace, params.fStops,
-                                                        params.fColorCount)
-                          : SkGradientShader::MakeSweep(center.fX, center.fY, params.fColors,
-                                                        params.fStops, params.fColorCount);
+    auto shader = params.fUseColors4f ? SkGradientShader::MakeSweep(center.fX,
+                                                                    center.fY,
+                                                                    params.fColors4f,
+                                                                    params.fColorSpace,
+                                                                    params.fStops,
+                                                                    params.fColorCount)
+                                      : SkGradientShader::MakeSweep(center.fX,
+                                                                    center.fY,
+                                                                    params.fColors,
+                                                                    params.fStops,
+                                                                    params.fColorCount);
     GrTest::TestAsFPArgs asFPArgs(d);
     std::unique_ptr<GrFragmentProcessor> fp = as_SB(shader)->asFragmentProcessor(asFPArgs.args());
     SkASSERT_RELEASE(fp);
@@ -120,7 +119,7 @@ std::unique_ptr<GrFragmentProcessor> GrSweepGradientLayout::Make(const SkSweepGr
         return nullptr;
     }
     matrix.postConcat(grad.getGradientMatrix());
-    return GrMatrixEffect::Make(
-            matrix, std::unique_ptr<GrFragmentProcessor>(
-                            new GrSweepGradientLayout(grad.getTBias(), grad.getTScale())));
+    return GrMatrixEffect::Make(matrix,
+                                std::unique_ptr<GrFragmentProcessor>(new GrSweepGradientLayout(
+                                        grad.getTBias(), grad.getTScale())));
 }

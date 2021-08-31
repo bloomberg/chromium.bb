@@ -54,6 +54,7 @@ BUILD_CONFIG_KEYS = (
 
 METADATA_APK_FILENAME = 'apk_file_name'  # Path relative to output_directory.
 METADATA_APK_SIZE = 'apk_size'  # File size of apk in bytes.
+METADATA_APK_SPLIT_NAME = 'apk_split_name'  # Name of the split if applicable.
 METADATA_ZIPALIGN_OVERHEAD = 'zipalign_padding'  # Overhead from zipalign.
 METADATA_SIGNING_BLOCK_SIZE = 'apk_signature_block_size'  # Size in bytes.
 METADATA_MAP_FILENAME = 'map_file_name'  # Path relative to output_directory.
@@ -206,43 +207,55 @@ def ClassifySections(section_names):
   return frozenset(unsummed_sections), frozenset(summed_sections)
 
 
-class Container(object):
-  """Info for a single SuperSize input file (e.g., APK file).
+class BaseContainer(object):
+  """Base class for BaseContainer and DeltaContainer.
 
   Fields:
-    name: Container name. Must be unique among containers, and can be ''.
+    name: Container name. Must be unique among (non-Diff) Containers.
     short_name: Short container name for compact display. This, also needs to be
         unique among containers in the same SizeInfo, and can be ''.
-    metadata: A dict.
-    section_sizes: A dict of section_name -> size.
     classified_sections: Cache for ClassifySections().
   """
   __slots__ = (
       'name',
       'short_name',
-      'metadata',
-      'section_sizes',
       '_classified_sections',
   )
 
-  def __init__(self, name, metadata, section_sizes):
+  def __init__(self, name):
     # name == '' hints that only one container exists, and there's no need to
     # distinguish them. This can affect console output.
     self.name = name
     self.short_name = None  # Assigned by AssignShortNames().
-    self.metadata = metadata or {}
-    self.section_sizes = section_sizes  # E.g. {SECTION_TEXT: 0}
     self._classified_sections = None
+
+  def ClassifySections(self):
+    if self._classified_sections is None:
+      self._classified_sections = ClassifySections(self.section_sizes.keys())
+    return self._classified_sections
 
   @staticmethod
   def AssignShortNames(containers):
     for i, c in enumerate(containers):
       c.short_name = str(i) if c.name else ''
 
-  def ClassifySections(self):
-    if not self._classified_sections:
-      self._classified_sections = ClassifySections(self.section_sizes.keys())
-    return self._classified_sections
+
+class Container(BaseContainer):
+  """Info for a single SuperSize input file (e.g., APK file).
+
+  Fields:
+    metadata: A dict.
+    section_sizes: A dict of section_name -> size.
+  """
+  __slots__ = (
+      'metadata',
+      'section_sizes',
+  )
+
+  def __init__(self, name, metadata, section_sizes):
+    super(Container, self).__init__(name)
+    self.metadata = metadata or {}
+    self.section_sizes = section_sizes  # E.g. {SECTION_TEXT: 0}
 
   @staticmethod
   def Empty():
@@ -253,6 +266,25 @@ class Container(object):
     singleton for robustness.
     """
     return Container(name='(empty)', metadata={}, section_sizes={})
+
+
+class DeltaContainer(BaseContainer):
+  """Delta version of Container."""
+  __slots__ = (
+      'before',
+      'after',
+  )
+
+  def __init__(self, name, before, after):
+    super(DeltaContainer, self).__init__(name)
+    self.before = before
+    self.after = after
+
+  @property
+  def section_sizes(self):
+    ret = collections.Counter(self.after.section_sizes)
+    ret.update({k: -v for k, v in self.before.section_sizes.items()})
+    return dict(ret)
 
 
 class BaseSizeInfo(object):
@@ -286,7 +318,7 @@ class BaseSizeInfo(object):
     self._symbols = symbols
     self._native_symbols = None
     self._pak_symbols = None
-    Container.AssignShortNames(self.containers)
+    BaseContainer.AssignShortNames(self.containers)
 
   @property
   def symbols(self):
@@ -315,12 +347,11 @@ class BaseSizeInfo(object):
     return self._pak_symbols
 
   @property
-  def all_section_sizes(self):
-    return [c.section_sizes for c in self.containers]
-
-  @property
-  def metadata(self):
-    return [c.metadata for c in self.containers]
+  def section_sizes(self):
+    ret = collections.Counter()
+    for c in self.containers:
+      ret.update(c.section_sizes)
+    return dict(ret)
 
   def ContainerForName(self, name, default=None):
     return next((c for c in self.containers if c.name == name), default)
@@ -996,6 +1027,12 @@ class SymbolGroup(BaseSymbol):
   def WherePssBiggerThan(self, min_pss):
     return self.Filter(lambda s: s.pss >= min_pss)
 
+  def WhereIsOnDemand(self, value=True):
+    ret = self.Filter(lambda s: s.container_name.endswith('?'))
+    if not value:
+      ret = ret.Inverted()
+    return ret
+
   def WhereInSection(self, section, container=None):
     """|section| can be section_name ('.bss'), or section chars ('bdr')."""
     if section.startswith('.'):
@@ -1229,7 +1266,7 @@ class SymbolGroup(BaseSymbol):
     # A full second faster to cluster per-section. Plus, don't need create
     # (section_name, name) tuples in cluster_func.
     ret = []
-    for section in self.GroupedBySectionName():
+    for section in self.GroupedByContainerAndSectionName():
       ret.extend(section.GroupedBy(
           cluster_func, min_count=2, group_factory=group_factory))
 
@@ -1263,6 +1300,9 @@ class SymbolGroup(BaseSymbol):
 
   def GroupedByContainerAndSectionName(self):
     return self.GroupedBy(lambda s: (s.container_name, s.section_name))
+
+  def GroupedByContainer(self):
+    return self.GroupedBy(lambda s: s.container_name)
 
   def GroupedBySectionName(self):
     return self.GroupedBy(lambda s: s.section_name)

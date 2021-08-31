@@ -8,8 +8,9 @@
 #ifndef GrDirectContextPriv_DEFINED
 #define GrDirectContextPriv_DEFINED
 
+#include "include/core/SkSpan.h"
+#include "include/core/SkSurface.h"
 #include "include/gpu/GrDirectContext.h"
-#include "src/core/SkSpan.h"
 
 class GrAtlasManager;
 class GrBackendFormat;
@@ -42,7 +43,7 @@ public:
     GrImageContext* asImageContext() { return fContext->asImageContext(); }
     GrRecordingContext* asRecordingContext() { return fContext->asRecordingContext(); }
 
-    // from GrImageContext
+    // from GrRecordingContext
     GrProxyProvider* proxyProvider() { return fContext->proxyProvider(); }
     const GrProxyProvider* proxyProvider() const { return fContext->proxyProvider(); }
 
@@ -52,7 +53,6 @@ public:
     // from GrRecordingContext
     GrDrawingManager* drawingManager() { return fContext->drawingManager(); }
 
-    GrMemoryPool* opMemoryPool() { return fContext->arenas().opMemoryPool(); }
     SkArenaAlloc* recordTimeAllocator() { return fContext->arenas().recordTimeAllocator(); }
     GrRecordingContext::Arenas arenas() { return fContext->arenas(); }
 
@@ -81,11 +81,21 @@ public:
      * GrContext will detect when it must perform a resolve before reading pixels back from the
      * surface or using it as a texture.
      */
-    GrSemaphoresSubmitted flushSurfaces(SkSpan<GrSurfaceProxy*>, const GrFlushInfo&);
+    GrSemaphoresSubmitted flushSurfaces(
+                SkSpan<GrSurfaceProxy*>,
+                SkSurface::BackendSurfaceAccess = SkSurface::BackendSurfaceAccess::kNoAccess,
+                const GrFlushInfo& = {},
+                const GrBackendSurfaceMutableState* newState = nullptr);
 
-    /** Version of above that flushes for a single proxy and uses a default GrFlushInfo. Null is
-     * allowed. */
-    void flushSurface(GrSurfaceProxy*);
+    /** Version of above that flushes for a single proxy. Null is allowed. */
+    GrSemaphoresSubmitted flushSurface(
+                GrSurfaceProxy* proxy,
+                SkSurface::BackendSurfaceAccess access = SkSurface::BackendSurfaceAccess::kNoAccess,
+                const GrFlushInfo& info = {},
+                const GrBackendSurfaceMutableState* newState = nullptr) {
+        size_t size = proxy ? 1 : 0;
+        return this->flushSurfaces({&proxy, size}, access, info, newState);
+    }
 
     /**
      * Returns true if createPMToUPMEffect and createUPMToPMEffect will succeed. In other words,
@@ -120,7 +130,9 @@ public:
         return fContext->onGetSmallPathAtlasMgr();
     }
 
-    void copyRenderTasksFromDDL(sk_sp<const SkDeferredDisplayList>, GrRenderTargetProxy* newDest);
+    void createDDLTask(sk_sp<const SkDeferredDisplayList>,
+                       sk_sp<GrRenderTargetProxy> newDest,
+                       SkIPoint offset);
 
     bool compile(const GrProgramDesc&, const GrProgramInfo&);
 

@@ -7,16 +7,20 @@ include_rules = [
   "+android_webview/proto",
   "+android_webview/test/android_webview_unittests_jni",
   "+cc",
-  "+components/autofill/android",
+  "+components/android_autofill/android",
+  "+components/android_autofill/browser",
   "+components/autofill/content/browser",
   "+components/autofill/content/common",
   "+components/autofill/core/browser",
   "+components/autofill/core/common",
   "+components/cdm/browser",
+  "+components/component_updater/android",
+  "+components/component_updater/installer_policies",
   "+components/crash/content/browser",
   "+components/crash/core",
   "+components/download/public/common",
   "+components/embedder_support/android/metrics",
+  "+components/embedder_support/origin_trials",
   "+components/favicon_base",
   "+components/flags_ui",
   "+components/heap_profiling",
@@ -31,6 +35,7 @@ include_rules = [
   "+components/pref_registry",
   "+components/printing/browser",
   "+components/printing/common",
+  "+components/profile_metrics",
   "+components/safe_browsing",
   "+components/security_interstitials",
   "+components/services/heap_profiling",
@@ -61,6 +66,8 @@ include_rules = [
   "+components/embedder_support/android",
 
   "+printing",
+
+  "+services/cert_verifier/public/mojom",
 
   "+services/metrics/public/cpp/ukm_source_id.h",
 

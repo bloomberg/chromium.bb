@@ -25,9 +25,21 @@ class Literal<bool> final : public Expression {
 public:
     static constexpr Kind kExpressionKind = Kind::kBoolLiteral;
 
-    Literal(const Context& context, int offset, bool value)
-        : INHERITED(offset, kExpressionKind, context.fBool_Type.get())
+    Literal(int offset, bool value, const Type* type)
+        : INHERITED(offset, kExpressionKind, type)
         , fValue(value) {}
+
+    // Makes a literal of boolean type.
+    static std::unique_ptr<BoolLiteral> Make(const Context& context, int offset, float value) {
+        return std::make_unique<BoolLiteral>(offset, value, context.fTypes.fBool.get());
+    }
+
+    // Makes a literal of boolean type. (Functionally identical to the above, but useful if you
+    // don't have access to the Context.)
+    static std::unique_ptr<BoolLiteral> Make(int offset, float value, const Type* type) {
+        SkASSERT(type->isBoolean());
+        return std::make_unique<BoolLiteral>(offset, value, type);
+    }
 
     bool value() const {
         return fValue;
@@ -45,20 +57,24 @@ public:
         return true;
     }
 
-    bool compareConstant(const Context& context, const Expression& other) const override {
-        const BoolLiteral& b = other.as<BoolLiteral>();
-        return this->value() == b.value();
+    ComparisonResult compareConstant(const Expression& other) const override {
+        if (!other.is<BoolLiteral>()) {
+            return ComparisonResult::kUnknown;
+        }
+        return this->value() == other.as<BoolLiteral>().value() ? ComparisonResult::kEqual
+                                                                : ComparisonResult::kNotEqual;
     }
 
     std::unique_ptr<Expression> clone() const override {
-        return std::unique_ptr<BoolLiteral>(new BoolLiteral(fOffset, this->value(), &this->type()));
+        return std::make_unique<BoolLiteral>(fOffset, this->value(), &this->type());
+    }
+
+    const Expression* getConstantSubexpression(int n) const override {
+        SkASSERT(n == 0);
+        return this;
     }
 
 private:
-    Literal(int offset, bool value, const Type* type)
-        : INHERITED(offset, kExpressionKind, type)
-        , fValue(value) {}
-
     bool fValue;
 
     using INHERITED = Expression;

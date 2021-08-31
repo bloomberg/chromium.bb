@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/util/type_safety/pass_key.h"
+#include "base/types/pass_key.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_facade_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -24,7 +24,7 @@
 namespace performance_manager {
 
 class GraphImpl;
-using PassKey = util::PassKey<SiteDataCacheFacade>;
+using PassKey = base::PassKey<SiteDataCacheFacade>;
 
 SiteDataCacheFacade::SiteDataCacheFacade(
     content::BrowserContext* browser_context)
@@ -32,7 +32,7 @@ SiteDataCacheFacade::SiteDataCacheFacade(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   SiteDataCacheFacadeFactory::GetInstance()->OnBeforeFacadeCreated(PassKey());
 
-  base::Optional<std::string> parent_context_id;
+  absl::optional<std::string> parent_context_id;
   if (browser_context->IsOffTheRecord()) {
     content::BrowserContext* parent_context =
         chrome::GetBrowserContextRedirectedInIncognito(browser_context);
@@ -155,7 +155,7 @@ void SiteDataCacheFacade::OnURLsDeleted(
 void SiteDataCacheFacade::HistoryServiceBeingDeleted(
     history::HistoryService* history_service) {
   DCHECK(history_observation_.IsObservingSource(history_service));
-  history_observation_.RemoveObservation();
+  history_observation_.Reset();
 }
 
 }  // namespace performance_manager

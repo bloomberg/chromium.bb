@@ -7,15 +7,16 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/nearby_sharing/nearby_notification_delegate.h"
+#include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
 #include "chrome/browser/nearby_sharing/share_target.h"
 #include "chrome/browser/nearby_sharing/share_target_discovered_callback.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata.h"
+#include "chrome/browser/nearby_sharing/transfer_metadata_builder.h"
 #include "chrome/browser/nearby_sharing/transfer_update_callback.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-class NearbySharingService;
 class NotificationDisplayService;
 class PrefService;
 class Profile;
@@ -25,7 +26,8 @@ class SkBitmap;
 // be shown as simultaneous connections are not supported. All methods should be
 // called from the UI thread.
 class NearbyNotificationManager : public TransferUpdateCallback,
-                                  public ShareTargetDiscoveredCallback {
+                                  public ShareTargetDiscoveredCallback,
+                                  public NearbySharingService::Observer {
  public:
   static constexpr base::TimeDelta kOnboardingDismissedTimeout =
       base::TimeDelta::FromMinutes(15);
@@ -35,13 +37,15 @@ class NearbyNotificationManager : public TransferUpdateCallback,
     kCopyText,
     kCopyImage,
     kOpenDownloads,
+    kOpenUrl,
   };
 
   // Type of content we received that determines the actions we provide.
   enum class ReceivedContentType {
-    kText,         // Arbitrary text content
-    kSingleImage,  // One image that will be shown as a preview
     kFiles,        // One or more generic files
+    kSingleImage,  // One image that will be shown as a preview
+    kSingleUrl,    // One URL that will be opened on click.
+    kText,         // Arbitrary text content
   };
 
   NearbyNotificationManager(
@@ -58,6 +62,11 @@ class NearbyNotificationManager : public TransferUpdateCallback,
   // ShareTargetDiscoveredCallback:
   void OnShareTargetDiscovered(ShareTarget share_target) override;
   void OnShareTargetLost(ShareTarget share_target) override;
+
+  // NearbySharingService::Observer
+  void OnHighVisibilityChanged(bool in_high_visibility) override {}
+  void OnNearbyProcessStopped() override;
+  void OnShutdown() override {}
 
   // Shows a progress notification of the data being transferred to or from
   // |share_target|. Has a cancel action to cancel the transfer.
@@ -79,7 +88,11 @@ class NearbyNotificationManager : public TransferUpdateCallback,
   void ShowSuccess(const ShareTarget& share_target);
 
   // Shows a notification for send or receive failure.
-  void ShowFailure(const ShareTarget& share_target);
+  void ShowFailure(const ShareTarget& share_target,
+                   const TransferMetadata& transfer_metadata);
+
+  // Shows a notification for send or receive cancellation.
+  void ShowCancelled(const ShareTarget& share_target);
 
   // Closes any currently shown transfer notification (e.g. progress or
   // connection).
@@ -91,6 +104,8 @@ class NearbyNotificationManager : public TransferUpdateCallback,
   // Gets the currently registered delegate for |notification_id|.
   NearbyNotificationDelegate* GetNotificationDelegate(
       const std::string& notification_id);
+
+  void OpenURL(GURL url);
 
   // Cancels the currently in progress transfer.
   void CancelTransfer();
@@ -128,7 +143,11 @@ class NearbyNotificationManager : public TransferUpdateCallback,
       delegate_map_;
 
   // ShareTarget of the current transfer.
-  base::Optional<ShareTarget> share_target_;
+  absl::optional<ShareTarget> share_target_;
+
+  // Last transfer status reported to OnTransferUpdate(). Null when no transfer
+  // is in progress.
+  absl::optional<TransferMetadata::Status> last_transfer_status_;
 
   base::OnceCallback<void(SuccessNotificationAction)>
       success_action_test_callback_;

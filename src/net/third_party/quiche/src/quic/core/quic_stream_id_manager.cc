@@ -1,20 +1,20 @@
 // Copyright (c) 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "net/third_party/quiche/src/quic/core/quic_stream_id_manager.h"
+#include "quic/core/quic_stream_id_manager.h"
 
 #include <cstdint>
 #include <string>
 
-#include "net/third_party/quiche/src/quic/core/quic_connection.h"
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "absl/strings/str_cat.h"
+#include "quic/core/quic_connection.h"
+#include "quic/core/quic_constants.h"
+#include "quic/core/quic_session.h"
+#include "quic/core/quic_utils.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -47,15 +47,16 @@ QuicStreamIdManager::~QuicStreamIdManager() {}
 bool QuicStreamIdManager::OnStreamsBlockedFrame(
     const QuicStreamsBlockedFrame& frame,
     std::string* error_details) {
-  DCHECK_EQ(frame.unidirectional, unidirectional_);
+  QUICHE_DCHECK_EQ(frame.unidirectional, unidirectional_);
   if (frame.stream_count > incoming_advertised_max_streams_) {
     // Peer thinks it can send more streams that we've told it.
-    *error_details = quiche::QuicheStrCat(
+    *error_details = absl::StrCat(
         "StreamsBlockedFrame's stream count ", frame.stream_count,
         " exceeds incoming max stream ", incoming_advertised_max_streams_);
     return false;
   }
-  DCHECK_LE(incoming_advertised_max_streams_, incoming_actual_max_streams_);
+  QUICHE_DCHECK_LE(incoming_advertised_max_streams_,
+                   incoming_actual_max_streams_);
   if (incoming_advertised_max_streams_ == incoming_actual_max_streams_) {
     // We have told peer about current max.
     return true;
@@ -85,38 +86,42 @@ bool QuicStreamIdManager::MaybeAllowNewOutgoingStreams(
 
 void QuicStreamIdManager::SetMaxOpenIncomingStreams(
     QuicStreamCount max_open_streams) {
-  QUIC_BUG_IF(incoming_stream_count_ > 0)
+  QUIC_BUG_IF(quic_bug_12413_1, incoming_stream_count_ > 0)
       << "non-zero incoming stream count " << incoming_stream_count_
       << " when setting max incoming stream to " << max_open_streams;
   QUIC_DLOG_IF(WARNING, incoming_initial_max_open_streams_ != max_open_streams)
-      << quiche::QuicheStrCat(
-             unidirectional_ ? "unidirectional " : "bidirectional: ",
-             "incoming stream limit changed from ",
-             incoming_initial_max_open_streams_, " to ", max_open_streams);
+      << absl::StrCat(unidirectional_ ? "unidirectional " : "bidirectional: ",
+                      "incoming stream limit changed from ",
+                      incoming_initial_max_open_streams_, " to ",
+                      max_open_streams);
   incoming_actual_max_streams_ = max_open_streams;
   incoming_advertised_max_streams_ = max_open_streams;
   incoming_initial_max_open_streams_ = max_open_streams;
 }
 
 void QuicStreamIdManager::MaybeSendMaxStreamsFrame() {
-  if ((incoming_advertised_max_streams_ - incoming_stream_count_) >
-      (incoming_initial_max_open_streams_ /
-       GetQuicFlag(FLAGS_quic_max_streams_window_divisor))) {
-    // window too large, no advertisement
-    return;
+  int divisor = GetQuicFlag(FLAGS_quic_max_streams_window_divisor);
+
+  if (divisor > 0) {
+    if ((incoming_advertised_max_streams_ - incoming_stream_count_) >
+        (incoming_initial_max_open_streams_ / divisor)) {
+      // window too large, no advertisement
+      return;
+    }
   }
   SendMaxStreamsFrame();
 }
 
 void QuicStreamIdManager::SendMaxStreamsFrame() {
-  QUIC_BUG_IF(incoming_advertised_max_streams_ >= incoming_actual_max_streams_);
+  QUIC_BUG_IF(quic_bug_12413_2,
+              incoming_advertised_max_streams_ >= incoming_actual_max_streams_);
   incoming_advertised_max_streams_ = incoming_actual_max_streams_;
   delegate_->SendMaxStreams(incoming_advertised_max_streams_, unidirectional_);
 }
 
 void QuicStreamIdManager::OnStreamClosed(QuicStreamId stream_id) {
-  DCHECK_NE(QuicUtils::IsBidirectionalStreamId(stream_id, version_),
-            unidirectional_);
+  QUICHE_DCHECK_NE(QuicUtils::IsBidirectionalStreamId(stream_id, version_),
+                   unidirectional_);
   if (QuicUtils::IsOutgoingStreamId(version_, stream_id, perspective_)) {
     // Nothing to do for outgoing streams.
     return;
@@ -134,7 +139,7 @@ void QuicStreamIdManager::OnStreamClosed(QuicStreamId stream_id) {
 }
 
 QuicStreamId QuicStreamIdManager::GetNextOutgoingStreamId() {
-  QUIC_BUG_IF(outgoing_stream_count_ >= outgoing_max_streams_)
+  QUIC_BUG_IF(quic_bug_12413_3, outgoing_stream_count_ >= outgoing_max_streams_)
       << "Attempt to allocate a new outgoing stream that would exceed the "
          "limit ("
       << outgoing_max_streams_ << ")";
@@ -146,7 +151,7 @@ QuicStreamId QuicStreamIdManager::GetNextOutgoingStreamId() {
 }
 
 bool QuicStreamIdManager::CanOpenNextOutgoingStream() const {
-  DCHECK(VersionHasIetfQuicFrames(version_.transport_version));
+  QUICHE_DCHECK(VersionHasIetfQuicFrames(version_.transport_version));
   return outgoing_stream_count_ < outgoing_max_streams_;
 }
 
@@ -154,11 +159,11 @@ bool QuicStreamIdManager::MaybeIncreaseLargestPeerStreamId(
     const QuicStreamId stream_id,
     std::string* error_details) {
   // |stream_id| must be an incoming stream of the right directionality.
-  DCHECK_NE(QuicUtils::IsBidirectionalStreamId(stream_id, version_),
-            unidirectional_);
-  DCHECK_NE(QuicUtils::IsServerInitiatedStreamId(version_.transport_version,
-                                                 stream_id),
-            perspective_ == Perspective::IS_SERVER);
+  QUICHE_DCHECK_NE(QuicUtils::IsBidirectionalStreamId(stream_id, version_),
+                   unidirectional_);
+  QUICHE_DCHECK_NE(QuicUtils::IsServerInitiatedStreamId(
+                       version_.transport_version, stream_id),
+                   perspective_ == Perspective::IS_SERVER);
   if (available_streams_.erase(stream_id) == 1) {
     // stream_id is available.
     return true;
@@ -166,7 +171,7 @@ bool QuicStreamIdManager::MaybeIncreaseLargestPeerStreamId(
 
   if (largest_peer_created_stream_id_ !=
       QuicUtils::GetInvalidStreamId(version_.transport_version)) {
-    DCHECK_GT(stream_id, largest_peer_created_stream_id_);
+    QUICHE_DCHECK_GT(stream_id, largest_peer_created_stream_id_);
   }
 
   // Calculate increment of incoming_stream_count_ by creating stream_id.
@@ -186,9 +191,9 @@ bool QuicStreamIdManager::MaybeIncreaseLargestPeerStreamId(
                     << "Failed to create a new incoming stream with id:"
                     << stream_id << ", reaching MAX_STREAMS limit: "
                     << incoming_advertised_max_streams_ << ".";
-    *error_details = quiche::QuicheStrCat("Stream id ", stream_id,
-                                          " would exceed stream count limit ",
-                                          incoming_advertised_max_streams_);
+    *error_details = absl::StrCat("Stream id ", stream_id,
+                                  " would exceed stream count limit ",
+                                  incoming_advertised_max_streams_);
     return false;
   }
 
@@ -201,7 +206,8 @@ bool QuicStreamIdManager::MaybeIncreaseLargestPeerStreamId(
 }
 
 bool QuicStreamIdManager::IsAvailableStream(QuicStreamId id) const {
-  DCHECK_NE(QuicUtils::IsBidirectionalStreamId(id, version_), unidirectional_);
+  QUICHE_DCHECK_NE(QuicUtils::IsBidirectionalStreamId(id, version_),
+                   unidirectional_);
   if (QuicUtils::IsOutgoingStreamId(version_, id, perspective_)) {
     // Stream IDs under next_ougoing_stream_id_ are either open or previously
     // open but now closed.

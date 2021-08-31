@@ -49,10 +49,6 @@ class CORE_EXPORT LinkLoaderClient : public GarbageCollectedMixin {
   virtual void LinkLoadingErrored() = 0;
   // There is no notification for cancellation.
 
-  virtual void DidStartLinkPrerender() = 0;
-  virtual void DidStopLinkPrerender() = 0;
-  virtual void DidSendLoadForLinkPrerender() = 0;
-  virtual void DidSendDOMContentLoadedForLinkPrerender() = 0;
   virtual bool IsLinkCreatedByParser() = 0;
 
   virtual scoped_refptr<base::SingleThreadTaskRunner>
@@ -61,4 +57,4 @@ class CORE_EXPORT LinkLoaderClient : public GarbageCollectedMixin {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_LINK_LOADER_CLIENT_H_

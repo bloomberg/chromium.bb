@@ -37,7 +37,21 @@ namespace {
         descriptor.dimension = wgpu::TextureDimension::e2D;
         descriptor.size.width = width;
         descriptor.size.height = height;
-        descriptor.size.depth = arrayLayerCount;
+        descriptor.size.depthOrArrayLayers = arrayLayerCount;
+        descriptor.sampleCount = 1;
+        descriptor.format = kDefaultFormat;
+        descriptor.mipLevelCount = mipLevelCount;
+        descriptor.usage = usage;
+        return device.CreateTexture(&descriptor);
+    }
+
+    wgpu::Texture Create3DTexture(wgpu::Device device,
+                                  wgpu::Extent3D size,
+                                  uint32_t mipLevelCount,
+                                  wgpu::TextureUsage usage) {
+        wgpu::TextureDescriptor descriptor;
+        descriptor.dimension = wgpu::TextureDimension::e3D;
+        descriptor.size = size;
         descriptor.sampleCount = 1;
         descriptor.format = kDefaultFormat;
         descriptor.mipLevelCount = mipLevelCount;
@@ -46,24 +60,32 @@ namespace {
     }
 
     wgpu::ShaderModule CreateDefaultVertexShaderModule(wgpu::Device device) {
-        return utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-            #version 450
-            layout (location = 0) out vec2 o_texCoord;
-            void main() {
-                const vec2 pos[6] = vec2[6](vec2(-2.f, -2.f),
-                                            vec2(-2.f,  2.f),
-                                            vec2( 2.f, -2.f),
-                                            vec2(-2.f,  2.f),
-                                            vec2( 2.f, -2.f),
-                                            vec2( 2.f,  2.f));
-                const vec2 texCoord[6] = vec2[6](vec2(0.f, 0.f),
-                                                 vec2(0.f, 1.f),
-                                                 vec2(1.f, 0.f),
-                                                 vec2(0.f, 1.f),
-                                                 vec2(1.f, 0.f),
-                                                 vec2(1.f, 1.f));
-                gl_Position = vec4(pos[gl_VertexIndex], 0.f, 1.f);
-                o_texCoord = texCoord[gl_VertexIndex];
+        return utils::CreateShaderModule(device, R"(
+            struct VertexOut {
+                [[location(0)]] texCoord : vec2<f32>;
+                [[builtin(position)]] position : vec4<f32>;
+            };
+
+            [[stage(vertex)]]
+            fn main([[builtin(vertex_index)]] VertexIndex : u32) -> VertexOut {
+                var output : VertexOut;
+                let pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+                                            vec2<f32>(-2., -2.),
+                                            vec2<f32>(-2.,  2.),
+                                            vec2<f32>( 2., -2.),
+                                            vec2<f32>(-2.,  2.),
+                                            vec2<f32>( 2., -2.),
+                                            vec2<f32>( 2.,  2.));
+                let texCoord : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+                                                 vec2<f32>(0., 0.),
+                                                 vec2<f32>(0., 1.),
+                                                 vec2<f32>(1., 0.),
+                                                 vec2<f32>(0., 1.),
+                                                 vec2<f32>(1., 0.),
+                                                 vec2<f32>(1., 1.));
+                output.position = vec4<f32>(pos[VertexIndex], 0., 1.);
+                output.texCoord = texCoord[VertexIndex];
+                return output;
             }
         )");
     }
@@ -133,12 +155,12 @@ class TextureViewSamplingTest : public DawnTest {
                 std::vector<RGBA8> data(kPaddedTexWidth * texHeight, RGBA8(0, 0, 0, pixelValue));
                 wgpu::Buffer stagingBuffer = utils::CreateBufferFromData(
                     device, data.data(), data.size() * sizeof(RGBA8), wgpu::BufferUsage::CopySrc);
-                wgpu::BufferCopyView bufferCopyView =
-                    utils::CreateBufferCopyView(stagingBuffer, 0, kTextureBytesPerRowAlignment);
-                wgpu::TextureCopyView textureCopyView =
-                    utils::CreateTextureCopyView(mTexture, level, {0, 0, layer});
+                wgpu::ImageCopyBuffer imageCopyBuffer =
+                    utils::CreateImageCopyBuffer(stagingBuffer, 0, kTextureBytesPerRowAlignment);
+                wgpu::ImageCopyTexture imageCopyTexture =
+                    utils::CreateImageCopyTexture(mTexture, level, {0, 0, layer});
                 wgpu::Extent3D copySize = {texWidth, texHeight, 1};
-                encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copySize);
+                encoder.CopyBufferToTexture(&imageCopyBuffer, &imageCopyTexture, &copySize);
             }
         }
         wgpu::CommandBuffer copy = encoder.Finish();
@@ -146,15 +168,14 @@ class TextureViewSamplingTest : public DawnTest {
     }
 
     void Verify(const wgpu::TextureView& textureView, const char* fragmentShader, int expected) {
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, fragmentShader);
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, fragmentShader);
 
-        utils::ComboRenderPipelineDescriptor textureDescriptor(device);
-        textureDescriptor.vertexStage.module = mVSModule;
-        textureDescriptor.cFragmentStage.module = fsModule;
-        textureDescriptor.cColorStates[0].format = mRenderPass.colorFormat;
+        utils::ComboRenderPipelineDescriptor2 textureDescriptor;
+        textureDescriptor.vertex.module = mVSModule;
+        textureDescriptor.cFragment.module = fsModule;
+        textureDescriptor.cTargets[0].format = mRenderPass.colorFormat;
 
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&textureDescriptor);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&textureDescriptor);
 
         wgpu::BindGroup bindGroup = utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
                                                          {{0, mSampler}, {1, textureView}});
@@ -182,6 +203,8 @@ class TextureViewSamplingTest : public DawnTest {
                            uint32_t textureMipLevels,
                            uint32_t textureViewBaseLayer,
                            uint32_t textureViewBaseMipLevel) {
+        // TODO(crbug.com/dawn/593): This test requires glTextureView, which is unsupported on GLES.
+        DAWN_SKIP_TEST_IF(IsOpenGLES());
         ASSERT(textureViewBaseLayer < textureArrayLayers);
         ASSERT(textureViewBaseMipLevel < textureMipLevels);
 
@@ -196,15 +219,12 @@ class TextureViewSamplingTest : public DawnTest {
         wgpu::TextureView textureView = mTexture.CreateView(&descriptor);
 
         const char* fragmentShader = R"(
-            #version 450
-            layout(set = 0, binding = 0) uniform sampler sampler0;
-            layout(set = 0, binding = 1) uniform texture2D texture0;
-            layout(location = 0) in vec2 texCoord;
-            layout(location = 0) out vec4 fragColor;
+            [[group(0), binding(0)]] var sampler0 : sampler;
+            [[group(0), binding(1)]] var texture0 : texture_2d<f32>;
 
-            void main() {
-                fragColor =
-                    texture(sampler2D(texture0, sampler0), texCoord);
+            [[stage(fragment)]]
+            fn main([[location(0)]] texCoord : vec2<f32>) -> [[location(0)]] vec4<f32> {
+                return textureSample(texture0, sampler0, texCoord);
             }
         )";
 
@@ -216,6 +236,8 @@ class TextureViewSamplingTest : public DawnTest {
                                 uint32_t textureMipLevels,
                                 uint32_t textureViewBaseLayer,
                                 uint32_t textureViewBaseMipLevel) {
+        // TODO(crbug.com/dawn/593): This test requires glTextureView, which is unsupported on GLES.
+        DAWN_SKIP_TEST_IF(IsOpenGLES());
         ASSERT(textureViewBaseLayer < textureArrayLayers);
         ASSERT(textureViewBaseMipLevel < textureMipLevels);
 
@@ -235,17 +257,14 @@ class TextureViewSamplingTest : public DawnTest {
         wgpu::TextureView textureView = mTexture.CreateView(&descriptor);
 
         const char* fragmentShader = R"(
-            #version 450
-            layout(set = 0, binding = 0) uniform sampler sampler0;
-            layout(set = 0, binding = 1) uniform texture2DArray texture0;
-            layout(location = 0) in vec2 texCoord;
-            layout(location = 0) out vec4 fragColor;
+            [[group(0), binding(0)]] var sampler0 : sampler;
+            [[group(0), binding(1)]] var texture0 : texture_2d_array<f32>;
 
-            void main() {
-                fragColor =
-                    texture(sampler2DArray(texture0, sampler0), vec3(texCoord, 0)) +
-                    texture(sampler2DArray(texture0, sampler0), vec3(texCoord, 1)) +
-                    texture(sampler2DArray(texture0, sampler0), vec3(texCoord, 2));
+            [[stage(fragment)]]
+            fn main([[location(0)]] texCoord : vec2<f32>) -> [[location(0)]] vec4<f32> {
+                return textureSample(texture0, sampler0, texCoord, 0) +
+                       textureSample(texture0, sampler0, texCoord, 1) +
+                       textureSample(texture0, sampler0, texCoord, 2);
             }
         )";
 
@@ -259,40 +278,35 @@ class TextureViewSamplingTest : public DawnTest {
     std::string CreateFragmentShaderForCubeMapFace(uint32_t layer, bool isCubeMapArray) {
         // Reference: https://en.wikipedia.org/wiki/Cube_mapping
         const std::array<std::string, 6> kCoordsToCubeMapFace = {{
-            " 1.f,   tc,  -sc",  // Positive X
-            "-1.f,   tc,   sc",  // Negative X
-            "  sc,  1.f,  -tc",  // Positive Y
-            "  sc, -1.f,   tc",  // Negative Y
-            "  sc,   tc,  1.f",  // Positive Z
-            " -sc,   tc, -1.f",  // Negative Z
+            " 1.,  tc, -sc",  // Positive X
+            "-1.,  tc,  sc",  // Negative X
+            " sc,  1., -tc",  // Positive Y
+            " sc, -1.,  tc",  // Negative Y
+            " sc,  tc,  1.",  // Positive Z
+            "-sc,  tc, -1.",  // Negative Z
         }};
 
-        const std::string textureType = isCubeMapArray ? "textureCubeArray" : "textureCube";
-        const std::string samplerType = isCubeMapArray ? "samplerCubeArray" : "samplerCube";
+        const std::string textureType = isCubeMapArray ? "texture_cube_array" : "texture_cube";
         const uint32_t cubeMapArrayIndex = layer / 6;
         const std::string coordToCubeMapFace = kCoordsToCubeMapFace[layer % 6];
 
         std::ostringstream stream;
         stream << R"(
-            #version 450
-            layout(set = 0, binding = 0) uniform sampler sampler0;
-            layout(set = 0, binding = 1) uniform )"
-               << textureType << R"( texture0;
-            layout(location = 0) in vec2 texCoord;
-            layout(location = 0) out vec4 fragColor;
-            void main() {
-                float sc = 2.f * texCoord.x - 1.f;
-                float tc = 2.f * texCoord.y - 1.f;
-                fragColor = texture()"
-               << samplerType << "(texture0, sampler0), ";
+            [[group(0), binding(0)]] var sampler0 : sampler;
+            [[group(0), binding(1)]] var texture0 : )"
+               << textureType << R"(<f32>;
+            [[stage(fragment)]]
+            fn main([[location(0)]] texCoord : vec2<f32>) -> [[location(0)]] vec4<f32> {
+                var sc : f32 = 2.0 * texCoord.x - 1.0;
+                var tc : f32 = 2.0 * texCoord.y - 1.0;
+                return textureSample(texture0, sampler0, vec3<f32>()"
+               << coordToCubeMapFace << ")";
 
         if (isCubeMapArray) {
-            stream << "vec4(" << coordToCubeMapFace << ", " << cubeMapArrayIndex;
-        } else {
-            stream << "vec3(" << coordToCubeMapFace;
+            stream << ", " << cubeMapArrayIndex;
         }
 
-        stream << R"());
+        stream << R"();
             })";
 
         return stream.str();
@@ -302,6 +316,9 @@ class TextureViewSamplingTest : public DawnTest {
                             uint32_t textureViewBaseLayer,
                             uint32_t textureViewLayerCount,
                             bool isCubeMapArray) {
+        // TODO(crbug.com/dawn/600): In OpenGL ES, cube map textures cannot be treated as arrays
+        // of 2D textures. Find a workaround.
+        DAWN_SKIP_TEST_IF(IsOpenGLES());
         constexpr uint32_t kMipLevels = 1u;
         initTexture(textureArrayLayers, kMipLevels);
 
@@ -347,17 +364,14 @@ TEST_P(TextureViewSamplingTest, Default2DArrayTexture) {
     wgpu::TextureView textureView = mTexture.CreateView();
 
     const char* fragmentShader = R"(
-            #version 450
-            layout(set = 0, binding = 0) uniform sampler sampler0;
-            layout(set = 0, binding = 1) uniform texture2DArray texture0;
-            layout(location = 0) in vec2 texCoord;
-            layout(location = 0) out vec4 fragColor;
+            [[group(0), binding(0)]] var sampler0 : sampler;
+            [[group(0), binding(1)]] var texture0 : texture_2d_array<f32>;
 
-            void main() {
-                fragColor =
-                    texture(sampler2DArray(texture0, sampler0), vec3(texCoord, 0)) +
-                    texture(sampler2DArray(texture0, sampler0), vec3(texCoord, 1)) +
-                    texture(sampler2DArray(texture0, sampler0), vec3(texCoord, 2));
+            [[stage(fragment)]]
+            fn main([[location(0)]] texCoord : vec2<f32>) -> [[location(0)]] vec4<f32> {
+                return textureSample(texture0, sampler0, texCoord, 0) +
+                       textureSample(texture0, sampler0, texCoord, 1) +
+                       textureSample(texture0, sampler0, texCoord, 2);
             }
         )";
 
@@ -482,22 +496,19 @@ class TextureViewRenderingTest : public DawnTest {
         renderPassInfo.cColorAttachments[0].clearColor = {1.0f, 0.0f, 0.0f, 1.0f};
 
         const char* oneColorFragmentShader = R"(
-            #version 450
-            layout(location = 0) out vec4 fragColor;
-
-            void main() {
-                fragColor = vec4(0.0, 1.0, 0.0, 1.0);
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+                return vec4<f32>(0.0, 1.0, 0.0, 1.0);
             }
         )";
-        wgpu::ShaderModule oneColorFsModule = utils::CreateShaderModule(
-            device, utils::SingleShaderStage::Fragment, oneColorFragmentShader);
+        wgpu::ShaderModule oneColorFsModule =
+            utils::CreateShaderModule(device, oneColorFragmentShader);
 
-        utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
-        pipelineDescriptor.vertexStage.module = vsModule;
-        pipelineDescriptor.cFragmentStage.module = oneColorFsModule;
-        pipelineDescriptor.cColorStates[0].format = kDefaultFormat;
+        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+        pipelineDescriptor.vertex.module = vsModule;
+        pipelineDescriptor.cFragment.module = oneColorFsModule;
+        pipelineDescriptor.cTargets[0].format = kDefaultFormat;
 
-        wgpu::RenderPipeline oneColorPipeline = device.CreateRenderPipeline(&pipelineDescriptor);
+        wgpu::RenderPipeline oneColorPipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         {
@@ -519,8 +530,8 @@ class TextureViewRenderingTest : public DawnTest {
             bytesPerRow / kBytesPerTexel * (textureWidthLevel0 - 1) + textureHeightLevel0;
         constexpr RGBA8 kExpectedPixel(0, 255, 0, 255);
         std::vector<RGBA8> expected(expectedDataSize, kExpectedPixel);
-        EXPECT_TEXTURE_RGBA8_EQ(expected.data(), texture, 0, 0, textureViewWidth, textureViewHeight,
-                                textureViewBaseLevel, textureViewBaseLayer);
+        EXPECT_TEXTURE_EQ(expected.data(), texture, {0, 0, textureViewBaseLayer},
+                          {textureViewWidth, textureViewHeight}, textureViewBaseLevel);
     }
 };
 
@@ -641,12 +652,14 @@ DAWN_INSTANTIATE_TEST(TextureViewSamplingTest,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());
 
 DAWN_INSTANTIATE_TEST(TextureViewRenderingTest,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());
 
 class TextureViewTest : public DawnTest {};
@@ -667,4 +680,20 @@ DAWN_INSTANTIATE_TEST(TextureViewTest,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
+                      VulkanBackend());
+
+class TextureView3DTest : public DawnTest {};
+
+// Test that 3D textures and 3D texture views can be created successfully
+TEST_P(TextureView3DTest, BasicTest) {
+    wgpu::Texture texture = Create3DTexture(device, {4, 4, 4}, 3, wgpu::TextureUsage::Sampled);
+    wgpu::TextureView view = texture.CreateView();
+}
+
+DAWN_INSTANTIATE_TEST(TextureView3DTest,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

@@ -11,8 +11,8 @@
 #include "include/codec/SkEncodedOrigin.h"
 #include "include/core/SkImageInfo.h"
 #include "include/core/SkSize.h"
-#include "include/core/SkYUVAIndex.h"
 
+#include <array>
 #include <tuple>
 
 /**
@@ -21,17 +21,24 @@
  */
 class SK_API SkYUVAInfo {
 public:
+    enum YUVAChannels { kY, kU, kV, kA, kLast = kA };
+    static constexpr int kYUVAChannelCount = static_cast<int>(YUVAChannels::kLast + 1);
+
+    struct YUVALocation;  // For internal use.
+    using YUVALocations = std::array<YUVALocation, kYUVAChannelCount>;
+
     /**
      * Specifies how YUV (and optionally A) are divided among planes. Planes are separated by
      * underscores in the enum value names. Within each plane the pixmap/texture channels are
      * mapped to the YUVA channels in the order specified, e.g. for kY_UV Y is in channel 0 of plane
      * 0, U is in channel 0 of plane 1, and V is in channel 1 of plane 1. Channel ordering
      * within a pixmap/texture given the channels it contains:
-     * A:               0:A
-     * Luminance/Gray:  0:Gray
-     * RG               0:R,    1:G
-     * RGB              0:R,    1:G, 2:B
-     * RGBA             0:R,    1:G, 2:B, 3:A
+     * A:                       0:A
+     * Luminance/Gray:          0:Gray
+     * Luminance/Gray + Alpha:  0:Gray, 1:A
+     * RG                       0:R,    1:G
+     * RGB                      0:R,    1:G, 2:B
+     * RGBA                     0:R,    1:G, 2:B, 3:A
      */
     enum class PlaneConfig {
         kUnknown,
@@ -73,54 +80,6 @@ public:
     };
 
     /**
-     * Deprecated in favor of separate PlaneConfig and Subsampling enums.
-     *
-     * Specifies how YUV (and optionally A) are divided among planes. Planes are separated by
-     * underscores in the enum value names. Within each plane the pixmap/texture channels are
-     * mapped to the YUVA channels in the order specified, e.g. for kY_UV Y is in channel 0 of plane
-     * 0, U is in channel 0 of plane 1, and V is in channel 1 of plane 1. Channel ordering
-     * within a pixmap/texture given the channels it contains:
-     * A:               0:A
-     * Luminance/Gray:  0:Gray
-     * RG               0:R,    1:G
-     * RGB              0:R,    1:G, 2:B
-     * RGBA             0:R,    1:G, 2:B, 3:A
-     *
-     * UV subsampling is also specified in the enum value names using J:a:b notation (e.g. 4:2:0 is
-     * 1/2 horizontal and 1/2 vertical resolution for U and V). A fourth number is added if alpha
-     * is present (always 4 as only full resolution alpha is supported).
-     */
-    enum class PlanarConfig {
-        kUnknown,
-
-        kY_U_V_444,    ///< Plane 0: Y, Plane 1: U,  Plane 2: V
-        kY_U_V_422,    ///< Plane 0: Y, Plane 1: U,  Plane 2: V
-        kY_U_V_420,    ///< Plane 0: Y, Plane 1: U,  Plane 2: V
-        kY_V_U_420,    ///< Plane 0: Y, Plane 1: V,  Plane 2: U
-        kY_U_V_440,    ///< Plane 0: Y, Plane 1: U,  Plane 2: V
-        kY_U_V_411,    ///< Plane 0: Y, Plane 1: U,  Plane 2: V
-        kY_U_V_410,    ///< Plane 0: Y, Plane 1: U,  Plane 2: V
-
-        kY_U_V_A_4204, ///< Plane 0: Y, Plane 1: U,  Plane 2: V, Plane 3: A
-        kY_V_U_A_4204, ///< Plane 0: Y, Plane 1: V,  Plane 2: U, Plane 3: A
-
-        kY_UV_420,     ///< Plane 0: Y, Plane 1: UV
-        kY_VU_420,     ///< Plane 0: Y, Plane 1: VU
-
-        kY_UV_A_4204,  ///< Plane 0: Y, Plane 1: UV, Plane 2: A
-        kY_VU_A_4204,  ///< Plane 0: Y, Plane 1: VU, Plane 2: A
-
-        kYUV_444,      ///< Plane 0: YUV
-        kUYV_444,      ///< Plane 0: UYV
-
-        kYUVA_4444,    ///< Plane 0: YUVA
-        kUYVA_4444,    ///< Plane 0: UYVA
-    };
-
-    static constexpr std::tuple<PlaneConfig, Subsampling>
-            PlanarConfigToPlaneConfigAndSubsampling(PlanarConfig);
-
-    /**
      * Describes how subsampled chroma values are sited relative to luma values.
      *
      * Currently only centered siting is supported but will expand to support additional sitings.
@@ -134,6 +93,16 @@ public:
 
     static constexpr int kMaxPlanes = 4;
 
+    /** ratio of Y/A values to U/V values in x and y. */
+    static std::tuple<int, int> SubsamplingFactors(Subsampling);
+
+    /**
+     * SubsamplingFactors(Subsampling) if planedIdx refers to a U/V plane and otherwise {1, 1} if
+     * inputs are valid. Invalid inputs consist of incompatible PlaneConfig/Subsampling/planeIdx
+     * combinations. {0, 0} is returned for invalid inputs.
+     */
+    static std::tuple<int, int> PlaneSubsamplingFactors(PlaneConfig, Subsampling, int planeIdx);
+
     /**
      * Given image dimensions, a planer configuration, subsampling, and origin, determine the
      * expected size of each plane. Returns the number of expected planes. planeDimensions[0]
@@ -144,7 +113,7 @@ public:
      */
     static int PlaneDimensions(SkISize imageDimensions,
                                PlaneConfig,
-                               Subsampling ,
+                               Subsampling,
                                SkEncodedOrigin,
                                SkISize planeDimensions[kMaxPlanes]);
 
@@ -158,13 +127,11 @@ public:
     static constexpr int NumChannelsInPlane(PlaneConfig, int i);
 
     /**
-     * Given a PlaneConfig and a set of channel flags for each plane, convert to SkYUVAIndex
+     * Given a PlaneConfig and a set of channel flags for each plane, convert to YUVALocations
      * representation. Fails if channel flags aren't valid for the PlaneConfig (i.e. don't have
-     * enough channels in a plane).
+     * enough channels in a plane) by returning an invalid set of locations (plane indices are -1).
      */
-    static bool GetYUVAIndices(PlaneConfig,
-                               const uint32_t planeChannelFlags[kMaxPlanes],
-                               SkYUVAIndex indices[SkYUVAIndex::kIndexCount]);
+    static YUVALocations GetYUVALocations(PlaneConfig, const uint32_t* planeChannelFlags);
 
     /** Does the PlaneConfig have alpha values? */
     static bool HasAlpha(PlaneConfig);
@@ -184,29 +151,14 @@ public:
                Siting sitingX = Siting::kCentered,
                Siting sitingY = Siting::kCentered);
 
-    /**
-     * Deprecated in favor of constructor that takes PlaneConfig and Subsampling.
-     *
-     * 'dimensions' should specify the size of the full resolution image (after planes have been
-     * oriented to how the image is displayed as indicated by 'origin').
-     */
-    SkYUVAInfo(SkISize dimensions,
-               PlanarConfig,
-               SkYUVColorSpace,
-               SkEncodedOrigin origin = kTopLeft_SkEncodedOrigin,
-               Siting sitingX = Siting::kCentered,
-               Siting sitingY = Siting::kCentered);
-
     SkYUVAInfo& operator=(const SkYUVAInfo& that) = default;
 
     PlaneConfig planeConfig() const { return fPlaneConfig; }
     Subsampling subsampling() const { return fSubsampling; }
 
-    /**
-     * Deprecated. May return kUnknown even if this is valid because not all valid PlaneConfig/
-     * Subsampling pairs have am equivalent PlanarConfig value.
-     */
-    PlanarConfig planarConfig() const;
+    std::tuple<int, int> planeSubsamplingFactors(int planeIdx) const {
+        return PlaneSubsamplingFactors(fPlaneConfig, fSubsampling, planeIdx);
+    }
 
     /**
      * Dimensions of the full resolution image (after planes have been oriented to how the image
@@ -221,6 +173,10 @@ public:
     Siting sitingY() const { return fSitingY; }
 
     SkEncodedOrigin origin() const { return fOrigin; }
+
+    SkMatrix originMatrix() const {
+        return SkEncodedOriginToMatrix(fOrigin, this->width(), this->height());
+    }
 
     bool hasAlpha() const { return HasAlpha(fPlaneConfig); }
 
@@ -246,13 +202,26 @@ public:
     int numChannelsInPlane(int i) const { return NumChannelsInPlane(fPlaneConfig, i); }
 
     /**
-     * Given a set of channel flags for each plane, converts this->planarConfig() to SkYUVAIndex
+     * Given a set of channel flags for each plane, converts this->planeConfig() to YUVALocations
      * representation. Fails if the channel flags aren't valid for the PlaneConfig (i.e. don't have
-     * enough channels in a plane).
+     * enough channels in a plane) by returning default initialized locations (all plane indices are
+     * -1).
      */
-    bool toYUVAIndices(const uint32_t channelFlags[4], SkYUVAIndex indices[4]) const {
-        return GetYUVAIndices(fPlaneConfig, channelFlags, indices);
-    }
+    YUVALocations toYUVALocations(const uint32_t* channelFlags) const;
+
+    /**
+     * Makes a SkYUVAInfo that is identical to this one but with the passed Subsampling. If the
+     * passed Subsampling is not k444 and this info's PlaneConfig is not compatible with chroma
+     * subsampling (because Y is in the same plane as UV) then the result will be an invalid
+     * SkYUVAInfo.
+     */
+    SkYUVAInfo makeSubsampling(SkYUVAInfo::Subsampling) const;
+
+    /**
+     * Makes a SkYUVAInfo that is identical to this one but with the passed dimensions. If the
+     * passed dimensions is empty then the result will be an invalid SkYUVAInfo.
+     */
+    SkYUVAInfo makeDimensions(SkISize) const;
 
     bool operator==(const SkYUVAInfo& that) const;
     bool operator!=(const SkYUVAInfo& that) const { return !(*this == that); }
@@ -331,33 +300,5 @@ constexpr int SkYUVAInfo::NumChannelsInPlane(PlaneConfig config, int i) {
     }
     return 0;
 }
-
-constexpr std::tuple<SkYUVAInfo::PlaneConfig, SkYUVAInfo::Subsampling>
-SkYUVAInfo::PlanarConfigToPlaneConfigAndSubsampling(PlanarConfig planarConfig) {
-    switch (planarConfig) {
-        case PlanarConfig::kUnknown:
-            return {PlaneConfig::kUnknown, Subsampling ::kUnknown};
-
-        case PlanarConfig::kY_U_V_444:    return {PlaneConfig::kY_U_V,   Subsampling::k444};
-        case PlanarConfig::kY_U_V_422:    return {PlaneConfig::kY_U_V,   Subsampling::k422};
-        case PlanarConfig::kY_U_V_420:    return {PlaneConfig::kY_U_V,   Subsampling::k420};
-        case PlanarConfig::kY_V_U_420:    return {PlaneConfig::kY_V_U,   Subsampling::k420};
-        case PlanarConfig::kY_U_V_440:    return {PlaneConfig::kY_U_V,   Subsampling::k440};
-        case PlanarConfig::kY_U_V_411:    return {PlaneConfig::kY_U_V,   Subsampling::k411};
-        case PlanarConfig::kY_U_V_410:    return {PlaneConfig::kY_U_V,   Subsampling::k410};
-        case PlanarConfig::kY_U_V_A_4204: return {PlaneConfig::kY_U_V_A, Subsampling::k420};
-        case PlanarConfig::kY_V_U_A_4204: return {PlaneConfig::kY_V_U_A, Subsampling::k420};
-        case PlanarConfig::kY_UV_420:     return {PlaneConfig::kY_UV,    Subsampling::k420};
-        case PlanarConfig::kY_VU_420:     return {PlaneConfig::kY_VU,    Subsampling::k420};
-        case PlanarConfig::kY_UV_A_4204:  return {PlaneConfig::kY_UV_A,  Subsampling::k420};
-        case PlanarConfig::kY_VU_A_4204:  return {PlaneConfig::kY_VU_A,  Subsampling::k420};
-        case PlanarConfig::kYUV_444:      return {PlaneConfig::kYUV,     Subsampling::k444};
-        case PlanarConfig::kUYV_444:      return {PlaneConfig::kUYV,     Subsampling::k444};
-        case PlanarConfig::kYUVA_4444:    return {PlaneConfig::kYUVA,    Subsampling::k444};
-        case PlanarConfig::kUYVA_4444:    return {PlaneConfig::kUYVA,    Subsampling::k444};
-    }
-    SkUNREACHABLE;
-}
-
 
 #endif

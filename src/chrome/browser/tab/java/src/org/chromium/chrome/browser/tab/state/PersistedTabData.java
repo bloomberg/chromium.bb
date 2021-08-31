@@ -20,6 +20,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,8 +29,7 @@ import java.util.Map;
 
 /**
  * PersistedTabData is Tab data persisted across restarts
- * A constructor of taking a Tab and a byte[] (serialized
- * {@link PersistedTabData}, PersistedTabDataStorage and
+ * A constructor of taking a Tab, a PersistedTabDataStorage and
  * PersistedTabDataID (identifier for {@link PersistedTabData}
  * in storage) is required as reflection is used to build
  * the object after acquiring the serialized object from storage.
@@ -69,7 +69,7 @@ public abstract class PersistedTabData implements UserData {
      * @return deserialized {@link PersistedTabData}
      */
     protected static <T extends PersistedTabData> T build(
-            Tab tab, PersistedTabDataFactory<T> factory, byte[] data, Class<T> clazz) {
+            Tab tab, PersistedTabDataFactory<T> factory, ByteBuffer data, Class<T> clazz) {
         PersistedTabDataConfiguration config =
                 PersistedTabDataConfiguration.get(clazz, tab.isIncognito());
         T persistedTabData = factory.create(data, config.getStorage(), config.getId());
@@ -235,33 +235,32 @@ public abstract class PersistedTabData implements UserData {
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     protected void save() {
         if (mIsTabSaveEnabledSupplier != null && mIsTabSaveEnabledSupplier.get()) {
-            byte[] serialized = serializeAndLog();
-            if (serialized == null) {
-                return;
-            }
-            mPersistedTabDataStorage.save(mTab.getId(), mPersistedTabDataId, serialized);
+            mPersistedTabDataStorage.save(mTab.getId(), mPersistedTabDataId,
+                    getOomAndMetricsWrapper(getSerializeSupplier()));
         }
     }
 
     /**
-     * @return {@link PersistedTabData} in serialized form.
+     * @return {@link Supplier} for {@link PersistedTabData} in serialized form.
      */
-    abstract byte[] serialize();
+    abstract Supplier<ByteBuffer> getSerializeSupplier();
 
     @VisibleForTesting
-    protected byte[] serializeAndLog() {
-        byte[] res;
-        try (TraceEvent e = TraceEvent.scoped("PersistedTabData.Serialize")) {
-            res = serialize();
-        } catch (OutOfMemoryError oe) {
-            Log.e(TAG, "Out of memory error when attempting to save PersistedTabData");
-            res = null;
-        }
-        // TODO(crbug.com/1162293) convert to enum histogram and differentiate null/not null/out of
-        // memory
-        RecordHistogram.recordBooleanHistogram(
-                "Tabs.PersistedTabData.Serialize." + getUmaTag(), res != null);
-        return res;
+    protected Supplier<ByteBuffer> getOomAndMetricsWrapper(Supplier<ByteBuffer> serializeSupplier) {
+        return () -> {
+            ByteBuffer res;
+            try (TraceEvent e = TraceEvent.scoped("PersistedTabData.Serialize")) {
+                res = serializeSupplier.get();
+            } catch (OutOfMemoryError oe) {
+                Log.e(TAG, "Out of memory error when attempting to save PersistedTabData");
+                res = null;
+            }
+            // TODO(crbug.com/1162293) convert to enum histogram and differentiate null/not null/out
+            // of memory
+            RecordHistogram.recordBooleanHistogram(
+                    "Tabs.PersistedTabData.Serialize." + getUmaTag(), res != null);
+            return res;
+        };
     }
 
     /**
@@ -269,9 +268,9 @@ public abstract class PersistedTabData implements UserData {
      * assign to fields in {@link PersistedTabData}
      * @param bytes serialized PersistedTabData
      */
-    abstract boolean deserialize(@Nullable byte[] bytes);
+    abstract boolean deserialize(@Nullable ByteBuffer bytes);
 
-    protected void deserializeAndLog(@Nullable byte[] bytes) {
+    protected void deserializeAndLog(@Nullable ByteBuffer bytes) {
         boolean success;
         try (TraceEvent e = TraceEvent.scoped("PersistedTabData.Deserialize")) {
             success = deserialize(bytes);
@@ -355,8 +354,11 @@ public abstract class PersistedTabData implements UserData {
      */
     public static void onTabClose(Tab tab) {
         tab.setIsTabSaveEnabled(false);
-        if (ShoppingPersistedTabData.from(tab) != null) {
-            ShoppingPersistedTabData.from(tab).disableSaving();
+        // TODO(crbug.com/1223965) ensure we cleanup ShoppingPersistedTabData on startup
+        ShoppingPersistedTabData shoppingPersistedTabData =
+                tab.getUserDataHost().getUserData(ShoppingPersistedTabData.class);
+        if (shoppingPersistedTabData != null) {
+            shoppingPersistedTabData.disableSaving();
         }
     }
 }

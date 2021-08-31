@@ -4,6 +4,8 @@
 
 #include "components/guest_view/renderer/guest_view_container.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -51,14 +53,13 @@ void GuestViewContainer::RenderFrameLifetimeObserver::OnDestruct() {
 }
 
 GuestViewContainer::GuestViewContainer(content::RenderFrame* render_frame)
-    : ready_(false),
-      element_instance_id_(guest_view::kInstanceIDNone),
+    : element_instance_id_(guest_view::kInstanceIDNone),
       render_frame_(render_frame),
       in_destruction_(false),
       destruction_isolate_(nullptr),
       element_resize_isolate_(nullptr) {
-  render_frame_lifetime_observer_.reset(
-      new RenderFrameLifetimeObserver(this, render_frame_));
+  render_frame_lifetime_observer_ =
+      std::make_unique<RenderFrameLifetimeObserver>(this, render_frame_);
 }
 
 GuestViewContainer::~GuestViewContainer() {
@@ -142,7 +143,7 @@ void GuestViewContainer::EnqueueRequest(
 }
 
 void GuestViewContainer::PerformPendingRequest() {
-  if (!ready_ || pending_requests_.empty() || pending_response_.get())
+  if (pending_requests_.empty() || pending_response_.get())
     return;
 
   std::unique_ptr<GuestViewRequest> pending_request =
@@ -211,16 +212,6 @@ bool GuestViewContainer::OnMessageReceived(const IPC::Message& message) {
   return true;
 }
 
-void GuestViewContainer::Ready() {
-  ready_ = true;
-  CHECK(!pending_response_);
-  PerformPendingRequest();
-
-  // Give the derived type an opportunity to perform some actions when the
-  // container acquires a geometry.
-  OnReady();
-}
-
 void GuestViewContainer::SetElementInstanceID(int element_instance_id) {
   DCHECK_EQ(element_instance_id_, guest_view::kInstanceIDNone);
   element_instance_id_ = element_instance_id;
@@ -228,10 +219,6 @@ void GuestViewContainer::SetElementInstanceID(int element_instance_id) {
   DCHECK(!g_guest_view_container_map.Get().count(element_instance_id));
   g_guest_view_container_map.Get().insert(
       std::make_pair(element_instance_id, this));
-}
-
-void GuestViewContainer::DidDestroyElement() {
-  Destroy(false);
 }
 
 void GuestViewContainer::RegisterElementResizeCallback(

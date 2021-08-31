@@ -65,9 +65,26 @@ void InitializeOneOffHelper(bool init_extensions) {
       init::GetAllowedGLImplementations();
   DCHECK(!allowed_impls.empty());
 
-  GLImplementation impl = allowed_impls[0];
-  if (use_software_gl)
-    impl = gl::GetSoftwareGLImplementation();
+  GLImplementationParts impl = GLImplementationParts(allowed_impls[0]);
+  if (use_software_gl) {
+    impl = gl::GetLegacySoftwareGLImplementation();
+
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#if defined(USE_OZONE)
+    if (!features::IsUsingOzonePlatform())
+#endif
+    {
+      // If ANGLE is available use it with SwiftShader Vulkan instead of using
+      // SwiftShader GL
+      for (auto i : allowed_impls) {
+        if (i == kGLImplementationEGLANGLE) {
+          impl = gl::GetSoftwareGLImplementation();
+          break;
+        }
+      }
+    }
+#endif
+  }
 
   DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL))
       << "kUseGL has not effect in tests";
@@ -94,7 +111,7 @@ void GLSurfaceTestSupport::InitializeNoExtensionsOneOff() {
 
 // static
 void GLSurfaceTestSupport::InitializeOneOffImplementation(
-    GLImplementation impl,
+    GLImplementationParts impl,
     bool fallback_to_software_gl) {
   DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL))
       << "kUseGL has not effect in tests";
@@ -121,7 +138,8 @@ void GLSurfaceTestSupport::InitializeOneOffWithMockBindings() {
   }
 #endif
 
-  InitializeOneOffImplementation(kGLImplementationMockGL, false);
+  InitializeOneOffImplementation(GLImplementationParts(kGLImplementationMockGL),
+                                 false);
 }
 
 // static
@@ -134,7 +152,8 @@ void GLSurfaceTestSupport::InitializeOneOffWithStubBindings() {
   }
 #endif
 
-  InitializeOneOffImplementation(kGLImplementationStubGL, false);
+  InitializeOneOffImplementation(GLImplementationParts(kGLImplementationStubGL),
+                                 false);
 }
 
 // static

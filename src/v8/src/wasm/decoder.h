@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if !V8_ENABLE_WEBASSEMBLY
+#error This header should only be included if WebAssembly is enabled.
+#endif  // !V8_ENABLE_WEBASSEMBLY
+
 #ifndef V8_WASM_DECODER_H_
 #define V8_WASM_DECODER_H_
 
@@ -61,6 +65,7 @@ class Decoder {
 
   virtual ~Decoder() = default;
 
+  // Ensures there are at least {length} bytes left to read, starting at {pc}.
   bool validate_size(const byte* pc, uint32_t length, const char* msg) {
     DCHECK_LE(start_, pc);
     if (V8_UNLIKELY(pc > end_ || length > static_cast<uint32_t>(end_ - pc))) {

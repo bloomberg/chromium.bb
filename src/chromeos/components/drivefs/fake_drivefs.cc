@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -97,6 +98,7 @@ struct FakeDriveFs::FileMetadata {
   mojom::Capabilities capabilities;
   mojom::FolderFeature folder_feature;
   std::string doc_id;
+  int64_t stable_id = 0;
 };
 
 class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
@@ -290,6 +292,13 @@ void FakeDriveFs::SetMetadata(const base::FilePath& path,
   }
 }
 
+void FakeDriveFs::DisplayConfirmDialog(
+    drivefs::mojom::DialogReasonPtr reason,
+    drivefs::mojom::DriveFsDelegate::DisplayConfirmDialogCallback callback) {
+  DCHECK(delegate_);
+  delegate_->DisplayConfirmDialog(std::move(reason), std::move(callback));
+}
+
 void FakeDriveFs::Init(
     drivefs::mojom::DriveFsConfigurationPtr config,
     mojo::PendingReceiver<drivefs::mojom::DriveFs> receiver,
@@ -320,6 +329,10 @@ void FakeDriveFs::GetMetadata(const base::FilePath& path,
   metadata->modification_time = info.last_modified;
   metadata->last_viewed_by_me_time = info.last_accessed;
 
+  if (metadata_[path].stable_id == 0) {
+    metadata_[path].stable_id = next_stable_id_++;
+  }
+
   const auto& stored_metadata = metadata_[path];
   metadata->pinned = stored_metadata.pinned;
   metadata->available_offline = stored_metadata.pinned;
@@ -345,6 +358,7 @@ void FakeDriveFs::GetMetadata(const base::FilePath& path,
                            : stored_metadata.original_name;
   metadata->alternate_url = GURL(base::StrCat({prefix, suffix})).spec();
   metadata->capabilities = stored_metadata.capabilities.Clone();
+  metadata->stable_id = stored_metadata.stable_id;
 
   std::move(callback).Run(drive::FILE_ERROR_OK, std::move(metadata));
 }
@@ -365,7 +379,7 @@ void FakeDriveFs::ResetCache(ResetCacheCallback callback) {
 void FakeDriveFs::GetThumbnail(const base::FilePath& path,
                                bool crop_to_square,
                                GetThumbnailCallback callback) {
-  std::move(callback).Run(base::nullopt);
+  std::move(callback).Run(absl::nullopt);
 }
 
 void FakeDriveFs::CopyFile(const base::FilePath& source,
@@ -408,6 +422,7 @@ void FakeDriveFs::CopyFile(const base::FilePath& source,
     return;
   }
   metadata_[target_absolute_path] = metadata_[source_absolute_path];
+  metadata_[target_absolute_path].stable_id = next_stable_id_++;
   std::move(callback).Run(drive::FILE_ERROR_OK);
 }
 

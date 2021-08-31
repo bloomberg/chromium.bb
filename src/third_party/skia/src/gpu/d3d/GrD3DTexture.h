@@ -30,6 +30,10 @@ public:
                                                   const GrD3DTextureResourceInfo&,
                                                   sk_sp<GrD3DResourceState>);
 
+    static sk_sp<GrD3DTexture> MakeAliasingTexture(GrD3DGpu*,
+                                                   sk_sp<GrD3DTexture>,
+                                                   DXGI_FORMAT);
+
     ~GrD3DTexture() override {}
 
     GrBackendTexture getBackendTexture() const override;
@@ -38,9 +42,6 @@ public:
     D3D12_CPU_DESCRIPTOR_HANDLE shaderResourceView() { return fShaderResourceView.fHandle; }
 
     void textureParamsModified() override {}
-
-    void addIdleProc(sk_sp<GrRefCntedCallback>) override;
-    void callIdleProcsOnBehalfOfResource() override;
 
 protected:
     GrD3DTexture(GrD3DGpu*,
@@ -59,8 +60,6 @@ protected:
         return false;
     }
 
-    void willRemoveLastRef() override;
-
 private:
     GrD3DTexture(GrD3DGpu*, SkBudgeted, SkISize dimensions, const GrD3DTextureResourceInfo&,
                  sk_sp<GrD3DResourceState>,
@@ -77,8 +76,6 @@ private:
         // Forward the release proc on to GrSurfaceResource
         this->setResourceRelease(std::move(releaseHelper));
     }
-
-    void removeFinishIdleProcs();
 
     struct SamplerHash {
         uint32_t operator()(GrSamplerState state) const { return state.asIndex(); }

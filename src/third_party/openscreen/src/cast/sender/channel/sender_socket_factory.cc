@@ -59,7 +59,8 @@ void SenderSocketFactory::OnAccepted(
     TlsConnectionFactory* factory,
     std::vector<uint8_t> der_x509_peer_cert,
     std::unique_ptr<TlsConnection> connection) {
-  OSP_NOTREACHED() << "This factory is connect-only.";
+  OSP_NOTREACHED();
+  OSP_LOG_FATAL << "This factory is connect-only";
 }
 
 void SenderSocketFactory::OnConnected(

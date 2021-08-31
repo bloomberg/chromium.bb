@@ -1,5 +1,6 @@
 #include "src/trace_processor/util/protozero_to_text.h"
 
+#include "perfetto/ext/base/string_utils.h"
 #include "perfetto/ext/base/string_view.h"
 #include "perfetto/protozero/proto_decoder.h"
 #include "perfetto/protozero/proto_utils.h"
@@ -7,7 +8,7 @@
 #include "src/trace_processor/util/descriptors.h"
 
 // This is the highest level that this protozero to text supports.
-#include "src/trace_processor/importers/proto/track_event.descriptor.h"
+#include "src/trace_processor/importers/track_event.descriptor.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -113,12 +114,14 @@ void ConvertProtoTypeToFieldAndValueString(const FieldDescriptor& fd,
       StrAppend(out, separator, indent, fd.name(), ": ",
                 std::to_string(field.as_float()));
       return;
-    case FieldDescriptorProto::TYPE_STRING:
-      StrAppend(out, separator, indent, fd.name(), ": ", field.as_std_string());
+    case FieldDescriptorProto::TYPE_STRING: {
+      auto s = base::QuoteAndEscapeControlCodes(field.as_std_string());
+      StrAppend(out, separator, indent, fd.name(), ": ", s);
       return;
+    }
     case FieldDescriptorProto::TYPE_BYTES: {
       std::string value = BytesToHexEncodedString(field.as_std_string());
-      StrAppend(out, separator, indent, fd.name(), ": ", value);
+      StrAppend(out, separator, indent, fd.name(), ": \"", value, "\"");
       return;
     }
     case FieldDescriptorProto::TYPE_ENUM: {
@@ -139,7 +142,6 @@ void ConvertProtoTypeToFieldAndValueString(const FieldDescriptor& fd,
           fd.name().c_str(), fd.resolved_type_name().c_str(), fd.type());
     }
   }
-  return;
 }
 
 void IncreaseIndents(std::string* out) {
@@ -169,16 +171,14 @@ void ProtozeroToTextInternal(const std::string& type,
   protozero::ProtoDecoder decoder(protobytes.data, protobytes.size);
   for (auto field = decoder.ReadField(); field.valid();
        field = decoder.ReadField()) {
-    auto opt_field_descriptor_idx =
-        proto_descriptor.FindFieldIdxByTag(field.id());
-    if (!opt_field_descriptor_idx) {
+    auto opt_field_descriptor = proto_descriptor.FindFieldByTag(field.id());
+    if (!opt_field_descriptor) {
       StrAppend(
           output, output->empty() ? "" : "\n", *indents,
           "# Ignoring unknown field with id: ", std::to_string(field.id()));
       continue;
     }
-    const auto& field_descriptor =
-        proto_descriptor.fields()[*opt_field_descriptor_idx];
+    const auto& field_descriptor = *opt_field_descriptor;
 
     if (field_descriptor.type() ==
         protos::pbzero::FieldDescriptorProto::TYPE_MESSAGE) {

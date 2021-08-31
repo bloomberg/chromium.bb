@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/sync/driver/sync_service.h"
@@ -61,7 +60,7 @@ void ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
   if (!sync_service || !sync_service->IsSyncFeatureActive() ||
       !sync_service->GetActiveDataTypes().Has(
           syncer::HISTORY_DELETE_DIRECTIVES) ||
-      sync_service->GetUserSettings()->IsUsingSecondaryPassphrase() ||
+      sync_service->GetUserSettings()->IsUsingExplicitPassphrase() ||
       !history_service) {
     std::move(callback).Run(false);
     return;
@@ -104,7 +103,7 @@ void ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
   if (!sync_service || !sync_service->IsSyncFeatureActive() ||
       !sync_service->GetActiveDataTypes().Has(
           syncer::HISTORY_DELETE_DIRECTIVES) ||
-      sync_service->GetUserSettings()->IsUsingSecondaryPassphrase() ||
+      sync_service->GetUserSettings()->IsUsingExplicitPassphrase() ||
       !history_service) {
     std::move(callback).Run(false);
     return;

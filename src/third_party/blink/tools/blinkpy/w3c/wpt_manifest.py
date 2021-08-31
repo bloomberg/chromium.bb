@@ -163,7 +163,7 @@ class WPTManifest(object):
         for test_type in self.test_types:
             if test_type not in items:
                 continue
-            for filename, records in items[test_type].iteritems():
+            for filename, records in items[test_type].items():
                 for item in filter(self._is_not_jsshell, records):
                     url_for_item = self._get_url_from_item(item)
                     url_items[url_for_item] = item
@@ -229,6 +229,48 @@ class WPTManifest(object):
                 reftest_list.append((expectation, ref_path_in_wpt))
         return reftest_list
 
+    def extract_fuzzy_metadata(self, url):
+        """Extracts the fuzzy reftest metadata for the specified reference test.
+
+        Although WPT supports multiple fuzzy references for a given test (one
+        for each reference file), blinkpy only supports a single reference per
+        test. As such, we just return the first fuzzy reference that we find.
+
+        FIXME: It is possible for the references and the fuzzy metadata to be
+        listed in different orders, which would then make our 'choose first'
+        logic incorrect. Instead we should return a dictionary and let our
+        caller select the reference being used.
+
+        See https://web-platform-tests.org/writing-tests/reftests.html#fuzzy-matching
+
+        Args:
+            url: A WPT URL.
+
+        Returns:
+            A pair of lists representing the maxDifference and totalPixel ranges
+            for the test. If the test isn't a reference test or doesn't have
+            fuzzy information, a pair of Nones are returned.
+        """
+
+        items = self.raw_dict.get('items', {})
+        if url not in items.get('reftest', {}):
+            return None, None
+
+        for item in items['reftest'][url]:
+            # Each item is a list of [url, refs, properties], and the fuzzy
+            # metadata is stored in the properties dict.
+            if 'fuzzy' not in item[2]:
+                return None, None
+            fuzzy_metadata_list = item[2]['fuzzy']
+            for fuzzy_metadata in fuzzy_metadata_list:
+                # The fuzzy metadata is a nested list of [url, [maxDifference,
+                # maxPixels]].
+                assert len(
+                    fuzzy_metadata[1]
+                ) == 2, 'Malformed fuzzy ref data for {}'.format(url)
+                return fuzzy_metadata[1]
+        return None, None
+
     def file_path_for_test_url(self, url):
         """Finds the file path for the given test URL.
 
@@ -244,7 +286,7 @@ class WPTManifest(object):
 
     @staticmethod
     def ensure_manifest(port, path=None):
-        """Updates the MANIFEST.json file, or generates if it does not exist.
+        """Regenerates the WPT MANIFEST.json file.
 
         Args:
             port: A blinkpy.web_tests.port.Port object.
@@ -260,6 +302,7 @@ class WPTManifest(object):
         # manifest from scratch (when version is bumped) or invalid/out-of-date
         # local manifest breaking the runner.
         if fs.exists(manifest_path):
+            _log.debug('Removing existing manifest file "%s".', manifest_path)
             fs.remove(manifest_path)
 
         # TODO(crbug.com/853815): perhaps also cache the manifest for wpt_internal.
@@ -267,12 +310,14 @@ class WPTManifest(object):
             base_manifest_path = fs.join(port.web_tests_dir(), 'external',
                                          BASE_MANIFEST_NAME)
             if fs.exists(base_manifest_path):
+                _log.debug('Copying base manifest from "%s" to "%s".',
+                           base_manifest_path, manifest_path)
                 fs.copyfile(base_manifest_path, manifest_path)
             else:
                 _log.error('Manifest base not found at "%s".',
                            base_manifest_path)
 
-        WPTManifest.generate_manifest(port.host, wpt_path)
+        WPTManifest.generate_manifest(port, wpt_path)
 
         if fs.isfile(manifest_path):
             _log.debug('Manifest generation completed.')
@@ -283,20 +328,24 @@ class WPTManifest(object):
             fs.write_text_file(manifest_path, '{}')
 
     @staticmethod
-    def generate_manifest(host, dest_path):
+    def generate_manifest(port, dest_path):
         """Generates MANIFEST.json on the specified directory."""
-        wpt_exec_path = PathFinder(host.filesystem).path_from_blink_tools(
-            'blinkpy', 'third_party', 'wpt', 'wpt', 'wpt')
+        wpt_exec_path = PathFinder(
+            port.host.filesystem).path_from_chromium_base(
+                'third_party', 'wpt_tools', 'wpt', 'wpt')
         cmd = [
-            'python', wpt_exec_path, 'manifest', '--no-download',
-            '--tests-root', dest_path
+            port.python3_command(), wpt_exec_path, 'manifest', '-v',
+            '--no-download', '--tests-root', dest_path
         ]
 
         # ScriptError will be raised if the command fails.
-        host.executive.run_command(
+        output = port.host.executive.run_command(
             cmd,
+            timeout_seconds=600,
             # This will also include stderr in the exception message.
             return_stderr=True)
+        if output:
+            _log.debug('Output: %s', output)
 
     @staticmethod
     def _flatten_items(items):

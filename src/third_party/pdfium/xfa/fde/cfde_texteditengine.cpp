@@ -7,7 +7,6 @@
 #include "xfa/fde/cfde_texteditengine.h"
 
 #include <algorithm>
-#include <limits>
 #include <utility>
 
 #include "core/fxcrt/fx_extension.h"
@@ -20,10 +19,6 @@
 
 namespace {
 
-constexpr size_t kMaxEditOperations = 128;
-constexpr size_t kGapSize = 128;
-constexpr size_t kPageWidthMax = 0xffff;
-
 class InsertOperation final : public CFDE_TextEditEngine::Operation {
  public:
   InsertOperation(CFDE_TextEditEngine* engine,
@@ -31,7 +26,7 @@ class InsertOperation final : public CFDE_TextEditEngine::Operation {
                   const WideString& added_text)
       : engine_(engine), start_idx_(start_idx), added_text_(added_text) {}
 
-  ~InsertOperation() override {}
+  ~InsertOperation() override = default;
 
   void Redo() const override {
     engine_->Insert(start_idx_, added_text_,
@@ -56,7 +51,7 @@ class DeleteOperation final : public CFDE_TextEditEngine::Operation {
                   const WideString& removed_text)
       : engine_(engine), start_idx_(start_idx), removed_text_(removed_text) {}
 
-  ~DeleteOperation() override {}
+  ~DeleteOperation() override = default;
 
   void Redo() const override {
     engine_->Delete(start_idx_, removed_text_.GetLength(),
@@ -83,7 +78,7 @@ class ReplaceOperation final : public CFDE_TextEditEngine::Operation {
       : insert_op_(engine, start_idx, added_text),
         delete_op_(engine, start_idx, removed_text) {}
 
-  ~ReplaceOperation() override {}
+  ~ReplaceOperation() override = default;
 
   void Redo() const override {
     delete_op_.Redo();
@@ -123,32 +118,7 @@ bool BreakFlagsChanged(int flags, WordBreakProperty previous) {
 
 }  // namespace
 
-CFDE_TextEditEngine::CFDE_TextEditEngine()
-    : font_color_(0xff000000),
-      font_size_(10.0f),
-      line_spacing_(10.0f),
-      text_length_(0),
-      gap_position_(0),
-      gap_size_(kGapSize),
-      available_width_(kPageWidthMax),
-      character_limit_(std::numeric_limits<size_t>::max()),
-      visible_line_count_(1),
-      next_operation_index_to_undo_(kMaxEditOperations - 1),
-      next_operation_index_to_insert_(0),
-      max_edit_operations_(kMaxEditOperations),
-      character_alignment_(CFX_TxtLineAlignment_Left),
-      has_character_limit_(false),
-      is_comb_text_(false),
-      is_dirty_(false),
-      validation_enabled_(false),
-      is_multiline_(false),
-      is_linewrap_enabled_(false),
-      limit_horizontal_area_(false),
-      limit_vertical_area_(false),
-      password_mode_(false),
-      password_alias_(L'*'),
-      has_selection_(false),
-      selection_({0, 0}) {
+CFDE_TextEditEngine::CFDE_TextEditEngine() {
   content_.resize(gap_size_);
   operation_buffer_.resize(max_edit_operations_);
 
@@ -301,7 +271,7 @@ void CFDE_TextEditEngine::Insert(size_t idx,
       // Raise the limit to allow subsequent changes to expanded text.
       character_limit_ = text_length_ + length;
     } else {
-      // Trucate the text to comply with the limit.
+      // Truncate the text to comply with the limit.
       CHECK(text_length_ <= character_limit_);
       length = character_limit_ - text_length_;
       exceeded_limit = true;
@@ -1039,7 +1009,7 @@ std::vector<CFX_RectF> CFDE_TextEditEngine::GetCharRects(
   if (piece.nCount < 1)
     return std::vector<CFX_RectF>();
 
-  CFX_TxtBreak::Run tr;
+  CFGAS_TxtBreak::Run tr;
   tr.pEdtEngine = this;
   tr.iStart = piece.nStart;
   tr.iLength = piece.nCount;
@@ -1048,7 +1018,7 @@ std::vector<CFX_RectF> CFDE_TextEditEngine::GetCharRects(
   tr.dwStyles = text_break_.GetLayoutStyles();
   tr.dwCharStyles = piece.dwCharStyles;
   tr.pRect = &piece.rtPiece;
-  return text_break_.GetCharRects(&tr, false);
+  return text_break_.GetCharRects(tr);
 }
 
 std::vector<TextCharPos> CFDE_TextEditEngine::GetDisplayPos(
@@ -1056,7 +1026,7 @@ std::vector<TextCharPos> CFDE_TextEditEngine::GetDisplayPos(
   if (piece.nCount < 1)
     return std::vector<TextCharPos>();
 
-  CFX_TxtBreak::Run tr;
+  CFGAS_TxtBreak::Run tr;
   tr.pEdtEngine = this;
   tr.iStart = piece.nStart;
   tr.iLength = piece.nCount;
@@ -1066,13 +1036,13 @@ std::vector<TextCharPos> CFDE_TextEditEngine::GetDisplayPos(
   tr.dwCharStyles = piece.dwCharStyles;
   tr.pRect = &piece.rtPiece;
 
-  std::vector<TextCharPos> data(text_break_.GetDisplayPos(&tr, nullptr));
-  text_break_.GetDisplayPos(&tr, data.data());
+  std::vector<TextCharPos> data(text_break_.GetDisplayPos(tr, nullptr));
+  text_break_.GetDisplayPos(tr, data.data());
   return data;
 }
 
 void CFDE_TextEditEngine::RebuildPieces() {
-  text_break_.EndBreak(CFX_BreakType::kParagraph);
+  text_break_.EndBreak(CFGAS_Char::BreakType::kParagraph);
   text_break_.ClearBreakPieces();
 
   char_widths_.clear();
@@ -1091,16 +1061,16 @@ void CFDE_TextEditEngine::RebuildPieces() {
   while (!iter.IsEOF(false)) {
     iter.Next(false);
 
-    CFX_BreakType break_status = text_break_.AppendChar(
+    CFGAS_Char::BreakType break_status = text_break_.AppendChar(
         password_mode_ ? password_alias_ : iter.GetChar());
     if (iter.IsEOF(false) && CFX_BreakTypeNoneOrPiece(break_status))
-      break_status = text_break_.EndBreak(CFX_BreakType::kParagraph);
+      break_status = text_break_.EndBreak(CFGAS_Char::BreakType::kParagraph);
 
     if (CFX_BreakTypeNoneOrPiece(break_status))
       continue;
     int32_t piece_count = text_break_.CountBreakPieces();
     for (int32_t i = 0; i < piece_count; ++i) {
-      const CFX_BreakPiece* piece = text_break_.GetBreakPieceUnstable(i);
+      const CFGAS_BreakPiece* piece = text_break_.GetBreakPieceUnstable(i);
 
       FDE_TEXTEDITPIECE txtEdtPiece;
       txtEdtPiece.rtPiece.left = piece->m_iStartPos / 20000.0f;
@@ -1219,7 +1189,7 @@ std::pair<size_t, size_t> CFDE_TextEditEngine::BoundsForWordAt(
 }
 
 CFDE_TextEditEngine::Iterator::Iterator(const CFDE_TextEditEngine* engine)
-    : engine_(engine), current_position_(-1) {}
+    : engine_(engine) {}
 
 CFDE_TextEditEngine::Iterator::~Iterator() = default;
 

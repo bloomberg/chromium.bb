@@ -661,8 +661,8 @@ void JpegClient::StartEncodeDmaBuf(int32_t bitstream_buffer_id) {
 
   auto input_buffer = gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
       test_image->visible_size, gfx::BufferFormat::YUV_420_BIPLANAR,
-      gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
-      gpu::kNullSurfaceHandle);
+      gfx::BufferUsage::VEA_READ_CAMERA_AND_CPU_READ_WRITE,
+      gpu::kNullSurfaceHandle, nullptr);
   ASSERT_EQ(input_buffer->Map(), true);
 
   uint8_t* plane_buf[2] = {static_cast<uint8_t*>(input_buffer->memory(0)),
@@ -682,7 +682,8 @@ void JpegClient::StartEncodeDmaBuf(int32_t bitstream_buffer_id) {
 
   auto output_buffer = gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
       gfx::Size(kJpegMaxSize, 1), gfx::BufferFormat::R_8,
-      gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE, gpu::kNullSurfaceHandle);
+      gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE, gpu::kNullSurfaceHandle,
+      nullptr);
   ASSERT_EQ(output_buffer->Map(), true);
   hw_out_frame_ = GetVideoFrameFromGpuMemoryBuffer(
       output_buffer.get(), test_image->visible_size, media::PIXEL_FORMAT_MJPEG);
@@ -817,6 +818,9 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders,
   VLOG(1) << "Exit TestEncode";
 }
 
+// We may need to keep the VAAPI shared memory path for Linux-based Chrome VCD.
+// Some of our older boards are still running on the Linux VCD.
+#if BUILDFLAG(USE_VAAPI)
 TEST_F(JpegEncodeAcceleratorTest, SimpleEncode) {
   for (size_t i = 0; i < g_env->repeat_; i++) {
     for (auto& image : g_env->image_data_user_) {
@@ -855,6 +859,7 @@ TEST_F(JpegEncodeAcceleratorTest, CodedSizeAlignment) {
   TestEncode(/*num_concurrent_encoders=*/1u, /*is_dma=*/false,
              /*exif_size=*/0u);
 }
+#endif
 
 TEST_F(JpegEncodeAcceleratorTest, SimpleDmaEncode) {
   for (size_t i = 0; i < g_env->repeat_; i++) {

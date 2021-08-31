@@ -8,10 +8,11 @@
 #include <GLES2/gl2extchromium.h>
 
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "ui/gfx/buffer_format_util.h"
 
 namespace gpu {
 
@@ -45,19 +46,83 @@ bool IsImageSizeValidForGpuMemoryBufferFormat(const gfx::Size& size,
     case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::P010:
       // U and V planes are subsampled by a factor of 2.
-      return size.width() % 2 == 0 && size.height() % 2 == 0;
+      if (size.width() % 2)
+        return false;
+      if (size.height() % 2 && !gfx::AllowOddHeightMultiPlanarBuffers())
+        return false;
+      return true;
   }
 
   NOTREACHED();
   return false;
 }
 
+GPU_EXPORT bool IsPlaneValidForGpuMemoryBufferFormat(gfx::BufferPlane plane,
+                                                     gfx::BufferFormat format) {
+  switch (format) {
+    case gfx::BufferFormat::YVU_420:
+      return plane == gfx::BufferPlane::DEFAULT ||
+             plane == gfx::BufferPlane::Y || plane == gfx::BufferPlane::U ||
+             plane == gfx::BufferPlane::V;
+      break;
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+      return plane == gfx::BufferPlane::DEFAULT ||
+             plane == gfx::BufferPlane::Y || plane == gfx::BufferPlane::UV;
+      break;
+    default:
+      return plane == gfx::BufferPlane::DEFAULT;
+      break;
+  }
+  NOTREACHED();
+  return false;
+}
+
+gfx::BufferFormat GetPlaneBufferFormat(gfx::BufferPlane plane,
+                                       gfx::BufferFormat format) {
+  switch (plane) {
+    case gfx::BufferPlane::DEFAULT:
+      return format;
+    case gfx::BufferPlane::Y:
+      if (format == gfx::BufferFormat::YVU_420 ||
+          format == gfx::BufferFormat::YUV_420_BIPLANAR) {
+        return gfx::BufferFormat::R_8;
+      }
+      if (format == gfx::BufferFormat::P010) {
+        return gfx::BufferFormat::R_16;
+      }
+      NOTREACHED();
+      break;
+    case gfx::BufferPlane::UV:
+      if (format == gfx::BufferFormat::YUV_420_BIPLANAR) {
+        return gfx::BufferFormat::RG_88;
+      }
+      if (format == gfx::BufferFormat::P010) {
+        // There does not yet exist a gfx::BufferFormat::RG_16, which would be
+        // required for P010.
+        NOTIMPLEMENTED();
+      }
+      break;
+    case gfx::BufferPlane::U:
+      if (format == gfx::BufferFormat::YVU_420)
+        return gfx::BufferFormat::R_8;
+      break;
+    case gfx::BufferPlane::V:
+      if (format == gfx::BufferFormat::YVU_420)
+        return gfx::BufferFormat::R_8;
+      break;
+  }
+
+  NOTREACHED();
+  return format;
+}
+
 uint32_t GetPlatformSpecificTextureTarget() {
 #if defined(OS_MAC)
   return macos_specific_texture_target;
-#elif defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#elif defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_WIN)
   return GL_TEXTURE_EXTERNAL_OES;
-#elif defined(OS_WIN) || defined(OS_FUCHSIA)
+#elif defined(OS_FUCHSIA)
   return GL_TEXTURE_2D;
 #elif defined(OS_NACL)
   NOTREACHED();
@@ -85,7 +150,8 @@ GPU_EXPORT uint32_t GetBufferTextureTarget(gfx::BufferUsage usage,
 
 GPU_EXPORT bool NativeBufferNeedsPlatformSpecificTextureTarget(
     gfx::BufferFormat format) {
-#if defined(USE_OZONE) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if defined(USE_OZONE) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_WIN)
   // Always use GL_TEXTURE_2D as the target for RGB textures.
   // https://crbug.com/916728
   if (format == gfx::BufferFormat::R_8 || format == gfx::BufferFormat::RG_88 ||

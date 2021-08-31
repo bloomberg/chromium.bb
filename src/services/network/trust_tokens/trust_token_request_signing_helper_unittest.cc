@@ -12,10 +12,10 @@
 
 #include "base/base64.h"
 #include "base/containers/span.h"
-#include "base/optional.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/time/time_to_iso8601.h"
@@ -38,6 +38,7 @@
 #include "services/network/trust_tokens/trust_token_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -58,7 +59,7 @@ using TrustTokenRequestSigningHelperTest = TrustTokenRequestHelperTest;
 // not verification.
 class FakeSigner : public TrustTokenRequestSigningHelper::Signer {
  public:
-  base::Optional<std::vector<uint8_t>> Sign(
+  absl::optional<std::vector<uint8_t>> Sign(
       base::span<const uint8_t> key,
       base::span<const uint8_t> data) override {
     return std::vector<uint8_t>{'s', 'i', 'g', 'n', 'e', 'd'};
@@ -79,7 +80,7 @@ class FakeSigner : public TrustTokenRequestSigningHelper::Signer {
 // be signing over.
 class IdentitySigner : public TrustTokenRequestSigningHelper::Signer {
  public:
-  base::Optional<std::vector<uint8_t>> Sign(
+  absl::optional<std::vector<uint8_t>> Sign(
       base::span<const uint8_t> key,
       base::span<const uint8_t> data) override {
     return std::vector<uint8_t>(data.begin(), data.end());
@@ -95,10 +96,10 @@ class IdentitySigner : public TrustTokenRequestSigningHelper::Signer {
 // FailingSigner always fails the Sign and Verify options.
 class FailingSigner : public TrustTokenRequestSigningHelper::Signer {
  public:
-  base::Optional<std::vector<uint8_t>> Sign(
+  absl::optional<std::vector<uint8_t>> Sign(
       base::span<const uint8_t> key,
       base::span<const uint8_t> data) override {
-    return base::nullopt;
+    return absl::nullopt;
   }
   bool Verify(base::span<const uint8_t> data,
               base::span<const uint8_t> signature,
@@ -143,7 +144,7 @@ void AssertHasSignaturesAndExtract(
   ASSERT_TRUE(request.extra_request_headers().GetHeader("Sec-Signature",
                                                         &signature_header));
 
-  base::Optional<net::structured_headers::Dictionary> maybe_dictionary =
+  absl::optional<net::structured_headers::Dictionary> maybe_dictionary =
       net::structured_headers::ParseDictionary(signature_header);
   ASSERT_TRUE(maybe_dictionary);
   ASSERT_TRUE(maybe_dictionary->contains("signatures"));
@@ -171,7 +172,7 @@ void AssertHasSignaturesAndExtract(
 void AssertDecodesToCborAndExtractField(base::StringPiece signing_data,
                                         base::StringPiece field_name,
                                         std::string* field_value_out) {
-  base::Optional<cbor::Value> parsed = cbor::Reader::Read(base::as_bytes(
+  absl::optional<cbor::Value> parsed = cbor::Reader::Read(base::as_bytes(
       // Skip over the domain separator (e.g. "Trust Token v0").
       base::make_span(signing_data)
           .subspan(base::size(TrustTokenRequestSigningHelper::
@@ -202,7 +203,7 @@ MATCHER_P2(Header,
 }
 
 SuitableTrustTokenOrigin CreateSuitableOriginOrDie(base::StringPiece spec) {
-  base::Optional<SuitableTrustTokenOrigin> maybe_origin =
+  absl::optional<SuitableTrustTokenOrigin> maybe_origin =
       SuitableTrustTokenOrigin::Create(GURL(spec));
   CHECK(maybe_origin) << "Failed to create a SuitableTrustTokenOrigin!";
   return *maybe_origin;
@@ -680,9 +681,9 @@ TEST_F(TrustTokenRequestSigningHelperTest, CatchesSignatureFailure) {
       net_log.GetEntriesWithType(
           net::NetLogEventType::TRUST_TOKEN_OPERATION_BEGIN_SIGNING),
       [](const net::NetLogEntry& entry) {
-        base::Optional<std::string> key = net::GetOptionalStringValueFromParams(
+        absl::optional<std::string> key = net::GetOptionalStringValueFromParams(
             entry, "failed_signing_params.key");
-        base::Optional<std::string> issuer =
+        absl::optional<std::string> issuer =
             net::GetOptionalStringValueFromParams(
                 entry, "failed_signing_params.issuer");
         return key && *key == "signing key" && issuer &&

@@ -7,14 +7,14 @@
 #include "third_party/blink/renderer/bindings/modules/v8/double_sequence_or_gpu_color_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_extent_3d_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_origin_3d_dict.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_buffer_copy_view.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_command_buffer_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_command_encoder_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_compute_pass_descriptor.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_pass_color_attachment_descriptor.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_pass_depth_stencil_attachment_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_image_copy_buffer.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_image_copy_texture.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_pass_color_attachment.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_pass_depth_stencil_attachment.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_pass_descriptor.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_texture_copy_view.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_command_buffer.h"
@@ -28,12 +28,17 @@
 
 namespace blink {
 
-WGPURenderPassColorAttachmentDescriptor AsDawnType(
-    const GPURenderPassColorAttachmentDescriptor* webgpu_desc) {
+WGPURenderPassColorAttachment AsDawnType(
+    const GPURenderPassColorAttachment* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  WGPURenderPassColorAttachmentDescriptor dawn_desc = {};
-  dawn_desc.attachment = webgpu_desc->attachment()->GetHandle();
+  WGPURenderPassColorAttachment dawn_desc = {};
+  if (webgpu_desc->hasView()) {
+    dawn_desc.view = webgpu_desc->view()->GetHandle();
+  } else if (webgpu_desc->hasAttachment()) {
+    // Deprecated path
+    dawn_desc.view = webgpu_desc->attachment()->GetHandle();
+  }
   dawn_desc.resolveTarget = webgpu_desc->resolveTarget()
                                 ? webgpu_desc->resolveTarget()->GetHandle()
                                 : nullptr;
@@ -64,12 +69,17 @@ WGPURenderPassColorAttachmentDescriptor AsDawnType(
 
 namespace {
 
-WGPURenderPassDepthStencilAttachmentDescriptor AsDawnType(
-    const GPURenderPassDepthStencilAttachmentDescriptor* webgpu_desc) {
+WGPURenderPassDepthStencilAttachment AsDawnType(
+    const GPURenderPassDepthStencilAttachment* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  WGPURenderPassDepthStencilAttachmentDescriptor dawn_desc = {};
-  dawn_desc.attachment = webgpu_desc->attachment()->GetHandle();
+  WGPURenderPassDepthStencilAttachment dawn_desc = {};
+  if (webgpu_desc->hasView()) {
+    dawn_desc.view = webgpu_desc->view()->GetHandle();
+  } else if (webgpu_desc->hasAttachment()) {
+    // Deprecated path
+    dawn_desc.view = webgpu_desc->attachment()->GetHandle();
+  }
 
   if (webgpu_desc->depthLoadValue().IsGPULoadOp()) {
     const WTF::String& gpuLoadOp =
@@ -109,8 +119,8 @@ WGPURenderPassDepthStencilAttachmentDescriptor AsDawnType(
 }
 
 WGPUBufferCopyView ValidateAndConvertBufferCopyView(
-    const GPUBufferCopyView* webgpu_view,
-    ExceptionState& exception_state) {
+    const GPUImageCopyBuffer* webgpu_view,
+    const char** error) {
   DCHECK(webgpu_view);
   DCHECK(webgpu_view->buffer());
 
@@ -118,17 +128,7 @@ WGPUBufferCopyView ValidateAndConvertBufferCopyView(
   dawn_view.nextInChain = nullptr;
   dawn_view.buffer = webgpu_view->buffer()->GetHandle();
 
-  {
-    const char* error =
-        ValidateTextureDataLayout(webgpu_view, &dawn_view.layout);
-    if (error) {
-      // TODO(crbug.com/dawn/566): This error needs to be injected into the
-      // encoder, instead of thrown as an exception.
-      exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
-                                        error);
-    }
-  }
-
+  *error = ValidateTextureDataLayout(webgpu_view, &dawn_view.layout);
   return dawn_view;
 }
 
@@ -166,34 +166,42 @@ GPUCommandEncoder* GPUCommandEncoder::Create(
     dawn_desc_ptr = &dawn_desc;
   }
 
-  return MakeGarbageCollected<GPUCommandEncoder>(
+  GPUCommandEncoder* encoder = MakeGarbageCollected<GPUCommandEncoder>(
       device, device->GetProcs().deviceCreateCommandEncoder(device->GetHandle(),
                                                             dawn_desc_ptr));
+  encoder->setLabel(webgpu_desc->label());
+  return encoder;
 }
 
 GPUCommandEncoder::GPUCommandEncoder(GPUDevice* device,
                                      WGPUCommandEncoder command_encoder)
     : DawnObject<WGPUCommandEncoder>(device, command_encoder) {}
 
-GPUCommandEncoder::~GPUCommandEncoder() {
-  if (IsDawnControlClientDestroyed()) {
-    return;
-  }
-  GetProcs().commandEncoderRelease(GetHandle());
-}
-
 GPURenderPassEncoder* GPUCommandEncoder::beginRenderPass(
     const GPURenderPassDescriptor* descriptor,
     ExceptionState& exception_state) {
   DCHECK(descriptor);
+
+  // Until the .attachment property is removed manual validation needs to be
+  // done for every attachment point
 
   uint32_t color_attachment_count =
       static_cast<uint32_t>(descriptor->colorAttachments().size());
 
   // Check loadValue color is correctly formatted before further processing.
   for (wtf_size_t i = 0; i < color_attachment_count; ++i) {
-    const GPURenderPassColorAttachmentDescriptor* color_attachment =
+    const GPURenderPassColorAttachment* color_attachment =
         descriptor->colorAttachments()[i];
+
+    if (color_attachment->hasAttachment()) {
+      device_->AddConsoleWarning(
+          "Specifying the texture view for a render pass color attachment with "
+          "'attachment' has been deprecated. Use 'view' instead.");
+    } else if (!color_attachment->hasView()) {
+      exception_state.ThrowTypeError("required member view is undefined.");
+      return nullptr;
+    }
+
     const GPULoadOpOrDoubleSequenceOrGPUColorDict load_value =
         color_attachment->loadValue();
 
@@ -213,24 +221,41 @@ GPURenderPassEncoder* GPUCommandEncoder::beginRenderPass(
     dawn_desc.label = label.c_str();
   }
 
-  std::unique_ptr<WGPURenderPassColorAttachmentDescriptor[]> color_attachments;
+  std::unique_ptr<WGPURenderPassColorAttachment[]> color_attachments;
 
   if (color_attachment_count > 0) {
     color_attachments = AsDawnType(descriptor->colorAttachments());
     dawn_desc.colorAttachments = color_attachments.get();
   }
 
-  WGPURenderPassDepthStencilAttachmentDescriptor depthStencilAttachment = {};
+  WGPURenderPassDepthStencilAttachment depthStencilAttachment = {};
   if (descriptor->hasDepthStencilAttachment()) {
+    if (descriptor->depthStencilAttachment()->hasAttachment()) {
+      device_->AddConsoleWarning(
+          "Specifying the texture view for a render pass depth/stencil "
+          "attachment with 'attachment' has been deprecated. Use 'view' "
+          "instead.");
+    } else if (!descriptor->depthStencilAttachment()->hasView()) {
+      exception_state.ThrowTypeError("required member view is undefined.");
+      return nullptr;
+    }
     depthStencilAttachment = AsDawnType(descriptor->depthStencilAttachment());
     dawn_desc.depthStencilAttachment = &depthStencilAttachment;
   } else {
     dawn_desc.depthStencilAttachment = nullptr;
   }
 
-  return MakeGarbageCollected<GPURenderPassEncoder>(
+  if (descriptor->hasOcclusionQuerySet()) {
+    dawn_desc.occlusionQuerySet = AsDawnType(descriptor->occlusionQuerySet());
+  } else {
+    dawn_desc.occlusionQuerySet = nullptr;
+  }
+
+  GPURenderPassEncoder* encoder = MakeGarbageCollected<GPURenderPassEncoder>(
       device_,
       GetProcs().commandEncoderBeginRenderPass(GetHandle(), &dawn_desc));
+  encoder->setLabel(descriptor->label());
+  return encoder;
 }
 
 GPUComputePassEncoder* GPUCommandEncoder::beginComputePass(
@@ -242,34 +267,34 @@ GPUComputePassEncoder* GPUCommandEncoder::beginComputePass(
     dawn_desc.label = label.c_str();
   }
 
-  return MakeGarbageCollected<GPUComputePassEncoder>(
+  GPUComputePassEncoder* encoder = MakeGarbageCollected<GPUComputePassEncoder>(
       device_,
       GetProcs().commandEncoderBeginComputePass(GetHandle(), &dawn_desc));
+  encoder->setLabel(descriptor->label());
+  return encoder;
 }
 
-void GPUCommandEncoder::copyBufferToBuffer(GPUBuffer* src,
-                                           uint64_t src_offset,
-                                           GPUBuffer* dst,
-                                           uint64_t dst_offset,
-                                           uint64_t size) {
-  DCHECK(src);
-  DCHECK(dst);
-  GetProcs().commandEncoderCopyBufferToBuffer(GetHandle(), src->GetHandle(),
-                                              src_offset, dst->GetHandle(),
-                                              dst_offset, size);
-}
-
-void GPUCommandEncoder::copyBufferToTexture(
-    GPUBufferCopyView* source,
-    GPUTextureCopyView* destination,
-    UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& copy_size,
-    ExceptionState& exception_state) {
-  WGPUExtent3D dawn_copy_size = AsDawnType(&copy_size);
+void GPUCommandEncoder::copyBufferToTexture(GPUImageCopyBuffer* source,
+                                            GPUImageCopyTexture* destination,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                                            const V8GPUExtent3D* copy_size
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                                            UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict&
+                                                copy_size
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+) {
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  WGPUExtent3D dawn_copy_size = AsDawnType(copy_size, device_);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  WGPUExtent3D dawn_copy_size = AsDawnType(&copy_size, device_);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   WGPUTextureCopyView dawn_destination = AsDawnType(destination, device_);
 
+  const char* error = nullptr;
   WGPUBufferCopyView dawn_source =
-      ValidateAndConvertBufferCopyView(source, exception_state);
-  if (exception_state.HadException()) {
+      ValidateAndConvertBufferCopyView(source, &error);
+  if (error) {
+    GetProcs().commandEncoderInjectValidationError(GetHandle(), error);
     return;
   }
 
@@ -277,17 +302,27 @@ void GPUCommandEncoder::copyBufferToTexture(
       GetHandle(), &dawn_source, &dawn_destination, &dawn_copy_size);
 }
 
-void GPUCommandEncoder::copyTextureToBuffer(
-    GPUTextureCopyView* source,
-    GPUBufferCopyView* destination,
-    UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& copy_size,
-    ExceptionState& exception_state) {
-  WGPUExtent3D dawn_copy_size = AsDawnType(&copy_size);
+void GPUCommandEncoder::copyTextureToBuffer(GPUImageCopyTexture* source,
+                                            GPUImageCopyBuffer* destination,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                                            const V8GPUExtent3D* copy_size
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                                            UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict&
+                                                copy_size
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+) {
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  WGPUExtent3D dawn_copy_size = AsDawnType(copy_size, device_);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  WGPUExtent3D dawn_copy_size = AsDawnType(&copy_size, device_);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   WGPUTextureCopyView dawn_source = AsDawnType(source, device_);
 
+  const char* error = nullptr;
   WGPUBufferCopyView dawn_destination =
-      ValidateAndConvertBufferCopyView(destination, exception_state);
-  if (exception_state.HadException()) {
+      ValidateAndConvertBufferCopyView(destination, &error);
+  if (error) {
+    GetProcs().commandEncoderInjectValidationError(GetHandle(), error);
     return;
   }
 
@@ -295,47 +330,25 @@ void GPUCommandEncoder::copyTextureToBuffer(
       GetHandle(), &dawn_source, &dawn_destination, &dawn_copy_size);
 }
 
-void GPUCommandEncoder::copyTextureToTexture(
-    GPUTextureCopyView* source,
-    GPUTextureCopyView* destination,
-    UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& copy_size,
-    ExceptionState& exception_state) {
+void GPUCommandEncoder::copyTextureToTexture(GPUImageCopyTexture* source,
+                                             GPUImageCopyTexture* destination,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                                             const V8GPUExtent3D* copy_size
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                                             UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict&
+                                                 copy_size
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+) {
   WGPUTextureCopyView dawn_source = AsDawnType(source, device_);
   WGPUTextureCopyView dawn_destination = AsDawnType(destination, device_);
-  WGPUExtent3D dawn_copy_size = AsDawnType(&copy_size);
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  WGPUExtent3D dawn_copy_size = AsDawnType(copy_size, device_);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  WGPUExtent3D dawn_copy_size = AsDawnType(&copy_size, device_);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   GetProcs().commandEncoderCopyTextureToTexture(
       GetHandle(), &dawn_source, &dawn_destination, &dawn_copy_size);
-}
-
-void GPUCommandEncoder::pushDebugGroup(String groupLabel) {
-  std::string label = groupLabel.Utf8();
-  GetProcs().commandEncoderPushDebugGroup(GetHandle(), label.c_str());
-}
-
-void GPUCommandEncoder::popDebugGroup() {
-  GetProcs().commandEncoderPopDebugGroup(GetHandle());
-}
-
-void GPUCommandEncoder::insertDebugMarker(String markerLabel) {
-  std::string label = markerLabel.Utf8();
-  GetProcs().commandEncoderInsertDebugMarker(GetHandle(), label.c_str());
-}
-
-void GPUCommandEncoder::resolveQuerySet(GPUQuerySet* querySet,
-                                        uint32_t firstQuery,
-                                        uint32_t queryCount,
-                                        GPUBuffer* destination,
-                                        uint64_t destinationOffset) {
-  GetProcs().commandEncoderResolveQuerySet(
-      GetHandle(), querySet->GetHandle(), firstQuery, queryCount,
-      destination->GetHandle(), destinationOffset);
-}
-
-void GPUCommandEncoder::writeTimestamp(GPUQuerySet* querySet,
-                                       uint32_t queryIndex) {
-  GetProcs().commandEncoderWriteTimestamp(GetHandle(), querySet->GetHandle(),
-                                          queryIndex);
 }
 
 GPUCommandBuffer* GPUCommandEncoder::finish(

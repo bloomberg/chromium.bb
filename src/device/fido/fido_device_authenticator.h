@@ -12,8 +12,6 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "device/fido/ctap2_device_operation.h"
@@ -22,6 +20,7 @@
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/large_blob.h"
 #include "device/fido/pin.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
 
@@ -49,28 +48,31 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
                     CtapGetAssertionOptions options,
                     GetAssertionCallback callback) override;
   void GetNextAssertion(GetAssertionCallback callback) override;
-  void GetTouch(base::OnceCallback<void()> callback) override;
+  void GetTouch(base::OnceClosure callback) override;
   void GetPinRetries(GetRetriesCallback callback) override;
   void GetPINToken(std::string pin,
                    std::vector<pin::Permissions> permissions,
-                   base::Optional<std::string> rp_id,
+                   absl::optional<std::string> rp_id,
                    GetTokenCallback callback) override;
   void GetUvRetries(GetRetriesCallback callback) override;
   bool CanGetUvToken() override;
   void GetUvToken(std::vector<pin::Permissions> permissions,
-                  base::Optional<std::string> rp_id,
+                  absl::optional<std::string> rp_id,
                   GetTokenCallback callback) override;
+  uint32_t CurrentMinPINLength() override;
+  uint32_t NewMinPINLength() override;
+  bool ForcePINChange() override;
   void SetPIN(const std::string& pin, SetPINCallback callback) override;
   void ChangePIN(const std::string& old_pin,
                  const std::string& new_pin,
                  SetPINCallback callback) override;
-  MakeCredentialPINUVDisposition PINUVDispositionForMakeCredential(
+  PINUVDisposition PINUVDispositionForMakeCredential(
       const CtapMakeCredentialRequest& request,
       const FidoRequestHandlerBase::Observer* observer) override;
 
   // WillNeedPINToGetAssertion returns whether a PIN prompt will be needed to
   // serve the given request on this authenticator.
-  GetAssertionPINDisposition WillNeedPINToGetAssertion(
+  PINUVDisposition PINUVDispositionForGetAssertion(
       const CtapGetAssertionRequest& request,
       const FidoRequestHandlerBase::Observer* observer) override;
 
@@ -85,7 +87,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void GetModality(BioEnrollmentCallback callback) override;
   void GetSensorInfo(BioEnrollmentCallback callback) override;
   void BioEnrollFingerprint(const pin::TokenResponse&,
-                            base::Optional<std::vector<uint8_t>> template_id,
+                            absl::optional<std::vector<uint8_t>> template_id,
                             BioEnrollmentCallback) override;
   void BioEnrollCancel(BioEnrollmentCallback) override;
   void BioEnrollEnumerate(const pin::TokenResponse&,
@@ -100,24 +102,25 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void WriteLargeBlob(
       const std::vector<uint8_t>& large_blob,
       const LargeBlobKey& large_blob_key,
-      base::Optional<pin::TokenResponse> pin_uv_auth_token,
+      absl::optional<pin::TokenResponse> pin_uv_auth_token,
       base::OnceCallback<void(CtapDeviceResponseCode)> callback) override;
   void ReadLargeBlob(const std::vector<LargeBlobKey>& large_blob_keys,
-                     base::Optional<pin::TokenResponse> pin_uv_auth_token,
+                     absl::optional<pin::TokenResponse> pin_uv_auth_token,
                      LargeBlobReadCallback callback) override;
 
-  base::Optional<base::span<const int32_t>> GetAlgorithms() override;
+  absl::optional<base::span<const int32_t>> GetAlgorithms() override;
   bool DiscoverableCredentialStorageFull() const override;
 
   void Reset(ResetCallback callback) override;
   void Cancel() override;
   std::string GetId() const override;
-  base::string16 GetDisplayName() const override;
+  std::string GetDisplayName() const override;
   ProtocolVersion SupportedProtocol() const override;
   bool SupportsHMACSecretExtension() const override;
   bool SupportsEnterpriseAttestation() const override;
-  const base::Optional<AuthenticatorSupportedOptions>& Options() const override;
-  base::Optional<FidoTransportProtocol> AuthenticatorTransport() const override;
+  bool SupportsCredBlobOfSize(size_t num_bytes) const override;
+  const absl::optional<AuthenticatorSupportedOptions>& Options() const override;
+  absl::optional<FidoTransportProtocol> AuthenticatorTransport() const override;
   bool IsInPairingMode() const override;
   bool IsPaired() const override;
   bool RequiresBlePairingPin() const override;
@@ -127,9 +130,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
 #if defined(OS_MAC)
   bool IsTouchIdAuthenticator() const override;
 #endif  // defined(OS_MAC)
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   bool IsChromeOSAuthenticator() const override;
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   base::WeakPtr<FidoAuthenticator> GetWeakPtr() override;
 
   FidoDevice* device() { return device_.get(); }
@@ -138,15 +141,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
  protected:
   void OnCtapMakeCredentialResponseReceived(
       MakeCredentialCallback callback,
-      base::Optional<std::vector<uint8_t>> response_data);
+      absl::optional<std::vector<uint8_t>> response_data);
   void OnCtapGetAssertionResponseReceived(
       GetAssertionCallback callback,
-      base::Optional<std::vector<uint8_t>> response_data);
+      absl::optional<std::vector<uint8_t>> response_data);
 
  private:
   using GetEphemeralKeyCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
-                              base::Optional<pin::KeyAgreementResponse>)>;
+                              absl::optional<pin::KeyAgreementResponse>)>;
   void InitializeAuthenticatorDone(base::OnceClosure callback);
   void GetEphemeralKey(GetEphemeralKeyCallback callback);
   void DoGetAssertion(CtapGetAssertionRequest request,
@@ -157,67 +160,67 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
       CtapGetAssertionOptions options,
       GetAssertionCallback callback,
       CtapDeviceResponseCode status,
-      base::Optional<pin::KeyAgreementResponse> key);
+      absl::optional<pin::KeyAgreementResponse> key);
   void OnHaveEphemeralKeyForGetPINToken(
       std::string pin,
       std::vector<pin::Permissions> permissions,
-      base::Optional<std::string> rp_id,
+      absl::optional<std::string> rp_id,
       GetTokenCallback callback,
       CtapDeviceResponseCode status,
-      base::Optional<pin::KeyAgreementResponse> key);
+      absl::optional<pin::KeyAgreementResponse> key);
   void OnHaveEphemeralKeyForSetPIN(
       std::string pin,
       SetPINCallback callback,
       CtapDeviceResponseCode status,
-      base::Optional<pin::KeyAgreementResponse> key);
+      absl::optional<pin::KeyAgreementResponse> key);
   void OnHaveEphemeralKeyForChangePIN(
       std::string old_pin,
       std::string new_pin,
       SetPINCallback callback,
       CtapDeviceResponseCode status,
-      base::Optional<pin::KeyAgreementResponse> key);
+      absl::optional<pin::KeyAgreementResponse> key);
   void OnHaveEphemeralKeyForUvToken(
-      base::Optional<std::string> rp_id,
+      absl::optional<std::string> rp_id,
       std::vector<pin::Permissions> permissions,
       GetTokenCallback callback,
       CtapDeviceResponseCode status,
-      base::Optional<pin::KeyAgreementResponse> key);
+      absl::optional<pin::KeyAgreementResponse> key);
 
   void FetchLargeBlobArray(
-      base::Optional<pin::TokenResponse> pin_uv_auth_token,
+      absl::optional<pin::TokenResponse> pin_uv_auth_token,
       LargeBlobArrayReader large_blob_array_reader,
       base::OnceCallback<void(CtapDeviceResponseCode,
-                              base::Optional<LargeBlobArrayReader>)> callback);
+                              absl::optional<LargeBlobArrayReader>)> callback);
   void WriteLargeBlobArray(
-      base::Optional<pin::TokenResponse> pin_uv_auth_token,
+      absl::optional<pin::TokenResponse> pin_uv_auth_token,
       LargeBlobArrayWriter large_blob_array_writer,
       base::OnceCallback<void(CtapDeviceResponseCode)> callback);
   void OnReadLargeBlobFragment(
       const size_t bytes_requested,
       LargeBlobArrayReader large_blob_array_reader,
-      base::Optional<pin::TokenResponse> pin_uv_auth_token,
+      absl::optional<pin::TokenResponse> pin_uv_auth_token,
       base::OnceCallback<void(CtapDeviceResponseCode,
-                              base::Optional<LargeBlobArrayReader>)> callback,
+                              absl::optional<LargeBlobArrayReader>)> callback,
       CtapDeviceResponseCode status,
-      base::Optional<LargeBlobsResponse> response);
+      absl::optional<LargeBlobsResponse> response);
   void OnWriteLargeBlobFragment(
       LargeBlobArrayWriter large_blob_array_writer,
-      base::Optional<pin::TokenResponse> pin_uv_auth_token,
+      absl::optional<pin::TokenResponse> pin_uv_auth_token,
       base::OnceCallback<void(CtapDeviceResponseCode)> callback,
       CtapDeviceResponseCode status,
-      base::Optional<LargeBlobsResponse> response);
+      absl::optional<LargeBlobsResponse> response);
   void OnHaveLargeBlobArrayForWrite(
       const std::vector<uint8_t>& large_blob,
       const LargeBlobKey& large_blob_key,
-      base::Optional<pin::TokenResponse> pin_uv_auth_token,
+      absl::optional<pin::TokenResponse> pin_uv_auth_token,
       base::OnceCallback<void(CtapDeviceResponseCode)> callback,
       CtapDeviceResponseCode status,
-      base::Optional<LargeBlobArrayReader> large_blob_array_reader);
+      absl::optional<LargeBlobArrayReader> large_blob_array_reader);
   void OnHaveLargeBlobArrayForRead(
       const std::vector<LargeBlobKey>& large_blob_keys,
       LargeBlobReadCallback callback,
       CtapDeviceResponseCode status,
-      base::Optional<LargeBlobArrayReader> large_blob_array_reader);
+      absl::optional<LargeBlobArrayReader> large_blob_array_reader);
 
   template <typename... Args>
   void TaskClearProxy(base::OnceCallback<void(Args...)> callback, Args... args);
@@ -227,36 +230,36 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   template <typename Task, typename Response, typename... RequestArgs>
   void RunTask(RequestArgs&&... request_args,
                base::OnceCallback<void(CtapDeviceResponseCode,
-                                       base::Optional<Response>)> callback);
+                                       absl::optional<Response>)> callback);
   template <typename Request, typename Response>
   void RunOperation(Request request,
                     base::OnceCallback<void(CtapDeviceResponseCode,
-                                            base::Optional<Response>)> callback,
-                    base::OnceCallback<base::Optional<Response>(
-                        const base::Optional<cbor::Value>&)> parser,
+                                            absl::optional<Response>)> callback,
+                    base::OnceCallback<absl::optional<Response>(
+                        const absl::optional<cbor::Value>&)> parser,
                     bool (*string_fixup_predicate)(
                         const std::vector<const cbor::Value*>&) = nullptr);
 
   struct EnumerateCredentialsState;
   void OnEnumerateRPsDone(EnumerateCredentialsState state,
                           CtapDeviceResponseCode status,
-                          base::Optional<EnumerateRPsResponse> response);
+                          absl::optional<EnumerateRPsResponse> response);
   void OnEnumerateCredentialsDone(
       EnumerateCredentialsState state,
       CtapDeviceResponseCode status,
-      base::Optional<EnumerateCredentialsResponse> response);
+      absl::optional<EnumerateCredentialsResponse> response);
 
   size_t max_large_blob_fragment_length();
 
   const std::unique_ptr<FidoDevice> device_;
-  base::Optional<AuthenticatorSupportedOptions> options_;
+  absl::optional<AuthenticatorSupportedOptions> options_;
   std::unique_ptr<FidoTask> task_;
   std::unique_ptr<GenericDeviceOperation> operation_;
 
   // The highest advertised PINUVAuthProtocol version that the authenticator
   // supports. This is guaranteed to be non-null after authenticator
   // initialization if |options_| indicates that PIN is supported.
-  base::Optional<PINUVAuthProtocol> chosen_pin_uv_auth_protocol_;
+  absl::optional<PINUVAuthProtocol> chosen_pin_uv_auth_protocol_;
 
   base::WeakPtrFactory<FidoDeviceAuthenticator> weak_factory_{this};
 

@@ -14,12 +14,16 @@
     void setScissorRect(GPUIntegerCoordinate x, GPUIntegerCoordinate y,
                         GPUIntegerCoordinate width, GPUIntegerCoordinate height);
 
-    [RaisesException] void setBlendColor(GPUColor color);
+    [RaisesException] void setBlendConstant(GPUColor color);
+    [RaisesException] void setBlendColor(GPUColor color); // Deprecated
     void setStencilReference(GPUStencilValue reference);
 
     void executeBundles(sequence<GPURenderBundle> bundles);
+    void beginOcclusionQuery(GPUSize32 queryIndex);
+    void endOcclusionQuery();
     void writeTimestamp(GPUQuerySet querySet, GPUSize32 queryIndex);
     void endPass();
 };
+GPURenderPassEncoder includes GPUObjectBase;
 GPURenderPassEncoder includes GPUProgrammablePassEncoder;
 GPURenderPassEncoder includes GPURenderEncoderBase;

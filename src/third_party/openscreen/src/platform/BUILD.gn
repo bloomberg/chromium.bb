@@ -17,7 +17,6 @@ source_set("base") {
     "base/ip_address.h",
     "base/location.cc",
     "base/location.h",
-    "base/socket_state.h",
     "base/tls_connect_options.h",
     "base/tls_credentials.cc",
     "base/tls_credentials.h",
@@ -32,6 +31,15 @@ source_set("base") {
   ]
 
   public_configs = [ "../build:openscreen_include_dirs" ]
+}
+
+# Public API source files. May depend on nothing except :base.
+source_set("logging") {
+  defines = []
+
+  sources = [ "api/logging.h" ]
+
+  public_deps = [ ":base" ]
 }
 
 # Public API source files. These may depend on nothing except :base.
@@ -57,7 +65,10 @@ source_set("api") {
     "api/udp_socket.h",
   ]
 
-  public_deps = [ ":base" ]
+  public_deps = [
+    ":base",
+    ":logging",
+  ]
 }
 
 # The following target is only activated in standalone builds (see :platform).
@@ -72,6 +83,7 @@ if (!build_with_chromium) {
       "impl/socket_handle.h",
       "impl/socket_handle_waiter.cc",
       "impl/socket_handle_waiter.h",
+      "impl/socket_state.h",
       "impl/stream_socket.h",
       "impl/task_runner.cc",
       "impl/task_runner.h",
@@ -96,7 +108,7 @@ if (!build_with_chromium) {
         "__APPLE_USE_RFC_3542",
       ]
 
-      libs = [
+      frameworks = [
         "CoreFoundation.framework",
         "IOKit.framework",
       ]
@@ -185,6 +197,11 @@ source_set("test") {
     # for other platforms, but nothing in here is called.
     sources += [ "test/paths_internal_other.cc" ]
   }
+
+  public_deps = [
+    ":api",
+    ":base",
+  ]
 
   deps = [
     ":platform",

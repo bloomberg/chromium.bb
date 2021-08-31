@@ -70,19 +70,19 @@ void UserspaceSwapPolicy::OnPassedToGraph(Graph* graph) {
   graph_ = graph;
   graph->AddProcessNodeObserver(this);
 
-  // Only create a memory pressure listener if the feature to swap on moderate
-  // pressure is enabled.
+  // Only handle the memory pressure notifications if the feature to swap on
+  // moderate pressure is enabled.
   if (config_.swap_on_moderate_pressure) {
-    memory_pressure_listener_.emplace(
-        FROM_HERE, base::BindRepeating(&UserspaceSwapPolicy::OnMemoryPressure,
-                                       weak_factory_.GetWeakPtr()));
+    graph_->AddSystemNodeObserver(this);
   }
 }
 
 void UserspaceSwapPolicy::OnTakenFromGraph(Graph* graph) {
   DCHECK_EQ(graph_, graph);
 
-  memory_pressure_listener_.reset();
+  if (config_.swap_on_moderate_pressure) {
+    graph_->RemoveSystemNodeObserver(this);
+  }
 
   graph->RemoveProcessNodeObserver(this);
   graph_ = nullptr;
@@ -144,9 +144,10 @@ base::TimeTicks UserspaceSwapPolicy::GetLastSwapTime(
 }
 
 void UserspaceSwapPolicy::OnMemoryPressure(
-    base::MemoryPressureListener::MemoryPressureLevel level) {
-  if (level == base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE)
+    base::MemoryPressureListener::MemoryPressureLevel new_level) {
+  if (new_level == base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) {
     return;
+  }
 
   auto now_ticks = base::TimeTicks::Now();
   // Try not to walk the graph too frequently because we can receive moderate
@@ -243,8 +244,10 @@ uint64_t UserspaceSwapPolicy::GetSwapDeviceFreeSpaceBytes() {
       GetSwapDeviceFreeSpaceBytes();
 }
 
-bool UserspaceSwapPolicy::IsPageNodeLoading(const PageNode* page_node) {
-  return page_node->IsLoading();
+bool UserspaceSwapPolicy::IsPageNodeLoadingOrBusy(const PageNode* page_node) {
+  const PageNode::LoadingState loading_state = page_node->GetLoadingState();
+  return loading_state == PageNode::LoadingState::kLoading ||
+         loading_state == PageNode::LoadingState::kLoadedBusy;
 }
 
 bool UserspaceSwapPolicy::IsPageNodeAudible(const PageNode* page_node) {
@@ -290,7 +293,7 @@ bool UserspaceSwapPolicy::IsEligibleToSwap(const ProcessNode* process_node,
   // it.
   if (page_node) {
     // If we're loading, audible, or visible we will not swap.
-    if (IsPageNodeLoading(page_node) || IsPageNodeVisible(page_node) ||
+    if (IsPageNodeLoadingOrBusy(page_node) || IsPageNodeVisible(page_node) ||
         IsPageNodeAudible(page_node)) {
       return false;
     }

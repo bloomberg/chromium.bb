@@ -10,12 +10,17 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/screenshot_delegate.h"
 #include "base/bind.h"
+#include "base/command_line.h"
+#include "cc/input/touch_action.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_service_factory.h"
 #include "chrome/browser/nearby_sharing/nearby_share_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/ash/back_gesture_contextual_nudge_delegate.h"
 #include "chrome/browser/ui/ash/chrome_accessibility_delegate.h"
 #include "chrome/browser/ui/ash/chrome_capture_mode_delegate.h"
@@ -24,15 +29,21 @@
 #include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/browser/ui/ash/tab_scrubber.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_util.h"
+#include "chrome/common/chrome_switches.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
+#include "components/ui_devtools/devtools_server.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/media_session_service.h"
 #include "content/public/browser/render_widget_host.h"
@@ -44,6 +55,10 @@ namespace {
 
 const char kKeyboardShortcutHelpPageUrl[] =
     "https://support.google.com/chromebook/answer/183101";
+
+// Browser tests are always started with --disable-logging-redirect, so we need
+// independent option here.
+absl::optional<bool> disable_logging_redirect_for_testing;
 
 content::WebContents* GetActiveWebContentsForNativeBrowserWindow(
     gfx::NativeWindow window) {
@@ -106,7 +121,7 @@ bool ChromeShellDelegate::AllowDefaultTouchActions(gfx::NativeWindow window) {
       render_widget_host_view->GetRenderWidgetHost();
   if (!render_widget_host)
     return true;
-  base::Optional<cc::TouchAction> allowed_touch_action =
+  absl::optional<cc::TouchAction> allowed_touch_action =
       render_widget_host->GetAllowedTouchAction();
   return allowed_touch_action.has_value()
              ? *allowed_touch_action != cc::TouchAction::kNone
@@ -204,4 +219,59 @@ std::unique_ptr<ash::NearbyShareDelegate>
 ChromeShellDelegate::CreateNearbyShareDelegate(
     ash::NearbyShareController* controller) const {
   return std::make_unique<NearbyShareDelegateImpl>(controller);
+}
+
+bool ChromeShellDelegate::IsSessionRestoreInProgress() const {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  return SessionRestore::IsRestoring(profile);
+}
+
+bool ChromeShellDelegate::IsUiDevToolsStarted() const {
+  return ChromeBrowserMainExtraPartsViews::Get()->GetUiDevToolsServerInstance();
+}
+
+void ChromeShellDelegate::StartUiDevTools() {
+  ChromeBrowserMainExtraPartsViews::Get()->CreateUiDevTools();
+}
+
+void ChromeShellDelegate::StopUiDevTools() {
+  ChromeBrowserMainExtraPartsViews::Get()->DestroyUiDevTools();
+}
+
+int ChromeShellDelegate::GetUiDevToolsPort() const {
+  return ChromeBrowserMainExtraPartsViews::Get()
+      ->GetUiDevToolsServerInstance()
+      ->port();
+}
+
+bool ChromeShellDelegate::IsLoggingRedirectDisabled() const {
+  if (disable_logging_redirect_for_testing.has_value())
+    return disable_logging_redirect_for_testing.value();
+
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableLoggingRedirect);
+}
+
+base::FilePath ChromeShellDelegate::GetPrimaryUserDownloadsFolder() const {
+  const user_manager::User* primary_user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  if (!primary_user)
+    return base::FilePath();
+
+  Profile* user_profile = ash::ProfileHelper::Get()->GetProfileByUser(
+      user_manager::UserManager::Get()->GetPrimaryUser());
+  if (user_profile)
+    return file_manager::util::GetDownloadsFolderForProfile(user_profile);
+
+  return base::FilePath();
+}
+
+// static
+void ChromeShellDelegate::SetDisableLoggingRedirectForTesting(bool value) {
+  disable_logging_redirect_for_testing = value;
+}
+
+// static
+void ChromeShellDelegate::ResetDisableLoggingRedirectForTesting() {
+  disable_logging_redirect_for_testing.reset();
 }

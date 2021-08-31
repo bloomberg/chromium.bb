@@ -18,6 +18,7 @@
 #include "common/BitSetIterator.h"
 #include "common/Log.h"
 #include "dawn_native/SpirvUtils.h"
+#include "dawn_native/TintUtils.h"
 #include "dawn_native/d3d12/BindGroupLayoutD3D12.h"
 #include "dawn_native/d3d12/D3D12Error.h"
 #include "dawn_native/d3d12/DeviceD3D12.h"
@@ -29,9 +30,11 @@
 
 #include <spirv_hlsl.hpp>
 
-#ifdef DAWN_ENABLE_WGSL
-#    include <tint/tint.h>
-#endif  // DAWN_ENABLE_WGSL
+// Tint include must be after spirv_hlsl.hpp, because spirv-cross has its own
+// version of spirv_headers. We also need to undef SPV_REVISION because SPIRV-Cross
+// is at 3 while spirv-headers is at 4.
+#undef SPV_REVISION
+#include <tint/tint.h>
 
 namespace dawn_native { namespace d3d12 {
 
@@ -79,11 +82,11 @@ namespace dawn_native { namespace d3d12 {
             if (enable16BitTypes) {
                 // enable-16bit-types are only allowed in -HV 2018 (default)
                 arguments.push_back(L"/enable-16bit-types");
-            } else {
-                // Enable FXC backward compatibility by setting the language version to 2016
-                arguments.push_back(L"-HV");
-                arguments.push_back(L"2016");
             }
+
+            arguments.push_back(L"-HV");
+            arguments.push_back(L"2018");
+
             return arguments;
         }
 
@@ -94,16 +97,14 @@ namespace dawn_native { namespace d3d12 {
                                                      const std::string& hlslSource,
                                                      const char* entryPoint,
                                                      uint32_t compileFlags) {
-        IDxcLibrary* dxcLibrary;
-        DAWN_TRY_ASSIGN(dxcLibrary, device->GetOrCreateDxcLibrary());
+        ComPtr<IDxcLibrary> dxcLibrary = device->GetDxcLibrary();
 
         ComPtr<IDxcBlobEncoding> sourceBlob;
         DAWN_TRY(CheckHRESULT(dxcLibrary->CreateBlobWithEncodingOnHeapCopy(
                                   hlslSource.c_str(), hlslSource.length(), CP_UTF8, &sourceBlob),
                               "DXC create blob"));
 
-        IDxcCompiler* dxcCompiler;
-        DAWN_TRY_ASSIGN(dxcCompiler, device->GetOrCreateDxcCompiler());
+        ComPtr<IDxcCompiler> dxcCompiler = device->GetDxcCompiler();
 
         std::wstring entryPointW;
         DAWN_TRY_ASSIGN(entryPointW, ConvertStringToWstring(entryPoint));
@@ -169,67 +170,127 @@ namespace dawn_native { namespace d3d12 {
     }
 
     // static
-    ResultOrError<ShaderModule*> ShaderModule::Create(Device* device,
-                                                      const ShaderModuleDescriptor* descriptor) {
+    ResultOrError<Ref<ShaderModule>> ShaderModule::Create(Device* device,
+                                                          const ShaderModuleDescriptor* descriptor,
+                                                          ShaderModuleParseResult* parseResult) {
         Ref<ShaderModule> module = AcquireRef(new ShaderModule(device, descriptor));
-        DAWN_TRY(module->InitializeBase());
-        return module.Detach();
+        DAWN_TRY(module->Initialize(parseResult));
+        return module;
     }
 
     ShaderModule::ShaderModule(Device* device, const ShaderModuleDescriptor* descriptor)
         : ShaderModuleBase(device, descriptor) {
     }
 
+    MaybeError ShaderModule::Initialize(ShaderModuleParseResult* parseResult) {
+        ScopedTintICEHandler scopedICEHandler(GetDevice());
+        return InitializeBase(parseResult);
+    }
+
     ResultOrError<std::string> ShaderModule::TranslateToHLSLWithTint(
         const char* entryPointName,
         SingleShaderStage stage,
         PipelineLayout* layout,
-        std::string* remappedEntryPointName) const {
+        std::string* remappedEntryPointName,
+        FirstOffsetInfo* firstOffsetInfo) const {
         ASSERT(!IsError());
 
-#ifdef DAWN_ENABLE_WGSL
+        ScopedTintICEHandler scopedICEHandler(GetDevice());
+
+        using BindingRemapper = tint::transform::BindingRemapper;
+        using BindingPoint = tint::transform::BindingPoint;
+        BindingRemapper::BindingPoints bindingPoints;
+        BindingRemapper::AccessControls accessControls;
+
+        const EntryPointMetadata::BindingInfoArray& moduleBindingInfo =
+            GetEntryPoint(entryPointName).bindings;
+
+        // d3d12::BindGroupLayout packs the bindings per HLSL register-space.
+        // We modify the Tint AST to make the "bindings" decoration match the
+        // offset chosen by d3d12::BindGroupLayout so that Tint produces HLSL
+        // with the correct registers assigned to each interface variable.
+        for (BindGroupIndex group : IterateBitSet(layout->GetBindGroupLayoutsMask())) {
+            const BindGroupLayout* bgl = ToBackend(layout->GetBindGroupLayout(group));
+            const auto& bindingOffsets = bgl->GetBindingOffsets();
+            const auto& groupBindingInfo = moduleBindingInfo[group];
+            for (const auto& it : groupBindingInfo) {
+                BindingNumber binding = it.first;
+                auto const& bindingInfo = it.second;
+                BindingIndex bindingIndex = bgl->GetBindingIndex(binding);
+                uint32_t bindingOffset = bindingOffsets[bindingIndex];
+                BindingPoint srcBindingPoint{static_cast<uint32_t>(group),
+                                             static_cast<uint32_t>(binding)};
+                BindingPoint dstBindingPoint{static_cast<uint32_t>(group), bindingOffset};
+                if (srcBindingPoint != dstBindingPoint) {
+                    bindingPoints.emplace(srcBindingPoint, dstBindingPoint);
+                }
+
+                // Declaring a read-only storage buffer in HLSL but specifying a
+                // storage buffer in the BGL produces the wrong output.
+                // Force read-only storage buffer bindings to be treated as UAV
+                // instead of SRV.
+                const bool forceStorageBufferAsUAV =
+                    (bindingInfo.buffer.type == wgpu::BufferBindingType::ReadOnlyStorage &&
+                     bgl->GetBindingInfo(bindingIndex).buffer.type ==
+                         wgpu::BufferBindingType::Storage);
+                if (forceStorageBufferAsUAV) {
+                    accessControls.emplace(srcBindingPoint, tint::ast::AccessControl::kReadWrite);
+                }
+            }
+        }
+
         std::ostringstream errorStream;
         errorStream << "Tint HLSL failure:" << std::endl;
 
-        // TODO: Remove redundant SPIRV step between WGSL and HLSL.
-        tint::Context context;
-        tint::reader::spirv::Parser parser(&context, GetSpirv());
+        tint::transform::Manager transformManager;
+        tint::transform::DataMap transformInputs;
 
-        if (!parser.Parse()) {
-            errorStream << "Parser: " << parser.error() << std::endl;
-            return DAWN_VALIDATION_ERROR(errorStream.str().c_str());
+        if (GetDevice()->IsRobustnessEnabled()) {
+            transformManager.Add<tint::transform::BoundArrayAccessors>();
+        }
+        if (stage == SingleShaderStage::Vertex) {
+            transformManager.Add<tint::transform::FirstIndexOffset>();
+            transformInputs.Add<tint::transform::FirstIndexOffset::BindingPoint>(
+                layout->GetFirstIndexOffsetShaderRegister(),
+                layout->GetFirstIndexOffsetRegisterSpace());
+        }
+        transformManager.Add<tint::transform::BindingRemapper>();
+        transformManager.Add<tint::transform::Renamer>();
+        transformManager.Add<tint::transform::Hlsl>();
+
+        // D3D12 registers like `t3` and `c3` have the same bindingOffset number in the
+        // remapping but should not be considered a collision because they have different types.
+        const bool mayCollide = true;
+        transformInputs.Add<BindingRemapper::Remappings>(std::move(bindingPoints),
+                                                         std::move(accessControls), mayCollide);
+
+        tint::Program program;
+        tint::transform::DataMap transformOutputs;
+        DAWN_TRY_ASSIGN(program, RunTransforms(&transformManager, GetTintProgram(), transformInputs,
+                                               &transformOutputs, nullptr));
+
+        if (auto* data = transformOutputs.Get<tint::transform::FirstIndexOffset::Data>()) {
+            firstOffsetInfo->usesVertexIndex = data->has_vertex_index;
+            if (firstOffsetInfo->usesVertexIndex) {
+                firstOffsetInfo->vertexIndexOffset = data->first_vertex_offset;
+            }
+            firstOffsetInfo->usesInstanceIndex = data->has_instance_index;
+            if (firstOffsetInfo->usesInstanceIndex) {
+                firstOffsetInfo->instanceIndexOffset = data->first_instance_offset;
+            }
         }
 
-        tint::ast::Module module = parser.module();
-        if (!module.IsValid()) {
-            errorStream << "Invalid module generated..." << std::endl;
-            return DAWN_VALIDATION_ERROR(errorStream.str().c_str());
+        if (auto* data = transformOutputs.Get<tint::transform::Renamer::Data>()) {
+            auto it = data->remappings.find(entryPointName);
+            if (it == data->remappings.end()) {
+                return DAWN_VALIDATION_ERROR("Could not find remapped name for entry point.");
+            }
+            *remappedEntryPointName = it->second;
+        } else {
+            return DAWN_VALIDATION_ERROR("Transform output missing renamer data.");
         }
 
-        tint::TypeDeterminer typeDeterminer(&context, &module);
-        if (!typeDeterminer.Determine()) {
-            errorStream << "Type Determination: " << typeDeterminer.error();
-            return DAWN_VALIDATION_ERROR(errorStream.str().c_str());
-        }
-
-        tint::Validator validator;
-        if (!validator.Validate(&module)) {
-            errorStream << "Validation: " << validator.error() << std::endl;
-            return DAWN_VALIDATION_ERROR(errorStream.str().c_str());
-        }
-
-        tint::transform::BoundArrayAccessorsTransform boundArrayTransformer(&context, &module);
-        if (!boundArrayTransformer.Run()) {
-            errorStream << "Bound Array Accessors Transform: " << boundArrayTransformer.error()
-                        << std::endl;
-            return DAWN_VALIDATION_ERROR(errorStream.str().c_str());
-        }
-
-        ASSERT(remappedEntryPointName != nullptr);
-        tint::inspector::Inspector inspector(module);
-        *remappedEntryPointName = inspector.GetRemappedNameForEntryPoint(entryPointName);
-
-        tint::writer::hlsl::Generator generator(std::move(module));
+        tint::writer::hlsl::Generator generator(&program);
         // TODO: Switch to GenerateEntryPoint once HLSL writer supports it.
         if (!generator.Generate()) {
             errorStream << "Generator: " << generator.error() << std::endl;
@@ -237,9 +298,6 @@ namespace dawn_native { namespace d3d12 {
         }
 
         return generator.result();
-#else
-        return DAWN_VALIDATION_ERROR("Using Tint to generate HLSL is not supported.");
-#endif  // DAWN_ENABLE_WGSL
     }
 
     ResultOrError<std::string> ShaderModule::TranslateToHLSLWithSPIRVCross(
@@ -256,11 +314,14 @@ namespace dawn_native { namespace d3d12 {
         options_glsl.force_zero_initialized_variables = true;
 
         spirv_cross::CompilerHLSL::Options options_hlsl;
-        if (GetDevice()->IsExtensionEnabled(Extension::ShaderFloat16)) {
+        if (GetDevice()->IsToggleEnabled(Toggle::UseDXC)) {
             options_hlsl.shader_model = ToBackend(GetDevice())->GetDeviceInfo().shaderModel;
-            options_hlsl.enable_16bit_types = true;
         } else {
             options_hlsl.shader_model = 51;
+        }
+
+        if (GetDevice()->IsExtensionEnabled(Extension::ShaderFloat16)) {
+            options_hlsl.enable_16bit_types = true;
         }
         // PointCoord and PointSize are not supported in HLSL
         // TODO (hao.x.li@intel.com): The point_coord_compat and point_size_compat are
@@ -276,7 +337,7 @@ namespace dawn_native { namespace d3d12 {
         compiler.set_hlsl_options(options_hlsl);
         compiler.set_entry_point(entryPointName, ShaderStageToExecutionModel(stage));
 
-        const EntryPointMetadata::BindingInfo& moduleBindingInfo =
+        const EntryPointMetadata::BindingInfoArray& moduleBindingInfo =
             GetEntryPoint(entryPointName).bindings;
 
         for (BindGroupIndex group : IterateBitSet(layout->GetBindGroupLayoutsMask())) {
@@ -292,8 +353,9 @@ namespace dawn_native { namespace d3d12 {
                 // the BGL produces the wrong output. Force read-only storage buffer bindings to
                 // be treated as UAV instead of SRV.
                 const bool forceStorageBufferAsUAV =
-                    (bindingInfo.type == wgpu::BindingType::ReadonlyStorageBuffer &&
-                     bgl->GetBindingInfo(bindingIndex).type == wgpu::BindingType::StorageBuffer);
+                    (bindingInfo.buffer.type == wgpu::BufferBindingType::ReadOnlyStorage &&
+                     bgl->GetBindingInfo(bindingIndex).buffer.type ==
+                         wgpu::BufferBindingType::Storage);
 
                 uint32_t bindingOffset = bindingOffsets[bindingIndex];
                 compiler.set_decoration(bindingInfo.id, spv::DecorationBinding, bindingOffset);
@@ -307,4 +369,136 @@ namespace dawn_native { namespace d3d12 {
         return compiler.compile();
     }
 
+    ResultOrError<CompiledShader> ShaderModule::Compile(const char* entryPointName,
+                                                        SingleShaderStage stage,
+                                                        PipelineLayout* layout,
+                                                        uint32_t compileFlags) {
+        Device* device = ToBackend(GetDevice());
+
+        // Compile the source shader to HLSL.
+        std::string hlslSource;
+        std::string remappedEntryPoint;
+        CompiledShader compiledShader = {};
+        if (device->IsToggleEnabled(Toggle::UseTintGenerator)) {
+            DAWN_TRY_ASSIGN(hlslSource, TranslateToHLSLWithTint(entryPointName, stage, layout,
+                                                                &remappedEntryPoint,
+                                                                &compiledShader.firstOffsetInfo));
+            entryPointName = remappedEntryPoint.c_str();
+        } else {
+            DAWN_TRY_ASSIGN(hlslSource,
+                            TranslateToHLSLWithSPIRVCross(entryPointName, stage, layout));
+
+            // Note that the HLSL will always use entryPoint "main" under
+            // SPIRV-cross.
+            entryPointName = "main";
+        }
+
+        // Use HLSL source as the input for the key since it does need to know about the pipeline
+        // layout. The pipeline layout is only required if we key from WGSL: two different pipeline
+        // layouts could be used to produce different shader blobs and the wrong shader blob could
+        // be loaded since the pipeline layout was missing from the key.
+        // The compiler flags or version used could also produce different HLSL source. HLSL key
+        // needs both to ensure the shader cache key is unique to the HLSL source.
+        // TODO(dawn:549): Consider keying from WGSL and serialize the pipeline layout it used.
+        PersistentCacheKey shaderCacheKey;
+        DAWN_TRY_ASSIGN(shaderCacheKey,
+                        CreateHLSLKey(entryPointName, stage, hlslSource, compileFlags));
+
+        DAWN_TRY_ASSIGN(compiledShader.cachedShader,
+                        device->GetPersistentCache()->GetOrCreate(
+                            shaderCacheKey, [&](auto doCache) -> MaybeError {
+                                if (device->IsToggleEnabled(Toggle::UseDXC)) {
+                                    DAWN_TRY_ASSIGN(compiledShader.compiledDXCShader,
+                                                    CompileShaderDXC(device, stage, hlslSource,
+                                                                     entryPointName, compileFlags));
+                                } else {
+                                    DAWN_TRY_ASSIGN(compiledShader.compiledFXCShader,
+                                                    CompileShaderFXC(device, stage, hlslSource,
+                                                                     entryPointName, compileFlags));
+                                }
+                                const D3D12_SHADER_BYTECODE shader =
+                                    compiledShader.GetD3D12ShaderBytecode();
+                                doCache(shader.pShaderBytecode, shader.BytecodeLength);
+                                return {};
+                            }));
+
+        return std::move(compiledShader);
+    }
+
+    D3D12_SHADER_BYTECODE CompiledShader::GetD3D12ShaderBytecode() const {
+        if (cachedShader.buffer != nullptr) {
+            return {cachedShader.buffer.get(), cachedShader.bufferSize};
+        } else if (compiledFXCShader != nullptr) {
+            return {compiledFXCShader->GetBufferPointer(), compiledFXCShader->GetBufferSize()};
+        } else if (compiledDXCShader != nullptr) {
+            return {compiledDXCShader->GetBufferPointer(), compiledDXCShader->GetBufferSize()};
+        }
+        UNREACHABLE();
+        return {};
+    }
+
+    ResultOrError<PersistentCacheKey> ShaderModule::CreateHLSLKey(const char* entryPointName,
+                                                                  SingleShaderStage stage,
+                                                                  const std::string& hlslSource,
+                                                                  uint32_t compileFlags) const {
+        std::stringstream stream;
+
+        // Prefix the key with the type to avoid collisions from another type that could have the
+        // same key.
+        stream << static_cast<uint32_t>(PersistentKeyType::Shader);
+
+        // Provide "guard" strings that the user cannot provide to help ensure the generated HLSL
+        // used to create this key is not being manufactured by the user to load the wrong shader
+        // blob.
+        // These strings can be HLSL comments because Tint does not emit HLSL comments.
+        // TODO(dawn:549): Replace guards strings with something more secure.
+        constexpr char kStartGuard[] = "// Start shader autogenerated by Dawn.";
+        constexpr char kEndGuard[] = "// End shader autogenerated by Dawn.";
+        ASSERT(hlslSource.find(kStartGuard) == std::string::npos);
+        ASSERT(hlslSource.find(kEndGuard) == std::string::npos);
+
+        stream << kStartGuard << "\n";
+        stream << hlslSource;
+        stream << "\n" << kEndGuard;
+
+        stream << compileFlags;
+
+        // Add the HLSL compiler version for good measure.
+        // Prepend the compiler name to ensure the version is always unique.
+        if (GetDevice()->IsToggleEnabled(Toggle::UseDXC)) {
+            uint64_t dxCompilerVersion;
+            DAWN_TRY_ASSIGN(dxCompilerVersion, GetDXCompilerVersion());
+            stream << "DXC" << dxCompilerVersion;
+        } else {
+            stream << "FXC" << GetD3DCompilerVersion();
+        }
+
+        // If the source contains multiple entry points, ensure they are cached seperately
+        // per stage since DX shader code can only be compiled per stage using the same
+        // entry point.
+        stream << static_cast<uint32_t>(stage);
+        stream << entryPointName;
+
+        return PersistentCacheKey(std::istreambuf_iterator<char>{stream},
+                                  std::istreambuf_iterator<char>{});
+    }
+
+    ResultOrError<uint64_t> ShaderModule::GetDXCompilerVersion() const {
+        ComPtr<IDxcValidator> dxcValidator = ToBackend(GetDevice())->GetDxcValidator();
+
+        ComPtr<IDxcVersionInfo> versionInfo;
+        DAWN_TRY(CheckHRESULT(dxcValidator.As(&versionInfo),
+                              "D3D12 QueryInterface IDxcValidator to IDxcVersionInfo"));
+
+        uint32_t compilerMajor, compilerMinor;
+        DAWN_TRY(CheckHRESULT(versionInfo->GetVersion(&compilerMajor, &compilerMinor),
+                              "IDxcVersionInfo::GetVersion"));
+
+        // Pack both into a single version number.
+        return (uint64_t(compilerMajor) << uint64_t(32)) + compilerMinor;
+    }
+
+    uint64_t ShaderModule::GetD3DCompilerVersion() const {
+        return D3D_COMPILER_VERSION;
+    }
 }}  // namespace dawn_native::d3d12

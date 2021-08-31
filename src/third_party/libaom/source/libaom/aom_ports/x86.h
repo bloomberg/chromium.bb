@@ -236,7 +236,7 @@ static INLINE int x86_simd_caps(void) {
 // x86_readtsc directly, but prevent the CPU's out-of-order execution from
 // affecting the measurement (by having earlier/later instructions be evaluated
 // in the time interval). See the white paper, "How to Benchmark Code
-// Execution Times on Intel® IA-32 and IA-64 Instruction Set Architectures" by
+// Execution Times on Intel(R) IA-32 and IA-64 Instruction Set Architectures" by
 // Gabriele Paoloni for more information.
 //
 // If you are timing a large function (CPU time > a couple of seconds), use

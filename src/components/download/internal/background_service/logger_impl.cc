@@ -32,7 +32,7 @@ std::string ControllerStateToString(Controller::State state) {
   }
 }
 
-std::string OptBoolToString(base::Optional<bool> value) {
+std::string OptBoolToString(absl::optional<bool> value) {
   if (value.has_value())
     return value.value() ? "OK" : "BAD";
 
@@ -155,8 +155,8 @@ std::unique_ptr<base::DictionaryValue> DriverEntryToValue(
 
 std::unique_ptr<base::DictionaryValue> EntryToValue(
     const Entry& entry,
-    const base::Optional<DriverEntry>& driver,
-    const base::Optional<CompletionType>& completion_type) {
+    const absl::optional<DriverEntry>& driver,
+    const absl::optional<CompletionType>& completion_type) {
   std::unique_ptr<base::DictionaryValue> serialized_entry =
       std::make_unique<base::DictionaryValue>();
   serialized_entry->SetString("client", ClientToString(entry.client));
@@ -236,14 +236,14 @@ base::Value LoggerImpl::GetServiceDownloads() {
   auto entries = log_source_->GetServiceDownloads();
   for (auto& entry : entries) {
     serialized_entries.Append(
-        EntryToValue(*entry.first, entry.second, base::nullopt));
+        EntryToValue(*entry.first, entry.second, absl::nullopt));
   }
 
   return std::move(serialized_entries);
 }
 
 void LoggerImpl::OnServiceStatusChanged() {
-  if (!observers_.might_have_observers())
+  if (observers_.empty())
     return;
 
   base::Value service_status = GetServiceStatus();
@@ -253,7 +253,7 @@ void LoggerImpl::OnServiceStatusChanged() {
 }
 
 void LoggerImpl::OnServiceDownloadsAvailable() {
-  if (!observers_.might_have_observers())
+  if (observers_.empty())
     return;
 
   base::Value service_downloads = GetServiceDownloads();
@@ -262,7 +262,7 @@ void LoggerImpl::OnServiceDownloadsAvailable() {
 }
 
 void LoggerImpl::OnServiceDownloadChanged(const std::string& guid) {
-  if (!observers_.might_have_observers())
+  if (observers_.empty())
     return;
 
   auto entry_details = log_source_->GetServiceDownload(guid);
@@ -270,7 +270,7 @@ void LoggerImpl::OnServiceDownloadChanged(const std::string& guid) {
     return;
 
   auto entry = EntryToValue(*(entry_details->first), entry_details->second,
-                            base::nullopt);
+                            absl::nullopt);
 
   for (auto& observer : observers_)
     observer.OnServiceDownloadChanged(*entry);
@@ -280,10 +280,10 @@ void LoggerImpl::OnServiceDownloadFailed(CompletionType completion_type,
                                          const Entry& entry) {
   DCHECK_NE(CompletionType::SUCCEED, completion_type);
 
-  if (!observers_.might_have_observers())
+  if (observers_.empty())
     return;
 
-  auto serialized_entry = EntryToValue(entry, base::nullopt, completion_type);
+  auto serialized_entry = EntryToValue(entry, absl::nullopt, completion_type);
   for (auto& observer : observers_)
     observer.OnServiceDownloadFailed(*serialized_entry);
 }
@@ -292,7 +292,7 @@ void LoggerImpl::OnServiceRequestMade(
     DownloadClient client,
     const std::string& guid,
     DownloadParams::StartResult start_result) {
-  if (!observers_.might_have_observers())
+  if (observers_.empty())
     return;
 
   base::DictionaryValue serialized_request;

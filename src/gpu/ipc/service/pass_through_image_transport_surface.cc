@@ -8,13 +8,13 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_macros_local.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/gl_switches.h"
+#include "ui/gl/gl_features.h"
 
 namespace gpu {
 
@@ -27,10 +27,6 @@ int g_current_swap_generation_ = 0;
 int g_num_swaps_in_current_swap_generation_ = 0;
 int g_last_multi_window_swap_generation_ = 0;
 
-bool HasSwitch(const char switch_constant[]) {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(switch_constant);
-}
-
 }  // anonymous namespace
 
 PassThroughImageTransportSurface::PassThroughImageTransportSurface(
@@ -38,13 +34,12 @@ PassThroughImageTransportSurface::PassThroughImageTransportSurface(
     gl::GLSurface* surface,
     bool override_vsync_for_multi_window_swap)
     : GLSurfaceAdapter(surface),
-      is_gpu_vsync_disabled_(HasSwitch(switches::kDisableGpuVsync)),
+      is_gpu_vsync_disabled_(!features::UseGpuVsync()),
       is_multi_window_swap_vsync_override_enabled_(
           override_vsync_for_multi_window_swap),
       delegate_(delegate) {}
 
-PassThroughImageTransportSurface::~PassThroughImageTransportSurface() {
-}
+PassThroughImageTransportSurface::~PassThroughImageTransportSurface() = default;
 
 bool PassThroughImageTransportSurface::Initialize(gl::GLSurfaceFormat format) {
   // The surface is assumed to have already been initialized.
@@ -255,7 +250,7 @@ void PassThroughImageTransportSurface::FinishSwapBuffers(
       // Report only if collection is enabled and supported on current platform
       // See gpu::Scheduler::TakeTotalBlockingTime for details.
       if (!blocked_time_since_last_swap.is_min()) {
-        UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        LOCAL_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
             "GPU.GpuBlockedBetweenSwapsUs2", blocked_time_since_last_swap,
             kTimingMetricsHistogramMin, kTimingMetricsHistogramMax,
             kTimingMetricsHistogramBuckets);
@@ -275,12 +270,10 @@ void PassThroughImageTransportSurface::FinishSwapBuffersAsync(
     gfx::SwapCompletionResult result) {
   // TODO(afrantzis): It's probably not ideal to introduce a wait here.
   // However, since this is a temporary step to maintain existing behavior
-  // until we are ready to expose the gpu_fence further, and fences are only
+  // until we are ready to expose the release_fence further, and fences are only
   // enabled with a flag, this should be fine for now.
-  if (result.gpu_fence) {
-    result.gpu_fence->Wait();
-    result.gpu_fence.reset();
-  }
+  if (!result.release_fence.is_null())
+    gfx::GpuFence(std::move(result.release_fence)).Wait();
   response.result = result.swap_result;
   FinishSwapBuffers(std::move(response), local_swap_id);
   std::move(callback).Run(std::move(result));

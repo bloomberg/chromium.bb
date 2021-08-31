@@ -10,6 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/chromeos_buildflags.h"
 #include "net/disk_cache/cache_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -63,7 +64,7 @@ TEST_F(CacheUtilTest, MoveCache) {
   EXPECT_TRUE(base::PathExists(dest_file1_));
   EXPECT_TRUE(base::PathExists(dest_file2_));
   EXPECT_TRUE(base::PathExists(dest_dir1_));
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_TRUE(base::PathExists(cache_dir_)); // old cache dir stays
 #else
   EXPECT_FALSE(base::PathExists(cache_dir_)); // old cache is gone

@@ -9,9 +9,11 @@
 #include <utility>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
@@ -173,7 +175,7 @@ TEST_F(AndroidSmsAppManagerImplTest, TestSetUpMessages_NoPreviousApp_Fails) {
       GetAndroidMessagesURL() /* expected_app_url */,
       GetAndroidMessagesURL(
           true /* use_install_url */) /* expected_install_url */,
-      base::nullopt /* id_for_app */);
+      absl::nullopt /* id_for_app */);
 
   // Verify that no installed app exists and no observers were notified.
   EXPECT_FALSE(fake_android_sms_app_setup_controller()->GetAppMetadataAtUrl(
@@ -265,7 +267,7 @@ TEST_F(AndroidSmsAppManagerImplTest,
       GetAndroidMessagesURL() /* expected_app_url */,
       GetAndroidMessagesURL(
           true /* use_install_url */) /* expected_install_url */,
-      base::nullopt /* id_for_app */);
+      absl::nullopt /* id_for_app */);
 
   // Verify that the new app was not installed and no observers were notified.
   EXPECT_FALSE(fake_android_sms_app_setup_controller()->GetAppMetadataAtUrl(
@@ -355,8 +357,27 @@ TEST_F(AndroidSmsAppManagerImplTest, TestManualUninstall) {
 
   // Now uninstall the app and verify that the app manager registers it.
   fake_android_sms_app_setup_controller()->SetAppAtUrl(install_url,
-                                                       base::nullopt);
+                                                       absl::nullopt);
   EXPECT_TRUE(android_sms_app_manager()->HasAppBeenManuallyUninstalledByUser());
+}
+
+TEST_F(AndroidSmsAppManagerImplTest, TestGetCurrentAppUrl) {
+  // Enable staging flag and install both prod and staging apps.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kUseMessagesStagingUrl);
+  fake_android_sms_app_setup_controller()->SetAppAtUrl(
+      GetAndroidMessagesURL(true /* use_install_url */, PwaDomain::kProdGoogle),
+      kOldAppId);
+  fake_android_sms_app_setup_controller()->SetAppAtUrl(
+      GetAndroidMessagesURL(true /* use_install_url */, PwaDomain::kStaging),
+      kNewAppId);
+  CompleteAsyncInitialization();
+
+  // When both apps are installed GetCurrentAppUrl should always
+  // return the preferred app.
+  EXPECT_EQ(
+      GetAndroidMessagesURL(false /* use_install_url */, PwaDomain::kStaging),
+      android_sms_app_manager()->GetCurrentAppUrl());
 }
 
 }  // namespace android_sms

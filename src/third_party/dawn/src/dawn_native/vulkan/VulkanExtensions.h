@@ -15,7 +15,8 @@
 #ifndef DAWNNATIVE_VULKAN_VULKANEXTENSIONS_H_
 #define DAWNNATIVE_VULKAN_VULKANEXTENSIONS_H_
 
-#include <bitset>
+#include "common/ityp_bitset.h"
+
 #include <unordered_map>
 
 namespace dawn_native { namespace vulkan {
@@ -38,17 +39,14 @@ namespace dawn_native { namespace vulkan {
         XlibSurface,
 
         // Others
-        DebugReport,
+        DebugUtils,
+        ValidationFeatures,
 
         EnumCount,
     };
 
-    // A bitset wrapper that is indexed with InstanceExt.
-    struct InstanceExtSet {
-        std::bitset<static_cast<size_t>(InstanceExt::EnumCount)> extensionBitSet;
-        void Set(InstanceExt extension, bool enabled);
-        bool Has(InstanceExt extension) const;
-    };
+    // A bitset that is indexed with InstanceExt.
+    using InstanceExtSet = ityp::bitset<InstanceExt, static_cast<uint32_t>(InstanceExt::EnumCount)>;
 
     // Information about a known instance extension.
     struct InstanceExtInfo {
@@ -99,7 +97,6 @@ namespace dawn_native { namespace vulkan {
         ExternalSemaphoreZirconHandle,
 
         // Others
-        DebugMarker,
         ImageDrmFormatModifier,
         Swapchain,
         SubgroupSizeControl,
@@ -107,14 +104,10 @@ namespace dawn_native { namespace vulkan {
         EnumCount,
     };
 
-    // A bitset wrapper that is indexed with DeviceExt.
-    struct DeviceExtSet {
-        std::bitset<static_cast<size_t>(DeviceExt::EnumCount)> extensionBitSet;
-        void Set(DeviceExt extension, bool enabled);
-        bool Has(DeviceExt extension) const;
-    };
+    // A bitset that is indexed with DeviceExt.
+    using DeviceExtSet = ityp::bitset<DeviceExt, static_cast<uint32_t>(DeviceExt::EnumCount)>;
 
-    // A bitset wrapper that is indexed with DeviceExt.
+    // Information about a known device extension.
     struct DeviceExtInfo {
         DeviceExt index;
         const char* name;
@@ -136,6 +129,33 @@ namespace dawn_native { namespace vulkan {
     DeviceExtSet EnsureDependencies(const DeviceExtSet& advertisedExts,
                                     const InstanceExtSet& instanceExts,
                                     uint32_t icdVersion);
+
+    // The list of all known Vulkan layers.
+    enum class VulkanLayer {
+        Validation,
+        LunargVkTrace,
+        RenderDocCapture,
+
+        // Fuchsia implements the swapchain through a layer (VK_LAYER_FUCHSIA_image_pipe_swapchain),
+        // which adds an instance extensions (VK_FUCHSIA_image_surface) to all ICDs.
+        FuchsiaImagePipeSwapchain,
+
+        EnumCount,
+    };
+
+    // A bitset that is indexed with VulkanLayer.
+    using VulkanLayerSet = ityp::bitset<VulkanLayer, static_cast<uint32_t>(VulkanLayer::EnumCount)>;
+
+    // Information about a known layer
+    struct VulkanLayerInfo {
+        VulkanLayer layer;
+        const char* name;
+    };
+
+    // Returns the information about a known VulkanLayer
+    const VulkanLayerInfo& GetVulkanLayerInfo(VulkanLayer layer);
+    // Returns a map that maps a Vulkan layer name to its VulkanLayer.
+    std::unordered_map<std::string, VulkanLayer> CreateVulkanLayerNameMap();
 
 }}  // namespace dawn_native::vulkan
 

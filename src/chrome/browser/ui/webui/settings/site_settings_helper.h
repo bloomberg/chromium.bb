@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -32,7 +32,7 @@ class ExtensionRegistry;
 }
 
 namespace permissions {
-class ChooserContextBase;
+class ObjectPermissionContextBase;
 }
 
 namespace site_settings {
@@ -63,18 +63,17 @@ constexpr char kOrigin[] = "origin";
 constexpr char kOriginForFavicon[] = "originForFavicon";
 constexpr char kRecentPermissions[] = "recentPermissions";
 constexpr char kSetting[] = "setting";
+constexpr char kSettingDetail[] = "settingDetail";
 constexpr char kSites[] = "sites";
 constexpr char kPolicyIndicator[] = "indicator";
 constexpr char kSource[] = "source";
 constexpr char kType[] = "type";
 constexpr char kIsEmbargoed[] = "isEmbargoed";
-constexpr char kIsDiscarded[] = "isDiscarded";
 
 enum class SiteSettingSource {
   kAllowlist,
   kAdsFilterBlocklist,
   kDefault,
-  kDrmDisabled,
   kEmbargo,
   kExtension,
   kInsecureOrigin,
@@ -110,8 +109,8 @@ struct ManagedState {
 bool HasRegisteredGroupName(ContentSettingsType type);
 
 // Converts a ContentSettingsType to/from its group name identifier.
-ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name);
-std::string ContentSettingsTypeToGroupName(ContentSettingsType type);
+ContentSettingsType ContentSettingsTypeFromGroupName(base::StringPiece name);
+base::StringPiece ContentSettingsTypeToGroupName(ContentSettingsType type);
 
 // Converts a ListValue of group names to a list of ContentSettingsTypes
 std::vector<ContentSettingsType> ContentSettingsTypesFromGroupNames(
@@ -125,14 +124,15 @@ base::Value GetValueForManagedState(const ManagedState& state);
 
 // Helper function to construct a dictionary for an exception.
 std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
+    ContentSettingsType content_type,
+    Profile* profile,
     const ContentSettingsPattern& pattern,
     const ContentSettingsPattern& secondary_pattern,
     const std::string& display_name,
     const ContentSetting& setting,
     const std::string& provider_name,
     bool incognito,
-    bool is_embargoed = false,
-    bool is_discarded = false);
+    bool is_embargoed = false);
 
 // Helper function to construct a dictionary for a hosted app exception.
 void AddExceptionForHostedApp(const std::string& url_pattern,
@@ -186,7 +186,7 @@ std::vector<ContentSettingPatternSource> GetSiteExceptionsForContentType(
 // for a given content settings type and is declared early so that it can used
 // by functions below.
 struct ChooserTypeNameEntry {
-  permissions::ChooserContextBase* (*get_context)(Profile*);
+  permissions::ObjectPermissionContextBase* (*get_context)(Profile*);
   const char* name;
 };
 
@@ -206,7 +206,7 @@ const ChooserTypeNameEntry* ChooserTypeFromGroupName(const std::string& name);
 // The structure of the SiteException objects is the same as the objects
 // returned by GetExceptionForPage().
 base::Value CreateChooserExceptionObject(
-    const base::string16& display_name,
+    const std::u16string& display_name,
     const base::Value& object,
     const std::string& chooser_type,
     const ChooserExceptionDetails& chooser_exception_details);

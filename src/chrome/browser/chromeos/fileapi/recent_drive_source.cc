@@ -11,8 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/ash/drive/drive_integration_service.h"
+#include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/recent_file.h"
 #include "chromeos/components/drivefs/drivefs_util.h"
@@ -112,7 +112,7 @@ void RecentDriveSource::OnComplete() {
 
 void RecentDriveSource::GotSearchResults(
     drive::FileError error,
-    base::Optional<std::vector<drivefs::mojom::QueryItemPtr>> results) {
+    absl::optional<std::vector<drivefs::mojom::QueryItemPtr>> results) {
   search_query_.reset();
   auto* integration_service =
       drive::util::GetIntegrationServiceByProfile(profile_);

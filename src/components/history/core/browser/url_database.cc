@@ -10,7 +10,6 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -29,11 +28,9 @@ URLDatabase::URLEnumeratorBase::URLEnumeratorBase()
     : initialized_(false) {
 }
 
-URLDatabase::URLEnumeratorBase::~URLEnumeratorBase() {
-}
+URLDatabase::URLEnumeratorBase::~URLEnumeratorBase() = default;
 
-URLDatabase::URLEnumerator::URLEnumerator() {
-}
+URLDatabase::URLEnumerator::URLEnumerator() = default;
 
 bool URLDatabase::URLEnumerator::GetNextURL(URLRow* r) {
   if (statement_.Step()) {
@@ -47,8 +44,7 @@ URLDatabase::URLDatabase()
     : has_keyword_search_terms_(false) {
 }
 
-URLDatabase::~URLDatabase() {
-}
+URLDatabase::~URLDatabase() = default;
 
 // Convenience to fill a URLRow. Must be in sync with the fields in
 // kURLRowFields.
@@ -159,7 +155,7 @@ bool URLDatabase::UpdateURLRow(URLID url_id, const URLRow& info) {
 
 URLID URLDatabase::AddURLInternal(const URLRow& info, bool is_temporary) {
   // This function is used to insert into two different tables, so we have to
-  // do some shuffling. Unfortinately, we can't use the macro
+  // do some shuffling. Unfortunately, we can't use the macro
   // HISTORY_URL_ROW_FIELDS because that specifies the table name which is
   // invalid in the insert syntax.
   #define ADDURL_COMMON_SUFFIX \
@@ -211,7 +207,7 @@ bool URLDatabase::URLTableContainsAutoincrement() {
   std::string urls_schema = statement.ColumnString(0);
   // We check if the whole schema contains "AUTOINCREMENT", since
   // "AUTOINCREMENT" only can be used for "INTEGER PRIMARY KEY", so we assume no
-  // other columns could cantain "AUTOINCREMENT".
+  // other columns could contain "AUTOINCREMENT".
   return urls_schema.find("AUTOINCREMENT") != std::string::npos;
 }
 
@@ -363,13 +359,13 @@ bool URLDatabase::IsTypedHost(const std::string& host, std::string* scheme) {
     url::kFtpScheme
   };
   URLRows dummy;
-  for (size_t i = 0; i < base::size(schemes); ++i) {
-    std::string scheme_and_host(schemes[i]);
+  for (const char* known_scheme : schemes) {
+    std::string scheme_and_host(known_scheme);
     scheme_and_host += url::kStandardSchemeSeparator + host;
     if (AutocompleteForPrefix(scheme_and_host + '/', 1, true, &dummy) ||
         AutocompleteForPrefix(scheme_and_host + ':', 1, true, &dummy)) {
       if (scheme != nullptr)
-        *scheme = schemes[i];
+        *scheme = known_scheme;
       return true;
     }
   }
@@ -382,7 +378,7 @@ bool URLDatabase::FindShortestURLFromBase(const std::string& base,
                                           int min_typed,
                                           bool allow_base,
                                           URLRow* info) {
-  // Select URLs that start with |base| and are prefixes of |url|.  All parts
+  // Select URLs that start with `base` and are prefixes of `url`.  All parts
   // of this query except the substr() call can be done using the index.  We
   // could do this query with a couple of LIKE or GLOB statements as well, but
   // those wouldn't use the index, and would run into problems with "wildcard"
@@ -408,18 +404,18 @@ bool URLDatabase::FindShortestURLFromBase(const std::string& base,
   return true;
 }
 
-bool URLDatabase::GetTextMatches(const base::string16& query,
+bool URLDatabase::GetTextMatches(const std::u16string& query,
                                  URLRows* results) {
   return GetTextMatchesWithAlgorithm(
       query, query_parser::MatchingAlgorithm::DEFAULT, results);
 }
 
 bool URLDatabase::GetTextMatchesWithAlgorithm(
-    const base::string16& query,
+    const std::u16string& query,
     query_parser::MatchingAlgorithm algorithm,
     URLRows* results) {
   query_parser::QueryNodeVector query_nodes;
-  query_parser_.ParseQueryNodes(query, algorithm, &query_nodes);
+  query_parser::QueryParser::ParseQueryNodes(query, algorithm, &query_nodes);
 
   results->clear();
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
@@ -427,20 +423,20 @@ bool URLDatabase::GetTextMatchesWithAlgorithm(
 
   while (statement.Step()) {
     query_parser::QueryWordVector query_words;
-    base::string16 url = base::i18n::ToLower(statement.ColumnString16(1));
-    query_parser_.ExtractQueryWords(url, &query_words);
+    std::u16string url = base::i18n::ToLower(statement.ColumnString16(1));
+    query_parser::QueryParser::ExtractQueryWords(url, &query_words);
     GURL gurl(url);
     if (gurl.is_valid()) {
       // Decode punycode to match IDN.
-      base::string16 ascii = base::ASCIIToUTF16(gurl.host());
-      base::string16 utf = url_formatter::IDNToUnicode(gurl.host());
+      std::u16string ascii = base::ASCIIToUTF16(gurl.host());
+      std::u16string utf = url_formatter::IDNToUnicode(gurl.host());
       if (ascii != utf)
-        query_parser_.ExtractQueryWords(utf, &query_words);
+        query_parser::QueryParser::ExtractQueryWords(utf, &query_words);
     }
-    base::string16 title = base::i18n::ToLower(statement.ColumnString16(2));
-    query_parser_.ExtractQueryWords(title, &query_words);
+    std::u16string title = base::i18n::ToLower(statement.ColumnString16(2));
+    query_parser::QueryParser::ExtractQueryWords(title, &query_words);
 
-    if (query_parser_.DoesQueryMatch(query_words, query_nodes)) {
+    if (query_parser::QueryParser::DoesQueryMatch(query_words, query_nodes)) {
       URLResult info;
       FillURLRow(statement, &info);
       if (info.url().is_valid())
@@ -498,7 +494,7 @@ bool URLDatabase::DropKeywordSearchTermsTable() {
 
 bool URLDatabase::SetKeywordSearchTermsForURL(URLID url_id,
                                               KeywordID keyword_id,
-                                              const base::string16& term) {
+                                              const std::u16string& term) {
   DCHECK(url_id && keyword_id && !term.empty());
 
   sql::Statement exist_statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
@@ -547,7 +543,7 @@ bool URLDatabase::GetKeywordSearchTermRow(URLID url_id,
 }
 
 bool URLDatabase::GetKeywordSearchTermRows(
-    const base::string16& term,
+    const std::u16string& term,
     std::vector<KeywordSearchTermRow>* rows) {
   sql::Statement statement(
       GetDB().GetCachedStatement(SQL_FROM_HERE,
@@ -581,7 +577,7 @@ void URLDatabase::DeleteAllSearchTermsForKeyword(
 
 void URLDatabase::GetMostRecentKeywordSearchTerms(
     KeywordID keyword_id,
-    const base::string16& prefix,
+    const std::u16string& prefix,
     int max_count,
     std::vector<KeywordSearchTermVisit>* matches) {
   // NOTE: the keyword_id can be zero if on first run the user does a query
@@ -602,10 +598,10 @@ void URLDatabase::GetMostRecentKeywordSearchTerms(
 
   // NOTE: Keep these CollapseWhitespace() and ToLower() calls in sync with
   // search_provider.cc.
-  base::string16 normalized_prefix =
+  std::u16string normalized_prefix =
       base::CollapseWhitespace(base::i18n::ToLower(prefix), false);
   // This magic gives us a prefix search.
-  base::string16 next_prefix = normalized_prefix;
+  std::u16string next_prefix = normalized_prefix;
   next_prefix.back() = next_prefix.back() + 1;
   statement.BindInt64(0, keyword_id);
   statement.BindString16(1, normalized_prefix);
@@ -684,7 +680,7 @@ URLDatabase::GetMostRecentNormalizedKeywordSearchTerms(
   return visits;
 }
 
-bool URLDatabase::DeleteKeywordSearchTerm(const base::string16& term) {
+bool URLDatabase::DeleteKeywordSearchTerm(const std::u16string& term) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM keyword_search_terms WHERE term=?"));
   statement.BindString16(0, term);
@@ -694,7 +690,7 @@ bool URLDatabase::DeleteKeywordSearchTerm(const base::string16& term) {
 
 bool URLDatabase::DeleteKeywordSearchTermForNormalizedTerm(
     KeywordID keyword_id,
-    const base::string16& normalized_term) {
+    const std::u16string& normalized_term) {
   sql::Statement statement(
       GetDB().GetCachedStatement(SQL_FROM_HERE,
                                  "DELETE FROM keyword_search_terms WHERE "
@@ -736,7 +732,7 @@ bool URLDatabase::CreateURLTable(bool is_temporary) {
   sql.append(name);
   sql.append(
       "("
-      // The id uses AUTOINCREMENT is for sync propose. Sync uses this |id| as
+      // The id uses AUTOINCREMENT is for sync propose. Sync uses this `id` as
       // an unique key to identify the URLs. If here did not use AUTOINCREMENT,
       // and Sync was not working somehow, a ROWID could be deleted and re-used
       // during this period. Once Sync come back, Sync would use ROWIDs and
@@ -760,7 +756,7 @@ bool URLDatabase::CreateURLTable(bool is_temporary) {
       "typed_count INTEGER DEFAULT 0 NOT NULL,"
       "last_visit_time INTEGER NOT NULL,"
       "hidden INTEGER DEFAULT 0 NOT NULL)");
-  // IMPORTANT: If you change the colums, also update in_memory_database.cc
+  // IMPORTANT: If you change the columns, also update in_memory_database.cc
   // where the values are copied (InitFromDisk).
 
   return GetDB().Execute(sql.c_str());

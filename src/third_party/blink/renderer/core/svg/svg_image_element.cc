@@ -21,8 +21,8 @@
 
 #include "third_party/blink/renderer/core/svg/svg_image_element.h"
 
-#include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom-blink.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/document_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -131,7 +131,9 @@ void SVGImageElement::CollectStyleForPresentationAttribute(
   }
 }
 
-void SVGImageElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+void SVGImageElement::SvgAttributeChanged(
+    const SvgAttributeChangedParams& params) {
+  const QualifiedName& attr_name = params.name;
   bool is_length_attribute =
       attr_name == svg_names::kXAttr || attr_name == svg_names::kYAttr ||
       attr_name == svg_names::kWidthAttr || attr_name == svg_names::kHeightAttr;
@@ -165,7 +167,7 @@ void SVGImageElement::SvgAttributeChanged(const QualifiedName& attr_name) {
     return;
   }
 
-  SVGGraphicsElement::SvgAttributeChanged(attr_name);
+  SVGGraphicsElement::SvgAttributeChanged(params);
 }
 
 void SVGImageElement::ParseAttribute(

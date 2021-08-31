@@ -36,8 +36,6 @@
 #     A specific visibility to apply for the generated static library. If
 #     omitted, visibility will be inherited from the invoker.
 
-import("//build/config/python.gni")
-
 # NOTE: Common variables here for when multiple templates use them.
 compiler_root = "//tools/json_schema_compiler"
 compiler_script = "$compiler_root/compiler.py"
@@ -111,6 +109,7 @@ template("generated_json_strings") {
   root_target_name = target_name
 
   bundle_generator_schema_name = target_name + "_bundle_generator_schema"
+
   action(bundle_generator_schema_name) {
     visibility = [ ":$root_target_name" ]
     script = compiler_script
@@ -227,6 +226,7 @@ template("function_registration") {
 
   bundle_generator_registration_name =
       target_name + "_bundle_generator_registration"
+
   action(bundle_generator_registration_name) {
     visibility = [ ":$root_target_name" ]
     script = compiler_script
@@ -320,8 +320,7 @@ template("generated_types") {
 
   schema_generator_name = target_name + "_schema_generator"
 
-  # TODO(crbug.com/1112471): Get this to run cleanly under Python 3.
-  python2_action_foreach(schema_generator_name) {
+  action_foreach(schema_generator_name) {
     visibility = [ ":$root_target_name" ]
     script = compiler_script
     sources = invoker.sources

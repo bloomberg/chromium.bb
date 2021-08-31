@@ -13,7 +13,7 @@
 #include "base/bits.h"
 #include "base/check_op.h"
 #include "base/macros.h"
-#include "base/process/process_metrics.h"
+#include "base/memory/page_size.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 
@@ -27,6 +27,7 @@
 #include <malloc/malloc.h>
 
 #include "base/allocator/allocator_interception_mac.h"
+#include "base/mac/mach_logging.h"
 #endif
 
 // No calls to malloc / new in this file. They would would cause re-entrancy of
@@ -133,7 +134,7 @@ extern "C" {
 //   - If the std::new_handler is NOT set just return nullptr.
 //   - If the std::new_handler is set:
 //     - Assume it will abort() if it fails (very likely the new_handler will
-//       just suicide priting a message).
+//       just suicide printing a message).
 //     - Assume it did succeed if it returns, in which case reattempt the alloc.
 
 ALWAYS_INLINE void* ShimCppNew(size_t size) {
@@ -147,6 +148,15 @@ ALWAYS_INLINE void* ShimCppNew(size_t size) {
     ptr = chain_head->alloc_function(chain_head, size, context);
   } while (!ptr && CallNewHandler(size));
   return ptr;
+}
+
+ALWAYS_INLINE void* ShimCppNewNoThrow(size_t size) {
+  void* context = nullptr;
+#if defined(OS_APPLE)
+  context = malloc_default_zone();
+#endif
+  const base::allocator::AllocatorDispatch* const chain_head = GetChainHead();
+  return chain_head->alloc_unchecked_function(chain_head, size, context);
 }
 
 ALWAYS_INLINE void* ShimCppAlignedNew(size_t size, size_t alignment) {
@@ -329,7 +339,11 @@ ALWAYS_INLINE void ShimAlignedFree(void* address, void* context) {
 // On Windows we use plain link-time overriding of the CRT symbols.
 #include "base/allocator/allocator_shim_override_ucrt_symbols_win.h"
 #elif defined(OS_APPLE)
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#include "base/allocator/allocator_shim_override_mac_default_zone.h"
+#else  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 #include "base/allocator/allocator_shim_override_mac_symbols.h"
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 #else
 #include "base/allocator/allocator_shim_override_libc_symbols.h"
 #endif
@@ -362,7 +376,9 @@ ALWAYS_INLINE void ShimAlignedFree(void* address, void* context) {
 #if defined(OS_APPLE)
 namespace base {
 namespace allocator {
+
 void InitializeAllocatorShim() {
+#if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   // Prepares the default dispatch. After the intercepted malloc calls have
   // traversed the shim this will route them to the default malloc zone.
   InitializeDefaultDispatchToMacAllocator();
@@ -372,7 +388,9 @@ void InitializeAllocatorShim() {
   // This replaces the default malloc zone, causing calls to malloc & friends
   // from the codebase to be routed to ShimMalloc() above.
   base::allocator::ReplaceFunctionsForStoredZones(&functions);
+#endif  // !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 }
+
 }  // namespace allocator
 }  // namespace base
 #endif

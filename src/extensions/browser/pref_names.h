@@ -73,13 +73,6 @@ extern const char kInstallDenyList[];
 // accessed through extensions::ExternalPolicyProvider.
 extern const char kInstallForceList[];
 
-// A list containing apps or extensions that Chrome will silently install on the
-// login screen on Chrome OS at startup time. It is a list of strings, each
-// string contains an app ID and an update URL, delimited by a semicolon. This
-// preference is set by an admin policy, and meant to be only accessed through
-// extensions::ExternalPolicyProvider.
-extern const char kLoginScreenExtensions[];
-
 // String pref for what version chrome was last time the extension prefs were
 // loaded.
 extern const char kLastChromeVersion[];
@@ -105,14 +98,6 @@ extern const char kStorageGarbageCollect[];
 // A preference that tracks browser action toolbar configuration. This is a list
 // object stored in the Preferences file. The extensions are stored by ID.
 extern const char kToolbar[];
-
-// Integer pref that tracks the number of browser actions visible in the browser
-// actions toolbar.
-extern const char kToolbarSize[];
-
-// Indicates whether extensions have been migrated from BrowserActionsContainer
-// to the ExtensionsToolbarContainer.
-extern const char kPinnedExtensionsMigrationComplete[];
 
 // A preference for a list of Component extensions that have been
 // uninstalled/removed and should not be reloaded.

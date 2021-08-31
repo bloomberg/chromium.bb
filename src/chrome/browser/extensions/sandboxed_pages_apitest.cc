@@ -8,7 +8,9 @@
 namespace extensions {
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SandboxedPages) {
-  EXPECT_TRUE(RunExtensionSubtest("sandboxed_pages", "main.html")) << message_;
+  EXPECT_TRUE(
+      RunExtensionTest({.name = "sandboxed_pages", .page_url = "main.html"}))
+      << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SandboxedPagesCSP) {
@@ -16,9 +18,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SandboxedPagesCSP) {
 
   // This app attempts to load remote web content inside a sandboxed page.
   // Loading web content will fail because of CSP. In addition to that we will
-  // show manifest warnings, hence the kFlagIgnoreManifestWarnings.
-  EXPECT_TRUE(RunExtensionSubtest("sandboxed_pages_csp", "main.html",
-                                  kFlagIgnoreManifestWarnings, kFlagNone))
+  // show manifest warnings, hence ignore_manifest_warnings is set to true.
+  ASSERT_TRUE(
+      RunExtensionTest({.name = "sandboxed_pages_csp", .page_url = "main.html"},
+                       {.ignore_manifest_warnings = true}))
       << message_;
 }
 

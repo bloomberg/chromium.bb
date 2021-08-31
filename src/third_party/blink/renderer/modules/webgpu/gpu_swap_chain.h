@@ -14,12 +14,13 @@ class Layer;
 
 namespace blink {
 
+class CanvasResource;
 class GPUCanvasContext;
 class GPUDevice;
 class GPUTexture;
+class StaticBitmapImage;
 
-class GPUSwapChain : public ScriptWrappable,
-                     public DeviceTreeObject,
+class GPUSwapChain : public DawnObjectImpl,
                      public WebGPUSwapBufferProvider::Client {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -37,6 +38,16 @@ class GPUSwapChain : public ScriptWrappable,
   cc::Layer* CcLayer();
   void SetFilterQuality(SkFilterQuality);
 
+  // Returns a StaticBitmapImage backed by a texture containing the current
+  // contents of the front buffer. This is done without any pixel copies. The
+  // texture in the ImageBitmap is from the active ContextProvider on the
+  // WebGPUSwapBufferProvider.
+  scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage();
+
+  // Returns a CanvasResource of type ExternalCanvasResource that will
+  // encapsulate an external mailbox, synctoken and release callback.
+  scoped_refptr<CanvasResource> ExportCanvasResource();
+
   // gpu_swap_chain.idl
   GPUTexture* getCurrentTexture();
 
@@ -48,7 +59,6 @@ class GPUSwapChain : public ScriptWrappable,
 
   scoped_refptr<WebGPUSwapBufferProvider> swap_buffers_;
 
-  Member<GPUDevice> device_;
   Member<GPUCanvasContext> context_;
   WGPUTextureUsage usage_;
   WGPUTextureFormat format_;

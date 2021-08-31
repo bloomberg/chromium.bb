@@ -31,8 +31,8 @@
 #include <math.h>
 #include <algorithm>
 #include "base/notreached.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/fdlibm/ieee754.h"
 
 namespace blink {
 
@@ -88,7 +88,7 @@ double DistanceEffect::ExponentialGain(double distance) {
   // Clamp distance according to spec
   distance = clampTo(distance, ref_distance_);
 
-  return pow(distance / ref_distance_, -clampTo(rolloff_factor_, 0.0));
+  return fdlibm::pow(distance / ref_distance_, -clampTo(rolloff_factor_, 0.0));
 }
 
 }  // namespace blink

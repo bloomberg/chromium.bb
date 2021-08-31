@@ -17,13 +17,13 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/public_key_credential_rp_entity.h"
 #include "device/fido/public_key_credential_user_entity.h"
 #include "net/cert/x509_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 
 namespace crypto {
@@ -47,7 +47,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // FromPKCS8 attempts to parse |pkcs8_private_key| as an ASN.1, DER, PKCS#8
     // private key of a supported type and returns a |PrivateKey| instance
     // representing that key.
-    static base::Optional<std::unique_ptr<PrivateKey>> FromPKCS8(
+    static absl::optional<std::unique_ptr<PrivateKey>> FromPKCS8(
         base::span<const uint8_t> pkcs8_private_key);
 
     // FreshP256Key returns a randomly generated P-256 PrivateKey.
@@ -85,6 +85,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
   // authenticator device.
   struct COMPONENT_EXPORT(DEVICE_FIDO) RegistrationData {
     RegistrationData();
+    explicit RegistrationData(const std::string& rp_id);
     RegistrationData(
         std::unique_ptr<PrivateKey> private_key,
         base::span<const uint8_t, kRpIdHashLength> application_parameter,
@@ -95,7 +96,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
 
     ~RegistrationData();
 
-    std::unique_ptr<PrivateKey> private_key;
+    std::unique_ptr<PrivateKey> private_key = PrivateKey::FreshP256Key();
     std::array<uint8_t, kRpIdHashLength> application_parameter;
     uint32_t counter = 0;
     bool is_resident = false;
@@ -104,17 +105,18 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     device::CredProtect protection = device::CredProtect::kUVOptional;
 
     // user is only valid if |is_resident| is true.
-    base::Optional<device::PublicKeyCredentialUserEntity> user;
+    absl::optional<device::PublicKeyCredentialUserEntity> user;
     // rp is only valid if |is_resident| is true.
-    base::Optional<device::PublicKeyCredentialRpEntity> rp;
+    absl::optional<device::PublicKeyCredentialRpEntity> rp;
 
     // hmac_key is present iff the credential has the hmac_secret extension
     // enabled. The first element of the pair is the HMAC key for non-UV, and
     // the second for when UV is used.
-    base::Optional<std::pair<std::array<uint8_t, 32>, std::array<uint8_t, 32>>>
+    absl::optional<std::pair<std::array<uint8_t, 32>, std::array<uint8_t, 32>>>
         hmac_key;
 
-    base::Optional<std::array<uint8_t, 32>> large_blob_key;
+    absl::optional<std::array<uint8_t, 32>> large_blob_key;
+    absl::optional<std::vector<uint8_t>> cred_blob;
 
     DISALLOW_COPY_AND_ASSIGN(RegistrationData);
   };
@@ -159,6 +161,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // zero, in violation of the rules for self-attestation.
     bool non_zero_aaguid_with_self_attestation = false;
 
+    // u2f_invalid_signature causes the signature in an assertion response to be
+    // invalid. (U2F only.)
+    bool u2f_invalid_signature = false;
+
+    // u2f_invalid_public_key causes the public key in a registration response
+    // to be invalid. (U2F only.)
+    bool u2f_invalid_public_key = false;
+
     // Number of PIN retries remaining.
     int pin_retries = kMaxPinRetries;
     // The number of failed PIN attempts since the token was "inserted".
@@ -176,7 +186,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // The permissions parameter for |pin_token|.
     uint8_t pin_uv_token_permissions = 0;
     // The permissions RPID for |pin_token|.
-    base::Optional<std::string> pin_uv_token_rpid;
+    absl::optional<std::string> pin_uv_token_rpid;
+    // If true, fail all PinUvAuthToken requests until a new PIN is set.
+    bool force_pin_change = false;
+    // The minimum PIN length as unicode code points.
+    uint32_t min_pin_length = kMinPinLength;
 
     // Number of internal UV retries remaining.
     int uv_retries = kMaxUvRetries;
@@ -188,7 +202,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     bool bio_enrollment_provisioned = false;
 
     // Current template ID being enrolled, if any.
-    base::Optional<uint8_t> bio_current_template_id;
+    absl::optional<uint8_t> bio_current_template_id;
 
     // Number of remaining samples in current enrollment.
     uint8_t bio_remaining_samples = 4;
@@ -208,19 +222,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // upon returning the error.
     bool bio_enrollment_next_sample_timeout = false;
 
-    // pending_assertions contains the second and subsequent assertions
-    // resulting from a GetAssertion call. These values are awaiting a
-    // GetNextAssertion request.
-    std::vector<std::vector<uint8_t>> pending_assertions;
-
-    // pending_rps contains the remaining RPs to return a previous
-    // authenticatorCredentialManagement command.
-    std::list<device::PublicKeyCredentialRpEntity> pending_rps;
-
-    // pending_registrations contains the remaining |is_resident| registration
-    // to return from a previous authenticatorCredentialManagement command.
-    std::list<cbor::Value::MapValue> pending_registrations;
-
     // allow_list_sizes contains the lengths of the allow_lists that have been
     // seen in assertion requests. This is for tests to confirm that the
     // expected sequence of requests was sent.
@@ -229,14 +230,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // The large-blob array.
     std::vector<uint8_t> large_blob;
 
-    // Buffer that gets progressively filled with large blob fragments until
-    // committed.
-    std::vector<uint8_t> large_blob_buffer;
-    uint64_t large_blob_expected_next_offset = 0;
-    uint64_t large_blob_expected_length = 0;
-
     FidoTransportProtocol transport =
         FidoTransportProtocol::kUsbHumanInterfaceDevice;
+
+    // Adds a new credential to the authenticator. Returns true on success,
+    // false if there already exists a credential with the given ID.
+    bool InjectRegistration(base::span<const uint8_t> credential_id,
+                            RegistrationData registration);
 
     // Adds a registration for the specified credential ID with the application
     // parameter set to be valid for the given relying party ID (which would
@@ -271,11 +271,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     bool InjectResidentKey(base::span<const uint8_t> credential_id,
                            const std::string& relying_party_id,
                            base::span<const uint8_t> user_id,
-                           base::Optional<std::string> user_name,
-                           base::Optional<std::string> user_display_name);
+                           absl::optional<std::string> user_name,
+                           absl::optional<std::string> user_display_name);
 
     // Returns the large blob associated with the credential, if any.
-    base::Optional<std::vector<uint8_t>> GetLargeBlob(
+    absl::optional<std::vector<uint8_t>> GetLargeBlob(
         const RegistrationData& credential);
 
     // Injects a large blob for the credential. If the credential already has an
@@ -318,7 +318,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
   // Constructs certificate encoded in X.509 format to be used for packed
   // attestation statement and FIDO-U2F attestation statement.
   // https://w3c.github.io/webauthn/#defined-attestation-formats
-  base::Optional<std::vector<uint8_t>> GenerateAttestationCertificate(
+  absl::optional<std::vector<uint8_t>> GenerateAttestationCertificate(
       bool individual_attestation_requested) const;
 
   void StoreNewKey(base::span<const uint8_t> key_handle,

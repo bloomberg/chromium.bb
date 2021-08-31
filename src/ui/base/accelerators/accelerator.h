@@ -12,14 +12,18 @@
 #define UI_BASE_ACCELERATORS_ACCELERATOR_H_
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/component_export.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+
+#if defined(OS_CHROMEOS)
+#include "ui/events/keycodes/dom/dom_code.h"
+#endif
 
 namespace ui {
 
@@ -46,6 +50,26 @@ class COMPONENT_EXPORT(UI_BASE) Accelerator {
               int modifiers,
               KeyState key_state = KeyState::PRESSED,
               base::TimeTicks time_stamp = base::TimeTicks());
+
+#if defined(OS_CHROMEOS)
+  // Additional constructor that takes a |DomCode| in order to implement
+  // layout independent fixed position shortcuts. This is only used for
+  // shortcuts in Chrome OS. One such example is Alt ']'. In the US layout ']'
+  // is VKEY_OEM_6, in the DE layout it is VKEY_OEM_PLUS. However the key in
+  // that position is always DomCode::BRACKET_RIGHT regardless of what the key
+  // generates when pressed. When the DE layout is used and the accelerator
+  // is created with { VKEY_OEM_PLUS, DomCode::BRACKET_RIGHT } the custom
+  // accelerator map will map BRACKET_RIGHT to VKEY_OEM_6 as if in the US
+  // layout in order to lookup the accelerator.
+  //
+  // See accelerator_map.h for more information.
+  Accelerator(KeyboardCode key_code,
+              DomCode code,
+              int modifiers,
+              KeyState key_state = KeyState::PRESSED,
+              base::TimeTicks time_stamp = base::TimeTicks());
+#endif
+
   explicit Accelerator(const KeyEvent& key_event);
   Accelerator(const Accelerator& accelerator);
   Accelerator& operator=(const Accelerator& accelerator);
@@ -59,13 +83,18 @@ class COMPONENT_EXPORT(UI_BASE) Accelerator {
 
   // Define the < operator so that the KeyboardShortcut can be used as a key in
   // a std::map.
-  bool operator <(const Accelerator& rhs) const;
+  bool operator<(const Accelerator& rhs) const;
 
-  bool operator ==(const Accelerator& rhs) const;
+  bool operator==(const Accelerator& rhs) const;
 
-  bool operator !=(const Accelerator& rhs) const;
+  bool operator!=(const Accelerator& rhs) const;
 
   KeyboardCode key_code() const { return key_code_; }
+
+#if defined(OS_CHROMEOS)
+  DomCode code() const { return code_; }
+  void reset_code() { code_ = DomCode::NONE; }
+#endif
 
   // Sets the key state that triggers the accelerator. Default is PRESSED.
   void set_key_state(KeyState state) { key_state_ = state; }
@@ -85,12 +114,12 @@ class COMPONENT_EXPORT(UI_BASE) Accelerator {
   bool IsRepeat() const;
 
   // Returns a string with the localized shortcut if any.
-  base::string16 GetShortcutText() const;
+  std::u16string GetShortcutText() const;
 
-#if defined(OS_APPLE)
-  base::string16 KeyCodeToMacSymbol() const;
+#if defined(OS_MAC)
+  std::u16string KeyCodeToMacSymbol() const;
 #endif
-  base::string16 KeyCodeToName() const;
+  std::u16string KeyCodeToName() const;
 
   void set_interrupted_by_mouse_event(bool interrupted_by_mouse_event) {
     interrupted_by_mouse_event_ = interrupted_by_mouse_event;
@@ -101,11 +130,16 @@ class COMPONENT_EXPORT(UI_BASE) Accelerator {
   }
 
  private:
-  base::string16 ApplyLongFormModifiers(base::string16 shortcut) const;
-  base::string16 ApplyShortFormModifiers(base::string16 shortcut) const;
+  std::u16string ApplyLongFormModifiers(const std::u16string& shortcut) const;
+  std::u16string ApplyShortFormModifiers(const std::u16string& shortcut) const;
 
   // The keycode (VK_...).
   KeyboardCode key_code_;
+
+#if defined(OS_CHROMEOS)
+  // The DomCode representing a key's physical position.
+  DomCode code_ = DomCode::NONE;
+#endif
 
   KeyState key_state_;
 
@@ -139,7 +173,7 @@ class COMPONENT_EXPORT(UI_BASE) AcceleratorTarget {
   virtual bool CanHandleAccelerators() const = 0;
 
  protected:
-  virtual ~AcceleratorTarget() {}
+  virtual ~AcceleratorTarget() = default;
 };
 
 // Since accelerator code is one of the few things that can't be cross platform
@@ -153,7 +187,7 @@ class AcceleratorProvider {
                                           Accelerator* accelerator) const = 0;
 
  protected:
-  virtual ~AcceleratorProvider() {}
+  virtual ~AcceleratorProvider() = default;
 };
 
 }  // namespace ui

@@ -14,7 +14,6 @@
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -27,6 +26,7 @@
 #include "components/translate/core/browser/translate_url_util.h"
 #include "components/translate/core/common/translate_util.h"
 #include "net/base/url_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -36,9 +36,7 @@ namespace {
 
 // The default list of languages the Google translation server supports.
 // We use this list until we receive the list that the server exposes.
-// Server also supports "hmm" (Hmong) and "jw" (Javanese), but these are
-// excluded because Chrome l10n library does not support it. This list must be
-// sorted in alphabetical order and contain no duplicates.
+// This list must be sorted in alphabetical order and contain no duplicates.
 const char* const kDefaultSupportedLanguages[] = {
     "af",     // Afrikaans
     "am",     // Amharic
@@ -72,6 +70,7 @@ const char* const kDefaultSupportedLanguages[] = {
     "ha",     // Hausa
     "haw",    // Hawaiian
     "hi",     // Hindi
+    "hmn",    // Hmong
     "hr",     // Croatian
     "ht",     // Haitian Creole
     "hu",     // Hungarian
@@ -80,8 +79,9 @@ const char* const kDefaultSupportedLanguages[] = {
     "ig",     // Igbo
     "is",     // Icelandic
     "it",     // Italian
-    "iw",     // Hebrew
+    "iw",     // Hebrew - Chrome uses "he"
     "ja",     // Japanese
+    "jw",     // Javanese - Chrome uses "jv"
     "ka",     // Georgian
     "kk",     // Kazakh
     "km",     // Khmer
@@ -105,14 +105,16 @@ const char* const kDefaultSupportedLanguages[] = {
     "my",     // Burmese
     "ne",     // Nepali
     "nl",     // Dutch
-    "no",     // Norwegian
+    "no",     // Norwegian - Chrome uses "nb"
     "ny",     // Nyanja
+    "or",     // Odia (Oriya)
     "pa",     // Punjabi
     "pl",     // Polish
     "ps",     // Pashto
     "pt",     // Portuguese
     "ro",     // Romanian
     "ru",     // Russian
+    "rw",     // Kinyarwanda
     "sd",     // Sindhi
     "si",     // Sinhala
     "sk",     // Slovak
@@ -130,8 +132,11 @@ const char* const kDefaultSupportedLanguages[] = {
     "te",     // Telugu
     "tg",     // Tajik
     "th",     // Thai
-    "tl",     // Tagalog
+    "tk",     // Turkmen
+    "tl",     // Tagalog - Chrome uses "fil"
     "tr",     // Turkish
+    "tt",     // Tatar
+    "ug",     // Uyghur
     "uk",     // Ukrainian
     "ur",     // Urdu
     "uz",     // Uzbek
@@ -209,8 +214,8 @@ bool TranslateLanguageList::IsSupportedLanguage(base::StringPiece language) {
 
 // static
 GURL TranslateLanguageList::TranslateLanguageUrl() {
-  std::string url = translate::GetTranslateSecurityOrigin().spec() +
-      kLanguageListFetchPath;
+  std::string url =
+      translate::GetTranslateSecurityOrigin().spec() + kLanguageListFetchPath;
   return GURL(url);
 }
 
@@ -254,8 +259,8 @@ void TranslateLanguageList::SetResourceRequestsAllowed(bool allowed) {
   }
 }
 
-std::unique_ptr<TranslateLanguageList::EventCallbackList::Subscription>
-TranslateLanguageList::RegisterEventCallback(const EventCallback& callback) {
+base::CallbackListSubscription TranslateLanguageList::RegisterEventCallback(
+    const EventCallback& callback) {
   return callback_list_.Add(callback);
 }
 
@@ -308,7 +313,7 @@ bool TranslateLanguageList::SetSupportedLanguages(
   //   "tl": {"XX": "LanguageName", ...}
   // }
   // Where "tl" is set in kTargetLanguagesKey.
-  base::Optional<base::Value> json_value =
+  absl::optional<base::Value> json_value =
       base::JSONReader::Read(language_list, base::JSON_ALLOW_TRAILING_COMMAS);
 
   if (!json_value || !json_value->is_dict()) {
@@ -336,7 +341,7 @@ bool TranslateLanguageList::SetSupportedLanguages(
   for (const auto& kv_pair : target_languages->DictItems()) {
     const std::string& lang = kv_pair.first;
     if (!l10n_util::IsLocaleNameTranslated(lang.c_str(), locale)) {
-      TranslateBrowserMetrics::ReportUndisplayableLanguage(lang);
+      // Don't include languages not displayable in current UI language.
       continue;
     }
     supported_languages_.push_back(lang);

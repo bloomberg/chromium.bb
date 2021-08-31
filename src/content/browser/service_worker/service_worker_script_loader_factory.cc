@@ -42,7 +42,6 @@ ServiceWorkerScriptLoaderFactory::~ServiceWorkerScriptLoaderFactory() = default;
 
 void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-    int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& resource_request,
@@ -139,8 +138,8 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
   // Assign a new resource ID for the script from network.
   context_->GetStorageControl()->GetNewResourceId(base::BindOnce(
       &ServiceWorkerScriptLoaderFactory::OnResourceIdAssignedForNewScriptLoader,
-      weak_factory_.GetWeakPtr(), std::move(receiver), routing_id, request_id,
-      options, resource_request, std::move(client), traffic_annotation));
+      weak_factory_.GetWeakPtr(), std::move(receiver), request_id, options,
+      resource_request, std::move(client), traffic_annotation));
 }
 
 void ServiceWorkerScriptLoaderFactory::Clone(
@@ -162,9 +161,8 @@ bool ServiceWorkerScriptLoaderFactory::CheckIfScriptRequestIsValid(
   if (!version)
     return false;
 
-  // Handle only the service worker main script
-  // (network::mojom::RequestDestination::kServiceWorker) or importScripts()
-  // (network::mojom::RequestDestination::kScript).
+  // Handle only RequestDestination::kServiceWorker (the service worker main
+  // script or static-import) or RequestDestination::kScript (importScripts()).
   if (resource_request.destination !=
           network::mojom::RequestDestination::kServiceWorker &&
       resource_request.destination !=
@@ -210,15 +208,14 @@ void ServiceWorkerScriptLoaderFactory::CopyScript(
   scoped_refptr<ServiceWorkerVersion> version = worker_host_->version();
   version->script_cache_map()->NotifyStartedCaching(url, new_resource_id);
 
-  auto repeating_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
   net::Error error = cache_writer_->StartCopy(
-      base::BindOnce(repeating_callback, new_resource_id));
+      base::BindOnce(std::move(split_callback.first), new_resource_id));
 
   // Run the callback directly if the operation completed or failed
   // synchronously.
   if (net::ERR_IO_PENDING != error) {
-    repeating_callback.Run(new_resource_id, error);
+    std::move(split_callback.second).Run(new_resource_id, error);
   }
 }
 
@@ -267,7 +264,6 @@ void ServiceWorkerScriptLoaderFactory::OnCopyScriptFinished(
 
 void ServiceWorkerScriptLoaderFactory::OnResourceIdAssignedForNewScriptLoader(
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-    int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& resource_request,
@@ -286,11 +282,13 @@ void ServiceWorkerScriptLoaderFactory::OnResourceIdAssignedForNewScriptLoader(
     return;
   }
 
+  // Note: We do not need to run throttles because they have been already by
+  // the ResourceFetcher on the renderer-side.
   mojo::MakeSelfOwnedReceiver(
       ServiceWorkerNewScriptLoader::CreateAndStart(
-          routing_id, request_id, options, resource_request, std::move(client),
+          request_id, options, resource_request, std::move(client),
           worker_host_->version(), loader_factory_for_new_scripts_,
-          traffic_annotation, resource_id),
+          traffic_annotation, resource_id, /*is_throttle_needed=*/false),
       std::move(receiver));
 }
 

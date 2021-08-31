@@ -12,7 +12,6 @@
 
 #include "base/component_export.h"
 #include "base/files/file_path.h"
-#include "base/strings/string16.h"
 
 namespace service_manager {
 
@@ -252,7 +251,7 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
   // |Service::CreatePackagedServiceInstance()|.
   //
   // See
-  // https://chromium.googlesource.com/chromium/src/+/master/services/service_manager/README.md#Packaging
+  // https://chromium.googlesource.com/chromium/src/+/main/services/service_manager/README.md#Packaging
   // for more information.
   std::vector<Manifest> packaged_services;
   std::vector<PreloadedFileInfo> preloaded_files;

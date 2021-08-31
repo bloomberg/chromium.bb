@@ -13,9 +13,9 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/time/time.h"
-#include "base/util/type_safety/strong_alias.h"
+#include "base/types/strong_alias.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
@@ -49,12 +49,11 @@ class TimestampDelegate {
 // software.
 class SafetyCheckHandler
     : public settings::SettingsPageUIHandler,
-      public password_manager::BulkLeakCheckServiceInterface::Observer,
-      public password_manager::InsecureCredentialsManager::Observer,
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
       public safe_browsing::ChromeCleanerController::Observer,
 #endif
-      public safety_check::SafetyCheck::SafetyCheckHandlerInterface {
+      public password_manager::BulkLeakCheckServiceInterface::Observer,
+      public password_manager::InsecureCredentialsManager::Observer {
  public:
   // The following enum represent the state of the safety check parent
   // component and  should be kept in sync with the JS frontend
@@ -69,12 +68,14 @@ class SafetyCheckHandler
   // check and should be kept in sync with the JS frontend
   // (safety_check_browser_proxy.js) and |SafetyCheck*| metrics enums in
   // enums.xml.
-  using PasswordsStatus = safety_check::SafetyCheck::PasswordsStatus;
-  using SafeBrowsingStatus = safety_check::SafetyCheck::SafeBrowsingStatus;
-  using UpdateStatus = safety_check::SafetyCheck::UpdateStatus;
+  using PasswordsStatus = safety_check::PasswordsStatus;
+  using SafeBrowsingStatus = safety_check::SafeBrowsingStatus;
+  using UpdateStatus = safety_check::UpdateStatus;
   enum class ExtensionsStatus {
     kChecking = 0,
-    kError = 1,
+    // Deprecated in M92, because the unknown extension state is never stored in
+    // extension prefs.
+    // kError = 1,
     kNoneBlocklisted = 2,
     kBlocklistedAllDisabled = 3,
     kBlocklistedReenabledAllByUser = 4,
@@ -119,7 +120,7 @@ class SafetyCheckHandler
 
   // Constructs a string depicting how much time passed since the completion of
   // something from the corresponding timestamps and strings IDs.
-  base::string16 GetStringForTimePassed(base::Time completion_timestamp,
+  std::u16string GetStringForTimePassed(base::Time completion_timestamp,
                                         base::Time system_time,
                                         int less_than_one_minute_ago_message_id,
                                         int minutes_ago_message_id,
@@ -129,15 +130,15 @@ class SafetyCheckHandler
 
   // Constructs the 'safety check ran' display string by how long ago safety
   // check ran.
-  base::string16 GetStringForParentRan(base::Time safety_check_completion_time);
-  base::string16 GetStringForParentRan(base::Time safety_check_completion_time,
+  std::u16string GetStringForParentRan(base::Time safety_check_completion_time);
+  std::u16string GetStringForParentRan(base::Time safety_check_completion_time,
                                        base::Time system_time);
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Constructs the string for the Chrome cleaner 'safe' state which depicts
   // how long ago its last check ran.
-  base::string16 GetStringForChromeCleanerRan();
-  base::string16 GetStringForChromeCleanerRan(base::Time cct_completion_time,
+  std::u16string GetStringForChromeCleanerRan();
+  std::u16string GetStringForChromeCleanerRan(base::Time cct_completion_time,
                                               base::Time system_time);
 
   // safe_browsing::ChromeCleanerController::Observer overrides.
@@ -178,12 +179,13 @@ class SafetyCheckHandler
  private:
   // These ensure integers are passed in the correct possitions in the extension
   // check methods.
-  using Compromised = util::StrongAlias<class CompromisedTag, int>;
-  using Done = util::StrongAlias<class DoneTag, int>;
-  using Total = util::StrongAlias<class TotalTag, int>;
-  using Blocklisted = util::StrongAlias<class BlocklistedTag, int>;
-  using ReenabledUser = util::StrongAlias<class ReenabledUserTag, int>;
-  using ReenabledAdmin = util::StrongAlias<class ReenabledAdminTag, int>;
+  using Compromised = base::StrongAlias<class CompromisedTag, int>;
+  using Weak = base::StrongAlias<class WeakTag, int>;
+  using Done = base::StrongAlias<class DoneTag, int>;
+  using Total = base::StrongAlias<class TotalTag, int>;
+  using Blocklisted = base::StrongAlias<class BlocklistedTag, int>;
+  using ReenabledUser = base::StrongAlias<class ReenabledUserTag, int>;
+  using ReenabledAdmin = base::StrongAlias<class ReenabledAdminTag, int>;
 
   // Handles triggering the safety check from the frontend (by user pressing a
   // button).
@@ -214,6 +216,7 @@ class SafetyCheckHandler
   void OnUpdateCheckResult(UpdateStatus status);
   void OnPasswordsCheckResult(PasswordsStatus status,
                               Compromised compromised,
+                              Weak weak,
                               Done done,
                               Total total);
   void OnExtensionsCheckResult(ExtensionsStatus status,
@@ -226,19 +229,20 @@ class SafetyCheckHandler
 
   // Methods for building user-visible strings based on the safety check
   // state.
-  base::string16 GetStringForParent(ParentStatus status);
-  base::string16 GetStringForUpdates(UpdateStatus status);
-  base::string16 GetStringForSafeBrowsing(SafeBrowsingStatus status);
-  base::string16 GetStringForPasswords(PasswordsStatus status,
+  std::u16string GetStringForParent(ParentStatus status);
+  std::u16string GetStringForUpdates(UpdateStatus status);
+  std::u16string GetStringForSafeBrowsing(SafeBrowsingStatus status);
+  std::u16string GetStringForPasswords(PasswordsStatus status,
                                        Compromised compromised,
+                                       Weak weak,
                                        Done done,
                                        Total total);
-  base::string16 GetStringForExtensions(ExtensionsStatus status,
+  std::u16string GetStringForExtensions(ExtensionsStatus status,
                                         Blocklisted blocklisted,
                                         ReenabledUser reenabled_user,
                                         ReenabledAdmin reenabled_admin);
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  base::string16 GetStringForChromeCleaner(ChromeCleanerStatus status,
+  std::u16string GetStringForChromeCleaner(ChromeCleanerStatus status,
                                            base::Time cct_completion_time,
                                            base::Time system_time);
 #endif
@@ -268,10 +272,7 @@ class SafetyCheckHandler
                               bool powerwash,
                               const std::string& version,
                               int64_t update_size,
-                              const base::string16& message);
-
-  // SafetyCheck::SafetyCheckHandlerInterface implementation.
-  void OnSafeBrowsingCheckResult(SafeBrowsingStatus status) override;
+                              const std::u16string& message);
 
   // BulkLeakCheckService::Observer implementation.
   void OnStateChanged(
@@ -280,7 +281,7 @@ class SafetyCheckHandler
                         password_manager::IsLeaked is_leaked) override;
 
   // InsecureCredentialsManager::Observer implementation.
-  void OnCompromisedCredentialsChanged(
+  void OnInsecureCredentialsChanged(
       password_manager::InsecureCredentialsManager::CredentialsView credentials)
       override;
 
@@ -297,7 +298,7 @@ class SafetyCheckHandler
   // Fire a safety check element WebUI update with a state and string.
   void FireBasicSafetyCheckWebUiListener(const std::string& event_name,
                                          int new_state,
-                                         const base::string16& display_string);
+                                         const std::u16string& display_string);
 
   // The current status of the safety check elements. Before safety
   // check is started, the parent is in the 'before' state.
@@ -313,7 +314,6 @@ class SafetyCheckHandler
   // is_leaked = true.
   bool compromised_passwords_exist_ = false;
 
-  std::unique_ptr<safety_check::SafetyCheck> safety_check_;
   std::unique_ptr<safety_check::UpdateCheckHelper> update_helper_;
 
   std::unique_ptr<VersionUpdater> version_updater_;
@@ -323,11 +323,13 @@ class SafetyCheckHandler
   extensions::PasswordsPrivateDelegate* passwords_delegate_ = nullptr;
   extensions::ExtensionPrefs* extension_prefs_ = nullptr;
   extensions::ExtensionServiceInterface* extension_service_ = nullptr;
-  ScopedObserver<password_manager::BulkLeakCheckServiceInterface,
-                 password_manager::BulkLeakCheckServiceInterface::Observer>
+  base::ScopedObservation<
+      password_manager::BulkLeakCheckServiceInterface,
+      password_manager::BulkLeakCheckServiceInterface::Observer>
       observed_leak_check_{this};
-  ScopedObserver<password_manager::InsecureCredentialsManager,
-                 password_manager::InsecureCredentialsManager::Observer>
+  base::ScopedObservation<
+      password_manager::InsecureCredentialsManager,
+      password_manager::InsecureCredentialsManager::Observer>
       observed_insecure_credentials_manager_{this};
   std::unique_ptr<TimestampDelegate> timestamp_delegate_;
   base::WeakPtrFactory<SafetyCheckHandler> weak_ptr_factory_{this};

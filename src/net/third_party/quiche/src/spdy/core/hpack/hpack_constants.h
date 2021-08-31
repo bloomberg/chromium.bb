@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
+#include "common/platform/api/quiche_export.h"
 
 // All section references below are to
 // https://httpwg.org/specs/rfc7540.html and
@@ -40,7 +40,6 @@ struct HpackStaticEntry {
   const size_t value_len;
 };
 
-class HpackHuffmanTable;
 class HpackStaticTable;
 
 // RFC 7540, 6.5.2: Initial value for SETTINGS_HEADER_TABLE_SIZE.
@@ -77,11 +76,6 @@ HpackHuffmanCodeVector();
 // RFC 7541, Appendix A: Static Table Definition.
 QUICHE_EXPORT_PRIVATE const std::vector<HpackStaticEntry>&
 HpackStaticTableVector();
-
-// Returns a HpackHuffmanTable instance initialized with |kHpackHuffmanCode|.
-// The instance is read-only, has static lifetime, and is safe to share amoung
-// threads. This function is thread-safe.
-QUICHE_EXPORT_PRIVATE const HpackHuffmanTable& ObtainHpackHuffmanTable();
 
 // Returns a HpackStaticTable instance initialized with |kHpackStaticTable|.
 // The instance is read-only, has static lifetime, and is safe to share amoung

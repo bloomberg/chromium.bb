@@ -12,6 +12,7 @@
 #include "ash/public/cpp/external_arc/message_center/arc_notification_surface_manager.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/message_center/views/notification_background_painter.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -44,15 +45,15 @@ class ArcNotificationContentView
       public ArcNotificationSurfaceManager::Observer,
       public views::WidgetObserver {
  public:
-  static const char kViewClassName[];
+  METADATA_HEADER(ArcNotificationContentView);
+
 
   ArcNotificationContentView(ArcNotificationItem* item,
                              const message_center::Notification& notification,
                              message_center::MessageView* message_view);
+  ArcNotificationContentView(const ArcNotificationContentView&) = delete;
+  ArcNotificationContentView& operator=(const ArcNotificationContentView&) = delete;
   ~ArcNotificationContentView() override;
-
-  // views::View overrides:
-  const char* GetClassName() const override;
 
   void Update(const message_center::Notification& notification);
   message_center::NotificationControlButtonsView* GetControlButtonsView();
@@ -103,6 +104,7 @@ class ArcNotificationContentView
   void OnMouseExited(const ui::MouseEvent& event) override;
   void OnFocus() override;
   void OnBlur() override;
+  void OnThemeChanged() override;
   views::FocusTraversable* GetFocusTraversable() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnAccessibilityEvent(ax::mojom::Event event) override;
@@ -190,7 +192,7 @@ class ArcNotificationContentView
   // Widget which this view tree is currently attached to.
   views::Widget* attached_widget_ = nullptr;
 
-  base::string16 accessible_name_;
+  std::u16string accessible_name_;
 
   // If it's true, the surface gets active when attached to this view.
   bool activate_on_attach_ = false;
@@ -200,11 +202,10 @@ class ArcNotificationContentView
   int bottom_radius_ = 0;
 
   // Current insets of mask layer.
-  base::Optional<gfx::Insets> mask_insets_;
+  absl::optional<gfx::Insets> mask_insets_;
 
   std::unique_ptr<ui::LayerTreeOwner> surface_copy_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcNotificationContentView);
 };
 
 }  // namespace ash

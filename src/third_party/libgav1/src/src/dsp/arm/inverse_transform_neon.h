@@ -26,6 +26,7 @@ namespace dsp {
 // Initializes Dsp::inverse_transforms, see the defines below for specifics.
 // This function is not thread-safe.
 void InverseTransformInit_NEON();
+void InverseTransformInit10bpp_NEON();
 
 }  // namespace dsp
 }  // namespace libgav1

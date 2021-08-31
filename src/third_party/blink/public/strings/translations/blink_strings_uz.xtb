@@ -19,6 +19,7 @@
 <translation id="1359897965706325498">banner</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> ta xatcho‘p</translation>
 <translation id="1480676835519562650">multitanlovli, <ph name="SELECTED" /> / <ph name="COUNT" /> tanlandi.</translation>
+<translation id="1588438908519853928">Normal</translation>
 <translation id="1589122976691792535">hudud</translation>
 <translation id="1591562245178063882">Bu oy</translation>
 <translation id="1637811476055996098">Fayllarni tanlash</translation>
@@ -84,6 +85,7 @@
 <translation id="3175736971608411871">taymer</translation>
 <translation id="3199563858620722075">ro‘yxatli maydon</translation>
 <translation id="3220661731597678625">joriy qadam</translation>
+<translation id="3321030238473337787">Ijro tezligi</translation>
 <translation id="3329013043687509092">To‘liqlik</translation>
 <translation id="3450233048674729344">Qiymat <ph name="MAXIMUM" /> ga teng yoki undan kichik bo‘lishi kerak.</translation>
 <translation id="3486220673238053218">ta’rif</translation>
@@ -111,6 +113,7 @@
 <translation id="4248100235867064564">menyu paneli</translation>
 <translation id="4293574643247337246">sahifa sarlavhasi</translation>
 <translation id="4360991593054037559">Yaroqli qiymat kiriting. Eng yaqin yaroqli qiymatlar: <ph name="VALID_VALUE_LOW" /> va <ph name="VALID_VALUE_HIGHER" /></translation>
+<translation id="4371899966896349864">ijro tezligi menyusini berkitish</translation>
 <translation id="4384249794467006333">Bu rasm yorliqsiz. Rasm tavsiflarini olish uchun yuqori oʻng burchakdagi Yana menyusini oching.</translation>
 <translation id="4384583879834880242">Savol-javoblar</translation>
 <translation id="4444765639179266822">Bunday yozilgan shekilli: <ph name="OCR_TEXT" /></translation>
@@ -128,7 +131,7 @@
 <translation id="4757246831282535685">sahifalar paneli</translation>
 <translation id="4763480195061959176">video</translation>
 <translation id="479989351350248267">qidiruv</translation>
-<translation id="4812940957355064477">Raqam kiriting.</translation>
+<translation id="4812940957355064477">Son kiriting.</translation>
 <translation id="4912200001568447310">joriy element</translation>
 <translation id="4912536737030637138">bibliografiya yozuvi</translation>
 <translation id="4915360478455618802">Vaqt tanlash oynasini chiqarish</translation>
@@ -147,15 +150,18 @@
 <translation id="512758898067543763">satr sarlavhasi</translation>
 <translation id="5143125788380636750">epilog</translation>
 <translation id="5164977714490026579">Minimal qiymat <ph name="MINIMUM" /> bo‘lishi mumkin.</translation>
+<translation id="5196716972587102051">2</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Elektron manzilning “<ph name="ATSIGN" />” belgisidan keyingi qismini kiriting. “<ph name="INVALIDADDRESS" />” manzili to‘liq emas.</translation>
 <translation id="5334352251556557839">Media fayl ijro etilmadi.</translation>
 <translation id="537648784377940524">Minimal sana (<ph name="MIN_DATE_OR_TIME" />) maksimal sanadan (<ph name="MAX_DATE_OR_TIME" />) oldin boʻlsin.</translation>
+<translation id="5378437566635403538">yoyilgan, muloqot oynasi ochiq.</translation>
 <translation id="5406322316791861025">shakl</translation>
 <translation id="5425179576310518467">joriy sana</translation>
 <translation id="5453733299334684579">daraxt elementi</translation>
 <translation id="5466621249238537318">Bir yoki bir nechta faylni tanlang</translation>
 <translation id="5468998798572797635">to‘liq ekran rejimidan chiqish</translation>
+<translation id="5516235301412634559">0,75</translation>
 <translation id="5516424706154626233">sana tanlash oynasi</translation>
 <translation id="5537725057119320332">Cast</translation>
 <translation id="5546461542133609677">ovozni yoqish</translation>
@@ -167,6 +173,8 @@
 <translation id="5677946354068040947">boshqa sozlamalar</translation>
 <translation id="576709008726043716">kirish</translation>
 <translation id="57838592816432529">Ovozni o‘chirib qo‘yish</translation>
+<translation id="5786442179789148008">ijro tezligi menyusini chiqarish</translation>
+<translation id="5787939484346677755">yoyilgan, elementlar avtomatik toʻldirilishi mumkin.</translation>
 <translation id="5860033963881614850">O‘chiq</translation>
 <translation id="588258955323874662">Butun ekran</translation>
 <translation id="5888666972993069672"><ph name="DEVICE_FRIENDLY_NAME" /> ekraniga namoyish etilmoqda</translation>
@@ -174,12 +182,14 @@
 <translation id="5916664084637901428">Yoniq</translation>
 <translation id="5939518447894949180">Asliga qaytarish</translation>
 <translation id="5966707198760109579">Xafta</translation>
+<translation id="5985507339671257014">0,5</translation>
 <translation id="5987525920412732405">hisoblagich tugmasi</translation>
 <translation id="6011459053400940133">tovush balandligi slayderi</translation>
 <translation id="6015796118275082299">Yil</translation>
 <translation id="6023896073578205740">ro‘yxat</translation>
 <translation id="6150588977291308318">bibliografiya</translation>
 <translation id="6164829606128959761">hisoblagich</translation>
+<translation id="6165053282446038410">yoyilgan, <ph name="COUNT" /> ta element avtomatik toʻldirilishi mumkin.</translation>
 <translation id="6166809985690652833">xotima</translation>
 <translation id="6209276755895393898">Bizningcha bu: <ph name="DESCRIPTION" /></translation>
 <translation id="6212595056017402527">joriy sahifa</translation>
@@ -200,6 +210,7 @@
 <translation id="6643016212128521049">Tozalash</translation>
 <translation id="668171684555832681">Boshqa...</translation>
 <translation id="6692633176391053278">hisoblagich</translation>
+<translation id="6696580792574109116">oy tanlagich</translation>
 <translation id="6709093583001123835">Qiymat formati: <ph name="VALUE" />.</translation>
 <translation id="6709570249143506788">Ijro sifati past</translation>
 <translation id="6755330956360078551">bildirgi</translation>
@@ -210,16 +221,19 @@
 <translation id="6843725295806269523">ovozsiz qilish</translation>
 <translation id="6885760532393684712">katalog</translation>
 <translation id="689129560213475294">nashriyot ramzi</translation>
+<translation id="6919891270253167948">1,5</translation>
 <translation id="6934078000481955284">iqtibos</translation>
 <translation id="693476918119313863">sarlavha</translation>
 <translation id="6941933287844615239">faylni yuklab olish</translation>
 <translation id="6981594929165378967">joylanadi</translation>
+<translation id="698788488269350478">yoyilgan.</translation>
 <translation id="6989848892321993519">Matndagi belgilar soni <ph name="MIN_CHARACTERS" /> tadan ko‘p bo‘lishi kerak (siz esa 1 ta belgi kiritdingiz).</translation>
 <translation id="7034405885550056553">taklif</translation>
 <translation id="709897737746224366">Talab etilgan formatga rioya qiling.</translation>
 <translation id="7102274145889307184">joriy joylashuv</translation>
 <translation id="7118469954320184356">Tavsif berilmagan.</translation>
 <translation id="7139483182332611405">so‘zboshi</translation>
+<translation id="7198226213493847604">qalqib chiquvchi menyu tugmasi</translation>
 <translation id="7214187073215825913">kontent axboroti</translation>
 <translation id="7238347055216017155">urgʻu</translation>
 <translation id="7263440858009898357">Ro‘yxat bandlaridan birini tanlang.</translation>
@@ -244,6 +258,7 @@
 <translation id="7745230546936012372">Tavsifsiz rasmlarni tasviflash uchun ularning ustiga oʻng klikni bosing.</translation>
 <translation id="7750228210027921155">Tasvir ustida tasvir</translation>
 <translation id="775297008183122718">Xato kiritildi</translation>
+<translation id="7782515065589691344">1,25</translation>
 <translation id="7789962463072032349">pauza</translation>
 <translation id="7802800022689234070">yoyiluvchi uchburchak</translation>
 <translation id="7852167693871241274">Rang tusi slayderi</translation>
@@ -257,6 +272,7 @@
 <translation id="8105797009065549151">qayd havolasi</translation>
 <translation id="811583516810654505">Tavsif yuklanmoqda...</translation>
 <translation id="8117451130807776954">Shu hafta</translation>
+<translation id="8131955114056917397">0,25</translation>
 <translation id="8199524924445686405">kkkk</translation>
 <translation id="8208673686607688524">mahalliy sana va vaqt tanlagich</translation>
 <translation id="8261464734335370856">Imloviy xato</translation>
@@ -281,11 +297,14 @@
 <translation id="8613126697340063924">ijroni masofadan turib boshqarish</translation>
 <translation id="862370744433916922">taglavha</translation>
 <translation id="8634971699417195529">Oy tanlash oynasini chiqarish</translation>
+<translation id="8637593834423658414">1,75</translation>
+<translation id="8668988909814782445">Keyingi qatorga olish</translation>
 <translation id="8711688047404765493">chiqish</translation>
 <translation id="8750798805984357768">Bu parametrlardan birini tanlang.</translation>
 <translation id="8808573423886751634">bob</translation>
 <translation id="8845239796550121995">Televizoringizga translatsiya qilinmoqda</translation>
 <translation id="8851136666856101339">main</translation>
+<translation id="8861621546968757188">qalqib chiquvchi oyna tugmasi</translation>
 <translation id="8875657656876809964">Video ijro etilmadi</translation>
 <translation id="8889402386540077796">Tus</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>

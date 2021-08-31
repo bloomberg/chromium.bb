@@ -11,7 +11,11 @@
 // GCC incorrectly allows function pointer to be caught by reference.
 // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=69372
 // XFAIL: gcc
-// UNSUPPORTED: libcxxabi-no-exceptions
+// UNSUPPORTED: no-exceptions
+
+// 65ace9daa360 made it in the dylib in macOS 10.11
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.10
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.9
 
 #include <cassert>
 
@@ -23,7 +27,7 @@ bool can_convert(...) { return false; }
 
 void f() {}
 
-int main()
+int main(int, char**)
 {
     typedef void Function();
     assert(!can_convert<Function&>(&f));
@@ -48,4 +52,6 @@ int main()
     {
         assert(false);
     }
+
+    return 0;
 }

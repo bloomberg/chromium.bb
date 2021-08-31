@@ -9,7 +9,7 @@ import './viewer-zoom-button.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {isRTL} from 'chrome://resources/js/util.m.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {FittingType} from '../constants.js';
 
@@ -19,65 +19,78 @@ const FIT_TO_WIDTH_BUTTON_STATE = 1;
 const TWO_UP_VIEW_DISABLED_STATE = 0;
 const TWO_UP_VIEW_ENABLED_STATE = 1;
 
-Polymer({
-  is: 'viewer-zoom-toolbar',
+export class ViewerZoomToolbarElement extends PolymerElement {
+  static get is() {
+    return 'viewer-zoom-toolbar';
+  }
 
-  _template: html`{__html_template__}`,
+  static get template() {
+    return html`{__html_template__}`;
+  }
 
-  properties: {
-    isPrintPreview: {
-      type: Boolean,
-      value: false,
-    },
+  static get properties() {
+    return {
+      /** @private */
+      keyboardNavigationActive_: {
+        type: Boolean,
+        value: false,
+      },
+    };
+  }
 
-    /** @private */
-    keyboardNavigationActive_: {
-      type: Boolean,
-      value: false,
-    },
-  },
+  constructor() {
+    super();
 
-  listeners: {
-    'focus': 'onFocus_',
-    'keyup': 'onKeyUp_',
-    'pointerdown': 'onPointerDown_',
-  },
+    /** @private {boolean} */
+    this.visible_ = true;
+  }
 
-  /** @private {boolean} */
-  visible_: true,
+  /** @override */
+  ready() {
+    super.ready();
+    this.addEventListener('focus', this.onFocus_);
+    this.addEventListener('keyup', this.onKeyUp_);
+    this.addEventListener('pointerdown', this.onPointerDown_);
+  }
+
+  /**
+   * @param {string} eventName
+   * @param {*=} detail
+   * @private
+   */
+  fire_(eventName, detail) {
+    this.dispatchEvent(
+        new CustomEvent(eventName, {bubbles: true, composed: true, detail}));
+  }
 
   /** @return {boolean} */
   isVisible() {
     return this.visible_;
-  },
+  }
 
   /** @private */
   onFocus_() {
-    if (this.visible_ || !this.isPrintPreview) {
+    if (this.visible_) {
       return;
     }
 
     // For Print Preview, ensure the parent element knows that keyboard
     // navigation is now active and show the toolbar.
-    this.fire('keyboard-navigation-active', true);
+    this.fire_('keyboard-navigation-active', true);
     this.show();
-  },
+  }
 
   /** @private */
   onKeyUp_() {
-    if (this.isPrintPreview) {
-      this.fire('keyboard-navigation-active', true);
-    }
+    this.fire_('keyboard-navigation-active', true);
     this.keyboardNavigationActive_ = true;
-  },
+  }
 
   /** @private */
   onPointerDown_() {
-    if (this.isPrintPreview) {
-      this.fire('keyboard-navigation-active', false);
-    }
+    this.fire_('keyboard-navigation-active', false);
     this.keyboardNavigationActive_ = false;
-  },
+  }
 
   /** Handle clicks of the fit-button. */
   fitToggle() {
@@ -85,7 +98,7 @@ Polymer({
         this.$['fit-button'].activeIndex === FIT_TO_WIDTH_BUTTON_STATE ?
             FittingType.FIT_TO_WIDTH :
             FittingType.FIT_TO_PAGE);
-  },
+  }
 
   /** Handle the keyboard shortcut equivalent of fit-button clicks. */
   fitToggleFromHotKey() {
@@ -97,7 +110,7 @@ Polymer({
         (button.activeIndex === FIT_TO_WIDTH_BUTTON_STATE ?
              FIT_TO_PAGE_BUTTON_STATE :
              FIT_TO_WIDTH_BUTTON_STATE);
-  },
+  }
 
   /**
    * Handle forcing zoom via scripting to a fitting type.
@@ -109,7 +122,7 @@ Polymer({
         (fittingType === FittingType.FIT_TO_WIDTH ? FIT_TO_PAGE_BUTTON_STATE :
                                                     FIT_TO_WIDTH_BUTTON_STATE);
     this.$['fit-button'].activeIndex = nextButtonState;
-  },
+  }
 
   /**
    * Fire a 'fit-to-changed' {CustomEvent} with the given FittingType as detail.
@@ -117,18 +130,18 @@ Polymer({
    * @private
    */
   fireFitToChangedEvent_(fittingType) {
-    this.fire('fit-to-changed', fittingType);
-  },
+    this.fire_('fit-to-changed', fittingType);
+  }
 
   /** Handle clicks of the zoom-in-button. */
   zoomIn() {
-    this.fire('zoom-in');
-  },
+    this.fire_('zoom-in');
+  }
 
   /** Handle clicks of the zoom-out-button. */
   zoomOut() {
-    this.fire('zoom-out');
-  },
+    this.fire_('zoom-out');
+  }
 
   show() {
     if (!this.visible_) {
@@ -137,7 +150,7 @@ Polymer({
       this.$['zoom-in-button'].show();
       this.$['zoom-out-button'].show();
     }
-  },
+  }
 
   hide() {
     if (this.visible_) {
@@ -146,7 +159,7 @@ Polymer({
       this.$['zoom-in-button'].hide();
       this.$['zoom-out-button'].hide();
     }
-  },
+  }
 
   /**
    * Offsets the toolbar position so that it doesn't move if scrollbars appear.
@@ -174,4 +187,6 @@ Polymer({
     // width closer to the bottom of the screen than usual, but this is ok.
     this.style.bottom = -horizontalScrollbarWidth + 'px';
   }
-});
+}
+
+customElements.define(ViewerZoomToolbarElement.is, ViewerZoomToolbarElement);

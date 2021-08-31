@@ -9,16 +9,21 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/services/machine_learning/public/mojom/grammar_checker.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/graph_executor.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/handwriting_recognizer.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/tensor.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/text_classifier.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/text_suggester.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/web_platform_handwriting.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 
 namespace chromeos {
 namespace machine_learning {
@@ -32,15 +37,30 @@ namespace machine_learning {
 // Handles TextClassifier::SuggestSelection by always returning the value
 // specified by a previous call to SetOutputSelection.
 // For use with ServiceConnection::UseFakeServiceConnectionForTesting().
-class FakeServiceConnectionImpl : public ServiceConnection,
-                                  public mojom::Model,
-                                  public mojom::TextClassifier,
-                                  public mojom::HandwritingRecognizer,
-                                  public mojom::GrammarChecker,
-                                  public mojom::GraphExecutor {
+class COMPONENT_EXPORT(CHROMEOS_MLSERVICE) FakeServiceConnectionImpl
+    : public ServiceConnection,
+      public mojom::MachineLearningService,
+      public mojom::Model,
+      public mojom::TextClassifier,
+      public mojom::HandwritingRecognizer,
+      public mojom::GrammarChecker,
+      public mojom::GraphExecutor,
+      public mojom::SodaRecognizer,
+      public mojom::TextSuggester,
+      public web_platform::mojom::HandwritingRecognizer {
  public:
   FakeServiceConnectionImpl();
   ~FakeServiceConnectionImpl() override;
+
+  // ServiceConnection:
+  mojom::MachineLearningService& GetMachineLearningService() override;
+  void BindMachineLearningService(
+      mojo::PendingReceiver<mojom::MachineLearningService> receiver) override;
+  void Initialize() override;
+
+  // mojom::MachineLearningService:
+  void Clone(
+      mojo::PendingReceiver<mojom::MachineLearningService> receiver) override;
 
   // It's safe to execute LoadBuiltinModel, LoadFlatBufferModel and
   // LoadTextClassifier for multi times, but all the receivers will be bound to
@@ -73,9 +93,28 @@ class FakeServiceConnectionImpl : public ServiceConnection,
       mojom::MachineLearningService::LoadHandwritingModelWithSpecCallback
           result_callback) override;
 
+  // Dedicated HWR API for Web Platform.
+  void LoadWebPlatformHandwritingModel(
+      web_platform::mojom::HandwritingModelConstraintPtr constraint,
+      mojo::PendingReceiver<web_platform::mojom::HandwritingRecognizer>
+          receiver,
+      LoadWebPlatformHandwritingModelCallback callback) override;
+
   void LoadGrammarChecker(
       mojo::PendingReceiver<mojom::GrammarChecker> receiver,
       mojom::MachineLearningService::LoadGrammarCheckerCallback callback)
+      override;
+
+  void LoadSpeechRecognizer(
+      mojom::SodaConfigPtr soda_config,
+      mojo::PendingRemote<mojom::SodaClient> soda_client,
+      mojo::PendingReceiver<mojom::SodaRecognizer> soda_recognizer,
+      mojom::MachineLearningService::LoadSpeechRecognizerCallback callback)
+      override;
+
+  void LoadTextSuggester(
+      mojo::PendingReceiver<mojom::TextSuggester> receiver,
+      mojom::MachineLearningService::LoadTextSuggesterCallback callback)
       override;
 
   // mojom::Model:
@@ -143,6 +182,17 @@ class FakeServiceConnectionImpl : public ServiceConnection,
   void SetOutputHandwritingRecognizerResult(
       const mojom::HandwritingRecognizerResultPtr& result);
 
+  // Call SetOutputWebPlatformHandwritingRecognizerResult() before
+  // GetPrediction() to set the output of handwriting.
+  void SetOutputWebPlatformHandwritingRecognizerResult(
+      const std::vector<web_platform::mojom::HandwritingPredictionPtr>&
+          predictions);
+
+  // Call SetOutputTextSuggesterResult() before Suggest() to set the
+  // output of a text suggestion query.
+  void SetOutputTextSuggesterResult(
+      const mojom::TextSuggesterResultPtr& result);
+
   // mojom::TextClassifier:
   void Annotate(mojom::TextAnnotationRequestPtr request,
                 mojom::TextClassifier::AnnotateCallback callback) override;
@@ -162,9 +212,26 @@ class FakeServiceConnectionImpl : public ServiceConnection,
       mojom::HandwritingRecognitionQueryPtr query,
       mojom::HandwritingRecognizer::RecognizeCallback callback) override;
 
+  // web_platform::mojom::HandwritingRecognizer
+  void GetPrediction(
+      std::vector<web_platform::mojom::HandwritingStrokePtr> strokes,
+      web_platform::mojom::HandwritingHintsPtr hints,
+      web_platform::mojom::HandwritingRecognizer::GetPredictionCallback
+          callback) override;
+
   // mojom::GrammarChecker:
   void Check(mojom::GrammarCheckerQueryPtr query,
              mojom::GrammarChecker::CheckCallback callback) override;
+
+  // mojom::SpeechRecognizer
+  void AddAudio(const std::vector<uint8_t>& audio) override;
+  void Stop() override;
+  void Start() override;
+  void MarkDone() override;
+
+  // mojom::TextSuggester:
+  void Suggest(mojom::TextSuggesterQueryPtr query,
+               mojom::TextSuggester::SuggestCallback callback) override;
 
  private:
   void ScheduleCall(base::OnceClosure call);
@@ -189,38 +256,76 @@ class FakeServiceConnectionImpl : public ServiceConnection,
   void HandleFindLanguagesCall(
       std::string text,
       mojom::TextClassifier::FindLanguagesCallback callback);
-  void HandleLoadHandwritingModel(
+  void HandleLoadHandwritingModelCall(
       mojo::PendingReceiver<mojom::HandwritingRecognizer> receiver,
       mojom::MachineLearningService::LoadHandwritingModelCallback callback);
-  void HandleLoadHandwritingModelWithSpec(
+  void HandleLoadWebPlatformHandwritingModelCall(
+      mojo::PendingReceiver<web_platform::mojom::HandwritingRecognizer>
+          receiver,
+      mojom::MachineLearningService::LoadHandwritingModelCallback callback);
+  void HandleLoadHandwritingModelWithSpecCall(
       mojo::PendingReceiver<mojom::HandwritingRecognizer> receiver,
       mojom::MachineLearningService::LoadHandwritingModelWithSpecCallback
           callback);
-  void HandleRecognize(
+  void HandleRecognizeCall(
       mojom::HandwritingRecognitionQueryPtr query,
       mojom::HandwritingRecognizer::RecognizeCallback callback);
-  void HandleLoadGrammarChecker(
+  void HandleGetPredictionCall(
+      std::vector<web_platform::mojom::HandwritingStrokePtr> strokes,
+      web_platform::mojom::HandwritingHintsPtr hints,
+      web_platform::mojom::HandwritingRecognizer::GetPredictionCallback
+          callback);
+  void HandleLoadGrammarCheckerCall(
       mojo::PendingReceiver<mojom::GrammarChecker> receiver,
       mojom::MachineLearningService::LoadGrammarCheckerCallback callback);
-  void HandleGrammarCheckerQuery(mojom::GrammarCheckerQueryPtr query,
-                                 mojom::GrammarChecker::CheckCallback callback);
+  void HandleGrammarCheckerQueryCall(
+      mojom::GrammarCheckerQueryPtr query,
+      mojom::GrammarChecker::CheckCallback callback);
+  void HandleLoadSpeechRecognizerCall(
+      mojo::PendingRemote<mojom::SodaClient> soda_client,
+      mojo::PendingReceiver<mojom::SodaRecognizer> soda_recognizer,
+      mojom::MachineLearningService::LoadSpeechRecognizerCallback callback);
+  void HandleLoadTextSuggesterCall(
+      mojo::PendingReceiver<mojom::TextSuggester> receiver,
+      mojom::MachineLearningService::LoadTextSuggesterCallback callback);
+  void HandleTextSuggesterSuggestCall(
+      mojom::TextSuggesterQueryPtr query,
+      mojom::TextSuggester::SuggestCallback callback);
 
+  void HandleStopCall();
+  void HandleStartCall();
+  void HandleMarkDoneCall();
+
+  // Additional receivers bound via `Clone`.
+  mojo::ReceiverSet<mojom::MachineLearningService> clone_ml_service_receivers_;
+
+  mojo::Remote<mojom::MachineLearningService> machine_learning_service_;
   mojo::ReceiverSet<mojom::Model> model_receivers_;
   mojo::ReceiverSet<mojom::GraphExecutor> graph_receivers_;
   mojo::ReceiverSet<mojom::TextClassifier> text_classifier_receivers_;
   mojo::ReceiverSet<mojom::HandwritingRecognizer> handwriting_receivers_;
+  mojo::ReceiverSet<web_platform::mojom::HandwritingRecognizer>
+      web_platform_handwriting_receivers_;
   mojo::ReceiverSet<mojom::GrammarChecker> grammar_checker_receivers_;
+  mojo::ReceiverSet<mojom::SodaRecognizer> soda_recognizer_receivers_;
+  mojo::ReceiverSet<mojom::TextSuggester> text_suggester_receivers_;
+  mojo::RemoteSet<mojom::SodaClient> soda_client_remotes_;
   mojom::TensorPtr output_tensor_;
   mojom::LoadHandwritingModelResult load_handwriting_model_result_;
+  mojom::LoadHandwritingModelResult load_web_platform_handwriting_model_result_;
   mojom::LoadModelResult load_model_result_;
   mojom::LoadModelResult load_text_classifier_result_;
+  mojom::LoadModelResult load_soda_result_;
   mojom::CreateGraphExecutorResult create_graph_executor_result_;
   mojom::ExecuteResult execute_result_;
   std::vector<mojom::TextAnnotationPtr> annotate_result_;
   mojom::CodepointSpanPtr suggest_selection_result_;
   std::vector<mojom::TextLanguagePtr> find_languages_result_;
   mojom::HandwritingRecognizerResultPtr handwriting_result_;
+  std::vector<web_platform::mojom::HandwritingPredictionPtr>
+      web_platform_handwriting_result_;
   mojom::GrammarCheckerResultPtr grammar_checker_result_;
+  mojom::TextSuggesterResultPtr text_suggester_result_;
 
   bool async_mode_;
   std::vector<base::OnceClosure> pending_calls_;

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_coalesced_packet.h"
+#include "quic/core/quic_coalesced_packet.h"
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/common/test_tools/quiche_test_utils.h"
+#include "quic/platform/api/quic_expect_bug.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "common/test_tools/quiche_test_utils.h"
 
 namespace quic {
 namespace test {
@@ -19,6 +19,7 @@ TEST(QuicCoalescedPacketTest, MaybeCoalescePacket) {
             coalesced.ToString(0));
   SimpleBufferAllocator allocator;
   EXPECT_EQ(0u, coalesced.length());
+  EXPECT_EQ(0u, coalesced.NumberOfPackets());
   char buffer[1000];
   QuicSocketAddress self_address(QuicIpAddress::Loopback4(), 1);
   QuicSocketAddress peer_address(QuicIpAddress::Loopback4(), 2);
@@ -35,6 +36,7 @@ TEST(QuicCoalescedPacketTest, MaybeCoalescePacket) {
             coalesced.TransmissionTypeOfPacket(ENCRYPTION_INITIAL));
   EXPECT_EQ(1500u, coalesced.max_packet_length());
   EXPECT_EQ(500u, coalesced.length());
+  EXPECT_EQ(1u, coalesced.NumberOfPackets());
   EXPECT_EQ(
       "total_length: 1500 padding_size: 1000 packets: {ENCRYPTION_INITIAL}",
       coalesced.ToString(1500));
@@ -54,6 +56,7 @@ TEST(QuicCoalescedPacketTest, MaybeCoalescePacket) {
                                             &allocator, 1500));
   EXPECT_EQ(1500u, coalesced.max_packet_length());
   EXPECT_EQ(1000u, coalesced.length());
+  EXPECT_EQ(2u, coalesced.NumberOfPackets());
   EXPECT_EQ(LOSS_RETRANSMISSION,
             coalesced.TransmissionTypeOfPacket(ENCRYPTION_ZERO_RTT));
   EXPECT_EQ(
@@ -77,6 +80,7 @@ TEST(QuicCoalescedPacketTest, MaybeCoalescePacket) {
                                              peer_address, &allocator, 1500));
   EXPECT_EQ(1500u, coalesced.max_packet_length());
   EXPECT_EQ(1000u, coalesced.length());
+  EXPECT_EQ(2u, coalesced.NumberOfPackets());
 
   // Max packet number length changed.
   SerializedPacket packet6(QuicPacketNumber(6), PACKET_4BYTE_PACKET_NUMBER,
@@ -87,6 +91,7 @@ TEST(QuicCoalescedPacketTest, MaybeCoalescePacket) {
                   "Max packet length changes in the middle of the write path");
   EXPECT_EQ(1500u, coalesced.max_packet_length());
   EXPECT_EQ(1000u, coalesced.length());
+  EXPECT_EQ(2u, coalesced.NumberOfPackets());
 }
 
 TEST(QuicCoalescedPacketTest, CopyEncryptedBuffers) {

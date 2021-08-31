@@ -6,6 +6,7 @@
 #define COMPONENTS_SYNC_DRIVER_SYNC_DRIVER_SWITCHES_H_
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 
 namespace switches {
 
@@ -25,18 +26,18 @@ extern const char kSyncIncludeSpecificsInProtocolLog[];
 extern const char kSyncShortInitialRetryOverride[];
 extern const char kSyncShortNudgeDelayForTest[];
 
-extern const base::Feature kStopSyncInPausedState;
 extern const base::Feature
     kSyncAllowWalletDataInTransportModeWithCustomPassphrase;
 extern const base::Feature kSyncAutofillWalletOfferData;
 extern const base::Feature kSyncWifiConfigurations;
 extern const base::Feature kDecoupleSyncFromAndroidMasterSync;
-extern const base::Feature kFollowTrustedVaultKeyRotation;
 
 extern const base::Feature kSyncRequiresPoliciesLoaded;
 extern const base::FeatureParam<base::TimeDelta> kSyncPolicyLoadTimeout;
 
 extern const base::Feature kSyncSupportTrustedVaultPassphraseRecovery;
+
+extern const base::Feature kSyncOfferTrustedVaultOptIn;
 
 }  // namespace switches
 

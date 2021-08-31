@@ -4,10 +4,7 @@
 
 #include "ui/gtk/input_method_context_impl_gtk.h"
 
-#include <gdk/gdk.h>
-#include <gdk/gdkkeysyms.h>
-#include <gtk/gtk.h>
-#include <stddef.h>
+#include <cstddef>
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window_tree_host.h"
@@ -15,17 +12,26 @@
 #include "ui/base/ime/linux/composition_text_util_pango.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gtk/gtk_compat.h"
 #include "ui/gtk/gtk_ui.h"
-#include "ui/gtk/gtk_ui_delegate.h"
+#include "ui/gtk/gtk_ui_platform.h"
 #include "ui/gtk/gtk_util.h"
 #include "ui/views/linux_ui/linux_ui.h"
 
 namespace gtk {
 
 namespace {
+
+GdkEventKey* GdkEventToKey(GdkEvent* event) {
+  DCHECK(!GtkCheckVersion(4));
+  auto* key = reinterpret_cast<GdkEventKey*>(event);
+  DCHECK(key->type == GdkKeyPress() || key->type == GdkKeyRelease());
+  return key;
+}
 
 // Get IME KeyEvent's target window. Assumes root aura::Window is set to
 // Event::target(), otherwise returns null.
@@ -37,11 +43,12 @@ GdkWindow* GetTargetWindow(const ui::KeyEvent& key_event) {
   DCHECK(window) << "KeyEvent target window not set.";
 
   auto window_id = window->GetHost()->GetAcceleratedWidget();
-  return GtkUi::GetDelegate()->GetGdkWindow(window_id);
+  return GtkUi::GetPlatform()->GetGdkWindow(window_id);
 }
 
 // Translate IME ui::KeyEvent to a GdkEventKey.
 GdkEvent* GdkEventFromImeKeyEvent(const ui::KeyEvent& key_event) {
+  DCHECK(!GtkCheckVersion(4));
   GdkEvent* event = GdkEventFromKeyEvent(key_event);
   if (!event)
     return nullptr;
@@ -51,7 +58,7 @@ GdkEvent* GdkEventFromImeKeyEvent(const ui::KeyEvent& key_event) {
     gdk_event_free(event);
     return nullptr;
   }
-  event->key.window = target_window;
+  GdkEventToKey(event)->window = target_window;
   return event;
 }
 
@@ -60,11 +67,7 @@ GdkEvent* GdkEventFromImeKeyEvent(const ui::KeyEvent& key_event) {
 InputMethodContextImplGtk::InputMethodContextImplGtk(
     ui::LinuxInputMethodContextDelegate* delegate,
     bool is_simple)
-    : delegate_(delegate),
-      is_simple_(is_simple),
-      has_focus_(false),
-      gtk_context_(nullptr),
-      gdk_last_set_client_window_(nullptr) {
+    : delegate_(delegate), is_simple_(is_simple) {
   CHECK(delegate_);
 
   gtk_context_ =
@@ -80,6 +83,9 @@ InputMethodContextImplGtk::InputMethodContextImplGtk(
   // TODO(shuchen): Handle operations on surrounding text.
   // "delete-surrounding" and "retrieve-surrounding" signals should be
   // handled.
+
+  if (GtkCheckVersion(4))
+    gtk_im_context_set_client_widget(gtk_context_, GetDummyWindow());
 }
 
 InputMethodContextImplGtk::~InputMethodContextImplGtk() {
@@ -95,39 +101,64 @@ bool InputMethodContextImplGtk::DispatchKeyEvent(
   if (!gtk_context_)
     return false;
 
-  GdkEvent* event = GdkEventFromImeKeyEvent(key_event);
-  if (!event) {
-    LOG(ERROR) << "Cannot translate a Keyevent to a GdkEvent.";
-    return false;
-  }
+  GdkEvent* event = nullptr;
+  if (!GtkCheckVersion(4)) {
+    event = GdkEventFromImeKeyEvent(key_event);
+    if (!event) {
+      LOG(ERROR) << "Cannot translate a Keyevent to a GdkEvent.";
+      return false;
+    }
 
-  GdkWindow* target_window = event->key.window;
-  if (!target_window) {
-    LOG(ERROR) << "Cannot get target GdkWindow for KeyEvent.";
-    return false;
-  }
+    GdkWindow* target_window = GdkEventToKey(event)->window;
+    if (!target_window) {
+      LOG(ERROR) << "Cannot get target GdkWindow for KeyEvent.";
+      return false;
+    }
 
-  SetContextClientWindow(target_window);
+    SetContextClientWindow(target_window);
+  }
 
   // Convert the last known caret bounds relative to the screen coordinates
   // to a GdkRectangle relative to the client window.
-  gint win_x = 0;
-  gint win_y = 0;
-  gdk_window_get_origin(target_window, &win_x, &win_y);
+  aura::Window* window = static_cast<aura::Window*>(key_event.target());
+  gint win_x = window->GetBoundsInScreen().x();
+  gint win_y = window->GetBoundsInScreen().y();
+  gint caret_x = last_caret_bounds_.x();
+  gint caret_y = last_caret_bounds_.y();
+  gint caret_w = last_caret_bounds_.width();
+  gint caret_h = last_caret_bounds_.height();
 
-  gint factor = gdk_window_get_scale_factor(target_window);
-  gint caret_x = last_caret_bounds_.x() / factor;
-  gint caret_y = last_caret_bounds_.y() / factor;
-  gint caret_w = last_caret_bounds_.width() / factor;
-  gint caret_h = last_caret_bounds_.height() / factor;
-
-  GdkRectangle gdk_rect = {caret_x - win_x, caret_y - win_y, caret_w, caret_h};
+  // Chrome's DIPs may be different from GTK's DIPs if
+  // --force-device-scale-factor is used.
+  float factor =
+      GetDeviceScaleFactor() / gtk_widget_get_scale_factor(GetDummyWindow());
+  GdkRectangle gdk_rect = {factor * (caret_x - win_x),
+                           factor * (caret_y - win_y), factor * caret_w,
+                           factor * caret_h};
   gtk_im_context_set_cursor_location(gtk_context_, &gdk_rect);
 
-  const bool handled =
-      gtk_im_context_filter_keypress(gtk_context_, &event->key);
-  gdk_event_free(event);
-  return handled;
+  if (!GtkCheckVersion(4)) {
+    const bool handled =
+        GtkImContextFilterKeypress(gtk_context_, GdkEventToKey(event));
+    gdk_event_free(event);
+    return handled;
+  }
+  // In GTK4, clients can no longer create or modify events.  This makes using
+  // the gtk_im_context_filter_keypress() API impossible.  Fortunately, an
+  // alternative API called gtk_im_context_filter_key() was added for clients
+  // that would have needed to construct their own event.  The parameters to
+  // the new API are just a deconstructed version of a KeyEvent.
+  bool press = key_event.type() == ui::ET_KEY_PRESSED;
+  auto* surface =
+      gtk_native_get_surface(gtk_widget_get_native(GetDummyWindow()));
+  auto* device = gdk_seat_get_keyboard(
+      gdk_display_get_default_seat(gdk_display_get_default()));
+  auto time = (key_event.time_stamp() - base::TimeTicks()).InMilliseconds();
+  auto keycode = GetKeyEventProperty(key_event, ui::kPropertyKeyboardHwKeyCode);
+  auto state = GetGdkKeyEventState(key_event);
+  auto group = GetKeyEventProperty(key_event, ui::kPropertyKeyboardGroup);
+  return gtk_im_context_filter_key(gtk_context_, press, surface, device, time,
+                                   keycode, state, group);
 }
 
 void InputMethodContextImplGtk::Reset() {
@@ -155,18 +186,13 @@ void InputMethodContextImplGtk::SetCursorLocation(const gfx::Rect& rect) {
   // Remember the caret bounds so that we can set the cursor location later.
   // gtk_im_context_set_cursor_location() takes the location relative to the
   // client window, which is unknown at this point.  So we'll call
-  // gtk_im_context_set_cursor_location() later in ProcessKeyEvent() where
+  // gtk_im_context_set_cursor_location() later in DispatchKeyEvent() where
   // (and only where) we know the client window.
-  if (views::LinuxUI::instance()) {
-    last_caret_bounds_ = gfx::ToEnclosingRect(gfx::ConvertRectToPixels(
-        rect, views::LinuxUI::instance()->GetDeviceScaleFactor()));
-  } else {
-    last_caret_bounds_ = rect;
-  }
+  last_caret_bounds_ = rect;
 }
 
 void InputMethodContextImplGtk::SetSurroundingText(
-    const base::string16& text,
+    const std::u16string& text,
     const gfx::Range& selection_range) {}
 
 // private:
@@ -212,13 +238,10 @@ void InputMethodContextImplGtk::OnPreeditStart(GtkIMContext* context) {
 }
 
 void InputMethodContextImplGtk::SetContextClientWindow(GdkWindow* window) {
+  DCHECK(!GtkCheckVersion(4));
   if (window == gdk_last_set_client_window_)
     return;
-#if GTK_CHECK_VERSION(3, 90, 0)
-  gtk_im_context_set_client_widget(gtk_context_, GTK_WIDGET(window));
-#else
   gtk_im_context_set_client_window(gtk_context_, window);
-#endif
 
   // Prevent leaks when overriding last client window
   if (gdk_last_set_client_window_)

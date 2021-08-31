@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_controller_factory.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
@@ -37,6 +38,7 @@
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -59,7 +61,7 @@ class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
       const GURL& url) override {
     std::string foo(url.path());
     if (url.path() == "/nobinding/")
-      web_ui->SetBindings(0);
+      web_ui->SetBindings(BINDINGS_POLICY_NONE);
     return HasWebUIScheme(url) ? std::make_unique<WebUIController>(web_ui)
                                : nullptr;
   }
@@ -69,10 +71,6 @@ class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
   }
   bool UseWebUIForURL(BrowserContext* browser_context,
                       const GURL& url) override {
-    return HasWebUIScheme(url);
-  }
-  bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                              const GURL& url) override {
     return HasWebUIScheme(url);
   }
 };
@@ -230,8 +228,10 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
   request->url = embedded_test_server()->GetURL("/auth-basic?password=");
   auto loader = network::SimpleURLLoader::Create(std::move(request),
                                                  TRAFFIC_ANNOTATION_FOR_TESTS);
-  auto loader_factory = BrowserContext::GetDefaultStoragePartition(
-                            shell()->web_contents()->GetBrowserContext())
+  auto loader_factory = shell()
+                            ->web_contents()
+                            ->GetBrowserContext()
+                            ->GetDefaultStoragePartition()
                             ->GetURLLoaderFactoryForBrowserProcess();
   scoped_refptr<net::HttpResponseHeaders> headers;
   base::RunLoop loop;
@@ -259,8 +259,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
   mojo::Remote<network::mojom::NetworkContext> network_context;
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
-  context_params->cert_verifier_params =
-      GetCertVerifierParams(network::mojom::CertVerifierCreationParams::New());
+  context_params->cert_verifier_params = GetCertVerifierParams(
+      cert_verifier::mojom::CertVerifierCreationParams::New());
   context_params->http_cache_path = GetCacheDirectory();
   GetNetworkService()->CreateNetworkContext(
       network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
@@ -426,7 +426,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, SyncCookieGetOnCrash) {
   // If the renderer is hung the test will hang.
 }
 
-int64_t GetPreloadedFirstPartySetCountFromNetworkService() {
+int64_t GetFirstPartySetCountFromNetworkService() {
   DCHECK(!content::IsInProcessNetworkService());
 
   mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
@@ -437,8 +437,7 @@ int64_t GetPreloadedFirstPartySetCountFromNetworkService() {
   mojo::ScopedAllowSyncCallForTesting allow_sync_call;
 
   int64_t count = 0;
-  EXPECT_TRUE(
-      network_service_test->GetPreloadedFirstPartySetEntriesCount(&count));
+  EXPECT_TRUE(network_service_test->GetFirstPartySetEntriesCount(&count));
 
   return count;
 }
@@ -459,11 +458,43 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceWithFirstPartySetBrowserTest,
   if (IsInProcessNetworkService())
     return;
 
-  EXPECT_EQ(GetPreloadedFirstPartySetCountFromNetworkService(), 2);
+  EXPECT_EQ(GetFirstPartySetCountFromNetworkService(), 3);
 
   SimulateNetworkServiceCrash();
 
-  EXPECT_EQ(GetPreloadedFirstPartySetCountFromNetworkService(), 2);
+  EXPECT_EQ(GetFirstPartySetCountFromNetworkService(), 3);
+}
+
+class NetworkServiceWithoutFirstPartySetBrowserTest
+    : public NetworkServiceBrowserTest {
+ public:
+  NetworkServiceWithoutFirstPartySetBrowserTest() {
+    scoped_feature_list_.InitAndDisableFeature(net::features::kFirstPartySets);
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Supplying this switch should not enable the feature, since the feature
+    // was explicitly disabled.
+    NetworkServiceBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(
+        network::switches::kUseFirstPartySet,
+        "https://example.com,https://member1.com,https://member2.com");
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(NetworkServiceWithoutFirstPartySetBrowserTest,
+                       GetsEnableFirstPartySetsSwitch) {
+  if (IsInProcessNetworkService())
+    return;
+
+  EXPECT_EQ(GetFirstPartySetCountFromNetworkService(), 0);
+
+  SimulateNetworkServiceCrash();
+
+  EXPECT_EQ(GetFirstPartySetCountFromNetworkService(), 0);
 }
 
 // Tests that CORS is performed by the network service when |factory_override|
@@ -473,7 +504,6 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, FactoryOverride) {
    public:
     void CreateLoaderAndStart(
         mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-        int32_t routing_id,
         int32_t request_id,
         uint32_t options,
         const network::ResourceRequest& resource_request,
@@ -541,8 +571,10 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, FactoryOverride) {
   params->factory_override = network::mojom::URLLoaderFactoryOverride::New();
   params->factory_override->overriding_factory =
       test_loader_factory_receiver.BindNewPipeAndPassRemote();
-  BrowserContext::GetDefaultStoragePartition(
-      shell()->web_contents()->GetBrowserContext())
+  shell()
+      ->web_contents()
+      ->GetBrowserContext()
+      ->GetDefaultStoragePartition()
       ->GetNetworkContext()
       ->CreateURLLoaderFactory(
           loader_factory_remote.BindNewPipeAndPassReceiver(),
@@ -588,9 +620,11 @@ class NetworkServiceInProcessBrowserTest : public ContentBrowserTest {
 // Verifies that in-process network service works.
 IN_PROC_BROWSER_TEST_F(NetworkServiceInProcessBrowserTest, Basic) {
   GURL test_url = embedded_test_server()->GetURL("foo.com", "/echo");
-  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(
-          shell()->web_contents()->GetBrowserContext()));
+  StoragePartitionImpl* partition =
+      static_cast<StoragePartitionImpl*>(shell()
+                                             ->web_contents()
+                                             ->GetBrowserContext()
+                                             ->GetDefaultStoragePartition());
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
   ASSERT_EQ(net::OK,
             LoadBasicRequest(partition->GetNetworkContext(), test_url));
@@ -616,9 +650,11 @@ class NetworkServiceInvalidLogBrowserTest : public ContentBrowserTest {
 // Verifies that an invalid --log-net-log flag won't crash the browser.
 IN_PROC_BROWSER_TEST_F(NetworkServiceInvalidLogBrowserTest, Basic) {
   GURL test_url = embedded_test_server()->GetURL("foo.com", "/echo");
-  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(
-          shell()->web_contents()->GetBrowserContext()));
+  StoragePartitionImpl* partition =
+      static_cast<StoragePartitionImpl*>(shell()
+                                             ->web_contents()
+                                             ->GetBrowserContext()
+                                             ->GetDefaultStoragePartition());
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
   ASSERT_EQ(net::OK,
             LoadBasicRequest(partition->GetNetworkContext(), test_url));
@@ -666,7 +702,7 @@ class NetworkServiceWithUDPSocketLimit : public NetworkServiceBrowserTest {
     network::mojom::NetworkContextParamsPtr context_params =
         network::mojom::NetworkContextParams::New();
     context_params->cert_verifier_params = GetCertVerifierParams(
-        network::mojom::CertVerifierCreationParams::New());
+        cert_verifier::mojom::CertVerifierCreationParams::New());
     GetNetworkService()->CreateNetworkContext(
         network_context.BindNewPipeAndPassReceiver(),
         std::move(context_params));

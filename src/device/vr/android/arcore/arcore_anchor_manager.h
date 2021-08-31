@@ -7,8 +7,8 @@
 
 #include <map>
 
+#include "base/types/pass_key.h"
 #include "base/util/type_safety/id_type.h"
-#include "base/util/type_safety/pass_key.h"
 #include "device/vr/android/arcore/address_to_id_map.h"
 #include "device/vr/android/arcore/arcore_plane_manager.h"
 #include "device/vr/android/arcore/arcore_sdk.h"
@@ -23,7 +23,7 @@ using AnchorId = util::IdTypeU64<class AnchorTag>;
 
 class ArCoreAnchorManager {
  public:
-  ArCoreAnchorManager(util::PassKey<ArCoreImpl> pass_key,
+  ArCoreAnchorManager(base::PassKey<ArCoreImpl> pass_key,
                       ArSession* arcore_session);
   ~ArCoreAnchorManager();
 
@@ -36,16 +36,16 @@ class ArCoreAnchorManager {
 
   bool AnchorExists(AnchorId id) const;
 
-  // Returns base::nullopt if anchor with the given id does not exist.
-  base::Optional<gfx::Transform> GetMojoFromAnchor(AnchorId id) const;
+  // Returns absl::nullopt if anchor with the given id does not exist.
+  absl::optional<gfx::Transform> GetMojoFromAnchor(AnchorId id) const;
 
   // Creates Anchor object given a plane ID.
-  base::Optional<AnchorId> CreateAnchor(ArCorePlaneManager* plane_manager,
+  absl::optional<AnchorId> CreateAnchor(ArCorePlaneManager* plane_manager,
                                         const device::mojom::Pose& pose,
                                         PlaneId plane_id);
 
   // Creates free-floating Anchor.
-  base::Optional<AnchorId> CreateAnchor(const device::mojom::Pose& pose);
+  absl::optional<AnchorId> CreateAnchor(const device::mojom::Pose& pose);
 
   void DetachAnchor(AnchorId anchor_id);
 

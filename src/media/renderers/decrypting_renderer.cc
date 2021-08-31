@@ -107,12 +107,16 @@ void DecryptingRenderer::SetCdm(CdmContext* cdm_context,
 }
 
 void DecryptingRenderer::SetLatencyHint(
-    base::Optional<base::TimeDelta> latency_hint) {
+    absl::optional<base::TimeDelta> latency_hint) {
   renderer_->SetLatencyHint(latency_hint);
 }
 
 void DecryptingRenderer::SetPreservesPitch(bool preserves_pitch) {
   renderer_->SetPreservesPitch(preserves_pitch);
+}
+
+void DecryptingRenderer::SetAutoplayInitiated(bool autoplay_initiated) {
+  renderer_->SetAutoplayInitiated(autoplay_initiated);
 }
 
 void DecryptingRenderer::Flush(base::OnceClosure flush_cb) {

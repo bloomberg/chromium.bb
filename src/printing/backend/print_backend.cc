@@ -4,6 +4,9 @@
 
 #include "printing/backend/print_backend.h"
 
+#include <string>
+
+#include "base/memory/scoped_refptr.h"
 #include "build/chromeos_buildflags.h"
 
 namespace {
@@ -17,11 +20,32 @@ namespace printing {
 
 PrinterBasicInfo::PrinterBasicInfo() = default;
 
+PrinterBasicInfo::PrinterBasicInfo(const std::string& printer_name,
+                                   const std::string& display_name,
+                                   const std::string& printer_description,
+                                   int printer_status,
+                                   bool is_default,
+                                   const PrinterBasicInfoOptions& options)
+    : printer_name(printer_name),
+      display_name(display_name),
+      printer_description(printer_description),
+      printer_status(printer_status),
+      is_default(is_default),
+      options(options) {}
+
 PrinterBasicInfo::PrinterBasicInfo(const PrinterBasicInfo& other) = default;
 
 PrinterBasicInfo::~PrinterBasicInfo() = default;
 
-#if BUILDFLAG(IS_ASH)
+bool PrinterBasicInfo::operator==(const PrinterBasicInfo& other) const {
+  return printer_name == other.printer_name &&
+         display_name == other.display_name &&
+         printer_description == other.printer_description &&
+         printer_status == other.printer_status &&
+         is_default == other.is_default && options == other.options;
+}
+
+#if defined(OS_CHROMEOS)
 
 AdvancedCapabilityValue::AdvancedCapabilityValue() = default;
 
@@ -41,6 +65,10 @@ bool AdvancedCapabilityValue::operator==(
 }
 
 AdvancedCapability::AdvancedCapability() = default;
+
+AdvancedCapability::AdvancedCapability(const std::string& name,
+                                       AdvancedCapability::Type type)
+    : name(name), type(type) {}
 
 AdvancedCapability::AdvancedCapability(
     const std::string& name,
@@ -65,7 +93,7 @@ bool AdvancedCapability::operator==(const AdvancedCapability& other) const {
          values == other.values;
 }
 
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 bool PrinterSemanticCapsAndDefaults::Paper::operator==(
     const PrinterSemanticCapsAndDefaults::Paper& other) const {

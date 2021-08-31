@@ -203,7 +203,7 @@ public class PickerCategoryView extends RelativeLayout
         mMultiSelectionAllowed = multiSelectionAllowed;
 
         mDecoderServiceHost = new DecoderServiceHost(this, context);
-        mDecoderServiceHost.bind(context);
+        mDecoderServiceHost.bind();
 
         mSelectionDelegate = new SelectionDelegate<PickerBitmap>();
         mSelectionDelegate.addObserver(this);
@@ -272,7 +272,7 @@ public class PickerCategoryView extends RelativeLayout
         }
 
         if (mDecoderServiceHost != null) {
-            mDecoderServiceHost.unbind(mWindowAndroid.getContext().get());
+            mDecoderServiceHost.unbind();
             mDecoderServiceHost = null;
         }
 
@@ -285,7 +285,7 @@ public class PickerCategoryView extends RelativeLayout
      */
     public void startVideoPlaybackAsync(Uri uri) {
         if (mDialog == null) return;
-        mVideoPlayer.startVideoPlaybackAsync(uri, mDialog.getWindow().getDecorView());
+        mVideoPlayer.startVideoPlaybackAsync(uri, mDialog.getWindow());
     }
 
     /**
@@ -408,10 +408,15 @@ public class PickerCategoryView extends RelativeLayout
 
         mMagnifyingMode = !mMagnifyingMode;
 
+        Context context = mWindowAndroid.getContext().get();
         if (mMagnifyingMode) {
             mZoom.setImageResource(R.drawable.zoom_out);
+            mZoom.setContentDescription(
+                    context.getString(R.string.photo_picker_accessibility_zoom_out));
         } else {
             mZoom.setImageResource(R.drawable.zoom_in);
+            mZoom.setContentDescription(
+                    context.getString(R.string.photo_picker_accessibility_zoom_in));
         }
 
         calculateGridMetrics();

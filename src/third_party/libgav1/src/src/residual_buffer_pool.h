@@ -27,72 +27,10 @@
 #include "src/utils/compiler_attributes.h"
 #include "src/utils/constants.h"
 #include "src/utils/memory.h"
+#include "src/utils/queue.h"
 #include "src/utils/types.h"
 
 namespace libgav1 {
-
-// A simple fixed size queue implementation to hold the transform parameters
-// when |Tile::split_parse_and_decode_| is true. We don't have to do any
-// boundary checks since we always push data into the queue before accessing it.
-class TransformParameterQueue {
- public:
-  TransformParameterQueue() = default;
-
-  // Move only.
-  TransformParameterQueue(TransformParameterQueue&& other) = default;
-  TransformParameterQueue& operator=(TransformParameterQueue&& other) = default;
-
-  LIBGAV1_MUST_USE_RESULT bool Init(int max_size) {
-    max_size_ = max_size;
-    // No initialization is necessary since the data will be always written to
-    // before being read.
-    non_zero_coeff_count_.reset(new (std::nothrow) int16_t[max_size_]);
-    tx_type_.reset(new (std::nothrow) TransformType[max_size_]);
-    return non_zero_coeff_count_ != nullptr && tx_type_ != nullptr;
-  }
-
-  // Adds the |non_zero_coeff_count| and the |tx_type| to the back of the queue.
-  void Push(int non_zero_coeff_count, TransformType tx_type) {
-    assert(back_ < max_size_);
-    non_zero_coeff_count_[back_] = non_zero_coeff_count;
-    tx_type_[back_++] = tx_type;
-  }
-
-  // Returns the non_zero_coeff_count at the front of the queue.
-  int16_t NonZeroCoeffCount() const {
-    assert(front_ != back_);
-    return non_zero_coeff_count_[front_];
-  }
-
-  // Returns the tx_type at the front of the queue.
-  TransformType Type() const {
-    assert(front_ != back_);
-    return tx_type_[front_];
-  }
-
-  // Removes the |non_zero_coeff_count| and the |tx_type| from the front of the
-  // queue.
-  void Pop() {
-    assert(front_ != back_);
-    ++front_;
-  }
-
-  // Clears the queue.
-  void Reset() {
-    front_ = 0;
-    back_ = 0;
-  }
-
-  // Used only in the tests. Returns the number of elements in the queue.
-  int Size() const { return back_ - front_; }
-
- private:
-  int max_size_ = 0;
-  std::unique_ptr<int16_t[]> non_zero_coeff_count_;
-  std::unique_ptr<TransformType[]> tx_type_;
-  int front_ = 0;
-  int back_ = 0;
-};
 
 // This class is used for parsing and decoding a superblock. Members of this
 // class are populated in the "parse" step and consumed in the "decode" step.
@@ -104,7 +42,8 @@ class ResidualBuffer : public Allocable {
     if (buffer != nullptr) {
       buffer->buffer_ = MakeAlignedUniquePtr<uint8_t>(32, buffer_size);
       if (buffer->buffer_ == nullptr ||
-          !buffer->transform_parameters_.Init(queue_size)) {
+          !buffer->transform_parameters_.Init(queue_size) ||
+          !buffer->partition_tree_order_.Init(queue_size)) {
         buffer = nullptr;
       }
     }
@@ -118,8 +57,13 @@ class ResidualBuffer : public Allocable {
   // Buffer used to store the residual values.
   uint8_t* buffer() { return buffer_.get(); }
   // Queue used to store the transform parameters.
-  TransformParameterQueue* transform_parameters() {
+  Queue<TransformParameters>* transform_parameters() {
     return &transform_parameters_;
+  }
+  // Queue used to store the block ordering in the partition tree of the
+  // superblocks.
+  Queue<PartitionTreeNode>* partition_tree_order() {
+    return &partition_tree_order_;
   }
 
  private:
@@ -128,7 +72,8 @@ class ResidualBuffer : public Allocable {
   ResidualBuffer() = default;
 
   AlignedUniquePtr<uint8_t> buffer_;
-  TransformParameterQueue transform_parameters_;
+  Queue<TransformParameters> transform_parameters_;
+  Queue<PartitionTreeNode> partition_tree_order_;
   // Used by ResidualBufferStack to form a chain of ResidualBuffers.
   ResidualBuffer* next_ = nullptr;
 };

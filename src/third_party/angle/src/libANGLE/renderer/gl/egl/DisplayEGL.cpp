@@ -113,6 +113,7 @@ DisplayEGL::DisplayEGL(const egl::DisplayState &state)
       mRenderer(nullptr),
       mEGL(nullptr),
       mConfig(EGL_NO_CONFIG_KHR),
+      mCurrentNativeContexts(),
       mHasEXTCreateContextRobustness(false),
       mHasNVRobustnessVideoMemoryPurge(false)
 {}
@@ -130,13 +131,6 @@ ImageImpl *DisplayEGL::createImage(const egl::ImageState &state,
 EGLSyncImpl *DisplayEGL::createSync(const egl::AttributeMap &attribs)
 {
     return new SyncEGL(attribs, mEGL);
-}
-
-std::string DisplayEGL::getVendorString() const
-{
-    const char *vendor = mEGL->queryString(EGL_VENDOR);
-    ASSERT(vendor);
-    return vendor;
 }
 
 egl::Error DisplayEGL::initializeContext(EGLContext shareContext,
@@ -279,7 +273,7 @@ egl::Error DisplayEGL::initialize(egl::Display *display)
     functionsGL->initialize(mDisplayAttributes);
 
     mRenderer.reset(
-        new RendererEGL(std::move(functionsGL), mDisplayAttributes, this, context, attribs));
+        new RendererEGL(std::move(functionsGL), mDisplayAttributes, this, context, attribs, false));
     const gl::Version &maxVersion = mRenderer->getMaxSupportedESVersion();
     if (maxVersion < gl::Version(2, 0))
     {
@@ -467,8 +461,7 @@ egl::ConfigSet DisplayEGL::generateConfigs()
                                    &config.colorComponentType, "EGL_EXT_pixel_format_float",
                                    EGL_COLOR_COMPONENT_TYPE_FIXED_EXT);
 
-        // Pixmaps are not supported on EGL, make sure the config doesn't expose them.
-        config.surfaceType &= ~EGL_PIXMAP_BIT;
+        config.surfaceType = fixSurfaceType(config.surfaceType);
 
         if (config.colorBufferType == EGL_RGB_BUFFER)
         {
@@ -507,12 +500,12 @@ egl::ConfigSet DisplayEGL::generateConfigs()
             {
                 ERR() << "RGBA(" << config.redSize << "," << config.greenSize << ","
                       << config.blueSize << "," << config.alphaSize << ") not handled";
-                UNREACHABLE();
+                continue;
             }
         }
         else
         {
-            UNREACHABLE();
+            continue;
         }
 
         if (config.depthSize == 0 && config.stencilSize == 0)
@@ -537,7 +530,7 @@ egl::ConfigSet DisplayEGL::generateConfigs()
         }
         else
         {
-            UNREACHABLE();
+            continue;
         }
 
         config.matchNativePixmap  = EGL_NONE;
@@ -564,12 +557,6 @@ egl::Error DisplayEGL::restoreLostDevice(const egl::Display *display)
 bool DisplayEGL::isValidNativeWindow(EGLNativeWindowType window) const
 {
     return true;
-}
-
-DeviceImpl *DisplayEGL::createDevice()
-{
-    UNIMPLEMENTED();
-    return nullptr;
 }
 
 egl::Error DisplayEGL::waitClient(const gl::Context *context)
@@ -712,6 +699,8 @@ void DisplayEGL::generateExtensions(egl::DisplayExtensions *outExtensions) const
 
     outExtensions->robustnessVideoMemoryPurgeNV = mHasNVRobustnessVideoMemoryPurge;
 
+    outExtensions->bufferAgeEXT = mEGL->hasExtension("EGL_EXT_buffer_age");
+
     DisplayGL::generateExtensions(outExtensions);
 }
 
@@ -756,7 +745,7 @@ egl::Error DisplayEGL::createRenderer(EGLContext shareContext,
     functionsGL->initialize(mDisplayAttributes);
 
     outRenderer->reset(
-        new RendererEGL(std::move(functionsGL), mDisplayAttributes, this, context, attribs));
+        new RendererEGL(std::move(functionsGL), mDisplayAttributes, this, context, attribs, false));
 
     return egl::NoError();
 }
@@ -782,6 +771,11 @@ void DisplayEGL::initializeFrontendFeatures(angle::FrontendFeatures *features) c
 void DisplayEGL::populateFeatureList(angle::FeatureList *features)
 {
     mRenderer->getFeatures().populateFeatureList(features);
+}
+
+RendererGL *DisplayEGL::getRenderer() const
+{
+    return reinterpret_cast<RendererGL *>(mRenderer.get());
 }
 
 egl::Error DisplayEGL::validateImageClientBuffer(const gl::Context *context,
@@ -814,6 +808,12 @@ ExternalImageSiblingImpl *DisplayEGL::createExternalImageSibling(const gl::Conte
         default:
             return DisplayGL::createExternalImageSibling(context, target, buffer, attribs);
     }
+}
+
+EGLint DisplayEGL::fixSurfaceType(EGLint surfaceType) const
+{
+    // Pixmaps are not supported on EGL, make sure the config doesn't expose them.
+    return surfaceType & ~EGL_PIXMAP_BIT;
 }
 
 }  // namespace rx

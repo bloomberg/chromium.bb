@@ -15,18 +15,29 @@
 
 namespace content {
 
-namespace {
-// The maximum number of TYPE_WINDOW_CONTENT_CHANGED events to fire in one
-// atomic update before we give up and fire it on the root node instead.
-constexpr int kMaxContentChangedEventsToFire = 5;
-}  // namespace
-
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate) {
-  return new BrowserAccessibilityManagerAndroid(initial_tree, nullptr,
-                                                delegate);
+  if (!delegate)
+    return new BrowserAccessibilityManagerAndroid(initial_tree, nullptr,
+                                                  nullptr);
+
+  WebContentsAccessibilityAndroid* wcax =
+      static_cast<WebContentsAccessibilityAndroid*>(
+          delegate->AccessibilityGetWebContentsAccessibility());
+  return new BrowserAccessibilityManagerAndroid(
+      initial_tree,
+      wcax && delegate->AccessibilityIsMainFrame() ? wcax->GetWeakPtr()
+                                                   : nullptr,
+      delegate);
+}
+
+// static
+BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
+    BrowserAccessibilityDelegate* delegate) {
+  return BrowserAccessibilityManager::Create(
+      BrowserAccessibilityManagerAndroid::GetEmptyDocument(), delegate);
 }
 
 BrowserAccessibilityManagerAndroid::BrowserAccessibilityManagerAndroid(
@@ -69,7 +80,7 @@ bool BrowserAccessibilityManagerAndroid::ShouldExposePasswordText() {
 
 BrowserAccessibility* BrowserAccessibilityManagerAndroid::GetFocus() const {
   BrowserAccessibility* focus = BrowserAccessibilityManager::GetFocus();
-  if (focus && !focus->IsPlainTextField())
+  if (focus && !focus->IsAtomicTextField())
     return GetActiveDescendant(focus);
   return focus;
 }
@@ -78,9 +89,10 @@ BrowserAccessibility* BrowserAccessibilityManagerAndroid::RetargetForEvents(
     BrowserAccessibility* node,
     RetargetEventType type) const {
   // Sometimes we get events on nodes in our internal accessibility tree
-  // that aren't exposed on Android. Get |updated| to point to the highest
-  // ancestor that's a leaf node.
-  BrowserAccessibility* updated = node->PlatformGetClosestPlatformObject();
+  // that aren't exposed on Android. Get |updated| to point to the lowest
+  // ancestor that is exposed.
+  BrowserAccessibility* updated = node->PlatformGetLowestPlatformAncestor();
+  DCHECK(updated);
 
   switch (type) {
     case RetargetEventType::RetargetEventTypeGenerated: {
@@ -160,6 +172,9 @@ void BrowserAccessibilityManagerAndroid::FireBlinkEvent(
     case ax::mojom::Event::kClicked:
       wcax->HandleClicked(android_node->unique_id());
       break;
+    case ax::mojom::Event::kEndOfTest:
+      wcax->HandleEndOfTestSignal();
+      break;
     case ax::mojom::Event::kHover:
       HandleHoverEvent(node);
       break;
@@ -184,34 +199,16 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
 
   // Always send AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED to notify
   // the Android system that the accessibility hierarchy rooted at this
-  // node has changed. However, if there are a large number of changes
-  // it's too expensive to fire all of them, so we just fire one
-  // on the root instead.
-  if (event_type != ui::AXEventGenerator::Event::SUBTREE_CREATED) {
-    content_changed_events_++;
-    if (content_changed_events_ < kMaxContentChangedEventsToFire) {
-      // If it's less than the max event count, fire the event on the specific
-      // node that changed.
-      wcax->HandleContentChanged(android_node->unique_id());
-    } else if (content_changed_events_ == kMaxContentChangedEventsToFire) {
-      // If it's equal to the max event count, fire the event on the
-      // root instead.
-      BrowserAccessibilityManager* root_manager = GetRootManager();
-      if (root_manager) {
-        auto* root_node =
-            static_cast<BrowserAccessibilityAndroid*>(root_manager->GetRoot());
-        if (root_node)
-          wcax->HandleContentChanged(root_node->unique_id());
-      }
-    }
-  }
+  // node has changed.
+  if (event_type != ui::AXEventGenerator::Event::SUBTREE_CREATED)
+    wcax->HandleContentChanged(android_node->unique_id());
 
   switch (event_type) {
     case ui::AXEventGenerator::Event::ALERT: {
       // When an alertdialog is shown, we will announce the hint, which
       // (should) contain the description set by the author. If it is
       // empty, then we will try GetInnerText() as a fallback.
-      base::string16 text = android_node->GetHint();
+      std::u16string text = android_node->GetHint();
       if (text.empty())
         text = android_node->GetInnerText();
 
@@ -222,13 +219,20 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
       wcax->HandleCheckStateChanged(android_node->unique_id());
       break;
     case ui::AXEventGenerator::Event::DOCUMENT_SELECTION_CHANGED: {
-      ui::AXNode::AXID focus_id =
+      ui::AXNodeID focus_id =
           ax_tree()->GetUnignoredSelection().focus_object_id;
       BrowserAccessibility* focus_object = GetFromID(focus_id);
       if (focus_object) {
         BrowserAccessibilityAndroid* android_focus_object =
             static_cast<BrowserAccessibilityAndroid*>(focus_object);
         wcax->HandleTextSelectionChanged(android_focus_object->unique_id());
+      }
+      break;
+    }
+    case ui::AXEventGenerator::Event::EXPANDED: {
+      if (android_node->IsCombobox() &&
+          GetFocus()->IsDescendantOf(android_node)) {
+        wcax->AnnounceLiveRegionText(android_node->GetComboboxExpandedText());
       }
       break;
     }
@@ -247,7 +251,7 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::LIVE_REGION_NODE_CHANGED: {
       // This event is fired when an object appears in a live region.
       // Speak its text.
-      base::string16 text = android_node->GetInnerText();
+      std::u16string text = android_node->GetInnerText();
       wcax->AnnounceLiveRegionText(text);
       break;
     }
@@ -265,6 +269,7 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
     // Currently unused events on this platform.
     case ui::AXEventGenerator::Event::ACCESS_KEY_CHANGED:
     case ui::AXEventGenerator::Event::ACTIVE_DESCENDANT_CHANGED:
+    case ui::AXEventGenerator::Event::ARIA_CURRENT_CHANGED:
     case ui::AXEventGenerator::Event::ATK_TEXT_OBJECT_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::ATOMIC_CHANGED:
     case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
@@ -277,7 +282,6 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
     case ui::AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:
     case ui::AXEventGenerator::Event::DROPEFFECT_CHANGED:
-    case ui::AXEventGenerator::Event::EXPANDED:
     case ui::AXEventGenerator::Event::EDITABLE_TEXT_CHANGED:
     case ui::AXEventGenerator::Event::ENABLED_CHANGED:
     case ui::AXEventGenerator::Event::FOCUS_CHANGED:
@@ -298,6 +302,8 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::LIVE_RELEVANT_CHANGED:
     case ui::AXEventGenerator::Event::LIVE_STATUS_CHANGED:
     case ui::AXEventGenerator::Event::LOAD_START:
+    case ui::AXEventGenerator::Event::MENU_POPUP_END:
+    case ui::AXEventGenerator::Event::MENU_POPUP_START:
     case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:
     case ui::AXEventGenerator::Event::MULTILINE_STATE_CHANGED:
     case ui::AXEventGenerator::Event::MULTISELECTABLE_STATE_CHANGED:
@@ -354,7 +360,7 @@ bool BrowserAccessibilityManagerAndroid::NextAtGranularity(
     int32_t* end_index) {
   switch (granularity) {
     case ANDROID_ACCESSIBILITY_NODE_INFO_MOVEMENT_GRANULARITY_CHARACTER: {
-      base::string16 text = node->GetInnerText();
+      std::u16string text = node->GetInnerText();
       if (cursor_index >= static_cast<int32_t>(text.length()))
         return false;
       base::i18n::UTF16CharIterator iter(text);
@@ -403,7 +409,7 @@ bool BrowserAccessibilityManagerAndroid::PreviousAtGranularity(
     case ANDROID_ACCESSIBILITY_NODE_INFO_MOVEMENT_GRANULARITY_CHARACTER: {
       if (cursor_index <= 0)
         return false;
-      base::string16 text = node->GetInnerText();
+      std::u16string text = node->GetInnerText();
       base::i18n::UTF16CharIterator iter(text);
       int previous_index = 0;
       while (!iter.end() &&
@@ -505,17 +511,52 @@ void BrowserAccessibilityManagerAndroid::OnAtomicUpdateFinished(
     ui::AXTree* tree,
     bool root_changed,
     const std::vector<ui::AXTreeObserver::Change>& changes) {
-  // Reset this every time we get an atomic update.
-  content_changed_events_ = 0;
-
   BrowserAccessibilityManager::OnAtomicUpdateFinished(tree, root_changed,
                                                       changes);
 
+  WebContentsAccessibilityAndroid* wcax = GetWebContentsAXFromRootManager();
+  if (!wcax)
+    return;
+
+  // Reset content changed events counter every time we finish an atomic update.
+  wcax->ResetContentChangedEventsCounter();
+
   if (root_changed) {
-    WebContentsAccessibilityAndroid* wcax = GetWebContentsAXFromRootManager();
-    if (!wcax)
-      return;
     wcax->HandleNavigate();
+  }
+}
+
+void BrowserAccessibilityManagerAndroid::OnNodeCreated(ui::AXTree* tree,
+                                                       ui::AXNode* node) {
+  BrowserAccessibilityManager::OnNodeCreated(tree, node);
+  if (node->data().GetBoolAttribute(
+          ax::mojom::BoolAttribute::kTouchPassthrough)) {
+    auto* root =
+        static_cast<BrowserAccessibilityManagerAndroid*>(GetRootManager());
+    if (root)
+      root->EnableTouchPassthrough();
+    else
+      EnableTouchPassthrough();
+  }
+}
+
+void BrowserAccessibilityManagerAndroid::OnBoolAttributeChanged(
+    ui::AXTree* tree,
+    ui::AXNode* node,
+    ax::mojom::BoolAttribute attr,
+    bool new_value) {
+  BrowserAccessibilityManager::OnBoolAttributeChanged(tree, node, attr,
+                                                      new_value);
+  if (new_value && attr == ax::mojom::BoolAttribute::kTouchPassthrough) {
+    // TODO(accessibility): there's a tiny chance we could get this
+    // called on an iframe before it's attached to the root manager.
+    // If this ever becomes an issue in practice, make this more robust.
+    auto* root =
+        static_cast<BrowserAccessibilityManagerAndroid*>(GetRootManager());
+    if (root)
+      root->EnableTouchPassthrough();
+    else
+      EnableTouchPassthrough();
   }
 }
 

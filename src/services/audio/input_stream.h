@@ -39,7 +39,7 @@ class InputStream final : public media::mojom::AudioInputStream,
   using CreatedCallback =
       base::OnceCallback<void(media::mojom::ReadOnlyAudioDataPipePtr,
                               bool,
-                              const base::Optional<base::UnguessableToken>&)>;
+                              const absl::optional<base::UnguessableToken>&)>;
   using DeleteCallback = base::OnceCallback<void(InputStream*)>;
 
   InputStream(
@@ -71,7 +71,10 @@ class InputStream final : public media::mojom::AudioInputStream,
   void OnMuted(bool is_muted) override;
 
  private:
-  void OnStreamError(bool signalPlatformError);
+  void OnStreamError(
+      absl::optional<media::mojom::AudioInputStreamObserver::DisconnectReason>
+          reason_to_report);
+  void OnStreamPlatformError();
   void CallDeleter();
   void SendLogMessage(const char* format, ...) PRINTF_FORMAT(2, 3);
 

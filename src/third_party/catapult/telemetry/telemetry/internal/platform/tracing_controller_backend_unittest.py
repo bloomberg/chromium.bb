@@ -11,6 +11,7 @@ Integrations tests using a real running browser and tracing agents are included
 among tests for the public facing telemetry.core.tracing_controller.
 """
 
+from __future__ import absolute_import
 import unittest
 
 from telemetry import decorators
@@ -181,7 +182,7 @@ class TracingControllerBackendTest(unittest.TestCase):
     self.assertIsNotNone(self.controller._current_state.builder)
 
     # Flush tracing several times.
-    for _ in xrange(5):
+    for _ in range(5):
       self.controller.FlushTracing()
       self.assertTrue(self.controller.is_tracing_running)
       self.assertIs(self.controller._current_state.config, self.config)

@@ -5,6 +5,7 @@
 #ifndef V8_EXECUTION_EXTERNAL_POINTER_TABLE_H_
 #define V8_EXECUTION_EXTERNAL_POINTER_TABLE_H_
 
+#include "src/base/platform/wrappers.h"
 #include "src/common/external-pointer.h"
 #include "src/utils/utils.h"
 
@@ -16,8 +17,8 @@ class V8_EXPORT_PRIVATE ExternalPointerTable {
   static const int kExternalPointerTableInitialCapacity = 1024;
 
   ExternalPointerTable()
-      : buffer_(reinterpret_cast<Address*>(
-            calloc(kExternalPointerTableInitialCapacity, sizeof(Address)))),
+      : buffer_(reinterpret_cast<Address*>(base::Calloc(
+            kExternalPointerTableInitialCapacity, sizeof(Address)))),
         length_(1),
         capacity_(kExternalPointerTableInitialCapacity),
         freelist_head_(0) {
@@ -26,7 +27,7 @@ class V8_EXPORT_PRIVATE ExternalPointerTable {
     buffer_[kNullExternalPointer] = kNullAddress;
   }
 
-  ~ExternalPointerTable() { ::free(buffer_); }
+  ~ExternalPointerTable() { base::Free(buffer_); }
 
   Address get(uint32_t index) const {
     CHECK_LT(index, length_);
@@ -46,13 +47,6 @@ class V8_EXPORT_PRIVATE ExternalPointerTable {
     }
     DCHECK_NE(kNullExternalPointer, index);
     return index;
-  }
-
-  void free(uint32_t index) {
-    // TODO(v8:10391, saelo): implement simple free list here, i.e. set
-    // buffer_[index] to freelist_head_ and set freelist_head
-    // to index
-    DCHECK_NE(kNullExternalPointer, index);
   }
 
   // Returns true if the entry exists in the table and therefore it can be read.

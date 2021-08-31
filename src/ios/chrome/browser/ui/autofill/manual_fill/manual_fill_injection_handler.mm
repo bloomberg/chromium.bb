@@ -14,8 +14,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
+#import "components/autofill/ios/browser/autofill_java_script_feature.h"
 #import "components/autofill/ios/browser/autofill_util.h"
-#import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_handler.h"
@@ -27,7 +27,6 @@
 #include "ios/chrome/common/ui/reauthentication/reauthentication_event.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
 #include "ios/web/public/js_messaging/web_frames_manager.h"
@@ -41,21 +40,10 @@
 
 using base::UmaHistogramEnumeration;
 
-namespace {
-// The timeout for any JavaScript call in this file.
-const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
-}
-
 @interface ManualFillInjectionHandler ()<FormActivityObserver>
 
 // The object in charge of listening to form events and reporting back.
 @property(nonatomic, strong) FormObserverHelper* formHelper;
-
-// Convenience getter for the current injection reciever.
-@property(nonatomic, readonly) CRWJSInjectionReceiver* injectionReceiver;
-
-// Convenience getter for the current suggestion manager.
-@property(nonatomic, readonly) JsSuggestionManager* suggestionManager;
 
 // Interface for |reauthenticationModule|, handling mostly the case when no
 // hardware for authentication is available.
@@ -157,7 +145,7 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
     } else {
       UmaHistogramEnumeration("IOS.Reauth.Password.ManualFallback",
                               ReauthenticationEvent::kMissingPasscode);
-      [self.securityAlertHandler showSetPasscodeDialog];
+      [self fillLastSelectedFieldWithString:content];
     }
   }
 }
@@ -182,26 +170,6 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
   }
 }
 
-#pragma mark - Getters
-
-- (CRWJSInjectionReceiver*)injectionReceiver {
-  web::WebState* webState = self.webStateList->GetActiveWebState();
-  if (webState) {
-    return webState->GetJSInjectionReceiver();
-  }
-  return nil;
-}
-
-- (JsSuggestionManager*)suggestionManager {
-  JsSuggestionManager* manager = base::mac::ObjCCastStrict<JsSuggestionManager>(
-      [self.injectionReceiver instanceOfClass:[JsSuggestionManager class]]);
-  web::WebState* webState = self.webStateList->GetActiveWebState();
-  if (webState) {
-    [manager setWebFramesManager:webState->GetWebFramesManager()];
-  }
-  return manager;
-}
-
 #pragma mark - Private
 
 // Injects the passed string to the active field and jumps to the next field.
@@ -216,25 +184,20 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
     return;
   }
 
-  base::DictionaryValue data = base::DictionaryValue();
-  data.SetString("identifier", self.lastFocusedElementIdentifier);
-  data.SetString("value", base::SysNSStringToUTF16(string));
-  std::vector<base::Value> parameters;
-  parameters.push_back(std::move(data));
-
-  activeWebFrame->CallJavaScriptFunction(
-      "autofill.fillActiveFormField", parameters,
-      base::BindOnce(^(const base::Value*) {
+  auto data = std::make_unique<base::DictionaryValue>();
+  data->SetString("identifier", self.lastFocusedElementIdentifier);
+  data->SetString("value", base::SysNSStringToUTF16(string));
+  autofill::AutofillJavaScriptFeature::GetInstance()->FillActiveFormField(
+      activeWebFrame, std::move(data), base::BindOnce(^(BOOL success) {
         [self jumpToNextField];
-      }),
-      base::TimeDelta::FromSeconds(kJavaScriptExecutionTimeoutInSeconds));
+      }));
 }
 
 // Attempts to jump to the next field in the current form.
 - (void)jumpToNextField {
   FormInputAccessoryViewHandler* handler =
       [[FormInputAccessoryViewHandler alloc] init];
-  handler.JSSuggestionManager = self.suggestionManager;
+  handler.webState = self.webStateList->GetActiveWebState();
   [handler setLastFocusFormActivityWebFrameID:
                base::SysUTF8ToNSString(self.lastFocusedElementFrameIdentifier)];
   [handler selectNextElementWithoutButtonPress];

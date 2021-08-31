@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import unittest
 import sys
 from altgraph.ObjectGraph import ObjectGraph
@@ -271,7 +272,7 @@ class TestObjectGraph (unittest.TestCase):
         n11 = graph.createNode(ArgNode, "n1.1", 1)
         n12 = graph.createNode(ArgNode, "n1.2", 0)
         n111 = graph.createNode(ArgNode, "n1.1.1", 0)
-        n112 = graph.createNode(ArgNode, "n1.1.2",2)
+        n112 = graph.createNode(ArgNode, "n1.1.2", 2)
         n2 = graph.createNode(ArgNode, "n2", 0)
         n3 = graph.createNode(ArgNode, "n2", 0)
 

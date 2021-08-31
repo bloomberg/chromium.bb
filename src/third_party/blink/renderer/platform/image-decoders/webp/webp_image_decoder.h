@@ -123,7 +123,7 @@ class PLATFORM_EXPORT WEBPImageDecoder final : public ImageDecoder {
 
   WebPDemuxer* demux_;
   WebPDemuxState demux_state_;
-  bool have_already_parsed_this_data_;
+  bool have_parsed_current_data_;
   int repetition_count_;
   int decoded_height_;
 
@@ -143,4 +143,4 @@ class PLATFORM_EXPORT WEBPImageDecoder final : public ImageDecoder {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_WEBP_WEBP_IMAGE_DECODER_H_

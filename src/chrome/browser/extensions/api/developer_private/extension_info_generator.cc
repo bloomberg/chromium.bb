@@ -20,7 +20,9 @@
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/developer_private/inspectable_views_finder.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
+#include "chrome/browser/extensions/blocklist_extension_prefs.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
+#include "chrome/browser/extensions/extension_allowlist.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
@@ -32,6 +34,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_frame_host.h"
+#include "extensions/browser/blocklist_state.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_icon_placeholder.h"
 #include "extensions/browser/extension_prefs.h"
@@ -123,8 +126,8 @@ developer::ManifestError ConstructManifestError(const ManifestError& error) {
   PopulateErrorBase(error, &result);
   result.manifest_key = base::UTF16ToUTF8(error.manifest_key());
   if (!error.manifest_specific().empty()) {
-    result.manifest_specific.reset(
-        new std::string(base::UTF16ToUTF8(error.manifest_specific())));
+    result.manifest_specific = std::make_unique<std::string>(
+        base::UTF16ToUTF8(error.manifest_specific()));
   }
   return result;
 }
@@ -419,7 +422,7 @@ ExtensionInfoGenerator::~ExtensionInfoGenerator() {
 
 void ExtensionInfoGenerator::CreateExtensionInfo(
     const std::string& id,
-    const ExtensionInfosCallback& callback) {
+    ExtensionInfosCallback callback) {
   DCHECK(callback_.is_null() && list_.empty()) <<
       "Only a single generation can be running at a time!";
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
@@ -439,17 +442,17 @@ void ExtensionInfoGenerator::CreateExtensionInfo(
   if (pending_image_loads_ == 0) {
     // Don't call the callback re-entrantly.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, std::move(list_)));
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(list_)));
     list_.clear();
   } else {
-    callback_ = callback;
+    callback_ = std::move(callback);
   }
 }
 
 void ExtensionInfoGenerator::CreateExtensionsInfo(
     bool include_disabled,
     bool include_terminated,
-    const ExtensionInfosCallback& callback) {
+    ExtensionInfosCallback callback) {
   auto add_to_list = [this](const ExtensionSet& extensions,
                             developer::ExtensionState state) {
     for (const scoped_refptr<const Extension>& extension : extensions) {
@@ -476,10 +479,10 @@ void ExtensionInfoGenerator::CreateExtensionsInfo(
   if (pending_image_loads_ == 0) {
     // Don't call the callback re-entrantly.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, std::move(list_)));
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(list_)));
     list_.clear();
   } else {
-    callback_ = callback;
+    callback_ = std::move(callback);
   }
 }
 
@@ -491,27 +494,37 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
 
   // Blocklist text.
   int blocklist_text = -1;
-  switch (extension_prefs_->GetExtensionBlocklistState(extension.id())) {
-    case BLOCKLISTED_MALWARE:
+  BitMapBlocklistState blocklist_state =
+      blocklist_prefs::GetExtensionBlocklistState(extension.id(),
+                                                  extension_prefs_);
+  switch (blocklist_state) {
+    case BitMapBlocklistState::BLOCKLISTED_MALWARE:
       blocklist_text = IDS_EXTENSIONS_BLOCKLISTED_MALWARE;
       break;
-    case BLOCKLISTED_SECURITY_VULNERABILITY:
+    case BitMapBlocklistState::BLOCKLISTED_SECURITY_VULNERABILITY:
       blocklist_text = IDS_EXTENSIONS_BLOCKLISTED_SECURITY_VULNERABILITY;
       break;
-    case BLOCKLISTED_CWS_POLICY_VIOLATION:
+    case BitMapBlocklistState::BLOCKLISTED_CWS_POLICY_VIOLATION:
       blocklist_text = IDS_EXTENSIONS_BLOCKLISTED_CWS_POLICY_VIOLATION;
       break;
-    case BLOCKLISTED_POTENTIALLY_UNWANTED:
+    case BitMapBlocklistState::BLOCKLISTED_POTENTIALLY_UNWANTED:
       blocklist_text = IDS_EXTENSIONS_BLOCKLISTED_POTENTIALLY_UNWANTED;
       break;
-    default:
+    case BitMapBlocklistState::NOT_BLOCKLISTED:
+      // no-op.
       break;
   }
   if (blocklist_text != -1) {
-    info->blacklist_text.reset(
-        new std::string(l10n_util::GetStringUTF8(blocklist_text)));
+    info->blacklist_text =
+        std::make_unique<std::string>(l10n_util::GetStringUTF8(blocklist_text));
   }
 
+  if (extension_system_->extension_service()->allowlist()->ShouldDisplayWarning(
+          extension.id())) {
+    info->show_safe_browsing_allowlist_warning = true;
+  }
+  ExtensionManagement* extension_management =
+      ExtensionManagementFactory::GetForBrowserContext(browser_context_);
   Profile* profile = Profile::FromBrowserContext(browser_context_);
 
   // ControlledInfo.
@@ -621,18 +634,18 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
 
   // Launch url.
   if (extension.is_app()) {
-    info->launch_url.reset(
-        new std::string(AppLaunchInfo::GetFullLaunchURL(&extension).spec()));
+    info->launch_url = std::make_unique<std::string>(
+        AppLaunchInfo::GetFullLaunchURL(&extension).spec());
   }
 
   // Location.
-  if (extension.location() == Manifest::INTERNAL &&
-      ManifestURL::UpdatesFromGallery(&extension)) {
+  if (extension.location() == mojom::ManifestLocation::kInternal &&
+      extension_management->UpdatesFromWebstore(extension)) {
     info->location = developer::LOCATION_FROM_STORE;
   } else if (Manifest::IsUnpackedLocation(extension.location())) {
     info->location = developer::LOCATION_UNPACKED;
   } else if (Manifest::IsExternalLocation(extension.location()) &&
-             ManifestURL::UpdatesFromGallery(&extension)) {
+             extension_management->UpdatesFromWebstore(extension)) {
     info->location = developer::LOCATION_THIRD_PARTY;
   } else {
     info->location = developer::LOCATION_UNKNOWN;
@@ -642,13 +655,13 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   int location_text = -1;
   if (info->location == developer::LOCATION_UNKNOWN)
     location_text = IDS_EXTENSIONS_INSTALL_LOCATION_UNKNOWN;
-  else if (extension.location() == Manifest::EXTERNAL_REGISTRY)
+  else if (extension.location() == mojom::ManifestLocation::kExternalRegistry)
     location_text = IDS_EXTENSIONS_INSTALL_LOCATION_3RD_PARTY;
   else if (extension.is_shared_module())
     location_text = IDS_EXTENSIONS_INSTALL_LOCATION_SHARED_MODULE;
   if (location_text != -1) {
-    info->location_text.reset(
-        new std::string(l10n_util::GetStringUTF8(location_text)));
+    info->location_text =
+        std::make_unique<std::string>(l10n_util::GetStringUTF8(location_text));
   }
 
   // Runtime/Manifest errors.
@@ -684,7 +697,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
 
   // Options page.
   if (OptionsPageInfo::HasOptionsPage(&extension)) {
-    info->options_page.reset(new developer::OptionsPage());
+    info->options_page = std::make_unique<developer::OptionsPage>();
     info->options_page->open_in_tab =
         OptionsPageInfo::ShouldOpenInTab(&extension);
     info->options_page->url =
@@ -693,9 +706,9 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
 
   // Path.
   if (Manifest::IsUnpackedLocation(extension.location())) {
-    info->path.reset(new std::string(extension.path().AsUTF8Unsafe()));
-    info->prettified_path.reset(new std::string(
-      extensions::path_util::PrettifyPath(extension.path()).AsUTF8Unsafe()));
+    info->path = std::make_unique<std::string>(extension.path().AsUTF8Unsafe());
+    info->prettified_path = std::make_unique<std::string>(
+        extensions::path_util::PrettifyPath(extension.path()).AsUTF8Unsafe());
   }
 
   AddPermissionsInfo(browser_context_, extension, &info->permissions);
@@ -710,7 +723,8 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
 
   info->type = GetExtensionType(extension.manifest()->type());
 
-  info->update_url = ManifestURL::GetUpdateURL(&extension).spec();
+  info->update_url =
+      extension_management->GetEffectiveUpdateURL(extension).spec();
 
   info->user_may_modify =
       management_policy->UserMayModifySettings(&extension, nullptr);

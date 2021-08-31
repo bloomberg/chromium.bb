@@ -107,10 +107,12 @@ chrome.fileManagerPrivate.TransferState = {
 };
 
 /** @enum {string} */
-chrome.fileManagerPrivate.CopyProgressStatusType = {
-  BEGIN_COPY_ENTRY: 'begin_copy_entry',
-  END_COPY_ENTRY: 'end_copy_entry',
+chrome.fileManagerPrivate.CopyOrMoveProgressStatusType = {
+  BEGIN: 'begin',
   PROGRESS: 'progress',
+  END_COPY: 'end_copy',
+  END_MOVE: 'end_move',
+  END_REMOVE_SOURCE: 'end_remove_source',
   SUCCESS: 'success',
   ERROR: 'error',
 };
@@ -176,14 +178,26 @@ chrome.fileManagerPrivate.DriveSyncErrorType = {
 };
 
 /** @enum {string} */
+chrome.fileManagerPrivate.DriveConfirmDialogType = {
+  ENABLE_DOCS_OFFLINE: 'enable_docs_offline',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.DriveDialogResult = {
+  NOT_DISPLAYED: 'not_displayed',
+  ACCEPT: 'accept',
+  REJECT: 'reject',
+  DISMISS: 'dismiss',
+};
+
+/** @enum {string} */
 chrome.fileManagerPrivate.TaskResult = {
   OPENED: 'opened',
   MESSAGE_SENT: 'message_sent',
   FAILED: 'failed',
   EMPTY: 'empty',
-  FAILED_PLUGIN_VM_TASK_DIRECTORY_NOT_SHARED:
-      'failed_plugin_vm_task_directory_not_shared',
-  FAILED_PLUGIN_VM_TASK_EXTERNAL_DRIVE: 'failed_plugin_vm_task_external_drive',
+  FAILED_PLUGIN_VM_DIRECTORY_NOT_SHARED:
+      'failed_plugin_vm_directory_not_shared',
 };
 
 /** @enum {string} */
@@ -268,6 +282,15 @@ chrome.fileManagerPrivate.CrostiniEventType = {
   DISABLE: 'disable',
   SHARE: 'share',
   UNSHARE: 'unshare',
+  DROP_FAILED_PLUGIN_VM_DIRECTORY_NOT_SHARED:
+      'drop_failed_plugin_vm_directory_not_shared',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.SharesheetLaunchSource = {
+  CONTEXT_MENU: 'context_menu',
+  SHARESHEET_BUTTON: 'sharesheet_button',
+  UNKNOWN: 'unknown',
 };
 
 /**
@@ -403,14 +426,22 @@ chrome.fileManagerPrivate.DriveSyncErrorEvent;
 
 /**
  * @typedef {{
- *   type: !chrome.fileManagerPrivate.CopyProgressStatusType,
+ *   type: !chrome.fileManagerPrivate.DriveConfirmDialogType,
+ *   fileUrl: string
+ * }}
+ */
+chrome.fileManagerPrivate.DriveConfirmDialogEvent;
+
+/**
+ * @typedef {{
+ *   type: !chrome.fileManagerPrivate.CopyOrMoveProgressStatusType,
  *   sourceUrl: (string|undefined),
  *   destinationUrl: (string|undefined),
  *   size: (number|undefined),
  *   error: (string|undefined)
  * }}
  */
-chrome.fileManagerPrivate.CopyProgressStatus;
+chrome.fileManagerPrivate.CopyOrMoveProgressStatus;
 
 /**
  * @typedef {{
@@ -582,6 +613,14 @@ chrome.fileManagerPrivate.MediaMetadata;
  * }}
  */
 chrome.fileManagerPrivate.HoldingSpaceState;
+
+/**
+ * @typedef {{
+ *   volumeId: string,
+ *   writable: boolean,
+ * }}
+ */
+chrome.fileManagerPrivate.GetVolumeRootOptions;
 
 /**
  * Logout the current user for navigating to the re-authentication screen for
@@ -1033,6 +1072,14 @@ chrome.fileManagerPrivate.getDirectorySize = function(entry, callback) {};
 chrome.fileManagerPrivate.getRecentFiles = function(restriction, fileType, callback) {};
 
 /**
+ * Requests the root directory of a volume. The ID of the volume must be
+ * specified as |volumeId| of the |options| paramter.
+ * @param {!chrome.fileManagerPrivate.GetVolumeRootOptions} options
+ * @param {function(!DirectoryEntry)} callback
+ */
+chrome.fileManagerPrivate.getVolumeRoot = function(options, callback) {};
+
+/**
  * Starts and mounts crostini container.
  * @param {function()} callback Callback called after the crostini container
  *     is started and mounted.
@@ -1173,9 +1220,11 @@ chrome.fileManagerPrivate.sharesheetHasTargets = function(entries, callback) {};
  * Invoke Sharesheet for selected files. If not possible, then returns
  * an error via chrome.runtime.lastError. |entries| Array of selected entries.
  * @param {!Array<!Entry>} entries
+ * @param {chrome.fileManagerPrivate.SharesheetLaunchSource} launchSource
  * @param {function()} callback
  */
-chrome.fileManagerPrivate.invokeSharesheet = function(entries, callback) {};
+chrome.fileManagerPrivate.invokeSharesheet = function(
+    entries, launchSource, callback) {};
 
 /**
  * Adds or removes a list of entries to temporary holding space. Any entries
@@ -1196,6 +1245,18 @@ chrome.fileManagerPrivate.toggleAddedToHoldingSpace = function(entries, added, c
  *     callback |state| Describes the current holding space state.
  */
 chrome.fileManagerPrivate.getHoldingSpaceState = function(callback) {};
+
+/**
+ * Returns true via `callback` if tablet mode is enabled, false otherwise.
+ * @param {function(boolean): void} callback
+ */
+chrome.fileManagerPrivate.isTabletModeEnabled = function(callback) {};
+
+/**
+ * Notifies Drive about the result of the last dialog shown.
+ * @param {chrome.fileManagerPrivate.DriveDialogResult} result
+ */
+chrome.fileManagerPrivate.notifyDriveDialogResult = function(result) {};
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;
@@ -1225,7 +1286,13 @@ chrome.fileManagerPrivate.onDeviceChanged;
 chrome.fileManagerPrivate.onDriveSyncError;
 
 /** @type {!ChromeEvent} */
+chrome.fileManagerPrivate.onDriveConfirmDialog;
+
+/** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onAppsUpdated;
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onCrostiniChanged;
+
+/** @type {!ChromeEvent} */
+chrome.fileManagerPrivate.onTabletModeChanged;

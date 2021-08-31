@@ -61,10 +61,9 @@ class MutatorHostClient {
       const PropertyAnimationState& mask,
       const PropertyAnimationState& state) = 0;
 
-  virtual void AnimationScalesChanged(ElementId element_id,
-                                      ElementListType list_type,
-                                      float maximum_scale,
-                                      float starting_scale) = 0;
+  virtual void MaximumScaleChanged(ElementId element_id,
+                                   ElementListType list_type,
+                                   float maximum_scale) = 0;
 
   virtual void ScrollOffsetAnimationFinished() = 0;
   virtual gfx::ScrollOffset GetScrollOffsetForAnimation(
@@ -75,9 +74,8 @@ class MutatorHostClient {
       ElementListType tree_type) = 0;
 
   virtual void OnCustomPropertyMutated(
-      ElementId element_id,
-      const std::string& custom_property_name,
-      PaintWorkletInput::PropertyValue custom_property_value) = 0;
+      PaintWorkletInput::PropertyKey property_key,
+      PaintWorkletInput::PropertyValue property_value) = 0;
 };
 
 }  // namespace cc

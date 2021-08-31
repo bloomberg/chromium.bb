@@ -38,7 +38,7 @@ ash::AppListSearchResultType ArcAppDataSearchProvider::ResultType() {
   return ash::AppListSearchResultType::kUnknown;
 }
 
-void ArcAppDataSearchProvider::Start(const base::string16& query) {
+void ArcAppDataSearchProvider::Start(const std::u16string& query) {
   arc::mojom::AppInstance* app_instance =
       arc::ArcServiceManager::Get()
           ? ARC_GET_INSTANCE_FOR_METHOD(
@@ -50,6 +50,7 @@ void ArcAppDataSearchProvider::Start(const base::string16& query) {
     ClearResults();
     return;
   }
+  last_query_ = query;
 
   weak_ptr_factory_.InvalidateWeakPtrs();
   app_instance->GetIcingGlobalQueryResults(
@@ -75,7 +76,7 @@ void ArcAppDataSearchProvider::OnResults(
     }
 
     new_results.emplace_back(std::make_unique<ArcAppDataSearchResult>(
-        std::move(result), list_controller_));
+        std::move(result), list_controller_, last_query_));
   }
   SwapResults(&new_results);
 }

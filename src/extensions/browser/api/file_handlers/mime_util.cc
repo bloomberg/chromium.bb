@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/file_handlers/mime_util.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -78,7 +80,7 @@ void OnGetMimeTypeFromFileForNonNativeLocalPathCompleted(
 void OnGetMimeTypeFromMetadataForNonNativeLocalPathCompleted(
     const base::FilePath& local_path,
     base::OnceCallback<void(const std::string&)> callback,
-    const base::Optional<std::string>& mime_type) {
+    const absl::optional<std::string>& mime_type) {
   if (mime_type) {
     std::move(callback).Run(mime_type.value());
     return;
@@ -195,7 +197,7 @@ void MimeTypeCollector::CollectForLocalPaths(
   callback_ = std::move(callback);
 
   DCHECK(!result_.get());
-  result_.reset(new std::vector<std::string>(local_paths.size()));
+  result_ = std::make_unique<std::vector<std::string>>(local_paths.size());
   left_ = local_paths.size();
 
   if (!left_) {

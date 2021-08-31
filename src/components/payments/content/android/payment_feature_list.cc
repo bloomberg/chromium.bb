@@ -19,7 +19,7 @@ namespace {
 // Entries in this array refer to features defined in
 // components/payments/core/features.h, content/public/common/content_features.h
 // or the .h file (for Android only features).
-const base::Feature* kFeaturesExposedToJava[] = {
+const base::Feature* const kFeaturesExposedToJava[] = {
     &::features::kServiceWorkerPaymentApps,
     &::features::kWebPayments,
     &::features::kWebPaymentsMinimalUI,
@@ -27,6 +27,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kAppStoreBilling,
     &features::kAppStoreBillingDebug,
     &features::kEnforceFullDelegation,
+    &features::kGPayAppDynamicUpdate,
     &features::kPaymentRequestSkipToGPay,
     &features::kPaymentRequestSkipToGPayIfNoCard,
     &features::kReturnGooglePayInBasicCard,
@@ -37,13 +38,12 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kWebPaymentsRedactShippingAddress,
     &features::kWebPaymentsSingleAppUiSkip,
     &kAndroidAppPaymentUpdateEvents,
-    &kScrollToExpandPaymentHandler,
 };
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
-  for (size_t i = 0; i < base::size(kFeaturesExposedToJava); ++i) {
-    if (kFeaturesExposedToJava[i]->name == feature_name)
-      return kFeaturesExposedToJava[i];
+  for (const base::Feature* feature : kFeaturesExposedToJava) {
+    if (feature->name == feature_name)
+      return feature;
   }
   NOTREACHED() << "Queried feature cannot be found in PaymentsFeatureList: "
                << feature_name;
@@ -55,9 +55,6 @@ const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
 // Android only features.
 const base::Feature kAndroidAppPaymentUpdateEvents{
     "AndroidAppPaymentUpdateEvents", base::FEATURE_ENABLED_BY_DEFAULT};
-// TODO(crbug.com/1094549): clean up after being stable.
-const base::Feature kScrollToExpandPaymentHandler{
-    "ScrollToExpandPaymentHandler", base::FEATURE_ENABLED_BY_DEFAULT};
 
 static jboolean JNI_PaymentFeatureList_IsEnabled(
     JNIEnv* env,

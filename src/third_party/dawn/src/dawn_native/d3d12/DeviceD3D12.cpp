@@ -14,16 +14,12 @@
 
 #include "dawn_native/d3d12/DeviceD3D12.h"
 
-#include "common/Assert.h"
-#include "dawn_native/BackendConnection.h"
-#include "dawn_native/ErrorData.h"
-#include "dawn_native/Format.h"
+#include "common/GPUInfo.h"
 #include "dawn_native/Instance.h"
 #include "dawn_native/d3d12/AdapterD3D12.h"
 #include "dawn_native/d3d12/BackendD3D12.h"
 #include "dawn_native/d3d12/BindGroupD3D12.h"
 #include "dawn_native/d3d12/BindGroupLayoutD3D12.h"
-#include "dawn_native/d3d12/BufferD3D12.h"
 #include "dawn_native/d3d12/CommandAllocatorManager.h"
 #include "dawn_native/d3d12/CommandBufferD3D12.h"
 #include "dawn_native/d3d12/ComputePipelineD3D12.h"
@@ -42,7 +38,6 @@
 #include "dawn_native/d3d12/StagingBufferD3D12.h"
 #include "dawn_native/d3d12/StagingDescriptorAllocatorD3D12.h"
 #include "dawn_native/d3d12/SwapChainD3D12.h"
-#include "dawn_native/d3d12/TextureD3D12.h"
 #include "dawn_native/d3d12/UtilsD3D12.h"
 
 #include <sstream>
@@ -76,6 +71,15 @@ namespace dawn_native { namespace d3d12 {
         DAWN_TRY(
             CheckHRESULT(mD3d12Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mCommandQueue)),
                          "D3D12 create command queue"));
+
+        // Get GPU timestamp counter frequency (in ticks/second). This fails if the specified
+        // command queue doesn't support timestamps, D3D12_COMMAND_LIST_TYPE_DIRECT always support
+        // timestamps.
+        uint64_t frequency;
+        DAWN_TRY(CheckHRESULT(mCommandQueue->GetTimestampFrequency(&frequency),
+                              "D3D12 get timestamp frequency"));
+        // Calculate the period in nanoseconds by the frequency.
+        mTimestampPeriod = static_cast<float>(1e9) / frequency;
 
         // If PIX is not attached, the QueryInterface fails. Hence, no need to check the return
         // value.
@@ -153,6 +157,10 @@ namespace dawn_native { namespace d3d12 {
         // Device shouldn't be used until after DeviceBase::Initialize so we must wait until after
         // device initialization to call NextSerial
         DAWN_TRY(NextSerial());
+
+        // The environment can only use DXC when it's available. Override the decision if it is not
+        // applicable.
+        DAWN_TRY(ApplyUseDxcToggle());
         return {};
     }
 
@@ -188,12 +196,33 @@ namespace dawn_native { namespace d3d12 {
         return ToBackend(GetAdapter())->GetBackend()->GetFactory();
     }
 
-    ResultOrError<IDxcLibrary*> Device::GetOrCreateDxcLibrary() const {
-        return ToBackend(GetAdapter())->GetBackend()->GetOrCreateDxcLibrary();
+    MaybeError Device::ApplyUseDxcToggle() {
+        if (!ToBackend(GetAdapter())->GetBackend()->GetFunctions()->IsDXCAvailable()) {
+            ForceSetToggle(Toggle::UseDXC, false);
+        } else if (IsExtensionEnabled(Extension::ShaderFloat16)) {
+            // Currently we can only use DXC to compile HLSL shaders using float16.
+            ForceSetToggle(Toggle::UseDXC, true);
+        }
+
+        if (IsToggleEnabled(Toggle::UseDXC)) {
+            DAWN_TRY(ToBackend(GetAdapter())->GetBackend()->EnsureDxcCompiler());
+            DAWN_TRY(ToBackend(GetAdapter())->GetBackend()->EnsureDxcLibrary());
+            DAWN_TRY(ToBackend(GetAdapter())->GetBackend()->EnsureDxcValidator());
+        }
+
+        return {};
     }
 
-    ResultOrError<IDxcCompiler*> Device::GetOrCreateDxcCompiler() const {
-        return ToBackend(GetAdapter())->GetBackend()->GetOrCreateDxcCompiler();
+    ComPtr<IDxcLibrary> Device::GetDxcLibrary() const {
+        return ToBackend(GetAdapter())->GetBackend()->GetDxcLibrary();
+    }
+
+    ComPtr<IDxcCompiler> Device::GetDxcCompiler() const {
+        return ToBackend(GetAdapter())->GetBackend()->GetDxcCompiler();
+    }
+
+    ComPtr<IDxcValidator> Device::GetDxcValidator() const {
+        return ToBackend(GetAdapter())->GetBackend()->GetDxcValidator();
     }
 
     const PlatformFunctions* Device::GetFunctions() const {
@@ -228,8 +257,11 @@ namespace dawn_native { namespace d3d12 {
         mRenderTargetViewAllocator->Tick(completedSerial);
         mDepthStencilViewAllocator->Tick(completedSerial);
         mUsedComObjectRefs.ClearUpTo(completedSerial);
-        DAWN_TRY(ExecutePendingCommandContext());
-        DAWN_TRY(NextSerial());
+
+        if (mPendingCommands.IsOpen()) {
+            DAWN_TRY(ExecutePendingCommandContext());
+            DAWN_TRY(NextSerial());
+        }
 
         DAWN_TRY(CheckDebugLayerAndGenerateErrors());
 
@@ -245,18 +277,24 @@ namespace dawn_native { namespace d3d12 {
     }
 
     MaybeError Device::WaitForSerial(ExecutionSerial serial) {
-        CheckPassedSerials();
+        DAWN_TRY(CheckPassedSerials());
         if (GetCompletedCommandSerial() < serial) {
             DAWN_TRY(CheckHRESULT(mFence->SetEventOnCompletion(uint64_t(serial), mFenceEvent),
                                   "D3D12 set event on completion"));
             WaitForSingleObject(mFenceEvent, INFINITE);
-            CheckPassedSerials();
+            DAWN_TRY(CheckPassedSerials());
         }
         return {};
     }
 
-    ExecutionSerial Device::CheckAndUpdateCompletedSerials() {
-        return ExecutionSerial(mFence->GetCompletedValue());
+    ResultOrError<ExecutionSerial> Device::CheckAndUpdateCompletedSerials() {
+        ExecutionSerial completeSerial = ExecutionSerial(mFence->GetCompletedValue());
+
+        if (completeSerial <= GetCompletedCommandSerial()) {
+            return ExecutionSerial(0);
+        }
+
+        return completeSerial;
     }
 
     void Device::ReferenceUntilUnused(ComPtr<IUnknown> object) {
@@ -267,62 +305,63 @@ namespace dawn_native { namespace d3d12 {
         return mPendingCommands.ExecuteCommandList(this);
     }
 
-    ResultOrError<BindGroupBase*> Device::CreateBindGroupImpl(
+    ResultOrError<Ref<BindGroupBase>> Device::CreateBindGroupImpl(
         const BindGroupDescriptor* descriptor) {
         return BindGroup::Create(this, descriptor);
     }
-    ResultOrError<BindGroupLayoutBase*> Device::CreateBindGroupLayoutImpl(
+    ResultOrError<Ref<BindGroupLayoutBase>> Device::CreateBindGroupLayoutImpl(
         const BindGroupLayoutDescriptor* descriptor) {
-        return new BindGroupLayout(this, descriptor);
+        return BindGroupLayout::Create(this, descriptor);
     }
     ResultOrError<Ref<BufferBase>> Device::CreateBufferImpl(const BufferDescriptor* descriptor) {
-        Ref<Buffer> buffer = AcquireRef(new Buffer(this, descriptor));
-        DAWN_TRY(buffer->Initialize(descriptor->mappedAtCreation));
-        return std::move(buffer);
+        return Buffer::Create(this, descriptor);
     }
-    CommandBufferBase* Device::CreateCommandBuffer(CommandEncoder* encoder,
-                                                   const CommandBufferDescriptor* descriptor) {
-        return new CommandBuffer(encoder, descriptor);
+    ResultOrError<Ref<CommandBufferBase>> Device::CreateCommandBuffer(
+        CommandEncoder* encoder,
+        const CommandBufferDescriptor* descriptor) {
+        return CommandBuffer::Create(encoder, descriptor);
     }
-    ResultOrError<ComputePipelineBase*> Device::CreateComputePipelineImpl(
+    ResultOrError<Ref<ComputePipelineBase>> Device::CreateComputePipelineImpl(
         const ComputePipelineDescriptor* descriptor) {
         return ComputePipeline::Create(this, descriptor);
     }
-    ResultOrError<PipelineLayoutBase*> Device::CreatePipelineLayoutImpl(
+    ResultOrError<Ref<PipelineLayoutBase>> Device::CreatePipelineLayoutImpl(
         const PipelineLayoutDescriptor* descriptor) {
         return PipelineLayout::Create(this, descriptor);
     }
-    ResultOrError<QuerySetBase*> Device::CreateQuerySetImpl(const QuerySetDescriptor* descriptor) {
+    ResultOrError<Ref<QuerySetBase>> Device::CreateQuerySetImpl(
+        const QuerySetDescriptor* descriptor) {
         return QuerySet::Create(this, descriptor);
     }
-    ResultOrError<RenderPipelineBase*> Device::CreateRenderPipelineImpl(
-        const RenderPipelineDescriptor* descriptor) {
+    ResultOrError<Ref<RenderPipelineBase>> Device::CreateRenderPipelineImpl(
+        const RenderPipelineDescriptor2* descriptor) {
         return RenderPipeline::Create(this, descriptor);
     }
-    ResultOrError<SamplerBase*> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
-        return new Sampler(this, descriptor);
+    ResultOrError<Ref<SamplerBase>> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
+        return Sampler::Create(this, descriptor);
     }
-    ResultOrError<ShaderModuleBase*> Device::CreateShaderModuleImpl(
-        const ShaderModuleDescriptor* descriptor) {
-        return ShaderModule::Create(this, descriptor);
+    ResultOrError<Ref<ShaderModuleBase>> Device::CreateShaderModuleImpl(
+        const ShaderModuleDescriptor* descriptor,
+        ShaderModuleParseResult* parseResult) {
+        return ShaderModule::Create(this, descriptor, parseResult);
     }
-    ResultOrError<SwapChainBase*> Device::CreateSwapChainImpl(
+    ResultOrError<Ref<SwapChainBase>> Device::CreateSwapChainImpl(
         const SwapChainDescriptor* descriptor) {
-        return new SwapChain(this, descriptor);
+        return OldSwapChain::Create(this, descriptor);
     }
-    ResultOrError<NewSwapChainBase*> Device::CreateSwapChainImpl(
+    ResultOrError<Ref<NewSwapChainBase>> Device::CreateSwapChainImpl(
         Surface* surface,
         NewSwapChainBase* previousSwapChain,
         const SwapChainDescriptor* descriptor) {
-        return DAWN_VALIDATION_ERROR("New swapchains not implemented.");
+        return SwapChain::Create(this, surface, previousSwapChain, descriptor);
     }
     ResultOrError<Ref<TextureBase>> Device::CreateTextureImpl(const TextureDescriptor* descriptor) {
         return Texture::Create(this, descriptor);
     }
-    ResultOrError<TextureViewBase*> Device::CreateTextureViewImpl(
+    ResultOrError<Ref<TextureViewBase>> Device::CreateTextureViewImpl(
         TextureBase* texture,
         const TextureViewDescriptor* descriptor) {
-        return new TextureView(texture, descriptor);
+        return TextureView::Create(texture, descriptor);
     }
 
     ResultOrError<std::unique_ptr<StagingBufferBase>> Device::CreateStagingBuffer(size_t size) {
@@ -374,7 +413,7 @@ namespace dawn_native { namespace d3d12 {
         CommandRecordingContext* commandContext;
         DAWN_TRY_ASSIGN(commandContext, GetPendingCommandContext());
         Texture* texture = ToBackend(dst->texture.Get());
-        ASSERT(texture->GetDimension() == wgpu::TextureDimension::e2D);
+        ASSERT(texture->GetDimension() != wgpu::TextureDimension::e1D);
 
         SubresourceRange range = GetSubresourcesAffectedByCopy(*dst, copySizePixels);
 
@@ -386,10 +425,9 @@ namespace dawn_native { namespace d3d12 {
 
         texture->TrackUsageAndTransitionNow(commandContext, wgpu::TextureUsage::CopyDst, range);
 
-        // compute the copySplits and record the CopyTextureRegion commands
-        CopyBufferToTextureWithCopySplit(commandContext, *dst, copySizePixels, texture,
-                                         ToBackend(source)->GetResource(), src.offset,
-                                         src.bytesPerRow, src.rowsPerImage, range.aspects);
+        RecordCopyBufferToTexture(commandContext, *dst, ToBackend(source)->GetResource(),
+                                  src.offset, src.bytesPerRow, src.rowsPerImage, copySizePixels,
+                                  texture, range.aspects);
 
         return {};
     }
@@ -406,17 +444,20 @@ namespace dawn_native { namespace d3d12 {
                                                          initialUsage);
     }
 
-    Ref<TextureBase> Device::WrapSharedHandle(const ExternalImageDescriptor* descriptor,
-                                              HANDLE sharedHandle,
-                                              ExternalMutexSerial acquireMutexKey,
-                                              bool isSwapChainTexture) {
-        Ref<TextureBase> dawnTexture;
-        if (ConsumedError(Texture::Create(this, descriptor, sharedHandle, acquireMutexKey,
-                                          isSwapChainTexture),
-                          &dawnTexture))
+    Ref<TextureBase> Device::CreateExternalTexture(const TextureDescriptor* descriptor,
+                                                   ComPtr<ID3D12Resource> d3d12Texture,
+                                                   ExternalMutexSerial acquireMutexKey,
+                                                   ExternalMutexSerial releaseMutexKey,
+                                                   bool isSwapChainTexture,
+                                                   bool isInitialized) {
+        Ref<Texture> dawnTexture;
+        if (ConsumedError(Texture::CreateExternalImage(this, descriptor, std::move(d3d12Texture),
+                                                       acquireMutexKey, releaseMutexKey,
+                                                       isSwapChainTexture, isInitialized),
+                          &dawnTexture)) {
             return nullptr;
-
-        return dawnTexture;
+        }
+        return {dawnTexture};
     }
 
     // We use IDXGIKeyedMutexes to synchronize access between D3D11 and D3D12. D3D11/12 fences
@@ -503,6 +544,23 @@ namespace dawn_native { namespace d3d12 {
 
         // By default use the maximum shader-visible heap size allowed.
         SetToggle(Toggle::UseD3D12SmallShaderVisibleHeapForTesting, false);
+
+        PCIInfo pciInfo = GetAdapter()->GetPCIInfo();
+
+        // Currently this workaround is only needed on Intel Gen9 and Gen9.5 GPUs.
+        // See http://crbug.com/1161355 for more information.
+        if (gpu_info::IsIntel(pciInfo.vendorId) &&
+            (gpu_info::IsSkylake(pciInfo.deviceId) || gpu_info::IsKabylake(pciInfo.deviceId) ||
+             gpu_info::IsCoffeelake(pciInfo.deviceId))) {
+            constexpr gpu_info::D3DDriverVersion kFirstDriverVersionWithFix = {27, 20, 100, 9466};
+            if (gpu_info::CompareD3DDriverVersion(pciInfo.vendorId,
+                                                  ToBackend(GetAdapter())->GetDriverVersion(),
+                                                  kFirstDriverVersionWithFix) < 0) {
+                SetToggle(
+                    Toggle::UseTempBufferInSmallFormatTextureToTextureCopyFromGreaterToLessMipLevel,
+                    true);
+            }
+        }
     }
 
     MaybeError Device::WaitForIdleForDestruction() {
@@ -522,7 +580,8 @@ namespace dawn_native { namespace d3d12 {
         }
 
         ComPtr<ID3D12InfoQueue> infoQueue;
-        ASSERT_SUCCESS(mD3d12Device.As(&infoQueue));
+        DAWN_TRY(CheckHRESULT(mD3d12Device.As(&infoQueue),
+                              "D3D12 QueryInterface ID3D12Device to ID3D12InfoQueue"));
         uint64_t totalErrors = infoQueue->GetNumStoredMessagesAllowedByRetrievalFilter();
 
         // Check if any errors have occurred otherwise we would be creating an empty error. Note
@@ -630,6 +689,10 @@ namespace dawn_native { namespace d3d12 {
     // so we return 1 and let ComputeTextureCopySplits take care of the alignment.
     uint64_t Device::GetOptimalBufferToTextureCopyOffsetAlignment() const {
         return 1;
+    }
+
+    float Device::GetTimestampPeriodInNS() const {
+        return mTimestampPeriod;
     }
 
 }}  // namespace dawn_native::d3d12

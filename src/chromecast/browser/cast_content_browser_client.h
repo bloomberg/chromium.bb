@@ -25,6 +25,8 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-forward.h"
 #include "services/service_manager/public/mojom/service.mojom-forward.h"
 #include "storage/browser/quota/quota_settings.h"
@@ -114,6 +116,8 @@ class CastContentBrowserClient
 
   virtual void InitializeURLLoaderThrottleDelegate();
 
+  virtual void SetPersistentCookieAccessSettings(PrefService* pref_service);
+
   // Returns the task runner that must be used for media IO.
   scoped_refptr<base::SingleThreadTaskRunner> GetMediaTaskRunner();
 
@@ -151,8 +155,18 @@ class CastContentBrowserClient
   // on browser startup.
   virtual bool EnableRemoteDebuggingImmediately();
 
+  // Note: These were originally part of ContentBrowserClient, but have been
+  // lifted into this class as they're now only used by Chromecast. This is a
+  // transitional step to avoid breakage in the internal downstream repository.
+  virtual void RunServiceInstance(
+      const service_manager::Identity& identity,
+      mojo::PendingReceiver<service_manager::mojom::Service>* receiver);
+  virtual absl::optional<service_manager::Manifest> GetServiceManifestOverlay(
+      base::StringPiece service_name);
+  std::vector<service_manager::Manifest> GetExtraServiceManifests();
+  std::vector<std::string> GetStartupServices();
+
   // content::ContentBrowserClient implementation:
-  std::vector<std::string> GetStartupServices() override;
   std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
   void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
@@ -162,7 +176,7 @@ class CastContentBrowserClient
                                       int child_process_id) override;
   std::string GetAcceptLangs(content::BrowserContext* context) override;
   network::mojom::NetworkContext* GetSystemNetworkContext() override;
-  void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
+  void OverrideWebkitPrefs(content::WebContents* web_contents,
                            blink::web_pref::WebPreferences* prefs) override;
   std::string GetApplicationLocale() override;
   scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext()
@@ -208,20 +222,14 @@ class CastContentBrowserClient
       mojo::BinderMapWithContext<content::RenderFrameHost*>* map) override;
   mojo::Remote<::media::mojom::MediaService> RunSecondaryMediaService()
       override;
-  void RunServiceInstance(
-      const service_manager::Identity& identity,
-      mojo::PendingReceiver<service_manager::mojom::Service>* receiver)
-      override;
-  base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
-      base::StringPiece service_name) override;
-  std::vector<service_manager::Manifest> GetExtraServiceManifests() override;
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
       content::PosixFileDescriptorInfo* mappings) override;
   void GetAdditionalWebUISchemes(
       std::vector<std::string>* additional_schemes) override;
-  content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
+  std::unique_ptr<content::DevToolsManagerDelegate>
+  CreateDevToolsManagerDelegate() override;
   std::unique_ptr<content::NavigationUIData> GetNavigationUIData(
       content::NavigationHandle* navigation_handle) override;
   bool ShouldEnableStrictSiteIsolation() override;
@@ -242,8 +250,8 @@ class CastContentBrowserClient
       bool in_memory,
       const base::FilePath& relative_partition_path,
       network::mojom::NetworkContextParams* network_context_params,
-      network::mojom::CertVerifierCreationParams* cert_verifier_creation_params)
-      override;
+      cert_verifier::mojom::CertVerifierCreationParams*
+          cert_verifier_creation_params) override;
   std::string GetUserAgent() override;
   bool DoesSiteRequireDedicatedProcess(content::BrowserContext* browser_context,
                                        const GURL& effective_site_url) override;

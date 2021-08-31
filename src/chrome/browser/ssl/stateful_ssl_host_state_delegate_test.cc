@@ -12,9 +12,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/simple_test_clock.h"
-#include "components/browsing_data/content/browsing_data_helper.h"
-
-#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -183,8 +181,8 @@ IN_PROC_BROWSER_TEST_F(StatefulSSLHostStateDelegateTest, Clear) {
   EXPECT_TRUE(state->HasAllowException(kExampleHost, tab));
 
   // Clear data for kWWWGoogleHost. kExampleHost will not be modified.
-  state->Clear(
-      base::Bind(&CStrStringMatcher, base::Unretained(kWWWGoogleHost)));
+  state->Clear(base::BindRepeating(&CStrStringMatcher,
+                                   base::Unretained(kWWWGoogleHost)));
 
   EXPECT_FALSE(state->HasAllowException(kWWWGoogleHost, tab));
   EXPECT_TRUE(state->HasAllowException(kExampleHost, tab));
@@ -192,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(StatefulSSLHostStateDelegateTest, Clear) {
   // Do a full clear, then make sure that both kWWWGoogleHost and kExampleHost,
   // which had a decision made, and kGoogleHost, which was untouched, are now
   // in a denied state.
-  state->Clear(base::Callback<bool(const std::string&)>());
+  state->Clear(base::RepeatingCallback<bool(const std::string&)>());
   EXPECT_FALSE(state->HasAllowException(kWWWGoogleHost, tab));
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
             state->QueryPolicy(kWWWGoogleHost, *cert,
@@ -453,20 +451,24 @@ IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest, PRE_AfterRestart) {
   // in the incognito profile.
   state->AllowCert(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID, tab);
 
-  Profile* incognito = profile->GetPrimaryOTRProfile();
+  auto* incognito_browser = CreateIncognitoBrowser(profile);
+  auto* incognito_tab =
+      incognito_browser->tab_strip_model()->GetActiveWebContents();
+
+  Profile* incognito = profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   content::SSLHostStateDelegate* incognito_state =
       incognito->GetSSLHostStateDelegate();
-
-  EXPECT_EQ(content::SSLHostStateDelegate::ALLOWED,
-            incognito_state->QueryPolicy(kWWWGoogleHost, *cert,
-                                         net::ERR_CERT_DATE_INVALID, tab));
+  EXPECT_EQ(
+      content::SSLHostStateDelegate::ALLOWED,
+      incognito_state->QueryPolicy(kWWWGoogleHost, *cert,
+                                   net::ERR_CERT_DATE_INVALID, incognito_tab));
 
   // Add a cert exception to the incognito profile. It will be checked after
   // restart that this exception does not exist. Note the different cert URL and
   // error than above thus mapping to a second exception. Also validate that it
   // was not added as an exception to the regular profile.
   incognito_state->AllowCert(kGoogleHost, *cert,
-                             net::ERR_CERT_COMMON_NAME_INVALID, tab);
+                             net::ERR_CERT_COMMON_NAME_INVALID, incognito_tab);
 
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
             state->QueryPolicy(kGoogleHost, *cert,
@@ -490,15 +492,20 @@ IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest, AfterRestart) {
             state->QueryPolicy(kWWWGoogleHost, *cert,
                                net::ERR_CERT_DATE_INVALID, tab));
 
-  Profile* incognito = profile->GetPrimaryOTRProfile();
+  auto* incognito_browser = CreateIncognitoBrowser(profile);
+  auto* incognito_tab =
+      incognito_browser->tab_strip_model()->GetActiveWebContents();
+
+  Profile* incognito = profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   content::SSLHostStateDelegate* incognito_state =
       incognito->GetSSLHostStateDelegate();
 
   // Verify that the exception added before restart to the incognito profile was
   // cleared when the incognito session ended.
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
-            incognito_state->QueryPolicy(
-                kGoogleHost, *cert, net::ERR_CERT_COMMON_NAME_INVALID, tab));
+            incognito_state->QueryPolicy(kGoogleHost, *cert,
+                                         net::ERR_CERT_COMMON_NAME_INVALID,
+                                         incognito_tab));
 }
 
 // Tests the default certificate memory, which is one week.
@@ -611,15 +618,14 @@ class RemoveBrowsingHistorySSLHostStateDelegateTest
     : public StatefulSSLHostStateDelegateTest {
  public:
   void RemoveAndWait(Profile* profile) {
-    content::BrowsingDataRemover* remover =
-        content::BrowserContext::GetBrowsingDataRemover(profile);
+    content::BrowsingDataRemover* remover = profile->GetBrowsingDataRemover();
     content::BrowsingDataRemoverCompletionObserver completion_observer(remover);
     remover->RemoveAndReply(
         browsing_data::CalculateBeginDeleteTime(
             browsing_data::TimePeriod::LAST_HOUR),
         browsing_data::CalculateEndDeleteTime(
             browsing_data::TimePeriod::LAST_HOUR),
-        ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
+        chrome_browsing_data_remover::DATA_TYPE_HISTORY,
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
         &completion_observer);
     completion_observer.BlockUntilCompletion();

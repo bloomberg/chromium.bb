@@ -143,7 +143,12 @@ const char kTouchscreenUsableWhileScreenOff[] =
 // Hides all Message Center notification popups (toasts). Used for testing.
 const char kSuppressMessageCenterPopups[] = "suppress-message-center-popups";
 
-base::Optional<base::TimeDelta> ContextualNudgesInterval() {
+// If set, the device will be forced to stay in clamshell UI mode but screen
+// auto rotation will be supported. E.g, chromebase device Dooly.
+const char kSupportsClamshellAutoRotation[] =
+    "supports-clamshell-auto-rotation";
+
+absl::optional<base::TimeDelta> ContextualNudgesInterval() {
   int numeric_cooldown_time;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           kAshContextualNudgesInterval) &&
@@ -156,9 +161,9 @@ base::Optional<base::TimeDelta> ContextualNudgesInterval() {
     cooldown_time =
         base::ClampToRange(cooldown_time, kAshContextualNudgesMinInterval,
                            kAshContextualNudgesMaxInterval);
-    return base::Optional<base::TimeDelta>(cooldown_time);
+    return absl::optional<base::TimeDelta>(cooldown_time);
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool ContextualNudgesResetShownCount() {

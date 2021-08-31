@@ -9,19 +9,18 @@
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/svg/ng_svg_character_data.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
-class NGBlockBreakToken;
 class NGConstraintSpace;
 class NGInlineChildLayoutContext;
-class NGInlineNodeLegacy;
 class NGLayoutResult;
 class NGOffsetMapping;
 struct NGInlineItemsData;
+struct SVGTextPathRange;
 
 // Represents an anonymous block box to be laid out, that contains consecutive
 // inline nodes and their descendants.
@@ -43,18 +42,15 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // Computes the value of min-content and max-content for this anonymous block
   // box. min-content is the inline size when lines wrap at every break
   // opportunity, and max-content is when lines do not wrap at all.
-  MinMaxSizesResult ComputeMinMaxSizes(
-      WritingMode container_writing_mode,
-      const MinMaxSizesInput&,
-      const NGConstraintSpace* = nullptr) const;
+  MinMaxSizesResult ComputeMinMaxSizes(WritingMode container_writing_mode,
+                                       const NGConstraintSpace&,
+                                       const MinMaxSizesFloatInput&) const;
 
   // Instruct to re-compute |PrepareLayout| on the next layout.
   void InvalidatePrepareLayoutForTest() {
     LayoutBlockFlow* block_flow = GetLayoutBlockFlow();
     block_flow->ResetNGInlineNodeData();
     DCHECK(!IsPrepareLayoutFinished());
-    // There shouldn't be paint fragment if NGInlineNodeData does not exist.
-    block_flow->SetPaintFragment(nullptr, nullptr);
   }
 
   const NGInlineItemsData& ItemsData(bool is_first_line) const {
@@ -74,12 +70,6 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // same as |items_data.text_content|, except when sticky images quirk is
   // needed.
   static String TextContentForStickyImagesQuirk(const NGInlineItemsData&);
-
-  // Clear associated fragments for LayoutObjects.
-  // They are associated when NGPaintFragment is constructed, but when clearing,
-  // NGInlineItem provides easier and faster logic.
-  static void ClearAssociatedFragments(const NGPhysicalFragment& fragment,
-                                       const NGBlockBreakToken* break_token);
 
   // Returns true if we don't need to collect inline items after replacing
   // |layout_text| after deleting replacing subtext from |offset| to |length|
@@ -125,6 +115,12 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
       bool first_line,
       const LayoutBlockFlow* block_flow);
 
+  // This function is available after PrepareLayout(), only for SVG <text>.
+  const Vector<std::pair<unsigned, NGSVGCharacterData>>& SVGCharacterDataList()
+      const;
+  // This function is available after PrepareLayout(), only for SVG <text>.
+  const Vector<SVGTextPathRange>& SVGTextPathRangeList() const;
+
   String ToString() const;
 
   struct FloatingObject {
@@ -136,6 +132,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
     const ComputedStyle& style;
     LayoutUnit float_inline_max_size_with_margin;
   };
+
+  static bool NeedsShapingForTesting(const NGInlineItem& item);
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(NGInlineNodeTest, SegmentBidiChangeSetsNeedsLayout);
@@ -178,7 +176,6 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
                                    NGInlineNodeData* data);
 
   friend class NGLineBreakerTest;
-  friend class NGInlineNodeLegacy;
 };
 
 inline bool NGInlineNode::IsStickyImagesQuirkForContentSize() const {

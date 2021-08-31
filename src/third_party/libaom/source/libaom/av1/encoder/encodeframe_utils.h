@@ -12,6 +12,9 @@
 #ifndef AOM_AV1_ENCODER_ENCODEFRAME_UTILS_H_
 #define AOM_AV1_ENCODER_ENCODEFRAME_UTILS_H_
 
+#include "aom_ports/aom_timer.h"
+#include "aom_ports/system_state.h"
+
 #include "av1/common/reconinter.h"
 
 #include "av1/encoder/encoder.h"
@@ -96,6 +99,27 @@ typedef struct {
   BLOCK_SIZE split_bsize2;
 } PartitionBlkParams;
 
+#if CONFIG_COLLECT_PARTITION_STATS
+typedef struct PartitionTimingStats {
+  // Tracks the number of partition decision used in the current call to \ref
+  // av1_rd_pick_partition
+  int partition_decisions[EXT_PARTITION_TYPES];
+  // Tracks the number of partition_block searched in the current call to \ref
+  // av1_rd_pick_partition
+  int partition_attempts[EXT_PARTITION_TYPES];
+  // Tracks the time spent on each partition search in the current call to \ref
+  // av1_rd_pick_partition
+  int64_t partition_times[EXT_PARTITION_TYPES];
+  // Tracks the rdcost spent on each partition search in the current call to
+  // \ref av1_rd_pick_partition
+  int64_t partition_rdcost[EXT_PARTITION_TYPES];
+  // Timer used to time the partitions.
+  struct aom_usec_timer timer;
+  // Whether the timer is on
+  int timer_is_on;
+} PartitionTimingStats;
+#endif  // CONFIG_COLLECT_PARTITION_STATS
+
 // Structure holding state variables for partition search.
 typedef struct {
   // Intra partitioning related info.
@@ -149,25 +173,17 @@ typedef struct {
 
   // This flag will be set if best partition is found from the search.
   bool found_best_partition;
+
+#if CONFIG_COLLECT_PARTITION_STATS
+  PartitionTimingStats part_timing_stats;
+#endif  // CONFIG_COLLECT_PARTITION_STATS
 } PartitionSearchState;
 
-static AOM_INLINE void update_global_motion_used(PREDICTION_MODE mode,
-                                                 BLOCK_SIZE bsize,
-                                                 const MB_MODE_INFO *mbmi,
-                                                 RD_COUNTS *rdc) {
-  if (mode == GLOBALMV || mode == GLOBAL_GLOBALMV) {
-    const int num_4x4s = mi_size_wide[bsize] * mi_size_high[bsize];
-    int ref;
-    for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
-      rdc->global_motion_used[mbmi->ref_frame[ref]] += num_4x4s;
-    }
-  }
-}
-
 static AOM_INLINE void update_filter_type_cdf(const MACROBLOCKD *xd,
-                                              const MB_MODE_INFO *mbmi) {
-  int dir;
-  for (dir = 0; dir < 2; ++dir) {
+                                              const MB_MODE_INFO *mbmi,
+                                              int dual_filter) {
+  for (int dir = 0; dir < 2; ++dir) {
+    if (dir && !dual_filter) break;
     const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
     InterpFilter filter = av1_extract_interp_filter(mbmi->interp_filters, dir);
     update_cdf(xd->tile_ctx->switchable_interp_cdf[ctx], filter,
@@ -229,9 +245,9 @@ static AOM_INLINE void set_max_min_partition_size(SuperBlockEnc *sb_enc,
       AOMMAX(sf->part_sf.default_min_partition_size,
              dim_to_size(cpi->oxcf.part_cfg.min_partition_size));
   sb_enc->max_partition_size =
-      AOMMIN(sb_enc->max_partition_size, cm->seq_params.sb_size);
+      AOMMIN(sb_enc->max_partition_size, cm->seq_params->sb_size);
   sb_enc->min_partition_size =
-      AOMMIN(sb_enc->min_partition_size, cm->seq_params.sb_size);
+      AOMMIN(sb_enc->min_partition_size, cm->seq_params->sb_size);
 
   if (use_auto_max_partition(cpi, sb_size, mi_row, mi_col)) {
     float features[FEATURE_SIZE_MAX_MIN_PART_PRED] = { 0.0f };
@@ -258,7 +274,7 @@ int av1_get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
                                    int mi_row, int mi_col);
 #endif  // !CONFIG_REALTIME_ONLY
 
-void av1_set_ssim_rdmult(const AV1_COMP *const cpi, MvCosts *const mv_costs,
+void av1_set_ssim_rdmult(const AV1_COMP *const cpi, int *errorperbit,
                          const BLOCK_SIZE bsize, const int mi_row,
                          const int mi_col, int *const rdmult);
 
@@ -320,6 +336,57 @@ void av1_set_cost_upd_freq(AV1_COMP *cpi, ThreadData *td,
                            const TileInfo *const tile_info, const int mi_row,
                            const int mi_col);
 
+static AOM_INLINE void av1_dealloc_mb_data(struct AV1Common *cm,
+                                           struct macroblock *mb) {
+  if (mb->txfm_search_info.txb_rd_records) {
+    aom_free(mb->txfm_search_info.txb_rd_records);
+    mb->txfm_search_info.txb_rd_records = NULL;
+  }
+  const int num_planes = av1_num_planes(cm);
+  for (int plane = 0; plane < num_planes; plane++) {
+    if (mb->plane[plane].src_diff) {
+      aom_free(mb->plane[plane].src_diff);
+      mb->plane[plane].src_diff = NULL;
+    }
+  }
+  if (mb->e_mbd.seg_mask) {
+    aom_free(mb->e_mbd.seg_mask);
+    mb->e_mbd.seg_mask = NULL;
+  }
+  if (mb->winner_mode_stats) {
+    aom_free(mb->winner_mode_stats);
+    mb->winner_mode_stats = NULL;
+  }
+}
+
+static AOM_INLINE void av1_alloc_mb_data(struct AV1Common *cm,
+                                         struct macroblock *mb,
+                                         int use_nonrd_pick_mode) {
+  if (!use_nonrd_pick_mode) {
+    mb->txfm_search_info.txb_rd_records =
+        (TxbRdRecords *)aom_malloc(sizeof(TxbRdRecords));
+  }
+  const int num_planes = av1_num_planes(cm);
+  for (int plane = 0; plane < num_planes; plane++) {
+    const int subsampling_xy =
+        plane ? cm->seq_params->subsampling_x + cm->seq_params->subsampling_y
+              : 0;
+    const int sb_size = MAX_SB_SQUARE >> subsampling_xy;
+    CHECK_MEM_ERROR(cm, mb->plane[plane].src_diff,
+                    (int16_t *)aom_memalign(
+                        32, sizeof(*mb->plane[plane].src_diff) * sb_size));
+  }
+  CHECK_MEM_ERROR(cm, mb->e_mbd.seg_mask,
+                  (uint8_t *)aom_memalign(
+                      16, 2 * MAX_SB_SQUARE * sizeof(mb->e_mbd.seg_mask[0])));
+  const int winner_mode_count = frame_is_intra_only(cm)
+                                    ? MAX_WINNER_MODE_COUNT_INTRA
+                                    : MAX_WINNER_MODE_COUNT_INTER;
+  CHECK_MEM_ERROR(cm, mb->winner_mode_stats,
+                  (WinnerModeStats *)aom_malloc(
+                      winner_mode_count * sizeof(mb->winner_mode_stats[0])));
+}
+
 // This function will compute the number of reference frames to be disabled
 // based on selective_ref_frame speed feature.
 static AOM_INLINE unsigned int get_num_refs_to_disable(
@@ -329,8 +396,11 @@ static AOM_INLINE unsigned int get_num_refs_to_disable(
   unsigned int num_refs_to_disable = 0;
   if (cpi->sf.inter_sf.selective_ref_frame >= 3) {
     num_refs_to_disable++;
-    if (cpi->sf.inter_sf.selective_ref_frame >= 5 &&
-        *ref_frame_flags & av1_ref_frame_flag_list[LAST2_FRAME]) {
+    if (cpi->sf.inter_sf.selective_ref_frame >= 6) {
+      // Disable LAST2_FRAME  and ALTREF2_FRAME
+      num_refs_to_disable += 2;
+    } else if (cpi->sf.inter_sf.selective_ref_frame == 5 &&
+               *ref_frame_flags & av1_ref_frame_flag_list[LAST2_FRAME]) {
       const int last2_frame_dist = av1_encoder_get_relative_dist(
           ref_display_order_hint[LAST2_FRAME - LAST_FRAME],
           cur_frame_display_index);
@@ -341,7 +411,7 @@ static AOM_INLINE unsigned int get_num_refs_to_disable(
 #if !CONFIG_REALTIME_ONLY
       else if (is_stat_consumption_stage_twopass(cpi)) {
         const FIRSTPASS_STATS *const this_frame_stats =
-            read_one_frame_stats(&cpi->twopass, cur_frame_display_index);
+            read_one_frame_stats(&cpi->ppi->twopass, cur_frame_display_index);
         aom_clear_system_state();
         const double coded_error_per_mb =
             this_frame_stats->coded_error / cpi->frame_info.num_mbs;

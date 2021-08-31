@@ -5,14 +5,15 @@
 #ifndef CHROME_BROWSER_CHROMEOS_NET_NETWORK_DIAGNOSTICS_FAKE_HOST_RESOLVER_H_
 #define CHROME_BROWSER_CHROMEOS_NET_NETWORK_DIAGNOSTICS_FAKE_HOST_RESOLVER_H_
 
-#include <deque>
+#include <memory>
+#include <utility>
 
-#include "base/optional.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/address_list.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace network_diagnostics {
@@ -25,12 +26,12 @@ class FakeHostResolver : public network::mojom::HostResolver {
    public:
     DnsResult(int32_t result,
               net::ResolveErrorInfo resolve_error_info,
-              base::Optional<net::AddressList> resolved_addresses);
+              absl::optional<net::AddressList> resolved_addresses);
     ~DnsResult();
 
     int result_;
     net::ResolveErrorInfo resolve_error_info_;
-    base::Optional<net::AddressList> resolved_addresses_;
+    absl::optional<net::AddressList> resolved_addresses_;
   };
 
   FakeHostResolver(
@@ -49,10 +50,8 @@ class FakeHostResolver : public network::mojom::HostResolver {
       mojo::PendingRemote<network::mojom::MdnsListenClient> response_client,
       MdnsListenCallback callback) override;
 
-  // Sets the fake dns results.
-  void set_fake_dns_results(std::deque<DnsResult*> fake_dns_results) {
-    fake_dns_results_ = std::move(fake_dns_results);
-  }
+  // Sets the fake DNS result for single host resolutions.
+  void SetFakeDnsResult(std::unique_ptr<DnsResult> fake_dns_result);
 
   // If set to true, the binding pipe will be disconnected when attempting to
   // connect.
@@ -61,10 +60,12 @@ class FakeHostResolver : public network::mojom::HostResolver {
   }
 
  private:
+  // Handles calls to the HostResolver.
   mojo::Receiver<network::mojom::HostResolver> receiver_;
-  // Use the list of fake dns results to fake different responses for multiple
-  // calls to the host_resolver's ResolveHost().
-  std::deque<DnsResult*> fake_dns_results_;
+  // Responds to calls made to |this|.
+  mojo::Remote<network::mojom::ResolveHostClient> response_client_;
+  // Use the |fake_dns_result| to fake a single host resolution.
+  std::unique_ptr<DnsResult> fake_dns_result_;
   // Used to mimic the scenario where network::mojom::HostResolver receiver
   // is disconnected.
   bool disconnect_ = false;

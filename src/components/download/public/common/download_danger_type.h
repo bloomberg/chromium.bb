@@ -44,8 +44,8 @@ enum DownloadDangerType {
   // Applications and extensions that modify browser and/or computer settings
   DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED = 8,
 
-  // Download URL whitelisted by enterprise policy.
-  DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY = 9,
+  // Download URL allowed by enterprise policy.
+  DOWNLOAD_DANGER_TYPE_ALLOWLISTED_BY_POLICY = 9,
 
   // Download is pending a more detailed verdict.
   DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING = 10,
@@ -80,6 +80,10 @@ enum DownloadDangerType {
   // should be blocked according to policy. See the BlockUnsupportedFiletypes
   // policy for details.
   DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE = 18,
+
+  // SafeBrowsing download service has classified this file as being associated
+  // with account compromise through stealing cookies.
+  DOWNLOAD_DANGER_TYPE_DANGEROUS_ACCOUNT_COMPROMISE = 19,
 
   // Memory space for histograms is determined by the max.
   // ALWAYS ADD NEW VALUES BEFORE THIS ONE.

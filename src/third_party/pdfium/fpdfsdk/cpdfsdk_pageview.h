@@ -12,6 +12,7 @@
 
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/cpdfsdk_annot.h"
 #include "fpdfsdk/cpdfsdk_annothandlermgr.h"
@@ -108,7 +109,7 @@ class CPDFSDK_PageView final : public CPDF_Page::View {
                   uint32_t nFlag);
 
   CFX_Matrix m_curMatrix;
-  IPDF_Page* const m_page;
+  UnownedPtr<IPDF_Page> const m_page;
   std::unique_ptr<CPDF_AnnotList> m_pAnnotList;
   std::vector<CPDFSDK_Annot*> m_SDKAnnotArray;
   UnownedPtr<CPDFSDK_FormFillEnvironment> const m_pFormFillEnv;

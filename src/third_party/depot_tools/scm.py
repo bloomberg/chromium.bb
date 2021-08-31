@@ -75,8 +75,8 @@ def determine_scm(root):
     try:
       subprocess2.check_call(
           ['git', 'rev-parse', '--show-cdup'],
-          stdout=subprocess2.VOID,
-          stderr=subprocess2.VOID,
+          stdout=subprocess2.DEVNULL,
+          stderr=subprocess2.DEVNULL,
           cwd=root)
       return 'git'
     except (OSError, subprocess2.CalledProcessError):
@@ -111,7 +111,7 @@ class GIT(object):
     return env
 
   @staticmethod
-  def Capture(args, cwd, strip_out=True, **kwargs):
+  def Capture(args, cwd=None, strip_out=True, **kwargs):
     env = GIT.ApplyEnvVars(kwargs)
     output = subprocess2.check_output(
         ['git'] + args, cwd=cwd, stderr=subprocess2.PIPE, env=env, **kwargs)
@@ -187,15 +187,40 @@ class GIT(object):
 
   @staticmethod
   def GetBranchRef(cwd):
-    """Returns the full branch reference, e.g. 'refs/heads/master'."""
+    """Returns the full branch reference, e.g. 'refs/heads/main'."""
     try:
       return GIT.Capture(['symbolic-ref', 'HEAD'], cwd=cwd)
     except subprocess2.CalledProcessError:
       return None
 
   @staticmethod
+  def GetRemoteHeadRef(cwd, url, remote):
+    """Returns the full default remote branch reference, e.g.
+    'refs/remotes/origin/main'."""
+    if os.path.exists(cwd):
+      try:
+        # Try using local git copy first
+        ref = 'refs/remotes/%s/HEAD' % remote
+        return GIT.Capture(['symbolic-ref', ref], cwd=cwd)
+      except subprocess2.CalledProcessError:
+        pass
+
+    try:
+      # Fetch information from git server
+      resp = GIT.Capture(['ls-remote', '--symref', url, 'HEAD'])
+      regex = r'^ref: (.*)\tHEAD$'
+      for line in resp.split('\n'):
+        m = re.match(regex, line)
+        if m:
+          return ''.join(GIT.RefToRemoteRef(m.group(1), remote))
+    except subprocess2.CalledProcessError:
+      pass
+    # Return default branch
+    return 'refs/remotes/%s/master' % remote
+
+  @staticmethod
   def GetBranch(cwd):
-    """Returns the short branch name, e.g. 'master'."""
+    """Returns the short branch name, e.g. 'main'."""
     branchref = GIT.GetBranchRef(cwd)
     if branchref:
       return GIT.ShortBranchName(branchref)
@@ -208,7 +233,7 @@ class GIT(object):
   @staticmethod
   def FetchUpstreamTuple(cwd, branch=None):
     """Returns a tuple containing remote and remote ref,
-       e.g. 'origin', 'refs/heads/master'
+       e.g. 'origin', 'refs/heads/main'
     """
     try:
       branch = branch or GIT.GetBranch(cwd)

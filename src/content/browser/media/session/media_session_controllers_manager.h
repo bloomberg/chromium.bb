@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"  // For MediaPlayerId.
 
@@ -26,13 +25,13 @@ namespace content {
 
 class MediaSessionController;
 class RenderFrameHost;
-class WebContents;
+class WebContentsImpl;
 
 // MediaSessionControllersManager is a delegate of MediaWebContentsObserver that
 // handles MediaSessionController instances.
 class CONTENT_EXPORT MediaSessionControllersManager {
  public:
-  explicit MediaSessionControllersManager(WebContents* web_contents);
+  explicit MediaSessionControllersManager(WebContentsImpl* web_contents);
   ~MediaSessionControllersManager();
 
   // Clear all the MediaSessionController associated with the given
@@ -89,7 +88,7 @@ class CONTENT_EXPORT MediaSessionControllersManager {
   // one and placing it in |controllers_map_| if necessary.
   MediaSessionController* FindOrCreateController(const MediaPlayerId& id);
 
-  WebContents* const web_contents_;
+  WebContentsImpl* const web_contents_;
 
   ControllersMap controllers_map_;
 

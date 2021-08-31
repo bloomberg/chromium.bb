@@ -23,7 +23,7 @@
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
@@ -70,8 +70,7 @@ class InfobarOverlayBrowserAgentTest
         browser_(browser_state_.get(), &web_state_list_) {
     // Add an activated WebState into whose queues infobar OverlayRequests will
     // be added.
-    std::unique_ptr<web::WebState> web_state =
-        std::make_unique<web::TestWebState>();
+    auto web_state = std::make_unique<web::FakeWebState>();
     web_state_ = web_state.get();
     web_state_list_.InsertWebState(/*index=*/0, std::move(web_state),
                                    WebStateList::INSERT_ACTIVATE,
@@ -84,9 +83,6 @@ class InfobarOverlayBrowserAgentTest
         InfobarOverlayType::kBanner,
         FakeInfobarOverlayRequestSupport(InfobarOverlayType::kBanner));
     request_supports_.emplace(
-        InfobarOverlayType::kDetailSheet,
-        FakeInfobarOverlayRequestSupport(InfobarOverlayType::kDetailSheet));
-    request_supports_.emplace(
         InfobarOverlayType::kModal,
         FakeInfobarOverlayRequestSupport(InfobarOverlayType::kModal));
     // Create the interaction handler and set up the mock handlers to return
@@ -95,10 +91,6 @@ class InfobarOverlayBrowserAgentTest
         interaction_handler_builder_.Build();
     EXPECT_CALL(*mock_handler(InfobarOverlayType::kBanner), CreateInstaller())
         .WillOnce(Return(ByMove(CreateInstaller(InfobarOverlayType::kBanner))));
-    EXPECT_CALL(*mock_handler(InfobarOverlayType::kDetailSheet),
-                CreateInstaller())
-        .WillOnce(
-            Return(ByMove(CreateInstaller(InfobarOverlayType::kDetailSheet))));
     EXPECT_CALL(*mock_handler(InfobarOverlayType::kModal), CreateInstaller())
         .WillOnce(Return(ByMove(CreateInstaller(InfobarOverlayType::kModal))));
     // Set up the browser agent and mock interaction handler.
@@ -201,5 +193,4 @@ TEST_P(InfobarOverlayBrowserAgentTest, OverlayPresentation) {
 INSTANTIATE_TEST_SUITE_P(/* No InstantiationName */,
                          InfobarOverlayBrowserAgentTest,
                          testing::Values(InfobarOverlayType::kBanner,
-                                         InfobarOverlayType::kDetailSheet,
                                          InfobarOverlayType::kModal));

@@ -19,6 +19,9 @@ FakeCrasAudioClient* g_instance = nullptr;
 const uint32_t kInputMaxSupportedChannels = 1;
 const uint32_t kOutputMaxSupportedChannels = 2;
 
+const uint32_t kInputAudioEffect = 1;
+const uint32_t kOutputAudioEffect = 0;
+
 FakeCrasAudioClient::FakeCrasAudioClient() {
   CHECK(!g_instance);
   g_instance = this;
@@ -28,9 +31,10 @@ FakeCrasAudioClient::FakeCrasAudioClient() {
   // Fake audio output nodes.
   AudioNode output_1;
   output_1.is_input = false;
-  output_1.id = 10001;
+  output_1.id = 0x100000001;
   output_1.stable_device_id_v1 = 10001;
   output_1.max_supported_channels = kOutputMaxSupportedChannels;
+  output_1.audio_effect = kOutputAudioEffect;
   output_1.device_name = "Fake Speaker";
   output_1.type = "INTERNAL_SPEAKER";
   output_1.name = "Speaker";
@@ -38,9 +42,10 @@ FakeCrasAudioClient::FakeCrasAudioClient() {
 
   AudioNode output_2;
   output_2.is_input = false;
-  output_2.id = 10002;
+  output_2.id = 0x200000001;
   output_2.stable_device_id_v1 = 10002;
   output_2.max_supported_channels = kOutputMaxSupportedChannels;
+  output_2.audio_effect = kOutputAudioEffect;
   output_2.device_name = "Fake Headphone";
   output_2.type = "HEADPHONE";
   output_2.name = "Headphone";
@@ -48,9 +53,10 @@ FakeCrasAudioClient::FakeCrasAudioClient() {
 
   AudioNode output_3;
   output_3.is_input = false;
-  output_3.id = 10003;
+  output_3.id = 0x300000001;
   output_3.stable_device_id_v1 = 10003;
   output_3.max_supported_channels = kOutputMaxSupportedChannels;
+  output_3.audio_effect = kOutputAudioEffect;
   output_3.device_name = "Fake Bluetooth Headphone";
   output_3.type = "BLUETOOTH";
   output_3.name = "Headphone";
@@ -58,9 +64,10 @@ FakeCrasAudioClient::FakeCrasAudioClient() {
 
   AudioNode output_4;
   output_4.is_input = false;
-  output_4.id = 10004;
+  output_4.id = 0x400000001;
   output_4.stable_device_id_v1 = 10004;
   output_4.max_supported_channels = kOutputMaxSupportedChannels;
+  output_4.audio_effect = kOutputAudioEffect;
   output_4.device_name = "Fake HDMI Speaker";
   output_4.type = "HDMI";
   output_4.name = "HDMI Speaker";
@@ -69,9 +76,10 @@ FakeCrasAudioClient::FakeCrasAudioClient() {
   // Fake audio input nodes
   AudioNode input_1;
   input_1.is_input = true;
-  input_1.id = 20001;
+  input_1.id = 0x100000002;
   input_1.stable_device_id_v1 = 20001;
   input_1.max_supported_channels = kInputMaxSupportedChannels;
+  input_1.audio_effect = kInputAudioEffect;
   input_1.device_name = "Fake Internal Mic";
   input_1.type = "INTERNAL_MIC";
   input_1.name = "Internal Mic";
@@ -79,9 +87,10 @@ FakeCrasAudioClient::FakeCrasAudioClient() {
 
   AudioNode input_2;
   input_2.is_input = true;
-  input_2.id = 20002;
+  input_2.id = 0x200000002;
   input_2.stable_device_id_v1 = 20002;
   input_2.max_supported_channels = kInputMaxSupportedChannels;
+  input_2.audio_effect = kInputAudioEffect;
   input_2.device_name = "Fake USB Mic";
   input_2.type = "USB";
   input_2.name = "Mic";
@@ -89,9 +98,10 @@ FakeCrasAudioClient::FakeCrasAudioClient() {
 
   AudioNode input_3;
   input_3.is_input = true;
-  input_3.id = 20003;
+  input_3.id = 0x300000002;
   input_3.stable_device_id_v1 = 20003;
   input_3.max_supported_channels = kInputMaxSupportedChannels;
+  input_3.audio_effect = kInputAudioEffect;
   input_3.device_name = "Fake Mic Jack";
   input_3.type = "MIC";
   input_3.name = "Some type of Mic";
@@ -140,6 +150,16 @@ void FakeCrasAudioClient::GetSystemAecGroupId(
   std::move(callback).Run(1);
 }
 
+void FakeCrasAudioClient::GetSystemNsSupported(
+    DBusMethodCallback<bool> callback) {
+  std::move(callback).Run(false);
+}
+
+void FakeCrasAudioClient::GetSystemAgcSupported(
+    DBusMethodCallback<bool> callback) {
+  std::move(callback).Run(false);
+}
+
 void FakeCrasAudioClient::GetNodes(DBusMethodCallback<AudioNodeList> callback) {
   std::move(callback).Run(node_list_);
 }
@@ -149,9 +169,14 @@ void FakeCrasAudioClient::GetNumberOfActiveOutputStreams(
   std::move(callback).Run(0);
 }
 
+void FakeCrasAudioClient::GetNumberOfInputStreamsWithPermission(
+    DBusMethodCallback<ClientTypeToInputStreamCount> callback) {
+  std::move(callback).Run(active_input_streams_);
+}
+
 void FakeCrasAudioClient::GetDeprioritizeBtWbsMic(
     DBusMethodCallback<bool> callback) {
-  std::move(callback).Run(base::nullopt);
+  std::move(callback).Run(false);
 }
 
 void FakeCrasAudioClient::SetOutputNodeVolume(uint64_t node_id,
@@ -173,6 +198,25 @@ void FakeCrasAudioClient::SetInputMute(bool mute_on) {
   volume_state_.input_mute = mute_on;
   for (auto& observer : observers_)
     observer.InputMuteChanged(volume_state_.input_mute);
+}
+
+void FakeCrasAudioClient::SetNoiseCancellationSupported(
+    bool noise_cancellation_supported) {
+  noise_cancellation_supported_ = noise_cancellation_supported;
+}
+
+void FakeCrasAudioClient::SetNoiseCancellationEnabled(
+    bool noise_cancellation_on) {
+  ++noise_cancellation_enabled_counter_;
+}
+
+void FakeCrasAudioClient::GetNoiseCancellationSupported(
+    DBusMethodCallback<bool> callback) {
+  std::move(callback).Run(noise_cancellation_supported_);
+}
+
+uint32_t FakeCrasAudioClient::GetNoiseCancellationEnabledCount() {
+  return noise_cancellation_enabled_counter_;
 }
 
 void FakeCrasAudioClient::SetActiveOutputNode(uint64_t node_id) {
@@ -226,6 +270,9 @@ void FakeCrasAudioClient::RemoveActiveInputNode(uint64_t node_id) {
 }
 
 void FakeCrasAudioClient::SwapLeftRight(uint64_t node_id, bool swap) {}
+
+void FakeCrasAudioClient::SetDisplayRotation(uint64_t node_id,
+                                             cras::DisplayRotation rotation) {}
 
 void FakeCrasAudioClient::SetGlobalOutputChannelRemix(
     int32_t channels,
@@ -314,6 +361,13 @@ void FakeCrasAudioClient::NotifyHotwordTriggeredForTesting(uint64_t tv_sec,
 
 void FakeCrasAudioClient::SetBluetoothBattteryLevelForTesting(uint32_t level) {
   battery_level_ = level;
+}
+
+void FakeCrasAudioClient::SetActiveInputStreamsWithPermission(
+    const ClientTypeToInputStreamCount& input_streams) {
+  active_input_streams_ = input_streams;
+  for (auto& observer : observers_)
+    observer.NumberOfInputStreamsWithPermissionChanged(active_input_streams_);
 }
 
 AudioNodeList::iterator FakeCrasAudioClient::FindNode(uint64_t node_id) {

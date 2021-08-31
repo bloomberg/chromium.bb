@@ -7,12 +7,12 @@
 
 #include <memory>
 
-#include "net/third_party/quiche/src/quic/core/quic_config.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_mutex.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_thread.h"
-#include "net/third_party/quiche/src/quic/tools/quic_server.h"
+#include "quic/core/quic_config.h"
+#include "quic/platform/api/quic_containers.h"
+#include "quic/platform/api/quic_mutex.h"
+#include "quic/platform/api/quic_socket_address.h"
+#include "quic/platform/api/quic_thread.h"
+#include "quic/tools/quic_server.h"
 
 namespace quic {
 namespace test {
@@ -86,7 +86,7 @@ class ServerThread : public QuicThread {
   bool initialized_;
 
   QuicMutex scheduled_actions_lock_;
-  QuicCircularDeque<std::function<void()>> scheduled_actions_
+  quiche::QuicheCircularDeque<std::function<void()>> scheduled_actions_
       QUIC_GUARDED_BY(scheduled_actions_lock_);
 };
 

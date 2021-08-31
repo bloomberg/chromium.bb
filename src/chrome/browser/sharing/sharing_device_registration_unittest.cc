@@ -73,7 +73,6 @@ class FakeInstanceID : public instance_id::InstanceID {
   void GetToken(const std::string& authorized_entity,
                 const std::string& scope,
                 base::TimeDelta time_to_live,
-                const std::map<std::string, std::string>& options,
                 std::set<Flags> flags,
                 GetTokenCallback callback) override {
     if (authorized_entity == kSharingSenderID)
@@ -233,8 +232,8 @@ class SharingDeviceRegistrationTest : public testing::Test {
   SharingDeviceRegistration sharing_device_registration_;
 
   // callback results
-  base::Optional<syncer::DeviceInfo::SharingInfo> local_sharing_info_;
-  base::Optional<SharingSyncPreference::FCMRegistration> fcm_registration_;
+  absl::optional<syncer::DeviceInfo::SharingInfo> local_sharing_info_;
+  absl::optional<SharingSyncPreference::FCMRegistration> fcm_registration_;
   SharingDeviceRegistrationResult result_;
 };
 

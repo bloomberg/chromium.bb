@@ -51,25 +51,22 @@ extern const base::Feature kUseDefaultUserAgentInWebClient;
 // of properties using hard coded logic.
 extern const base::Feature kPreserveScrollViewProperties;
 
-// When enabled, display an interstitial on lookalike URL navigations.
-extern const base::Feature kIOSLookalikeUrlNavigationSuggestionsUI;
-
-// When enabled, supports dropping URLs on the web content area to navigate to
-// the URL.
-extern const base::Feature kAddWebContentDropInteraction;
-
-// When enabled, opening a URL with a text fragment (e.g.,
-// example.com/#:~:text=examples) will cause matching text in the page to be
-// highlighted and scrolled into view.
-// See also: https://wicg.github.io/scroll-to-text-fragment/
-extern const base::Feature kScrollToTextIOS;
-
 // When enabled, display an interstitial on legacy TLS connections.
 extern const base::Feature kIOSLegacyTLSInterstitial;
+
+// Records snapshot size of image (IOS.Snapshots.ImageSize histogram) and PDF
+// (IOS.Snapshots.PDFSize histogram) if enabled. Enabling this flag will
+// generate PDF when Page Snapshot is taken just to record PDF size.
+extern const base::Feature kRecordSnapshotSize;
 
 // When enabled, use the native context menu in web content, for the iOS version
 // that supports it.
 extern const base::Feature kWebViewNativeContextMenu;
+
+// Parameter name and values for the native context menu.
+extern const char kWebViewNativeContextMenuName[];
+extern const char kWebViewNativeContextMenuParameterSystem[];
+extern const char kWebViewNativeContextMenuParameterWeb[];
 
 // When true, for each navigation, the default user agent is chosen by the
 // WebClient GetDefaultUserAgent() method. If it is false, the mobile version
@@ -77,7 +74,19 @@ extern const base::Feature kWebViewNativeContextMenu;
 bool UseWebClientDefaultUserAgent();
 
 // When true, the native context menu for the web content are used.
-bool UseWebViewNativeContextMenu();
+bool UseWebViewNativeContextMenuWeb();
+
+// When true, the custom implementation of context menu using native ContextMenu
+// for the web content is used.
+bool UseWebViewNativeContextMenuSystem();
+
+// Feature flag that enable Shared Highlighting color change in iOS.
+extern const base::Feature kIOSSharedHighlightingColorChange;
+
+// Feature flag that enables creating pending item on POST form submission.
+// Also, for GET form submissions with same page navigation, retains the
+// transition type of new navigation item.
+extern const base::Feature kCreatePendingItemForPostFormSubmission;
 
 }  // namespace features
 }  // namespace web

@@ -137,10 +137,12 @@ TEST(StressJS) {
   v8::Local<v8::Context> env = v8::Context::New(CcTest::isolate());
   env->Enter();
 
-  NewFunctionArgs args = NewFunctionArgs::ForBuiltin(
-      factory->function_string(), isolate->sloppy_function_map(),
-      Builtins::kEmptyFunction);
-  Handle<JSFunction> function = factory->NewFunction(args);
+  Handle<NativeContext> context(isolate->native_context());
+  Handle<SharedFunctionInfo> info = factory->NewSharedFunctionInfoForBuiltin(
+      factory->function_string(), Builtins::kEmptyFunction);
+  info->set_language_mode(LanguageMode::kStrict);
+  Handle<JSFunction> function =
+      Factory::JSFunctionBuilder{isolate, info, context}.Build();
   CHECK(!function->shared().construct_as_builtin());
 
   // Force the creation of an initial map.
@@ -149,7 +151,7 @@ TEST(StressJS) {
   // Patch the map to have an accessor for "get".
   Handle<Map> map(function->initial_map(), isolate);
   Handle<DescriptorArray> instance_descriptors(
-      map->instance_descriptors(kRelaxedLoad), isolate);
+      map->instance_descriptors(isolate), isolate);
   CHECK_EQ(0, instance_descriptors->number_of_descriptors());
 
   PropertyAttributes attrs = NONE;

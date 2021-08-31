@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
+#include "quic/test_tools/mock_random.h"
 
 #include <string.h>
 
@@ -21,8 +21,21 @@ uint64_t MockRandom::RandUint64() {
   return base_ + increment_;
 }
 
+void MockRandom::InsecureRandBytes(void* data, size_t len) {
+  RandBytes(data, len);
+}
+
+uint64_t MockRandom::InsecureRandUint64() {
+  return RandUint64();
+}
+
 void MockRandom::ChangeValue() {
   increment_++;
+}
+
+void MockRandom::ResetBase(uint32_t base) {
+  base_ = base;
+  increment_ = 0;
 }
 
 }  // namespace test

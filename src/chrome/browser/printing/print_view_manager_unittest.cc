@@ -7,8 +7,10 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/print_test_utils.h"
 #include "chrome/browser/printing/print_view_manager.h"
@@ -85,11 +87,26 @@ class TestPrintViewManager : public PrintViewManagerBase {
   // Override to create a TestPrintJob instead of a real one.
   bool CreateNewPrintJob(std::unique_ptr<PrinterQuery> query) override {
     print_job_ = base::MakeRefCounted<TestPrintJob>();
-    print_job_->Initialize(std::move(query), RenderSourceName(), number_pages_);
+    print_job_->Initialize(std::move(query), RenderSourceName(),
+                           number_pages());
 #if defined(OS_CHROMEOS)
     print_job_->SetSource(PrintJob::Source::PRINT_PREVIEW, /*source_id=*/"");
 #endif  // defined(OS_CHROMEOS)
     return true;
+  }
+  void SetupScriptedPrintPreview(
+      SetupScriptedPrintPreviewCallback callback) override {
+    NOTREACHED();
+  }
+  void ShowScriptedPrintPreview(bool is_modifiable) override { NOTREACHED(); }
+  void RequestPrintPreview(
+      mojom::RequestPrintPreviewParamsPtr params) override {
+    NOTREACHED();
+  }
+  void CheckForCancel(int32_t preview_ui_id,
+                      int32_t request_id,
+                      CheckForCancelCallback callback) override {
+    NOTREACHED();
   }
 
  private:

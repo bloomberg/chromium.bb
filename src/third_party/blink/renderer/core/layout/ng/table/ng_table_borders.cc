@@ -191,13 +191,14 @@ scoped_refptr<NGTableBorders> NGTableBorders::ComputeTableBorders(
     return table_borders;
 
   NGTableGroupedChildren grouped_children(table);
-  bool hide_empty_cells = table_style.EmptyCells() == EEmptyCells::kHide;
   WritingDirectionMode table_writing_direction =
       table.Style().GetWritingDirection();
-  wtf_size_t box_order = 0;
-  wtf_size_t table_column_count = 0;
-  wtf_size_t table_row_index = 0;
 
+  wtf_size_t box_order = 0;
+  wtf_size_t table_column_count =
+      NGTableAlgorithmUtils::ComputeMaximumNonMergeableColumnCount(
+          grouped_children.columns, table.Style().IsFixedTableLayout());
+  wtf_size_t table_row_index = 0;
   // Mark cell borders.
   bool found_multispan_cells = false;
   for (const NGBlockNode section : grouped_children) {
@@ -209,11 +210,6 @@ scoped_refptr<NGTableBorders> NGTableBorders::ComputeTableBorders(
       for (NGBlockNode cell = To<NGBlockNode>(row.FirstChild()); cell;
            cell = To<NGBlockNode>(cell.NextSibling())) {
         tabulator.FindNextFreeColumn();
-        // https://stackoverflow.com/questions/18758373/why-do-the-css-property-border-collapse-and-empty-cells-conflict
-        if (hide_empty_cells && !To<NGBlockNode>(cell).FirstChild()) {
-          tabulator.ProcessCell(cell);
-          continue;
-        }
         wtf_size_t cell_colspan = cell.TableCellColspan();
         found_multispan_cells |=
             cell.TableCellRowspan() > 1 || cell_colspan > 1;
@@ -239,8 +235,8 @@ scoped_refptr<NGTableBorders> NGTableBorders::ComputeTableBorders(
     table_borders->AddSection(section_start_row,
                               table_row_index - section_start_row);
   }
-  table_borders->SetLastColumnIndex(table_column_count);
 
+  table_borders->SetLastColumnIndex(table_column_count);
   wtf_size_t table_row_count = table_row_index;
   table_row_index = 0;
 
@@ -256,10 +252,6 @@ scoped_refptr<NGTableBorders> NGTableBorders::ComputeTableBorders(
         for (NGBlockNode cell = To<NGBlockNode>(row.FirstChild()); cell;
              cell = To<NGBlockNode>(cell.NextSibling())) {
           tabulator.FindNextFreeColumn();
-          if (hide_empty_cells && !To<NGBlockNode>(cell).FirstChild()) {
-            tabulator.ProcessCell(cell);
-            continue;
-          }
           table_borders->MergeBorders(
               table_row_index, tabulator.CurrentColumn(),
               cell.TableCellRowspan(), cell.TableCellColspan(), cell.Style(),
@@ -381,6 +373,26 @@ void NGTableBorders::ShowEdges() {
   LOG(INFO) << "\n" << DumpEdges().Utf8();
 }
 
+bool NGTableBorders::operator==(const NGTableBorders& other) const {
+  // Compare by traversal, because we must call edge comparsion function.
+  if (edges_.size() != other.edges_.size())
+    return false;
+  for (unsigned i = 0; i < edges_.size(); i++) {
+    if (edges_[i].edge_side != other.edges_[i].edge_side)
+      return false;
+    if (edges_[i].box_order != other.edges_[i].box_order)
+      return false;
+  }
+  return sections_ == other.sections_ &&
+         edges_per_row_ == other.edges_per_row_ &&
+         cached_table_border_ == other.cached_table_border_ &&
+         collapsed_visual_inline_start_ ==
+             other.collapsed_visual_inline_start_ &&
+         collapsed_visual_inline_end_ == other.collapsed_visual_inline_end_ &&
+         last_column_index_ == other.last_column_index_ &&
+         is_collapsed_ == other.is_collapsed_;
+}
+
 #endif
 
 NGBoxStrut NGTableBorders::GetCellBorders(wtf_size_t row,
@@ -463,6 +475,19 @@ void NGTableBorders::ComputeCollapsedTableBorderPadding(
                            ? BorderWidth(inline_end_edge) / 2
                            : LayoutUnit();
   cached_table_border_ = borders;
+}
+
+NGBoxStrut NGTableBorders::GetCollapsedBorderVisualSizeDiff() const {
+  if (!is_collapsed_)
+    return NGBoxStrut();
+  // Inline sizes expand by difference between visual and
+  // layout border width.
+  NGBoxStrut visual_diff;
+  visual_diff.inline_start =
+      collapsed_visual_inline_start_ - cached_table_border_->inline_start;
+  visual_diff.inline_end =
+      collapsed_visual_inline_end_ - cached_table_border_->inline_end;
+  return visual_diff;
 }
 
 NGBoxStrut NGTableBorders::CellBorder(

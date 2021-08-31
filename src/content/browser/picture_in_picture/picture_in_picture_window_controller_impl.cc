@@ -12,7 +12,6 @@
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/picture_in_picture/picture_in_picture_session.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/web_contents.h"
@@ -69,6 +68,14 @@ void PictureInPictureWindowControllerImpl::Show() {
   media_session_action_previous_track_handled_ =
       media_session->ShouldRouteAction(
           media_session::mojom::MediaSessionAction::kPreviousTrack);
+  media_session_action_toggle_microphone_handled_ =
+      media_session->ShouldRouteAction(
+          media_session::mojom::MediaSessionAction::kToggleMicrophone);
+  media_session_action_toggle_camera_handled_ =
+      media_session->ShouldRouteAction(
+          media_session::mojom::MediaSessionAction::kToggleCamera);
+  media_session_action_hang_up_handled_ = media_session->ShouldRouteAction(
+      media_session::mojom::MediaSessionAction::kHangUp);
 
   UpdatePlayPauseButtonVisibility();
   window_->SetSkipAdButtonVisibility(media_session_action_skip_ad_handled_);
@@ -76,8 +83,19 @@ void PictureInPictureWindowControllerImpl::Show() {
       media_session_action_next_track_handled_);
   window_->SetPreviousTrackButtonVisibility(
       media_session_action_previous_track_handled_);
+  window_->SetMicrophoneMuted(microphone_muted_);
+  window_->SetToggleMicrophoneButtonVisibility(
+      media_session_action_toggle_microphone_handled_);
+  window_->SetCameraState(camera_turned_on_);
+  window_->SetToggleCameraButtonVisibility(
+      media_session_action_toggle_camera_handled_);
+  window_->SetHangUpButtonVisibility(media_session_action_hang_up_handled_);
   window_->ShowInactive();
   GetWebContentsImpl()->SetHasPictureInPictureVideo(true);
+}
+
+void PictureInPictureWindowControllerImpl::FocusInitiator() {
+  GetWebContentsImpl()->Activate();
 }
 
 void PictureInPictureWindowControllerImpl::Close(bool should_pause_video) {
@@ -90,12 +108,13 @@ void PictureInPictureWindowControllerImpl::Close(bool should_pause_video) {
 
 void PictureInPictureWindowControllerImpl::CloseAndFocusInitiator() {
   Close(false /* should_pause_video */);
-  GetWebContentsImpl()->Activate();
+  FocusInitiator();
 }
 
-void PictureInPictureWindowControllerImpl::OnWindowDestroyed() {
+void PictureInPictureWindowControllerImpl::OnWindowDestroyed(
+    bool should_pause_video) {
   window_ = nullptr;
-  CloseInternal(true /* should_pause_video */);
+  CloseInternal(should_pause_video);
 }
 
 void PictureInPictureWindowControllerImpl::EmbedSurface(
@@ -161,8 +180,6 @@ bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
   DCHECK(window_);
   DCHECK(active_session_);
 
-  MediaPlayerId player_id = active_session_->player_id();
-
   if (IsPlayerActive()) {
     if (media_session_action_pause_handled_) {
       MediaSessionImpl::Get(web_contents())
@@ -170,9 +187,8 @@ bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
       return true /* still playing */;
     }
 
-    player_id.render_frame_host->Send(new MediaPlayerDelegateMsg_Pause(
-        player_id.render_frame_host->GetRoutingID(), player_id.delegate_id,
-        false /* triggered_by_user */));
+    active_session_->GetMediaPlayerRemote()->RequestPause(
+        /*triggered_by_user=*/false);
     return false /* paused */;
   }
 
@@ -182,14 +198,14 @@ bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
     return false /* still paused */;
   }
 
-  player_id.render_frame_host->Send(new MediaPlayerDelegateMsg_Play(
-      player_id.render_frame_host->GetRoutingID(), player_id.delegate_id));
+  active_session_->GetMediaPlayerRemote()->RequestPlay();
   return true /* playing */;
 }
 
 PictureInPictureResult PictureInPictureWindowControllerImpl::StartSession(
     PictureInPictureServiceImpl* service,
     const MediaPlayerId& player_id,
+    mojo::PendingAssociatedRemote<media::mojom::MediaPlayer> player_remote,
     const viz::SurfaceId& surface_id,
     const gfx::Size& natural_size,
     bool show_play_pause_button,
@@ -208,8 +224,8 @@ PictureInPictureResult PictureInPictureWindowControllerImpl::StartSession(
     active_session_->Disconnect();
 
   active_session_ = std::make_unique<PictureInPictureSession>(
-      service, player_id, session_remote->InitWithNewPipeAndPassReceiver(),
-      std::move(observer));
+      service, player_id, std::move(player_remote),
+      session_remote->InitWithNewPipeAndPassReceiver(), std::move(observer));
 
   EmbedSurface(surface_id, natural_size);
   SetShowPlayPauseButton(show_play_pause_button);
@@ -249,6 +265,42 @@ void PictureInPictureWindowControllerImpl::PreviousTrack() {
     MediaSession::Get(web_contents())->PreviousTrack();
 }
 
+void PictureInPictureWindowControllerImpl::ToggleMicrophone() {
+  if (!media_session_action_toggle_microphone_handled_)
+    return;
+
+  MediaSession::Get(web_contents())->ToggleMicrophone();
+}
+
+void PictureInPictureWindowControllerImpl::ToggleCamera() {
+  if (!media_session_action_toggle_camera_handled_)
+    return;
+
+  MediaSession::Get(web_contents())->ToggleCamera();
+}
+
+void PictureInPictureWindowControllerImpl::HangUp() {
+  if (media_session_action_hang_up_handled_)
+    MediaSession::Get(web_contents())->HangUp();
+}
+
+void PictureInPictureWindowControllerImpl::MediaSessionInfoChanged(
+    const media_session::mojom::MediaSessionInfoPtr& info) {
+  if (!info)
+    return;
+
+  microphone_muted_ =
+      info->microphone_state == media_session::mojom::MicrophoneState::kMuted;
+  camera_turned_on_ =
+      info->camera_state == media_session::mojom::CameraState::kTurnedOn;
+
+  if (!window_)
+    return;
+
+  window_->SetMicrophoneMuted(microphone_muted_);
+  window_->SetCameraState(camera_turned_on_);
+}
+
 void PictureInPictureWindowControllerImpl::MediaSessionActionsChanged(
     const std::set<media_session::mojom::MediaSessionAction>& actions) {
   // TODO(crbug.com/919842): Currently, the first Media Session to be created
@@ -271,6 +323,16 @@ void PictureInPictureWindowControllerImpl::MediaSessionActionsChanged(
   media_session_action_previous_track_handled_ =
       actions.find(media_session::mojom::MediaSessionAction::kPreviousTrack) !=
       actions.end();
+  media_session_action_toggle_microphone_handled_ =
+      actions.find(
+          media_session::mojom::MediaSessionAction::kToggleMicrophone) !=
+      actions.end();
+  media_session_action_toggle_camera_handled_ =
+      actions.find(media_session::mojom::MediaSessionAction::kToggleCamera) !=
+      actions.end();
+  media_session_action_hang_up_handled_ =
+      actions.find(media_session::mojom::MediaSessionAction::kHangUp) !=
+      actions.end();
 
   if (!window_)
     return;
@@ -281,6 +343,11 @@ void PictureInPictureWindowControllerImpl::MediaSessionActionsChanged(
       media_session_action_next_track_handled_);
   window_->SetPreviousTrackButtonVisibility(
       media_session_action_previous_track_handled_);
+  window_->SetToggleMicrophoneButtonVisibility(
+      media_session_action_toggle_microphone_handled_);
+  window_->SetToggleCameraButtonVisibility(
+      media_session_action_toggle_camera_handled_);
+  window_->SetHangUpButtonVisibility(media_session_action_hang_up_handled_);
 }
 
 gfx::Size PictureInPictureWindowControllerImpl::GetSize() {
@@ -323,13 +390,10 @@ void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
     bool should_pause_video) {
   DCHECK(active_session_);
 
-  MediaPlayerId player_id = active_session_->player_id();
-
   if (IsPlayerActive() && should_pause_video) {
     // Pause the current video so there is only one video playing at a time.
-    player_id.render_frame_host->Send(new MediaPlayerDelegateMsg_Pause(
-        player_id.render_frame_host->GetRoutingID(), player_id.delegate_id,
-        false /* triggered_by_user */));
+    active_session_->GetMediaPlayerRemote()->RequestPause(
+        /*triggered_by_user=*/false);
   }
 
   active_session_->Shutdown();

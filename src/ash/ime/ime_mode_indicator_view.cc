@@ -9,6 +9,7 @@
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -29,8 +30,12 @@ const int kShowingDuration = 500;
 
 class ModeIndicatorFrameView : public views::BubbleFrameView {
  public:
+  METADATA_HEADER(ModeIndicatorFrameView);
+
   explicit ModeIndicatorFrameView()
       : views::BubbleFrameView(gfx::Insets(), gfx::Insets()) {}
+  ModeIndicatorFrameView(const ModeIndicatorFrameView&) = delete;
+  ModeIndicatorFrameView& operator=(const ModeIndicatorFrameView&) = delete;
   ~ModeIndicatorFrameView() override {}
 
  private:
@@ -40,20 +45,23 @@ class ModeIndicatorFrameView : public views::BubbleFrameView {
         ->GetDisplayNearestPoint(rect.CenterPoint())
         .bounds();
   }
-
-  DISALLOW_COPY_AND_ASSIGN(ModeIndicatorFrameView);
 };
+
+BEGIN_METADATA(ModeIndicatorFrameView, views::BubbleFrameView)
+END_METADATA
 
 }  // namespace
 
 ImeModeIndicatorView::ImeModeIndicatorView(const gfx::Rect& cursor_bounds,
-                                           const base::string16& label)
+                                           const std::u16string& label)
     : cursor_bounds_(cursor_bounds), label_view_(new views::Label(label)) {
   SetButtons(ui::DIALOG_BUTTON_NONE);
   SetCanActivate(false);
   set_accept_events(false);
-  set_shadow(views::BubbleBorder::BIG_SHADOW);
+  set_shadow(views::BubbleBorder::STANDARD_SHADOW);
   SetArrow(views::BubbleBorder::TOP_CENTER);
+  // Ignore this view for accessibility purposes.
+  SetAccessibleRole(ax::mojom::Role::kNone);
 }
 
 ImeModeIndicatorView::~ImeModeIndicatorView() = default;
@@ -84,10 +92,6 @@ gfx::Size ImeModeIndicatorView::CalculatePreferredSize() const {
   return size;
 }
 
-const char* ImeModeIndicatorView::GetClassName() const {
-  return "ImeModeIndicatorView";
-}
-
 void ImeModeIndicatorView::Init() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(label_view_);
@@ -100,11 +104,12 @@ ImeModeIndicatorView::CreateNonClientFrameView(views::Widget* widget) {
   auto frame = std::make_unique<ModeIndicatorFrameView>();
   // arrow adjustment in BubbleDialogDelegateView is unnecessary because arrow
   // of this bubble is always center.
-  frame->SetBubbleBorder(std::unique_ptr<views::BubbleBorder>(
-      new views::BubbleBorder(arrow(), GetShadow(), color())));
   frame->SetBubbleBorder(
       std::make_unique<views::BubbleBorder>(arrow(), GetShadow(), color()));
   return frame;
 }
+
+BEGIN_METADATA(ImeModeIndicatorView, views::BubbleDialogDelegateView)
+END_METADATA
 
 }  // namespace ash

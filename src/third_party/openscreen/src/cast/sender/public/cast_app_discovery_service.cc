@@ -12,7 +12,8 @@ CastAppDiscoveryService::Subscription::Subscription(
     uint32_t id)
     : discovery_service_(discovery_service), id_(id) {}
 
-CastAppDiscoveryService::Subscription::Subscription(Subscription&& other)
+CastAppDiscoveryService::Subscription::Subscription(
+    Subscription&& other) noexcept
     : discovery_service_(other.discovery_service_), id_(other.id_) {
   other.discovery_service_ = nullptr;
 }

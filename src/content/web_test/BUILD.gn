@@ -6,6 +6,7 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/ui.gni")  # For the use_x11 and toolkit_views variables.
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/buildflags/buildflags.gni")  # For the enable_plugins variable.
+import("//printing/buildflags/buildflags.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -42,8 +43,12 @@ mojom("web_test_common_mojom") {
 static_library("web_test_common") {
   testonly = true
   sources = [
+    "common/tracked_dictionary.cc",
+    "common/tracked_dictionary.h",
     "common/web_test_constants.cc",
     "common/web_test_constants.h",
+    "common/web_test_runtime_flags.cc",
+    "common/web_test_runtime_flags.h",
     "common/web_test_string_util.cc",
     "common/web_test_string_util.h",
     "common/web_test_switches.cc",
@@ -153,6 +158,7 @@ static_library("web_test_browser") {
   deps = [
     ":web_test_common",
     "//base",
+    "//build:chromeos_buildflags",
     "//cc/base",
     "//cc/paint",
     "//components/download/content/factory",
@@ -163,6 +169,7 @@ static_library("web_test_browser") {
     "//content/public/browser",  # For component builds.
     "//content/shell:content_shell_lib",
     "//content/test:blink_test_browser_support",
+    "//content/test:mojo_bindings_web_test_mojom",
     "//content/test:mojo_web_test_bindings",
     "//content/test:test_support",
     "//device/bluetooth:fake_bluetooth",
@@ -215,6 +222,12 @@ static_library("web_test_renderer") {
     check_includes = false
   }
 
+  # We allow a circular include from blink's web_test implementation. This
+  # is an incremental step to moving the renderer web_test implementation
+  # into blink.
+  allow_circular_includes_from =
+      [ "//third_party/blink/renderer/core/web_test" ]
+
   sources = [
     "renderer/accessibility_controller.cc",
     "renderer/accessibility_controller.h",
@@ -234,8 +247,6 @@ static_library("web_test_renderer") {
     "renderer/gc_controller.h",
     "renderer/layout_dump.cc",
     "renderer/layout_dump.h",
-    "renderer/pixel_dump.cc",
-    "renderer/pixel_dump.h",
     "renderer/spell_check_client.cc",
     "renderer/spell_check_client.h",
     "renderer/test_plugin.cc",
@@ -248,8 +259,6 @@ static_library("web_test_renderer") {
     "renderer/test_websocket_handshake_throttle_provider.h",
     "renderer/text_input_controller.cc",
     "renderer/text_input_controller.h",
-    "renderer/tracked_dictionary.cc",
-    "renderer/tracked_dictionary.h",
     "renderer/web_ax_object_proxy.cc",
     "renderer/web_ax_object_proxy.h",
     "renderer/web_frame_test_proxy.cc",
@@ -262,14 +271,8 @@ static_library("web_test_renderer") {
     "renderer/web_test_grammar_checker.h",
     "renderer/web_test_render_thread_observer.cc",
     "renderer/web_test_render_thread_observer.h",
-    "renderer/web_test_runtime_flags.cc",
-    "renderer/web_test_runtime_flags.h",
     "renderer/web_test_spell_checker.cc",
     "renderer/web_test_spell_checker.h",
-    "renderer/web_view_test_proxy.cc",
-    "renderer/web_view_test_proxy.h",
-    "renderer/web_widget_test_proxy.cc",
-    "renderer/web_widget_test_proxy.h",
   ]
   deps = [
     ":web_test_common",
@@ -290,7 +293,10 @@ static_library("web_test_renderer") {
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",
     "//media/capture",
-    "//printing",
+    "//printing/buildflags",
+
+    # TODO(crbug.com/1200443) Remove //printing/mojom requirement coming from
+    # //third_party/blink/public:blink_headers.
     "//printing/mojom",
     "//services/device/public/mojom",
     "//services/service_manager/public/cpp",
@@ -298,7 +304,9 @@ static_library("web_test_renderer") {
     "//skia:test_fonts",
     "//third_party/blink/public:blink_headers",
     "//third_party/blink/public:test_headers",
+    "//third_party/blink/renderer/core/web_test",
     "//ui/accessibility:ax_base",
+    "//ui/base/dragdrop/mojom",
     "//ui/base/ime:ime_types",
     "//ui/display",
     "//ui/events:dom_keycode_converter",
@@ -310,4 +318,12 @@ static_library("web_test_renderer") {
     "//url",
     "//v8",
   ]
+
+  if (enable_basic_printing) {
+    sources += [
+      "renderer/pixel_dump.cc",
+      "renderer/pixel_dump.h",
+    ]
+    deps += [ "//printing" ]
+  }
 }

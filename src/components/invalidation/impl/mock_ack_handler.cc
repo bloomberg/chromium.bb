@@ -10,30 +10,29 @@
 #include "components/invalidation/public/ack_handle.h"
 #include "components/invalidation/public/invalidation.h"
 
-namespace syncer {
+namespace invalidation {
 
 namespace {
 
 struct AckHandleMatcher {
-  AckHandleMatcher(const AckHandle& handle);
-  bool operator()(const syncer::Invalidation& invalidation) const;
+  explicit AckHandleMatcher(const AckHandle& handle);
+  bool operator()(const Invalidation& invalidation) const;
 
-  syncer::AckHandle handle_;
+  AckHandle handle_;
 };
 
 AckHandleMatcher::AckHandleMatcher(const AckHandle& handle)
   : handle_(handle) {}
 
-bool AckHandleMatcher::operator()(
-    const syncer::Invalidation& invalidation) const {
+bool AckHandleMatcher::operator()(const Invalidation& invalidation) const {
   return handle_.Equals(invalidation.ack_handle());
 }
 
 }  // namespace
 
-MockAckHandler::MockAckHandler() {}
+MockAckHandler::MockAckHandler() = default;
 
-MockAckHandler::~MockAckHandler() {}
+MockAckHandler::~MockAckHandler() = default;
 
 void MockAckHandler::RegisterInvalidation(Invalidation* invalidation) {
   unacked_invalidations_.push_back(*invalidation);
@@ -103,4 +102,4 @@ void MockAckHandler::Drop(const Topic& topic, const AckHandle& handle) {
   unrecovered_drop_events_.emplace(topic, handle);
 }
 
-}  // namespace syncer
+}  // namespace invalidation

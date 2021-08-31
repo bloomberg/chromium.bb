@@ -7,30 +7,31 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/infobars/confirm_infobar_creator.h"
 #include "chrome/browser/ui/tab_sharing/tab_sharing_ui.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // static
 infobars::InfoBar* TabSharingInfoBarDelegate::Create(
-    InfoBarService* infobar_service,
-    const base::string16& shared_tab_name,
-    const base::string16& app_name,
+    infobars::ContentInfoBarManager* infobar_manager,
+    const std::u16string& shared_tab_name,
+    const std::u16string& app_name,
     bool shared_tab,
     bool can_share,
     TabSharingUI* ui) {
-  DCHECK(infobar_service);
-  return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      base::WrapUnique(new TabSharingInfoBarDelegate(
+  DCHECK(infobar_manager);
+  return infobar_manager->AddInfoBar(
+      CreateConfirmInfoBar(base::WrapUnique(new TabSharingInfoBarDelegate(
           shared_tab_name, app_name, shared_tab, can_share, ui))));
 }
 
 TabSharingInfoBarDelegate::TabSharingInfoBarDelegate(
-    base::string16 shared_tab_name,
-    base::string16 app_name,
+    std::u16string shared_tab_name,
+    std::u16string app_name,
     bool shared_tab,
     bool can_share,
     TabSharingUI* ui)
@@ -55,7 +56,7 @@ TabSharingInfoBarDelegate::GetIdentifier() const {
   return TAB_SHARING_INFOBAR_DELEGATE;
 }
 
-base::string16 TabSharingInfoBarDelegate::GetMessageText() const {
+std::u16string TabSharingInfoBarDelegate::GetMessageText() const {
   if (shared_tab_) {
     return l10n_util::GetStringFUTF16(
         IDS_TAB_SHARING_INFOBAR_SHARING_CURRENT_TAB_LABEL, app_name_);
@@ -69,7 +70,7 @@ base::string16 TabSharingInfoBarDelegate::GetMessageText() const {
                    app_name_);
 }
 
-base::string16 TabSharingInfoBarDelegate::GetButtonLabel(
+std::u16string TabSharingInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK)
                                        ? IDS_TAB_SHARING_INFOBAR_STOP_BUTTON

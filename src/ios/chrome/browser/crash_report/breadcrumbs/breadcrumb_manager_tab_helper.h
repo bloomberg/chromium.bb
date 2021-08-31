@@ -5,7 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_CRASH_REPORT_BREADCRUMBS_BREADCRUMB_MANAGER_TAB_HELPER_H_
 #define IOS_CHROME_BROWSER_CRASH_REPORT_BREADCRUMBS_BREADCRUMB_MANAGER_TAB_HELPER_H_
 
-#include "base/scoped_observer.h"
+#include <string>
+
+#include "base/scoped_observation.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
@@ -152,8 +154,9 @@ class BreadcrumbManagerTabHelper
   int sequentially_scrolled_ = 0;
 
   // Manages this object as an observer of infobars.
-  ScopedObserver<infobars::InfoBarManager, infobars::InfoBarManager::Observer>
-      infobar_observer_;
+  base::ScopedObservation<infobars::InfoBarManager,
+                          infobars::InfoBarManager::Observer>
+      infobar_observation_{this};
 
   // Allows observing Objective-C object for Scroll and Zoom events.
   __strong id<CRWWebViewScrollViewProxyObserver> scroll_observer_;

@@ -20,12 +20,24 @@ class SandboxedWebUiAppTestBase : public MojoWebUIBrowserTest {
   // automatically injects |scripts|, in order, into the sandboxed frame.
   SandboxedWebUiAppTestBase(const std::string& host_url,
                             const std::string& sandboxed_url,
-                            const std::vector<base::FilePath>& scripts);
+                            const std::vector<base::FilePath>& scripts,
+                            const std::string& test_module = std::string());
   ~SandboxedWebUiAppTestBase() override;
 
   SandboxedWebUiAppTestBase(const SandboxedWebUiAppTestBase&) = delete;
   SandboxedWebUiAppTestBase& operator=(const SandboxedWebUiAppTestBase&) =
       delete;
+
+  // Configures and installs a handler to deliver testing resources into a
+  // WebUIDataSource configured using MaybeConfigureTestableDataSource().
+  // This installs the "default" handler which serves requests of the form
+  // scheme://origin/<file>, where <file> is in |resource_files| and can be
+  // found from |root_folder| under the source tree.
+  // Tests can invoke SetTestableDataSourceRequestHandlerForTesting() directly
+  // for more elaborate handlers.
+  static void ConfigureDefaultTestRequestHandler(
+      const base::FilePath& root_folder,
+      const std::vector<std::string>& resource_files);
 
   // Returns the contents of the JavaScript library used to help test the
   // sandboxed frame.
@@ -50,6 +62,7 @@ class SandboxedWebUiAppTestBase : public MojoWebUIBrowserTest {
   const std::string host_url_;
   const std::string sandboxed_url_;
   const std::vector<base::FilePath> scripts_;
+  const std::string test_module_;
 };
 
 #endif  // CHROMEOS_COMPONENTS_WEB_APPLICATIONS_TEST_SANDBOXED_WEB_UI_TEST_BASE_H_

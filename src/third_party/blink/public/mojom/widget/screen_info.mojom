@@ -9,7 +9,10 @@ import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojom/display_color_spaces.mojom";
 
 // Information about the screen on which a WidgetBase is being displayed. This
-// is the content counterpart to blink::ScreenInfo.
+// is the content counterpart to blink::ScreenInfo, and it roughly parallels
+// display.mojom.Display. It may be desirable to deprecate derived counterparts
+// of ui/display types, but doing so is complicated by widespread use and legacy
+// quirks around blink::ScreenInfo.
 struct ScreenInfo {
   // Device scale factor. Specifies the ratio between physical and logical
   // pixels.
@@ -46,4 +49,21 @@ struct ScreenInfo {
   // This is the orientation angle of the displayed content in degrees.
   // It is the opposite of the physical rotation.
   uint16 orientation_angle;
+
+  // Proposed: https://github.com/webscreens/window-placement
+  // Whether this Screen is part of a multi-screen extended visual workspace.
+  bool is_extended;
+
+  // Proposed: https://github.com/webscreens/window-placement
+  // Whether this screen is designated as the 'primary' screen by the OS
+  // (otherwise it is a 'secondary' screen).
+  bool is_primary = false;
+
+  // Proposed: https://github.com/webscreens/window-placement
+  // Whether this screen is an 'internal' panel built into the device, like a
+  // laptop display (otherwise it is 'external', like a wired monitor).
+  bool is_internal = false;
+
+  // Not web-exposed; the display::Display::id(), for internal tracking only.
+  int64 display_id;
 };

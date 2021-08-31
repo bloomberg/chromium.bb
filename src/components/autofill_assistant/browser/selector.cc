@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
+#include "components/autofill_assistant/browser/action_value.pb.h"
 
 namespace autofill_assistant {
 
@@ -14,8 +15,7 @@ namespace autofill_assistant {
 // they're not shared outside of this module, for them to be visible to
 // std::make_tuple and std::lexicographical_compare.
 
-bool operator<(const SelectorProto::TextFilter& a,
-               const SelectorProto::TextFilter& b) {
+bool operator<(const TextFilter& a, const TextFilter& b) {
   return std::make_tuple(a.re2(), a.case_sensitive()) <
          std::make_tuple(b.re2(), b.case_sensitive());
 }
@@ -76,13 +76,6 @@ bool operator<(const SelectorProto::Filter& a, const SelectorProto::Filter& b) {
     case SelectorProto::Filter::kEnterFrame:
     case SelectorProto::Filter::kLabelled:
       return false;
-
-    case SelectorProto::Filter::kClosest: {
-      return std::make_tuple(a.closest().target(), a.closest().in_alignment(),
-                             a.closest().relative_position()) <
-             std::make_tuple(b.closest().target(), b.closest().in_alignment(),
-                             b.closest().relative_position());
-    }
 
     case SelectorProto::Filter::kMatchCssSelector:
       return a.match_css_selector() < b.match_css_selector();
@@ -205,70 +198,6 @@ bool Selector::empty() const {
   return !has_css_selector;
 }
 
-base::Optional<std::string> Selector::ExtractSingleCssSelectorForAutofill()
-    const {
-  int last_enter_frame_index = -1;
-  for (int i = proto.filters().size() - 1; i >= 0; i--) {
-    if (proto.filters(i).filter_case() == SelectorProto::Filter::kEnterFrame) {
-      last_enter_frame_index = i;
-      break;
-    }
-  }
-  std::string css_selector;
-  for (int i = last_enter_frame_index + 1; i < proto.filters().size(); i++) {
-    const SelectorProto::Filter& filter = proto.filters(i);
-    switch (filter.filter_case()) {
-      case SelectorProto::Filter::kCssSelector:
-        if (css_selector.empty()) {
-          css_selector = filter.css_selector();
-        } else {
-          VLOG(1) << __func__
-                  << " Selector with multiple CSS selectors not supported for "
-                     "autofill: "
-                  << *this;
-          return base::nullopt;
-        }
-        break;
-
-      case SelectorProto::Filter::kBoundingBox:
-      case SelectorProto::Filter::kNthMatch:
-        if (filter.nth_match().index() == 0)
-          break;
-
-        FALLTHROUGH;
-      case SelectorProto::Filter::kInnerText:
-      case SelectorProto::Filter::kValue:
-      case SelectorProto::Filter::kPseudoType:
-      case SelectorProto::Filter::kPseudoElementContent:
-      case SelectorProto::Filter::kCssStyle:
-      case SelectorProto::Filter::kLabelled:
-      case SelectorProto::Filter::kClosest:
-      case SelectorProto::Filter::kMatchCssSelector:
-      case SelectorProto::Filter::kOnTop:
-        VLOG(1) << __func__
-                << " Selector feature not supported by autofill: " << *this;
-        return base::nullopt;
-
-      case SelectorProto::Filter::FILTER_NOT_SET:
-        VLOG(1) << __func__ << " Unknown filter type in: " << *this;
-        return base::nullopt;
-
-      case SelectorProto::Filter::kEnterFrame:
-        // This cannot possibly happen, since the iteration started after the
-        // last enter_frame.
-        NOTREACHED();
-        break;
-    }
-  }
-  if (css_selector.empty()) {
-    VLOG(1) << __func__
-            << " Selector without CSS selector not supported by autofill: "
-            << *this;
-    return base::nullopt;
-  }
-  return css_selector;
-}
-
 std::ostream& operator<<(std::ostream& out, const Selector& selector) {
   return out << selector.proto;
 }
@@ -281,8 +210,7 @@ std::ostream& operator<<(std::ostream& out, PseudoType pseudo_type) {
   return out << PseudoTypeName(pseudo_type);
 }
 
-std::ostream& operator<<(std::ostream& out,
-                         const SelectorProto::TextFilter& c) {
+std::ostream& operator<<(std::ostream& out, const TextFilter& c) {
   out << "/" << c.re2() << "/";
   if (c.case_sensitive()) {
     out << "i";
@@ -367,29 +295,6 @@ std::ostream& operator<<(std::ostream& out, const SelectorProto::Filter& f) {
 
     case SelectorProto::Filter::kLabelled:
       out << "labelled";
-      return out;
-
-    case SelectorProto::Filter::kClosest:
-      out << "closest to " << f.closest().target();
-      switch (f.closest().relative_position()) {
-        case SelectorProto::ProximityFilter::UNSPECIFIED_POSITION:
-          break;
-        case SelectorProto::ProximityFilter::ABOVE:
-          out << " above";
-          break;
-        case SelectorProto::ProximityFilter::BELOW:
-          out << " below";
-          break;
-        case SelectorProto::ProximityFilter::RIGHT:
-          out << " right";
-          break;
-        case SelectorProto::ProximityFilter::LEFT:
-          out << " left";
-          break;
-      }
-      if (f.closest().in_alignment()) {
-        out << " in alignment";
-      }
       return out;
 
     case SelectorProto::Filter::kMatchCssSelector:

@@ -5,8 +5,10 @@
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
 
 #include "base/containers/adapters.h"
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "cc/base/features.h"
+#include "cc/input/layer_selection_bound.h"
 #include "cc/layers/layer.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_op_buffer.h"
@@ -150,7 +152,7 @@ class ConversionContext {
                                        translation.Height());
       }
     } else {
-      cc_list_.push<cc::ConcatOp>(translation_2d_or_matrix.ToSkMatrix());
+      cc_list_.push<cc::ConcatOp>(translation_2d_or_matrix.ToSkM44());
     }
   }
 
@@ -241,7 +243,7 @@ class ConversionContext {
     // The transform space when the SaveLayer[Alpha]Op was emitted.
     const TransformPaintPropertyNode* transform;
     // Records the bounds of the effect which initiated the entry. Note that
-    // the effect is not |this->effect| (which is the previous effect), but the
+    // the effect is not |effect| (which is the previous effect), but the
     // |current_effect_| when this entry is the top of the stack.
     FloatRect bounds;
   };
@@ -534,11 +536,10 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
   // effects, so we can handle them separately.
   bool has_filter = !effect.Filter().IsEmpty();
   bool has_opacity = effect.Opacity() != 1.f;
-  bool has_other_effects = effect.BlendMode() != SkBlendMode::kSrcOver ||
-                           effect.GetColorFilter() != kColorFilterNone;
+  bool has_other_effects = effect.BlendMode() != SkBlendMode::kSrcOver;
   DCHECK(!has_filter || !(has_opacity || has_other_effects));
   // We always composite backdrop filters.
-  DCHECK(effect.BackdropFilter().IsEmpty());
+  DCHECK(!effect.BackdropFilter());
 
   // Apply effects.
   cc_list_.StartPaint();
@@ -550,8 +551,6 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
       PaintFlags flags;
       flags.setBlendMode(effect.BlendMode());
       flags.setAlpha(alpha);
-      flags.setColorFilter(GraphicsContext::WebCoreColorFilterToSkiaColorFilter(
-          effect.GetColorFilter()));
       save_layer_id = cc_list_.push<cc::SaveLayerOp>(nullptr, &flags);
     } else {
       save_layer_id = cc_list_.push<cc::SaveLayerAlphaOp>(nullptr, alpha);
@@ -688,7 +687,7 @@ void ConversionContext::SwitchToTransform(
     const auto& translation = translation_2d_or_matrix.Translation2D();
     cc_list_.push<cc::TranslateOp>(translation.Width(), translation.Height());
   } else {
-    cc_list_.push<cc::ConcatOp>(translation_2d_or_matrix.ToSkMatrix());
+    cc_list_.push<cc::ConcatOp>(translation_2d_or_matrix.ToSkM44());
   }
   cc_list_.EndPaintOfPairedBegin();
   previous_transform_ = current_transform_;
@@ -714,10 +713,10 @@ void ConversionContext::Convert(const PaintChunkSubset& chunks) {
 
     for (const auto& item : it.DisplayItems()) {
       sk_sp<const PaintRecord> record;
-      if (item.IsScrollbar())
-        record = static_cast<const ScrollbarDisplayItem&>(item).Paint();
-      else if (item.IsDrawing())
-        record = static_cast<const DrawingDisplayItem&>(item).GetPaintRecord();
+      if (auto* scrollbar = DynamicTo<ScrollbarDisplayItem>(item))
+        record = scrollbar->Paint();
+      else if (auto* drawing = DynamicTo<DrawingDisplayItem>(item))
+        record = drawing->GetPaintRecord();
       else
         continue;
 
@@ -815,8 +814,6 @@ static void UpdateBackgroundColor(cc::Layer& layer,
                                   const EffectPaintPropertyNode& layer_effect,
                                   const PaintChunkSubset& paint_chunks) {
   Vector<Color, 4> background_colors;
-  Color safe_opaque_background_color;
-  float safe_opaque_background_area = 0;
   float min_background_area = kMinBackgroundColorCoverageRatio *
                               layer.bounds().width() * layer.bounds().height();
   for (auto it = paint_chunks.end(); it != paint_chunks.begin();) {
@@ -841,20 +838,12 @@ static void UpdateBackgroundColor(cc::Layer& layer,
         break;
       }
     }
-    if (chunk.background_color_area > safe_opaque_background_area) {
-      // This color will be used only if we don't find proper background_color.
-      safe_opaque_background_color = chunk.background_color;
-      safe_opaque_background_area = chunk.background_color_area;
-    }
   }
 
   Color background_color;
   for (Color color : base::Reversed(background_colors))
     background_color = background_color.Blend(color);
   layer.SetBackgroundColor(background_color.Rgb());
-  layer.SetSafeOpaqueBackgroundColor(background_color == Color::kTransparent
-                                         ? safe_opaque_background_color.Rgb()
-                                         : background_color.Rgb());
 }
 
 static void UpdateTouchActionRegion(
@@ -941,8 +930,16 @@ static void UpdateNonFastScrollableRegion(
       // This is not necessary with ScrollUnification which ensures the
       // complete scroll tree.
       if (!RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
-        DCHECK(property_tree_manager);
-        property_tree_manager->EnsureCompositorScrollNode(*scroll_translation);
+        if (property_tree_manager) {
+          property_tree_manager->EnsureCompositorScrollNode(
+              *scroll_translation);
+        } else {
+          // A repaint-only update does not modify property tree nodes and has
+          // no property tree manager. This DCHECK ensures that a scroll node
+          // has already been created.
+          DCHECK(scroll_translation->CcNodeId(
+              layer.property_tree_sequence_number()));
+        }
       }
     }
   }
@@ -995,14 +992,75 @@ static void UpdateTouchActionWheelEventHandlerAndNonFastScrollableRegions(
   layer.SetNonFastScrollableRegion(std::move(non_fast_scrollable_region));
 }
 
+static gfx::Point MapSelectionBoundPoint(const IntPoint& point,
+                                         const PropertyTreeState& layer_state,
+                                         const PropertyTreeState& chunk_state,
+                                         const FloatPoint& layer_offset) {
+  FloatPoint mapped_point =
+      GeometryMapper::SourceToDestinationProjection(chunk_state.Transform(),
+                                                    layer_state.Transform())
+          .MapPoint(FloatPoint(point));
+
+  mapped_point.MoveBy(-layer_offset);
+  gfx::Point out_point(RoundedIntPoint(mapped_point));
+  return out_point;
+}
+
+static cc::LayerSelectionBound
+ConvertPaintedSelectionBoundToLayerSelectionBound(
+    const PaintedSelectionBound& bound,
+    const PropertyTreeState& layer_state,
+    const PropertyTreeState& chunk_state,
+    const FloatPoint& layer_offset) {
+  cc::LayerSelectionBound layer_bound;
+  layer_bound.type = bound.type;
+  layer_bound.hidden = bound.hidden;
+  layer_bound.edge_start = MapSelectionBoundPoint(bound.edge_start, layer_state,
+                                                  chunk_state, layer_offset);
+  layer_bound.edge_end = MapSelectionBoundPoint(bound.edge_end, layer_state,
+                                                chunk_state, layer_offset);
+  return layer_bound;
+}
+
+static void UpdateLayerSelection(cc::Layer& layer,
+                                 const PropertyTreeState& layer_state,
+                                 const PaintChunkSubset& chunks,
+                                 cc::LayerSelection& layer_selection) {
+  gfx::Vector2dF cc_layer_offset = layer.offset_to_transform_parent();
+  FloatPoint layer_offset(cc_layer_offset.x(), cc_layer_offset.y());
+  for (const auto& chunk : chunks) {
+    if (!chunk.layer_selection_data)
+      continue;
+
+    auto chunk_state = chunk.properties.GetPropertyTreeState().Unalias();
+    if (chunk.layer_selection_data->start) {
+      const PaintedSelectionBound& bound =
+          chunk.layer_selection_data->start.value();
+      layer_selection.start = ConvertPaintedSelectionBoundToLayerSelectionBound(
+          bound, layer_state, chunk_state, layer_offset);
+      layer_selection.start.layer_id = layer.id();
+    }
+
+    if (chunk.layer_selection_data->end) {
+      const PaintedSelectionBound& bound =
+          chunk.layer_selection_data->end.value();
+      layer_selection.end = ConvertPaintedSelectionBoundToLayerSelectionBound(
+          bound, layer_state, chunk_state, layer_offset);
+      layer_selection.end.layer_id = layer.id();
+    }
+  }
+}
+
 void PaintChunksToCcLayer::UpdateLayerProperties(
     cc::Layer& layer,
     const PropertyTreeState& layer_state,
     const PaintChunkSubset& chunks,
+    cc::LayerSelection& layer_selection,
     PropertyTreeManager* property_tree_manager) {
   UpdateBackgroundColor(layer, layer_state.Effect(), chunks);
   UpdateTouchActionWheelEventHandlerAndNonFastScrollableRegions(
       layer, layer_state, chunks, property_tree_manager);
+  UpdateLayerSelection(layer, layer_state, chunks, layer_selection);
 }
 
 }  // namespace blink

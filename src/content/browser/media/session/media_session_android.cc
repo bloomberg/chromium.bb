@@ -44,7 +44,6 @@ MediaSessionAndroid::MediaSessionAndroid(MediaSessionImpl* session)
     web_contents_android_ = contents->GetWebContentsAndroid();
     DCHECK(web_contents_android_);
     web_contents_android_->SetMediaSession(j_media_session);
-    web_contents_android_->AddDestructionObserver(this);
   }
 
   session->AddObserver(observer_receiver_.BindNewPipeAndPassRemote());
@@ -59,11 +58,6 @@ MediaSessionAndroid::~MediaSessionAndroid() {
     Java_MediaSessionImpl_mediaSessionDestroyed(env, j_local_session);
 
   j_media_session_.reset();
-
-  if (web_contents_android_) {
-    web_contents_android_->SetMediaSession(nullptr);
-    web_contents_android_->RemoveDestructionObserver(this);
-  }
 }
 
 // static
@@ -106,7 +100,7 @@ void MediaSessionAndroid::MediaSessionInfoChanged(
 }
 
 void MediaSessionAndroid::MediaSessionMetadataChanged(
-    const base::Optional<media_session::MediaMetadata>& metadata) {
+    const absl::optional<media_session::MediaMetadata>& metadata) {
   ScopedJavaLocalRef<jobject> j_local_session = GetJavaObject();
   if (j_local_session.is_null())
     return;
@@ -163,7 +157,7 @@ void MediaSessionAndroid::MediaSessionImagesChanged(
 }
 
 void MediaSessionAndroid::MediaSessionPositionChanged(
-    const base::Optional<media_session::MediaPosition>& position) {
+    const absl::optional<media_session::MediaPosition>& position) {
   ScopedJavaLocalRef<jobject> j_local_session = GetJavaObject();
   if (j_local_session.is_null())
     return;
@@ -177,14 +171,6 @@ void MediaSessionAndroid::MediaSessionPositionChanged(
     Java_MediaSessionImpl_mediaSessionPositionChanged(env, j_local_session,
                                                       nullptr);
   }
-}
-
-// The Java MediaSession is kept alive by the Java WebContents and will be
-// cleared when the WebContents is destroyed, so we destroy the corresponding
-// MediaSessionAndroid to ensure mediaSessionDestroyed is called.
-void MediaSessionAndroid::WebContentsAndroidDestroyed(
-    WebContentsAndroid* web_contents_android) {
-  media_session_->ClearMediaSessionAndroid();  // Deletes |this|.
 }
 
 void MediaSessionAndroid::Resume(

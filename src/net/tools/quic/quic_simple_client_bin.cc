@@ -36,9 +36,6 @@
 #include "base/logging.h"
 #include "net/base/net_errors.h"
 #include "net/quic/address_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
@@ -63,7 +60,8 @@ class QuicSimpleClientFactory : public quic::QuicToyClient::ClientFactory {
       uint16_t port,
       quic::ParsedQuicVersionVector versions,
       const quic::QuicConfig& config,
-      std::unique_ptr<quic::ProofVerifier> verifier) override {
+      std::unique_ptr<quic::ProofVerifier> verifier,
+      std::unique_ptr<quic::SessionCache> /*session_cache*/) override {
     net::AddressList addresses;
     int rv = net::SynchronousHostResolver::Resolve(host_for_lookup, &addresses);
     if (rv != net::OK) {

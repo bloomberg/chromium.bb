@@ -15,13 +15,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/browser/ui/user_manager.h"
+#include "chrome/browser/ui/profile_picker.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -37,9 +38,9 @@
 const char kSignInPromoQueryKeyShowAccountManagement[] =
     "showAccountManagement";
 
-InlineLoginHandler::InlineLoginHandler() {}
+InlineLoginHandler::InlineLoginHandler() = default;
 
-InlineLoginHandler::~InlineLoginHandler() {}
+InlineLoginHandler::~InlineLoginHandler() = default;
 
 void InlineLoginHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -61,6 +62,10 @@ void InlineLoginHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "dialogClose", base::BindRepeating(&InlineLoginHandler::HandleDialogClose,
                                          base::Unretained(this)));
+}
+
+void InlineLoginHandler::OnJavascriptDisallowed() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void InlineLoginHandler::HandleInitializeMessage(const base::ListValue* args) {
@@ -106,9 +111,8 @@ void InlineLoginHandler::ContinueHandleInitializeMessage() {
   signin_metrics::Reason reason =
       signin::GetSigninReasonForEmbeddedPromoURL(current_url);
 
-  if (reason != signin_metrics::Reason::REASON_REAUTHENTICATION &&
-      reason != signin_metrics::Reason::REASON_UNLOCK &&
-      reason != signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT) {
+  if (reason != signin_metrics::Reason::kReauthentication &&
+      reason != signin_metrics::Reason::kAddSecondaryAccount) {
     signin_metrics::LogSigninAccessPointStarted(
         access_point,
         signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
@@ -121,8 +125,8 @@ void InlineLoginHandler::ContinueHandleInitializeMessage() {
 
   Profile* profile = Profile::FromWebUI(web_ui());
   std::string default_email;
-  if (reason == signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT ||
-      reason == signin_metrics::Reason::REASON_FORCED_SIGNIN_PRIMARY_ACCOUNT) {
+  if (reason == signin_metrics::Reason::kSigninPrimaryAccount ||
+      reason == signin_metrics::Reason::kForcedSigninPrimaryAccount) {
     default_email =
         profile->GetPrefs()->GetString(prefs::kGoogleServicesLastUsername);
   } else {
@@ -180,7 +184,7 @@ void InlineLoginHandler::HandleCompleteLoginMessageWithCookies(
   }
 
   bool skip_for_now = dict.FindBoolKey("skipForNow").value_or(false);
-  base::Optional<bool> trusted = dict.FindBoolKey("trusted");
+  absl::optional<bool> trusted = dict.FindBoolKey("trusted");
   bool trusted_value = trusted.value_or(false);
   bool trusted_found = trusted.has_value();
 
@@ -229,10 +233,10 @@ void InlineLoginHandler::HandleSwitchToFullTabMessage(
 }
 
 void InlineLoginHandler::HandleDialogClose(const base::ListValue* args) {
-#if !defined(OS_CHROMEOS)
-  // Does nothing if user manager is not showing.
-  UserManagerProfileDialog::HideDialog();
-#endif  // !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  // Does nothing if profile picker is not showing.
+  ProfilePickerForceSigninDialog::HideDialog();
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void InlineLoginHandler::CloseDialogFromJavascript() {

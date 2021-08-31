@@ -14,11 +14,13 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
+#include "ui/base/linux/linux_desktop.h"
 #include "ui/base/x/x11_display_util.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/display/display.h"
 #include "ui/display/display_finder.h"
 #include "ui/display/util/display_util.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -33,7 +35,7 @@ namespace views {
 
 DesktopScreenX11::DesktopScreenX11() {
   if (LinuxUI::instance())
-    display_scale_factor_observer_.Add(LinuxUI::instance());
+    display_scale_factor_observer_.Observe(LinuxUI::instance());
 }
 
 DesktopScreenX11::~DesktopScreenX11() {
@@ -41,21 +43,20 @@ DesktopScreenX11::~DesktopScreenX11() {
 }
 
 void DesktopScreenX11::Init() {
-  if (x11_display_manager_->IsXrandrAvailable() &&
-      ui::X11EventSource::HasInstance())
-    event_source_observer_.Add(ui::X11EventSource::GetInstance());
+  if (x11_display_manager_->IsXrandrAvailable())
+    event_observer_.Observe(x11::Connection::Get());
   x11_display_manager_->Init();
 }
 
 gfx::Point DesktopScreenX11::GetCursorScreenPoint() {
   TRACE_EVENT0("views", "DesktopScreenX11::GetCursorScreenPoint()");
 
-  base::Optional<gfx::Point> point_in_pixels;
+  absl::optional<gfx::Point> point_in_pixels;
   if (const auto* const event_source = ui::X11EventSource::GetInstance())
     point_in_pixels = event_source->GetRootCursorLocationFromCurrentEvent();
   if (!point_in_pixels) {
     // This call is expensive so we explicitly only call it when
-    // |point_in_pixels| is not set. We note that base::Optional::value_or()
+    // |point_in_pixels| is not set. We note that absl::optional::value_or()
     // would cause it to be called regardless.
     point_in_pixels = x11_display_manager_->GetCursorLocation();
   }
@@ -162,8 +163,8 @@ std::string DesktopScreenX11::GetCurrentWorkspace() {
   return x11_display_manager_->GetCurrentWorkspace();
 }
 
-bool DesktopScreenX11::DispatchXEvent(x11::Event* event) {
-  return x11_display_manager_->ProcessEvent(event);
+void DesktopScreenX11::OnEvent(const x11::Event& event) {
+  x11_display_manager_->OnEvent(event);
 }
 
 void DesktopScreenX11::OnDeviceScaleFactorChanged() {

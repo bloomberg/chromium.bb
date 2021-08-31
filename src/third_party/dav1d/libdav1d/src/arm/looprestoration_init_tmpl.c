@@ -27,9 +27,24 @@
 
 #include "src/cpu.h"
 #include "src/looprestoration.h"
-#include "src/tables.h"
 
-#if BITDEPTH == 8 || ARCH_AARCH64
+#if ARCH_AARCH64
+void BF(dav1d_wiener_filter7, neon)(pixel *p, const ptrdiff_t p_stride,
+                                    const pixel (*left)[4],
+                                    const pixel *lpf, const ptrdiff_t lpf_stride,
+                                    const int w, int h,
+                                    const LooprestorationParams *const params,
+                                    const enum LrEdgeFlags edges
+                                    HIGHBD_DECL_SUFFIX);
+void BF(dav1d_wiener_filter5, neon)(pixel *p, const ptrdiff_t p_stride,
+                                    const pixel (*left)[4],
+                                    const pixel *lpf, const ptrdiff_t lpf_stride,
+                                    const int w, int h,
+                                    const LooprestorationParams *const params,
+                                    const enum LrEdgeFlags edges
+                                    HIGHBD_DECL_SUFFIX);
+#else
+
 // The 8bpc version calculates things slightly differently than the reference
 // C version. That version calculates roughly this:
 // int16_t sum = 0;
@@ -46,12 +61,11 @@
 // 1 << (bitdepth + 6 - round_bits_h).
 void BF(dav1d_wiener_filter_h, neon)(int16_t *dst, const pixel (*left)[4],
                                      const pixel *src, ptrdiff_t stride,
-                                     const int16_t fh[7], const intptr_t w,
+                                     const int16_t fh[8], intptr_t w,
                                      int h, enum LrEdgeFlags edges
                                      HIGHBD_DECL_SUFFIX);
 // This calculates things slightly differently than the reference C version.
 // This version calculates roughly this:
-// fv[3] += 128;
 // int32_t sum = 0;
 // for (int i = 0; i < 7; i++)
 //     sum += mid[idx] * fv[i];
@@ -59,51 +73,40 @@ void BF(dav1d_wiener_filter_h, neon)(int16_t *dst, const pixel (*left)[4],
 // This function assumes that the width is a multiple of 8.
 void BF(dav1d_wiener_filter_v, neon)(pixel *dst, ptrdiff_t stride,
                                      const int16_t *mid, int w, int h,
-                                     const int16_t fv[7], enum LrEdgeFlags edges,
+                                     const int16_t fv[8], enum LrEdgeFlags edges,
                                      ptrdiff_t mid_stride HIGHBD_DECL_SUFFIX);
-void BF(dav1d_copy_narrow, neon)(pixel *dst, ptrdiff_t stride,
-                                 const pixel *src, int w, int h);
 
 static void wiener_filter_neon(pixel *const dst, const ptrdiff_t dst_stride,
                                const pixel (*const left)[4],
                                const pixel *lpf, const ptrdiff_t lpf_stride,
-                               const int w, const int h, const int16_t fh[7],
-                               const int16_t fv[7], const enum LrEdgeFlags edges
-                               HIGHBD_DECL_SUFFIX)
+                               const int w, const int h,
+                               const LooprestorationParams *const params,
+                               const enum LrEdgeFlags edges HIGHBD_DECL_SUFFIX)
 {
+    const int16_t (*const filter)[8] = params->filter;
     ALIGN_STK_16(int16_t, mid, 68 * 384,);
     int mid_stride = (w + 7) & ~7;
 
     // Horizontal filter
     BF(dav1d_wiener_filter_h, neon)(&mid[2 * mid_stride], left, dst, dst_stride,
-                                    fh, w, h, edges HIGHBD_TAIL_SUFFIX);
+                                    filter[0], w, h, edges HIGHBD_TAIL_SUFFIX);
     if (edges & LR_HAVE_TOP)
         BF(dav1d_wiener_filter_h, neon)(mid, NULL, lpf, lpf_stride,
-                                        fh, w, 2, edges HIGHBD_TAIL_SUFFIX);
+                                        filter[0], w, 2, edges
+                                        HIGHBD_TAIL_SUFFIX);
     if (edges & LR_HAVE_BOTTOM)
         BF(dav1d_wiener_filter_h, neon)(&mid[(2 + h) * mid_stride], NULL,
                                         lpf + 6 * PXSTRIDE(lpf_stride),
-                                        lpf_stride, fh, w, 2, edges
+                                        lpf_stride, filter[0], w, 2, edges
                                         HIGHBD_TAIL_SUFFIX);
 
     // Vertical filter
-    if (w >= 8)
-        BF(dav1d_wiener_filter_v, neon)(dst, dst_stride, &mid[2*mid_stride],
-                                        w & ~7, h, fv, edges,
-                                        mid_stride * sizeof(*mid)
-                                        HIGHBD_TAIL_SUFFIX);
-    if (w & 7) {
-        // For uneven widths, do a full 8 pixel wide filtering into a temp
-        // buffer and copy out the narrow slice of pixels separately into dest.
-        ALIGN_STK_16(pixel, tmp, 64 * 8,);
-        BF(dav1d_wiener_filter_v, neon)(tmp, (w & 7) * sizeof(pixel),
-                                        &mid[2*mid_stride + (w & ~7)],
-                                        w & 7, h, fv, edges,
-                                        mid_stride * sizeof(*mid)
-                                        HIGHBD_TAIL_SUFFIX);
-        BF(dav1d_copy_narrow, neon)(dst + (w & ~7), dst_stride, tmp, w & 7, h);
-    }
+    BF(dav1d_wiener_filter_v, neon)(dst, dst_stride, &mid[2*mid_stride],
+                                    w, h, filter[1], edges,
+                                    mid_stride * sizeof(*mid)
+                                    HIGHBD_TAIL_SUFFIX);
 }
+#endif
 
 void BF(dav1d_sgr_box3_h, neon)(int32_t *sumsq, int16_t *sum,
                                 const pixel (*left)[4],
@@ -205,94 +208,66 @@ void BF(dav1d_sgr_weighted2, neon)(pixel *dst, const ptrdiff_t dst_stride,
                                    const int w, const int h,
                                    const int16_t wt[2] HIGHBD_DECL_SUFFIX);
 
-static void sgr_filter_neon(pixel *const dst, const ptrdiff_t dst_stride,
-                             const pixel (*const left)[4],
-                             const pixel *lpf, const ptrdiff_t lpf_stride,
-                             const int w, const int h, const int sgr_idx,
-                             const int16_t sgr_wt[7], const enum LrEdgeFlags edges
-                             HIGHBD_DECL_SUFFIX)
+static void sgr_filter_5x5_neon(pixel *const dst, const ptrdiff_t dst_stride,
+                                const pixel (*const left)[4],
+                                const pixel *lpf, const ptrdiff_t lpf_stride,
+                                const int w, const int h,
+                                const LooprestorationParams *const params,
+                                const enum LrEdgeFlags edges HIGHBD_DECL_SUFFIX)
 {
-    if (!dav1d_sgr_params[sgr_idx][0]) {
-        ALIGN_STK_16(int16_t, tmp, 64 * 384,);
-        dav1d_sgr_filter1_neon(tmp, dst, dst_stride, left, lpf, lpf_stride,
-                               w, h, dav1d_sgr_params[sgr_idx][3], edges
-                               HIGHBD_TAIL_SUFFIX);
-        if (w >= 8)
-            BF(dav1d_sgr_weighted1, neon)(dst, dst_stride, dst, dst_stride,
-                                          tmp, w & ~7, h, (1 << 7) - sgr_wt[1]
-                                          HIGHBD_TAIL_SUFFIX);
-        if (w & 7) {
-            // For uneven widths, do a full 8 pixel wide filtering into a temp
-            // buffer and copy out the narrow slice of pixels separately into
-            // dest.
-            ALIGN_STK_16(pixel, stripe, 64 * 8,);
-            BF(dav1d_sgr_weighted1, neon)(stripe, (w & 7) * sizeof(pixel),
-                                          dst + (w & ~7), dst_stride,
-                                          tmp + (w & ~7), w & 7, h,
-                                          (1 << 7) - sgr_wt[1]
-                                          HIGHBD_TAIL_SUFFIX);
-            BF(dav1d_copy_narrow, neon)(dst + (w & ~7), dst_stride, stripe,
-                                        w & 7, h);
-        }
-    } else if (!dav1d_sgr_params[sgr_idx][1]) {
-        ALIGN_STK_16(int16_t, tmp, 64 * 384,);
-        dav1d_sgr_filter2_neon(tmp, dst, dst_stride, left, lpf, lpf_stride,
-                               w, h, dav1d_sgr_params[sgr_idx][2], edges
-                               HIGHBD_TAIL_SUFFIX);
-        if (w >= 8)
-            BF(dav1d_sgr_weighted1, neon)(dst, dst_stride, dst, dst_stride,
-                                          tmp, w & ~7, h, sgr_wt[0]
-                                          HIGHBD_TAIL_SUFFIX);
-        if (w & 7) {
-            // For uneven widths, do a full 8 pixel wide filtering into a temp
-            // buffer and copy out the narrow slice of pixels separately into
-            // dest.
-            ALIGN_STK_16(pixel, stripe, 64 * 8,);
-            BF(dav1d_sgr_weighted1, neon)(stripe, (w & 7) * sizeof(pixel),
-                                          dst + (w & ~7), dst_stride,
-                                          tmp + (w & ~7), w & 7, h, sgr_wt[0]
-                                          HIGHBD_TAIL_SUFFIX);
-            BF(dav1d_copy_narrow, neon)(dst + (w & ~7), dst_stride, stripe,
-                                        w & 7, h);
-        }
-    } else {
-        ALIGN_STK_16(int16_t, tmp1, 64 * 384,);
-        ALIGN_STK_16(int16_t, tmp2, 64 * 384,);
-        dav1d_sgr_filter2_neon(tmp1, dst, dst_stride, left, lpf, lpf_stride,
-                               w, h, dav1d_sgr_params[sgr_idx][2], edges
-                               HIGHBD_TAIL_SUFFIX);
-        dav1d_sgr_filter1_neon(tmp2, dst, dst_stride, left, lpf, lpf_stride,
-                               w, h, dav1d_sgr_params[sgr_idx][3], edges
-                               HIGHBD_TAIL_SUFFIX);
-        const int16_t wt[2] = { sgr_wt[0], 128 - sgr_wt[0] - sgr_wt[1] };
-        if (w >= 8)
-            BF(dav1d_sgr_weighted2, neon)(dst, dst_stride, dst, dst_stride,
-                                          tmp1, tmp2, w & ~7, h, wt
-                                          HIGHBD_TAIL_SUFFIX);
-        if (w & 7) {
-            // For uneven widths, do a full 8 pixel wide filtering into a temp
-            // buffer and copy out the narrow slice of pixels separately into
-            // dest.
-            ALIGN_STK_16(pixel, stripe, 64 * 8,);
-            BF(dav1d_sgr_weighted2, neon)(stripe, (w & 7) * sizeof(pixel),
-                                          dst + (w & ~7), dst_stride,
-                                          tmp1 + (w & ~7), tmp2 + (w & ~7),
-                                          w & 7, h, wt HIGHBD_TAIL_SUFFIX);
-            BF(dav1d_copy_narrow, neon)(dst + (w & ~7), dst_stride, stripe,
-                                        w & 7, h);
-        }
-    }
+    ALIGN_STK_16(int16_t, tmp, 64 * 384,);
+    dav1d_sgr_filter2_neon(tmp, dst, dst_stride, left, lpf, lpf_stride,
+                           w, h, params->sgr.s0, edges HIGHBD_TAIL_SUFFIX);
+    BF(dav1d_sgr_weighted1, neon)(dst, dst_stride, dst, dst_stride,
+                                  tmp, w, h, params->sgr.w0 HIGHBD_TAIL_SUFFIX);
 }
-#endif // BITDEPTH == 8
+
+static void sgr_filter_3x3_neon(pixel *const dst, const ptrdiff_t dst_stride,
+                                const pixel (*const left)[4],
+                                const pixel *lpf, const ptrdiff_t lpf_stride,
+                                const int w, const int h,
+                                const LooprestorationParams *const params,
+                                const enum LrEdgeFlags edges HIGHBD_DECL_SUFFIX)
+{
+    ALIGN_STK_16(int16_t, tmp, 64 * 384,);
+    dav1d_sgr_filter1_neon(tmp, dst, dst_stride, left, lpf, lpf_stride,
+                           w, h, params->sgr.s1, edges HIGHBD_TAIL_SUFFIX);
+    BF(dav1d_sgr_weighted1, neon)(dst, dst_stride, dst, dst_stride,
+                                  tmp, w, h, params->sgr.w1 HIGHBD_TAIL_SUFFIX);
+}
+
+static void sgr_filter_mix_neon(pixel *const dst, const ptrdiff_t dst_stride,
+                                const pixel (*const left)[4],
+                                const pixel *lpf, const ptrdiff_t lpf_stride,
+                                const int w, const int h,
+                                const LooprestorationParams *const params,
+                                const enum LrEdgeFlags edges HIGHBD_DECL_SUFFIX)
+{
+    ALIGN_STK_16(int16_t, tmp1, 64 * 384,);
+    ALIGN_STK_16(int16_t, tmp2, 64 * 384,);
+    dav1d_sgr_filter2_neon(tmp1, dst, dst_stride, left, lpf, lpf_stride,
+                           w, h, params->sgr.s0, edges HIGHBD_TAIL_SUFFIX);
+    dav1d_sgr_filter1_neon(tmp2, dst, dst_stride, left, lpf, lpf_stride,
+                           w, h, params->sgr.s1, edges HIGHBD_TAIL_SUFFIX);
+    const int16_t wt[2] = { params->sgr.w0, params->sgr.w1 };
+    BF(dav1d_sgr_weighted2, neon)(dst, dst_stride, dst, dst_stride,
+                                  tmp1, tmp2, w, h, wt HIGHBD_TAIL_SUFFIX);
+}
 
 COLD void bitfn(dav1d_loop_restoration_dsp_init_arm)(Dav1dLoopRestorationDSPContext *const c, int bpc) {
     const unsigned flags = dav1d_get_cpu_flags();
 
     if (!(flags & DAV1D_ARM_CPU_FLAG_NEON)) return;
 
-#if BITDEPTH == 8 || ARCH_AARCH64
-    c->wiener = wiener_filter_neon;
-    if (bpc <= 10)
-        c->selfguided = sgr_filter_neon;
+#if ARCH_AARCH64
+    c->wiener[0] = BF(dav1d_wiener_filter7, neon);
+    c->wiener[1] = BF(dav1d_wiener_filter5, neon);
+#else
+    c->wiener[0] = c->wiener[1] = wiener_filter_neon;
 #endif
+    if (bpc <= 10) {
+        c->sgr[0] = sgr_filter_5x5_neon;
+        c->sgr[1] = sgr_filter_3x3_neon;
+        c->sgr[2] = sgr_filter_mix_neon;
+    }
 }

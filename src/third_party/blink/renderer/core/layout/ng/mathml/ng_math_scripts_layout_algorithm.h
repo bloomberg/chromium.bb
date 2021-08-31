@@ -23,6 +23,7 @@ class CORE_EXPORT NGMathScriptsLayoutAlgorithm
 
  private:
   struct SubSupPair {
+    DISALLOW_NEW();
     NGBlockNode sub = nullptr;
     NGBlockNode sup = nullptr;
   };
@@ -33,7 +34,8 @@ class CORE_EXPORT NGMathScriptsLayoutAlgorithm
                       unsigned* first_prescript_index,
                       NGBoxFragmentBuilder* = nullptr) const;
 
-  MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const final;
+  MinMaxSizesResult ComputeMinMaxSizes(
+      const MinMaxSizesFloatInput&) const final;
 
   struct ChildAndMetrics {
     DISALLOW_NEW();

@@ -10,10 +10,12 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -21,6 +23,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "third_party/blink/public/common/switches.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -187,7 +190,7 @@ void FullscreenKeyboardBrowserTestBase::SendFullscreenShortcutAndWait() {
   // On MACOSX, Command + Control + F is used.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(GetActiveBrowser(), ui::VKEY_F,
                                               true, false, false, true));
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
   // A dedicated fullscreen key is used on Chrome OS, so send a fullscreen
   // command directly instead, to avoid constructing the key press.
   ASSERT_TRUE(chrome::ExecuteCommand(GetActiveBrowser(), IDC_FULLSCREEN));
@@ -430,4 +433,10 @@ std::string FullscreenKeyboardBrowserTestBase::GetFullscreenFramePath() {
 
 void FullscreenKeyboardBrowserTestBase::SetUpOnMainThread() {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(GetActiveBrowser()));
+}
+
+void FullscreenKeyboardBrowserTestBase::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  BrowserTestBase::SetUpCommandLine(command_line);
+  command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
 }

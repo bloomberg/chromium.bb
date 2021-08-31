@@ -45,8 +45,7 @@ static void makebm(SkBitmap* bm, SkColorType ct, int w, int h) {
 
 static void setup(SkPaint* paint, const SkBitmap& bm, SkFilterQuality filter_level,
                   SkTileMode tmx, SkTileMode tmy) {
-    paint->setShader(bm.makeShader(tmx, tmy));
-    paint->setFilterQuality(filter_level);
+    paint->setShader(bm.makeShader(tmx, tmy, SkSamplingOptions(filter_level)));
 }
 
 constexpr SkColorType gColorTypes[] = {
@@ -168,7 +167,7 @@ constexpr int gHeight = 32;
 static sk_sp<SkShader> make_bm(SkTileMode tx, SkTileMode ty) {
     SkBitmap bm;
     makebm(&bm, kN32_SkColorType, gWidth, gHeight);
-    return bm.makeShader(tx, ty);
+    return bm.makeShader(tx, ty, SkSamplingOptions());
 }
 
 static sk_sp<SkShader> make_grad(SkTileMode tx, SkTileMode ty) {

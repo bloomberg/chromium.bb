@@ -22,11 +22,15 @@ class GrShaderCaps;
 class GrSwizzle;
 class GrTextureEffect;
 
-/** Provides custom fragment shader code. Fragment processors receive an input color (half4) and
-    produce an output color. They may reference textures and uniforms.
+/** Provides custom fragment shader code. Fragment processors receive an input position and
+    produce an output color. They may contain uniforms and may have children fragment processors
+    that are sampled.
  */
 class GrFragmentProcessor : public GrProcessor {
 public:
+    /** Always returns 'color'. */
+    static std::unique_ptr<GrFragmentProcessor> MakeColor(SkPMColor4f color);
+
     /**
     *  In many instances (e.g. SkShader::asFragmentProcessor() implementations) it is desirable to
     *  only consider the input color's alpha. However, there is a competing desire to have reusable
@@ -101,8 +105,8 @@ public:
 
     /**
      * Returns a fragment processor that composes two fragment processors `f` and `g` into f(g(x)).
-     * This is equivalent to running them in series. This is not the same as transfer-mode
-     * composition; there is no blending step.
+     * This is equivalent to running them in series (`g`, then `f`). This is not the same as
+     * transfer-mode composition; there is no blending step.
      */
     static std::unique_ptr<GrFragmentProcessor> Compose(std::unique_ptr<GrFragmentProcessor> f,
                                                         std::unique_ptr<GrFragmentProcessor> g);
@@ -116,7 +120,7 @@ public:
     // The FP this was registered with as a child function. This will be null if this is a root.
     const GrFragmentProcessor* parent() const { return fParent; }
 
-    GrGLSLFragmentProcessor* createGLSLInstance() const;
+    std::unique_ptr<GrGLSLFragmentProcessor> makeProgramImpl() const;
 
     void getGLSLProcessorKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const {
         this->onGetGLSLProcessorKey(caps, b);
@@ -187,11 +191,6 @@ public:
     // coordinate expression.
     bool hasPerspectiveTransform() const {
         return SkToBool(fFlags & kNetTransformHasPerspective_Flag);
-    }
-
-    // True if emitted code returns the output color, rather than assigning it to sk_OutColor.
-    virtual bool usesExplicitReturn() const {
-        return false;
     }
 
     // The SampleUsage describing how this FP is invoked by its parent using 'sample(matrix)'
@@ -388,6 +387,11 @@ protected:
         fFlags |= kUsesSampleCoordsDirectly_Flag;
     }
 
+    void mergeOptimizationFlags(OptimizationFlags flags) {
+        SkASSERT((flags & ~kAll_OptimizationFlags) == 0);
+        fFlags &= (flags | ~kAll_OptimizationFlags);
+    }
+
 private:
     virtual SkPMColor4f constantOutputForConstantInput(const SkPMColor4f& /* inputColor */) const {
         SK_ABORT("Subclass must override this if advertising this optimization.");
@@ -396,7 +400,7 @@ private:
     /** Returns a new instance of the appropriate *GL* implementation class
         for the given GrFragmentProcessor; caller is responsible for deleting
         the object. */
-    virtual GrGLSLFragmentProcessor* onCreateGLSLInstance() const = 0;
+    virtual std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const = 0;
 
     /** Implemented using GLFragmentProcessor::GenKey as described in this class's comment. */
     virtual void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const = 0;
@@ -487,6 +491,7 @@ static inline GrFPResult GrFPFailure(std::unique_ptr<GrFragmentProcessor> fp) {
     return {false, std::move(fp)};
 }
 static inline GrFPResult GrFPSuccess(std::unique_ptr<GrFragmentProcessor> fp) {
+    SkASSERT(fp);
     return {true, std::move(fp)};
 }
 

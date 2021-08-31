@@ -34,7 +34,7 @@ BindingsManagerCast::~BindingsManagerCast() = default;
 void BindingsManagerCast::AddBinding(base::StringPiece binding_name,
                                      base::StringPiece binding_script) {
   cast_web_contents_->script_injector()->AddScriptForAllOrigins(
-      binding_name.as_string(), binding_script);
+      std::string(binding_name), binding_script);
 }
 
 void BindingsManagerCast::OnPageStateChanged(
@@ -42,9 +42,6 @@ void BindingsManagerCast::OnPageStateChanged(
   auto page_state = cast_web_contents->page_state();
 
   switch (page_state) {
-    case CastWebContents::PageState::LOADING:
-      cast_web_contents_->InjectScriptsIntoMainFrame();
-      break;
     case CastWebContents::PageState::DESTROYED:
     case CastWebContents::PageState::ERROR:
       CastWebContents::Observer::Observe(nullptr);
@@ -55,6 +52,7 @@ void BindingsManagerCast::OnPageStateChanged(
       port_connector_->OnPageLoaded();
       break;
     case CastWebContents::PageState::IDLE:
+    case CastWebContents::PageState::LOADING:
     case CastWebContents::PageState::CLOSED:
       break;
   }

@@ -11,8 +11,8 @@
 
 #include "ash/search_box/search_box_view_delegate.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/timer/timer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace aura {
@@ -46,7 +46,7 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   // views::View:
   const char* GetClassName() const override;
   ax::mojom::Role GetAccessibleWindowRole() override;
-  base::string16 GetAccessibleWindowTitle() const override;
+  std::u16string GetAccessibleWindowTitle() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
@@ -71,13 +71,13 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   // If |initial_category| has value, we will initialize the specified category,
   // otherwise all the categories will be intialized.
   void InitCategoriesTabbedPane(
-      base::Optional<ShortcutCategory> initial_category);
+      absl::optional<ShortcutCategory> initial_category);
 
   // Update views' layout based on search box status.
   void UpdateViewsLayout(bool is_search_box_active);
 
   // Show search results in |search_results_container_|.
-  void ShowSearchResults(const base::string16& search_query);
+  void ShowSearchResults(const std::u16string& search_query);
 
   // views::WidgetDelegate:
   views::ClientView* CreateClientView(views::Widget* widget) override;

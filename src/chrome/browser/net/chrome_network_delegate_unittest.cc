@@ -8,13 +8,18 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "base/files/file_util.h"
 #include "base/system/sys_info.h"
+#include "base/test/scoped_running_on_chromeos.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/scoped_set_running_on_chromeos_for_testing.h"
-#include "chrome/browser/download/download_prefs.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/common/chrome_paths.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -31,30 +36,23 @@ bool IsAccessAllowed(const std::string& path,
       base::FilePath::FromUTF8Unsafe(profile_path));
 }
 
-#if defined(OS_CHROMEOS)
-const char kLsbRelease[] =
-    "CHROMEOS_RELEASE_NAME=Chrome OS\n"
-    "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
-#endif
-
 }  // namespace
 
 TEST(ChromeNetworkDelegateStaticTest, IsAccessAllowed) {
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  // Platforms other than Chrome OS and Android have access to any files.
-  EXPECT_TRUE(IsAccessAllowed("/", ""));
-  EXPECT_TRUE(IsAccessAllowed("/foo.txt", ""));
-#endif
-
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS) || \
+    defined(OS_ANDROID)
   // Chrome OS and Android don't have access to random files.
   EXPECT_FALSE(IsAccessAllowed("/", ""));
   EXPECT_FALSE(IsAccessAllowed("/foo.txt", ""));
   // Empty path should not be allowed.
   EXPECT_FALSE(IsAccessAllowed("", ""));
+#else
+  // Platforms other than Chrome OS and Android have access to any files.
+  EXPECT_TRUE(IsAccessAllowed("/", ""));
+  EXPECT_TRUE(IsAccessAllowed("/foo.txt", ""));
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   base::FilePath temp_dir;
   ASSERT_TRUE(base::PathService::Get(base::DIR_TEMP, &temp_dir));
   // Chrome OS allows the following directories.
@@ -75,10 +73,24 @@ TEST(ChromeNetworkDelegateStaticTest, IsAccessAllowed) {
   EXPECT_FALSE(IsAccessAllowed("/home/chronos/user", ""));
   EXPECT_FALSE(IsAccessAllowed("/home/chronos", ""));
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // If profile path is given, the following additional paths are allowed.
   EXPECT_TRUE(IsAccessAllowed("/profile/Downloads", "/profile"));
   EXPECT_TRUE(IsAccessAllowed("/profile/MyFiles", "/profile"));
   EXPECT_TRUE(IsAccessAllowed("/profile/MyFiles/file.pdf", "/profile"));
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // System level documents and downloads directories are allowed.
+  base::FilePath documents_dir;
+  base::PathService::Get(chrome::DIR_USER_DOCUMENTS, &documents_dir);
+  EXPECT_TRUE(IsAccessAllowed(documents_dir.AsUTF8Unsafe(), ""));
+  base::FilePath downloads_dir;
+  base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_dir);
+  EXPECT_TRUE(IsAccessAllowed(downloads_dir.AsUTF8Unsafe(), ""));
+#endif
+
+  // WebRTC logs for the current profile are allowed.
   EXPECT_TRUE(IsAccessAllowed("/profile/WebRTC Logs", "/profile"));
 
   // GCache/v2/<opaque ID>/Logs is allowed.
@@ -94,12 +106,10 @@ TEST(ChromeNetworkDelegateStaticTest, IsAccessAllowed) {
   EXPECT_FALSE(IsAccessAllowed("/home/chronos/user/GCache/v2/id/Logs", ""));
 
   // $HOME/Downloads is allowed for linux-chromeos, but not on devices.
-  const std::string& home_downloads =
-      DownloadPrefs::GetDefaultDownloadDirectory().value();
+  std::string home_downloads = base::GetHomeDir().Append("Downloads").value();
   EXPECT_TRUE(IsAccessAllowed(home_downloads, ""));
   {
-    chromeos::ScopedSetRunningOnChromeOSForTesting fake_release(kLsbRelease,
-                                                                base::Time());
+    base::test::ScopedRunningOnChromeOS running_on_chromeos;
     EXPECT_FALSE(IsAccessAllowed(home_downloads, ""));
   }
 

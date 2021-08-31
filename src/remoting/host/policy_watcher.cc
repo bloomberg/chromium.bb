@@ -7,6 +7,7 @@
 
 #include "remoting/host/policy_watcher.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -18,6 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/policy/core/common/async_policy_loader.h"
 #include "components/policy/core/common/async_policy_provider.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -63,7 +65,7 @@ std::unique_ptr<base::DictionaryValue> CopyValuesAndAddDefaults(
     }
 
     CHECK(value->type() == i.value().type());
-    to->Set(i.key(), value->CreateDeepCopy());
+    to->Set(i.key(), base::Value::ToUniquePtrValue(value->Clone()));
   }
 
   return to;
@@ -99,7 +101,7 @@ std::unique_ptr<base::DictionaryValue> CopyChromotingPoliciesIntoDictionary(
     // TODO(lukasza): Removing this somewhat brittle filtering will be possible
     //                after having separate, Chromoting-specific schema.
     if (key.find(kPolicyNameSubstring) != std::string::npos) {
-      policy_dict->Set(key, value->CreateDeepCopy());
+      policy_dict->Set(key, base::Value::ToUniquePtrValue(value->Clone()));
     }
   }
 
@@ -158,8 +160,12 @@ void PolicyWatcher::StartWatching(
   }
 }
 
-std::unique_ptr<base::DictionaryValue> PolicyWatcher::GetCurrentPolicies() {
-  return old_policies_->CreateDeepCopy();
+std::unique_ptr<base::DictionaryValue> PolicyWatcher::GetEffectivePolicies() {
+  return effective_policies_->CreateDeepCopy();
+}
+
+std::unique_ptr<base::DictionaryValue> PolicyWatcher::GetPlatformPolicies() {
+  return platform_policies_->CreateDeepCopy();
 }
 
 std::unique_ptr<base::DictionaryValue> PolicyWatcher::GetDefaultPolicies() {
@@ -181,15 +187,18 @@ std::unique_ptr<base::DictionaryValue> PolicyWatcher::GetDefaultPolicies() {
   result->SetString(key::kRemoteAccessHostUdpPortRange, "");
   result->SetBoolean(key::kRemoteAccessHostAllowUiAccessForRemoteAssistance,
                      false);
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   result->SetBoolean(key::kRemoteAccessHostAllowFileTransfer, true);
   result->SetBoolean(key::kRemoteAccessHostEnableUserInterface, true);
+  result->SetBoolean(key::kRemoteAccessHostAllowRemoteAccessConnections, true);
+  result->SetInteger(key::kRemoteAccessHostMaximumSessionDurationMinutes, 0);
 #endif
   return result;
 }
 
 void PolicyWatcher::SignalPolicyError() {
-  old_policies_->Clear();
+  effective_policies_->Clear();
+  platform_policies_->Clear();
   policy_error_callback_.Run();
 }
 
@@ -198,7 +207,8 @@ PolicyWatcher::PolicyWatcher(
     std::unique_ptr<policy::PolicyService> owned_policy_service,
     std::unique_ptr<policy::ConfigurationPolicyProvider> owned_policy_provider,
     std::unique_ptr<policy::SchemaRegistry> owned_schema_registry)
-    : old_policies_(new base::DictionaryValue()),
+    : effective_policies_(new base::DictionaryValue()),
+      platform_policies_(new base::DictionaryValue()),
       default_values_(GetDefaultPolicies()),
       policy_service_(policy_service),
       owned_schema_registry_(std::move(owned_schema_registry)),
@@ -287,7 +297,7 @@ void CopyDictionaryValue(const base::DictionaryValue& from,
                          std::string key) {
   const base::Value* value;
   if (from.Get(key, &value)) {
-    to.Set(key, value->CreateDeepCopy());
+    to.Set(key, base::Value::ToUniquePtrValue(value->Clone()));
   }
 }
 }  // namespace
@@ -301,9 +311,10 @@ PolicyWatcher::StoreNewAndReturnChangedPolicies(
   base::DictionaryValue::Iterator iter(*new_policies);
   while (!iter.IsAtEnd()) {
     base::Value* old_policy;
-    if (!(old_policies_->Get(iter.key(), &old_policy) &&
-          old_policy->Equals(&iter.value()))) {
-      changed_policies->Set(iter.key(), iter.value().CreateDeepCopy());
+    if (!(effective_policies_->Get(iter.key(), &old_policy) &&
+          *old_policy == iter.value())) {
+      changed_policies->Set(
+          iter.key(), base::Value::ToUniquePtrValue(iter.value().Clone()));
     }
     iter.Advance();
   }
@@ -322,7 +333,7 @@ PolicyWatcher::StoreNewAndReturnChangedPolicies(
   }
 
   // Save the new policies.
-  old_policies_.swap(new_policies);
+  effective_policies_.swap(new_policies);
 
   return changed_policies;
 }
@@ -339,6 +350,8 @@ void PolicyWatcher::OnPolicyUpdated(const policy::PolicyNamespace& ns,
     return;
   }
 
+  platform_policies_ = new_policies->CreateDeepCopy();
+
   // Use default values for any missing policies.
   std::unique_ptr<base::DictionaryValue> filled_policies =
       CopyValuesAndAddDefaults(*new_policies, *default_values_);
@@ -346,7 +359,7 @@ void PolicyWatcher::OnPolicyUpdated(const policy::PolicyNamespace& ns,
   // Limit reporting to only the policies that were changed.
   std::unique_ptr<base::DictionaryValue> changed_policies =
       StoreNewAndReturnChangedPolicies(std::move(filled_policies));
-  if (changed_policies->empty()) {
+  if (changed_policies->DictEmpty()) {
     return;
   }
 
@@ -400,19 +413,19 @@ std::unique_ptr<PolicyWatcher> PolicyWatcher::CreateWithTaskRunner(
   // Chromium.
   std::unique_ptr<policy::AsyncPolicyLoader> policy_loader;
 #if defined(OS_WIN)
-  policy_loader.reset(new policy::PolicyLoaderWin(
-      file_task_runner, L"SOFTWARE\\Policies\\Google\\Chrome"));
+  policy_loader = std::make_unique<policy::PolicyLoaderWin>(
+      file_task_runner, L"SOFTWARE\\Policies\\Google\\Chrome");
 #elif defined(OS_APPLE)
   CFStringRef bundle_id = CFSTR("com.google.Chrome");
-  policy_loader.reset(new policy::PolicyLoaderMac(
+  policy_loader = std::make_unique<policy::PolicyLoaderMac>(
       file_task_runner,
       policy::PolicyLoaderMac::GetManagedPolicyPath(bundle_id),
-      new MacPreferences(), bundle_id));
+      new MacPreferences(), bundle_id);
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
-  policy_loader.reset(new policy::ConfigDirPolicyLoader(
+  policy_loader = std::make_unique<policy::ConfigDirPolicyLoader>(
       file_task_runner,
       base::FilePath(FILE_PATH_LITERAL("/etc/opt/chrome/policies")),
-      policy::POLICY_SCOPE_MACHINE));
+      policy::POLICY_SCOPE_MACHINE);
 #elif defined(OS_ANDROID)
   NOTIMPLEMENTED();
   policy::PolicyServiceImpl::Providers providers;
@@ -421,7 +434,7 @@ std::unique_ptr<PolicyWatcher> PolicyWatcher::CreateWithTaskRunner(
   return base::WrapUnique(new PolicyWatcher(
       owned_policy_service.get(), std::move(owned_policy_service), nullptr,
       CreateSchemaRegistry()));
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
   NOTREACHED() << "CreateWithPolicyService() should be used on ChromeOS.";
   return nullptr;
 #else

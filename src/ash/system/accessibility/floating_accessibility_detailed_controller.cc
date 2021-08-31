@@ -14,6 +14,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/image_button.h"
@@ -79,7 +80,6 @@ void FloatingAccessibilityDetailedController::Show(
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
   init_params.translucent = true;
-  init_params.show_by_click = true;
 
   bubble_view_ = new DetailedBubbleView(init_params);
   bubble_view_->SetArrowWithoutResizing(alignment);
@@ -126,7 +126,7 @@ void FloatingAccessibilityDetailedController::TransitionToMainView(
   CloseBubble();
 }
 
-base::string16
+std::u16string
 FloatingAccessibilityDetailedController::GetAccessibleNameForBubble() {
   return l10n_util::GetStringUTF16(
       IDS_ASH_FLOATING_ACCESSIBILITY_DETAILED_MENU);

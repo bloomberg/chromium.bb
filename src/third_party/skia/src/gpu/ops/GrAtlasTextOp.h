@@ -13,6 +13,11 @@
 #include "src/gpu/ops/GrMeshDrawOp.h"
 #include "src/gpu/text/GrTextBlob.h"
 
+#if !defined(SK_BUILD_FOR_IOS) || \
+            (defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MIN_REQUIRED > __IPHONE_9_0)
+    #define GR_HAS_THREAD_LOCAL
+#endif
+
 class GrRecordingContext;
 
 class GrAtlasTextOp final : public GrMeshDrawOp {
@@ -20,27 +25,73 @@ public:
     DEFINE_OP_CLASS_ID
 
     ~GrAtlasTextOp() override {
-        for (const auto& g : fGeometries.items()) {
-            g.fBlob->unref();
+        for (const Geometry* g = fHead; g != nullptr;) {
+            const Geometry* next = g->fNext;
+            g->~Geometry();
+            g = next;
         }
     }
+
+#if defined(GR_HAS_THREAD_LOCAL)
+    void* operator new(size_t s);
+    void operator delete(void* b) noexcept;
+    static void ClearCache();
+#else
+    static void ClearCache() {}
+#endif
 
     static const int kVerticesPerGlyph = GrAtlasSubRun::kVerticesPerGlyph;
     static const int kIndicesPerGlyph = 6;
 
     struct Geometry {
+        Geometry(const GrAtlasSubRun& subRun,
+                 const SkMatrix& drawMatrix,
+                 SkPoint drawOrigin,
+                 SkIRect clipRect,
+                 sk_sp<GrTextBlob> blob,
+                 GrAtlasSubRunOwner subRunOwner,
+                 const SkPMColor4f& color)
+            : fSubRun{subRun}
+            , fBlob{std::move(blob)}
+            , fSubRunDtor{std::move(subRunOwner)}
+            , fDrawMatrix{drawMatrix}
+            , fDrawOrigin{drawOrigin}
+            , fClipRect{clipRect}
+            , fColor{color} {
+                SkASSERT(fBlob != nullptr || fSubRunDtor != nullptr);
+                SkASSERT(SkToBool(fSubRunDtor) != SkToBool(fBlob));
+        }
+
+        static Geometry* MakeForBlob(const GrAtlasSubRun& subRun,
+                                     const SkMatrix& drawMatrix,
+                                     SkPoint drawOrigin,
+                                     SkIRect clipRect,
+                                     sk_sp<GrTextBlob> blob,
+                                     const SkPMColor4f& color,
+                                     SkArenaAlloc* alloc);
+
         void fillVertexData(void* dst, int offset, int count) const;
 
         const GrAtlasSubRun& fSubRun;
-        const SkMatrix       fDrawMatrix;
-        const SkPoint        fDrawOrigin;
-        const SkIRect        fClipRect;
-        GrTextBlob* const    fBlob;  // mutable to make unref call in Op dtor.
+
+        // Either this Geometry holds a ref to the GrTextBlob in the case of a text blob based
+        // SubRun (WithCaching case), or it holds a unique_ptr to a SubRun allocated on the
+        // GrTextBlobAllocator in the NoCache case. It must hold one, and can't hold both.
+        sk_sp<GrTextBlob> fBlob;  // mutable to make unref call in Op dtor.
+        GrAtlasSubRunOwner fSubRunDtor;
+
+        const SkMatrix fDrawMatrix;
+        const SkPoint fDrawOrigin;
+
+        // fClipRect is only used in the DirectMaskSubRun case to do geometric clipping.
+        // TransformedMaskSubRun, and SDFTSubRun don't use this field, and expect an empty rect.
+        const SkIRect fClipRect;
 
         // Color is updated after processor analysis if it was determined the shader resolves to
         // a constant color that we then evaluate on the CPU.
         // TODO: This can be made const once processor analysis is separated from op creation.
-        SkPMColor4f          fColor;
+        SkPMColor4f fColor;
+        Geometry* fNext{nullptr};
     };
 
     const char* name() const override { return "AtlasTextOp"; }
@@ -49,8 +100,7 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override;
 
-    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*,
-                                      bool hasMixedSampledCoverage, GrClampType) override;
+    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrClampType) override;
 
     enum class MaskType : uint32_t {
         kGrayscaleCoverage,
@@ -66,7 +116,7 @@ public:
     static constexpr int kMaskTypeCount = static_cast<int>(MaskType::kLast) + 1;
 
 #if GR_TEST_UTILS
-    static GrOp::Owner CreateOpTestingOnly(GrRenderTargetContext* rtc,
+    static GrOp::Owner CreateOpTestingOnly(GrSurfaceDrawContext* rtc,
                                            const SkPaint& skPaint,
                                            const SkFont& font,
                                            const SkMatrixProvider& mtxProvider,
@@ -78,23 +128,6 @@ public:
 private:
     friend class GrOp; // for ctor
 
-    GrAtlasTextOp(MaskType maskType,
-                  bool needsTransform,
-                  int glyphCount,
-                  SkRect deviceRect,
-                  const Geometry& geo,
-                  GrPaint&& paint);
-
-    GrAtlasTextOp(MaskType maskType,
-                  bool needsTransform,
-                  int glyphCount,
-                  SkRect deviceRect,
-                  SkColor luminanceColor,
-                  bool useGammaCorrectDistanceTable,
-                  uint32_t DFGPFlags,
-                  const Geometry& geo,
-                  GrPaint&& paint);
-
     struct FlushInfo {
         sk_sp<const GrBuffer> fVertexBuffer;
         sk_sp<const GrBuffer> fIndexBuffer;
@@ -105,27 +138,54 @@ private:
         int fNumDraws = 0;
     };
 
+    GrAtlasTextOp(MaskType maskType,
+                  bool needsTransform,
+                  int glyphCount,
+                  SkRect deviceRect,
+                  Geometry* geo,
+                  GrPaint&& paint);
+
+    GrAtlasTextOp(MaskType maskType,
+                  bool needsTransform,
+                  int glyphCount,
+                  SkRect deviceRect,
+                  SkColor luminanceColor,
+                  bool useGammaCorrectDistanceTable,
+                  uint32_t DFGPFlags,
+                  Geometry* geo,
+                  GrPaint&& paint);
+
     GrProgramInfo* programInfo() override {
         // TODO [PI]: implement
         return nullptr;
     }
 
+    void addGeometry(Geometry* geometry) {
+        *fTail = geometry;
+        // The geometry may have many entries. Find the end.
+        do {
+            fTail = &(*fTail)->fNext;
+        } while (*fTail != nullptr);
+    }
+
     void onCreateProgramInfo(const GrCaps*,
                              SkArenaAlloc*,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&&,
                              const GrXferProcessor::DstProxyView&,
-                             GrXferBarrierFlags renderPassXferBarriers) override {
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override {
         // We cannot surface the GrAtlasTextOp's programInfo at record time. As currently
         // implemented, the GP is modified at flush time based on the number of pages in the
         // atlas.
     }
 
     void onPrePrepareDraws(GrRecordingContext*,
-                           const GrSurfaceProxyView* writeView,
+                           const GrSurfaceProxyView& writeView,
                            GrAppliedClip*,
                            const GrXferProcessor::DstProxyView&,
-                           GrXferBarrierFlags renderPassXferBarriers) override {
+                           GrXferBarrierFlags renderPassXferBarriers,
+                           GrLoadOp colorLoadOp) override {
         // TODO [PI]: implement
     }
 
@@ -179,14 +239,6 @@ private:
                                           const GrSurfaceProxyView* views,
                                           unsigned int numActiveViews) const;
 
-    // The minimum number of Geometry we will try to allocate as ops are merged together.
-    // The atlas text op holds one Geometry inline. When combined with the linear growth policy,
-    // the total number of geometries follows 6, 18, 36, 60, 90 (the deltas are 6*n).
-    static constexpr auto kMinGeometryAllocated = 6;
-
-    GrTBlockList<Geometry> fGeometries{kMinGeometryAllocated,
-                                       GrBlockAllocator::GrowthPolicy::kLinear};
-
     GrProcessorSet fProcessors;
     int fNumGlyphs; // Sum of glyphs in each geometry's subrun
 
@@ -203,6 +255,9 @@ private:
     // Only used for distance fields; per-channel luminance for LCD, or gamma-corrected luminance
     // for single-channel distance fields.
     const SkColor fLuminanceColor{0};
+
+    Geometry* fHead{nullptr};
+    Geometry** fTail{&fHead};
 
     using INHERITED = GrMeshDrawOp;
 };

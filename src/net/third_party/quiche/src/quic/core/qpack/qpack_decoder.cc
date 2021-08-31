@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder.h"
+#include "quic/core/qpack/qpack_decoder.h"
 
 #include <utility>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_index_conversions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/core/qpack/qpack_index_conversions.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -21,7 +22,7 @@ QpackDecoder::QpackDecoder(
       encoder_stream_receiver_(this),
       maximum_blocked_streams_(maximum_blocked_streams),
       known_received_count_(0) {
-  DCHECK(encoder_stream_error_delegate_);
+  QUICHE_DCHECK(encoder_stream_error_delegate_);
 
   header_table_.SetMaximumDynamicTableCapacity(maximum_dynamic_table_capacity);
 }
@@ -37,13 +38,13 @@ void QpackDecoder::OnStreamReset(QuicStreamId stream_id) {
 
 bool QpackDecoder::OnStreamBlocked(QuicStreamId stream_id) {
   auto result = blocked_streams_.insert(stream_id);
-  DCHECK(result.second);
+  QUICHE_DCHECK(result.second);
   return blocked_streams_.size() <= maximum_blocked_streams_;
 }
 
 void QpackDecoder::OnStreamUnblocked(QuicStreamId stream_id) {
   size_t result = blocked_streams_.erase(stream_id);
-  DCHECK_EQ(1u, result);
+  QUICHE_DCHECK_EQ(1u, result);
 }
 
 void QpackDecoder::OnDecodingCompleted(QuicStreamId stream_id,
@@ -80,11 +81,12 @@ void QpackDecoder::OnInsertWithNameReference(bool is_static,
       return;
     }
 
-    entry = header_table_.InsertEntry(entry->name(), value);
-    if (!entry) {
+    if (!header_table_.EntryFitsDynamicTableCapacity(entry->name(), value)) {
       OnErrorDetected(QUIC_QPACK_ENCODER_STREAM_ERROR_INSERTING_STATIC,
                       "Error inserting entry with name reference.");
+      return;
     }
+    header_table_.InsertEntry(entry->name(), value);
     return;
   }
 
@@ -103,20 +105,22 @@ void QpackDecoder::OnInsertWithNameReference(bool is_static,
                     "Dynamic table entry not found.");
     return;
   }
-  entry = header_table_.InsertEntry(entry->name(), value);
-  if (!entry) {
+  if (!header_table_.EntryFitsDynamicTableCapacity(entry->name(), value)) {
     OnErrorDetected(QUIC_QPACK_ENCODER_STREAM_ERROR_INSERTING_DYNAMIC,
                     "Error inserting entry with name reference.");
+    return;
   }
+  header_table_.InsertEntry(entry->name(), value);
 }
 
 void QpackDecoder::OnInsertWithoutNameReference(absl::string_view name,
                                                 absl::string_view value) {
-  const QpackEntry* entry = header_table_.InsertEntry(name, value);
-  if (!entry) {
+  if (!header_table_.EntryFitsDynamicTableCapacity(name, value)) {
     OnErrorDetected(QUIC_QPACK_ENCODER_STREAM_ERROR_INSERTING_LITERAL,
                     "Error inserting literal entry.");
+    return;
   }
+  header_table_.InsertEntry(name, value);
 }
 
 void QpackDecoder::OnDuplicate(uint64_t index) {
@@ -135,13 +139,13 @@ void QpackDecoder::OnDuplicate(uint64_t index) {
                     "Dynamic table entry not found.");
     return;
   }
-  entry = header_table_.InsertEntry(entry->name(), entry->value());
-  if (!entry) {
-    // InsertEntry() can only fail if entry is larger then dynamic table
-    // capacity, but that is impossible since entry was retrieved from the
-    // dynamic table.
+  if (!header_table_.EntryFitsDynamicTableCapacity(entry->name(),
+                                                   entry->value())) {
+    // This is impossible since entry was retrieved from the dynamic table.
     OnErrorDetected(QUIC_INTERNAL_ERROR, "Error inserting duplicate entry.");
+    return;
   }
+  header_table_.InsertEntry(entry->name(), entry->value());
 }
 
 void QpackDecoder::OnSetDynamicTableCapacity(uint64_t capacity) {
@@ -153,14 +157,8 @@ void QpackDecoder::OnSetDynamicTableCapacity(uint64_t capacity) {
 
 void QpackDecoder::OnErrorDetected(QuicErrorCode error_code,
                                    absl::string_view error_message) {
-  if (GetQuicReloadableFlag(quic_granular_qpack_error_codes)) {
-    QUIC_CODE_COUNT_N(quic_granular_qpack_error_codes, 2, 2);
-    encoder_stream_error_delegate_->OnEncoderStreamError(error_code,
-                                                         error_message);
-  } else {
-    encoder_stream_error_delegate_->OnEncoderStreamError(
-        QUIC_QPACK_ENCODER_STREAM_ERROR, error_message);
-  }
+  encoder_stream_error_delegate_->OnEncoderStreamError(error_code,
+                                                       error_message);
 }
 
 std::unique_ptr<QpackProgressiveDecoder> QpackDecoder::CreateProgressiveDecoder(

@@ -21,7 +21,7 @@
 #include "include/gpu/GrRecordingContext.h"
 #include "tools/Resources.h"
 
-class GrRenderTargetContext;
+class GrSurfaceDrawContext;
 
 DEF_SIMPLE_GPU_GM_CAN_FAIL(cross_context_image, context, rtc, canvas, errorMsg,
                            3 * 256 + 40, 256 + 128 + 30) {
@@ -60,9 +60,9 @@ DEF_SIMPLE_GPU_GM_CAN_FAIL(cross_context_image, context, rtc, canvas, errorMsg,
                           0, 0);
         canvas->translate(128, 0);
 
-        SkPaint paint;
-        paint.setFilterQuality(kMedium_SkFilterQuality);
-        canvas->drawImageRect(images[i], SkRect::MakeWH(128, 128), &paint);
+        canvas->drawImageRect(images[i], SkRect::MakeWH(128, 128),
+                              SkSamplingOptions(SkFilterMode::kLinear,
+                                                SkMipmapMode::kLinear));
 
         canvas->restore();
         canvas->translate(256 + 10, 0);

@@ -63,7 +63,7 @@ void ValidateTraceTimestampDiff(const char* name,
                                 Clock::time_point end_time,
                                 TraceIdHierarchy ids,
                                 Error error) {
-  const auto elapsed = to_microseconds(end_time - start_time);
+  const auto elapsed = to_milliseconds(end_time - start_time);
   ASSERT_GE(static_cast<uint64_t>(elapsed.count()), milliseconds);
 }
 

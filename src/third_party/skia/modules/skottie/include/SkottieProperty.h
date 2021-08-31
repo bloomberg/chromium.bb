@@ -40,6 +40,8 @@ struct TextPropertyValue {
     sk_sp<SkTypeface>       fTypeface;
     SkString                fText;
     float                   fTextSize    = 0,
+                            fMinTextSize = 0,                                 // when auto-sizing
+                            fMaxTextSize = std::numeric_limits<float>::max(), // when auto-sizing
                             fStrokeWidth = 0,
                             fLineHeight  = 0,
                             fLineShift   = 0,
@@ -48,6 +50,7 @@ struct TextPropertyValue {
     Shaper::VAlign          fVAlign      = Shaper::VAlign::kTop;
     Shaper::ResizePolicy    fResize      = Shaper::ResizePolicy::kNone;
     Shaper::LinebreakPolicy fLineBreak   = Shaper::LinebreakPolicy::kExplicit;
+    Shaper::Direction       fDirection   = Shaper::Direction::kLTR;
     SkRect                  fBox         = SkRect::MakeEmpty();
     SkColor                 fFillColor   = SK_ColorTRANSPARENT,
                             fStrokeColor = SK_ColorTRANSPARENT;

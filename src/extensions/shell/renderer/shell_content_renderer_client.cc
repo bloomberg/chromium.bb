@@ -4,6 +4,8 @@
 
 #include "extensions/shell/renderer/shell_content_renderer_client.h"
 
+#include <memory>
+
 #include "components/nacl/common/buildflags.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/render_frame.h"
@@ -41,13 +43,14 @@ void ShellContentRendererClient::RenderThreadStarted() {
   extensions_client_.reset(CreateExtensionsClient());
   ExtensionsClient::Set(extensions_client_.get());
 
-  extensions_renderer_client_.reset(new ShellExtensionsRendererClient);
+  extensions_renderer_client_ =
+      std::make_unique<ShellExtensionsRendererClient>();
   ExtensionsRendererClient::Set(extensions_renderer_client_.get());
 
   thread->AddObserver(extensions_renderer_client_->GetDispatcher());
 
-  guest_view_container_dispatcher_.reset(
-      new ExtensionsGuestViewContainerDispatcher());
+  guest_view_container_dispatcher_ =
+      std::make_unique<ExtensionsGuestViewContainerDispatcher>();
   thread->AddObserver(guest_view_container_dispatcher_.get());
 }
 
@@ -88,9 +91,7 @@ void ShellContentRendererClient::WillSendRequest(
     const blink::WebURL& url,
     const net::SiteForCookies& site_for_cookies,
     const url::Origin* initiator_origin,
-    GURL* new_url,
-    bool* force_ignore_site_for_cookies) {
-  *force_ignore_site_for_cookies = false;
+    GURL* new_url) {
   // TODO(jamescook): Cause an error for bad extension scheme requests?
 }
 

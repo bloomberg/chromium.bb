@@ -28,7 +28,6 @@
 
 #include <memory>
 #include "third_party/blink/renderer/core/css/parser/css_parser_selector.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -42,54 +41,12 @@ namespace {
 // in official builds.
 const char kCSSSelectorTypeName[] = "blink::CSSSelector";
 
-// See CSSSelectorList::TreatAsNonComplexArgumentToNot.
-//
-// Note that there is no need to keep this function up to date (e.g. add new
-// pseudo-classes etc), as this is only used to determine if ShadowDOM v0
-// features should be allowed in combination with :not(), and new selector
-// features should generally _not_ be allowed to work with ShadowDOM v0.
-//
-// TODO(crbug.com/937746): Remove this when ShadowDOM v0 is removed.
-bool TreatAsNonComplexArgumentToNot(const CSSSelector* selector) {
-  if (!selector)
-    return false;
-
-  if (selector->SelectorList()) {
-    switch (selector->GetPseudoType()) {
-      case CSSSelector::kPseudoIs:
-      case CSSSelector::kPseudoWhere:
-        break;
-      default:
-        return false;
-    }
-  }
-
-  if (selector->Match() == CSSSelector::kPseudoElement)
-    return false;
-
-  if (!selector->TagHistory())
-    return true;
-
-  if (selector->Match() == CSSSelector::kTag) {
-    // We can't check against anyQName() here because namespace may not be
-    // g_null_atom.
-    // Example:
-    //     @namespace "http://www.w3.org/2000/svg";
-    //     svg:not(:root) { ...
-    if (selector->TagQName().LocalName() ==
-        CSSSelector::UniversalSelectorAtom())
-      return TreatAsNonComplexArgumentToNot(selector->TagHistory());
-  }
-
-  return false;
-}
-
 }  // namespace
 
 CSSSelectorList CSSSelectorList::Copy() const {
   CSSSelectorList list;
 
-  unsigned length = this->ComputeLength();
+  unsigned length = ComputeLength();
   list.selector_array_ =
       reinterpret_cast<CSSSelector*>(WTF::Partitions::FastMalloc(
           WTF::Partitions::ComputeAllocationSize(length, sizeof(CSSSelector)),
@@ -143,14 +100,14 @@ CSSSelectorList CSSSelectorList::AdoptSelectorVector(
 }
 
 const CSSSelector* CSSSelectorList::FirstForCSSOM() const {
-  const CSSSelector* s = this->First();
+  const CSSSelector* s = First();
   if (!s)
     return nullptr;
-  while (this->Next(*s))
-    s = this->Next(*s);
-  if (this->NextInFullList(*s))
-    return this->NextInFullList(*s);
-  return this->First();
+  while (Next(*s))
+    s = Next(*s);
+  if (NextInFullList(*s))
+    return NextInFullList(*s);
+  return First();
 }
 
 unsigned CSSSelectorList::ComputeLength() const {
@@ -160,10 +117,6 @@ unsigned CSSSelectorList::ComputeLength() const {
   while (!current->IsLastInSelectorList())
     ++current;
   return static_cast<unsigned>(current - selector_array_) + 1;
-}
-
-bool CSSSelectorList::TreatAsNonComplexArgumentToNot() const {
-  return blink::TreatAsNonComplexArgumentToNot(First()) && !Next(*First());
 }
 
 void CSSSelectorList::DeleteSelectors() {

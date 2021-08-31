@@ -33,6 +33,7 @@ using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::Ne;
+using ::testing::NiceMock;
 using ::testing::NotNull;
 using ::testing::Sequence;
 using ::testing::StrEq;
@@ -435,8 +436,8 @@ TEST_F(ApplicationAgentTest, LaunchesApp_PassesMessages_ThenStopsApp) {
 
   // Phase 1: Sender sends a LAUNCH request, which causes the idle app to stop
   // and the receiver app to launch. The receiver (ApplicationAgent) broadcasts
-  // a RECEIVER_STATUS to indicate the app is running; and both the receiver app
-  // and the sender will get a copy of it.
+  // a RECEIVER_STATUS to indicate the app is running; but the receiver app
+  // should not get a copy of that.
   Sequence phase1;
   MessagePort* port_for_app = nullptr;
   EXPECT_CALL(*idle_app(), DidStop()).InSequence(phase1);
@@ -473,20 +474,6 @@ TEST_F(ApplicationAgentTest, LaunchesApp_PassesMessages_ThenStopsApp) {
         }
       }
   })";
-  EXPECT_CALL(some_app, OnMessage(_, _, _))
-      .InSequence(phase1)
-      .WillOnce(Invoke([&](const std::string& source_id,
-                           const std::string& the_namespace,
-                           const std::string& message) {
-        EXPECT_EQ(kPlatformReceiverId, source_id);
-        EXPECT_EQ(kReceiverNamespace, the_namespace);
-        const auto parsed = json::Parse(message);
-        EXPECT_TRUE(parsed.is_value()) << parsed.error();
-        if (parsed.is_value()) {
-          EXPECT_EQ(json::Parse(kRunningAppReceiverStatus).value(),
-                    parsed.value());
-        }
-      }));
   EXPECT_CALL(*sender_inbound(), OnMessage(_, _))
       .InSequence(phase1)
       .WillOnce(Invoke([&](CastSocket*, CastMessage message) {
@@ -597,6 +584,71 @@ TEST_F(ApplicationAgentTest, LaunchesApp_PassesMessages_ThenStopsApp) {
   Mock::VerifyAndClearExpectations(sender_inbound());
 
   agent()->UnregisterApplication(&some_app);
+}
+
+TEST_F(ApplicationAgentTest, AllowsVirtualConnectionsToApp) {
+  NiceMock<FakeApplication> some_app("1A2B3C4D", "Something Doer");
+  agent()->RegisterApplication(&some_app);
+
+  // Launch the app, using gMock to simulate an app that calls
+  // MessagePort::SetClient() (to permit messaging) and to get the transport ID
+  // of the app.
+  EXPECT_CALL(*idle_app(), DidStop());
+  EXPECT_CALL(some_app, DidLaunch(_, NotNull()))
+      .WillOnce(Invoke([&](Json::Value params, MessagePort* port) {
+        port->SetClient(&some_app, some_app.GetSessionId());
+      }));
+  std::string transport_id;
+  EXPECT_CALL(*sender_inbound(), OnMessage(_, _))
+      .WillRepeatedly(Invoke([&](CastSocket*, CastMessage message) {
+        const Json::Value payload = ValidateAndParseMessage(
+            message, kPlatformReceiverId, kBroadcastId, kReceiverNamespace);
+        if (payload["type"].asString() == "RECEIVER_STATUS") {
+          transport_id =
+              payload["status"]["applications"][0]["transportId"].asString();
+        }
+      }));
+  auto launch_result = sender_outbound()->Send(MakeCastMessage(
+      kPlatformSenderId, kPlatformReceiverId, kReceiverNamespace, R"({
+        "requestId":1,
+        "type":"LAUNCH",
+        "appId":"1A2B3C4D",
+        "appParams":{},
+        "language":"en-US",
+        "supportedAppTypes":["WEB"]
+      })"));
+  ASSERT_TRUE(launch_result.ok()) << launch_result;
+  Mock::VerifyAndClearExpectations(idle_app());
+  Mock::VerifyAndClearExpectations(&some_app);
+  Mock::VerifyAndClearExpectations(sender_inbound());
+
+  // Now that the application has launched, check that the policy allows
+  // connections to both the ApplicationAgent and the running application.
+  auto* const policy =
+      static_cast<ConnectionNamespaceHandler::VirtualConnectionPolicy*>(
+          agent());
+  EXPECT_TRUE(policy->IsConnectionAllowed(
+      VirtualConnection{kPlatformReceiverId, "any-sender-12345", 0}));
+  ASSERT_FALSE(transport_id.empty());
+  EXPECT_TRUE(policy->IsConnectionAllowed(
+      VirtualConnection{transport_id, "any-sender-12345", 0}));
+  EXPECT_FALSE(policy->IsConnectionAllowed(
+      VirtualConnection{"wherever i likes", "any-sender-12345", 0}));
+
+  // Unregister the app, which will automatically stop it too.
+  EXPECT_CALL(some_app, DidStop());
+  EXPECT_CALL(*idle_app(), DidLaunch(_, NotNull()));
+  EXPECT_CALL(*sender_inbound(), OnMessage(_, _));  // RECEIVER_STATUS update.
+  agent()->UnregisterApplication(&some_app);
+
+  // With the app stopped, check that the policy no longer allows connections to
+  // the now-stale |transport_id|.
+  EXPECT_TRUE(policy->IsConnectionAllowed(
+      VirtualConnection{kPlatformReceiverId, "any-sender-12345", 0}));
+  EXPECT_FALSE(policy->IsConnectionAllowed(
+      VirtualConnection{transport_id, "any-sender-12345", 0}));
+  EXPECT_FALSE(policy->IsConnectionAllowed(
+      VirtualConnection{"wherever i likes", "any-sender-12345", 0}));
 }
 
 }  // namespace

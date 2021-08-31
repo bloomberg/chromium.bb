@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -45,8 +47,8 @@ class NavigationPredictorPreconnectClientBrowserTest
   }
 
   void SetUp() override {
-    https_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
     https_server_->ServeFilesFromSourceDirectory(
         "chrome/test/data/navigation_predictor");
     ASSERT_TRUE(https_server_->Start());
@@ -108,7 +110,7 @@ class NavigationPredictorPreconnectClientBrowserTest
 
 IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTest,
                        NoPreconnectSearch) {
-  static const char kShortName[] = "test";
+  static const char16_t kShortName[] = u"test";
   static const char kSearchURL[] =
       "/anchors_different_area.html?q={searchTerms}";
   TemplateURLService* model =
@@ -118,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTest,
   ASSERT_TRUE(model->loaded());
 
   TemplateURLData data;
-  data.SetShortName(base::ASCIIToUTF16(kShortName));
+  data.SetShortName(kShortName);
   data.SetKeyword(data.short_name());
   data.SetURL(GetTestURL(kSearchURL).spec());
 
@@ -380,7 +382,7 @@ class NavigationPredictorPreconnectClientBrowserTestWithSearch
 #endif
 IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTestWithSearch,
                        MAYBE_PreconnectSearchWithFeature) {
-  static const char kShortName[] = "test";
+  static const char16_t kShortName[] = u"test";
   static const char kSearchURL[] =
       "/anchors_different_area.html?q={searchTerms}";
   TemplateURLService* model =
@@ -390,7 +392,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTestWithSearch,
   ASSERT_TRUE(model->loaded());
 
   TemplateURLData data;
-  data.SetShortName(base::ASCIIToUTF16(kShortName));
+  data.SetShortName(kShortName);
   data.SetKeyword(data.short_name());
   data.SetURL(GetTestURL(kSearchURL).spec());
 

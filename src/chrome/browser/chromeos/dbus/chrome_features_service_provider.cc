@@ -7,18 +7,21 @@
 #include <algorithm>
 #include <iterator>
 #include <memory>
+#include <string>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/crostini/crostini_pref_names.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/crostini/crostini_features.h"
-#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_features.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
-#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "components/arc/arc_features.h"
 #include "components/prefs/pref_service.h"
 #include "dbus/bus.h"
@@ -29,11 +32,14 @@ namespace {
 
 void SendResponse(dbus::MethodCall* method_call,
                   dbus::ExportedObject::ResponseSender response_sender,
-                  bool answer) {
+                  bool answer,
+                  const std::string& reason = std::string()) {
   std::unique_ptr<dbus::Response> response =
       dbus::Response::FromMethodCall(method_call);
   dbus::MessageWriter writer(response.get());
   writer.AppendBool(answer);
+  if (!reason.empty())
+    writer.AppendString(reason);
   std::move(response_sender).Run(std::move(response));
 }
 
@@ -91,13 +97,6 @@ void ChromeFeaturesServiceProvider::Start(
                      weak_ptr_factory_.GetWeakPtr()));
   exported_object->ExportMethod(
       kChromeFeaturesServiceInterface,
-      kChromeFeaturesServiceIsUsbguardEnabledMethod,
-      base::BindRepeating(&ChromeFeaturesServiceProvider::IsUsbguardEnabled,
-                          weak_ptr_factory_.GetWeakPtr()),
-      base::BindOnce(&ChromeFeaturesServiceProvider::OnExported,
-                     weak_ptr_factory_.GetWeakPtr()));
-  exported_object->ExportMethod(
-      kChromeFeaturesServiceInterface,
       kChromeFeaturesServiceIsCryptohomeDistributedModelEnabledMethod,
       base::BindRepeating(
           &ChromeFeaturesServiceProvider::IsCryptohomeDistributedModelEnabled,
@@ -128,6 +127,21 @@ void ChromeFeaturesServiceProvider::Start(
           weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&ChromeFeaturesServiceProvider::OnExported,
                      weak_ptr_factory_.GetWeakPtr()));
+  exported_object->ExportMethod(
+      kChromeFeaturesServiceInterface,
+      kChromeFeaturesServiceIsPeripheralDataAccessEnabledMethod,
+      base::BindRepeating(
+          &ChromeFeaturesServiceProvider::IsPeripheralDataAccessEnabled,
+          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
+                          weak_ptr_factory_.GetWeakPtr()));
+  exported_object->ExportMethod(
+      kChromeFeaturesServiceInterface,
+      kChromeFeaturesServiceIsDNSProxyEnabledMethod,
+      base::BindRepeating(&ChromeFeaturesServiceProvider::IsDnsProxyEnabled,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ChromeFeaturesServiceProvider::OnExported(
@@ -143,13 +157,12 @@ void ChromeFeaturesServiceProvider::IsFeatureEnabled(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
   static const base::Feature constexpr* kFeatureLookup[] = {
-      &::features::kUsbbouncer,
-      &::features::kUsbguard,
       &arc::kBootCompletedBroadcastFeature,
       &arc::kCustomTabsExperimentFeature,
       &arc::kFilePickerExperimentFeature,
       &arc::kNativeBridgeToggleFeature,
       &features::kSessionManagerLongKillTimeout,
+      &features::kCrostiniUseDlc,
   };
 
   dbus::MessageReader reader(method_call);
@@ -187,9 +200,10 @@ void ChromeFeaturesServiceProvider::IsCrostiniEnabled(
   if (!profile)
     return;
 
-  SendResponse(
-      method_call, std::move(response_sender),
-      profile ? crostini::CrostiniFeatures::Get()->IsAllowed(profile) : false);
+  std::string reason;
+  bool answer =
+      crostini::CrostiniFeatures::Get()->IsAllowedNow(profile, &reason);
+  SendResponse(method_call, std::move(response_sender), answer, reason);
 }
 
 void ChromeFeaturesServiceProvider::IsCryptohomeDistributedModelEnabled(
@@ -223,16 +237,9 @@ void ChromeFeaturesServiceProvider::IsPluginVmEnabled(
   if (!profile)
     return;
 
-  SendResponse(
-      method_call, std::move(response_sender),
-      profile ? plugin_vm::PluginVmFeatures::Get()->IsAllowed(profile) : false);
-}
-
-void ChromeFeaturesServiceProvider::IsUsbguardEnabled(
-    dbus::MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender response_sender) {
-  SendResponse(method_call, std::move(response_sender),
-               base::FeatureList::IsEnabled(::features::kUsbguard));
+  std::string reason;
+  bool answer = plugin_vm::PluginVmFeatures::Get()->IsAllowed(profile, &reason);
+  SendResponse(method_call, std::move(response_sender), answer, reason);
 }
 
 void ChromeFeaturesServiceProvider::IsVmManagementCliAllowed(
@@ -245,6 +252,23 @@ void ChromeFeaturesServiceProvider::IsVmManagementCliAllowed(
   SendResponse(method_call, std::move(response_sender),
                profile->GetPrefs()->GetBoolean(
                    crostini::prefs::kVmManagementCliAllowedByPolicy));
+}
+
+void ChromeFeaturesServiceProvider::IsPeripheralDataAccessEnabled(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  bool peripheral_data_access_enabled = false;
+  CrosSettings::Get()->GetBoolean(chromeos::kDevicePeripheralDataAccessEnabled,
+                                  &peripheral_data_access_enabled);
+  SendResponse(method_call, std::move(response_sender),
+               peripheral_data_access_enabled);
+}
+
+void ChromeFeaturesServiceProvider::IsDnsProxyEnabled(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  SendResponse(method_call, std::move(response_sender),
+               base::FeatureList::IsEnabled(features::kEnableDnsProxy));
 }
 
 }  // namespace chromeos

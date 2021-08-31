@@ -530,7 +530,7 @@ egl::Error DisplayGbm::initialize(egl::Display *display)
     functionsGL->initialize(display->getAttributeMap());
 
     mRenderer.reset(new RendererEGL(std::move(functionsGL), display->getAttributeMap(), this,
-                                    context, attribs));
+                                    context, attribs, false));
     const gl::Version &maxVersion = mRenderer->getMaxSupportedESVersion();
     if (maxVersion < gl::Version(2, 0))
     {
@@ -1035,6 +1035,14 @@ WorkerContext *DisplayGbm::createWorkerContext(std::string *infoLog,
         return nullptr;
     }
     return new WorkerContextGbm(context, mEGL);
+}
+
+EGLint DisplayGbm::fixSurfaceType(EGLint surfaceType) const
+{
+    EGLint type = DisplayEGL::fixSurfaceType(surfaceType);
+    // Ozone native surfaces don't support EGL_WINDOW_BIT,
+    // but ANGLE uses renderbuffers to emulate windows
+    return type | EGL_WINDOW_BIT;
 }
 
 }  // namespace rx

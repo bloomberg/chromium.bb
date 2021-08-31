@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.customtabs;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,7 +23,7 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.app.appmenu.AppMenuPropertiesDelegateImpl;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
-import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
+import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.browserservices.ui.controller.Verifier;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
@@ -35,7 +34,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.appmenu.CustomViewBinder;
 import org.chromium.components.embedder_support.util.UrlConstants;
-import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.url.GURL;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -74,9 +73,9 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier, Verifier verifier,
             @CustomTabsUiType final int uiType, List<String> menuEntries, boolean isOpenedByChrome,
             boolean showShare, boolean showStar, boolean showDownload, boolean isIncognito,
-            ModalDialogManager modalDialogManager, boolean showOpenInChrome) {
+            boolean showOpenInChrome) {
         super(context, activityTabProvider, multiWindowModeStateDispatcher, tabModelSelector,
-                toolbarManager, decorView, null, bookmarkBridgeSupplier, modalDialogManager);
+                toolbarManager, decorView, null, bookmarkBridgeSupplier);
         mVerifier = verifier;
         mUiType = uiType;
         mMenuEntries = menuEntries;
@@ -102,7 +101,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
     public void prepareMenu(Menu menu, AppMenuHandler handler) {
         Tab currentTab = mActivityTabProvider.get();
         if (currentTab != null) {
-            String url = currentTab.getUrlString();
+            GURL url = currentTab.getUrl();
 
             MenuItem forwardMenuItem = menu.findItem(R.id.forward_menu_id);
             forwardMenuItem.setEnabled(currentTab.canGoForward());
@@ -138,14 +137,6 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                 openInChromeItemVisible = false;
                 requestDesktopSiteVisible = false;
                 addToHomeScreenVisible = false;
-            } else if (mUiType == CustomTabsUiType.PAYMENT_REQUEST) {
-                // Only the icon row and 'find in page' are shown for opening payment request UI
-                // from Chrome.
-                openInChromeItemVisible = false;
-                requestDesktopSiteVisible = false;
-                addToHomeScreenVisible = false;
-                downloadItemVisible = false;
-                bookmarkItemVisible = false;
             } else if (mUiType == CustomTabsUiType.READER_MODE) {
                 // Only 'find in page' and the reader mode preference are shown for Reader Mode UI.
                 menu.findItem(R.id.icon_row_menu_id).setVisible(false);
@@ -160,7 +151,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                 requestDesktopSiteVisible = false;
                 // For Webapps & WebAPKs Verifier#wasPreviouslyVerified() performs verification
                 // (instead of looking up cached value).
-                addToHomeScreenVisible = !mVerifier.wasPreviouslyVerified(url);
+                addToHomeScreenVisible = !mVerifier.wasPreviouslyVerified(url.getSpec());
                 downloadItemVisible = false;
                 bookmarkItemVisible = false;
             } else if (mUiType == CustomTabsUiType.OFFLINE_PAGE) {
@@ -184,9 +175,9 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                 openInChromeItemVisible = false;
             }
 
-            boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
-                    || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
-            if (isChromeScheme || TextUtils.isEmpty(url)) {
+            boolean isChromeScheme = url.getScheme().equals(UrlConstants.CHROME_SCHEME)
+                    || url.getScheme().equals(UrlConstants.CHROME_NATIVE_SCHEME);
+            if (isChromeScheme || url.isEmpty()) {
                 addToHomeScreenVisible = false;
             }
 
@@ -231,10 +222,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             }
 
             updateRequestDesktopSiteMenuItem(menu, currentTab, requestDesktopSiteVisible);
-            MenuItem homescreenItem = menu.findItem(R.id.add_to_homescreen_id);
-            MenuItem openWebApkItem = menu.findItem(R.id.open_webapk_id);
-            prepareAddToHomescreenMenuItem(
-                    homescreenItem, null, openWebApkItem, menu, currentTab, addToHomeScreenVisible);
+            prepareAddToHomescreenMenuItem(menu, currentTab, addToHomeScreenVisible);
         }
     }
 

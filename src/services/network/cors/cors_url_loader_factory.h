@@ -8,7 +8,6 @@
 #include <memory>
 #include <set>
 
-#include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
@@ -26,6 +25,7 @@ namespace network {
 class NetworkContext;
 class ResourceSchedulerClient;
 class URLLoader;
+class URLLoaderFactory;
 struct ResourceRequest;
 
 namespace cors {
@@ -72,7 +72,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
 
   // Implements mojom::URLLoaderFactory.
   void CreateLoaderAndStart(mojo::PendingReceiver<mojom::URLLoader> receiver,
-                            int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const ResourceRequest& resource_request,
@@ -87,10 +86,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
 
   InitiatorLockCompatibility VerifyRequestInitiatorLockWithPluginCheck(
       uint32_t process_id,
-      const base::Optional<url::Origin>& request_initiator_origin_lock,
-      const base::Optional<url::Origin>& request_initiator);
+      const absl::optional<url::Origin>& request_initiator_origin_lock,
+      const absl::optional<url::Origin>& request_initiator);
 
   bool GetAllowAnyCorsExemptHeaderForBrowser() const;
+
+  mojo::PendingRemote<mojom::DevToolsObserver> GetDevToolsObserver(
+      const ResourceRequest& resource_request) const;
 
   mojo::ReceiverSet<mojom::URLLoaderFactory> receivers_;
 
@@ -105,15 +107,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
   // Retained from URLLoaderFactoryParams:
   const bool disable_web_security_;
   const int32_t process_id_ = mojom::kInvalidProcessId;
-  const base::Optional<url::Origin> request_initiator_origin_lock_;
+  const absl::optional<url::Origin> request_initiator_origin_lock_;
   const bool ignore_isolated_world_origin_;
   const mojom::TrustTokenRedemptionPolicy trust_token_redemption_policy_;
   net::IsolationInfo isolation_info_;
+  const std::string debug_tag_;
 
   // Relative order of |network_loader_factory_| and |loaders_| matters -
   // URLLoaderFactory needs to live longer than URLLoaders created using the
   // factory.  See also https://crbug.com/906305.
-  std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory_;
+  std::unique_ptr<network::URLLoaderFactory> network_loader_factory_;
 
   // Used when the network loader factory is overridden.
   std::unique_ptr<FactoryOverride> factory_override_;
@@ -124,10 +127,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
   // Accessed by instances in |loaders_| too. Since the factory outlives them,
   // it's safe.
   const OriginAccessList* const origin_access_list_;
-
-  // Owns factory bound OriginAccessList that to have factory specific
-  // additional allowed access list.
-  std::unique_ptr<OriginAccessList> factory_bound_origin_access_list_;
 
   static bool allow_external_preflights_for_testing_;
 

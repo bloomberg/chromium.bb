@@ -10,12 +10,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chooser_controller/mock_chooser_controller_view.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/usb_chooser_controller.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/permissions/mock_chooser_controller_view.h"
 #include "content/public/test/web_contents_tester.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
@@ -51,7 +51,8 @@ class UsbChooserControllerTest : public ChromeRenderViewHostTestHarness {
 
     usb_chooser_controller_ = std::make_unique<UsbChooserController>(
         main_rfh(), std::move(device_filters), std::move(callback));
-    mock_usb_chooser_view_ = std::make_unique<MockChooserControllerView>();
+    mock_usb_chooser_view_ =
+        std::make_unique<permissions::MockChooserControllerView>();
     usb_chooser_controller_->set_view(mock_usb_chooser_view_.get());
     // Make sure the device::mojom::UsbDeviceManager::SetClient() call has
     // been received.
@@ -68,7 +69,8 @@ class UsbChooserControllerTest : public ChromeRenderViewHostTestHarness {
 
   device::FakeUsbDeviceManager device_manager_;
   std::unique_ptr<UsbChooserController> usb_chooser_controller_;
-  std::unique_ptr<MockChooserControllerView> mock_usb_chooser_view_;
+  std::unique_ptr<permissions::MockChooserControllerView>
+      mock_usb_chooser_view_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UsbChooserControllerTest);
@@ -79,19 +81,19 @@ TEST_F(UsbChooserControllerTest, AddDevice) {
   CreateAndAddFakeUsbDevice("a", "001");
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, usb_chooser_controller_->NumOptions());
-  EXPECT_EQ(base::ASCIIToUTF16("a"), usb_chooser_controller_->GetOption(0));
+  EXPECT_EQ(u"a", usb_chooser_controller_->GetOption(0));
 
   EXPECT_CALL(*mock_usb_chooser_view_, OnOptionAdded(1)).Times(1);
   CreateAndAddFakeUsbDevice("b", "002");
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2u, usb_chooser_controller_->NumOptions());
-  EXPECT_EQ(base::ASCIIToUTF16("b"), usb_chooser_controller_->GetOption(1));
+  EXPECT_EQ(u"b", usb_chooser_controller_->GetOption(1));
 
   EXPECT_CALL(*mock_usb_chooser_view_, OnOptionAdded(2)).Times(1);
   CreateAndAddFakeUsbDevice("c", "003");
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, usb_chooser_controller_->NumOptions());
-  EXPECT_EQ(base::ASCIIToUTF16("c"), usb_chooser_controller_->GetOption(2));
+  EXPECT_EQ(u"c", usb_chooser_controller_->GetOption(2));
 }
 
 TEST_F(UsbChooserControllerTest, RemoveDevice) {
@@ -104,14 +106,14 @@ TEST_F(UsbChooserControllerTest, RemoveDevice) {
   device_manager_.RemoveDevice(device_b->guid);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2u, usb_chooser_controller_->NumOptions());
-  EXPECT_EQ(base::ASCIIToUTF16("a"), usb_chooser_controller_->GetOption(0));
-  EXPECT_EQ(base::ASCIIToUTF16("c"), usb_chooser_controller_->GetOption(1));
+  EXPECT_EQ(u"a", usb_chooser_controller_->GetOption(0));
+  EXPECT_EQ(u"c", usb_chooser_controller_->GetOption(1));
 
   EXPECT_CALL(*mock_usb_chooser_view_, OnOptionRemoved(0)).Times(1);
   device_manager_.RemoveDevice(device_a->guid);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, usb_chooser_controller_->NumOptions());
-  EXPECT_EQ(base::ASCIIToUTF16("c"), usb_chooser_controller_->GetOption(0));
+  EXPECT_EQ(u"c", usb_chooser_controller_->GetOption(0));
 
   EXPECT_CALL(*mock_usb_chooser_view_, OnOptionRemoved(0)).Times(1);
   device_manager_.RemoveDevice(device_c->guid);
@@ -122,21 +124,19 @@ TEST_F(UsbChooserControllerTest, RemoveDevice) {
 TEST_F(UsbChooserControllerTest, AddAndRemoveDeviceWithSameName) {
   auto device_a_1 = CreateAndAddFakeUsbDevice("a", "001");
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(base::ASCIIToUTF16("a"), usb_chooser_controller_->GetOption(0));
+  EXPECT_EQ(u"a", usb_chooser_controller_->GetOption(0));
 
   auto device_b = CreateAndAddFakeUsbDevice("b", "002");
   auto device_a_2 = CreateAndAddFakeUsbDevice("a", "002");
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(base::ASCIIToUTF16("a (001)"),
-            usb_chooser_controller_->GetOption(0));
-  EXPECT_EQ(base::ASCIIToUTF16("b"), usb_chooser_controller_->GetOption(1));
-  EXPECT_EQ(base::ASCIIToUTF16("a (002)"),
-            usb_chooser_controller_->GetOption(2));
+  EXPECT_EQ(u"a (001)", usb_chooser_controller_->GetOption(0));
+  EXPECT_EQ(u"b", usb_chooser_controller_->GetOption(1));
+  EXPECT_EQ(u"a (002)", usb_chooser_controller_->GetOption(2));
 
   device_manager_.RemoveDevice(device_a_1->guid);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(base::ASCIIToUTF16("b"), usb_chooser_controller_->GetOption(0));
-  EXPECT_EQ(base::ASCIIToUTF16("a"), usb_chooser_controller_->GetOption(1));
+  EXPECT_EQ(u"b", usb_chooser_controller_->GetOption(0));
+  EXPECT_EQ(u"a", usb_chooser_controller_->GetOption(1));
 }
 
 TEST_F(UsbChooserControllerTest, UnknownDeviceName) {
@@ -144,6 +144,6 @@ TEST_F(UsbChooserControllerTest, UnknownDeviceName) {
   uint16_t product_id = 456;
   device_manager_.CreateAndAddDevice(vendor_id, product_id);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(base::ASCIIToUTF16("Unknown device [007b:01c8]"),
+  EXPECT_EQ(u"Unknown device [007b:01c8]",
             usb_chooser_controller_->GetOption(0));
 }

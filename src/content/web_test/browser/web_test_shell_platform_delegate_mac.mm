@@ -4,6 +4,7 @@
 
 #include "content/web_test/browser/web_test_shell_platform_delegate.h"
 
+#include "base/containers/contains.h"
 #import "base/mac/foundation_util.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/public/browser/render_frame_host.h"
@@ -89,16 +90,16 @@ void WebTestShellPlatformDelegate::SetAddressBarURL(Shell* shell,
 }
 
 void WebTestShellPlatformDelegate::SetTitle(Shell* shell,
-                                            const base::string16& title) {
+                                            const std::u16string& title) {
   if (!IsHeadless()) {
     ShellPlatformDelegate::SetTitle(shell, title);
     return;
   }
 }
 
-void WebTestShellPlatformDelegate::RenderViewReady(Shell* shell) {
+void WebTestShellPlatformDelegate::MainFrameCreated(Shell* shell) {
   if (!IsHeadless()) {
-    ShellPlatformDelegate::RenderViewReady(shell);
+    ShellPlatformDelegate::MainFrameCreated(shell);
     return;
   }
 

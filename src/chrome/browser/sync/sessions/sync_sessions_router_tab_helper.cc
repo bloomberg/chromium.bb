@@ -18,18 +18,6 @@
 
 namespace sync_sessions {
 
-// static
-void SyncSessionsRouterTabHelper::CreateForWebContents(
-    content::WebContents* web_contents,
-    SyncSessionsWebContentsRouter* router) {
-  DCHECK(web_contents);
-  if (!FromWebContents(web_contents)) {
-    web_contents->SetUserData(UserDataKey(),
-                              base::WrapUnique(new SyncSessionsRouterTabHelper(
-                                  web_contents, router)));
-  }
-}
-
 SyncSessionsRouterTabHelper::SyncSessionsRouterTabHelper(
     content::WebContents* web_contents,
     SyncSessionsWebContentsRouter* router)
@@ -38,7 +26,8 @@ SyncSessionsRouterTabHelper::SyncSessionsRouterTabHelper(
       ChromeTranslateClient::FromWebContents(web_contents);
   // A translate client is not always attached to web contents (e.g. tests).
   if (chrome_translate_client_)
-    chrome_translate_client_->translate_driver()->AddObserver(this);
+    chrome_translate_client_->GetTranslateDriver()
+        ->AddLanguageDetectionObserver(this);
 
   favicon_driver_ =
       favicon::ContentFaviconDriver::FromWebContents(web_contents);
@@ -50,7 +39,7 @@ SyncSessionsRouterTabHelper::~SyncSessionsRouterTabHelper() {}
 
 void SyncSessionsRouterTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle && navigation_handle->IsInMainFrame())
+  if (navigation_handle && navigation_handle->IsInPrimaryMainFrame())
     NotifyRouter();
 }
 
@@ -61,7 +50,8 @@ void SyncSessionsRouterTabHelper::TitleWasSet(content::NavigationEntry* entry) {
 void SyncSessionsRouterTabHelper::WebContentsDestroyed() {
   NotifyRouter();
   if (chrome_translate_client_)
-    chrome_translate_client_->translate_driver()->RemoveObserver(this);
+    chrome_translate_client_->GetTranslateDriver()
+        ->RemoveLanguageDetectionObserver(this);
   if (favicon_driver_)
     favicon_driver_->RemoveObserver(this);
 }
@@ -71,8 +61,11 @@ void SyncSessionsRouterTabHelper::DidFinishLoad(
     const GURL& validated_url) {
   // Only notify when the main frame finishes loading; only the main frame
   // doesn't have a parent.
-  if (render_frame_host && !render_frame_host->GetParent())
+  if (render_frame_host && !render_frame_host->GetParent() &&
+      render_frame_host->GetLifecycleState() ==
+          content::RenderFrameHost::LifecycleState::kActive) {
     NotifyRouter(true);
+  }
 }
 
 void SyncSessionsRouterTabHelper::DidOpenRequestedURL(

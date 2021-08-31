@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,6 +33,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/strings/grit/components_strings.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -62,7 +62,7 @@ void SetJsonDevicePolicy(
     std::unique_ptr<ExternalDataFetcher> external_data_fetcher,
     PolicyMap* policies) {
   std::string error;
-  base::Optional<base::Value> decoded_json =
+  absl::optional<base::Value> decoded_json =
       DecodeJsonStringAndNormalize(json_string, policy_name, &error);
   base::Value value_to_set = decoded_json.has_value()
                                  ? std::move(decoded_json.value())
@@ -71,7 +71,9 @@ void SetJsonDevicePolicy(
                 POLICY_SOURCE_CLOUD, std::move(value_to_set),
                 std::move(external_data_fetcher));
   if (!error.empty())
-    policies->AddError(policy_name, error);
+    policies->AddMessage(policy_name, PolicyMap::MessageType::kError,
+                         IDS_POLICY_PROTO_PARSING_ERROR,
+                         {base::UTF8ToUTF16(error)});
 }
 
 // Returns true and sets |level| to a PolicyLevel if the policy has been set
@@ -112,7 +114,8 @@ void SetPolicyWithValidatingRegex(const std::string& policy_name,
   policies->Set(policy_name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                 POLICY_SOURCE_CLOUD, base::Value(policy_value), nullptr);
   if (!RE2::FullMatch(policy_value, pattern))
-    policies->AddError(policy_name, IDS_POLICY_INVALID_VALUE);
+    policies->AddMessage(policy_name, PolicyMap::MessageType::kError,
+                         IDS_POLICY_INVALID_VALUE);
 }
 
 void SetExternalDataDevicePolicy(
@@ -133,10 +136,10 @@ std::unique_ptr<base::Value> DecodeIntegerValue(google::protobuf::int64 value) {
       value > std::numeric_limits<int>::max()) {
     LOG(WARNING) << "Integer value " << value
                  << " out of numeric limits, ignoring.";
-    return std::unique_ptr<base::Value>();
+    return nullptr;
   }
 
-  return std::unique_ptr<base::Value>(new base::Value(static_cast<int>(value)));
+  return std::make_unique<base::Value>(static_cast<int>(value));
 }
 
 std::unique_ptr<base::Value> DecodeConnectionType(int value) {
@@ -156,9 +159,9 @@ std::unique_ptr<base::Value> DecodeConnectionType(int value) {
 void AddDeprecationWarning(const std::string& old_name,
                            const std::string& new_name,
                            PolicyMap* policies) {
-  policies->AddError(old_name,
-                     l10n_util::GetStringFUTF8(IDS_POLICY_MIGRATED_OLD_POLICY,
-                                               base::UTF8ToUTF16(new_name)));
+  policies->AddMessage(old_name, PolicyMap::MessageType::kError,
+                       IDS_POLICY_MIGRATED_OLD_POLICY,
+                       {base::UTF8ToUTF16(new_name)});
 }
 
 void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
@@ -670,6 +673,15 @@ void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
                           settings_proto.system_proxy_settings(), policies);
     }
   }
+
+  if (policy.has_device_debug_packet_capture_allowed() &&
+      policy.device_debug_packet_capture_allowed().has_allowed()) {
+    policies->Set(
+        key::kDeviceDebugPacketCaptureAllowed, POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+        base::Value(policy.device_debug_packet_capture_allowed().allowed()),
+        nullptr);
+  }
 }
 
 void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
@@ -795,6 +807,11 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kReportDeviceSystemInfo, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                     base::Value(container.report_system_info()), nullptr);
+    }
+    if (container.has_report_print_jobs()) {
+      policies->Set(key::kReportDevicePrintJobs, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    base::Value(container.report_print_jobs()), nullptr);
     }
   }
 
@@ -1881,11 +1898,65 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                           container.arc_data_snapshot_hours(), policies);
     }
   }
+
+  if (policy.has_device_allow_mgs_to_store_display_properties()) {
+    const em::BooleanPolicyProto& container(
+        policy.device_allow_mgs_to_store_display_properties());
+    if (container.has_value()) {
+      policies->Set(key::kDeviceAllowMGSToStoreDisplayProperties,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD, base::Value(container.value()),
+                    nullptr);
+    }
+  }
+
+  if (policy.has_device_system_wide_tracing_enabled() &&
+      policy.device_system_wide_tracing_enabled().has_enabled()) {
+    bool enabled = policy.device_system_wide_tracing_enabled().enabled();
+    policies->Set(key::kDeviceSystemWideTracingEnabled, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                  base::Value(enabled), nullptr);
+  } else {
+    // Set policy default to false if the policy is unset.
+    policies->Set(key::kDeviceSystemWideTracingEnabled, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                  base::Value(false), nullptr);
+  }
+
+  if (policy.has_device_pci_peripheral_data_access_enabled()) {
+    const em::DevicePciPeripheralDataAccessEnabledProto& container(
+        policy.device_pci_peripheral_data_access_enabled());
+    if (container.has_enabled()) {
+      policies->Set(key::kDevicePciPeripheralDataAccessEnabled,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD, base::Value(container.enabled()),
+                    nullptr);
+    }
+  }
+
+  if (policy.has_device_borealis_allowed() &&
+      policy.device_borealis_allowed().has_allowed()) {
+    policies->Set(key::kDeviceBorealisAllowed, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                  base::Value(policy.device_borealis_allowed().allowed()),
+                  nullptr);
+  }
+
+  if (policy.has_device_allowed_bluetooth_services()) {
+    const em::DeviceAllowedBluetoothServicesProto& container(
+        policy.device_allowed_bluetooth_services());
+    base::Value allowlist(base::Value::Type::LIST);
+    for (const auto& entry : container.allowlist())
+      allowlist.Append(entry);
+    policies->Set(key::kDeviceAllowedBluetoothServices, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                  std::move(allowlist), nullptr);
+  }
 }
 
 }  // namespace
 
-base::Optional<base::Value> DecodeJsonStringAndNormalize(
+absl::optional<base::Value> DecodeJsonStringAndNormalize(
     const std::string& json_string,
     const std::string& policy_name,
     std::string* error) {
@@ -1894,7 +1965,7 @@ base::Optional<base::Value> DecodeJsonStringAndNormalize(
           json_string, base::JSON_ALLOW_TRAILING_COMMAS);
   if (!value_with_error.value) {
     *error = "Invalid JSON string: " + value_with_error.error_message;
-    return base::nullopt;
+    return absl::nullopt;
   }
   base::Value root = std::move(value_with_error.value.value());
 
@@ -1911,7 +1982,7 @@ base::Optional<base::Value> DecodeJsonStringAndNormalize(
     msg << "Invalid policy value: " << schema_error << " (at "
         << (error_path.empty() ? "toplevel" : error_path) << ")";
     *error = msg.str();
-    return base::nullopt;
+    return absl::nullopt;
   }
   if (changed) {
     std::ostringstream msg;

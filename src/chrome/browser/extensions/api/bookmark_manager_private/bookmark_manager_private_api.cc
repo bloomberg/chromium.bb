@@ -42,6 +42,7 @@
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/view_type_utils.h"
+#include "extensions/common/mojom/view_type.mojom.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -104,12 +105,12 @@ CreateNodeDataElementFromBookmarkNode(const BookmarkNode& node) {
   bookmark_manager_private::BookmarkNodeDataElement element;
   // Add id and parentId so we can associate the data with existing nodes on the
   // client side.
-  element.id.reset(new std::string(base::NumberToString(node.id())));
-  element.parent_id.reset(
-      new std::string(base::NumberToString(node.parent()->id())));
+  element.id = std::make_unique<std::string>(base::NumberToString(node.id()));
+  element.parent_id =
+      std::make_unique<std::string>(base::NumberToString(node.parent()->id()));
 
   if (node.is_url())
-    element.url.reset(new std::string(node.url().spec()));
+    element.url = std::make_unique<std::string>(node.url().spec());
 
   element.title = base::UTF16ToUTF8(node.GetTitle());
   for (const auto& child : node.children()) {
@@ -128,7 +129,7 @@ bookmark_manager_private::BookmarkNodeDataElement CreateApiNodeDataElement(
   bookmark_manager_private::BookmarkNodeDataElement node_element;
 
   if (element.is_url)
-    node_element.url.reset(new std::string(element.url.spec()));
+    node_element.url = std::make_unique<std::string>(element.url.spec());
   node_element.title = base::UTF16ToUTF8(element.title);
   for (size_t i = 0; i < element.children.size(); ++i) {
     node_element.children.push_back(
@@ -187,7 +188,7 @@ BookmarkManagerPrivateEventRouter::~BookmarkManagerPrivateEventRouter() {
 void BookmarkManagerPrivateEventRouter::DispatchEvent(
     events::HistogramValue histogram_value,
     const std::string& event_name,
-    std::unique_ptr<base::ListValue> event_args) {
+    std::vector<base::Value> event_args) {
   EventRouter::Get(browser_context_)
       ->BroadcastEvent(std::make_unique<Event>(histogram_value, event_name,
                                                std::move(event_args)));
@@ -224,9 +225,9 @@ BookmarkManagerPrivateAPI::GetFactoryInstance() {
 void BookmarkManagerPrivateAPI::OnListenerAdded(
     const EventListenerInfo& details) {
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
-  event_router_.reset(new BookmarkManagerPrivateEventRouter(
+  event_router_ = std::make_unique<BookmarkManagerPrivateEventRouter>(
       browser_context_,
-      BookmarkModelFactory::GetForBrowserContext(browser_context_)));
+      BookmarkModelFactory::GetForBrowserContext(browser_context_));
 }
 
 BookmarkManagerPrivateDragEventRouter::BookmarkManagerPrivateDragEventRouter(
@@ -250,7 +251,7 @@ BookmarkManagerPrivateDragEventRouter::
 void BookmarkManagerPrivateDragEventRouter::DispatchEvent(
     events::HistogramValue histogram_value,
     const std::string& event_name,
-    std::unique_ptr<base::ListValue> args) {
+    std::vector<base::Value> args) {
   EventRouter* event_router = EventRouter::Get(profile_);
   if (!event_router)
     return;
@@ -432,7 +433,7 @@ BookmarkManagerPrivateStartDragFunction::RunOnReady() {
     return Error(bookmark_keys::kEditBookmarksDisabled);
 
   content::WebContents* web_contents = GetSenderWebContents();
-  if (GetViewType(web_contents) != VIEW_TYPE_TAB_CONTENTS) {
+  if (GetViewType(web_contents) != mojom::ViewType::kTabContents) {
     NOTREACHED();
     return Error(kUnknownErrorDoNotUse);
   }
@@ -453,10 +454,9 @@ BookmarkManagerPrivateStartDragFunction::RunOnReady() {
   if (params->is_from_touch)
     source = ui::mojom::DragEventSource::kTouch;
 
-  chrome::DragBookmarks(GetProfile(),
-                        {std::move(nodes), params->drag_node_index,
-                         web_contents->GetContentNativeView(), source,
-                         gfx::Point(params->x, params->y)});
+  chrome::DragBookmarks(
+      GetProfile(), {std::move(nodes), params->drag_node_index, web_contents,
+                     source, gfx::Point(params->x, params->y)});
 
   return NoArguments();
 }
@@ -479,7 +479,7 @@ BookmarkManagerPrivateDropFunction::RunOnReady() {
     return Error(error);
 
   content::WebContents* web_contents = GetSenderWebContents();
-  DCHECK_EQ(VIEW_TYPE_TAB_CONTENTS, GetViewType(web_contents));
+  DCHECK_EQ(mojom::ViewType::kTabContents, GetViewType(web_contents));
 
   size_t drop_index;
   if (params->index)

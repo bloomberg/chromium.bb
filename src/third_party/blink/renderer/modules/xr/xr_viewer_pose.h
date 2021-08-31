@@ -18,19 +18,17 @@ class XRViewerPose final : public XRPose {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  XRViewerPose(XRFrame*, const TransformationMatrix&);
+  explicit XRViewerPose(XRFrame*,
+                        const TransformationMatrix&,
+                        bool emulated_position);
   ~XRViewerPose() override = default;
 
   const HeapVector<Member<XRView>>& views() const { return views_; }
-  const HeapVector<Member<XRView>>& cameraViews() const {
-    return camera_views_;
-  }
 
   void Trace(Visitor*) const override;
 
  private:
   HeapVector<Member<XRView>> views_;
-  HeapVector<Member<XRView>> camera_views_;
 };
 
 }  // namespace blink

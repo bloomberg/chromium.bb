@@ -5,9 +5,12 @@
 #ifndef QUICHE_QUIC_TOOLS_QUIC_SIMPLE_SERVER_BACKEND_H_
 #define QUICHE_QUIC_TOOLS_QUIC_SIMPLE_SERVER_BACKEND_H_
 
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/tools/quic_backend_response.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
+#include <memory>
+
+#include "quic/core/quic_types.h"
+#include "quic/core/web_transport_interface.h"
+#include "quic/tools/quic_backend_response.h"
+#include "spdy/core/spdy_header_block.h"
 
 namespace quic {
 
@@ -29,8 +32,12 @@ class QuicSimpleServerBackend {
     // Called when the response is ready at the backend and can be send back to
     // the QUIC client.
     virtual void OnResponseBackendComplete(
-        const QuicBackendResponse* response,
-        std::list<QuicBackendResponse::ServerPushInfo> resources) = 0;
+        const QuicBackendResponse* response) = 0;
+  };
+
+  struct WebTransportResponse {
+    spdy::Http2HeaderBlock response_headers;
+    std::unique_ptr<WebTransportVisitor> visitor;
   };
 
   virtual ~QuicSimpleServerBackend() = default;
@@ -51,6 +58,15 @@ class QuicSimpleServerBackend {
       RequestHandler* request_handler) = 0;
   // Clears the state of the backend  instance
   virtual void CloseBackendResponseStream(RequestHandler* request_handler) = 0;
+
+  virtual WebTransportResponse ProcessWebTransportRequest(
+      const spdy::Http2HeaderBlock& /*request_headers*/,
+      WebTransportSession* /*session*/) {
+    WebTransportResponse response;
+    response.response_headers[":status"] = "400";
+    return response;
+  }
+  virtual bool SupportsWebTransport() { return false; }
 };
 
 }  // namespace quic

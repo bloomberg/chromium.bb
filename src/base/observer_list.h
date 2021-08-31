@@ -19,7 +19,6 @@
 #include "base/observer_list_internal.h"
 #include "base/ranges/algorithm.h"
 #include "base/sequence_checker.h"
-#include "base/stl_util.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -258,7 +257,7 @@ class ObserverList {
       live_iterators_.head()->value()->Invalidate();
     if (check_empty) {
       Compact();
-      DCHECK(observers_.empty());
+      DCHECK(observers_.empty()) << GetObserversCreationStackString();
     }
   }
 
@@ -273,6 +272,7 @@ class ObserverList {
       NOTREACHED() << "Observers can only be added once!";
       return;
     }
+    observers_count_++;
     observers_.emplace_back(ObserverStorageType(obs));
   }
 
@@ -284,7 +284,8 @@ class ObserverList {
         observers_, [obs](const auto& o) { return o.IsEqual(obs); });
     if (it == observers_.end())
       return;
-
+    if (!it->IsMarkedForRemoval())
+      observers_count_--;
     if (live_iterators_.empty()) {
       observers_.erase(it);
     } else {
@@ -314,9 +315,10 @@ class ObserverList {
       for (auto& observer : observers_)
         observer.MarkForRemoval();
     }
+    observers_count_ = 0;
   }
 
-  bool might_have_observers() const { return !observers_.empty(); }
+  bool empty() const { return !observers_count_; }
 
  private:
   friend class internal::WeakLinkNode<ObserverList>;
@@ -327,12 +329,28 @@ class ObserverList {
     // Compact() is only ever called when the last iterator is destroyed.
     DETACH_FROM_SEQUENCE(iteration_sequence_checker_);
 
-    EraseIf(observers_, [](const auto& o) { return o.IsMarkedForRemoval(); });
+    observers_.erase(
+        std::remove_if(observers_.begin(), observers_.end(),
+                       [](const auto& o) { return o.IsMarkedForRemoval(); }),
+        observers_.end());
+  }
+
+  std::string GetObserversCreationStackString() const {
+    std::string result;
+#if DCHECK_IS_ON()
+    for (const auto& observer : observers_) {
+      result += observer.GetCreationStackString();
+      result += "\n";
+    }
+#endif
+    return result;
   }
 
   std::vector<ObserverStorageType> observers_;
 
   base::LinkedList<internal::WeakLinkNode<ObserverList>> live_iterators_;
+
+  size_t observers_count_{0};
 
   const ObserverListPolicy policy_;
 

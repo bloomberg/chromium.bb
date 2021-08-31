@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <functional>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -16,11 +17,11 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -217,12 +218,11 @@ void StatefulSSLHostStateDelegate::AllowCert(
     content::WebContents* web_contents) {
   DCHECK(web_contents);
   content::StoragePartition* storage_partition =
-      content::BrowserContext::GetStoragePartition(
-          browser_context_, web_contents->GetMainFrame()->GetSiteInstance(),
+      browser_context_->GetStoragePartition(
+          web_contents->GetMainFrame()->GetSiteInstance(),
           false /* can_create */);
   if (!storage_partition ||
-      storage_partition != content::BrowserContext::GetDefaultStoragePartition(
-                               browser_context_)) {
+      storage_partition != browser_context_->GetDefaultStoragePartition()) {
     // Decisions for non-default storage partitions are stored in memory only;
     // see comment on declaration of
     // |allowed_certs_for_non_default_storage_partitions_|.
@@ -239,7 +239,7 @@ void StatefulSSLHostStateDelegate::AllowCert(
           url, url, ContentSettingsType::SSL_CERT_DECISIONS, nullptr));
 
   if (!value.get() || !value->is_dict())
-    value.reset(new base::DictionaryValue());
+    value = std::make_unique<base::DictionaryValue>();
 
   base::DictionaryValue* dict;
   bool success = value->GetAsDictionary(&dict);
@@ -296,12 +296,11 @@ StatefulSSLHostStateDelegate::QueryPolicy(const std::string& host,
     return ALLOWED;
 
   content::StoragePartition* storage_partition =
-      content::BrowserContext::GetStoragePartition(
-          browser_context_, web_contents->GetMainFrame()->GetSiteInstance(),
+      browser_context_->GetStoragePartition(
+          web_contents->GetMainFrame()->GetSiteInstance(),
           false /* can_create */);
   if (!storage_partition ||
-      storage_partition != content::BrowserContext::GetDefaultStoragePartition(
-                               browser_context_)) {
+      storage_partition != browser_context_->GetDefaultStoragePartition()) {
     if (allowed_certs_for_non_default_storage_partitions_.find(host) ==
         allowed_certs_for_non_default_storage_partitions_.end()) {
       return DENIED;
@@ -396,12 +395,11 @@ bool StatefulSSLHostStateDelegate::HasAllowException(
   DCHECK(web_contents);
 
   content::StoragePartition* storage_partition =
-      content::BrowserContext::GetStoragePartition(
-          browser_context_, web_contents->GetMainFrame()->GetSiteInstance(),
+      browser_context_->GetStoragePartition(
+          web_contents->GetMainFrame()->GetSiteInstance(),
           false /* can_create */);
   if (!storage_partition ||
-      storage_partition != content::BrowserContext::GetDefaultStoragePartition(
-                               browser_context_)) {
+      storage_partition != browser_context_->GetDefaultStoragePartition()) {
     return allowed_certs_for_non_default_storage_partitions_.find(host) !=
            allowed_certs_for_non_default_storage_partitions_.end();
   }
@@ -422,9 +420,8 @@ bool StatefulSSLHostStateDelegate::HasAllowException(
   DCHECK(success);
 
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
-    int policy_decision;  // Owned by dict
-    success = it.value().GetAsInteger(&policy_decision);
-    if (success && (static_cast<CertJudgment>(policy_decision) == ALLOWED))
+    if (it.value().is_int() &&
+        (static_cast<CertJudgment>(it.value().GetInt()) == ALLOWED))
       return true;
   }
 
@@ -451,8 +448,7 @@ void StatefulSSLHostStateDelegate::RevokeUserAllowExceptionsHard(
     const std::string& host) {
   RevokeUserAllowExceptions(host);
   auto* network_context =
-      content::BrowserContext::GetDefaultStoragePartition(browser_context_)
-          ->GetNetworkContext();
+      browser_context_->GetDefaultStoragePartition()->GetNetworkContext();
   network_context->CloseIdleConnections(base::NullCallback());
 }
 

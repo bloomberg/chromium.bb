@@ -119,7 +119,13 @@ public class StartSurfaceLayout extends Layout {
                     new Handler().postDelayed(() -> {
                         Tab currentTab = mTabModelSelector.getCurrentTab();
                         if (currentTab != null) mTabContentManager.cacheTabThumbnail(currentTab);
+                        mLayoutTabs = null;
                     }, ZOOMING_DURATION);
+                } else {
+                    // crbug.com/1176548, mLayoutTabs is used to capture thumbnail, null it in a
+                    // post delay handler to avoid creating a new pending surface in native, which
+                    // will hold the thumbnail capturing task.
+                    new Handler().postDelayed(() -> { mLayoutTabs = null; }, ZOOMING_DURATION);
                 }
             }
 
@@ -240,6 +246,7 @@ public class StartSurfaceLayout extends Layout {
 
         int sourceTabId = nextId;
         if (sourceTabId == Tab.INVALID_TAB_ID) sourceTabId = mTabModelSelector.getCurrentTabId();
+
         LayoutTab sourceLayoutTab = createLayoutTab(
                 sourceTabId, mTabModelSelector.isIncognitoSelected(), NO_CLOSE_BUTTON, NO_TITLE);
         sourceLayoutTab.setDecorationAlpha(0);
@@ -267,6 +274,7 @@ public class StartSurfaceLayout extends Layout {
     @Override
     public void doneHiding() {
         super.doneHiding();
+        mStartSurface.onHide();
         RecordUserAction.record("MobileExitStackView");
     }
 

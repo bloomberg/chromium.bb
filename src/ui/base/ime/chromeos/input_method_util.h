@@ -14,7 +14,6 @@
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 
@@ -40,13 +39,11 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodUtil {
   std::string GetInputMethodDisplayNameFromId(
       const std::string& input_method_id) const;
 
-  base::string16 GetInputMethodShortName(
+  std::u16string GetInputMethodMediumName(
       const InputMethodDescriptor& input_method) const;
-  base::string16 GetInputMethodMediumName(
+  std::u16string GetInputMethodLongNameStripped(
       const InputMethodDescriptor& input_method) const;
-  base::string16 GetInputMethodLongNameStripped(
-      const InputMethodDescriptor& input_method) const;
-  base::string16 GetInputMethodLongName(
+  std::u16string GetInputMethodLongName(
       const InputMethodDescriptor& input_method) const;
 
   // Converts an input method ID to an input method descriptor. Returns NULL
@@ -144,8 +141,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodUtil {
   void InitXkbInputMethodsForTesting(const InputMethodDescriptors& imes);
 
   // Map from input method ID to associated input method descriptor.
-  typedef std::map<
-    std::string, InputMethodDescriptor> InputMethodIdToDescriptorMap;
+  using InputMethodIdToDescriptorMap =
+      std::map<std::string, InputMethodDescriptor>;
 
   // Returns the fallback input method descriptor (the very basic US
   // keyboard). This function is mostly used for testing, but may be used
@@ -160,9 +157,6 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodUtil {
       InputMethodType type,
       std::vector<std::string>* out_input_method_ids) const;
 
-  // Gets the id to descriptor map for testing.
-  const InputMethodIdToDescriptorMap& GetIdToDescriptorMapForTesting();
-
  private:
   // Converts a string sent from IBus IME engines, which is written in English,
   // into Chrome's string ID, then pulls internationalized resource string from
@@ -171,19 +165,20 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodUtil {
   // The english_string to should be a xkb id with "xkb:...:...:..." format.
   // TODO(shuchen): this method should be removed when finish the wrapping of
   // xkb to extension.
-  base::string16 TranslateString(const std::string& english_string) const;
+  std::u16string TranslateString(const std::string& english_string) const;
 
   bool TranslateStringInternal(const std::string& english_string,
-                               base::string16 *out_string) const;
+                               std::u16string* out_string) const;
 
   // Get long name of the given input method. |short_name| is to specify whether
   // to get the long name for OOBE screen, because OOBE screen displays shorter
   // name (e.g. 'US' instead of 'US keyboard').
-  base::string16 GetInputMethodLongNameInternal(
-      const InputMethodDescriptor& input_method, bool short_name) const;
+  std::u16string GetInputMethodLongNameInternal(
+      const InputMethodDescriptor& input_method,
+      bool short_name) const;
 
   // Map from language code to associated input method IDs, etc.
-  typedef std::multimap<std::string, std::string> LanguageCodeToIdsMap;
+  using LanguageCodeToIdsMap = std::multimap<std::string, std::string>;
 
   LanguageCodeToIdsMap language_code_to_ids_;
   InputMethodIdToDescriptorMap id_to_descriptor_;

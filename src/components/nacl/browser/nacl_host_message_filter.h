@@ -62,7 +62,7 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
       IPC::Message* reply_msg,
       bool nonsfi_mode_allowed,
       NaClBrowserDelegate::MapUrlToLocalFilePathCallback map_url_callback);
-  void LaunchNaClContinuationOnIOThread(
+  void LaunchNaClContinuationOnProcessThread(
       const nacl::NaClLaunchParams& launch_params,
       IPC::Message* reply_msg,
       const std::vector<NaClResourcePrefetchResult>& prefetched_resource_files,
@@ -79,7 +79,7 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
                    const PnaclCacheInfo& cache_info);
   void OnTranslationFinished(int instance, bool success);
   void OnMissingArchError(int render_view_id);
-  void OnOpenNaClExecutable(int render_view_id,
+  void OnOpenNaClExecutable(int render_frame_id,
                             const GURL& file_url,
                             bool enable_validation_caching,
                             IPC::Message* reply_msg);

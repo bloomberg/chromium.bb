@@ -29,7 +29,7 @@ namespace dawn_native { namespace vulkan {
     class DescriptorSetAllocator;
     class Device;
 
-    VkDescriptorType VulkanDescriptorType(wgpu::BindingType type, bool isDynamic);
+    VkDescriptorType VulkanDescriptorType(const BindingInfo& bindingInfo);
 
     // In Vulkan descriptor pools have to be sized to an exact number of descriptors. This means
     // it's hard to have something where we can mix different types of descriptor sets because
@@ -43,17 +43,22 @@ namespace dawn_native { namespace vulkan {
     // the pools are reused when no longer used. Minimizing the number of descriptor pool allocation
     // is important because creating them can incur GPU memory allocation which is usually an
     // expensive syscall.
+    //
+    // The Vulkan BindGroupLayout is dependent on UseTintGenerator or not.
+    // When UseTintGenerator is on, VkDescriptorSetLayoutBinding::binding is set to BindingIndex,
+    // otherwise it is set to BindingNumber.
     class BindGroupLayout final : public BindGroupLayoutBase {
       public:
-        static ResultOrError<BindGroupLayout*> Create(Device* device,
-                                                      const BindGroupLayoutDescriptor* descriptor);
+        static ResultOrError<Ref<BindGroupLayout>> Create(
+            Device* device,
+            const BindGroupLayoutDescriptor* descriptor);
 
         BindGroupLayout(DeviceBase* device, const BindGroupLayoutDescriptor* descriptor);
 
         VkDescriptorSetLayout GetHandle() const;
 
-        ResultOrError<BindGroup*> AllocateBindGroup(Device* device,
-                                                    const BindGroupDescriptor* descriptor);
+        ResultOrError<Ref<BindGroup>> AllocateBindGroup(Device* device,
+                                                        const BindGroupDescriptor* descriptor);
         void DeallocateBindGroup(BindGroup* bindGroup,
                                  DescriptorSetAllocation* descriptorSetAllocation);
         void FinishDeallocation(ExecutionSerial completedSerial);

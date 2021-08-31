@@ -10,6 +10,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_isolation_policy.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -58,7 +59,8 @@ class PageLifecycleStateManagerBrowserTest : public ContentBrowserTest {
   }
 
   void StartPerformanceObserver(RenderFrameHostImpl* rfh, int numEntries) {
-    EXPECT_TRUE(ExecJs(rfh, R"(
+    EXPECT_TRUE(ExecJs(rfh,
+                       R"(
       window.performanceObserverEntries = [];
       window.performanceObserverPromise = new Promise(resolve => {
         new PerformanceObserver(entries => {
@@ -67,11 +69,12 @@ class PageLifecycleStateManagerBrowserTest : public ContentBrowserTest {
             window.performanceObserverEntries.push(e.name);
           });
           if (window.performanceObserverEntries.length === )" +
-                                base::NumberToString(numEntries) + R"()
+                           base::NumberToString(numEntries) + R"()
             resolve(true);
         }).observe({type: 'visibility-state', buffered: true});
       });
-    )"));
+    )",
+                       EXECUTE_SCRIPT_NO_RESOLVE_PROMISES));
   }
 
   void MatchEventList(RenderFrameHostImpl* rfh,

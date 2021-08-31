@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
@@ -271,6 +272,10 @@ Status AdbImpl::GetPidByName(const std::string& device_serial,
                              int* pid) {
   std::string response;
   // on Android O `ps` returns only user processes, so also try with `-A` flag.
+  // With ps && ps -A, we actually get both the result concatenated together.
+  // Any additional argument (i.e. -A) is not supported until android
+  // version 8.0 (API level 26). And we would see output such as "bad pid '-A'"
+  // which is of three tokens.
   Status status =
       ExecuteHostShellCommand(device_serial, "ps && ps -A", &response);
 
@@ -282,7 +287,7 @@ Status AdbImpl::GetPidByName(const std::string& device_serial,
     std::vector<base::StringPiece> tokens = base::SplitStringPiece(
         line, base::kWhitespaceASCII,
         base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    if (tokens.size() != 8 && tokens.size() != 9)
+    if (tokens.size() < 8 || tokens.size() > 10)
       continue;
     // The ps command on Android M+ does not always output a value for WCHAN,
     // so the process name might appear in the 8th or 9th column. Use the
@@ -318,7 +323,7 @@ Status AdbImpl::GetSocketByPattern(const std::string& device_serial,
         base::SPLIT_WANT_NONEMPTY);
     if (tokens.size() != 8)
       continue;
-    *socket_name = tokens[7].as_string();
+    *socket_name = std::string(tokens[7]);
     return Status(kOk);
   }
 

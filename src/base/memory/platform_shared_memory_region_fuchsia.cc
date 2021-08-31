@@ -10,7 +10,7 @@
 
 #include "base/bits.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/process/process_metrics.h"
+#include "base/memory/page_size.h"
 
 namespace base {
 namespace subtle {
@@ -121,7 +121,7 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
     return {};
 
   // Aligning may overflow so check that the result doesn't decrease.
-  size_t rounded_size = bits::Align(size, GetPageSize());
+  size_t rounded_size = bits::AlignUp(size, GetPageSize());
   if (rounded_size < size ||
       rounded_size > static_cast<size_t>(std::numeric_limits<int>::max())) {
     return {};

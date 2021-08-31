@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ReadLaterAppElement} from 'chrome://read-later/app.js';
-import {ReadLaterApiProxy, ReadLaterApiProxyImpl} from 'chrome://read-later/read_later_api_proxy.js';
+import {ReadLaterAppElement} from 'chrome://read-later.top-chrome/app.js';
+import {ReadLaterApiProxy, ReadLaterApiProxyImpl} from 'chrome://read-later.top-chrome/read_later_api_proxy.js';
 import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
@@ -105,8 +105,9 @@ suite('ReadLaterAppTest', () => {
   test('click on item passes correct url', async () => {
     const expectedUrl = 'https://www.apple.com';
     clickItem(expectedUrl);
-    const url = await testProxy.whenCalled('openSavedEntry');
+    const [url, updateReadStatus] = await testProxy.whenCalled('openURL');
     assertEquals(url.url, expectedUrl);
+    assertTrue(updateReadStatus);
   });
 
   test('Click on item mark as read button triggers actions', async () => {
@@ -160,8 +161,9 @@ suite('ReadLaterAppTest', () => {
         (readLaterApp.shadowRoot.querySelector(`[data-url="${expectedUrl}"]`));
 
     keyDownOn(readLaterItem, 0, [], 'Enter');
-    const url = await testProxy.whenCalled('openSavedEntry');
+    const [url, updateReadStatus] = await testProxy.whenCalled('openURL');
     assertEquals(url.url, expectedUrl);
+    assertTrue(updateReadStatus);
   });
 
   test('Space key triggers action and passes correct url', async () => {
@@ -170,8 +172,9 @@ suite('ReadLaterAppTest', () => {
         (readLaterApp.shadowRoot.querySelector(`[data-url="${expectedUrl}"]`));
 
     keyDownOn(readLaterItem, 0, [], ' ');
-    const url = await testProxy.whenCalled('openSavedEntry');
+    const [url, updateReadStatus] = await testProxy.whenCalled('openURL');
     assertEquals(url.url, expectedUrl);
+    assertTrue(updateReadStatus);
   });
 
   test('Keyboard navigation abides by item list range boundaries', async () => {
@@ -232,4 +235,31 @@ suite('ReadLaterAppTest', () => {
         keyDownOn(firstItem, 0, [], 'ArrowLeft');
         assertEquals(firstItem, readLaterApp.shadowRoot.activeElement);
       });
+
+  test('Favicons present in the dom', async () => {
+    const readLaterItems = /** @type {!NodeList<!Element>} */
+        (readLaterApp.shadowRoot.querySelectorAll('read-later-item'));
+
+    readLaterItems.forEach((readLaterItem) => {
+      assertTrue(!!readLaterItem.shadowRoot.querySelector('.favicon'));
+    });
+  });
+
+  test('Verify visibilitychange triggers data fetch', async () => {
+    assertEquals(1, testProxy.getCallCount('getReadLaterEntries'));
+
+    // When hidden visibilitychange should not trigger the data callback.
+    Object.defineProperty(
+        document, 'visibilityState', {value: 'hidden', writable: true});
+    document.dispatchEvent(new Event('visibilitychange'));
+    await flushTasks();
+    assertEquals(1, testProxy.getCallCount('getReadLaterEntries'));
+
+    // When visible visibilitychange should trigger the data callback.
+    Object.defineProperty(
+        document, 'visibilityState', {value: 'visible', writable: true});
+    document.dispatchEvent(new Event('visibilitychange'));
+    await flushTasks();
+    assertEquals(2, testProxy.getCallCount('getReadLaterEntries'));
+  });
 });

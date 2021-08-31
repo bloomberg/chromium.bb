@@ -71,7 +71,11 @@ GetPhysicalDeviceToolPropertiesEXTFunc								getPhysicalDeviceToolPropertiesEXT
 GetPhysicalDeviceCooperativeMatrixPropertiesNVFunc					getPhysicalDeviceCooperativeMatrixPropertiesNV;
 GetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNVFunc	getPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV;
 CreateHeadlessSurfaceEXTFunc										createHeadlessSurfaceEXT;
+AcquireWinrtDisplayNVFunc											acquireWinrtDisplayNV;
+GetWinrtDisplayNVFunc												getWinrtDisplayNV;
 CreateAndroidSurfaceKHRFunc											createAndroidSurfaceKHR;
+GetPhysicalDeviceVideoCapabilitiesKHRFunc							getPhysicalDeviceVideoCapabilitiesKHR;
+GetPhysicalDeviceVideoFormatPropertiesKHRFunc						getPhysicalDeviceVideoFormatPropertiesKHR;
 CreateImagePipeSurfaceFUCHSIAFunc									createImagePipeSurfaceFUCHSIA;
 CreateStreamDescriptorSurfaceGGPFunc								createStreamDescriptorSurfaceGGP;
 CreateIOSSurfaceMVKFunc												createIOSSurfaceMVK;

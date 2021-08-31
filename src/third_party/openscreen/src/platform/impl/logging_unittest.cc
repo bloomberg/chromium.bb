@@ -25,17 +25,15 @@ class LoggingTest : public ::testing::Test {
     previous_log_level = GetLogLevel();
     SetLogLevel(LogLevel::kInfo);
     SetLogBufferForTest(&log_messages);
+    testing::FLAGS_gtest_death_test_style = "threadsafe";
   }
 
   void TearDown() {
     SetLogLevel(previous_log_level);
     SetLogBufferForTest(nullptr);
-    DisableBreakForTest(nullptr);
   }
 
  protected:
-  void DisableBreak() { DisableBreakForTest(&break_was_called); }
-
   void ExpectLog(LogLevel level, absl::string_view message) {
     const char* level_string = "";
     switch (level) {
@@ -78,20 +76,6 @@ class LoggingTest : public ::testing::Test {
     log_messages.clear();
   }
 
-  void ExpectBreakAndClear() {
-    EXPECT_TRUE(break_was_called);
-    break_was_called = false;
-  }
-
-  void ExpectDebugBreakAndClear() {
-#if OSP_DCHECK_IS_ON()
-    EXPECT_TRUE(break_was_called);
-    break_was_called = false;
-#else
-    EXPECT_FALSE(break_was_called);
-#endif  // OSP_DCHECK_IS_ON()
-  }
-
  private:
   struct LogMessage {
     std::string level;
@@ -99,7 +83,6 @@ class LoggingTest : public ::testing::Test {
   };
   std::vector<std::string> log_messages;
   std::vector<LogMessage> expected_messages;
-  bool break_was_called = false;
   LogLevel previous_log_level = LogLevel::kWarning;
 };
 
@@ -209,79 +192,55 @@ TEST_F(LoggingTest, DebugConditionalLogging) {
 }
 
 TEST_F(LoggingTest, CheckAndLogFatal) {
-  DisableBreak();
+  ASSERT_DEATH(OSP_CHECK(false), ".*OSP_CHECK\\(false\\) failed: ");
 
-  ExpectLog(LogLevel::kFatal, "OSP_CHECK(false) failed: ");
-  OSP_CHECK(false);
-  ExpectBreakAndClear();
+  ASSERT_DEATH(OSP_CHECK_EQ(1, 2),
+               ".*OSP_CHECK\\(\\(1\\) == \\(2\\)\\) failed: 1 vs\\. 2: ");
 
-  ExpectLog(LogLevel::kFatal, "OSP_CHECK((1) == (2)) failed: 1 vs. 2: ");
-  OSP_CHECK_EQ(1, 2);
-  ExpectBreakAndClear();
+  ASSERT_DEATH(OSP_CHECK_NE(1, 1),
+               ".*OSP_CHECK\\(\\(1\\) != \\(1\\)\\) failed: 1 vs\\. 1: ");
 
-  ExpectLog(LogLevel::kFatal, "OSP_CHECK((1) != (1)) failed: 1 vs. 1: ");
-  OSP_CHECK_NE(1, 1);
-  ExpectBreakAndClear();
+  ASSERT_DEATH(OSP_CHECK_LT(2, 1),
+               ".*OSP_CHECK\\(\\(2\\) < \\(1\\)\\) failed: 2 vs\\. 1: ");
 
-  ExpectLog(LogLevel::kFatal, "OSP_CHECK((2) < (1)) failed: 2 vs. 1: ");
-  OSP_CHECK_LT(2, 1);
-  ExpectBreakAndClear();
+  ASSERT_DEATH(OSP_CHECK_LE(2, 1),
+               ".*OSP_CHECK\\(\\(2\\) <= \\(1\\)\\) failed: 2 vs\\. 1: ");
 
-  ExpectLog(LogLevel::kFatal, "OSP_CHECK((2) <= (1)) failed: 2 vs. 1: ");
-  OSP_CHECK_LE(2, 1);
-  ExpectBreakAndClear();
+  ASSERT_DEATH(OSP_CHECK_GT(1, 2),
+               ".*OSP_CHECK\\(\\(1\\) > \\(2\\)\\) failed: 1 vs\\. 2: ");
 
-  ExpectLog(LogLevel::kFatal, "OSP_CHECK((1) > (2)) failed: 1 vs. 2: ");
-  OSP_CHECK_GT(1, 2);
-  ExpectBreakAndClear();
+  ASSERT_DEATH(OSP_CHECK_GE(1, 2),
+               ".*OSP_CHECK\\(\\(1\\) >= \\(2\\)\\) failed: 1 vs\\. 2: ");
 
-  ExpectLog(LogLevel::kFatal, "OSP_CHECK((1) >= (2)) failed: 1 vs. 2: ");
-  OSP_CHECK_GE(1, 2);
-  ExpectBreakAndClear();
-
-  ExpectLog(LogLevel::kFatal, "Fatal");
-  OSP_LOG_FATAL << "Fatal";
-  ExpectBreakAndClear();
+  ASSERT_DEATH((OSP_LOG_FATAL << "Fatal"), ".*Fatal");
 
   VerifyLogs();
 }
 
 TEST_F(LoggingTest, DCheckAndDLogFatal) {
-  DisableBreak();
-
-  ExpectLog(LogLevel::kFatal, "OSP_CHECK(false) failed: ");
-  OSP_DCHECK(false);
-  ExpectDebugBreakAndClear();
-
-  ExpectLog(LogLevel::kFatal, "OSP_CHECK((1) == (2)) failed: 1 vs. 2: ");
-  OSP_DCHECK_EQ(1, 2);
-  ExpectDebugBreakAndClear();
-
-  ExpectLog(LogLevel::kFatal, "OSP_CHECK((1) != (1)) failed: 1 vs. 1: ");
-  OSP_DCHECK_NE(1, 1);
-  ExpectDebugBreakAndClear();
-
-  ExpectLog(LogLevel::kFatal, "OSP_CHECK((2) < (1)) failed: 2 vs. 1: ");
-  OSP_DCHECK_LT(2, 1);
-  ExpectDebugBreakAndClear();
-
-  ExpectLog(LogLevel::kFatal, "OSP_CHECK((2) <= (1)) failed: 2 vs. 1: ");
-  OSP_DCHECK_LE(2, 1);
-  ExpectDebugBreakAndClear();
-
-  ExpectLog(LogLevel::kFatal, "OSP_CHECK((1) > (2)) failed: 1 vs. 2: ");
-  OSP_DCHECK_GT(1, 2);
-  ExpectDebugBreakAndClear();
-
-  ExpectLog(LogLevel::kFatal, "OSP_CHECK((1) >= (2)) failed: 1 vs. 2: ");
-  OSP_DCHECK_GE(1, 2);
-  ExpectDebugBreakAndClear();
-
-  ExpectLog(LogLevel::kFatal, "Fatal");
-  OSP_DLOG_FATAL << "Fatal";
-  ExpectDebugBreakAndClear();
-
 #if OSP_DCHECK_IS_ON()
+  ASSERT_DEATH(OSP_DCHECK(false), ".*OSP_CHECK\\(false\\) failed: ");
+
+  ASSERT_DEATH(OSP_DCHECK_EQ(1, 2),
+               ".*OSP_CHECK\\(\\(1\\) == \\(2\\)\\) failed: 1 vs\\. 2: ");
+
+  ASSERT_DEATH(OSP_DCHECK_NE(1, 1),
+               ".*OSP_CHECK\\(\\(1\\) != \\(1\\)\\) failed: 1 vs\\. 1: ");
+
+  ASSERT_DEATH(OSP_DCHECK_LT(2, 1),
+               ".*OSP_CHECK\\(\\(2\\) < \\(1\\)\\) failed: 2 vs\\. 1: ");
+
+  ASSERT_DEATH(OSP_DCHECK_LE(2, 1),
+               ".*OSP_CHECK\\(\\(2\\) <= \\(1\\)\\) failed: 2 vs\\. 1: ");
+
+  ASSERT_DEATH(OSP_DCHECK_GT(1, 2),
+               ".*OSP_CHECK\\(\\(1\\) > \\(2\\)\\) failed: 1 vs\\. 2: ");
+
+  ASSERT_DEATH(OSP_DCHECK_GE(1, 2),
+               ".*OSP_CHECK\\(\\(1\\) >= \\(2\\)\\) failed: 1 vs\\. 2: ");
+
+  ASSERT_DEATH((OSP_DLOG_FATAL << "Fatal"), ".*Fatal");
+
   VerifyLogs();
 #else
   VerifyNoLogs();
@@ -309,13 +268,7 @@ TEST_F(LoggingTest, OspUnimplemented) {
 }
 
 TEST_F(LoggingTest, OspNotReached) {
-  DisableBreak();
-  ExpectLog(LogLevel::kFatal, "TestBody: NOTREACHED() hit.");
-
-  OSP_NOTREACHED();
-
-  VerifyLogs();
-  ExpectBreakAndClear();
+  ASSERT_DEATH(OSP_NOTREACHED(), ".*TestBody: NOTREACHED\\(\\) hit.");
 }
 
 }  // namespace openscreen

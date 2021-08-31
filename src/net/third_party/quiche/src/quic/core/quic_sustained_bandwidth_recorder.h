@@ -7,10 +7,10 @@
 
 #include <cstdint>
 
-#include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/core/quic_bandwidth.h"
+#include "quic/core/quic_time.h"
+#include "quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -44,22 +44,22 @@ class QUIC_EXPORT_PRIVATE QuicSustainedBandwidthRecorder {
   bool HasEstimate() const { return has_estimate_; }
 
   QuicBandwidth BandwidthEstimate() const {
-    DCHECK(has_estimate_);
+    QUICHE_DCHECK(has_estimate_);
     return bandwidth_estimate_;
   }
 
   QuicBandwidth MaxBandwidthEstimate() const {
-    DCHECK(has_estimate_);
+    QUICHE_DCHECK(has_estimate_);
     return max_bandwidth_estimate_;
   }
 
   int64_t MaxBandwidthTimestamp() const {
-    DCHECK(has_estimate_);
+    QUICHE_DCHECK(has_estimate_);
     return max_bandwidth_timestamp_;
   }
 
   bool EstimateRecordedDuringSlowStart() const {
-    DCHECK(has_estimate_);
+    QUICHE_DCHECK(has_estimate_);
     return bandwidth_estimate_recorded_during_slow_start_;
   }
 

@@ -36,8 +36,8 @@ TemplateUrlServiceAndroid::TemplateUrlServiceAndroid(
     TemplateURLService* template_url_service)
     : template_url_service_(template_url_service) {
   template_url_subscription_ = template_url_service_->RegisterOnLoadedCallback(
-      base::Bind(&TemplateUrlServiceAndroid::OnTemplateURLServiceLoaded,
-                 base::Unretained(this)));
+      base::BindOnce(&TemplateUrlServiceAndroid::OnTemplateURLServiceLoaded,
+                     base::Unretained(this)));
   template_url_service_->AddObserver(this);
 }
 
@@ -68,7 +68,7 @@ void TemplateUrlServiceAndroid::SetUserSelectedDefaultSearchProvider(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& jkeyword) {
-  base::string16 keyword(
+  std::u16string keyword(
       base::android::ConvertJavaStringToUTF16(env, jkeyword));
   TemplateURL* template_url =
       template_url_service_->GetTemplateURLForKeyword(keyword);
@@ -119,7 +119,7 @@ TemplateUrlServiceAndroid::IsSearchResultsPageFromDefaultSearchProvider(
 }
 
 void TemplateUrlServiceAndroid::OnTemplateURLServiceLoaded() {
-  template_url_subscription_.reset();
+  template_url_subscription_ = {};
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!java_ref_)
     return;
@@ -142,7 +142,7 @@ TemplateUrlServiceAndroid::GetUrlForSearchQuery(
   const TemplateURL* default_provider =
       template_url_service_->GetDefaultSearchProvider();
 
-  base::string16 query(base::android::ConvertJavaStringToUTF16(env, jquery));
+  std::u16string query(base::android::ConvertJavaStringToUTF16(env, jquery));
 
   std::string url;
   if (default_provider &&
@@ -175,7 +175,7 @@ TemplateUrlServiceAndroid::GetSearchQueryForUrl(
 
   std::unique_ptr<GURL> url = url::GURLAndroid::ToNativeGURL(env, jurl);
 
-  base::string16 query;
+  std::u16string query;
 
   if (default_provider &&
       default_provider->url_ref().SupportsReplacement(
@@ -194,7 +194,7 @@ TemplateUrlServiceAndroid::GetUrlForVoiceSearchQuery(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& jquery) {
-  base::string16 query(base::android::ConvertJavaStringToUTF16(env, jquery));
+  std::u16string query(base::android::ConvertJavaStringToUTF16(env, jquery));
 
   if (!query.empty()) {
     GURL gurl(GetDefaultSearchURLForSearchTerms(template_url_service_, query));
@@ -214,7 +214,7 @@ TemplateUrlServiceAndroid::GetUrlForContextualSearchQuery(
     const JavaParamRef<jstring>& jalternate_term,
     jboolean jshould_prefetch,
     const JavaParamRef<jstring>& jprotocol_version) {
-  base::string16 query(base::android::ConvertJavaStringToUTF16(env, jquery));
+  std::u16string query(base::android::ConvertJavaStringToUTF16(env, jquery));
 
   if (!query.empty()) {
     GURL gurl(GetDefaultSearchURLForSearchTerms(template_url_service_, query));
@@ -247,14 +247,14 @@ TemplateUrlServiceAndroid::GetSearchEngineUrlFromTemplateUrl(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& jkeyword) {
-  base::string16 keyword =
+  std::u16string keyword =
       base::android::ConvertJavaStringToUTF16(env, jkeyword);
   TemplateURL* template_url =
       template_url_service_->GetTemplateURLForKeyword(keyword);
   if (!template_url)
     return base::android::ScopedJavaLocalRef<jstring>(env, nullptr);
   std::string url(template_url->url_ref().ReplaceSearchTerms(
-      TemplateURLRef::SearchTermsArgs(base::ASCIIToUTF16("query")),
+      TemplateURLRef::SearchTermsArgs(u"query"),
       template_url_service_->search_terms_data()));
   return base::android::ConvertUTF8ToJavaString(env, url);
 }
@@ -263,7 +263,7 @@ int TemplateUrlServiceAndroid::GetSearchEngineTypeFromTemplateUrl(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& jkeyword) {
-  base::string16 keyword =
+  std::u16string keyword =
       base::android::ConvertJavaStringToUTF16(env, jkeyword);
   TemplateURL* template_url =
       template_url_service_->GetTemplateURLForKeyword(keyword);
@@ -289,12 +289,23 @@ jboolean TemplateUrlServiceAndroid::SetPlayAPISearchEngine(
   auto existing_play_api_turl = std::find_if(
       template_urls.cbegin(), template_urls.cend(),
       [](const TemplateURL* turl) { return turl->created_from_play_api(); });
-  if (existing_play_api_turl != template_urls.cend())
+  if (existing_play_api_turl != template_urls.cend()) {
+    // Migrate old Play API database entries that were incorrectly marked as
+    // safe_for_autoreplace() before M89.
+    // TODO(tommycli): Delete this once the below metric approaches zero.
+    TemplateURL* turl = *existing_play_api_turl;
+    if (turl->safe_for_autoreplace()) {
+      TemplateURLService::LogSearchTemplateURLEvent(
+          TemplateURLService::MIGRATE_SAFE_FOR_AUTOREPLACE_PLAY_API_ENGINE);
+      template_url_service_->ResetTemplateURL(turl, turl->short_name(),
+                                              turl->keyword(), turl->url());
+    }
     return false;
+  }
 
-  base::string16 keyword =
+  std::u16string keyword =
       base::android::ConvertJavaStringToUTF16(env, jkeyword);
-  base::string16 name = base::android::ConvertJavaStringToUTF16(env, jname);
+  std::u16string name = base::android::ConvertJavaStringToUTF16(env, jname);
   std::string search_url = base::android::ConvertJavaStringToUTF8(jsearch_url);
   std::string suggest_url;
   if (jsuggest_url) {
@@ -305,12 +316,14 @@ jboolean TemplateUrlServiceAndroid::SetPlayAPISearchEngine(
     favicon_url = base::android::ConvertJavaStringToUTF8(jfavicon_url);
   }
 
-  TemplateURL* t_url =
-      template_url_service_->CreateOrUpdateTemplateURLFromPlayAPIData(
-          name, keyword, search_url, suggest_url, favicon_url);
+  TemplateURL* t_url = template_url_service_->CreatePlayAPISearchEngine(
+      name, keyword, search_url, suggest_url, favicon_url);
 
-  if (set_as_default && template_url_service_->CanMakeDefault(t_url))
+  // CanMakeDefault() will prevent us from taking over a policy or extension
+  // defined default search engine.
+  if (set_as_default && template_url_service_->CanMakeDefault(t_url)) {
     template_url_service_->SetUserSelectedDefaultSearchProvider(t_url);
+  }
   return true;
 }
 
@@ -321,7 +334,7 @@ TemplateUrlServiceAndroid::AddSearchEngineForTesting(
     const base::android::JavaParamRef<jstring>& jkeyword,
     jint age_in_days) {
   TemplateURLData data;
-  base::string16 keyword =
+  std::u16string keyword =
       base::android::ConvertJavaStringToUTF16(env, jkeyword);
   data.SetShortName(keyword);
   data.SetKeyword(keyword);

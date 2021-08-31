@@ -37,8 +37,6 @@ class DisplayEGL : public DisplayGL
 
     EGLSyncImpl *createSync(const egl::AttributeMap &attribs) override;
 
-    std::string getVendorString() const override;
-
     void setBlobCacheFuncs(EGLSetBlobFuncANDROID set, EGLGetBlobFuncANDROID get) override;
 
     virtual void destroyNativeContext(EGLContext context);
@@ -76,8 +74,6 @@ class DisplayEGL : public DisplayGL
 
     bool isValidNativeWindow(EGLNativeWindowType window) const override;
 
-    DeviceImpl *createDevice() override;
-
     egl::Error waitClient(const gl::Context *context) override;
     egl::Error waitNative(const gl::Context *context, EGLint engine) override;
 
@@ -91,6 +87,8 @@ class DisplayEGL : public DisplayGL
     void initializeFrontendFeatures(angle::FrontendFeatures *features) const override;
 
     void populateFeatureList(angle::FeatureList *features) override;
+
+    RendererGL *getRenderer() const override;
 
     egl::Error validateImageClientBuffer(const gl::Context *context,
                                          EGLenum target,
@@ -114,6 +112,8 @@ class DisplayEGL : public DisplayGL
 
     egl::Error makeCurrentSurfaceless(gl::Context *context) override;
 
+    virtual EGLint fixSurfaceType(EGLint surfaceType) const;
+
     template <typename T>
     void getConfigAttrib(EGLConfig config, EGLint attribute, T *value) const;
 
@@ -134,8 +134,11 @@ class DisplayEGL : public DisplayGL
     {
         EGLSurface surface = EGL_NO_SURFACE;
         EGLContext context = EGL_NO_CONTEXT;
+        // True if the current context is an external context. and both surface and context will be
+        // unset when an external context is current.
+        bool isExternalContext = false;
     };
-    std::unordered_map<std::thread::id, CurrentNativeContext> mCurrentNativeContexts;
+    angle::HashMap<std::thread::id, CurrentNativeContext> mCurrentNativeContexts;
 
   private:
     void generateCaps(egl::Caps *outCaps) const override;

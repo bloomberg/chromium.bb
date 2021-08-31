@@ -6,14 +6,13 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/url_util.h"
-#include "third_party/blink/public/common/loader/network_utils.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 
 namespace extensions {
 
@@ -55,7 +54,7 @@ DesktopCaptureChooseDesktopMediaFunction::Run() {
   // |web_contents| is the WebContents for which the stream is created, and will
   // also be used to determine where to show the picker's UI.
   content::WebContents* web_contents = NULL;
-  base::string16 target_name;
+  std::u16string target_name;
   GURL origin;
   if (params->target_tab) {
     if (!params->target_tab->url) {
@@ -69,10 +68,10 @@ DesktopCaptureChooseDesktopMediaFunction::Run() {
 
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
             ::switches::kAllowHttpScreenCapture) &&
-        !blink::network_utils::IsOriginSecure(origin)) {
+        !network::IsUrlPotentiallyTrustworthy(origin)) {
       return RespondNow(Error(kDesktopCaptureApiTabUrlNotSecure));
     }
-    target_name = base::UTF8ToUTF16(blink::network_utils::IsOriginSecure(origin)
+    target_name = base::UTF8ToUTF16(network::IsUrlPotentiallyTrustworthy(origin)
                                         ? net::GetHostAndOptionalPort(origin)
                                         : origin.spec());
 
@@ -81,10 +80,10 @@ DesktopCaptureChooseDesktopMediaFunction::Run() {
       return RespondNow(Error(kDesktopCaptureApiNoTabIdError));
     }
 
-    ChromeExtensionFunctionDetails details(this);
-    if (!ExtensionTabUtil::GetTabById(*(params->target_tab->id),
-                                      details.GetProfile(), true,
-                                      &web_contents)) {
+    if (!ExtensionTabUtil::GetTabById(
+            *(params->target_tab->id),
+            Profile::FromBrowserContext(browser_context()), true,
+            &web_contents)) {
       return RespondNow(Error(kDesktopCaptureApiInvalidTabIdError));
     }
     DCHECK(web_contents);

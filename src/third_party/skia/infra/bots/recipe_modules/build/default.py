@@ -29,7 +29,8 @@ def compile_swiftshader(api, extra_tokens, swiftshader_root, cc, cxx, out):
   """
   swiftshader_opts = [
       '-DSWIFTSHADER_BUILD_TESTS=OFF',
-      '-DSWIFTSHADER_WARNINGS_AS_ERRORS=0',
+      '-DSWIFTSHADER_WARNINGS_AS_ERRORS=OFF',
+      '-DREACTOR_ENABLE_MEMORY_SANITIZER_INSTRUMENTATION=OFF',  # Way too slow.
   ]
   cmake_bin = str(api.vars.workdir.join('cmake_linux', 'bin'))
   env = {
@@ -94,20 +95,17 @@ def compile_fn(api, checkout_root, out_dir):
   args = {'werror': 'true'}
   env = {}
 
-  if os == 'Mac' or os == 'Mac10.15.5' or os == 'Mac10.15.7':
+  if os == 'Mac':
     # XCode build is listed in parentheses after the version at
     # https://developer.apple.com/news/releases/, or on Wikipedia here:
     # https://en.wikipedia.org/wiki/Xcode#Version_comparison_table
     # Use lowercase letters.
-    XCODE_BUILD_VERSION = '11c29'
-    if os == 'Mac10.15.5':
+    # https://chrome-infra-packages.appspot.com/p/infra_internal/ios/xcode
+    XCODE_BUILD_VERSION = '12c33'
+    if compiler == 'Xcode11.4.1':
       XCODE_BUILD_VERSION = '11e503a'
-    if os == 'Mac10.15.7':
-      # https://chrome-infra-packages.appspot.com/p/infra_internal/ios/xcode
-      # '12b45b' is not available, so we use '12b5044c'.
-      XCODE_BUILD_VERSION = '12b5044c'
     extra_cflags.append(
-        '-DDUMMY_xcode_build_version=%s' % XCODE_BUILD_VERSION)
+        '-DREBUILD_IF_CHANGED_xcode_build_version=%s' % XCODE_BUILD_VERSION)
     mac_toolchain_cmd = api.vars.workdir.join(
         'mac_toolchain', 'mac_toolchain')
     xcode_app_path = api.vars.cache_dir.join('Xcode.app')
@@ -129,13 +127,8 @@ def compile_fn(api, checkout_root, out_dir):
       api.step('select xcode', [
           'sudo', 'xcode-select', '-switch', xcode_app_path])
       if 'iOS' in extra_tokens:
-        if target_arch == 'arm':
-          # Can only compile for 32-bit up to iOS 10.
-          env['IPHONEOS_DEPLOYMENT_TARGET'] = '10.0'
-        else:
-          # Our iOS devices are on an older version.
-          # Can't compile for Metal before 11.0.
-          env['IPHONEOS_DEPLOYMENT_TARGET'] = '11.0'
+        # Can't compile for Metal before 11.0.
+        env['IPHONEOS_DEPLOYMENT_TARGET'] = '11.0'
       else:
         # We have some bots on 10.13.
         env['MACOSX_DEPLOYMENT_TARGET'] = '10.13'
@@ -174,7 +167,7 @@ def compile_fn(api, checkout_root, out_dir):
     extra_cflags .append('-B%s/bin' % clang_linux)
     extra_ldflags.append('-B%s/bin' % clang_linux)
     extra_ldflags.append('-fuse-ld=lld')
-    extra_cflags.append('-DDUMMY_clang_linux_version=%s' %
+    extra_cflags.append('-DPLACEHOLDER_clang_linux_version=%s' %
                         api.run.asset_version('clang_linux', skia_dir))
     if 'Static' in extra_tokens:
       extra_ldflags.extend(['-static-libstdc++', '-static-libgcc'])
@@ -317,7 +310,7 @@ def compile_fn(api, checkout_root, out_dir):
         'Upstream_Testing_Provisioning_Profile.mobileprovision')
   if compiler == 'Clang' and 'Win' in os:
     args['clang_win'] = '"%s"' % api.vars.workdir.join('clang_win')
-    extra_cflags.append('-DDUMMY_clang_win_version=%s' %
+    extra_cflags.append('-DPLACEHOLDER_clang_win_version=%s' %
                         api.run.asset_version('clang_win', skia_dir))
 
   sanitize = ''

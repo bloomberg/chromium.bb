@@ -7,22 +7,22 @@
 
 #include <string>
 
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "media/mojo/mojom/audio_logging.mojom.h"
+#include "media/mojo/mojom/audio_stream_factory.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "services/audio/public/mojom/stream_factory.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace audio {
 
-class FakeStreamFactory : public mojom::StreamFactory {
+class FakeStreamFactory : public media::mojom::AudioStreamFactory {
  public:
   FakeStreamFactory();
   ~FakeStreamFactory() override;
 
-  mojo::PendingRemote<mojom::StreamFactory> MakeRemote() {
+  mojo::PendingRemote<media::mojom::AudioStreamFactory> MakeRemote() {
     auto remote = receiver_.BindNewPipeAndPassRemote();
     receiver_.set_disconnect_handler(base::BindOnce(
         &FakeStreamFactory::ResetReceiver, base::Unretained(this)));
@@ -65,8 +65,9 @@ class FakeStreamFactory : public mojom::StreamFactory {
       const media::AudioParameters& params,
       const base::UnguessableToken& group_id,
       CreateOutputStreamCallback created_callback) override {}
-  void BindMuter(mojo::PendingAssociatedReceiver<mojom::LocalMuter> receiver,
-                 const base::UnguessableToken& group_id) override {}
+  void BindMuter(
+      mojo::PendingAssociatedReceiver<media::mojom::LocalMuter> receiver,
+      const base::UnguessableToken& group_id) override {}
   void CreateLoopbackStream(
       mojo::PendingReceiver<media::mojom::AudioInputStream> receiver,
       mojo::PendingRemote<media::mojom::AudioInputStreamClient> client,
@@ -76,10 +77,10 @@ class FakeStreamFactory : public mojom::StreamFactory {
       const base::UnguessableToken& group_id,
       CreateLoopbackStreamCallback created_callback) override {}
 
-  mojo::Receiver<mojom::StreamFactory> receiver_{this};
+  mojo::Receiver<media::mojom::AudioStreamFactory> receiver_{this};
 
  private:
-  base::Optional<base::RunLoop> disconnect_loop_;
+  absl::optional<base::RunLoop> disconnect_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeStreamFactory);
 };

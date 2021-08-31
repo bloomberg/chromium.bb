@@ -15,6 +15,7 @@
 #include "base/token.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/media/media_interface_factory_holder.h"
 #include "content/public/common/cdm_info.h"
 #include "media/media_buildflags.h"
@@ -31,6 +32,11 @@
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
+#if defined(OS_WIN)
+#include "base/sequenced_task_runner.h"
+#include "media/mojo/mojom/media_foundation_service.mojom.h"
+#endif
+
 namespace content {
 
 class RenderFrameHost;
@@ -44,7 +50,7 @@ class RenderFrameHost;
 //   CDM types.
 class MediaInterfaceProxy final : public media::mojom::InterfaceFactory {
  public:
-  MediaInterfaceProxy(RenderFrameHost* render_frame_host);
+  explicit MediaInterfaceProxy(RenderFrameHost* render_frame_host);
   ~MediaInterfaceProxy() final;
 
   void Bind(mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver);
@@ -75,17 +81,23 @@ class MediaInterfaceProxy final : public media::mojom::InterfaceFactory {
       mojo::PendingReceiver<media::mojom::MediaPlayerRendererExtension>
           renderer_extension_request) final;
 #endif  // defined(OS_ANDROID)
+#if defined(OS_WIN)
+  void CreateMediaFoundationRenderer(
+      mojo::PendingReceiver<media::mojom::Renderer> receiver,
+      mojo::PendingReceiver<media::mojom::MediaFoundationRendererExtension>
+          renderer_extension_receiver) final;
+#endif  // defined(OS_WIN)
   void CreateCdm(const std::string& key_system,
                  const media::CdmConfig& cdm_config,
-                 CreateCdmCallback callback) final;
+                 CreateCdmCallback create_cdm_cb) final;
 
  private:
   // Gets services provided by the browser (at RenderFrameHost level) to the
   // mojo media (or CDM) service running remotely. |cdm_file_system_id| is
   // used to register the appropriate CdmStorage interface needed by the CDM.
+  // If |cdm_file_system_id| is empty, CdmStorage interface won't be available.
   mojo::PendingRemote<media::mojom::FrameInterfaceFactory> GetFrameServices(
-      const base::Token& cdm_guid,
-      const std::string& cdm_file_system_id);
+      const std::string& cdm_file_system_id = "");
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   // Gets a CdmFactory pointer for |key_system|. Returns null if unexpected
@@ -105,7 +117,7 @@ class MediaInterfaceProxy final : public media::mojom::InterfaceFactory {
   // |cdm_factory_map_| associated with |cdm_guid|.
   void OnCdmServiceConnectionError(const base::Token& cdm_guid);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Callback for for Chrome OS CDM creation to facilitate falling back to the
   // library CDM if the daemon is unavailable or other settings prevent usage of
   // it.
@@ -114,11 +126,25 @@ class MediaInterfaceProxy final : public media::mojom::InterfaceFactory {
       const media::CdmConfig& cdm_config,
       CreateCdmCallback callback,
       mojo::PendingRemote<media::mojom::ContentDecryptionModule> receiver,
-      const base::Optional<base::UnguessableToken>& cdm_id,
-      mojo::PendingRemote<media::mojom::Decryptor> decryptor,
+      media::mojom::CdmContextPtr cdm_context,
       const std::string& error_message);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+#if defined(OS_WIN)
+  // Gets the InterfaceFactory from MediaFoundationService. May return null if
+  // MediaFoundationService cannot be used or connection failed.
+  InterfaceFactory* GetMediaFoundationServiceInterfaceFactory(
+      const base::FilePath& cdm_path);
+
+  void ConnectToMediaFoundationService(const base::FilePath& cdm_path);
+  void OnMediaFoundationServiceConnectionError();
+  bool ShouldUseMediaFoundationServiceForCdm(
+      const std::string& key_system,
+      const media::CdmConfig& cdm_config);
+
+  mojo::Remote<media::mojom::InterfaceFactory> mf_interface_factory_remote_;
+#endif  // defined(OS_WIN)
 
   // Safe to hold a raw pointer since |this| is owned by RenderFrameHostImpl.
   RenderFrameHost* const render_frame_host_;

@@ -17,7 +17,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/image/image_skia.h"
 
-class AppWindowLauncherItemController;
+class AppWindowShelfItemController;
 
 namespace aura {
 class Window;
@@ -66,7 +66,7 @@ class ASH_PUBLIC_EXPORT ShelfItemDelegate {
     // called when this item is selected from the menu.
     int command_id;
     // The title and icon shown for this item in the app menu.
-    base::string16 title;
+    std::u16string title;
     gfx::ImageSkia icon;
   };
   using AppMenuItems = std::vector<AppMenuItem>;
@@ -91,8 +91,8 @@ class ASH_PUBLIC_EXPORT ShelfItemDelegate {
   virtual void GetContextMenu(int64_t display_id,
                               GetContextMenuCallback callback);
 
-  // Returns nullptr if class is not AppWindowLauncherItemController.
-  virtual AppWindowLauncherItemController* AsAppWindowLauncherItemController();
+  // Returns nullptr if class is not AppWindowShelfItemController.
+  virtual AppWindowShelfItemController* AsAppWindowShelfItemController();
 
   // Attempts to execute a context menu command; returns true if it was run.
   bool ExecuteContextMenuCommand(int64_t command_id, int32_t event_flags);

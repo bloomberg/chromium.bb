@@ -23,8 +23,10 @@ target_sources(dawn_platform PRIVATE
     "${DAWN_INCLUDE_DIR}/dawn_platform/DawnPlatform.h"
     "${DAWN_INCLUDE_DIR}/dawn_platform/dawn_platform_export.h"
     "DawnPlatform.cpp"
+    "WorkerThread.cpp"
+    "WorkerThread.h"
     "tracing/EventTracer.cpp"
     "tracing/EventTracer.h"
     "tracing/TraceEvent.h"
 )
-target_link_libraries(dawn_platform PRIVATE dawn_internal_config dawn_common)
+target_link_libraries(dawn_platform PUBLIC dawn_headers PRIVATE dawn_internal_config dawn_common)

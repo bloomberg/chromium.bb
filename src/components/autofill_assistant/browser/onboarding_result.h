@@ -5,12 +5,10 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ONBOARDING_RESULT_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ONBOARDING_RESULT_H_
 
-#include <string>
-
 namespace autofill_assistant {
 
 // GENERATED_JAVA_ENUM_PACKAGE: (
-// org.chromium.chrome.browser.autofill_assistant)
+// org.chromium.chrome.browser.autofill_assistant.onboarding)
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: AssistantOnboardingResult
 enum class OnboardingResult {
   // The onboarding was dismissed. No explicit choice was made.

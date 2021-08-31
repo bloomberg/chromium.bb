@@ -50,7 +50,8 @@ config("inside_blink") {
       "-Wno-implicit-int-conversion",
     ]
 
-    if (!is_ash || default_toolchain != "//build/toolchain/cros:target") {
+    if (!is_chromeos_ash ||
+        default_toolchain != "//build/toolchain/cros:target") {
       cflags += [ "-Wno-enum-float-conversion" ]
     }
   }
@@ -81,6 +82,8 @@ config("blink_pch") {
       cflags = [ "/FI$precompiled_header" ]
     } else if (is_mac) {
       precompiled_source = "//third_party/blink/renderer/build/mac/prefix.h"
+    } else if (is_linux) {
+      precompiled_source = "//third_party/blink/renderer/build/linux/prefix.h"
     }
   }
 }
@@ -115,15 +118,6 @@ config("config") {
       "-add-plugin",
       "-Xclang",
       "blink-gc-plugin",
-    ]
-
-    # TODO(bikineev): Remove when clang pre-built has been updated.
-    # Disallow members in stack allocated classes.
-    cflags += [
-      "-Xclang",
-      "-plugin-arg-blink-gc-plugin",
-      "-Xclang",
-      "no-members-in-stack-allocated",
     ]
 
     # Add arguments for enabled GC plugin options:

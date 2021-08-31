@@ -28,7 +28,6 @@ namespace {
 
 using assistant::util::DeepLinkParam;
 using assistant::util::DeepLinkType;
-using assistant::util::ProactiveSuggestionsAction;
 
 // Helpers ---------------------------------------------------------------------
 
@@ -41,7 +40,7 @@ void CreateAndSendMouseClick(aura::WindowTreeHost* host,
 
   // Send an ET_MOUSE_PRESSED event.
   ui::EventDispatchDetails details =
-      host->event_sink()->OnEventFromSource(&press_event);
+      host->GetEventSink()->OnEventFromSource(&press_event);
 
   if (details.dispatcher_destroyed)
     return;
@@ -52,7 +51,7 @@ void CreateAndSendMouseClick(aura::WindowTreeHost* host,
                                ui::EF_LEFT_MOUSE_BUTTON);
 
   // Send an ET_MOUSE_RELEASED event.
-  ignore_result(host->event_sink()->OnEventFromSource(&release_event));
+  ignore_result(host->GetEventSink()->OnEventFromSource(&release_event));
 }
 
 }  // namespace
@@ -169,24 +168,6 @@ void AssistantCardElementView::DidSuppressNavigation(
     const GURL& url,
     WindowOpenDisposition disposition,
     bool from_user_gesture) {
-  // Proactive suggestion deep links may be invoked without a user gesture to
-  // log view impressions. Those are (currently) the only deep links we allow to
-  // be processed without originating from a user event.
-  if (!from_user_gesture) {
-    DeepLinkType deep_link_type = assistant::util::GetDeepLinkType(url);
-    if (deep_link_type != DeepLinkType::kProactiveSuggestions) {
-      NOTREACHED();
-      return;
-    }
-
-    const base::Optional<ProactiveSuggestionsAction> action =
-        assistant::util::GetDeepLinkParamAsProactiveSuggestionsAction(
-            assistant::util::GetDeepLinkParams(url), DeepLinkParam::kAction);
-    if (action != ProactiveSuggestionsAction::kViewImpression) {
-      NOTREACHED();
-      return;
-    }
-  }
   // We delegate navigation to the AssistantController so that it can apply
   // special handling to deep links.
   AssistantController::Get()->OpenUrl(url);

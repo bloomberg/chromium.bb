@@ -55,7 +55,7 @@ TEST(AXPlatformNodeBaseTest, GetHypertext) {
   update.nodes.resize(4);
 
   update.nodes[0].id = 1;
-  update.nodes[0].role = ax::mojom::Role::kWebArea;
+  update.nodes[0].role = ax::mojom::Role::kRootWebArea;
   update.nodes[0].child_ids = {2, 3, 4};
 
   MakeStaticText(&update.nodes[1], 2, "text1");
@@ -66,24 +66,24 @@ TEST(AXPlatformNodeBaseTest, GetHypertext) {
 
   // Set an AXMode on the AXPlatformNode as some platforms (auralinux) use it to
   // determine if it should enable accessibility.
-  AXPlatformNodeBase::NotifyAddAXModeFlags(kAXModeComplete);
+  testing::ScopedAxModeSetter ax_mode_setter(kAXModeComplete);
 
   AXPlatformNodeBase* root = static_cast<AXPlatformNodeBase*>(
       TestAXNodeWrapper::GetOrCreate(&tree, tree.root())->ax_platform_node());
 
-  EXPECT_EQ(root->GetHypertext(), base::UTF8ToUTF16("text1text2text3"));
+  EXPECT_EQ(root->GetHypertext(), u"text1text2text3");
 
   AXPlatformNodeBase* text1 = static_cast<AXPlatformNodeBase*>(
       AXPlatformNode::FromNativeViewAccessible(root->ChildAtIndex(0)));
-  EXPECT_EQ(text1->GetHypertext(), base::UTF8ToUTF16("text1"));
+  EXPECT_EQ(text1->GetHypertext(), u"text1");
 
   AXPlatformNodeBase* text2 = static_cast<AXPlatformNodeBase*>(
       AXPlatformNode::FromNativeViewAccessible(root->ChildAtIndex(1)));
-  EXPECT_EQ(text2->GetHypertext(), base::UTF8ToUTF16("text2"));
+  EXPECT_EQ(text2->GetHypertext(), u"text2");
 
   AXPlatformNodeBase* text3 = static_cast<AXPlatformNodeBase*>(
       AXPlatformNode::FromNativeViewAccessible(root->ChildAtIndex(2)));
-  EXPECT_EQ(text3->GetHypertext(), base::UTF8ToUTF16("text3"));
+  EXPECT_EQ(text3->GetHypertext(), u"text3");
 }
 
 TEST(AXPlatformNodeBaseTest, GetHypertextIgnoredContainerSiblings) {
@@ -101,7 +101,7 @@ TEST(AXPlatformNodeBaseTest, GetHypertextIgnoredContainerSiblings) {
   update.nodes.resize(7);
 
   update.nodes[0].id = 1;
-  update.nodes[0].role = ax::mojom::Role::kWebArea;
+  update.nodes[0].role = ax::mojom::Role::kRootWebArea;
   update.nodes[0].child_ids = {2, 4, 6};
 
   update.nodes[1].id = 2;
@@ -125,30 +125,27 @@ TEST(AXPlatformNodeBaseTest, GetHypertextIgnoredContainerSiblings) {
   AXTree tree(update);
   // Set an AXMode on the AXPlatformNode as some platforms (auralinux) use it to
   // determine if it should enable accessibility.
-  AXPlatformNodeBase::NotifyAddAXModeFlags(kAXModeComplete);
+  ui::testing::ScopedAxModeSetter ax_mode_setter(kAXModeComplete);
 
   AXPlatformNodeBase* root = static_cast<AXPlatformNodeBase*>(
       TestAXNodeWrapper::GetOrCreate(&tree, tree.root())->ax_platform_node());
 
-  EXPECT_EQ(root->GetHypertext(), base::UTF8ToUTF16("text1text2text3"));
+  EXPECT_EQ(root->GetHypertext(), u"text1text2text3");
 
   AXPlatformNodeBase* text1_ignored_container =
       static_cast<AXPlatformNodeBase*>(
           AXPlatformNode::FromNativeViewAccessible(root->ChildAtIndex(0)));
-  EXPECT_EQ(text1_ignored_container->GetHypertext(),
-            base::UTF8ToUTF16("text1"));
+  EXPECT_EQ(text1_ignored_container->GetHypertext(), u"text1");
 
   AXPlatformNodeBase* text2_ignored_container =
       static_cast<AXPlatformNodeBase*>(
           AXPlatformNode::FromNativeViewAccessible(root->ChildAtIndex(1)));
-  EXPECT_EQ(text2_ignored_container->GetHypertext(),
-            base::UTF8ToUTF16("text2"));
+  EXPECT_EQ(text2_ignored_container->GetHypertext(), u"text2");
 
   AXPlatformNodeBase* text3_ignored_container =
       static_cast<AXPlatformNodeBase*>(
           AXPlatformNode::FromNativeViewAccessible(root->ChildAtIndex(2)));
-  EXPECT_EQ(text3_ignored_container->GetHypertext(),
-            base::UTF8ToUTF16("text3"));
+  EXPECT_EQ(text3_ignored_container->GetHypertext(), u"text3");
 }
 
 TEST(AXPlatformNodeBaseTest, InnerTextIgnoresInvisibleAndIgnored) {
@@ -173,39 +170,74 @@ TEST(AXPlatformNodeBaseTest, InnerTextIgnoresInvisibleAndIgnored) {
 
   // Set an AXMode on the AXPlatformNode as some platforms (auralinux) use it to
   // determine if it should enable accessibility.
-  AXPlatformNodeBase::NotifyAddAXModeFlags(kAXModeComplete);
+  ui::testing::ScopedAxModeSetter ax_mode_setter(kAXModeComplete);
 
-  EXPECT_EQ(root->GetInnerText(), base::UTF8ToUTF16("abde"));
+  EXPECT_EQ(root->GetInnerText(), u"abde");
 
   // Setting invisible or ignored on a static text node causes it to be included
   // or excluded from the root node's inner text:
   {
     SetIsInvisible(&tree, 2, true);
-    EXPECT_EQ(root->GetInnerText(), base::UTF8ToUTF16("bde"));
+    EXPECT_EQ(root->GetInnerText(), u"bde");
 
     SetIsInvisible(&tree, 2, false);
-    EXPECT_EQ(root->GetInnerText(), base::UTF8ToUTF16("abde"));
+    EXPECT_EQ(root->GetInnerText(), u"abde");
 
-    SetRole(&tree, 2, ax::mojom::Role::kIgnored);
-    EXPECT_EQ(root->GetInnerText(), base::UTF8ToUTF16("bde"));
+    SetRole(&tree, 2, ax::mojom::Role::kNone);
+    EXPECT_EQ(root->GetInnerText(), u"bde");
 
     SetRole(&tree, 2, ax::mojom::Role::kStaticText);
-    EXPECT_EQ(root->GetInnerText(), base::UTF8ToUTF16("abde"));
+    EXPECT_EQ(root->GetInnerText(), u"abde");
   }
 
   // Setting invisible or ignored on a group node has no effect on the inner
   // text:
   {
     SetIsInvisible(&tree, 4, true);
-    EXPECT_EQ(root->GetInnerText(), base::UTF8ToUTF16("abde"));
+    EXPECT_EQ(root->GetInnerText(), u"abde");
 
-    SetRole(&tree, 4, ax::mojom::Role::kIgnored);
-    EXPECT_EQ(root->GetInnerText(), base::UTF8ToUTF16("abde"));
+    SetRole(&tree, 4, ax::mojom::Role::kNone);
+    EXPECT_EQ(root->GetInnerText(), u"abde");
   }
 }
 
+TEST(AXPlatformNodeBaseTest, TestMenuSelectedItems) {
+  ui::testing::ScopedAxModeSetter ax_mode_setter(kAXModeComplete);
+
+  AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kMenu;
+
+  AXNodeData item_1_data;
+  item_1_data.id = 2;
+  item_1_data.role = ax::mojom::Role::kMenuItem;
+  item_1_data.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
+
+  AXNodeData item_2_data;
+  item_2_data.id = 3;
+  item_2_data.role = ax::mojom::Role::kMenuItem;
+
+  root_data.child_ids = {item_1_data.id, item_2_data.id};
+
+  AXTreeUpdate update;
+  update.root_id = 1;
+  update.nodes = {root_data, item_1_data, item_2_data};
+  AXTree tree(update);
+
+  auto* root = static_cast<AXPlatformNodeBase*>(
+      TestAXNodeWrapper::GetOrCreate(&tree, tree.root())->ax_platform_node());
+
+  int num = root->GetSelectionCount();
+  EXPECT_EQ(num, 1);
+
+  gfx::NativeViewAccessible first_child = root->ChildAtIndex(0);
+  AXPlatformNodeBase* first_selected_node = root->GetSelectedItem(0);
+  EXPECT_EQ(first_child, first_selected_node->GetNativeViewAccessible());
+  EXPECT_EQ(nullptr, root->GetSelectedItem(1));
+}
+
 TEST(AXPlatformNodeBaseTest, TestSelectedChildren) {
-  AXPlatformNode::NotifyAddAXModeFlags(kAXModeComplete);
+  ui::testing::ScopedAxModeSetter ax_mode_setter(kAXModeComplete);
 
   AXNodeData root_data;
   root_data.id = 1;
@@ -240,7 +272,7 @@ TEST(AXPlatformNodeBaseTest, TestSelectedChildren) {
 }
 
 TEST(AXPlatformNodeBaseTest, TestSelectedChildrenWithGroup) {
-  AXPlatformNode::NotifyAddAXModeFlags(kAXModeComplete);
+  ui::testing::ScopedAxModeSetter ax_mode_setter(kAXModeComplete);
 
   AXNodeData root_data;
   root_data.id = 1;
@@ -306,7 +338,7 @@ TEST(AXPlatformNodeBaseTest, TestSelectedChildrenWithGroup) {
 }
 
 TEST(AXPlatformNodeBaseTest, TestSelectedChildrenMixed) {
-  AXPlatformNode::NotifyAddAXModeFlags(kAXModeComplete);
+  ui::testing::ScopedAxModeSetter ax_mode_setter(kAXModeComplete);
 
   // Build the below tree which is mixed with listBoxOption and group.
   // id=1 listBox FOCUSABLE MULTISELECTABLE (0, 0)-(0, 0) child_ids=2,3,4,9
@@ -414,10 +446,10 @@ TEST(AXPlatformNodeBaseTest, CompareTo) {
   // n4  n5  n6       n10
   //         /
   //        n7
-  AXPlatformNode::NotifyAddAXModeFlags(kAXModeComplete);
+  ui::testing::ScopedAxModeSetter ax_mode_setter(kAXModeComplete);
   AXNodeData node1;
   node1.id = 1;
-  node1.role = ax::mojom::Role::kWebArea;
+  node1.role = ax::mojom::Role::kRootWebArea;
   node1.child_ids = {2};
 
   AXNodeData node2;
@@ -492,7 +524,7 @@ TEST(AXPlatformNodeBaseTest, CompareTo) {
   // Test for two nodes that do not share the same root. They should not be
   // comparable.
   AXPlatformNodeBase detached_node;
-  EXPECT_EQ(base::nullopt, n1->CompareTo(detached_node));
+  EXPECT_EQ(absl::nullopt, n1->CompareTo(detached_node));
 
   // Create a test vector of all the tree nodes arranged in a pre-order
   // traversal way. The node that has a smaller index in the vector should also
@@ -509,14 +541,14 @@ TEST(AXPlatformNodeBaseTest, CompareTo) {
       else if (lhs->GetData().id > rhs->GetData().id)
         expected_result = 1;
 
-      EXPECT_NE(base::nullopt, lhs->CompareTo(*rhs));
+      EXPECT_NE(absl::nullopt, lhs->CompareTo(*rhs));
       int actual_result = 0;
       if (lhs->CompareTo(*rhs) < 0)
         actual_result = -1;
       else if (lhs->CompareTo(*rhs) > 0)
         actual_result = 1;
 
-      SCOPED_TRACE(testing::Message()
+      SCOPED_TRACE(::testing::Message()
                    << "lhs.id=" << base::NumberToString(lhs->GetData().id)
                    << ", rhs.id=" << base::NumberToString(rhs->GetData().id)
                    << ", lhs->CompareTo(*rhs)={actual:"

@@ -29,13 +29,24 @@
   [super configureCell:cell withStyler:styler];
   cell.textLabel.text = self.text;
   cell.detailTextLabel.text = self.detailText;
-  DCHECK(self.image);
   cell.image = self.image;
 
   if (self.detailTextColor) {
     cell.detailTextLabel.textColor = self.detailTextColor;
   } else {
     cell.detailTextLabel.textColor = UIColor.cr_secondaryLabelColor;
+  }
+
+  if (self.imageViewTintColor) {
+    [cell setImageViewTintColor:self.imageViewTintColor];
+  }
+
+  if (self.image && self.alignImageWithFirstLineOfText) {
+    [cell alignImageWithFirstLineOfText:YES];
+  }
+
+  if (self.image && self.leftAlignImage) {
+    [cell setImageViewContentMode:UIViewContentModeLeft];
   }
 }
 

@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/render_widget_targeter.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -94,7 +96,7 @@ RenderWidgetTargetResult::RenderWidgetTargetResult(
 RenderWidgetTargetResult::RenderWidgetTargetResult(
     RenderWidgetHostViewBase* in_view,
     bool in_should_query_view,
-    base::Optional<gfx::PointF> in_location,
+    absl::optional<gfx::PointF> in_location,
     bool in_latched_target)
     : view(in_view),
       should_query_view(in_should_query_view),
@@ -132,7 +134,7 @@ RenderWidgetTargeter::TargetingRequest::~TargetingRequest() = default;
 
 void RenderWidgetTargeter::TargetingRequest::RunCallback(
     RenderWidgetHostViewBase* target,
-    base::Optional<gfx::PointF> point) {
+    absl::optional<gfx::PointF> point) {
   if (!callback.is_null()) {
     std::move(callback).Run(target ? target->GetWeakPtr() : nullptr, point);
   }
@@ -312,13 +314,13 @@ void RenderWidgetTargeter::QueryClient(
   async_depth_++;
 
   TracingUmaTracker tracker("Event.AsyncTargeting.ResponseTime");
-  async_hit_test_timeout_.reset(new OneShotTimeoutMonitor(
+  async_hit_test_timeout_ = std::make_unique<OneShotTimeoutMonitor>(
       base::BindOnce(
           &RenderWidgetTargeter::AsyncHitTestTimedOut,
           weak_ptr_factory_.GetWeakPtr(), target->GetWeakPtr(), target_location,
           last_request_target ? last_request_target->GetWeakPtr() : nullptr,
           last_target_location),
-      async_hit_test_timeout_delay_));
+      async_hit_test_timeout_delay_);
 
   target_client.set_disconnect_handler(base::BindOnce(
       &RenderWidgetTargeter::OnInputTargetDisconnect,
@@ -422,7 +424,7 @@ void RenderWidgetTargeter::FoundFrameSinkId(
 
 void RenderWidgetTargeter::FoundTarget(
     RenderWidgetHostViewBase* target,
-    const base::Optional<gfx::PointF>& target_location,
+    const absl::optional<gfx::PointF>& target_location,
     bool latched_target,
     TargetingRequest* request) {
   DCHECK(request);

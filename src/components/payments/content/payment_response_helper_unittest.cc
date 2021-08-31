@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_executor.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -277,7 +278,7 @@ TEST_F(PaymentResponseHelperTest,
   mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
   options->request_payer_phone = true;
   test_address()->SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER,
-                             base::UTF8ToUTF16("(515) 223-1234"));
+                             u"(515) 223-1234");
   RecreateSpecWithOptions(std::move(options));
 
   PaymentResponseHelper helper("en-US", spec(), test_app(),
@@ -296,7 +297,7 @@ TEST_F(PaymentResponseHelperTest,
   mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
   options->request_payer_phone = true;
   test_address()->SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER,
-                             base::UTF8ToUTF16("(515) 123-1234"));
+                             u"(515) 123-1234");
   RecreateSpecWithOptions(std::move(options));
 
   PaymentResponseHelper helper("en-US", spec(), test_app(),

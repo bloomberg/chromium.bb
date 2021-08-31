@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/simple_session_notifier.h"
+#include "quic/test_tools/simple_session_notifier.h"
 
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_map_util.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_map_util.h"
+#include "quic/test_tools/quic_test_utils.h"
 
 namespace quic {
 
@@ -125,6 +125,24 @@ void SimpleSessionNotifier::WriteOrBufferPing() {
   WriteBufferedControlFrames();
 }
 
+void SimpleSessionNotifier::WriteOrBufferAckFrequency(
+    const QuicAckFrequencyFrame& ack_frequency_frame) {
+  QUIC_DVLOG(1) << "Writing ACK_FREQUENCY";
+  const bool had_buffered_data =
+      HasBufferedStreamData() || HasBufferedControlFrames();
+  QuicControlFrameId control_frame_id = ++last_control_frame_id_;
+  control_frames_.emplace_back((
+      QuicFrame(new QuicAckFrequencyFrame(control_frame_id,
+                                          /*sequence_number=*/control_frame_id,
+                                          ack_frequency_frame.packet_tolerance,
+                                          ack_frequency_frame.max_ack_delay))));
+  if (had_buffered_data) {
+    QUIC_DLOG(WARNING) << "Connection is write blocked";
+    return;
+  }
+  WriteBufferedControlFrames();
+}
+
 void SimpleSessionNotifier::NeuterUnencryptedData() {
   if (QuicVersionUsesCryptoFrames(connection_->transport_version())) {
     for (const auto& interval : crypto_bytes_transferred_[ENCRYPTION_INITIAL]) {
@@ -145,6 +163,17 @@ void SimpleSessionNotifier::NeuterUnencryptedData() {
 }
 
 void SimpleSessionNotifier::OnCanWrite() {
+  if (connection_->donot_write_mid_packet_processing()) {
+    if (connection_->framer().is_processing_packet()) {
+      // Do not write data in the middle of packet processing because rest
+      // frames in the packet may change the data to write. For example, lost
+      // data could be acknowledged. Also, connection is going to emit
+      // OnCanWrite signal post packet processing.
+      QUIC_BUG(simple_notifier_write_mid_packet_processing)
+          << "Try to write mid packet processing.";
+      return;
+    }
+  }
   if (!RetransmitLostCryptoData() || !RetransmitLostControlFrames() ||
       !RetransmitLostStreamData()) {
     return;
@@ -463,7 +492,7 @@ bool SimpleSessionNotifier::OnControlFrameAcked(const QuicFrame& frame) {
   if (id == kInvalidControlFrameId) {
     return false;
   }
-  DCHECK(id < least_unacked_ + control_frames_.size());
+  QUICHE_DCHECK(id < least_unacked_ + control_frames_.size());
   if (id < least_unacked_ ||
       GetControlFrameId(control_frames_.at(id - least_unacked_)) ==
           kInvalidControlFrameId) {
@@ -486,7 +515,7 @@ void SimpleSessionNotifier::OnControlFrameLost(const QuicFrame& frame) {
   if (id == kInvalidControlFrameId) {
     return;
   }
-  DCHECK(id < least_unacked_ + control_frames_.size());
+  QUICHE_DCHECK(id < least_unacked_ + control_frames_.size());
   if (id < least_unacked_ ||
       GetControlFrameId(control_frames_.at(id - least_unacked_)) ==
           kInvalidControlFrameId) {

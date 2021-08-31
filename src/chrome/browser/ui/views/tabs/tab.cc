@@ -17,7 +17,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -57,11 +57,13 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/clip_recorder.h"
+#include "ui/compositor/compositor.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
@@ -76,7 +78,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
@@ -146,28 +147,32 @@ class Tab::TabCloseButtonObserver : public views::ViewObserver {
                                   TabController* controller)
       : tab_(tab), close_button_(close_button), controller_(controller) {
     DCHECK(close_button_);
-    tab_close_button_observer_.Add(close_button_);
+    tab_close_button_observation_.Observe(close_button_);
   }
   TabCloseButtonObserver(const TabCloseButtonObserver&) = delete;
   TabCloseButtonObserver& operator=(const TabCloseButtonObserver&) = delete;
 
   ~TabCloseButtonObserver() override {
-    tab_close_button_observer_.Remove(close_button_);
+    DCHECK(tab_close_button_observation_.IsObserving());
+    tab_close_button_observation_.Reset();
   }
 
  private:
   void OnViewFocused(views::View* observed_view) override {
-    controller_->UpdateHoverCard(tab_);
+    controller_->UpdateHoverCard(tab_,
+                                 TabController::HoverCardUpdateType::kFocus);
   }
 
   void OnViewBlurred(views::View* observed_view) override {
     // Only hide hover card if not keyboard navigating.
-    if (!controller_->IsFocusInTabs())
-      controller_->UpdateHoverCard(nullptr);
+    if (!controller_->IsFocusInTabs()) {
+      controller_->UpdateHoverCard(nullptr,
+                                   TabController::HoverCardUpdateType::kFocus);
+    }
   }
 
-  ScopedObserver<views::View, views::ViewObserver> tab_close_button_observer_{
-      this};
+  base::ScopedObservation<views::View, views::ViewObserver>
+      tab_close_button_observation_{this};
 
   Tab* tab_;
   views::View* close_button_;
@@ -216,20 +221,17 @@ Tab::Tab(TabController* controller)
 
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 
-  icon_ = new TabIcon;
-  AddChildView(icon_);
+  icon_ = AddChildView(std::make_unique<TabIcon>());
 
-  alert_indicator_ = new AlertIndicator(this);
-  AddChildView(alert_indicator_);
+  alert_indicator_ = AddChildView(std::make_unique<AlertIndicator>(this));
 
   // Unretained is safe here because this class outlives its close button, and
   // the controller outlives this Tab.
-  close_button_ = new TabCloseButton(
+  close_button_ = AddChildView(std::make_unique<TabCloseButton>(
       base::BindRepeating(&Tab::CloseButtonPressed, base::Unretained(this)),
       base::BindRepeating(&TabController::OnMouseEventInTab,
-                          base::Unretained(controller_)));
+                          base::Unretained(controller_))));
   close_button_->SetHasInkDropActionOnClick(true);
-  AddChildView(close_button_);
 
   tab_close_button_observer_ = std::make_unique<TabCloseButtonObserver>(
       this, close_button_, controller_);
@@ -247,7 +249,8 @@ Tab::~Tab() {
   // Observer must be unregistered before child views are destroyed.
   tab_close_button_observer_.reset();
   if (controller_->HoverCardIsShowingForTab(this))
-    controller_->UpdateHoverCard(nullptr);
+    controller_->UpdateHoverCard(
+        nullptr, TabController::HoverCardUpdateType::kTabRemoved);
 }
 
 void Tab::AnimationEnded(const gfx::Animation* animation) {
@@ -465,7 +468,8 @@ bool IsSelectionModifierDown(const ui::MouseEvent& event) {
 }  // namespace
 
 bool Tab::OnMousePressed(const ui::MouseEvent& event) {
-  controller_->UpdateHoverCard(nullptr);
+  controller_->UpdateHoverCard(nullptr,
+                               TabController::HoverCardUpdateType::kEvent);
   controller_->OnMouseEventInTab(this, event);
 
   // Allow a right click from touch to drag, which corresponds to a long click.
@@ -579,8 +583,8 @@ void Tab::MaybeUpdateHoverStatus(const ui::MouseEvent& event) {
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Move the hit test area for hovering up so that it is not overlapped by tab
   // hover cards when they are shown.
-  // TODO(crbug/978134): Once Linux/CrOS widget transparency is solved, remove
-  // this case.
+  // TODO(crbug.com/978134): Once Linux/CrOS widget transparency is solved,
+  // remove that case.
   constexpr int kHoverCardOverlap = 6;
   if (event.location().y() >= height() - kHoverCardOverlap)
     return;
@@ -591,7 +595,8 @@ void Tab::MaybeUpdateHoverStatus(const ui::MouseEvent& event) {
   UpdateForegroundColors();
   Layout();
   if (g_show_hover_card_on_mouse_hover)
-    controller_->UpdateHoverCard(this);
+    controller_->UpdateHoverCard(this,
+                                 TabController::HoverCardUpdateType::kHover);
 }
 
 void Tab::OnMouseExited(const ui::MouseEvent& event) {
@@ -604,7 +609,8 @@ void Tab::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 void Tab::OnGestureEvent(ui::GestureEvent* event) {
-  controller_->UpdateHoverCard(nullptr);
+  controller_->UpdateHoverCard(nullptr,
+                               TabController::HoverCardUpdateType::kEvent);
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN: {
       // TAP_DOWN is only dispatched for the first touch point.
@@ -634,16 +640,9 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
-base::string16 Tab::GetTooltipText(const gfx::Point& p) const {
-  // TODO(corising): Make sure that accessibility is solved properly for hover
-  // cards.
-  // Tab hover cards replace tooltips.
-  if (base::FeatureList::IsEnabled(features::kTabHoverCards))
-    return base::string16();
-
-  // Note: Anything that affects the tooltip text should be accounted for when
-  // calling TooltipTextChanged() from Tab::SetData().
-  return GetTooltipText(data_.title, GetAlertStateToShow(data_.alert_state));
+std::u16string Tab::GetTooltipText(const gfx::Point& p) const {
+  // Tab hover cards replace tooltips for tabs.
+  return std::u16string();
 }
 
 void Tab::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -652,7 +651,7 @@ void Tab::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
                               IsSelected());
 
-  base::string16 name = controller_->GetAccessibleTabName(this);
+  std::u16string name = controller_->GetAccessibleTabName(this);
   if (!name.empty()) {
     node_data->SetName(name);
   } else {
@@ -690,12 +689,16 @@ void Tab::AddedToWidget() {
 
 void Tab::OnFocus() {
   View::OnFocus();
-  controller_->UpdateHoverCard(this);
+  controller_->UpdateHoverCard(this,
+                               TabController::HoverCardUpdateType::kFocus);
 }
 
 void Tab::OnBlur() {
   View::OnBlur();
-  controller_->UpdateHoverCard(nullptr);
+  if (!controller_->IsFocusInTabs()) {
+    controller_->UpdateHoverCard(nullptr,
+                                 TabController::HoverCardUpdateType::kFocus);
+  }
 }
 
 void Tab::OnThemeChanged() {
@@ -727,9 +730,9 @@ void Tab::SetClosing(bool closing) {
   }
 }
 
-base::Optional<SkColor> Tab::GetGroupColor() const {
+absl::optional<SkColor> Tab::GetGroupColor() const {
   if (closing_ || !group().has_value())
-    return base::nullopt;
+    return absl::nullopt;
 
   return controller_->GetPaintedGroupColor(
       controller_->GetGroupColorId(group().value()));
@@ -742,19 +745,20 @@ SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
   if (!theme_provider)
     return foreground_color_;
 
+  // TODO(tluk): These color computations should be moved into ThemeProvider
+  // when other tab colors are also computed there.
   switch (state) {
-    case TabAlertState::AUDIO_PLAYING:
-    case TabAlertState::AUDIO_MUTING:
-      return theme_provider->GetColor(ThemeProperties::COLOR_TAB_ALERT_AUDIO);
     case TabAlertState::MEDIA_RECORDING:
     case TabAlertState::DESKTOP_CAPTURING:
-      return theme_provider->GetColor(
-          ThemeProperties::COLOR_TAB_ALERT_RECORDING);
+      return color_utils::IsDark(foreground_color_) ? gfx::kGoogleRed600
+                                                    : gfx::kGoogleRed300;
     case TabAlertState::TAB_CAPTURING:
-      return theme_provider->GetColor(
-          ThemeProperties::COLOR_TAB_ALERT_CAPTURING);
     case TabAlertState::PIP_PLAYING:
-      return theme_provider->GetColor(ThemeProperties::COLOR_TAB_PIP_PLAYING);
+      if (color_utils::IsDark(foreground_color_))
+        return gfx::kGoogleBlue600;
+      FALLTHROUGH;
+    case TabAlertState::AUDIO_PLAYING:
+    case TabAlertState::AUDIO_MUTING:
     case TabAlertState::BLUETOOTH_CONNECTED:
     case TabAlertState::BLUETOOTH_SCAN_ACTIVE:
     case TabAlertState::USB_CONNECTED:
@@ -775,13 +779,15 @@ bool Tab::IsActive() const {
 void Tab::ActiveStateChanged() {
   UpdateTabIconNeedsAttentionBlocked();
   UpdateForegroundColors();
+  alert_indicator_->OnParentTabButtonColorChanged();
   title_->SetFontList(tab_style_->GetFontList());
   Layout();
 }
 
 void Tab::AlertStateChanged() {
   if (controller_->HoverCardIsShowingForTab(this))
-    controller_->UpdateHoverCard(this);
+    controller_->UpdateHoverCard(
+        this, TabController::HoverCardUpdateType::kTabDataChanged);
   Layout();
 }
 
@@ -810,9 +816,9 @@ void Tab::SetData(TabRendererData data) {
   icon_->SetCanPaintToLayer(controller_->CanPaintThrobberToLayer());
   UpdateTabIconNeedsAttentionBlocked();
 
-  base::string16 title = data_.title;
+  std::u16string title = data_.title;
   if (title.empty() && !data_.should_render_empty_title) {
-    title = icon_->ShowingLoadingAnimation()
+    title = icon_->GetShowingLoadingAnimation()
                 ? l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE)
                 : CoreTabHelper::GetDefaultTitle();
   } else {
@@ -826,6 +832,13 @@ void Tab::SetData(TabRendererData data) {
     alert_indicator_->TransitionToAlertState(new_alert_state);
   if (old.pinned != data_.pinned)
     showing_alert_indicator_ = false;
+  if (!data_.pinned && old.pinned) {
+    is_animating_from_pinned_ = true;
+    // We must set this to true early, because we don't want to set
+    // |is_animating_from_pinned_| to false if we lay out before the animation
+    // begins.
+    set_animating(true);
+  }
 
   if (new_alert_state != old_alert_state || data_.title != old.title)
     TooltipTextChanged();
@@ -854,13 +867,22 @@ void Tab::SetTabNeedsAttention(bool attention) {
   SchedulePaint();
 }
 
+void Tab::SetFreezingVoteToken(
+    std::unique_ptr<performance_manager::freezing::FreezingVoteToken> token) {
+  freezing_token_ = std::move(token);
+}
+
+void Tab::ReleaseFreezingVoteToken() {
+  freezing_token_.reset();
+}
+
 // static
-base::string16 Tab::GetTooltipText(const base::string16& title,
-                                   base::Optional<TabAlertState> alert_state) {
+std::u16string Tab::GetTooltipText(const std::u16string& title,
+                                   absl::optional<TabAlertState> alert_state) {
   if (!alert_state)
     return title;
 
-  base::string16 result = title;
+  std::u16string result = title;
   if (!result.empty())
     result.append(1, '\n');
   result.append(chrome::GetTabAlertStateText(alert_state.value()));
@@ -868,10 +890,10 @@ base::string16 Tab::GetTooltipText(const base::string16& title,
 }
 
 // static
-base::Optional<TabAlertState> Tab::GetAlertStateToShow(
+absl::optional<TabAlertState> Tab::GetAlertStateToShow(
     const std::vector<TabAlertState>& alert_states) {
   if (alert_states.empty())
-    return base::nullopt;
+    return absl::nullopt;
 
   return alert_states[0];
 }
@@ -918,12 +940,20 @@ void Tab::UpdateIconVisibility() {
                         : GetAlertStateToShow(data().alert_state))
           .has_value();
 
-  if (data().pinned) {
+  is_animating_from_pinned_ &= animating();
+
+  if (data().pinned || is_animating_from_pinned_) {
     // When the tab is pinned, we can show one of the two icons; the alert icon
     // is given priority over the favicon. The close buton is never shown.
     showing_alert_indicator_ = has_alert_icon;
     showing_icon_ = has_favicon && !has_alert_icon;
     showing_close_button_ = false;
+
+    // While animating to or from the pinned state, pinned tabs are rendered as
+    // normal tabs. Force the extra padding on so the favicon doesn't jitter
+    // left and then back right again as it resizes through layout regimes.
+    extra_padding_before_content_ = true;
+    extra_alert_indicator_padding_ = true;
     return;
   }
 
@@ -1020,8 +1050,7 @@ void Tab::UpdateForegroundColors() {
 
   title_->SetEnabledColor(colors.foreground_color);
 
-  close_button_->SetIconColors(colors.foreground_color,
-                               colors.background_color);
+  close_button_->SetColors(colors);
 
   if (foreground_color_ != colors.foreground_color) {
     foreground_color_ = colors.foreground_color;

@@ -4,13 +4,12 @@
 
 #include "chrome/browser/ui/views/web_apps/pwa_confirmation_bubble_view.h"
 
-#include <utility>
+#include <string>
 
-#include "base/i18n/message_formatter.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -42,13 +41,6 @@
 
 namespace {
 
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
-constexpr char kDeviceTypeForCheckbox[] = "computer";
-#else
-constexpr char kDeviceTypeForCheckbox[] = "other";
-#endif
-
 PWAConfirmationBubbleView* g_bubble_ = nullptr;
 
 bool g_auto_accept_pwa_for_testing = false;
@@ -58,7 +50,7 @@ std::unique_ptr<views::ImageView> CreateIconView(
     const WebApplicationInfo& web_app_info) {
   constexpr int kIconSize = 48;
   gfx::ImageSkia image(std::make_unique<WebAppInfoImageSource>(
-                           kIconSize, web_app_info.icon_bitmaps_any),
+                           kIconSize, web_app_info.icon_bitmaps.any),
                        gfx::Size(kIconSize, kIconSize));
 
   auto icon_image_view = std::make_unique<views::ImageView>();
@@ -67,7 +59,7 @@ std::unique_ptr<views::ImageView> CreateIconView(
 }
 
 // Returns a label containing the app name.
-std::unique_ptr<views::Label> CreateNameLabel(const base::string16& name) {
+std::unique_ptr<views::Label> CreateNameLabel(const std::u16string& name) {
   auto name_label = std::make_unique<views::Label>(
       name, views::style::CONTEXT_DIALOG_BODY_TEXT,
       views::style::TextStyle::STYLE_PRIMARY);
@@ -138,7 +130,7 @@ PWAConfirmationBubbleView::PWAConfirmationBubbleView(
   // Use CONTROL insets, because the icon is non-text (see documentation for
   // DialogContentType).
   gfx::Insets margin_insets = layout_provider->GetDialogInsetsForContentType(
-      views::CONTROL, views::CONTROL);
+      views::DialogContentType::kControl, views::DialogContentType::kControl);
   set_margins(margin_insets);
 
   int icon_label_spacing = layout_provider->GetDistanceMetric(
@@ -170,17 +162,6 @@ PWAConfirmationBubbleView::PWAConfirmationBubbleView(
         web_app_info_->enable_experimental_tabbed_window);
   }
 
-  // TODO(crbug.com/897302): This is an experimental UI added to prototype
-  // The PWA Run on OS Login feature, final design is yet to be decided.
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin)) {
-    // TODO(crbug.com/897302): Detect the type of device and supply the proper
-    // constant for the string.
-    run_on_os_login_ = labels->AddChildView(std::make_unique<views::Checkbox>(
-        base::i18n::MessageFormatter::FormatWithNumberedArgs(
-            l10n_util::GetStringUTF16(IDS_INSTALL_PWA_RUN_ON_OS_LOGIN_LABEL),
-            kDeviceTypeForCheckbox)));
-  }
-
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PWA_CONFIRMATION);
 
   SetHighlightedButton(highlight_button);
@@ -209,7 +190,7 @@ void PWAConfirmationBubbleView::WindowClosing() {
         web_app::GenerateAppIdFromURL(web_app_info_->start_url);
     UMA_HISTOGRAM_ENUMERATION("WebApp.InstallIphPromo.Result",
                               web_app::InstallIphResult::kCanceled);
-    web_app::RecordInstallIphIgnored(prefs_, app_id);
+    web_app::RecordInstallIphIgnored(prefs_, app_id, base::Time::Now());
   }
   if (callback_) {
     DCHECK(web_app_info_);
@@ -224,13 +205,6 @@ bool PWAConfirmationBubbleView::Accept() {
         tabbed_window_checkbox_->GetChecked();
   }
 
-  // User opt-in in checkbox is passed via the web_app_info structure to the
-  // underlying PWA install code.
-  // The definition of run_on_os_login_ is dependent on
-  // features::kDesktopPWAsRunOnOsLogin being enabled.
-  if (run_on_os_login_)
-    web_app_info_->run_on_os_login = run_on_os_login_->GetChecked();
-
   if (iph_state_ == chrome::PwaInProductHelpState::kShown) {
     web_app::AppId app_id =
         web_app::GenerateAppIdFromURL(web_app_info_->start_url);
@@ -241,11 +215,6 @@ bool PWAConfirmationBubbleView::Accept() {
   }
   std::move(callback_).Run(true, std::move(web_app_info_));
   return true;
-}
-
-views::Checkbox*
-PWAConfirmationBubbleView::GetRunOnOsLoginCheckboxForTesting() {
-  return run_on_os_login_;
 }
 
 namespace chrome {

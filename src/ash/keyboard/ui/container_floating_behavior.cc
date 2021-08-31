@@ -4,10 +4,13 @@
 
 #include "ash/keyboard/ui/container_floating_behavior.h"
 
+#include <memory>
+
 #include "ash/keyboard/ui/display_util.h"
 #include "ash/keyboard/ui/drag_descriptor.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/events/event.h"
@@ -228,7 +231,7 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
         // Mouse events are limited to just the left mouse button.
         drag_descriptor_.reset();
       } else if (!drag_descriptor_) {
-        drag_descriptor_.reset(new DragDescriptor{
+        drag_descriptor_ = std::make_unique<DragDescriptor>(DragDescriptor{
             keyboard_bounds_in_screen.origin(), kb_offset, pointer_id});
       }
       break;

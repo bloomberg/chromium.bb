@@ -173,8 +173,17 @@ public class RenderCoordinatesImpl implements RenderCoordinates {
     /**
      * @return Current page scale factor (maps CSS pixels to DIP pixels).
      */
+    @Override
     public float getPageScaleFactor() {
         return mPageScaleFactor;
+    }
+
+    /**
+     * @return Current page scale factor (approx, integer).
+     */
+    @Override
+    public int getPageScaleFactorInt() {
+        return (int) Math.floor(mPageScaleFactor);
     }
 
     /**

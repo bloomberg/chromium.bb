@@ -269,11 +269,10 @@ void PrefetchManager::PrefetchUrl(
   std::unique_ptr<blink::ThrottlingURLLoader> loader =
       blink::ThrottlingURLLoader::CreateLoaderAndStart(
           std::move(factory), std::move(throttles),
-          /*routing_id is not needed*/ -1,
           content::GlobalRequestID::MakeBrowserInitiated().request_id, options,
           &request, client.get(), kPrefetchTrafficAnnotation,
           base::ThreadTaskRunnerHandle::Get(),
-          /*cors_exempt_header_list=*/base::nullopt);
+          /*cors_exempt_header_list=*/absl::nullopt);
 
   delegate_->PrefetchInitiated(info.url, job->url);
 
@@ -319,7 +318,7 @@ void PrefetchManager::TryToLaunchPrefetchJobs() {
   // partition here, e.g., from WebContentsObserver. And make a similar change
   // in PreconnectManager.
   content::StoragePartition* storage_partition =
-      content::BrowserContext::GetDefaultStoragePartition(profile_);
+      profile_->GetDefaultStoragePartition();
   scoped_refptr<network::SharedURLLoaderFactory> factory =
       storage_partition->GetURLLoaderFactoryForBrowserProcess();
 

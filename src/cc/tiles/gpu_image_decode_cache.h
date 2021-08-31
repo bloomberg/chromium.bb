@@ -15,12 +15,12 @@
 #include "base/logging.h"
 #include "base/memory/discardable_memory.h"
 #include "base/memory/memory_pressure_listener.h"
-#include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/cc_export.h"
 #include "cc/paint/image_transfer_cache_entry.h"
 #include "cc/tiles/image_decode_cache.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkYUVAInfo.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
@@ -337,10 +337,10 @@ class CC_EXPORT GpuImageDecodeCache
     const bool is_bitmap_backed_;
     std::unique_ptr<base::DiscardableMemory> data_;
     sk_sp<SkImage> image_;  // RGBX (or null in YUV decode path)
-    // Only fill out the base::Optional |yuv_color_space| if doing YUV decoding.
+    // Only fill out the absl::optional |yuv_color_space| if doing YUV decoding.
     // Otherwise it was filled out with a default "identity" value by the
     // decoder.
-    base::Optional<YUVSkImages> image_yuv_planes_;
+    absl::optional<YUVSkImages> image_yuv_planes_;
 
     // Keeps tracks of images that could go through hardware decode acceleration
     // though they're possibly prevented from doing so because of a disabled
@@ -411,7 +411,7 @@ class CC_EXPORT GpuImageDecodeCache
     }
 
     // If in transfer cache mode.
-    base::Optional<uint32_t> transfer_cache_id() const {
+    absl::optional<uint32_t> transfer_cache_id() const {
       DCHECK(mode_ == Mode::kTransferCache || mode_ == Mode::kNone);
       return transfer_cache_id_;
     }
@@ -492,21 +492,21 @@ class CC_EXPORT GpuImageDecodeCache
     // Used if |mode_| == kSkImage.
     // May be null if image not yet uploaded / prepared.
     sk_sp<SkImage> image_;
-    base::Optional<YUVSkImages> image_yuv_planes_;
+    absl::optional<YUVSkImages> image_yuv_planes_;
     // TODO(crbug/910276): Change after alpha support.
     bool is_alpha_ = false;
     GrGLuint gl_id_ = 0;
-    base::Optional<std::array<GrGLuint, kNumYUVPlanes>> gl_plane_ids_;
+    absl::optional<std::array<GrGLuint, kNumYUVPlanes>> gl_plane_ids_;
 
     // Used if |mode_| == kTransferCache.
-    base::Optional<uint32_t> transfer_cache_id_;
+    absl::optional<uint32_t> transfer_cache_id_;
 
     // The original un-mipped image, for RGBX, or the representative image
     // backed by three planes for YUV. It is retained until it can be safely
     // deleted.
     sk_sp<SkImage> unmipped_image_;
     // Used for YUV decoding and null otherwise.
-    base::Optional<YUVSkImages> unmipped_yuv_images_;
+    absl::optional<YUVSkImages> unmipped_yuv_images_;
   };
 
   struct ImageData : public base::RefCountedThreadSafe<ImageData> {
@@ -520,10 +520,7 @@ class CC_EXPORT GpuImageDecodeCache
               bool is_bitmap_backed,
               bool can_do_hardware_accelerated_decode,
               bool do_hardware_accelerated_decode,
-              bool is_yuv_format,
-              SkYUVColorSpace yuv_cs,
-              SkYUVAInfo::PlanarConfig yuv_config,
-              SkYUVAPixmapInfo::DataType yuv_dt);
+              absl::optional<SkYUVAPixmapInfo> yuva_pixmap_info);
 
     bool IsGpuOrTransferCache() const;
     bool HasUploadedData() const;
@@ -537,11 +534,8 @@ class CC_EXPORT GpuImageDecodeCache
     int upload_scale_mip_level;
     bool needs_mips = false;
     bool is_bitmap_backed;
-    bool is_yuv;
     bool is_budgeted = false;
-    base::Optional<SkYUVColorSpace> yuv_color_space;
-    base::Optional<SkYUVAInfo::PlanarConfig> yuv_planar_config;
-    base::Optional<SkYUVAPixmapInfo::DataType> yuv_data_type;
+    absl::optional<SkYUVAPixmapInfo> yuva_pixmap_info;
 
     // If true, this image is no longer in our |persistent_cache_| and will be
     // deleted as soon as its ref count reaches zero.
@@ -571,12 +565,12 @@ class CC_EXPORT GpuImageDecodeCache
   // the |in_use_cache_|.
   struct InUseCacheKeyHash;
   struct InUseCacheKey {
-    static InUseCacheKey FromDrawImage(const DrawImage& draw_image);
+    InUseCacheKey(const DrawImage& draw_image, int mip_level);
+
     bool operator==(const InUseCacheKey& other) const;
 
    private:
     friend struct GpuImageDecodeCache::InUseCacheKeyHash;
-    explicit InUseCacheKey(const DrawImage& draw_image);
 
     PaintImage::FrameKey frame_key;
     int upload_scale_mip_level;
@@ -590,6 +584,13 @@ class CC_EXPORT GpuImageDecodeCache
   // All private functions should only be called while holding |lock_|. Some
   // functions also require the |context_| lock. These are indicated by
   // additional comments.
+
+  // Calculate the mip level to upload-scale the image to before uploading. We
+  // use mip levels rather than exact scales to increase re-use of scaled
+  // images.
+  int CalculateUploadScaleMipLevel(const DrawImage& draw_image) const;
+
+  InUseCacheKey InUseCacheKeyFromDrawImage(const DrawImage& draw_image) const;
 
   // Similar to GetTaskForImageAndRef, but gets the dependent decode task
   // rather than the upload task, if necessary.
@@ -642,7 +643,8 @@ class CC_EXPORT GpuImageDecodeCache
       const SkImage* uploaded_v_image,
       const size_t image_width,
       const size_t image_height,
-      const SkYUVAInfo::PlanarConfig yuva_planar_config,
+      const SkYUVAInfo::PlaneConfig yuva_plane_config,
+      const SkYUVAInfo::Subsampling yuva_subsampling,
       const SkYUVColorSpace yuva_color_space,
       sk_sp<SkColorSpace> target_color_space,
       sk_sp<SkColorSpace> decoded_color_space) const;

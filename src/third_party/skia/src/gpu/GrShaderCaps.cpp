@@ -18,10 +18,10 @@ GrShaderCaps::GrShaderCaps(const GrContextOptions& options) {
     fShaderDerivativeSupport = false;
     fGeometryShaderSupport = false;
     fGSInvocationsSupport = false;
-    fPathRenderingSupport = false;
     fDstReadInShaderSupport = false;
     fDualSourceBlendingSupport = false;
     fIntegerSupport = false;
+    fNonsquareMatrixSupport = false;
     fFBFetchSupport = false;
     fFBFetchNeedsCustomOutput = false;
     fUsesPrecisionModifiers = false;
@@ -44,21 +44,25 @@ GrShaderCaps::GrShaderCaps(const GrContextOptions& options) {
     fRemovePowWithConstantExponent = false;
     fMustWriteToFragColor = false;
     fNoDefaultPrecisionForExternalSamplers = false;
-    fCanOnlyUseSampleMaskWithStencil = false;
+    fRewriteMatrixVectorMultiply = false;
     fFlatInterpolationSupport = false;
     fPreferFlatInterpolation = false;
     fNoPerspectiveInterpolationSupport = false;
     fSampleMaskSupport = false;
     fExternalTextureSupport = false;
     fVertexIDSupport = false;
-    fFPManipulationSupport = false;
+    fBitManipulationSupport = false;
     fFloatIs32Bits = true;
     fHalfIs32Bits = false;
     fHasLowFragmentPrecision = false;
+    fReducedShaderMode = false;
     fColorSpaceMathNeedsFloat = false;
     fBuiltinFMASupport = false;
     fBuiltinDeterminantSupport = false;
     fCanUseDoLoops = true;
+    fCanUseFastMath = false;
+    fUseNodePools = true;
+    fAvoidDfDxForGradientsWhenPossible = false;
 
     fVersionDeclString = nullptr;
     fShaderDerivativeExtensionString = nullptr;
@@ -85,21 +89,19 @@ void GrShaderCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("Shader Derivative Support", fShaderDerivativeSupport);
     writer->appendBool("Geometry Shader Support", fGeometryShaderSupport);
     writer->appendBool("Geometry Shader Invocations Support", fGSInvocationsSupport);
-    writer->appendBool("Path Rendering Support", fPathRenderingSupport);
     writer->appendBool("Dst Read In Shader Support", fDstReadInShaderSupport);
     writer->appendBool("Dual Source Blending Support", fDualSourceBlendingSupport);
     writer->appendBool("Integer Support", fIntegerSupport);
+    writer->appendBool("Nonsquare Matrix Support", fNonsquareMatrixSupport);
 
     static const char* kAdvBlendEqInteractionStr[] = {
         "Not Supported",
         "Automatic",
         "General Enable",
-        "Specific Enables",
     };
     static_assert(0 == kNotSupported_AdvBlendEqInteraction);
     static_assert(1 == kAutomatic_AdvBlendEqInteraction);
     static_assert(2 == kGeneralEnable_AdvBlendEqInteraction);
-    static_assert(3 == kSpecificEnables_AdvBlendEqInteraction);
     static_assert(SK_ARRAY_COUNT(kAdvBlendEqInteractionStr) == kLast_AdvBlendEqInteraction + 1);
 
     writer->appendBool("FB Fetch Support", fFBFetchSupport);
@@ -126,14 +128,14 @@ void GrShaderCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("Must write to sk_FragColor [workaround]", fMustWriteToFragColor);
     writer->appendBool("Don't add default precision statement for samplerExternalOES",
                        fNoDefaultPrecisionForExternalSamplers);
-    writer->appendBool("Can only use sample mask with stencil", fCanOnlyUseSampleMaskWithStencil);
+    writer->appendBool("Rewrite matrix-vector multiply", fRewriteMatrixVectorMultiply);
     writer->appendBool("Flat interpolation support", fFlatInterpolationSupport);
     writer->appendBool("Prefer flat interpolation", fPreferFlatInterpolation);
     writer->appendBool("No perspective interpolation support", fNoPerspectiveInterpolationSupport);
     writer->appendBool("Sample mask support", fSampleMaskSupport);
     writer->appendBool("External texture support", fExternalTextureSupport);
     writer->appendBool("sk_VertexID support", fVertexIDSupport);
-    writer->appendBool("Floating point manipulation support", fFPManipulationSupport);
+    writer->appendBool("Bit manipulation support", fBitManipulationSupport);
     writer->appendBool("float == fp32", fFloatIs32Bits);
     writer->appendBool("half == fp32", fHalfIs32Bits);
     writer->appendBool("Has poor fragment precision", fHasLowFragmentPrecision);
@@ -141,6 +143,7 @@ void GrShaderCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("Builtin fma() support", fBuiltinFMASupport);
     writer->appendBool("Builtin determinant() support", fBuiltinDeterminantSupport);
     writer->appendBool("Can use do-while loops", fCanUseDoLoops);
+    writer->appendBool("Use node pools", fUseNodePools);
 
     writer->appendS32("Max FS Samplers", fMaxFragmentSamplers);
     writer->appendS32("Max Tessellation Segments", fMaxTessellationSegments);
@@ -174,6 +177,10 @@ void GrShaderCaps::applyOptionsOverrides(const GrContextOptions& options) {
         SkASSERT(!fRemovePowWithConstantExponent);
         SkASSERT(!fMustWriteToFragColor);
         SkASSERT(!fNoDefaultPrecisionForExternalSamplers);
+        SkASSERT(!fRewriteMatrixVectorMultiply);
+    }
+    if (!options.fEnableExperimentalHardwareTessellation) {
+        fMaxTessellationSegments = 0;
     }
 #if GR_TEST_UTILS
     if (options.fSuppressDualSourceBlending) {
@@ -182,12 +189,12 @@ void GrShaderCaps::applyOptionsOverrides(const GrContextOptions& options) {
     if (options.fSuppressGeometryShaders) {
         fGeometryShaderSupport = false;
     }
-    if (options.fSuppressTessellationShaders) {
-        fMaxTessellationSegments = 0;
-    }
     if (options.fMaxTessellationSegmentsOverride > 0) {
         fMaxTessellationSegments = std::min(options.fMaxTessellationSegmentsOverride,
                                             fMaxTessellationSegments);
+    }
+    if (options.fReducedShaderVariations) {
+        fReducedShaderMode = true;
     }
 #endif
 }

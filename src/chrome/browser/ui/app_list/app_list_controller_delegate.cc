@@ -22,6 +22,7 @@
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -56,37 +57,11 @@ AppListControllerDelegate::AppListControllerDelegate() {}
 
 AppListControllerDelegate::~AppListControllerDelegate() {}
 
-void AppListControllerDelegate::GetAppInfoDialogBounds(
-    GetAppInfoDialogBoundsCallback callback) {
-  std::move(callback).Run(gfx::Rect());
-}
-
-std::string AppListControllerDelegate::AppListSourceToString(
-    AppListSource source) {
-  switch (source) {
-    case LAUNCH_FROM_APP_LIST:
-      return extension_urls::kLaunchSourceAppList;
-    case LAUNCH_FROM_APP_LIST_SEARCH:
-      return extension_urls::kLaunchSourceAppListSearch;
-    default:
-      return std::string();
-  }
-}
-
-bool AppListControllerDelegate::UninstallAllowed(Profile* profile,
-                                                 const std::string& app_id) {
-  const extensions::Extension* extension = GetExtension(profile, app_id);
-  const extensions::ManagementPolicy* policy =
-      extensions::ExtensionSystem::Get(profile)->management_policy();
-  return extension && policy->UserMayModifySettings(extension, nullptr) &&
-         !policy->MustRemainInstalled(extension, nullptr);
-}
-
 void AppListControllerDelegate::DoShowAppInfoFlow(Profile* profile,
                                                   const std::string& app_id) {
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile);
-  DCHECK_NE(proxy->AppRegistryCache().GetAppType(app_id),
+  DCHECK_NE(apps::AppServiceProxyFactory::GetForProfile(profile)
+                ->AppRegistryCache()
+                .GetAppType(app_id),
             apps::mojom::AppType::kUnknown);
 
   web_app::AppRegistrar& registrar =
@@ -104,41 +79,8 @@ void AppListControllerDelegate::DoShowAppInfoFlow(Profile* profile,
 
 void AppListControllerDelegate::UninstallApp(Profile* profile,
                                              const std::string& app_id) {
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile);
-  proxy->Uninstall(app_id, GetAppListWindow());
-}
-
-bool AppListControllerDelegate::IsAppFromWebStore(Profile* profile,
-                                                  const std::string& app_id) {
-  const extensions::Extension* extension = GetExtension(profile, app_id);
-  return extension && extension->from_webstore();
-}
-
-void AppListControllerDelegate::ShowAppInWebStore(Profile* profile,
-                                                  const std::string& app_id,
-                                                  bool is_search_result) {
-  const extensions::Extension* extension = GetExtension(profile, app_id);
-  if (!extension)
-    return;
-
-  const GURL url = extensions::ManifestURL::GetDetailsURL(extension);
-  DCHECK_NE(url, GURL::EmptyGURL());
-
-  const std::string source = AppListSourceToString(
-      is_search_result ? AppListControllerDelegate::LAUNCH_FROM_APP_LIST_SEARCH
-                       : AppListControllerDelegate::LAUNCH_FROM_APP_LIST);
-  OpenURL(profile,
-          net::AppendQueryParameter(url, extension_urls::kWebstoreSourceField,
-                                    source),
-          ui::PAGE_TRANSITION_LINK, WindowOpenDisposition::CURRENT_TAB);
-}
-
-bool AppListControllerDelegate::HasOptionsPage(Profile* profile,
-                                               const std::string& app_id) {
-  const extensions::Extension* extension = GetExtension(profile, app_id);
-  return extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile) &&
-         extension && extensions::OptionsPageInfo::HasOptionsPage(extension);
+  apps::AppServiceProxyFactory::GetForProfile(profile)->Uninstall(
+      app_id, apps::mojom::UninstallSource::kAppList, GetAppListWindow());
 }
 
 void AppListControllerDelegate::ShowOptionsPage(Profile* profile,
@@ -163,28 +105,6 @@ void AppListControllerDelegate::SetExtensionLaunchType(
     const std::string& extension_id,
     extensions::LaunchType launch_type) {
   extensions::SetLaunchType(profile, extension_id, launch_type);
-}
-
-bool AppListControllerDelegate::IsExtensionInstalled(
-    Profile* profile,
-    const std::string& app_id) {
-  return !!GetExtension(profile, app_id);
-}
-
-extensions::InstallTracker* AppListControllerDelegate::GetInstallTrackerFor(
-    Profile* profile) {
-  if (extensions::ExtensionSystem::Get(profile)->extension_service())
-    return extensions::InstallTrackerFactory::GetForBrowserContext(profile);
-  return NULL;
-}
-
-void AppListControllerDelegate::GetApps(Profile* profile,
-                                        extensions::ExtensionSet* out_apps) {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
-  DCHECK(registry);
-  out_apps->InsertAll(registry->enabled_extensions());
-  out_apps->InsertAll(registry->disabled_extensions());
-  out_apps->InsertAll(registry->terminated_extensions());
 }
 
 void AppListControllerDelegate::OnSearchStarted() {

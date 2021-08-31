@@ -30,6 +30,7 @@
 #include "components/printing/common/cloud_print_cdd_conversion.h"
 #include "printing/backend/win_helper.h"
 #include "printing/emf_win.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/page_range.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/printing_utils.h"
@@ -71,11 +72,11 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
     delegate_ = delegate;
     // An empty printer name means watch the current server, we need to pass
     // nullptr to OpenPrinterWithName().
-    LPTSTR printer_name_to_use = nullptr;
-    std::wstring printer_name_wide;
+    wchar_t* printer_name_to_use = nullptr;
+    std::wstring wide_printer_name;
     if (!printer_name.empty()) {
-      printer_name_wide = base::UTF8ToWide(printer_name);
-      printer_name_to_use = const_cast<LPTSTR>(printer_name_wide.c_str());
+      wide_printer_name = base::UTF8ToWide(printer_name);
+      printer_name_to_use = const_cast<wchar_t*>(wide_printer_name.c_str());
     }
     bool ret = false;
     if (printer_.OpenPrinterWithName(printer_name_to_use)) {
@@ -278,25 +279,24 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         return false;
       }
 
-      base::string16 printer_wide = base::UTF8ToWide(printer_name);
       std::unique_ptr<DEVMODE, base::FreeDeleter> dev_mode =
-          CjtToDevMode(printer_wide, print_ticket);
+          CjtToDevMode(base::UTF8ToWide(printer_name), print_ticket);
       if (!dev_mode) {
         NOTREACHED();
         return false;
       }
 
-      HDC dc =
-          CreateDC(L"WINSPOOL", printer_wide.c_str(), nullptr, dev_mode.get());
+      HDC dc = CreateDC(L"WINSPOOL", base::UTF8ToWide(printer_name).c_str(),
+                        nullptr, dev_mode.get());
       if (!dc) {
         NOTREACHED();
         return false;
       }
       DOCINFO di = {0};
       di.cbSize = sizeof(DOCINFO);
-      base::string16 doc_name = base::UTF8ToUTF16(job_title);
+      std::u16string doc_name = base::UTF8ToUTF16(job_title);
       DCHECK(printing::SimplifyDocumentTitle(doc_name) == doc_name);
-      di.lpszDocName = doc_name.c_str();
+      di.lpszDocName = base::as_wcstr(doc_name);
       job_id_ = StartDoc(dc, &di);
       if (job_id_ <= 0)
         return false;
@@ -651,8 +651,10 @@ PrintSystem::PrintSystemResult PrintSystemWin::Init() {
 
 PrintSystem::PrintSystemResult PrintSystemWin::EnumeratePrinters(
     printing::PrinterList* printer_list) {
-  bool ret = print_backend_->EnumeratePrinters(printer_list);
-  return PrintSystemResult(ret, std::string());
+  printing::mojom::ResultCode result =
+      print_backend_->EnumeratePrinters(printer_list);
+  return PrintSystemResult(result == printing::mojom::ResultCode::kSuccess,
+                           std::string());
 }
 
 void PrintSystemWin::GetPrinterCapsAndDefaults(
@@ -688,8 +690,8 @@ bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
       print_backend_->GetPrinterDriverInfo(printer_name));
   DCHECK(job_details);
   printing::ScopedPrinterHandle printer_handle;
-  std::wstring printer_name_wide = base::UTF8ToWide(printer_name);
-  printer_handle.OpenPrinterWithName(printer_name_wide.c_str());
+  std::wstring wide_printer_name = base::UTF8ToWide(printer_name);
+  printer_handle.OpenPrinterWithName(wide_printer_name.c_str());
   DCHECK(printer_handle.IsValid());
   bool ret = false;
   if (printer_handle.IsValid()) {

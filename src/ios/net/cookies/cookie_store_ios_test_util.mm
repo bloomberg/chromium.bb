@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -18,6 +17,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -40,11 +40,11 @@ void TestPersistentCookieStore::RunLoadedCallback() {
   std::vector<std::unique_ptr<net::CanonicalCookie>> cookies;
   std::unique_ptr<net::CanonicalCookie> cookie(
       net::CanonicalCookie::Create(kTestCookieURL, "a=b", base::Time::Now(),
-                                   base::nullopt /* server_time */));
+                                   absl::nullopt /* server_time */));
   cookies.push_back(std::move(cookie));
 
-  std::unique_ptr<net::CanonicalCookie> bad_canonical_cookie(
-      std::make_unique<net::CanonicalCookie>(
+  std::unique_ptr<net::CanonicalCookie> bad_canonical_cookie =
+      net::CanonicalCookie::CreateUnsafeCookieForTesting(
           "name", "\x81r\xe4\xbd\xa0\xe5\xa5\xbd", "domain", "/path/",
           base::Time(),  // creation
           base::Time(),  // expires
@@ -52,7 +52,7 @@ void TestPersistentCookieStore::RunLoadedCallback() {
           false,         // secure
           false,         // httponly
           net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT,
-          false /* same_party */));
+          false /* same_party */);
   cookies.push_back(std::move(bad_canonical_cookie));
   std::move(loaded_callback_).Run(std::move(cookies));
 }
@@ -135,7 +135,7 @@ void SetCookie(const std::string& cookie_line,
   net::CookieOptions options;
   options.set_include_httponly();
   auto canonical_cookie = net::CanonicalCookie::Create(
-      url, cookie_line, base::Time::Now(), base::nullopt /* server_time */);
+      url, cookie_line, base::Time::Now(), absl::nullopt /* server_time */);
   ASSERT_TRUE(canonical_cookie);
   store->SetCanonicalCookieAsync(std::move(canonical_cookie), url, options,
                                  base::DoNothing());

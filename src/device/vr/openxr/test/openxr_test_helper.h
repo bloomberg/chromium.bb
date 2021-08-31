@@ -14,10 +14,10 @@
 #include <unordered_set>
 #include <vector>
 
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "device/vr/test/test_hook.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/openxr/src/include/openxr/openxr.h"
 #include "third_party/openxr/src/include/openxr/openxr_platform.h"
 
@@ -41,6 +41,11 @@ class OpenXrTestHelper : public device::ServiceTestHook {
  public:
   OpenXrTestHelper();
   ~OpenXrTestHelper();
+
+  // Because the test helper isn't intended to be recreated, even if an instance
+  // is destroyed, this should be called whenever a session is/would have been
+  // terminated regardless of the path it took to be terminated; otherwise, it
+  // may not be possible to request a new session.
   void Reset();
   void TestFailure();
 
@@ -56,6 +61,8 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   // state of the runtime.
 
   XrSystemId GetSystemId();
+  XrSystemProperties GetSystemProperties();
+
   XrSwapchain GetSwapchain();
   XrInstance CreateInstance();
   XrResult GetActionStateFloat(XrAction action, XrActionStateFloat* data) const;
@@ -157,6 +164,9 @@ class OpenXrTestHelper : public device::ServiceTestHook {
       "/reference_space/view";
   static constexpr const char* kUnboundedReferenceSpacePath =
       "/reference_space/unbounded";
+  static constexpr XrSystemProperties kSystemProperties = {
+      XR_TYPE_SYSTEM_PROPERTIES, nullptr,           0, 0xBADFACE, "Test System",
+      {2048, 2048, 1},           {XR_TRUE, XR_TRUE}};
 
   static constexpr uint32_t kNumExtensionsSupported = base::size(kExtensions);
   static constexpr uint32_t kNumViews = base::size(kViewConfigurationViews);
@@ -174,7 +184,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
                                     bool left);
   XrResult UpdateAction(XrAction action);
   void SetSessionState(XrSessionState state);
-  base::Optional<gfx::Transform> GetPose();
+  absl::optional<gfx::Transform> GetPose();
   device::ControllerFrameData GetControllerDataFromPath(
       std::string path_string) const;
   void UpdateInteractionProfile(

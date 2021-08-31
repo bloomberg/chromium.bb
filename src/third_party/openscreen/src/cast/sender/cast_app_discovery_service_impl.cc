@@ -174,7 +174,6 @@ bool CastAppDiscoveryServiceImpl::ShouldRefreshAppAvailability(
   }
 
   OSP_NOTREACHED();
-  return false;
 }
 
 void CastAppDiscoveryServiceImpl::RemoveAvailabilityCallback(uint32_t id) {

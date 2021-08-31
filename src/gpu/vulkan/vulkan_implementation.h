@@ -12,9 +12,9 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "gpu/vulkan/semaphore_handle.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -50,9 +50,8 @@ class SysmemBufferCollection {
 // VkSurfaceKHR objects). It also provides helper/utility functions.
 class COMPONENT_EXPORT(VULKAN) VulkanImplementation {
  public:
-  VulkanImplementation(bool use_swiftshader = false,
-                       bool allow_protected_memory = false,
-                       bool enforce_protected_memory = false);
+  explicit VulkanImplementation(bool use_swiftshader = false,
+                                bool allow_protected_memory = false);
 
   virtual ~VulkanImplementation();
 
@@ -144,12 +143,10 @@ class COMPONENT_EXPORT(VULKAN) VulkanImplementation {
 
   bool use_swiftshader() const { return use_swiftshader_; }
   bool allow_protected_memory() const { return allow_protected_memory_; }
-  bool enforce_protected_memory() const { return enforce_protected_memory_; }
 
  private:
   const bool use_swiftshader_;
   const bool allow_protected_memory_;
-  const bool enforce_protected_memory_;
   DISALLOW_COPY_AND_ASSIGN(VulkanImplementation);
 };
 

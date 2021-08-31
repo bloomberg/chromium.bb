@@ -8,7 +8,7 @@ import unittest
 from blinkpy.common.checkout.git_mock import MockGit
 from blinkpy.common.host_mock import MockHost
 from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
-from blinkpy.common.system.executive_mock import mock_git_commands
+from blinkpy.common.system.executive_mock import mock_git_commands, MockExecutive
 from blinkpy.common.system.filesystem_mock import MockFileSystem
 from blinkpy.w3c.local_wpt_mock import MockLocalWPT
 from blinkpy.w3c.import_notifier import ImportNotifier, TestFailure
@@ -70,7 +70,7 @@ class ImportNotifierTest(unittest.TestCase):
             self.notifier.more_failures_in_baseline('foo-expected.txt'))
         self.assertEqual(
             executive.calls,
-            [['git', 'diff', '-U0', 'origin/master', '--', 'foo-expected.txt']
+            [['git', 'diff', '-U0', 'origin/main', '--', 'foo-expected.txt']
              ])
 
     def test_more_failures_in_baseline_fewer_fails(self):
@@ -260,14 +260,39 @@ class ImportNotifierTest(unittest.TestCase):
             self.notifier.find_owned_directory(
                 'virtual/gpu/external/wpt/foo/bar.html'), 'external/wpt/foo')
 
+    def test_create_bugs_for_product(self):
+        expectation_lines = {}
+        expectation_lines['external/wpt/foo/baz.html'] = \
+            'crbug/123456 external/wpt/foo/baz.html [ Failure ]'
+
+        bugs = self.notifier.create_bugs_for_product(
+            'SHA_START', 'SHA_END', 'https://crrev.com/c/12345',
+            'android_weblayer', expectation_lines)
+
+        self.assertEqual(len(bugs), 1)
+        self.assertEqual(bugs[0].body['components'], ['Internals>WebLayer'])
+        self.assertEqual(
+            bugs[0].body['summary'],
+            '[WPT] New failures introduced by import https://crrev.com/c/12345')
+
     def test_create_bugs_from_new_failures(self):
         self.host.filesystem.write_text_file(
-            MOCK_WEB_TESTS + 'external/wpt/foo/OWNERS',
-            '# COMPONENT: Blink>Infra>Ecosystem\n'
-            '# WPT-NOTIFY: true\n'
-            'foolip@chromium.org\n')
+            MOCK_WEB_TESTS + 'external/wpt/foo/OWNERS', 'foolip@chromium.org')
         self.host.filesystem.write_text_file(
             MOCK_WEB_TESTS + 'external/wpt/bar/OWNERS', 'test@chromium.org')
+
+        data = ('{"dirs":{"external/wpt/foo":{"monorail":{"component":'
+                '"Blink>Infra>Ecosystem"},"teamEmail":"email","wpt":{'
+                '"notify":"YES"}}}}')
+
+        def mock_run_command(args):
+            if args[-1].endswith('external/wpt/foo'):
+                return data
+            return ''
+
+        self.notifier.owners_extractor.executive = MockExecutive(
+            run_command_fn=mock_run_command)
+
         self.notifier.new_failures_by_directory = {
             'external/wpt/foo': [
                 TestFailure(

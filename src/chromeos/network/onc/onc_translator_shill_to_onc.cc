@@ -37,7 +37,7 @@ base::Value ConvertVpnStringToValue(const std::string& str,
   if (type == base::Value::Type::STRING)
     return base::Value(str);
 
-  base::Optional<base::Value> value = base::JSONReader::Read(str);
+  absl::optional<base::Value> value = base::JSONReader::Read(str);
   if (!value || value->type() != type)
     return base::Value(type);
 
@@ -198,7 +198,7 @@ class ShillToONCTranslator {
 
 std::unique_ptr<base::DictionaryValue>
 ShillToONCTranslator::CreateTranslatedONCObject() {
-  onc_object_.reset(new base::Value(base::Value::Type::DICTIONARY));
+  onc_object_ = std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
   if (onc_signature_ == &kNetworkWithStateSignature) {
     TranslateNetworkWithState();
   } else if (onc_signature_ == &kEthernetSignature) {
@@ -391,7 +391,7 @@ void ShillToONCTranslator::TranslateVPN() {
     provider_type_dictionary = onc_provider_type;
   }
 
-  base::Optional<bool> save_credentials =
+  absl::optional<bool> save_credentials =
       shill_dictionary_->FindBoolKey(shill::kSaveCredentialsProperty);
   if (onc_provider_type != ::onc::vpn::kThirdPartyVpn &&
       onc_provider_type != ::onc::vpn::kArcVpn && save_credentials) {
@@ -420,7 +420,7 @@ void ShillToONCTranslator::TranslateWiFiWithState() {
   if (!unknown_encoding && !ssid.empty())
     onc_object_->SetKey(::onc::wifi::kSSID, base::Value(ssid));
 
-  base::Optional<bool> link_monitor_disable =
+  absl::optional<bool> link_monitor_disable =
       shill_dictionary_->FindBoolKey(shill::kLinkMonitorDisableProperty);
   if (link_monitor_disable) {
     onc_object_->SetKey(::onc::wifi::kAllowGatewayARPPolling,
@@ -472,27 +472,25 @@ void ShillToONCTranslator::TranslateCellularWithState() {
         nested_translator.CreateTranslatedONCObject();
     onc_object_->MergeDictionary(nested_object.get());
 
-    // Copy ICCID and IMSI from the Device dictionary only if not provied in the
-    // Service properties.
-    if (!onc_object_->FindKey(::onc::cellular::kICCID)) {
-      const base::Value* iccid =
-          device_dictionary->FindKey(shill::kIccidProperty);
-      if (iccid)
-        onc_object_->SetKey(::onc::cellular::kICCID, iccid->Clone());
-    }
-    if (!onc_object_->FindKey(::onc::cellular::kIMSI)) {
-      const base::Value* imsi =
-          device_dictionary->FindKey(shill::kImsiProperty);
-      if (imsi)
-        onc_object_->SetKey(::onc::cellular::kIMSI, imsi->Clone());
+    // The Scanning property is retrieved from the Device dictionary, but only
+    // if this is the active SIM, meaning that the service ICCID matches the
+    // device ICCID.
+    const std::string* service_iccid =
+        onc_object_->FindStringKey(::onc::cellular::kICCID);
+    if (service_iccid) {
+      const std::string* device_iccid =
+          device_dictionary->FindStringKey(shill::kIccidProperty);
+      if (device_iccid && *service_iccid == *device_iccid) {
+        scanning = device_dictionary->FindBoolKey(shill::kScanningProperty)
+                       .value_or(false);
+      }
     }
 
-    // Get requires_roaming and scanning from the Device dictionary.
+    // Get requires_roaming from the Device dictionary, even if this is not the
+    // active SIM.
     requires_roaming =
         device_dictionary->FindBoolKey(shill::kProviderRequiresRoamingProperty)
             .value_or(false);
-    scanning = device_dictionary->FindBoolKey(shill::kScanningProperty)
-                   .value_or(false);
   }
   if (requires_roaming) {
     onc_object_->SetKey(::onc::cellular::kRoamingState,
@@ -762,7 +760,7 @@ void ShillToONCTranslator::TranslateAndAddNestedObject(
                                          network_state_);
   std::unique_ptr<base::DictionaryValue> nested_object =
       nested_translator.CreateTranslatedONCObject();
-  if (nested_object->empty())
+  if (nested_object->DictEmpty())
     return;
   onc_object_->SetKey(onc_field_name, std::move(*nested_object));
 }
@@ -797,7 +795,7 @@ void ShillToONCTranslator::TranslateAndAddListOfObjects(
     std::unique_ptr<base::DictionaryValue> nested_object =
         nested_translator.CreateTranslatedONCObject();
     // If the nested object couldn't be parsed, simply omit it.
-    if (nested_object->empty())
+    if (nested_object->DictEmpty())
       continue;
     result.Append(std::move(*nested_object));
   }

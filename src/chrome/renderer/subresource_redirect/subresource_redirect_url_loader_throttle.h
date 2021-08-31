@@ -6,7 +6,10 @@
 #define CHROME_RENDERER_SUBRESOURCE_REDIRECT_SUBRESOURCE_REDIRECT_URL_LOADER_THROTTLE_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "chrome/renderer/subresource_redirect/login_robots_compression_metrics.h"
+#include "chrome/renderer/subresource_redirect/public_resource_decider_agent.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
@@ -25,12 +28,19 @@ class SubresourceRedirectURLLoaderThrottle : public blink::URLLoaderThrottle {
   static std::unique_ptr<SubresourceRedirectURLLoaderThrottle>
   MaybeCreateThrottle(const blink::WebURLRequest& request, int render_frame_id);
 
-  explicit SubresourceRedirectURLLoaderThrottle(int render_frame_id);
+  SubresourceRedirectURLLoaderThrottle(int render_frame_id,
+                                       bool allowed_to_redirect);
   ~SubresourceRedirectURLLoaderThrottle() override;
+
+  SubresourceRedirectURLLoaderThrottle(
+      const SubresourceRedirectURLLoaderThrottle&) = delete;
+  SubresourceRedirectURLLoaderThrottle& operator=(
+      const SubresourceRedirectURLLoaderThrottle&) = delete;
 
   // blink::URLLoaderThrottle:
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;
+  const char* NameForLoggingWillStartRequest() override;
   void WillRedirectRequest(
       net::RedirectInfo* redirect_info,
       const network::mojom::URLResponseHead& response_head,
@@ -50,24 +60,14 @@ class SubresourceRedirectURLLoaderThrottle : public blink::URLLoaderThrottle {
   // Overridden to do nothing as the default implementation is NOT_REACHED()
   void DetachFromCurrentSequence() override;
 
-  // Return whether the image url should be redirected.
-  virtual bool ShouldRedirectImage(const GURL& url) = 0;
-
-  // Indicates the subresource redirect failed, and the image will be fetched
-  // directly from the  origin instead. The failures can be due to non-2xx http
-  // responses or other net errors
-  virtual void OnRedirectedLoadCompleteWithError() = 0;
-
-  // Notifies the image load finished.
-  virtual void RecordMetricsOnLoadFinished(const GURL& url,
-                                           int64_t content_length) = 0;
-
-  content::RenderFrame* GetRenderFrame() const {
-    return content::RenderFrame::FromRoutingID(render_frame_id_);
-  }
-
  private:
-  friend class TestPublicImageHintsURLLoaderThrottle;
+  friend class SubresourceRedirectPublicImageHintsDeciderAgentTest;
+
+  // Callback to notify the decision of decider subclasses.
+  void NotifyRedirectDeciderDecision(SubresourceRedirectResult);
+
+  // Start the timer for redirect fetch timeout.
+  void StartRedirectTimeoutTimer();
 
   // Callback invoked when the redirect fetch times out.
   void OnRedirectTimeout();
@@ -75,17 +75,25 @@ class SubresourceRedirectURLLoaderThrottle : public blink::URLLoaderThrottle {
   // Render frame id to get the hints agent of the render frame.
   const int render_frame_id_;
 
-  // Whether this resource was actually redirected to compressed server origin.
-  // This will be true when the redirect was attempted. Will be false when
-  // redirect failed due to neterrors, or redirect was not attempted (but
-  // coverage metrics recorded), or redirect was not needed when the initial URL
-  // itself is compressed origin.
-  bool did_redirect_compressed_origin_ = false;
+  // The current state of redirect.
+  PublicResourceDeciderRedirectState redirect_state_ =
+      PublicResourceDeciderRedirectState::kNone;
 
   // Timer to detect whether the response from compression server has timed out.
   std::unique_ptr<base::OneShotTimer> redirect_timeout_timer_;
 
-  DISALLOW_COPY_AND_ASSIGN(SubresourceRedirectURLLoaderThrottle);
+  // Whether the subresource can be redirected or not and what was the reason if
+  // its not eligible.
+  SubresourceRedirectResult redirect_result_ =
+      SubresourceRedirectResult::kUnknown;
+
+  // Used to record the image load and compression metrics.
+  absl::optional<LoginRobotsCompressionMetrics>
+      login_robots_compression_metrics_;
+
+  // Used to get a weak pointer to |this|.
+  base::WeakPtrFactory<SubresourceRedirectURLLoaderThrottle> weak_ptr_factory_{
+      this};
 };
 
 }  // namespace subresource_redirect

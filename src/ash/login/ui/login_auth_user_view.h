@@ -17,8 +17,8 @@
 #include "ash/public/cpp/session/user_info.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -69,7 +69,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
     // User's pin length to use for autosubmit.
     size_t autosubmit_pin_length = 0;
     // Only present when the TPM is locked.
-    base::Optional<base::TimeDelta> time_until_tpm_unlock = base::nullopt;
+    absl::optional<base::TimeDelta> time_until_tpm_unlock = absl::nullopt;
   };
 
   // Possible states that the input fields (PasswordView & PinInputView)
@@ -99,7 +99,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
     views::Button* challenge_response_button();
     views::Label* challenge_response_label();
     bool HasAuthMethod(AuthMethods auth_method) const;
-    const base::string16& GetDisabledAuthMessageContent() const;
+    const std::u16string& GetDisabledAuthMessageContent() const;
 
    private:
     LoginAuthUserView* const view_;
@@ -146,7 +146,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
 
   // Add an easy unlock icon.
   void SetEasyUnlockIcon(EasyUnlockIconId id,
-                         const base::string16& accessibility_label);
+                         const std::u16string& accessibility_label);
 
   // Captures any metadata about the current view state that will be used for
   // animation.
@@ -181,6 +181,9 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   gfx::Size CalculatePreferredSize() const override;
   void RequestFocus() override;
 
+  // NonAccessibleView:
+  void OnThemeChanged() override;
+
  private:
   struct UiState;
   class FingerprintView;
@@ -189,13 +192,13 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   class LockedTpmMessageView;
 
   // Called when the user submits an auth method. Runs mojo call.
-  void OnAuthSubmit(const base::string16& password);
+  void OnAuthSubmit(const std::u16string& password);
   // Called with the result of the request started in |OnAuthSubmit| or
   // |AttemptAuthenticateWithExternalBinary|.
-  void OnAuthComplete(base::Optional<bool> auth_success);
+  void OnAuthComplete(absl::optional<bool> auth_success);
   // Called with the result of the request started in
   // |AttemptAuthenticateWithChallengeResponse|.
-  void OnChallengeResponseAuthComplete(base::Optional<bool> auth_success);
+  void OnChallengeResponseAuthComplete(absl::optional<bool> auth_success);
 
   // Called when the user view has been tapped. This will run |on_auth_| if tap
   // to unlock is enabled, or run |OnOnlineSignInMessageTap| if the online
@@ -215,6 +218,9 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   // Helper method to check if an auth method is enable. Use it like this:
   // bool has_tap = HasAuthMethod(AUTH_TAP).
   bool HasAuthMethod(AuthMethods auth_method) const;
+
+  // Whether the authentication attempt should use the user's PIN.
+  bool ShouldAuthenticateWithPin() const;
 
   // TODO(crbug/899812): remove this and pass a handler in via the Callbacks
   // struct instead.
@@ -246,8 +252,8 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   gfx::Size GetPaddingBelowPasswordView() const;
 
   // Convenience methods to determine UI text based on the InputFieldMode.
-  base::string16 GetPinPasswordToggleText();
-  base::string16 GetPasswordViewPlaceholder() const;
+  std::u16string GetPinPasswordToggleText();
+  std::u16string GetPasswordViewPlaceholder() const;
 
   // Authentication methods available and extra parameters that control the UI.
   AuthMethods auth_methods_ = AUTH_NONE;

@@ -8,9 +8,12 @@
 #include "base/json/json_writer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/internet_config_dialog_resources.h"
+#include "chrome/grit/internet_config_dialog_resources_map.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -63,8 +66,8 @@ std::string GetId(const std::string& network_type,
 }  // namespace
 
 // static
-void InternetConfigDialog::ShowDialogForNetworkId(
-    const std::string& network_id) {
+void InternetConfigDialog::ShowDialogForNetworkId(const std::string& network_id,
+                                                  gfx::NativeWindow parent) {
   const NetworkState* network_state =
       NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
           network_id);
@@ -83,12 +86,13 @@ void InternetConfigDialog::ShowDialogForNetworkId(
 
   InternetConfigDialog* dialog =
       new InternetConfigDialog(id, network_type, network_id);
-  dialog->ShowSystemDialog();
+  dialog->ShowSystemDialog(parent);
 }
 
 // static
 void InternetConfigDialog::ShowDialogForNetworkType(
-    const std::string& network_type) {
+    const std::string& network_type,
+    gfx::NativeWindow parent) {
   std::string id = GetId(network_type, "");
   auto* instance = SystemWebDialogDelegate::FindInstance(id);
   if (instance) {
@@ -97,14 +101,14 @@ void InternetConfigDialog::ShowDialogForNetworkType(
   }
 
   InternetConfigDialog* dialog = new InternetConfigDialog(id, network_type, "");
-  dialog->ShowSystemDialog();
+  dialog->ShowSystemDialog(parent);
 }
 
 InternetConfigDialog::InternetConfigDialog(const std::string& dialog_id,
                                            const std::string& network_type,
                                            const std::string& network_id)
     : SystemWebDialogDelegate(GURL(chrome::kChromeUIIntenetConfigDialogURL),
-                              base::string16() /* title */),
+                              std::u16string() /* title */),
       dialog_id_(dialog_id),
       network_type_(network_type),
       network_id_(network_id) {}
@@ -155,14 +159,12 @@ InternetConfigDialogUI::InternetConfigDialogUI(content::WebUI* web_ui)
   AddInternetStrings(source);
   source->AddLocalizedString("title", IDS_SETTINGS_INTERNET_CONFIG);
   source->UseStringsJs();
-#if BUILDFLAG(OPTIMIZE_WEBUI)
-  source->SetDefaultResource(IDR_INTERNET_CONFIG_DIALOG_VULCANIZED_HTML);
-  source->AddResourcePath("crisper.js", IDR_INTERNET_CONFIG_DIALOG_CRISPER_JS);
-#else
-  source->SetDefaultResource(IDR_INTERNET_CONFIG_DIALOG_HTML);
-  source->AddResourcePath("internet_config_dialog.js",
-                          IDR_INTERNET_CONFIG_DIALOG_JS);
-#endif
+
+  webui::SetupWebUIDataSource(
+      source,
+      base::make_span(kInternetConfigDialogResources,
+                      kInternetConfigDialogResourcesSize),
+      IDR_INTERNET_CONFIG_DIALOG_INTERNET_CONFIG_DIALOG_CONTAINER_HTML);
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }

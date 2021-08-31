@@ -25,6 +25,7 @@ class ASH_EXPORT ContinueBrowsingChip : public views::Button {
   ContinueBrowsingChip(
       const chromeos::phonehub::BrowserTabsModel::BrowserTabMetadata& metadata,
       int index,
+      size_t total_count,
       chromeos::phonehub::UserActionRecorder* user_action_recorder);
 
   ~ContinueBrowsingChip() override;
@@ -43,6 +44,9 @@ class ASH_EXPORT ContinueBrowsingChip : public views::Button {
 
   // The index of the chip as it is ordered in the parent view.
   int index_;
+
+  // The total number of chips in the parent view.
+  size_t total_count_;
 
   chromeos::phonehub::UserActionRecorder* user_action_recorder_ = nullptr;
 };

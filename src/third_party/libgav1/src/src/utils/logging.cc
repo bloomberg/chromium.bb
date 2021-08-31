@@ -56,7 +56,7 @@ void Log(LogSeverity severity, const char* file, int line, const char* format,
   va_end(ap);
   fprintf(stderr, "\n");
 }
-#else  // !LIBGAV1_ENABLE_LOGGING
+#else   // !LIBGAV1_ENABLE_LOGGING
 void Log(LogSeverity /*severity*/, const char* /*file*/, int /*line*/,
          const char* /*format*/, ...) {}
 #endif  // LIBGAV1_ENABLE_LOGGING

@@ -19,6 +19,7 @@
 <translation id="1359897965706325498">банер</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> ставки</translation>
 <translation id="1480676835519562650">повеќе опции за избор, избрани се <ph name="SELECTED" /> од <ph name="COUNT" />.</translation>
+<translation id="1588438908519853928">Нормален</translation>
 <translation id="1589122976691792535">регион</translation>
 <translation id="1591562245178063882">Овој месец</translation>
 <translation id="1637811476055996098">Избери датотеки</translation>
@@ -84,6 +85,7 @@
 <translation id="3175736971608411871">тајмер</translation>
 <translation id="3199563858620722075">поле со комбинации</translation>
 <translation id="3220661731597678625">тековен чекор</translation>
+<translation id="3321030238473337787">Брзина на репродукција</translation>
 <translation id="3329013043687509092">Заситеност</translation>
 <translation id="3450233048674729344">Вредноста мора да биде помала или еднаква на <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">дефиниција</translation>
@@ -111,6 +113,7 @@
 <translation id="4248100235867064564">лента за мени</translation>
 <translation id="4293574643247337246">заглавие на страницата</translation>
 <translation id="4360991593054037559">Внесете важечка вредност. Двете најблиски важечки вредности се <ph name="VALID_VALUE_LOW" /> и <ph name="VALID_VALUE_HIGHER" />.</translation>
+<translation id="4371899966896349864">Ќе се сокрие менито за брзина на репродукцијата</translation>
 <translation id="4384249794467006333">Сликава нема етикета. Отворете го менито „Повеќе опции“ горе десно за да добиете описи за сликата.</translation>
 <translation id="4384583879834880242">П и О</translation>
 <translation id="4444765639179266822">Се чини дека вели: <ph name="OCR_TEXT" /></translation>
@@ -147,15 +150,18 @@
 <translation id="512758898067543763">наслов на ред</translation>
 <translation id="5143125788380636750">епилог</translation>
 <translation id="5164977714490026579">Вредноста мора да биде поголема или еднаква на <ph name="MINIMUM" />.</translation>
+<translation id="5196716972587102051">2</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> ПБ</translation>
 <translation id="5307600278924710095">Внесете дел проследен со „<ph name="ATSIGN" />“. „<ph name="INVALIDADDRESS" />“ е нецелосна.</translation>
 <translation id="5334352251556557839">Не може да пушта аудиовизуелни содржини.</translation>
 <translation id="537648784377940524">Најраниот датум (<ph name="MIN_DATE_OR_TIME" />) мора да биде пред најдоцниот датум (<ph name="MAX_DATE_OR_TIME" />).</translation>
+<translation id="5378437566635403538">Проширено, дијалогот е отворен.</translation>
 <translation id="5406322316791861025">слика</translation>
 <translation id="5425179576310518467">тековен датум</translation>
 <translation id="5453733299334684579">ставка на дрво</translation>
 <translation id="5466621249238537318">Изберете една или повеќе датотеки.</translation>
 <translation id="5468998798572797635">излези од цел екран</translation>
+<translation id="5516235301412634559">0,75</translation>
 <translation id="5516424706154626233">избирач на датум</translation>
 <translation id="5537725057119320332">Емитувај</translation>
 <translation id="5546461542133609677">вклучи звук</translation>
@@ -167,6 +173,8 @@
 <translation id="5677946354068040947">повеќе опции</translation>
 <translation id="576709008726043716">вовед</translation>
 <translation id="57838592816432529">Исклучи звук</translation>
+<translation id="5786442179789148008">Ќе се прикаже менито за брзина на репродукцијата</translation>
+<translation id="5787939484346677755">Проширено, достапни се опции за автоматско довршување.</translation>
 <translation id="5860033963881614850">Исклучено</translation>
 <translation id="588258955323874662">Цел екран</translation>
 <translation id="5888666972993069672">Сега се емитува на <ph name="DEVICE_FRIENDLY_NAME" /></translation>
@@ -174,12 +182,14 @@
 <translation id="5916664084637901428">Вклучено</translation>
 <translation id="5939518447894949180">Ресетирај</translation>
 <translation id="5966707198760109579">Седмица</translation>
+<translation id="5985507339671257014">0,5</translation>
 <translation id="5987525920412732405">копче за приспособување</translation>
 <translation id="6011459053400940133">лизгач за јачина на звук</translation>
 <translation id="6015796118275082299">Година</translation>
 <translation id="6023896073578205740">поле со список</translation>
 <translation id="6150588977291308318">библиографија</translation>
 <translation id="6164829606128959761">мерач</translation>
+<translation id="6165053282446038410">Проширено, достапни се <ph name="COUNT" /> опции за автоматско довршување.</translation>
 <translation id="6166809985690652833">поговор</translation>
 <translation id="6209276755895393898">Се чини дека е: <ph name="DESCRIPTION" /></translation>
 <translation id="6212595056017402527">тековна страница</translation>
@@ -200,6 +210,7 @@
 <translation id="6643016212128521049">Исчисти</translation>
 <translation id="668171684555832681">Друго...</translation>
 <translation id="6692633176391053278">градатор</translation>
+<translation id="6696580792574109116">избирач на месец</translation>
 <translation id="6709093583001123835">Вредноста мора да биде <ph name="VALUE" />.</translation>
 <translation id="6709570249143506788">Слаб квалитет на репродукција</translation>
 <translation id="6755330956360078551">совет за алатка</translation>
@@ -210,16 +221,19 @@
 <translation id="6843725295806269523">исклучи тон</translation>
 <translation id="6885760532393684712">директориум</translation>
 <translation id="689129560213475294">отпечаток</translation>
+<translation id="6919891270253167948">1,5</translation>
 <translation id="6934078000481955284">цитат на блок</translation>
 <translation id="693476918119313863">заглавие</translation>
 <translation id="6941933287844615239">преземи аудио-визуелни содржини</translation>
 <translation id="6981594929165378967">вметнување</translation>
+<translation id="698788488269350478">Проширено.</translation>
 <translation id="6989848892321993519">Продолжете го текстот на <ph name="MIN_CHARACTERS" /> знаци или повеќе (во моментов користите 1 знак).</translation>
 <translation id="7034405885550056553">предлог</translation>
 <translation id="709897737746224366">Усогласете го бараниот формат.</translation>
 <translation id="7102274145889307184">тековна локација</translation>
 <translation id="7118469954320184356">Нема достапен опис.</translation>
 <translation id="7139483182332611405">предговор</translation>
+<translation id="7198226213493847604">копче за скокачко мени</translation>
 <translation id="7214187073215825913">информации за содржините</translation>
 <translation id="7238347055216017155">нагласување</translation>
 <translation id="7263440858009898357">Изберете ставка од листата.</translation>
@@ -244,6 +258,7 @@
 <translation id="7745230546936012372">За да ги добиете описите на сликите што недостасуваат, отворете го контекстуалното мени.</translation>
 <translation id="7750228210027921155">Слика во слика</translation>
 <translation id="775297008183122718">Неважечка вредност</translation>
+<translation id="7782515065589691344">1,25</translation>
 <translation id="7789962463072032349">пауза</translation>
 <translation id="7802800022689234070">триаголник за откривање</translation>
 <translation id="7852167693871241274">Лизгач за нијанси</translation>
@@ -257,6 +272,7 @@
 <translation id="8105797009065549151">белешка за референца</translation>
 <translation id="811583516810654505">Се добива описот...</translation>
 <translation id="8117451130807776954">Оваа седмица</translation>
+<translation id="8131955114056917397">0,25</translation>
 <translation id="8199524924445686405">yyyy</translation>
 <translation id="8208673686607688524">Избирач на локален датум и време</translation>
 <translation id="8261464734335370856">Погрешен правопис</translation>
@@ -281,11 +297,14 @@
 <translation id="8613126697340063924">контролирај ја далечинската репродукција</translation>
 <translation id="862370744433916922">поднаслов</translation>
 <translation id="8634971699417195529">Прикажи го избирачот за месец</translation>
+<translation id="8637593834423658414">1,75</translation>
+<translation id="8668988909814782445">Прелом на ред</translation>
 <translation id="8711688047404765493">излез</translation>
 <translation id="8750798805984357768">Изберете една од опциите.</translation>
 <translation id="8808573423886751634">поглавје</translation>
 <translation id="8845239796550121995">Сега се емитува на вашиот TV</translation>
 <translation id="8851136666856101339">главно</translation>
+<translation id="8861621546968757188">копче за скокачки дијалог</translation>
 <translation id="8875657656876809964">Грешка при репродукција на видео</translation>
 <translation id="8889402386540077796">Нијанса</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>

@@ -19,7 +19,7 @@ class RegExpStack;
 // Since there is only one stack area, the Irregexp implementation is not
 // re-entrant. I.e., no regular expressions may be executed in the same thread
 // during a preempted Irregexp execution.
-class RegExpStackScope {
+class V8_NODISCARD RegExpStackScope {
  public:
   // Create and delete an instance to control the life-time of a growing stack.
 
@@ -34,7 +34,6 @@ class RegExpStackScope {
  private:
   RegExpStack* regexp_stack_;
 };
-
 
 class RegExpStack {
  public:
@@ -133,6 +132,9 @@ class RegExpStack {
   // After this, the buffer is either the default size, or it is empty, so
   // you have to call EnsureCapacity before using it again.
   void Reset();
+
+  // Whether the ThreadLocal storage has been invalidated.
+  bool IsValid() const { return thread_local_.memory_ != nullptr; }
 
   ThreadLocal thread_local_;
   Isolate* isolate_;

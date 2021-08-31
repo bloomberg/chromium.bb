@@ -9,6 +9,9 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/compositor.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/views/widget/widget.h"
@@ -40,6 +43,7 @@ TabSearchButton::TabSearchButton(TabStrip* tab_strip)
       webui_bubble_manager_(this,
                             tab_strip->controller()->GetProfile(),
                             GURL(chrome::kChromeUITabSearchURL),
+                            IDS_ACCNAME_TAB_SEARCH,
                             true),
       widget_open_timer_(base::BindRepeating([](base::TimeDelta time_elapsed) {
         base::UmaHistogramMediumTimes("Tabs.TabSearch.WindowDisplayedDuration3",
@@ -80,23 +84,25 @@ void TabSearchButton::OnWidgetVisibilityChanged(views::Widget* widget,
     GetWidget()->GetCompositor()->RequestPresentationTimeForNextFrame(
         base::BindOnce(
             [](base::TimeTicks bubble_created_time,
-               bool bubble_using_cached_webview,
+               bool bubble_using_cached_web_contents,
                const gfx::PresentationFeedback& feedback) {
               base::UmaHistogramMediumTimes(
-                  bubble_using_cached_webview
+                  bubble_using_cached_web_contents
                       ? "Tabs.TabSearch.WindowTimeToShowCachedWebView"
                       : "Tabs.TabSearch.WindowTimeToShowUncachedWebView",
                   feedback.timestamp - bubble_created_time);
             },
             *bubble_created_time_,
-            webui_bubble_manager_.bubble_using_cached_webview()));
+            webui_bubble_manager_.bubble_using_cached_web_contents()));
     bubble_created_time_.reset();
   }
 }
 
 void TabSearchButton::OnWidgetDestroying(views::Widget* widget) {
   DCHECK_EQ(webui_bubble_manager_.GetBubbleWidget(), widget);
-  observed_bubble_widget_.Remove(webui_bubble_manager_.GetBubbleWidget());
+  DCHECK(bubble_widget_observation_.IsObservingSource(
+      webui_bubble_manager_.GetBubbleWidget()));
+  bubble_widget_observation_.Reset();
   pressed_lock_.reset();
 }
 
@@ -114,8 +120,8 @@ bool TabSearchButton::ShowTabSearchBubble(bool triggered_by_keyboard_shortcut) {
 
   // There should only ever be a single bubble widget active for the
   // TabSearchButton.
-  DCHECK(!observed_bubble_widget_.IsObservingSources());
-  observed_bubble_widget_.Add(webui_bubble_manager_.GetBubbleWidget());
+  DCHECK(!bubble_widget_observation_.IsObserving());
+  bubble_widget_observation_.Observe(webui_bubble_manager_.GetBubbleWidget());
   widget_open_timer_.Reset(webui_bubble_manager_.GetBubbleWidget());
 
   // Hold the pressed lock while the |bubble_| is active.
@@ -143,3 +149,6 @@ void TabSearchButton::ButtonPressed(const ui::Event& event) {
   }
   CloseTabSearchBubble();
 }
+
+BEGIN_METADATA(TabSearchButton, NewTabButton)
+END_METADATA

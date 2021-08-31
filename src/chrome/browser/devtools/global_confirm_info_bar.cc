@@ -7,9 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/browser/infobars/confirm_infobar_creator.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/infobars/core/infobar.h"
@@ -26,14 +27,14 @@ class GlobalConfirmInfoBar::DelegateProxy : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
-  base::string16 GetLinkText() const override;
+  std::u16string GetLinkText() const override;
   GURL GetLinkURL() const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
   void InfoBarDismissed() override;
-  base::string16 GetMessageText() const override;
+  std::u16string GetMessageText() const override;
   gfx::ElideBehavior GetMessageElideBehavior() const override;
   int GetButtons() const override;
-  base::string16 GetButtonLabel(InfoBarButton button) const override;
+  std::u16string GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
 
@@ -55,7 +56,7 @@ GlobalConfirmInfoBar::DelegateProxy::GetIdentifier() const {
                           : INVALID;
 }
 
-base::string16 GlobalConfirmInfoBar::DelegateProxy::GetLinkText() const {
+std::u16string GlobalConfirmInfoBar::DelegateProxy::GetLinkText() const {
   return global_info_bar_ ? global_info_bar_->delegate_->GetLinkText()
                           : ConfirmInfoBarDelegate::GetLinkText();
 }
@@ -94,9 +95,9 @@ void GlobalConfirmInfoBar::DelegateProxy::InfoBarDismissed() {
   }
 }
 
-base::string16 GlobalConfirmInfoBar::DelegateProxy::GetMessageText() const {
+std::u16string GlobalConfirmInfoBar::DelegateProxy::GetMessageText() const {
   return global_info_bar_ ? global_info_bar_->delegate_->GetMessageText()
-                          : base::string16();
+                          : std::u16string();
 }
 
 gfx::ElideBehavior
@@ -113,7 +114,7 @@ int GlobalConfirmInfoBar::DelegateProxy::GetButtons() const {
                           : BUTTON_NONE;
 }
 
-base::string16 GlobalConfirmInfoBar::DelegateProxy::GetButtonLabel(
+std::u16string GlobalConfirmInfoBar::DelegateProxy::GetButtonLabel(
     InfoBarButton button) const {
   return global_info_bar_ ? global_info_bar_->delegate_->GetButtonLabel(button)
                           : ConfirmInfoBarDelegate::GetButtonLabel(button);
@@ -219,18 +220,18 @@ void GlobalConfirmInfoBar::MaybeAddInfoBar(content::WebContents* web_contents) {
   if (is_closing_)
     return;
 
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  // WebContents from the tab strip must have the infobar service.
-  DCHECK(infobar_service);
-  if (base::Contains(proxies_, infobar_service))
+  infobars::ContentInfoBarManager* infobar_manager =
+      infobars::ContentInfoBarManager::FromWebContents(web_contents);
+  // WebContents from the tab strip must have the infobar manager.
+  DCHECK(infobar_manager);
+  if (base::Contains(proxies_, infobar_manager))
     return;
 
   auto proxy = std::make_unique<GlobalConfirmInfoBar::DelegateProxy>(
       weak_factory_.GetWeakPtr());
   GlobalConfirmInfoBar::DelegateProxy* proxy_ptr = proxy.get();
-  infobars::InfoBar* added_bar = infobar_service->AddInfoBar(
-      infobar_service->CreateConfirmInfoBar(std::move(proxy)));
+  infobars::InfoBar* added_bar =
+      infobar_manager->AddInfoBar(CreateConfirmInfoBar(std::move(proxy)));
 
   // If AddInfoBar() fails, either infobars are globally disabled, or something
   // strange has gone wrong and we can't show the infobar on every tab. In
@@ -250,6 +251,6 @@ void GlobalConfirmInfoBar::MaybeAddInfoBar(content::WebContents* web_contents) {
   }
 
   proxy_ptr->info_bar_ = added_bar;
-  proxies_[infobar_service] = proxy_ptr;
-  infobar_service->AddObserver(this);
+  proxies_[infobar_manager] = proxy_ptr;
+  infobar_manager->AddObserver(this);
 }

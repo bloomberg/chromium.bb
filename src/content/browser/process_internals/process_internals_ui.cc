@@ -29,7 +29,7 @@ ProcessInternalsUI::ProcessInternalsUI(WebUI* web_ui)
     : WebUIController(web_ui) {
   // This WebUI does not require any process bindings, so disable it early in
   // initialization time.
-  web_ui->SetBindings(0);
+  web_ui->SetBindings(BINDINGS_POLICY_NONE);
 
   // Create a WebUIDataSource to serve the HTML/JS files to the WebUI.
   WebUIDataSource* source =
@@ -37,7 +37,7 @@ ProcessInternalsUI::ProcessInternalsUI(WebUI* web_ui)
 
   source->AddResourcePath("process_internals.js", IDR_PROCESS_INTERNALS_JS);
   source->AddResourcePath("process_internals.css", IDR_PROCESS_INTERNALS_CSS);
-  source->AddResourcePath("process_internals.mojom-lite.js",
+  source->AddResourcePath("process_internals.mojom-webui.js",
                           IDR_PROCESS_INTERNALS_MOJO_JS);
   source->SetDefaultResource(IDR_PROCESS_INTERNALS_HTML);
   source->OverrideContentSecurityPolicy(

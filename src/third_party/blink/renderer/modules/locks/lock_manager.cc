@@ -160,6 +160,11 @@ class LockManager::LockRequestImpl final
         std::move(lock_lifetime_), manager_);
     manager_->held_locks_.insert(lock);
 
+    // Note that either invoking `callback` or calling ScriptPromise::Cast to
+    // convert the resulting value to a Promise can or will execute javascript.
+    // This means that the ExecutionContext could be synchronously destroyed,
+    // and the `lock` might be released before HoldUntil is called. This is
+    // safe, as releasing a lock twice is harmless.
     ScriptState::Scope scope(script_state);
     v8::TryCatch try_catch(script_state->GetIsolate());
     v8::Maybe<ScriptValue> result = callback->Invoke(nullptr, lock);
@@ -202,10 +207,23 @@ class LockManager::LockRequestImpl final
   DISALLOW_COPY_AND_ASSIGN(LockRequestImpl);
 };
 
-LockManager::LockManager(ExecutionContext* context)
-    : ExecutionContextLifecycleObserver(context),
-      service_(context),
-      observer_(context) {}
+const char LockManager::kSupplementName[] = "LockManager";
+
+// static
+LockManager* LockManager::locks(NavigatorBase& navigator) {
+  auto* supplement = Supplement<NavigatorBase>::From<LockManager>(navigator);
+  if (!supplement) {
+    supplement = MakeGarbageCollected<LockManager>(navigator);
+    Supplement<NavigatorBase>::ProvideTo(navigator, supplement);
+  }
+  return supplement;
+}
+
+LockManager::LockManager(NavigatorBase& navigator)
+    : Supplement<NavigatorBase>(navigator),
+      ExecutionContextLifecycleObserver(navigator.GetExecutionContext()),
+      service_(navigator.GetExecutionContext()),
+      observer_(navigator.GetExecutionContext()) {}
 
 ScriptPromise LockManager::request(ScriptState* script_state,
                                    const String& name,
@@ -229,7 +247,7 @@ ScriptPromise LockManager::request(ScriptState* script_state,
 
   context->GetScheduler()->RegisterStickyFeature(
       blink::SchedulingPolicy::Feature::kWebLocks,
-      {blink::SchedulingPolicy::RecordMetricsForBackForwardCache()});
+      {blink::SchedulingPolicy::DisableBackForwardCache()});
 
   // 5. If origin is an opaque origin, then reject promise with a
   // "SecurityError" DOMException.
@@ -416,6 +434,7 @@ bool LockManager::IsPendingRequest(LockRequestImpl* request) {
 
 void LockManager::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
+  Supplement<NavigatorBase>::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
   visitor->Trace(pending_requests_);
   visitor->Trace(held_locks_);

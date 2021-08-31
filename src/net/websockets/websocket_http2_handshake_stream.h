@@ -13,7 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
+#include "base/strings/string_piece.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_export.h"
@@ -23,6 +23,7 @@
 #include "net/websockets/websocket_basic_stream_adapters.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
 #include "net/websockets/websocket_stream.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 
@@ -52,7 +53,8 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
       WebSocketStream::ConnectDelegate* connect_delegate,
       std::vector<std::string> requested_sub_protocols,
       std::vector<std::string> requested_extensions,
-      WebSocketStreamRequestAPI* request);
+      WebSocketStreamRequestAPI* request,
+      std::vector<std::string> dns_aliases);
 
   ~WebSocketHttp2HandshakeStream() override;
 
@@ -86,6 +88,8 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
   void SetPriority(RequestPriority priority) override;
   void PopulateNetErrorDetails(NetErrorDetails* details) override;
   HttpStream* RenewStreamForAuth() override;
+  const std::vector<std::string>& GetDnsAliases() const override;
+  base::StringPiece GetAcceptChViaAlps() const override;
 
   // WebSocketHandshakeStreamBase methods.
 
@@ -116,7 +120,7 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
 
   void OnFailure(const std::string& message,
                  int net_error,
-                 base::Optional<int> response_code);
+                 absl::optional<int> response_code);
 
   HandshakeResult result_;
 
@@ -177,6 +181,12 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
   // The extension parameters. The class is defined in the implementation file
   // to avoid including extension-related header files here.
   std::unique_ptr<WebSocketExtensionParams> extension_params_;
+
+  // Stores any DNS aliases for the remote endpoint. The alias chain is
+  // preserved in reverse order, from canonical name (i.e. address record name)
+  // through to query name. These are stored in the stream instead of the
+  // session due to complications related to IP-pooling.
+  std::vector<std::string> dns_aliases_;
 
   base::WeakPtrFactory<WebSocketHttp2HandshakeStream> weak_ptr_factory_{this};
 

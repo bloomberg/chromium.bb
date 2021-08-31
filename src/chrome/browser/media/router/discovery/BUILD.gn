@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
+
 assert(!is_android)
 
 static_library("discovery") {
@@ -9,14 +11,23 @@ static_library("discovery") {
   deps = [
     "//base",
     "//base:i18n",
+    "//build:chromeos_buildflags",
     "//chrome/app:generated_resources",
+    "//chrome/browser:browser_process",
+    "//chrome/browser/media/router:data_decoder_util",
+    "//chrome/browser/media/router:media_router_feature",
     "//chrome/common:constants",
     "//components/cast_channel",
+    "//components/media_router/browser",
     "//components/media_router/common",
+    "//components/media_router/common/mojom:logger",
+    "//components/net_log",
+    "//components/prefs",
     "//components/version_info",
     "//content/public/browser",
     "//content/public/common",
     "//services/network/public/cpp",
+    "//third_party/openscreen/src/cast/common/channel/proto:channel_proto",
   ]
   sources = [
     "dial/device_description_fetcher.cc",
@@ -51,10 +62,6 @@ static_library("discovery") {
     "discovery_network_list_wifi.h",
     "discovery_network_monitor.cc",
     "discovery_network_monitor.h",
-    "discovery_network_monitor_metric_observer.cc",
-    "discovery_network_monitor_metric_observer.h",
-    "discovery_network_monitor_metrics.cc",
-    "discovery_network_monitor_metrics.h",
     "mdns/cast_media_sink_service.cc",
     "mdns/cast_media_sink_service.h",
     "mdns/cast_media_sink_service_impl.cc",
@@ -73,6 +80,10 @@ static_library("discovery") {
 
   if (is_linux || is_chromeos) {
     sources += [ "discovery_network_list_wifi_linux.cc" ]
+  }
+
+  if (is_chromeos_ash) {
+    deps += [ "//chromeos/network" ]
   }
 
   if (is_posix) {

@@ -5,8 +5,6 @@
 #ifndef MEDIA_BASE_AUDIO_DECODER_H_
 #define MEDIA_BASE_AUDIO_DECODER_H_
 
-#include <string>
-
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -86,6 +84,9 @@ class MEDIA_EXPORT AudioDecoder : public Decoder {
 
   // Returns true if the decoder needs bitstream conversion before decoding.
   virtual bool NeedsBitstreamConversion() const;
+
+  // Returns the type of the decoder for statistics recording purposes.
+  virtual AudioDecoderType GetDecoderType() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioDecoder);

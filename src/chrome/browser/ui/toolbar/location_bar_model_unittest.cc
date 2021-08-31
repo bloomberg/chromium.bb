@@ -35,14 +35,6 @@
 
 namespace {
 
-// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
-// function.
-GURL GetViewSourceURL(const char* path) {
-  GURL::Replacements replace_path;
-  replace_path.SetPathStr(path);
-  return GURL("view-source:").ReplaceComponents(replace_path);
-}
-
 struct TestItem {
   GURL url;
   const std::string expected_formatted_full_url;
@@ -53,7 +45,7 @@ struct TestItem {
 const std::vector<TestItem>& TestItems() {
   static base::NoDestructor<std::vector<TestItem>> items{{
       {
-          GetViewSourceURL("http://www.google.com"),
+          GURL("view-source:http://www.google.com"),
           "view-source:www.google.com",
           "view-source:www.google.com",
       },
@@ -62,17 +54,9 @@ const std::vector<TestItem>& TestItems() {
           "",
       },
       {
-          GetViewSourceURL(chrome::kChromeUINewTabURL),
+          GURL(std::string("view-source:") + chrome::kChromeUINewTabURL),
           "view-source:" +
               content::GetWebUIURLString(chrome::kChromeUINewTabHost),
-      },
-      {
-          GURL("chrome-search://local-ntp/local-ntp.html"),
-          "",
-      },
-      {
-          GURL("view-source:chrome-search://local-ntp/local-ntp.html"),
-          "view-source:chrome-search://local-ntp/local-ntp.html",
       },
       {
           GURL("chrome-extension://fooooooooooooooooooooooooooooooo/bar.html"),
@@ -116,8 +100,8 @@ class LocationBarModelTest : public BrowserWithTestWindowTest {
  protected:
   void NavigateAndCheckText(
       const GURL& url,
-      const base::string16& expected_formatted_full_url,
-      const base::string16& expected_elided_url_for_display);
+      const std::u16string& expected_formatted_full_url,
+      const std::u16string& expected_elided_url_for_display);
   void NavigateAndCheckElided(const GURL& https_url);
 
  private:
@@ -153,8 +137,8 @@ void LocationBarModelTest::SetUp() {
 
 void LocationBarModelTest::NavigateAndCheckText(
     const GURL& url,
-    const base::string16& expected_formatted_full_url,
-    const base::string16& expected_elided_url_for_display) {
+    const std::u16string& expected_formatted_full_url,
+    const std::u16string& expected_elided_url_for_display) {
   // Check while loading.
   content::NavigationController* controller =
       &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
@@ -185,32 +169,32 @@ void LocationBarModelTest::NavigateAndCheckElided(const GURL& url) {
   controller->LoadURL(url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
                       std::string());
   LocationBarModel* location_bar_model = browser()->location_bar_model();
-  const base::string16 formatted_full_url_before(
+  const std::u16string formatted_full_url_before(
       location_bar_model->GetFormattedFullURL());
   EXPECT_LT(formatted_full_url_before.size(), url.spec().size());
   EXPECT_TRUE(base::EndsWith(formatted_full_url_before,
-                             base::string16(gfx::kEllipsisUTF16),
+                             std::u16string(gfx::kEllipsisUTF16),
                              base::CompareCase::SENSITIVE));
-  const base::string16 display_url_before(
+  const std::u16string display_url_before(
       location_bar_model->GetURLForDisplay());
   EXPECT_LT(display_url_before.size(), url.spec().size());
   EXPECT_TRUE(base::EndsWith(display_url_before,
-                             base::string16(gfx::kEllipsisUTF16),
+                             std::u16string(gfx::kEllipsisUTF16),
                              base::CompareCase::SENSITIVE));
 
   // Check after commit.
   CommitPendingLoad(controller);
-  const base::string16 formatted_full_url_after(
+  const std::u16string formatted_full_url_after(
       location_bar_model->GetFormattedFullURL());
   EXPECT_LT(formatted_full_url_after.size(), url.spec().size());
   EXPECT_TRUE(base::EndsWith(formatted_full_url_after,
-                             base::string16(gfx::kEllipsisUTF16),
+                             std::u16string(gfx::kEllipsisUTF16),
                              base::CompareCase::SENSITIVE));
-  const base::string16 display_url_after(
+  const std::u16string display_url_after(
       location_bar_model->GetURLForDisplay());
   EXPECT_LT(display_url_after.size(), url.spec().size());
   EXPECT_TRUE(base::EndsWith(display_url_after,
-                             base::string16(gfx::kEllipsisUTF16),
+                             std::u16string(gfx::kEllipsisUTF16),
                              base::CompareCase::SENSITIVE));
 }
 

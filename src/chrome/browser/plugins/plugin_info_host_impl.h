@@ -29,10 +29,6 @@ class GURL;
 class HostContentSettingsMap;
 class Profile;
 
-namespace component_updater {
-struct ComponentInfo;
-}
-
 namespace content {
 struct WebPluginInfo;
 }  // namespace content
@@ -93,7 +89,6 @@ class PluginInfoHostImpl : public chrome::mojom::PluginInfoHost {
     scoped_refptr<PluginPrefs> plugin_prefs_;
 
     BooleanPrefMember allow_outdated_plugins_;
-    BooleanPrefMember run_all_flash_in_allow_mode_;
   };
 
   PluginInfoHostImpl(int render_process_id, Profile* profile);
@@ -117,21 +112,13 @@ class PluginInfoHostImpl : public chrome::mojom::PluginInfoHost {
                      GetPluginInfoCallback callback,
                      const std::vector<content::WebPluginInfo>& plugins);
 
-  void ComponentPluginLookupDone(
-      const GetPluginInfo_Params& params,
-      chrome::mojom::PluginInfoPtr output,
-      GetPluginInfoCallback callback,
-      std::unique_ptr<PluginMetadata> plugin_metadata,
-      std::unique_ptr<component_updater::ComponentInfo> cus_plugin_info);
-
   void GetPluginInfoFinish(const GetPluginInfo_Params& params,
                            chrome::mojom::PluginInfoPtr output,
                            GetPluginInfoCallback callback,
                            std::unique_ptr<PluginMetadata> plugin_metadata);
 
   Context context_;
-  std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
-      shutdown_notifier_;
+  base::CallbackListSubscription shutdown_subscription_;
 
   base::WeakPtrFactory<PluginInfoHostImpl> weak_factory_{this};
 

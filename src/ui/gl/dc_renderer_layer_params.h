@@ -8,6 +8,7 @@
 #include <array>
 
 #include "base/memory/ref_counted.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -49,9 +50,8 @@ struct GL_EXPORT DCRendererLayerParams {
   // after applying the |quad_rect.origin()| as an offset.
   gfx::Transform transform;
 
-  // If |is_clipped| is true, then clip to |clip_rect| in root target space.
-  bool is_clipped = false;
-  gfx::Rect clip_rect;
+  // If present, then clip to |clip_rect| in root target space.
+  absl::optional<gfx::Rect> clip_rect;
 
   gfx::ProtectedVideoType protected_video_type =
       gfx::ProtectedVideoType::kClear;

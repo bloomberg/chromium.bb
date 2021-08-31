@@ -69,6 +69,27 @@ bool WriteFileInternal(const std::string& path,
 // static
 int FtraceProcfs::g_kmesg_fd = -1;  // Set by ProbesMain() in probes.cc .
 
+const char* const FtraceProcfs::kTracingPaths[] = {
+    "/sys/kernel/tracing/",
+    "/sys/kernel/debug/tracing/",
+    nullptr,
+};
+
+// static
+std::unique_ptr<FtraceProcfs> FtraceProcfs::CreateGuessingMountPoint(
+    const std::string& instance_path) {
+  std::unique_ptr<FtraceProcfs> ftrace_procfs;
+  size_t index = 0;
+  while (!ftrace_procfs && kTracingPaths[index]) {
+    std::string path = kTracingPaths[index++];
+    if (!instance_path.empty())
+      path += instance_path;
+
+    ftrace_procfs = Create(path);
+  }
+  return ftrace_procfs;
+}
+
 // static
 std::unique_ptr<FtraceProcfs> FtraceProcfs::Create(const std::string& root) {
   if (!CheckRootPath(root)) {
@@ -106,6 +127,11 @@ bool FtraceProcfs::DisableAllEvents() {
 std::string FtraceProcfs::ReadEventFormat(const std::string& group,
                                           const std::string& name) const {
   std::string path = root_ + "events/" + group + "/" + name + "/format";
+  return ReadFileIntoString(path);
+}
+
+std::string FtraceProcfs::ReadPrintkFormats() const {
+  std::string path = root_ + "printk_formats";
   return ReadFileIntoString(path);
 }
 
@@ -152,9 +178,13 @@ void FtraceProcfs::ClearTrace() {
   // on Android. The permissions to these files are configured in
   // platform/framework/native/cmds/atrace/atrace.rc.
   for (size_t cpu = 0; cpu < NumberOfCpus(); cpu++) {
-    if (!ClearFile(root_ + "per_cpu/cpu" + std::to_string(cpu) + "/trace"))
-      PERFETTO_ELOG("Failed to clear buffer for CPU %zd", cpu);
+    ClearPerCpuTrace(cpu);
   }
+}
+
+void FtraceProcfs::ClearPerCpuTrace(size_t cpu) {
+  if (!ClearFile(root_ + "per_cpu/cpu" + std::to_string(cpu) + "/trace"))
+    PERFETTO_ELOG("Failed to clear buffer for CPU %zd", cpu);
 }
 
 bool FtraceProcfs::WriteTraceMarker(const std::string& str) {
@@ -173,14 +203,14 @@ bool FtraceProcfs::SetCpuBufferSizeInPages(size_t pages) {
 
 bool FtraceProcfs::EnableTracing() {
   KernelLogWrite("perfetto: enabled ftrace\n");
-  PERFETTO_LOG("enabled ftrace");
+  PERFETTO_LOG("enabled ftrace in %s", root_.c_str());
   std::string path = root_ + "tracing_on";
   return WriteToFile(path, "1");
 }
 
 bool FtraceProcfs::DisableTracing() {
   KernelLogWrite("perfetto: disabled ftrace\n");
-  PERFETTO_LOG("disabled ftrace");
+  PERFETTO_LOG("disabled ftrace in %s", root_.c_str());
   std::string path = root_ + "tracing_on";
   return WriteToFile(path, "0");
 }
@@ -324,6 +354,23 @@ const std::set<std::string> FtraceProcfs::GetEventNamesForGroup(
     }
   }
   return names;
+}
+
+uint32_t FtraceProcfs::ReadEventId(const std::string& group,
+                                   const std::string& name) const {
+  std::string path = root_ + "events/" + group + "/" + name + "/id";
+
+  std::string str;
+  if (!base::ReadFile(path, &str))
+    return 0;
+
+  if (str.size() && str[str.size() - 1] == '\n')
+    str.resize(str.size() - 1);
+
+  base::Optional<uint32_t> id = base::StringToUInt32(str);
+  if (!id)
+    return 0;
+  return *id;
 }
 
 // static

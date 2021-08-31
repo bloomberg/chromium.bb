@@ -52,17 +52,21 @@ class ChromeLauncher {
             chromeArguments.push(`--user-data-dir=${temporaryUserDataDir}`);
         }
         let chromeExecutable = executablePath;
-        if (os.arch() === 'arm64') {
-            chromeExecutable = '/usr/bin/chromium-browser';
-        }
-        else if (!executablePath) {
-            const { missingText, executablePath } = resolveExecutablePath(this);
-            if (missingText)
-                throw new Error(missingText);
-            chromeExecutable = executablePath;
+        if (!executablePath) {
+            // Use Intel x86 builds on Apple M1 until native macOS arm64
+            // Chromium builds are available.
+            if (os.platform() !== 'darwin' && os.arch() === 'arm64') {
+                chromeExecutable = '/usr/bin/chromium-browser';
+            }
+            else {
+                const { missingText, executablePath } = resolveExecutablePath(this);
+                if (missingText)
+                    throw new Error(missingText);
+                chromeExecutable = executablePath;
+            }
         }
         const usePipe = chromeArguments.includes('--remote-debugging-pipe');
-        const runner = new BrowserRunner(chromeExecutable, chromeArguments, temporaryUserDataDir);
+        const runner = new BrowserRunner(this.product, chromeExecutable, chromeArguments, temporaryUserDataDir);
         runner.start({
             handleSIGHUP,
             handleSIGTERM,
@@ -87,10 +91,6 @@ class ChromeLauncher {
             throw error;
         }
     }
-    /**
-     * @param {!Launcher.ChromeArgOptions=} options
-     * @returns {!Array<string>}
-     */
     defaultArgs(options = {}) {
         const chromeArguments = [
             '--disable-background-networking',
@@ -103,7 +103,7 @@ class ChromeLauncher {
             '--disable-default-apps',
             '--disable-dev-shm-usage',
             '--disable-extensions',
-            '--disable-features=TranslateUI',
+            '--disable-features=Translate',
             '--disable-hang-monitor',
             '--disable-ipc-flooding-protection',
             '--disable-popup-blocking',
@@ -175,7 +175,7 @@ class FirefoxLauncher {
                 throw new Error(missingText);
             firefoxExecutable = executablePath;
         }
-        const runner = new BrowserRunner(firefoxExecutable, firefoxArguments, temporaryUserDataDir);
+        const runner = new BrowserRunner(this.product, firefoxExecutable, firefoxArguments, temporaryUserDataDir);
         runner.start({
             handleSIGHUP,
             handleSIGTERM,
@@ -337,6 +337,8 @@ class FirefoxLauncher {
             'extensions.update.notifyUser': false,
             // Make sure opening about:addons will not hit the network
             'extensions.webservice.discoverURL': `http://${server}/dummy/discoveryURL`,
+            // Force disable Fission until the Remote Agent is compatible
+            'fission.autostart': false,
             // Allow the application to have focus even it runs in the background
             'focusmanager.testmode': true,
             // Disable useragent updates
@@ -355,6 +357,8 @@ class FirefoxLauncher {
             // Prevent various error message on the console
             // jest-puppeteer asserts that no error message is emitted by the console
             'network.cookie.cookieBehavior': 0,
+            // Disable experimental feature that is only available in Nightly
+            'network.cookie.sameSite.laxByDefault': false,
             // Do not prompt for temporary redirects
             'network.http.prompt-temp-redirect': false,
             // Disable speculative connections so they are not reported as leaking
@@ -437,8 +441,10 @@ function resolveExecutablePath(launcher) {
         }
     }
     const revisionInfo = browserFetcher.revisionInfo(launcher._preferredRevision);
+    const firefoxHelp = `Run \`PUPPETEER_PRODUCT=firefox npm install\` to download a supported Firefox browser binary.`;
+    const chromeHelp = `Run \`npm install\` to download the correct Chromium revision (${launcher._preferredRevision}).`;
     const missingText = !revisionInfo.local
-        ? `Could not find browser revision ${launcher._preferredRevision}. Run "PUPPETEER_PRODUCT=firefox npm install" or "PUPPETEER_PRODUCT=firefox yarn install" to download a supported Firefox browser binary.`
+        ? `Could not find expected browser (${launcher.product}) locally. ${launcher.product === 'chrome' ? chromeHelp : firefoxHelp}`
         : null;
     return { executablePath: revisionInfo.executablePath, missingText };
 }
@@ -467,3 +473,4 @@ export default function Launcher(projectRoot, preferredRevision, isPuppeteerCore
             return new ChromeLauncher(projectRoot, preferredRevision, isPuppeteerCore);
     }
 }
+//# sourceMappingURL=Launcher.js.map

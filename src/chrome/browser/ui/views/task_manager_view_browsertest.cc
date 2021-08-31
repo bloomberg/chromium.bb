@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/task_manager/task_manager_columns.h"
@@ -38,6 +39,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/test/widget_test.h"
 
@@ -107,7 +109,7 @@ class TaskManagerViewTest : public InProcessBrowserTest {
   int FindRowForTab(content::WebContents* tab) {
     SessionID tab_id = sessions::SessionTabHelper::IdForTab(tab);
     std::unique_ptr<TaskManagerTester> tester =
-        TaskManagerTester::Create(base::Closure());
+        TaskManagerTester::Create(base::RepeatingClosure());
     for (int i = 0; i < tester->GetRowCount(); ++i) {
       if (tester->GetTabId(i) == tab_id)
         return i;
@@ -274,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerViewTest, DISABLED_SelectionConsistency) {
   // Find the three tabs we set up, in TaskManager model order. Because we have
   // not sorted the table yet, this should also be their UI display order.
   std::unique_ptr<TaskManagerTester> tester =
-      TaskManagerTester::Create(base::Closure());
+      TaskManagerTester::Create(base::RepeatingClosure());
   std::vector<content::WebContents*> tabs;
   for (int i = 0; i < tester->GetRowCount(); ++i) {
     // Filter based on our title.
@@ -381,4 +383,14 @@ IN_PROC_BROWSER_TEST_F(TaskManagerViewTest, RestoreBounds) {
   EXPECT_TRUE(display.bounds().Contains(restored_bounds));
 }
 
+IN_PROC_BROWSER_TEST_F(TaskManagerViewTest, CloseByAccelerator) {
+  chrome::ShowTaskManager(browser());
+
+  EXPECT_FALSE(GetView()->GetWidget()->IsClosed());
+
+  GetView()->AcceleratorPressed(
+      ui::Accelerator(ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN));
+
+  EXPECT_TRUE(GetView()->GetWidget()->IsClosed());
+}
 }  // namespace task_manager

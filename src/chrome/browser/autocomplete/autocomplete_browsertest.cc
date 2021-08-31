@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -46,7 +47,7 @@
 
 namespace {
 
-base::string16 AutocompleteResultAsString(const AutocompleteResult& result) {
+std::u16string AutocompleteResultAsString(const AutocompleteResult& result) {
   std::string output(base::StringPrintf("{%" PRIuS "} ", result.size()));
   for (size_t i = 0; i < result.size(); ++i) {
     AutocompleteMatch match = result.match_at(i);
@@ -83,7 +84,7 @@ class AutocompleteBrowserTest : public extensions::ExtensionBrowserTest {
     EXPECT_FALSE(location_bar->GetDestinationURL().is_valid());
     EXPECT_EQ(base::UTF8ToUTF16(url::kAboutBlankURL),
               omnibox_view->GetText());
-    EXPECT_EQ(base::string16(), omnibox_model->keyword());
+    EXPECT_EQ(std::u16string(), omnibox_model->keyword());
     EXPECT_FALSE(omnibox_model->is_keyword_hint());
     EXPECT_FALSE(omnibox_model->is_keyword_selected());
   }
@@ -105,10 +106,10 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {
   EXPECT_EQ(base::UTF8ToUTF16(url::kAboutBlankURL), omnibox_view->GetText());
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
-  omnibox_view->SetUserText(base::ASCIIToUTF16("chrome"));
+  omnibox_view->SetUserText(u"chrome");
 
   EXPECT_FALSE(location_bar->GetDestinationURL().is_valid());
-  EXPECT_EQ(base::ASCIIToUTF16("chrome"), omnibox_view->GetText());
+  EXPECT_EQ(u"chrome", omnibox_view->GetText());
   EXPECT_FALSE(omnibox_view->IsSelectAll());
 
   omnibox_view->RevertAll();
@@ -117,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {
   EXPECT_EQ(base::UTF8ToUTF16(url::kAboutBlankURL), omnibox_view->GetText());
   EXPECT_FALSE(omnibox_view->IsSelectAll());
 
-  omnibox_view->SetUserText(base::ASCIIToUTF16("chrome"));
+  omnibox_view->SetUserText(u"chrome");
   location_bar->Revert();
 
   EXPECT_FALSE(location_bar->GetDestinationURL().is_valid());
@@ -127,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {
 
 // Autocomplete test is flaky on ChromeOS.
 // http://crbug.com/52928
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_Autocomplete DISABLED_Autocomplete
 #else
 #define MAYBE_Autocomplete Autocomplete
@@ -147,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
   {
     omnibox_view->model()->SetInputInProgress(true);
     AutocompleteInput input(
-        base::ASCIIToUTF16("chrome"), metrics::OmniboxEventProto::NTP,
+        u"chrome", metrics::OmniboxEventProto::NTP,
         ChromeAutocompleteSchemeClassifier(browser()->profile()));
     input.set_prevent_inline_autocomplete(true);
     input.set_want_asynchronous_matches(false);
@@ -182,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, TabAwayRevertSelect) {
   LocationBar* location_bar = GetLocationBar();
   OmniboxView* omnibox_view = location_bar->GetOmniboxView();
   EXPECT_EQ(base::UTF8ToUTF16(url::kAboutBlankURL), omnibox_view->GetText());
-  omnibox_view->SetUserText(base::string16());
+  omnibox_view->SetUserText(std::u16string());
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
@@ -204,10 +205,10 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
 
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(browser()->profile());
-  base::string16 default_search_keyword =
+  std::u16string default_search_keyword =
       template_url_service->GetDefaultSearchProvider()->keyword();
 
-  base::string16 query_text = base::ASCIIToUTF16("foo");
+  std::u16string query_text = u"foo";
 
   size_t selection_start, selection_end;
 
@@ -217,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
 
     location_bar->FocusSearch();
     EXPECT_FALSE(location_bar->GetDestinationURL().is_valid());
-    EXPECT_EQ(base::string16(), omnibox_view->GetText());
+    EXPECT_EQ(std::u16string(), omnibox_view->GetText());
     EXPECT_EQ(default_search_keyword, omnibox_model->keyword());
     EXPECT_FALSE(omnibox_model->is_keyword_hint());
     EXPECT_TRUE(omnibox_model->is_keyword_selected());
@@ -236,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
     omnibox_view->SetUserText(query_text);
     EXPECT_FALSE(location_bar->GetDestinationURL().is_valid());
     EXPECT_EQ(query_text, omnibox_view->GetText());
-    EXPECT_EQ(base::string16(), omnibox_model->keyword());
+    EXPECT_EQ(std::u16string(), omnibox_model->keyword());
     EXPECT_FALSE(omnibox_model->is_keyword_hint());
     EXPECT_FALSE(omnibox_model->is_keyword_selected());
 
@@ -261,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
 
     location_bar->FocusSearch();
     EXPECT_FALSE(location_bar->GetDestinationURL().is_valid());
-    EXPECT_EQ(base::string16(), omnibox_view->GetText());
+    EXPECT_EQ(std::u16string(), omnibox_view->GetText());
     EXPECT_EQ(default_search_keyword, omnibox_model->keyword());
     EXPECT_FALSE(omnibox_model->is_keyword_hint());
     EXPECT_TRUE(omnibox_model->is_keyword_selected());
@@ -272,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
 
     location_bar->FocusSearch();
     EXPECT_FALSE(location_bar->GetDestinationURL().is_valid());
-    EXPECT_EQ(base::string16(), omnibox_view->GetText());
+    EXPECT_EQ(std::u16string(), omnibox_view->GetText());
     EXPECT_EQ(default_search_keyword, omnibox_model->keyword());
     EXPECT_FALSE(omnibox_model->is_keyword_hint());
     EXPECT_TRUE(omnibox_model->is_keyword_selected());
@@ -329,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
 
     EXPECT_FALSE(location_bar->GetDestinationURL().is_valid());
     EXPECT_EQ(query_text, omnibox_view->GetText());
-    EXPECT_EQ(base::string16(), omnibox_model->keyword());
+    EXPECT_EQ(std::u16string(), omnibox_model->keyword());
     EXPECT_FALSE(omnibox_model->is_keyword_hint());
     EXPECT_FALSE(omnibox_model->is_keyword_selected());
 
@@ -346,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
 
     location_bar->FocusSearch();
     EXPECT_FALSE(location_bar->GetDestinationURL().is_valid());
-    EXPECT_EQ(base::string16(), omnibox_view->GetText());
+    EXPECT_EQ(std::u16string(), omnibox_view->GetText());
     EXPECT_EQ(default_search_keyword, omnibox_model->keyword());
     EXPECT_FALSE(omnibox_model->is_keyword_hint());
     EXPECT_TRUE(omnibox_model->is_keyword_selected());

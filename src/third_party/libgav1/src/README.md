@@ -20,7 +20,15 @@ information on the AV1 video format can be found at
     From within the libgav1 directory:
 
     ```shell
-      $ git clone https://github.com/abseil/abseil-cpp.git third_party/abseil-cpp
+    $ git clone https://github.com/abseil/abseil-cpp.git third_party/abseil-cpp
+    ```
+
+4.  (Optional) [GoogleTest](https://github.com/google/googletest)
+
+    From within the libgav1 directory:
+
+    ```shell
+    $ git clone https://github.com/google/googletest.git third_party/googletest
     ```
 
 ### Compile
@@ -39,10 +47,13 @@ Configuration options:
     [symbol reduction](#symbol-reduction) in an optimized build to keep all
     versions of dsp functions available. Automatically defined in
     `src/dsp/dsp.h` if unset.
+*   `LIBGAV1_ENABLE_AVX2`: define to a non-zero value to enable avx2
+    optimizations. Automatically defined in `src/utils/cpu.h` if unset.
 *   `LIBGAV1_ENABLE_NEON`: define to a non-zero value to enable NEON
-    optimizations. Automatically defined in `src/dsp/dsp.h` if unset.
+    optimizations. Automatically defined in `src/utils/cpu.h` if unset.
 *   `LIBGAV1_ENABLE_SSE4_1`: define to a non-zero value to enable sse4.1
-    optimizations. Automatically defined in `src/dsp/dsp.h` if unset.
+    optimizations. Automatically defined in `src/utils/cpu.h` if unset. Note
+    setting this to 0 will also disable AVX2.
 *   `LIBGAV1_ENABLE_LOGGING`: define to 0/1 to control debug logging.
     Automatically defined in `src/utils/logging.h` if unset.
 *   `LIBGAV1_EXAMPLES_ENABLE_LOGGING`: define to 0/1 to control error logging in

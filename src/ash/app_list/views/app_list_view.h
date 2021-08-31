@@ -9,17 +9,18 @@
 #include <string>
 #include <vector>
 
-#include "ash/app_list/app_list_export.h"
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
+#include "ash/ash_export.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window_observer.h"
+#include "ui/events/event.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -44,7 +45,7 @@ class AppListConfig;
 class AppListMainView;
 class AppListModel;
 class AppsGridView;
-class BoundsAnimationObserver;
+class StateTransitionNotifier;
 class PaginationModel;
 class SearchBoxView;
 class SearchModel;
@@ -64,8 +65,8 @@ constexpr int kAppListThresholdDenominator = 3;
 // and hosts a AppsGridView and passes AppListModel to it for display.
 // TODO(newcomer|weidongg): Organize the cc file to match the order of
 // definitions in this header.
-class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
-                                    public aura::WindowObserver {
+class ASH_EXPORT AppListView : public views::WidgetDelegateView,
+                               public aura::WindowObserver {
  public:
   class TestApi {
    public:
@@ -117,6 +118,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   static constexpr int kAppListAnimationDurationMs = 200;
   static constexpr int kAppListAnimationDurationFromFullscreenMs = 250;
 
+  // The scroll offset in order to transition from PEEKING to FULLSCREEN
+  static constexpr int kAppListMinScrollToSwitchStates = 20;
+
   // Does not take ownership of |delegate|.
   explicit AppListView(AppListViewDelegate* delegate);
   ~AppListView() override;
@@ -150,7 +154,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   void InitChildWidget();
 
   // Sets the state of all child views to be re-shown, then shows the view.
-  void Show(bool is_side_shelf);
+  // |preferred_state| - The initial app list view state. It may be overridden
+  // depending on device state. For example, peeking state is not supported in
+  // tablet mode, or for side shelf.
+  void Show(AppListViewState preferred_state, bool is_side_shelf);
 
   // If |drag_and_drop_host| is not nullptr it will be called upon drag and drop
   // operations outside the application list. This has to be called after
@@ -183,6 +190,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   const char* GetClassName() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void Layout() override;
+  void OnThemeChanged() override;
 
   // WidgetDelegate:
   ax::mojom::Role GetAccessibleWindowRole() override;
@@ -200,7 +208,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   void OnWallpaperColorsChanged();
 
   // Handles scroll events from various sources.
-  bool HandleScroll(const gfx::Vector2d& offset, ui::EventType type);
+  bool HandleScroll(const gfx::Point& location,
+                    const gfx::Vector2d& offset,
+                    ui::EventType type);
 
   // Changes the app list state.
   void SetState(AppListViewState new_state);
@@ -313,9 +323,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
 
-  // Called when state transition animation is completed.
-  void OnStateTransitionAnimationCompleted();
-
   void OnTabletModeAnimationTransitionNotified(
       TabletModeAnimationTransition animation_transition);
 
@@ -323,7 +330,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   void EndDragFromShelf(AppListViewState app_list_state);
 
   // Moves the AppListView off screen and calls a layout if needed.
-  void OnBoundsAnimationCompleted();
+  void OnBoundsAnimationCompleted(AppListViewState target_state);
 
   // Returns the expected tile bounds in screen coordinates the provided app
   // grid item ID , if the item is in the first apps grid page. Otherwise, it
@@ -487,6 +494,15 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Returns true if scroll events should be ignored.
   bool ShouldIgnoreScrollEvents();
 
+  // Returns true if we should dismiss app list. We use the |location|,
+  // |offset|, and |type| of the scroll event. |is_in_vertical_bounds| indicates
+  // whether the event took place within the vertical bounds of the apps grid,
+  // since this affects dismissal behavior.
+  bool ShouldScrollDismissAppList(const gfx::Point& location,
+                                  const gfx::Vector2d& offset,
+                                  ui::EventType type,
+                                  bool is_in_vertical_bounds);
+
   // Returns preferred y of fullscreen widget bounds in parent window for the
   // specified state.
   int GetPreferredWidgetYForState(AppListViewState state) const;
@@ -519,10 +535,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   AppListBackgroundShieldView* app_list_background_shield_ = nullptr;
 
   // The time the AppListView was requested to be shown. Used for metrics.
-  base::Optional<base::Time> time_shown_;
+  absl::optional<base::Time> time_shown_;
 
-  // Whether tablet mode is active.
-  bool is_tablet_mode_ = false;
   // Whether the shelf is oriented on the side.
   bool is_side_shelf_ = false;
 
@@ -556,12 +570,14 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   const bool is_background_blur_enabled_;
   // The state of the app list, controlled via SetState().
   AppListViewState app_list_state_ = AppListViewState::kClosed;
+  // Set to target app list state while `SetState()` is being handled.
+  AppListViewState target_app_list_state_ = AppListViewState::kClosed;
 
   // The timestamp when the ongoing animation ends.
   base::TimeTicks animation_end_timestamp_;
 
   // An observer to notify AppListView of bounds animation completion.
-  std::unique_ptr<BoundsAnimationObserver> bounds_animation_observer_;
+  std::unique_ptr<StateTransitionNotifier> state_transition_notifier_;
 
   // Metric reporter for state change animations.
   const std::unique_ptr<StateAnimationMetricsReporter>
@@ -591,7 +607,16 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // goes off when the app list is not visible after a set amount of time.
   base::OneShotTimer page_reset_timer_;
 
-  base::WeakPtrFactory<AppListView> weak_ptr_factory_{this};
+  // Used to cancel in progress `SetState()` request if `SetState()` gets called
+  // again. Updating children state during app list view state update may cause
+  // `SetState()` to get called again - for example, if exiting search results
+  // page causes virtual keyboard to get hidden, and work area bounds available
+  // to the app list change.
+  // When calling methods that may cause nested `SetState()` call, `SetState()`
+  // will bind a weak ptr to this factory, and it will bail out early if it
+  // detects that `SetState()` got called again (in which case the weak ptr will
+  // be invalidated).
+  base::WeakPtrFactory<AppListView> set_state_weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppListView);
 };

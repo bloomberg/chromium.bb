@@ -6,10 +6,10 @@
 #define CHROMEOS_COMPONENTS_PHONEHUB_BROWSER_TABS_MODEL_H_
 
 #include <ostream>
+#include <string>
 
-#include "base/optional.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
@@ -23,7 +23,7 @@ class BrowserTabsModel {
 
   struct BrowserTabMetadata {
     BrowserTabMetadata(GURL url,
-                       const base::string16& title,
+                       const std::u16string& title,
                        base::Time last_accessed_timestamp,
                        const gfx::Image& favicon);
     BrowserTabMetadata(const BrowserTabMetadata& other);
@@ -33,7 +33,7 @@ class BrowserTabsModel {
     bool operator<(const BrowserTabMetadata& other) const;
 
     GURL url;
-    base::string16 title;
+    std::u16string title;
     base::Time last_accessed_timestamp;
     gfx::Image favicon;
   };

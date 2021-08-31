@@ -51,19 +51,19 @@ std::unique_ptr<NativeMessagingHostManifest> NativeMessagingHostManifest::Load(
   std::unique_ptr<base::Value> parsed =
       deserializer.Deserialize(NULL, error_message);
   if (!parsed) {
-    return std::unique_ptr<NativeMessagingHostManifest>();
+    return nullptr;
   }
 
   base::DictionaryValue* dictionary;
   if (!parsed->GetAsDictionary(&dictionary)) {
     *error_message = "Invalid manifest file.";
-    return std::unique_ptr<NativeMessagingHostManifest>();
+    return nullptr;
   }
 
   std::unique_ptr<NativeMessagingHostManifest> result(
       new NativeMessagingHostManifest());
   if (!result->Parse(dictionary, error_message)) {
-    return std::unique_ptr<NativeMessagingHostManifest>();
+    return nullptr;
   }
 
   return result;
@@ -110,10 +110,9 @@ bool NativeMessagingHostManifest::Parse(base::DictionaryValue* dictionary,
     return false;
   }
   allowed_origins_.ClearPatterns();
-  for (auto it = allowed_origins_list->begin();
-       it != allowed_origins_list->end(); ++it) {
+  for (const auto& entry : allowed_origins_list->GetList()) {
     std::string pattern_string;
-    if (!it->GetAsString(&pattern_string)) {
+    if (!entry.GetAsString(&pattern_string)) {
       *error_message = "allowed_origins must be list of strings.";
       return false;
     }

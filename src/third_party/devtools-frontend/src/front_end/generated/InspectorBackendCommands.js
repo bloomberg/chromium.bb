@@ -52,6 +52,7 @@ export function registerCommands(inspectorBackend) {
     Labelfor: 'labelfor',
     Labelwrapped: 'labelwrapped',
     Legend: 'legend',
+    Rubyannotation: 'rubyannotation',
     Tablecaption: 'tablecaption',
     Title: 'title',
     Other: 'other'
@@ -108,7 +109,10 @@ export function registerCommands(inspectorBackend) {
         {'name': 'fetchRelatives', 'type': 'boolean', 'optional': true}
       ],
       ['nodes']);
-  inspectorBackend.registerCommand('Accessibility.getFullAXTree', [], ['nodes']);
+  inspectorBackend.registerCommand(
+      'Accessibility.getFullAXTree', [{'name': 'max_depth', 'type': 'number', 'optional': true}], ['nodes']);
+  inspectorBackend.registerCommand(
+      'Accessibility.getChildAXNodes', [{'name': 'id', 'type': 'string', 'optional': false}], ['nodes']);
   inspectorBackend.registerCommand(
       'Accessibility.queryAXTree',
       [
@@ -244,12 +248,30 @@ export function registerCommands(inspectorBackend) {
     KTrustedTypesSinkViolation: 'kTrustedTypesSinkViolation',
     KTrustedTypesPolicyViolation: 'kTrustedTypesPolicyViolation'
   });
+  inspectorBackend.registerEnum(
+      'Audits.SharedArrayBufferIssueType', {TransferIssue: 'TransferIssue', CreationIssue: 'CreationIssue'});
+  inspectorBackend.registerEnum(
+      'Audits.TwaQualityEnforcementViolationType',
+      {KHttpError: 'kHttpError', KUnavailableOffline: 'kUnavailableOffline', KDigitalAssetLinks: 'kDigitalAssetLinks'});
+  inspectorBackend.registerEnum('Audits.AttributionReportingIssueType', {
+    PermissionPolicyDisabled: 'PermissionPolicyDisabled',
+    InvalidAttributionSourceEventId: 'InvalidAttributionSourceEventId',
+    InvalidAttributionData: 'InvalidAttributionData',
+    AttributionSourceUntrustworthyOrigin: 'AttributionSourceUntrustworthyOrigin',
+    AttributionUntrustworthyOrigin: 'AttributionUntrustworthyOrigin'
+  });
   inspectorBackend.registerEnum('Audits.InspectorIssueCode', {
     SameSiteCookieIssue: 'SameSiteCookieIssue',
     MixedContentIssue: 'MixedContentIssue',
     BlockedByResponseIssue: 'BlockedByResponseIssue',
     HeavyAdIssue: 'HeavyAdIssue',
-    ContentSecurityPolicyIssue: 'ContentSecurityPolicyIssue'
+    ContentSecurityPolicyIssue: 'ContentSecurityPolicyIssue',
+    SharedArrayBufferIssue: 'SharedArrayBufferIssue',
+    TrustedWebActivityIssue: 'TrustedWebActivityIssue',
+    LowTextContrastIssue: 'LowTextContrastIssue',
+    CorsIssue: 'CorsIssue',
+    AttributionReportingIssue: 'AttributionReportingIssue',
+    QuirksModeIssue: 'QuirksModeIssue'
   });
   inspectorBackend.registerEvent('Audits.issueAdded', ['issue']);
   inspectorBackend.registerEnum('Audits.GetEncodedResponseRequestEncoding', {Webp: 'webp', Jpeg: 'jpeg', Png: 'png'});
@@ -264,6 +286,8 @@ export function registerCommands(inspectorBackend) {
       ['body', 'originalSize', 'encodedSize']);
   inspectorBackend.registerCommand('Audits.disable', [], []);
   inspectorBackend.registerCommand('Audits.enable', [], []);
+  inspectorBackend.registerCommand(
+      'Audits.checkContrast', [{'name': 'reportAAA', 'type': 'boolean', 'optional': true}], []);
 
   // BackgroundService.
   inspectorBackend.registerEnum('BackgroundService.ServiceName', {
@@ -301,6 +325,7 @@ export function registerCommands(inspectorBackend) {
     BackgroundFetch: 'backgroundFetch',
     ClipboardReadWrite: 'clipboardReadWrite',
     ClipboardSanitizedWrite: 'clipboardSanitizedWrite',
+    DisplayCapture: 'displayCapture',
     DurableStorage: 'durableStorage',
     Flash: 'flash',
     Geolocation: 'geolocation',
@@ -321,6 +346,10 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEnum('Browser.PermissionSetting', {Granted: 'granted', Denied: 'denied', Prompt: 'prompt'});
   inspectorBackend.registerEnum(
       'Browser.BrowserCommandId', {OpenTabSearch: 'openTabSearch', CloseTabSearch: 'closeTabSearch'});
+  inspectorBackend.registerEvent('Browser.downloadWillBegin', ['frameId', 'guid', 'url', 'suggestedFilename']);
+  inspectorBackend.registerEnum(
+      'Browser.DownloadProgressEventState', {InProgress: 'inProgress', Completed: 'completed', Canceled: 'canceled'});
+  inspectorBackend.registerEvent('Browser.downloadProgress', ['guid', 'totalBytes', 'receivedBytes', 'state']);
   inspectorBackend.registerCommand(
       'Browser.setPermission',
       [
@@ -348,7 +377,15 @@ export function registerCommands(inspectorBackend) {
       [
         {'name': 'behavior', 'type': 'string', 'optional': false},
         {'name': 'browserContextId', 'type': 'string', 'optional': true},
-        {'name': 'downloadPath', 'type': 'string', 'optional': true}
+        {'name': 'downloadPath', 'type': 'string', 'optional': true},
+        {'name': 'eventsEnabled', 'type': 'boolean', 'optional': true}
+      ],
+      []);
+  inspectorBackend.registerCommand(
+      'Browser.cancelDownload',
+      [
+        {'name': 'guid', 'type': 'string', 'optional': false},
+        {'name': 'browserContextId', 'type': 'string', 'optional': true}
       ],
       []);
   inspectorBackend.registerCommand('Browser.close', [], []);
@@ -543,6 +580,8 @@ export function registerCommands(inspectorBackend) {
     Backdrop: 'backdrop',
     Selection: 'selection',
     TargetText: 'target-text',
+    SpellingError: 'spelling-error',
+    GrammarError: 'grammar-error',
     FirstLineInherited: 'first-line-inherited',
     Scrollbar: 'scrollbar',
     ScrollbarThumb: 'scrollbar-thumb',
@@ -782,6 +821,10 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEnum(
       'DOMDebugger.DOMBreakpointType',
       {SubtreeModified: 'subtree-modified', AttributeModified: 'attribute-modified', NodeRemoved: 'node-removed'});
+  inspectorBackend.registerEnum('DOMDebugger.CSPViolationType', {
+    TrustedtypeSinkViolation: 'trustedtype-sink-violation',
+    TrustedtypePolicyViolation: 'trustedtype-policy-violation'
+  });
   inspectorBackend.registerCommand(
       'DOMDebugger.getEventListeners',
       [
@@ -804,6 +847,8 @@ export function registerCommands(inspectorBackend) {
       'DOMDebugger.removeInstrumentationBreakpoint', [{'name': 'eventName', 'type': 'string', 'optional': false}], []);
   inspectorBackend.registerCommand(
       'DOMDebugger.removeXHRBreakpoint', [{'name': 'url', 'type': 'string', 'optional': false}], []);
+  inspectorBackend.registerCommand(
+      'DOMDebugger.setBreakOnCSPViolation', [{'name': 'violationTypes', 'type': 'object', 'optional': false}], []);
   inspectorBackend.registerCommand(
       'DOMDebugger.setDOMBreakpoint',
       [{'name': 'nodeId', 'type': 'number', 'optional': false}, {'name': 'type', 'type': 'string', 'optional': false}],
@@ -837,7 +882,9 @@ export function registerCommands(inspectorBackend) {
       [
         {'name': 'computedStyles', 'type': 'object', 'optional': false},
         {'name': 'includePaintOrder', 'type': 'boolean', 'optional': true},
-        {'name': 'includeDOMRects', 'type': 'boolean', 'optional': true}
+        {'name': 'includeDOMRects', 'type': 'boolean', 'optional': true},
+        {'name': 'includeBlendedBackgroundColors', 'type': 'boolean', 'optional': true},
+        {'name': 'includeTextColorOpacities', 'type': 'boolean', 'optional': true}
       ],
       ['documents', 'strings']);
 
@@ -902,7 +949,7 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEnum(
       'Emulation.VirtualTimePolicy',
       {Advance: 'advance', Pause: 'pause', PauseIfNetworkFetchesPending: 'pauseIfNetworkFetchesPending'});
-  inspectorBackend.registerEnum('Emulation.DisabledImageType', {Avif: 'avif', Webp: 'webp'});
+  inspectorBackend.registerEnum('Emulation.DisabledImageType', {Avif: 'avif', Jxl: 'jxl', Webp: 'webp'});
   inspectorBackend.registerEvent('Emulation.virtualTimeBudgetExpired', []);
   inspectorBackend.registerCommand('Emulation.canEmulate', [], ['result']);
   inspectorBackend.registerCommand('Emulation.clearDeviceMetricsOverride', [], []);
@@ -1108,6 +1155,18 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEnum(
       'Input.MouseButton',
       {None: 'none', Left: 'left', Middle: 'middle', Right: 'right', Back: 'back', Forward: 'forward'});
+  inspectorBackend.registerEvent('Input.dragIntercepted', ['data']);
+  inspectorBackend.registerEnum(
+      'Input.DispatchDragEventRequestType',
+      {DragEnter: 'dragEnter', DragOver: 'dragOver', Drop: 'drop', DragCancel: 'dragCancel'});
+  inspectorBackend.registerCommand(
+      'Input.dispatchDragEvent',
+      [
+        {'name': 'type', 'type': 'string', 'optional': false}, {'name': 'x', 'type': 'number', 'optional': false},
+        {'name': 'y', 'type': 'number', 'optional': false}, {'name': 'data', 'type': 'object', 'optional': false},
+        {'name': 'modifiers', 'type': 'number', 'optional': true}
+      ],
+      []);
   inspectorBackend.registerEnum(
       'Input.DispatchKeyEventRequestType',
       {KeyDown: 'keyDown', KeyUp: 'keyUp', RawKeyDown: 'rawKeyDown', Char: 'char'});
@@ -1184,6 +1243,8 @@ export function registerCommands(inspectorBackend) {
       []);
   inspectorBackend.registerCommand(
       'Input.setIgnoreInputEvents', [{'name': 'ignore', 'type': 'boolean', 'optional': false}], []);
+  inspectorBackend.registerCommand(
+      'Input.setInterceptDrags', [{'name': 'enabled', 'type': 'boolean', 'optional': false}], []);
   inspectorBackend.registerCommand(
       'Input.synthesizePinchGesture',
       [
@@ -1338,6 +1399,7 @@ export function registerCommands(inspectorBackend) {
     SignedExchange: 'SignedExchange',
     Ping: 'Ping',
     CSPViolationReport: 'CSPViolationReport',
+    Preflight: 'Preflight',
     Other: 'Other'
   });
   inspectorBackend.registerEnum('Network.ErrorReason', {
@@ -1370,6 +1432,8 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEnum('Network.CookieSameSite', {Strict: 'Strict', Lax: 'Lax', None: 'None'});
   inspectorBackend.registerEnum('Network.CookiePriority', {Low: 'Low', Medium: 'Medium', High: 'High'});
   inspectorBackend.registerEnum(
+      'Network.CookieSourceScheme', {Unset: 'Unset', NonSecure: 'NonSecure', Secure: 'Secure'});
+  inspectorBackend.registerEnum(
       'Network.ResourcePriority',
       {VeryLow: 'VeryLow', Low: 'Low', Medium: 'Medium', High: 'High', VeryHigh: 'VeryHigh'});
   inspectorBackend.registerEnum('Network.RequestReferrerPolicy', {
@@ -1393,7 +1457,6 @@ export function registerCommands(inspectorBackend) {
     Inspector: 'inspector',
     SubresourceFilter: 'subresource-filter',
     ContentType: 'content-type',
-    CollapsedByClient: 'collapsed-by-client',
     CoepFrameResourceNeedsCoepHeader: 'coep-frame-resource-needs-coep-header',
     CoopSandboxedIframeCannotNavigateToCoopPage: 'coop-sandboxed-iframe-cannot-navigate-to-coop-page',
     CorpNotSameOrigin: 'corp-not-same-origin',
@@ -1425,7 +1488,8 @@ export function registerCommands(inspectorBackend) {
     MethodDisallowedByPreflightResponse: 'MethodDisallowedByPreflightResponse',
     HeaderDisallowedByPreflightResponse: 'HeaderDisallowedByPreflightResponse',
     RedirectContainsCredentials: 'RedirectContainsCredentials',
-    InsecurePrivateNetwork: 'InsecurePrivateNetwork'
+    InsecurePrivateNetwork: 'InsecurePrivateNetwork',
+    NoCorsRedirectModeNotFollow: 'NoCorsRedirectModeNotFollow'
   });
   inspectorBackend.registerEnum(
       'Network.ServiceWorkerResponseSource',
@@ -1433,9 +1497,14 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEnum('Network.TrustTokenParamsRefreshPolicy', {UseCached: 'UseCached', Refresh: 'Refresh'});
   inspectorBackend.registerEnum(
       'Network.TrustTokenOperationType', {Issuance: 'Issuance', Redemption: 'Redemption', Signing: 'Signing'});
-  inspectorBackend.registerEnum(
-      'Network.InitiatorType',
-      {Parser: 'parser', Script: 'script', Preload: 'preload', SignedExchange: 'SignedExchange', Other: 'other'});
+  inspectorBackend.registerEnum('Network.InitiatorType', {
+    Parser: 'parser',
+    Script: 'script',
+    Preload: 'preload',
+    SignedExchange: 'SignedExchange',
+    Preflight: 'preflight',
+    Other: 'other'
+  });
   inspectorBackend.registerEnum('Network.SetCookieBlockedReason', {
     SecureOnly: 'SecureOnly',
     SameSiteStrict: 'SameSiteStrict',
@@ -1451,7 +1520,9 @@ export function registerCommands(inspectorBackend) {
     UnknownError: 'UnknownError',
     SchemefulSameSiteStrict: 'SchemefulSameSiteStrict',
     SchemefulSameSiteLax: 'SchemefulSameSiteLax',
-    SchemefulSameSiteUnspecifiedTreatedAsLax: 'SchemefulSameSiteUnspecifiedTreatedAsLax'
+    SchemefulSameSiteUnspecifiedTreatedAsLax: 'SchemefulSameSiteUnspecifiedTreatedAsLax',
+    SamePartyFromCrossPartyContext: 'SamePartyFromCrossPartyContext',
+    SamePartyConflictsWithOtherAttributes: 'SamePartyConflictsWithOtherAttributes'
   });
   inspectorBackend.registerEnum('Network.CookieBlockedReason', {
     SecureOnly: 'SecureOnly',
@@ -1465,7 +1536,8 @@ export function registerCommands(inspectorBackend) {
     UnknownError: 'UnknownError',
     SchemefulSameSiteStrict: 'SchemefulSameSiteStrict',
     SchemefulSameSiteLax: 'SchemefulSameSiteLax',
-    SchemefulSameSiteUnspecifiedTreatedAsLax: 'SchemefulSameSiteUnspecifiedTreatedAsLax'
+    SchemefulSameSiteUnspecifiedTreatedAsLax: 'SchemefulSameSiteUnspecifiedTreatedAsLax',
+    SamePartyFromCrossPartyContext: 'SamePartyFromCrossPartyContext'
   });
   inspectorBackend.registerEnum('Network.AuthChallengeSource', {Server: 'Server', Proxy: 'Proxy'});
   inspectorBackend.registerEnum(
@@ -1480,13 +1552,23 @@ export function registerCommands(inspectorBackend) {
     SignatureValidityUrl: 'signatureValidityUrl',
     SignatureTimestamps: 'signatureTimestamps'
   });
+  inspectorBackend.registerEnum('Network.ContentEncoding', {Deflate: 'deflate', Gzip: 'gzip', Br: 'br'});
+  inspectorBackend.registerEnum('Network.PrivateNetworkRequestPolicy', {
+    Allow: 'Allow',
+    BlockFromInsecureToMorePrivate: 'BlockFromInsecureToMorePrivate',
+    WarnFromInsecureToMorePrivate: 'WarnFromInsecureToMorePrivate'
+  });
+  inspectorBackend.registerEnum(
+      'Network.IPAddressSpace', {Local: 'Local', Private: 'Private', Public: 'Public', Unknown: 'Unknown'});
   inspectorBackend.registerEnum('Network.CrossOriginOpenerPolicyValue', {
     SameOrigin: 'SameOrigin',
     SameOriginAllowPopups: 'SameOriginAllowPopups',
     UnsafeNone: 'UnsafeNone',
     SameOriginPlusCoep: 'SameOriginPlusCoep'
   });
-  inspectorBackend.registerEnum('Network.CrossOriginEmbedderPolicyValue', {None: 'None', RequireCorp: 'RequireCorp'});
+  inspectorBackend.registerEnum(
+      'Network.CrossOriginEmbedderPolicyValue',
+      {None: 'None', CorsOrCredentialless: 'CorsOrCredentialless', RequireCorp: 'RequireCorp'});
   inspectorBackend.registerEvent('Network.dataReceived', ['requestId', 'timestamp', 'dataLength', 'encodedDataLength']);
   inspectorBackend.registerEvent(
       'Network.eventSourceMessageReceived', ['requestId', 'timestamp', 'eventName', 'eventId', 'data']);
@@ -1516,9 +1598,32 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEvent('Network.webSocketHandshakeResponseReceived', ['requestId', 'timestamp', 'response']);
   inspectorBackend.registerEvent(
       'Network.webSocketWillSendHandshakeRequest', ['requestId', 'timestamp', 'wallTime', 'request']);
-  inspectorBackend.registerEvent('Network.requestWillBeSentExtraInfo', ['requestId', 'associatedCookies', 'headers']);
+  inspectorBackend.registerEvent('Network.webTransportCreated', ['transportId', 'url', 'timestamp', 'initiator']);
+  inspectorBackend.registerEvent('Network.webTransportConnectionEstablished', ['transportId', 'timestamp']);
+  inspectorBackend.registerEvent('Network.webTransportClosed', ['transportId', 'timestamp']);
   inspectorBackend.registerEvent(
-      'Network.responseReceivedExtraInfo', ['requestId', 'blockedCookies', 'headers', 'headersText']);
+      'Network.requestWillBeSentExtraInfo', ['requestId', 'associatedCookies', 'headers', 'clientSecurityState']);
+  inspectorBackend.registerEvent(
+      'Network.responseReceivedExtraInfo',
+      ['requestId', 'blockedCookies', 'headers', 'resourceIPAddressSpace', 'headersText']);
+  inspectorBackend.registerEnum('Network.TrustTokenOperationDoneEventStatus', {
+    Ok: 'Ok',
+    InvalidArgument: 'InvalidArgument',
+    FailedPrecondition: 'FailedPrecondition',
+    ResourceExhausted: 'ResourceExhausted',
+    AlreadyExists: 'AlreadyExists',
+    Unavailable: 'Unavailable',
+    BadResponse: 'BadResponse',
+    InternalError: 'InternalError',
+    UnknownError: 'UnknownError',
+    FulfilledLocally: 'FulfilledLocally'
+  });
+  inspectorBackend.registerEvent(
+      'Network.trustTokenOperationDone',
+      ['status', 'type', 'requestId', 'topLevelOrigin', 'issuerOrigin', 'issuedTokenCount']);
+  inspectorBackend.registerCommand(
+      'Network.setAcceptedEncodings', [{'name': 'encodings', 'type': 'object', 'optional': false}], []);
+  inspectorBackend.registerCommand('Network.clearAcceptedEncodingsOverride', [], []);
   inspectorBackend.registerCommand('Network.canClearBrowserCache', [], ['result']);
   inspectorBackend.registerCommand('Network.canClearBrowserCookies', [], ['result']);
   inspectorBackend.registerCommand('Network.canEmulateNetworkConditions', [], ['result']);
@@ -1604,7 +1709,10 @@ export function registerCommands(inspectorBackend) {
         {'name': 'httpOnly', 'type': 'boolean', 'optional': true},
         {'name': 'sameSite', 'type': 'string', 'optional': true},
         {'name': 'expires', 'type': 'number', 'optional': true},
-        {'name': 'priority', 'type': 'string', 'optional': true}
+        {'name': 'priority', 'type': 'string', 'optional': true},
+        {'name': 'sameParty', 'type': 'boolean', 'optional': true},
+        {'name': 'sourceScheme', 'type': 'string', 'optional': true},
+        {'name': 'sourcePort', 'type': 'number', 'optional': true}
       ],
       ['success']);
   inspectorBackend.registerCommand(
@@ -1643,6 +1751,7 @@ export function registerCommands(inspectorBackend) {
 
   // Overlay.
   inspectorBackend.registerEnum('Overlay.LineStylePattern', {Dashed: 'dashed', Dotted: 'dotted'});
+  inspectorBackend.registerEnum('Overlay.ContrastAlgorithm', {Aa: 'aa', Aaa: 'aaa', Apca: 'apca'});
   inspectorBackend.registerEnum('Overlay.ColorFormat', {Rgb: 'rgb', Hsl: 'hsl', Hex: 'hex'});
   inspectorBackend.registerEnum('Overlay.InspectMode', {
     SearchForNode: 'searchForNode',
@@ -1735,6 +1844,11 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerCommand(
       'Overlay.setShowGridOverlays', [{'name': 'gridNodeHighlightConfigs', 'type': 'object', 'optional': false}], []);
   inspectorBackend.registerCommand(
+      'Overlay.setShowFlexOverlays', [{'name': 'flexNodeHighlightConfigs', 'type': 'object', 'optional': false}], []);
+  inspectorBackend.registerCommand(
+      'Overlay.setShowScrollSnapOverlays',
+      [{'name': 'scrollSnapHighlightConfigs', 'type': 'object', 'optional': false}], []);
+  inspectorBackend.registerCommand(
       'Overlay.setShowPaintRects', [{'name': 'result', 'type': 'boolean', 'optional': false}], []);
   inspectorBackend.registerCommand(
       'Overlay.setShowLayoutShiftRegions', [{'name': 'result', 'type': 'boolean', 'optional': false}], []);
@@ -1742,6 +1856,8 @@ export function registerCommands(inspectorBackend) {
       'Overlay.setShowScrollBottleneckRects', [{'name': 'show', 'type': 'boolean', 'optional': false}], []);
   inspectorBackend.registerCommand(
       'Overlay.setShowHitTestBorders', [{'name': 'show', 'type': 'boolean', 'optional': false}], []);
+  inspectorBackend.registerCommand(
+      'Overlay.setShowWebVitals', [{'name': 'show', 'type': 'boolean', 'optional': false}], []);
   inspectorBackend.registerCommand(
       'Overlay.setShowViewportSizeOnResize', [{'name': 'show', 'type': 'boolean', 'optional': false}], []);
   inspectorBackend.registerCommand(
@@ -1764,6 +1880,85 @@ export function registerCommands(inspectorBackend) {
     PerformanceMeasureMemory: 'PerformanceMeasureMemory',
     PerformanceProfile: 'PerformanceProfile'
   });
+  inspectorBackend.registerEnum('Page.PermissionsPolicyFeature', {
+    Accelerometer: 'accelerometer',
+    AmbientLightSensor: 'ambient-light-sensor',
+    Autoplay: 'autoplay',
+    Camera: 'camera',
+    ChDpr: 'ch-dpr',
+    ChDeviceMemory: 'ch-device-memory',
+    ChDownlink: 'ch-downlink',
+    ChEct: 'ch-ect',
+    ChLang: 'ch-lang',
+    ChRtt: 'ch-rtt',
+    ChUa: 'ch-ua',
+    ChUaArch: 'ch-ua-arch',
+    ChUaPlatform: 'ch-ua-platform',
+    ChUaModel: 'ch-ua-model',
+    ChUaMobile: 'ch-ua-mobile',
+    ChUaFullVersion: 'ch-ua-full-version',
+    ChUaPlatformVersion: 'ch-ua-platform-version',
+    ChViewportWidth: 'ch-viewport-width',
+    ChWidth: 'ch-width',
+    ClipboardRead: 'clipboard-read',
+    ClipboardWrite: 'clipboard-write',
+    ConversionMeasurement: 'conversion-measurement',
+    CrossOriginIsolated: 'cross-origin-isolated',
+    DirectSockets: 'direct-sockets',
+    DisplayCapture: 'display-capture',
+    DocumentDomain: 'document-domain',
+    EncryptedMedia: 'encrypted-media',
+    ExecutionWhileOutOfViewport: 'execution-while-out-of-viewport',
+    ExecutionWhileNotRendered: 'execution-while-not-rendered',
+    FocusWithoutUserActivation: 'focus-without-user-activation',
+    Fullscreen: 'fullscreen',
+    Frobulate: 'frobulate',
+    Gamepad: 'gamepad',
+    Geolocation: 'geolocation',
+    Gyroscope: 'gyroscope',
+    Hid: 'hid',
+    IdleDetection: 'idle-detection',
+    InterestCohort: 'interest-cohort',
+    Magnetometer: 'magnetometer',
+    Microphone: 'microphone',
+    Midi: 'midi',
+    OtpCredentials: 'otp-credentials',
+    Payment: 'payment',
+    PictureInPicture: 'picture-in-picture',
+    PublickeyCredentialsGet: 'publickey-credentials-get',
+    ScreenWakeLock: 'screen-wake-lock',
+    Serial: 'serial',
+    SharedAutofill: 'shared-autofill',
+    StorageAccessAPI: 'storage-access-api',
+    SyncXhr: 'sync-xhr',
+    TrustTokenRedemption: 'trust-token-redemption',
+    Usb: 'usb',
+    VerticalScroll: 'vertical-scroll',
+    WebShare: 'web-share',
+    XrSpatialTracking: 'xr-spatial-tracking'
+  });
+  inspectorBackend.registerEnum(
+      'Page.PermissionsPolicyBlockReason', {Header: 'Header', IframeAttribute: 'IframeAttribute'});
+  inspectorBackend.registerEnum('Page.OriginTrialTokenStatus', {
+    Success: 'Success',
+    NotSupported: 'NotSupported',
+    Insecure: 'Insecure',
+    Expired: 'Expired',
+    WrongOrigin: 'WrongOrigin',
+    InvalidSignature: 'InvalidSignature',
+    Malformed: 'Malformed',
+    WrongVersion: 'WrongVersion',
+    FeatureDisabled: 'FeatureDisabled',
+    TokenDisabled: 'TokenDisabled',
+    FeatureDisabledForUser: 'FeatureDisabledForUser'
+  });
+  inspectorBackend.registerEnum('Page.OriginTrialStatus', {
+    Enabled: 'Enabled',
+    ValidTokenNotProvided: 'ValidTokenNotProvided',
+    OSNotSupported: 'OSNotSupported',
+    TrialNotAllowed: 'TrialNotAllowed'
+  });
+  inspectorBackend.registerEnum('Page.OriginTrialUsageRestriction', {None: 'None', Subset: 'Subset'});
   inspectorBackend.registerEnum('Page.TransitionType', {
     Link: 'link',
     Typed: 'typed',
@@ -1804,18 +1999,26 @@ export function registerCommands(inspectorBackend) {
     StrictOriginWhenCrossOrigin: 'strictOriginWhenCrossOrigin',
     UnsafeUrl: 'unsafeUrl'
   });
+  inspectorBackend.registerEnum(
+      'Page.NavigationType', {Navigation: 'Navigation', BackForwardCacheRestore: 'BackForwardCacheRestore'});
   inspectorBackend.registerEvent('Page.domContentEventFired', ['timestamp']);
+  inspectorBackend.registerEnum(
+      'Page.FileChooserOpenedEventMode', {SelectSingle: 'selectSingle', SelectMultiple: 'selectMultiple'});
   inspectorBackend.registerEvent('Page.fileChooserOpened', ['frameId', 'backendNodeId', 'mode']);
   inspectorBackend.registerEvent('Page.frameAttached', ['frameId', 'parentFrameId', 'stack']);
   inspectorBackend.registerEvent('Page.frameClearedScheduledNavigation', ['frameId']);
-  inspectorBackend.registerEvent('Page.frameDetached', ['frameId']);
-  inspectorBackend.registerEvent('Page.frameNavigated', ['frame']);
+  inspectorBackend.registerEnum('Page.FrameDetachedEventReason', {Remove: 'remove', Swap: 'swap'});
+  inspectorBackend.registerEvent('Page.frameDetached', ['frameId', 'reason']);
+  inspectorBackend.registerEvent('Page.frameNavigated', ['frame', 'type']);
+  inspectorBackend.registerEvent('Page.documentOpened', ['frame']);
   inspectorBackend.registerEvent('Page.frameResized', []);
   inspectorBackend.registerEvent('Page.frameRequestedNavigation', ['frameId', 'reason', 'url', 'disposition']);
   inspectorBackend.registerEvent('Page.frameScheduledNavigation', ['frameId', 'delay', 'reason', 'url']);
   inspectorBackend.registerEvent('Page.frameStartedLoading', ['frameId']);
   inspectorBackend.registerEvent('Page.frameStoppedLoading', ['frameId']);
   inspectorBackend.registerEvent('Page.downloadWillBegin', ['frameId', 'guid', 'url', 'suggestedFilename']);
+  inspectorBackend.registerEnum(
+      'Page.DownloadProgressEventState', {InProgress: 'inProgress', Completed: 'completed', Canceled: 'canceled'});
   inspectorBackend.registerEvent('Page.downloadProgress', ['guid', 'totalBytes', 'receivedBytes', 'state']);
   inspectorBackend.registerEvent('Page.interstitialHidden', []);
   inspectorBackend.registerEvent('Page.interstitialShown', []);
@@ -1823,6 +2026,7 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEvent(
       'Page.javascriptDialogOpening', ['url', 'message', 'type', 'hasBrowserHandler', 'defaultPrompt']);
   inspectorBackend.registerEvent('Page.lifecycleEvent', ['frameId', 'loaderId', 'name', 'timestamp']);
+  inspectorBackend.registerEvent('Page.backForwardCacheNotUsed', ['loaderId', 'frameId']);
   inspectorBackend.registerEvent('Page.loadEventFired', ['timestamp']);
   inspectorBackend.registerEvent('Page.navigatedWithinDocument', ['frameId', 'url']);
   inspectorBackend.registerEvent('Page.screencastFrame', ['data', 'metadata', 'sessionId']);
@@ -1836,7 +2040,8 @@ export function registerCommands(inspectorBackend) {
       'Page.addScriptToEvaluateOnNewDocument',
       [
         {'name': 'source', 'type': 'string', 'optional': false},
-        {'name': 'worldName', 'type': 'string', 'optional': true}
+        {'name': 'worldName', 'type': 'string', 'optional': true},
+        {'name': 'includeCommandLineAPI', 'type': 'boolean', 'optional': true}
       ],
       ['identifier']);
   inspectorBackend.registerCommand('Page.bringToFront', [], []);
@@ -1846,7 +2051,8 @@ export function registerCommands(inspectorBackend) {
       [
         {'name': 'format', 'type': 'string', 'optional': true}, {'name': 'quality', 'type': 'number', 'optional': true},
         {'name': 'clip', 'type': 'object', 'optional': true},
-        {'name': 'fromSurface', 'type': 'boolean', 'optional': true}
+        {'name': 'fromSurface', 'type': 'boolean', 'optional': true},
+        {'name': 'captureBeyondViewport', 'type': 'boolean', 'optional': true}
       ],
       ['data']);
   inspectorBackend.registerEnum('Page.CaptureSnapshotRequestFormat', {MHTML: 'mhtml'});
@@ -1877,7 +2083,9 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerCommand('Page.getManifestIcons', [], ['primaryIcon']);
   inspectorBackend.registerCommand('Page.getCookies', [], ['cookies']);
   inspectorBackend.registerCommand('Page.getFrameTree', [], ['frameTree']);
-  inspectorBackend.registerCommand('Page.getLayoutMetrics', [], ['layoutViewport', 'visualViewport', 'contentSize']);
+  inspectorBackend.registerCommand(
+      'Page.getLayoutMetrics', [],
+      ['layoutViewport', 'visualViewport', 'contentSize', 'cssLayoutViewport', 'cssVisualViewport', 'cssContentSize']);
   inspectorBackend.registerCommand('Page.getNavigationHistory', [], ['currentIndex', 'entries']);
   inspectorBackend.registerCommand('Page.resetNavigationHistory', [], []);
   inspectorBackend.registerCommand(
@@ -1952,6 +2160,8 @@ export function registerCommands(inspectorBackend) {
       'Page.setAdBlockingEnabled', [{'name': 'enabled', 'type': 'boolean', 'optional': false}], []);
   inspectorBackend.registerCommand(
       'Page.setBypassCSP', [{'name': 'enabled', 'type': 'boolean', 'optional': false}], []);
+  inspectorBackend.registerCommand(
+      'Page.getPermissionsPolicyState', [{'name': 'frameId', 'type': 'string', 'optional': false}], ['states']);
   inspectorBackend.registerCommand(
       'Page.setDeviceMetricsOverride',
       [
@@ -2030,6 +2240,8 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerCommand(
       'Page.setProduceCompilationCache', [{'name': 'enabled', 'type': 'boolean', 'optional': false}], []);
   inspectorBackend.registerCommand(
+      'Page.produceCompilationCache', [{'name': 'scripts', 'type': 'object', 'optional': false}], []);
+  inspectorBackend.registerCommand(
       'Page.addCompilationCache',
       [{'name': 'url', 'type': 'string', 'optional': false}, {'name': 'data', 'type': 'string', 'optional': false}],
       []);
@@ -2054,6 +2266,11 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerCommand(
       'Performance.setTimeDomain', [{'name': 'timeDomain', 'type': 'string', 'optional': false}], []);
   inspectorBackend.registerCommand('Performance.getMetrics', [], ['metrics']);
+
+  // PerformanceTimeline.
+  inspectorBackend.registerEvent('PerformanceTimeline.timelineEventAdded', ['event']);
+  inspectorBackend.registerCommand(
+      'PerformanceTimeline.enable', [{'name': 'eventTypes', 'type': 'object', 'optional': false}], []);
 
   // Security.
   inspectorBackend.registerEnum(
@@ -2200,6 +2417,9 @@ export function registerCommands(inspectorBackend) {
       'Storage.untrackCacheStorageForOrigin', [{'name': 'origin', 'type': 'string', 'optional': false}], []);
   inspectorBackend.registerCommand(
       'Storage.untrackIndexedDBForOrigin', [{'name': 'origin', 'type': 'string', 'optional': false}], []);
+  inspectorBackend.registerCommand('Storage.getTrustTokens', [], ['tokens']);
+  inspectorBackend.registerCommand(
+      'Storage.clearTrustTokens', [{'name': 'issuerOrigin', 'type': 'string', 'optional': false}], ['didDeleteTokens']);
 
   // SystemInfo.
   inspectorBackend.registerEnum('SystemInfo.SubsamplingFormat', {Yuv420: 'yuv420', Yuv422: 'yuv422', Yuv444: 'yuv444'});
@@ -2303,6 +2523,7 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEnum('Tracing.StreamCompression', {None: 'none', Gzip: 'gzip'});
   inspectorBackend.registerEnum(
       'Tracing.MemoryDumpLevelOfDetail', {Background: 'background', Light: 'light', Detailed: 'detailed'});
+  inspectorBackend.registerEnum('Tracing.TracingBackend', {Auto: 'auto', Chrome: 'chrome', System: 'system'});
   inspectorBackend.registerEvent('Tracing.bufferUsage', ['percentFull', 'eventCount', 'value']);
   inspectorBackend.registerEvent('Tracing.dataCollected', ['value']);
   inspectorBackend.registerEvent(
@@ -2329,7 +2550,9 @@ export function registerCommands(inspectorBackend) {
         {'name': 'transferMode', 'type': 'string', 'optional': true},
         {'name': 'streamFormat', 'type': 'string', 'optional': true},
         {'name': 'streamCompression', 'type': 'string', 'optional': true},
-        {'name': 'traceConfig', 'type': 'object', 'optional': true}
+        {'name': 'traceConfig', 'type': 'object', 'optional': true},
+        {'name': 'perfettoConfig', 'type': 'string', 'optional': true},
+        {'name': 'tracingBackend', 'type': 'string', 'optional': true}
       ],
       []);
 
@@ -2509,6 +2732,20 @@ export function registerCommands(inspectorBackend) {
       'Debugger.DebugSymbolsType',
       {None: 'None', SourceMap: 'SourceMap', EmbeddedDWARF: 'EmbeddedDWARF', ExternalDWARF: 'ExternalDWARF'});
   inspectorBackend.registerEvent('Debugger.breakpointResolved', ['breakpointId', 'location']);
+  inspectorBackend.registerEnum('Debugger.PausedEventReason', {
+    Ambiguous: 'ambiguous',
+    Assert: 'assert',
+    CSPViolation: 'CSPViolation',
+    DebugCommand: 'debugCommand',
+    DOM: 'DOM',
+    EventListener: 'EventListener',
+    Exception: 'exception',
+    Instrumentation: 'instrumentation',
+    OOM: 'OOM',
+    Other: 'other',
+    PromiseRejection: 'promiseRejection',
+    XHR: 'XHR'
+  });
   inspectorBackend.registerEvent('Debugger.paused', [
     'callFrames', 'reason', 'data', 'hitBreakpoints', 'asyncStackTrace', 'asyncStackTraceId', 'asyncCallStackTraceId'
   ]);
@@ -2545,14 +2782,6 @@ export function registerCommands(inspectorBackend) {
         {'name': 'returnByValue', 'type': 'boolean', 'optional': true},
         {'name': 'generatePreview', 'type': 'boolean', 'optional': true},
         {'name': 'throwOnSideEffect', 'type': 'boolean', 'optional': true},
-        {'name': 'timeout', 'type': 'number', 'optional': true}
-      ],
-      ['result', 'exceptionDetails']);
-  inspectorBackend.registerCommand(
-      'Debugger.executeWasmEvaluator',
-      [
-        {'name': 'callFrameId', 'type': 'string', 'optional': false},
-        {'name': 'evaluator', 'type': 'string', 'optional': false},
         {'name': 'timeout', 'type': 'number', 'optional': true}
       ],
       ['result', 'exceptionDetails']);
@@ -2699,14 +2928,16 @@ export function registerCommands(inspectorBackend) {
       'HeapProfiler.stopTrackingHeapObjects',
       [
         {'name': 'reportProgress', 'type': 'boolean', 'optional': true},
-        {'name': 'treatGlobalObjectsAsRoots', 'type': 'boolean', 'optional': true}
+        {'name': 'treatGlobalObjectsAsRoots', 'type': 'boolean', 'optional': true},
+        {'name': 'captureNumericValue', 'type': 'boolean', 'optional': true}
       ],
       []);
   inspectorBackend.registerCommand(
       'HeapProfiler.takeHeapSnapshot',
       [
         {'name': 'reportProgress', 'type': 'boolean', 'optional': true},
-        {'name': 'treatGlobalObjectsAsRoots', 'type': 'boolean', 'optional': true}
+        {'name': 'treatGlobalObjectsAsRoots', 'type': 'boolean', 'optional': true},
+        {'name': 'captureNumericValue', 'type': 'boolean', 'optional': true}
       ],
       []);
 
@@ -2750,8 +2981,7 @@ export function registerCommands(inspectorBackend) {
     Number: 'number',
     Boolean: 'boolean',
     Symbol: 'symbol',
-    Bigint: 'bigint',
-    Wasm: 'wasm'
+    Bigint: 'bigint'
   });
   inspectorBackend.registerEnum('Runtime.RemoteObjectSubtype', {
     Array: 'array',
@@ -2771,12 +3001,8 @@ export function registerCommands(inspectorBackend) {
     Typedarray: 'typedarray',
     Arraybuffer: 'arraybuffer',
     Dataview: 'dataview',
-    I32: 'i32',
-    I64: 'i64',
-    F32: 'f32',
-    F64: 'f64',
-    V128: 'v128',
-    Externref: 'externref'
+    Webassemblymemory: 'webassemblymemory',
+    Wasmvalue: 'wasmvalue'
   });
   inspectorBackend.registerEnum('Runtime.ObjectPreviewType', {
     Object: 'object',
@@ -2800,7 +3026,14 @@ export function registerCommands(inspectorBackend) {
     Weakset: 'weakset',
     Iterator: 'iterator',
     Generator: 'generator',
-    Error: 'error'
+    Error: 'error',
+    Proxy: 'proxy',
+    Promise: 'promise',
+    Typedarray: 'typedarray',
+    Arraybuffer: 'arraybuffer',
+    Dataview: 'dataview',
+    Webassemblymemory: 'webassemblymemory',
+    Wasmvalue: 'wasmvalue'
   });
   inspectorBackend.registerEnum('Runtime.PropertyPreviewType', {
     Object: 'object',
@@ -2825,9 +3058,36 @@ export function registerCommands(inspectorBackend) {
     Weakset: 'weakset',
     Iterator: 'iterator',
     Generator: 'generator',
-    Error: 'error'
+    Error: 'error',
+    Proxy: 'proxy',
+    Promise: 'promise',
+    Typedarray: 'typedarray',
+    Arraybuffer: 'arraybuffer',
+    Dataview: 'dataview',
+    Webassemblymemory: 'webassemblymemory',
+    Wasmvalue: 'wasmvalue'
   });
   inspectorBackend.registerEvent('Runtime.bindingCalled', ['name', 'payload', 'executionContextId']);
+  inspectorBackend.registerEnum('Runtime.ConsoleAPICalledEventType', {
+    Log: 'log',
+    Debug: 'debug',
+    Info: 'info',
+    Error: 'error',
+    Warning: 'warning',
+    Dir: 'dir',
+    DirXML: 'dirxml',
+    Table: 'table',
+    Trace: 'trace',
+    Clear: 'clear',
+    StartGroup: 'startGroup',
+    StartGroupCollapsed: 'startGroupCollapsed',
+    EndGroup: 'endGroup',
+    Assert: 'assert',
+    Profile: 'profile',
+    ProfileEnd: 'profileEnd',
+    Count: 'count',
+    TimeEnd: 'timeEnd'
+  });
   inspectorBackend.registerEvent(
       'Runtime.consoleAPICalled', ['type', 'args', 'executionContextId', 'timestamp', 'stackTrace', 'context']);
   inspectorBackend.registerEvent('Runtime.exceptionRevoked', ['reason', 'exceptionId']);
@@ -2887,7 +3147,8 @@ export function registerCommands(inspectorBackend) {
         {'name': 'timeout', 'type': 'number', 'optional': true},
         {'name': 'disableBreaks', 'type': 'boolean', 'optional': true},
         {'name': 'replMode', 'type': 'boolean', 'optional': true},
-        {'name': 'allowUnsafeEvalBlockedByCSP', 'type': 'boolean', 'optional': true}
+        {'name': 'allowUnsafeEvalBlockedByCSP', 'type': 'boolean', 'optional': true},
+        {'name': 'uniqueContextId', 'type': 'string', 'optional': true}
       ],
       ['result', 'exceptionDetails']);
   inspectorBackend.registerCommand('Runtime.getIsolateId', [], ['id']);

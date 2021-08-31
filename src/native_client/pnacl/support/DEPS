@@ -1,5 +1,0 @@
-include_rules = [
-  "+native_client/pnacl/support",
-  "+native_client/src/trusted/service_runtime/include",
-  "+native_client/src/untrusted",
-]

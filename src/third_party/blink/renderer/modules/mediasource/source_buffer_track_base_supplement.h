@@ -22,6 +22,7 @@ class SourceBufferTrackBaseSupplement
   static SourceBuffer* sourceBuffer(TrackBase&);
   static void SetSourceBuffer(TrackBase&, SourceBuffer*);
 
+  SourceBufferTrackBaseSupplement();
   void Trace(Visitor*) const override;
 
  private:
@@ -33,4 +34,4 @@ class SourceBufferTrackBaseSupplement
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASOURCE_SOURCE_BUFFER_TRACK_BASE_SUPPLEMENT_H_

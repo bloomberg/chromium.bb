@@ -16,6 +16,10 @@ import("//tools/grit/grit_rule.gni")
 # This static library is shared with the setup program.
 source_set("common") {
   sources = [
+    "experiments_fetcher.cc",
+    "experiments_fetcher.h",
+    "experiments_manager.cc",
+    "experiments_manager.h",
     "gcp_crash_reporter_client.cc",
     "gcp_crash_reporter_client.h",
     "gcp_crash_reporting_utils.cc",
@@ -126,6 +130,21 @@ component("policies") {
   ]
 }
 
+source_set("mdm_utils") {
+  sources = [
+    "mdm_utils.cc",
+    "mdm_utils.h",
+  ]
+  public_configs = [ ":gaiacp_config" ]
+  deps = [
+    ":policies",
+    ":util",
+    "//base",
+    "//build:branding_buildflags",
+    "//url:url",
+  ]
+}
+
 # This static library is shared with the test code.
 
 source_set("gaiacp_lib") {
@@ -159,8 +178,6 @@ source_set("gaiacp_lib") {
     "initguid.cc",
     "internet_availability_checker.cc",
     "internet_availability_checker.h",
-    "mdm_utils.cc",
-    "mdm_utils.h",
     "os_process_manager.cc",
     "os_process_manager.h",
     "password_recovery_manager.cc",
@@ -175,6 +192,7 @@ source_set("gaiacp_lib") {
   public_deps = [ ":common" ]
   deps = [
     ":gaia_credential_provider_idl",
+    ":mdm_utils",
     ":policies",
     ":static_resources",
     ":string_resources",
@@ -274,6 +292,7 @@ shared_library("gaia1_0") {
   deps = [
     ":common",
     ":gaiacp_lib",
+    ":mdm_utils",
     ":policies",
     ":util",
     ":version",

@@ -5,30 +5,35 @@
 package org.chromium.chrome.browser.tasks;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 import org.chromium.chrome.browser.homepage.HomepageManager;
-import org.chromium.chrome.browser.locale.LocaleManager;
+import org.chromium.chrome.browser.omnibox.OmniboxStub;
+import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
-import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
+import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.ResourceRequestBody;
@@ -42,6 +47,66 @@ import java.util.List;
  */
 public final class ReturnToChromeExperimentsUtil {
     private static final String TAG = "TabSwitcherOnReturn";
+
+    /** An inner class to monitor the state of a newly create Tab. */
+    private static class TabStateObserver implements UrlFocusChangeListener {
+        private final Tab mNewTab;
+        private final TabModel mCurrentTabModel;
+        private final OmniboxStub mOmniboxStub;
+        private final @Nullable Runnable mEmptyTabCloseCallback;
+        private final ActivityTabProvider mActivityTabProvider;
+        private boolean mIsOmniboxFocused;
+
+        TabStateObserver(@NonNull Tab newTab, @NonNull TabModel currentTabModel,
+                @NonNull OmniboxStub omniboxStub, @Nullable Runnable emptyTabCloseCallback,
+                ActivityTabProvider activityTabProvider) {
+            mNewTab = newTab;
+            mCurrentTabModel = currentTabModel;
+            mEmptyTabCloseCallback = emptyTabCloseCallback;
+            mOmniboxStub = omniboxStub;
+            mActivityTabProvider = activityTabProvider;
+            mIsOmniboxFocused =
+                    mOmniboxStub.isUrlBarFocused() && activityTabProvider.get() == newTab;
+            mOmniboxStub.addUrlFocusChangeListener(this);
+        }
+
+        @Override
+        public void onUrlFocusChange(boolean hasFocus) {
+            // Filter out focus events that happen when the tab itself in not the current tab.
+            if (mActivityTabProvider.get() != mNewTab) return;
+
+            if (hasFocus) {
+                // It is possible that unfocusing event happens before the Omnibox
+                // first gets focused, use this flag to skip the cases.
+                mIsOmniboxFocused = true;
+                return;
+            }
+
+            if (!hasFocus && mIsOmniboxFocused) {
+                if (mNewTab.getUrl().isEmpty()) {
+                    if (mEmptyTabCloseCallback != null) {
+                        mEmptyTabCloseCallback.run();
+                    }
+                    // Closes the Tab after any necessary transition is done. This
+                    // is safer than closing the Tab first, especially if it is the
+                    // only Tab in the TabModel.
+                    if (!mNewTab.isClosing()) {
+                        mCurrentTabModel.closeTab(mNewTab);
+                    }
+                } else {
+                    // After the tab navigates, we will set the keep tab property,
+                    // and the new tab won't be deleted from the TabModel when the
+                    // back button is tapped.
+                    StartSurfaceUserData.setKeepTab(mNewTab, true);
+                }
+
+                // No matter whether the back button is tapped or the Tab navigates,
+                // {@link onUrlFocusChanged} with focus == false is always called.
+                // Removes the observer here.
+                mOmniboxStub.removeUrlFocusChangeListener(this);
+            }
+        }
+    }
 
     @VisibleForTesting
     public static final String TAB_SWITCHER_ON_RETURN_MS_PARAM = "tab_switcher_on_return_time_ms";
@@ -139,37 +204,85 @@ public final class ReturnToChromeExperimentsUtil {
     /**
      * Check if we should handle the navigation. If so, create a new tab and load the URL.
      *
+     * @param params The LoadUrlParams to load.
+     * @param incognito Whether to load URL in an incognito Tab.
+     * @param parentTab  The parent tab used to create a new tab if needed.
+     * @return Current tab created if we have handled the navigation, null otherwise.
+     */
+    public static Tab handleLoadUrlFromStartSurface(
+            LoadUrlParams params, @Nullable Boolean incognito, @Nullable Tab parentTab) {
+        return handleLoadUrlWithPostDataFromStartSurface(
+                params, null, null, incognito, parentTab, false, false, null, null);
+    }
+
+    /**
+     * Check if we should handle the navigation as opening a new Tab. If so, create a new tab and
+     * load the URL.
+     *
      * @param url The URL to load.
      * @param transition The page transition type.
      * @param incognito Whether to load URL in an incognito Tab.
      * @param parentTab  The parent tab used to create a new tab if needed.
-     * @return true if we have handled the navigation, false otherwise.
+     * @param currentTabModel The current TabModel.
+     * @param emptyTabCloseCallback The callback to run when the newly created empty Tab will be
+     *                              closing.
      */
-    public static boolean willHandleLoadUrlFromStartSurface(String url,
-            @PageTransition int transition, @Nullable Boolean incognito, @Nullable Tab parentTab) {
-        return willHandleLoadUrlWithPostDataFromStartSurface(
-                url, transition, null, null, incognito, parentTab);
+    public static void handleLoadUrlFromStartSurfaceAsNewTab(String url,
+            @PageTransition int transition, @Nullable Boolean incognito, @Nullable Tab parentTab,
+            TabModel currentTabModel, @Nullable Runnable emptyTabCloseCallback) {
+        LoadUrlParams params = new LoadUrlParams(url, transition);
+        handleLoadUrlWithPostDataFromStartSurface(params, null, null, incognito, parentTab,
+                /*focusOnOmnibox*/ true, /*skipOverviewCheck*/ true, currentTabModel,
+                emptyTabCloseCallback);
     }
 
     /**
      * Check if we should handle the navigation. If so, create a new tab and load the URL with POST
      * data.
      *
-     * @param url The URL to load.
-     * @param transition The page transition type.
+     * @param params The LoadUrlParams to load.
+     * @param postDataType postData type.
+     * @param postData POST data to include in the tab URL's request body, ex. bitmap when image
+     *                 search.
+     * @param incognito Whether to load URL in an incognito Tab. If null, the current tab model will
+     *                  be used.
+     * @param parentTab The parent tab used to create a new tab if needed.
+     * @return true if we have handled the navigation, false otherwise.
+     */
+    public static boolean handleLoadUrlWithPostDataFromStartSurface(LoadUrlParams params,
+            @Nullable String postDataType, @Nullable byte[] postData, @Nullable Boolean incognito,
+            @Nullable Tab parentTab) {
+        return handleLoadUrlWithPostDataFromStartSurface(params, postDataType, postData, incognito,
+                       parentTab, false, false, null, null)
+                != null;
+    }
+
+    /**
+     * Check if we should handle the navigation. If so, create a new tab and load the URL with POST
+     * data.
+     *
+     * @param params The LoadUrlParams to load.
      * @param postDataType   postData type.
      * @param postData       POST data to include in the tab URL's request body, ex. bitmap when
      *         image search.
      * @param incognito Whether to load URL in an incognito Tab. If null, the current tab model will
      *         be used.
      * @param parentTab  The parent tab used to create a new tab if needed.
-     * @return true if we have handled the navigation, false otherwise.
+     * @param focusOnOmnibox Whether to focus on the omnibox when a new Tab is created.
+     * @param skipOverviewCheck Whether to skip a check of whether it is in the overview mode.
+     * @param currentTabModel The current TabModel.
+     * @param emptyTabCloseCallback The callback to run when the newly created empty Tab will be
+     *                              closing.
+     * @return Current tab created if we have handled the navigation, null otherwise.
      */
-    public static boolean willHandleLoadUrlWithPostDataFromStartSurface(String url,
-            @PageTransition int transition, @Nullable String postDataType,
-            @Nullable byte[] postData, @Nullable Boolean incognito, @Nullable Tab parentTab) {
-        ChromeActivity chromeActivity = getActivityPresentingOverviewWithOmnibox(url);
-        if (chromeActivity == null) return false;
+    private static Tab handleLoadUrlWithPostDataFromStartSurface(LoadUrlParams params,
+            @Nullable String postDataType, @Nullable byte[] postData, @Nullable Boolean incognito,
+            @Nullable Tab parentTab, boolean focusOnOmnibox, boolean skipOverviewCheck,
+            @Nullable TabModel currentTabModel, @Nullable Runnable emptyTabCloseCallback) {
+        String url = params.getUrl();
+        ChromeActivity chromeActivity =
+                getActivityPresentingOverviewWithOmnibox(url, skipOverviewCheck);
+        if (chromeActivity == null) return null;
 
         // Create a new unparented tab.
         boolean incognitoParam;
@@ -179,36 +292,47 @@ public final class ReturnToChromeExperimentsUtil {
             incognitoParam = incognito;
         }
 
-        LoadUrlParams params = new LoadUrlParams(url);
-        // TODO(https://crbug.com/1134187): This may no longer accurate.
-        params.setTransitionType(transition | PageTransition.FROM_ADDRESS_BAR);
         if (!TextUtils.isEmpty(postDataType) && postData != null && postData.length != 0) {
             params.setVerbatimHeaders("Content-Type: " + postDataType);
             params.setPostData(ResourceRequestBody.createFromBytes(postData));
         }
 
-        chromeActivity.getTabCreator(incognitoParam)
-                .createNewTab(params, TabLaunchType.FROM_START_SURFACE, parentTab);
+        Tab newTab = chromeActivity.getTabCreator(incognitoParam)
+                             .createNewTab(params, TabLaunchType.FROM_START_SURFACE, parentTab);
+        if (focusOnOmnibox && newTab != null) {
+            // This observer lives for as long as the user is focused in the Omnibox. It stops
+            // observing once the focus is cleared, e.g, Tab navigates or user taps the back button.
+            new TabStateObserver(newTab, currentTabModel,
+                    chromeActivity.getToolbarManager().getOmniboxStub(), emptyTabCloseCallback,
+                    chromeActivity.getActivityTabProvider());
+        }
 
-        if (transition == PageTransition.AUTO_BOOKMARK) {
-            RecordUserAction.record("Suggestions.Tile.Tapped.GridTabSwitcher");
+        if (params.getTransitionType() == PageTransition.AUTO_BOOKMARK) {
+            if (params.getReferrer() == null) {
+                RecordUserAction.record("Suggestions.Tile.Tapped.StartSurface");
+            }
+        } else if (url == null) {
+            RecordUserAction.record("MobileMenuNewTab.StartSurfaceFinale");
         } else {
-            RecordUserAction.record("MobileOmniboxUse.GridTabSwitcher");
+            RecordUserAction.record("MobileOmniboxUse.StartSurface");
 
             // These are duplicated here but would have been recorded by LocationBarLayout#loadUrl.
             RecordUserAction.record("MobileOmniboxUse");
-            LocaleManager.getInstance().recordLocaleBasedSearchMetrics(false, url, transition);
+            AppHooks.get().getLocaleManager().recordLocaleBasedSearchMetrics(
+                    false, url, params.getTransitionType());
         }
 
-        return true;
+        return newTab;
     }
 
     /**
      * @param url The URL to load.
+     * @param skipOverviewCheck Whether to skip a check of whether it is in the overview mode.
      * @return The ChromeActivity if it is presenting the omnibox on the tab switcher, else null.
      */
-    private static ChromeActivity getActivityPresentingOverviewWithOmnibox(String url) {
-        if (!StartSurfaceConfiguration.isStartSurfaceEnabled()) return null;
+    private static ChromeActivity getActivityPresentingOverviewWithOmnibox(
+            String url, boolean skipOverviewCheck) {
+        if (!isStartSurfaceHomepageEnabled()) return null;
 
         Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
         if (!(activity instanceof ChromeActivity)) return null;
@@ -216,28 +340,33 @@ public final class ReturnToChromeExperimentsUtil {
         ChromeActivity chromeActivity = (ChromeActivity) activity;
 
         assert LibraryLoader.getInstance().isInitialized();
-        if (!chromeActivity.isInOverviewMode() && !UrlUtilities.isNTPUrl(url)) return null;
+        if (!skipOverviewCheck && !chromeActivity.isInOverviewMode()
+                && !UrlUtilities.isNTPUrl(url)) {
+            return null;
+        }
 
         return chromeActivity;
     }
 
-    public static boolean isCanonicalizedNTPUrl(String url) {
-        if (TextUtils.isEmpty(url)) return false;
-        // Avoid loading native library due to GURL usage since
-        // #shouldShowStartSurfaceAsTheHomePage() is in the critical path in Instant Start.
-        return url.equals("chrome://newtab/") || url.equals("chrome-native://newtab/")
-                || url.equals("about:newtab");
+    /**
+     * @return true when both Start Surface and homepage is enabled.
+     */
+    public static boolean isStartSurfaceHomepageEnabled() {
+        return HomepageManager.isHomepageEnabled()
+                && StartSurfaceConfiguration.isStartSurfaceEnabled();
     }
 
     /**
      * Check whether we should show Start Surface as the home page. This is used for all cases
      * except initial tab creation, which uses {@link
-     * #shouldShowStartSurfaceAsTheHomePageNoTabs()}.
+     * #shouldShowStartSurfaceAsTheHomePageNoTabs(Context)}.
      *
      * @return Whether Start Surface should be shown as the home page.
+     * @param context The activity context
      */
-    public static boolean shouldShowStartSurfaceAsTheHomePage() {
-        return shouldShowStartSurfaceAsTheHomePageNoTabs()
+    public static boolean shouldShowStartSurfaceAsTheHomePage(Context context) {
+        return shouldShowStartSurfaceAsTheHomePageNoTabs(context)
+                && HomepageManager.isHomepageEnabled()
                 && !StartSurfaceConfiguration.START_SURFACE_OPEN_NTP_INSTEAD_OF_START.getValue();
     }
 
@@ -245,54 +374,49 @@ public final class ReturnToChromeExperimentsUtil {
      * @return Whether we should show Start Surface as the home page on phone. Start surface
      *         hasn't been enabled on tablet yet.
      */
-    public static boolean shouldShowStartSurfaceAsTheHomePageOnPhone(boolean isTablet) {
-        return !isTablet && shouldShowStartSurfaceAsTheHomePage();
+    public static boolean shouldShowStartSurfaceAsTheHomePageOnPhone(
+            Context context, boolean isTablet) {
+        return !isTablet && shouldShowStartSurfaceAsTheHomePage(context);
     }
 
     /**
      * @return Whether Start Surface should be shown as NTP.
      */
-    public static boolean shouldShowStartSurfaceHomeAsNTP(boolean incognito, boolean isTablet) {
-        return !incognito && shouldShowStartSurfaceAsTheHomePageOnPhone(isTablet);
-    }
-
-    /**
-     * @return Whether hides the home button on an incognito tab.
-     */
-    public static boolean shouldHideHomeButtonForStartSurface(boolean incognito, boolean isTablet) {
-        return incognito && StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH.getValue()
-                && shouldShowStartSurfaceAsTheHomePageOnPhone(isTablet);
+    public static boolean shouldShowStartSurfaceHomeAsNTP(
+            Context context, boolean incognito, boolean isTablet) {
+        return !incognito && shouldShowStartSurfaceAsTheHomePageOnPhone(context, isTablet);
     }
 
     /**
      * Check whether we should show Start Surface as the home page for initial tab creation.
      *
      * @return Whether Start Surface should be shown as the home page.
+     * @param context The activity context.
      */
-    public static boolean shouldShowStartSurfaceAsTheHomePageNoTabs() {
+    public static boolean shouldShowStartSurfaceAsTheHomePageNoTabs(Context context) {
         // When creating initial tab, i.e. cold start without restored tabs, we should only show
-        // StartSurface as the HomePage if Single Pane is enabled, HomePage is not customized,
-        // accessibility is not enabled and not on tablet.
+        // StartSurface as the HomePage if Single Pane is enabled, HomePage is not customized, not
+        // on tablet, accessibility is not enabled or the tab group continuation feature is enabled.
         String homePageUrl = HomepageManager.getHomepageUri();
         return StartSurfaceConfiguration.isStartSurfaceSinglePaneEnabled()
-                && (TextUtils.isEmpty(homePageUrl) || isCanonicalizedNTPUrl(homePageUrl))
-                && !ChromeAccessibilityUtil.get().isAccessibilityEnabled()
-                && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
-                        ContextUtils.getApplicationContext());
+                && (TextUtils.isEmpty(homePageUrl)
+                        || UrlUtilities.isCanonicalizedNTPUrl(homePageUrl))
+                && !StartSurfaceConfiguration.shouldHideStartSurfaceWithAccessibilityOn(context)
+                && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
     }
 
     /**
      * @param tabModelSelector The tab model selector.
      * @return the total tab count, and works before native initialization.
      */
-    public static int getTotalTabCount(TabModelSelector tabModelSelector) {
+    public static int getTotalTabCount(Context context, TabModelSelector tabModelSelector) {
         if ((CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)
                     || CachedFeatureFlags.isEnabled(
                             ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP))
                 && !tabModelSelector.isTabStateInitialized()) {
             List<PseudoTab> allTabs;
             try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-                allTabs = PseudoTab.getAllPseudoTabsFromStateFile();
+                allTabs = PseudoTab.getAllPseudoTabsFromStateFile(context);
             }
             return allTabs != null ? allTabs.size() : 0;
         }

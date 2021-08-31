@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_UTILS_MAC_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_UTILS_MAC_H_
 
-#include "content/browser/accessibility/accessibility_tree_formatter_base.h"
+#include "content/browser/accessibility/accessibility_tools_utils_mac.h"
 #include "content/browser/accessibility/browser_accessibility_cocoa.h"
+#include "ui/accessibility/platform/inspect/ax_tree_indexer.h"
 
 namespace ui {
 class AXPropertyNode;
@@ -15,26 +16,25 @@ class AXPropertyNode;
 namespace content {
 namespace a11y {
 
-/**
- * Converts accessible node object to a line index in the formatted
- * accessibility tree, the node is placed at, and vice versa.
- */
-class CONTENT_EXPORT LineIndexer final {
- public:
-  explicit LineIndexer(const gfx::NativeViewAccessible node);
-  virtual ~LineIndexer();
-
-  std::string IndexBy(const gfx::NativeViewAccessible node) const;
-  gfx::NativeViewAccessible NodeBy(const std::string& index) const;
-
- private:
-  void Build(const gfx::NativeViewAccessible node, int* counter);
-
-  std::map<const gfx::NativeViewAccessible, std::string> map;
+// IsBrowserAccessibilityCocoa or IsAXUIElement accessible node comparator.
+struct NodeComparator {
+  constexpr bool operator()(const gfx::NativeViewAccessible& lhs,
+                            const gfx::NativeViewAccessible& rhs) const {
+    if (IsAXUIElement(lhs)) {
+      DCHECK(IsAXUIElement(rhs));
+      return CFHash(lhs) < CFHash(rhs);
+    }
+    DCHECK(IsBrowserAccessibilityCocoa(lhs));
+    DCHECK(IsBrowserAccessibilityCocoa(rhs));
+    return lhs < rhs;
+  }
 };
 
+using LineIndexer =
+    ui::AXTreeIndexer<GetDOMId, NSArray*, ChildrenOf, NodeComparator>;
+
 // Implements stateful id values. Can be either id or be in
-// error or not applciable state. Similar to base::Optional, but tri-state
+// error or not applciable state. Similar to absl::optional, but tri-state
 // allowing nullable values.
 class CONTENT_EXPORT OptionalNSObject final {
  public:
@@ -70,6 +70,7 @@ class CONTENT_EXPORT OptionalNSObject final {
 // Invokes attributes matching the given property filter.
 class CONTENT_EXPORT AttributeInvoker final {
  public:
+  AttributeInvoker(const LineIndexer* line_indexer);
   AttributeInvoker(const id node, const LineIndexer* line_indexer);
 
   // Invokes an attribute matching to a property filter.
@@ -84,6 +85,9 @@ class CONTENT_EXPORT AttributeInvoker final {
                 const OptionalNSObject& value) const;
 
  private:
+  // Returns an accessible object of the given property node or default one.
+  id TargetOf(const ui::AXPropertyNode& property_node) const;
+
   // Returns a parameterized attribute parameter by a property node.
   OptionalNSObject ParamByPropertyNode(const ui::AXPropertyNode&) const;
 
@@ -98,12 +102,10 @@ class CONTENT_EXPORT AttributeInvoker final {
   id PropertyNodeToTextMarkerRange(const ui::AXPropertyNode&) const;
 
   gfx::NativeViewAccessible LineIndexToNode(
-      const base::string16 line_index) const;
+      const std::u16string line_index) const;
 
   const id node;
   const LineIndexer* line_indexer;
-  const NSArray* attributes;
-  const NSArray* parameterized_attributes;
 };
 
 // bindings

@@ -13,7 +13,6 @@
 
 class SkSVGRadialGradient final : public SkSVGGradient {
 public:
-    ~SkSVGRadialGradient() override = default;
     static sk_sp<SkSVGRadialGradient> Make() {
         return sk_sp<SkSVGRadialGradient>(new SkSVGRadialGradient());
     }
@@ -28,7 +27,7 @@ protected:
     bool parseAndSetAttribute(const char*, const char*) override;
 
     sk_sp<SkShader> onMakeShader(const SkSVGRenderContext&,
-                                 const SkColor*, const SkScalar*, int count,
+                                 const SkColor4f*, const SkScalar*, int count,
                                  SkTileMode, const SkMatrix&) const override;
 private:
     SkSVGRadialGradient();

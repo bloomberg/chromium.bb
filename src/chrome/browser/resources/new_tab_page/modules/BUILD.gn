@@ -4,18 +4,43 @@
 
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/grit/preprocess_grit.gni")
+import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/polymer/html_to_js.gni")
+import("//ui/webui/resources/tools/generate_grd.gni")
 import("//ui/webui/webui_features.gni")
-
-js_library("module_descriptor") {
-}
 
 js_library("modules") {
   deps = [
+    ":module_descriptor",
     ":module_registry",
-    "kaleidoscope:module",
+    ":module_wrapper",
+    "..:new_tab_page_proxy",
+    "..:utils",
+    "..:utils",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
+    "//ui/webui/resources/cr_elements/cr_toast:cr_toast.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:event_tracker.m",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
+}
+
+js_library("module_descriptor") {
+  deps = [
+    "..:metrics_utils",
+    "..:window_proxy",
+  ]
+}
+
+js_library("module_descriptors") {
+  deps = [
+    ":module_descriptor",
+    "..:i18n_setup",
+    "cart:module",
+    "drive:module",
     "task_module:module",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
   if (!is_official_build) {
     deps += [ "dummy:module" ]
@@ -25,6 +50,17 @@ js_library("modules") {
 js_library("module_wrapper") {
   deps = [
     ":module_descriptor",
+    "..:metrics_utils",
+    "..:window_proxy",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+  ]
+  externs_list = [ "//third_party/closure_compiler/externs/metrics_private.js" ]
+}
+
+js_library("module_header") {
+  deps = [
+    "..:i18n_setup",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
@@ -32,53 +68,94 @@ js_library("module_wrapper") {
 js_library("module_registry") {
   deps = [
     ":module_descriptor",
-    "//ui/webui/resources/js:cr.m",
+    ":module_descriptors",
+    "..:new_tab_page_proxy",
+  ]
+}
+
+js_library("info_dialog") {
+  deps = [
+    "..:i18n_setup",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
   ]
 }
 
 html_to_js("web_components_local") {
-  js_files = [ "module_wrapper.js" ]
+  js_files = [
+    "module_header.js",
+    "module_wrapper.js",
+    "modules.js",
+    "info_dialog.js",
+  ]
 }
 
 group("web_components") {
   public_deps = [
     ":web_components_local",
+    "cart:web_components",
+    "drive:web_components",
     "dummy:web_components",
     "task_module:web_components",
   ]
 }
 
-if (optimize_webui) {
-  # Up one folder to get to the root NTP gen dir, where files need to live
-  # for bundling.
-  preprocess_folder = "../preprocessed/modules"
+# Up one folder to get to the root NTP gen dir, where files need to live
+# for bundling.
+preprocess_folder = "../preprocessed/modules"
+preprocess_manifest = "preprocessed_manifest.json"
+preprocess_gen_manifest = "preprocessed_gen_manifest.json"
 
-  preprocess_grit("preprocess") {
-    defines = [ "is_official_build=$is_official_build" ]
-    in_folder = "./"
+generate_grd("build_grdp") {
+  grd_prefix = "new_tab_page"
+  out_grd = "$target_gen_dir/resources.grdp"
+  deps = [
+    ":preprocess",
+    ":preprocess_gen",
+  ]
+  manifest_files = [
+    "$target_gen_dir/preprocessed_manifest.json",
+    "$target_gen_dir/preprocessed_gen_manifest.json",
+  ]
+  resource_path_prefix = "modules"
+}
 
-    out_folder = "$target_gen_dir/$preprocess_folder"
-    in_files = [
-      "kaleidoscope/module.js",
-      "module_descriptor.js",
-      "modules.js",
-      "module_registry.js",
-      "task_module/task_module_handler_proxy.js",
-    ]
-    if (!is_official_build) {
-      in_files += [ "dummy/foo_proxy.js" ]
-    }
+preprocess_if_expr("preprocess") {
+  defines = [ "is_official_build=$is_official_build" ]
+  in_folder = "./"
+
+  out_folder = "$target_gen_dir/$preprocess_folder"
+  out_manifest = "$target_gen_dir/$preprocess_manifest"
+  in_files = [
+    "module_descriptor.js",
+    "module_descriptors.js",
+    "module_registry.js",
+    "task_module/task_module_handler_proxy.js",
+    "cart/chrome_cart_proxy.js",
+    "drive/drive_module_proxy.js",
+  ]
+  if (!is_official_build) {
+    in_files += [ "dummy/foo_proxy.js" ]
   }
+}
 
-  preprocess_grit("preprocess_gen") {
-    deps = [ ":web_components" ]
-    defines = [ "is_official_build=$is_official_build" ]
-    in_folder = target_gen_dir
-    out_folder = "$target_gen_dir/$preprocess_folder"
-    in_files = [
-      "module_wrapper.js",
-      "dummy/module.js",
-      "task_module/module.js",
-    ]
+preprocess_if_expr("preprocess_gen") {
+  deps = [ ":web_components" ]
+  defines = [ "is_official_build=$is_official_build" ]
+  in_folder = target_gen_dir
+  out_folder = "$target_gen_dir/$preprocess_folder"
+  out_manifest = "$target_gen_dir/$preprocess_gen_manifest"
+  in_files = [
+    "module_header.js",
+    "module_wrapper.js",
+    "modules.js",
+    "info_dialog.js",
+    "task_module/module.js",
+    "cart/module.js",
+    "drive/module.js",
+  ]
+  if (!is_official_build) {
+    in_files += [ "dummy/module.js" ]
   }
 }

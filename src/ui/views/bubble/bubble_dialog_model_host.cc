@@ -9,6 +9,8 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/class_property.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -21,7 +23,6 @@
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
 
 namespace views {
@@ -30,18 +31,18 @@ namespace {
 DialogContentType FieldTypeToContentType(ui::DialogModelField::Type type) {
   switch (type) {
     case ui::DialogModelField::kButton:
-      return DialogContentType::CONTROL;
+      return DialogContentType::kControl;
     case ui::DialogModelField::kBodyText:
-      return DialogContentType::TEXT;
+      return DialogContentType::kText;
     case ui::DialogModelField::kCheckbox:
-      return DialogContentType::CONTROL;
+      return DialogContentType::kControl;
     case ui::DialogModelField::kTextfield:
-      return DialogContentType::CONTROL;
+      return DialogContentType::kControl;
     case ui::DialogModelField::kCombobox:
-      return DialogContentType::CONTROL;
+      return DialogContentType::kControl;
   }
   NOTREACHED();
-  return DialogContentType::CONTROL;
+  return DialogContentType::kControl;
 }
 
 // A subclass of Checkbox that allows using an external Label/StyledLabel view
@@ -50,13 +51,13 @@ DialogContentType FieldTypeToContentType(ui::DialogModelField::Type type) {
 // StyledLabel.
 class CheckboxControl : public Checkbox {
  public:
+  METADATA_HEADER(CheckboxControl);
   CheckboxControl(std::unique_ptr<View> label, int label_line_height)
       : label_line_height_(label_line_height) {
     auto* layout = SetLayoutManager(std::make_unique<BoxLayout>());
     layout->set_between_child_spacing(LayoutProvider::Get()->GetDistanceMetric(
-        views::DISTANCE_RELATED_LABEL_HORIZONTAL));
-    layout->set_cross_axis_alignment(
-        views::BoxLayout::CrossAxisAlignment::kStart);
+        DISTANCE_RELATED_LABEL_HORIZONTAL));
+    layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStart);
 
     SetAssociatedLabel(label.get());
 
@@ -90,10 +91,14 @@ class CheckboxControl : public Checkbox {
   const int label_line_height_;
 };
 
+BEGIN_METADATA(CheckboxControl, Checkbox)
+END_METADATA
+
 }  // namespace
 
 class BubbleDialogModelHost::LayoutConsensusView : public View {
  public:
+  METADATA_HEADER(LayoutConsensusView);
   LayoutConsensusView(LayoutConsensusGroup* group, std::unique_ptr<View> view)
       : group_(group) {
     group->AddView(this);
@@ -125,6 +130,9 @@ class BubbleDialogModelHost::LayoutConsensusView : public View {
  private:
   LayoutConsensusGroup* const group_;
 };
+
+BEGIN_METADATA(BubbleDialogModelHost, LayoutConsensusView, View)
+END_METADATA
 
 BubbleDialogModelHost::LayoutConsensusGroup::LayoutConsensusGroup() = default;
 BubbleDialogModelHost::LayoutConsensusGroup::~LayoutConsensusGroup() {
@@ -245,8 +253,8 @@ BubbleDialogModelHost::BubbleDialogModelHost(
   set_close_on_deactivate(model_->close_on_deactivate(GetPassKey()));
 
   set_fixed_width(LayoutProvider::Get()->GetDistanceMetric(
-      anchor_view ? views::DISTANCE_BUBBLE_PREFERRED_WIDTH
-                  : views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
+      anchor_view ? DISTANCE_BUBBLE_PREFERRED_WIDTH
+                  : DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 
   AddInitialFields();
 }
@@ -275,7 +283,7 @@ View* BubbleDialogModelHost::GetInitiallyFocusedView() {
   if (!model_)
     return BubbleDialogDelegateView::GetInitiallyFocusedView();
 
-  base::Optional<int> unique_id = model_->initially_focused_field(GetPassKey());
+  absl::optional<int> unique_id = model_->initially_focused_field(GetPassKey());
 
   if (!unique_id)
     return BubbleDialogDelegateView::GetInitiallyFocusedView();
@@ -321,15 +329,6 @@ void BubbleDialogModelHost::Close() {
   model_.reset();
 }
 
-void BubbleDialogModelHost::SelectAllText(int unique_id) {
-  const DialogModelHostField& field_view_info =
-      FindDialogModelHostField(model_->GetFieldByUniqueId(unique_id));
-
-  DCHECK(field_view_info.focusable_view);
-  static_cast<views::Textfield*>(field_view_info.focusable_view)
-      ->SelectAll(false);
-}
-
 void BubbleDialogModelHost::OnFieldAdded(ui::DialogModelField* field) {
   switch (field->type(GetPassKey())) {
     case ui::DialogModelField::kButton:
@@ -363,7 +362,7 @@ void BubbleDialogModelHost::AddInitialFields() {
 void BubbleDialogModelHost::UpdateSpacingAndMargins() {
   const DialogContentType first_field_content_type =
       children().empty()
-          ? DialogContentType::CONTROL
+          ? DialogContentType::kControl
           : FieldTypeToContentType(FindDialogModelHostField(children().front())
                                        .dialog_model_field->type(GetPassKey()));
   DialogContentType last_field_content_type = first_field_content_type;
@@ -378,8 +377,8 @@ void BubbleDialogModelHost::UpdateSpacingAndMargins() {
     } else {
       int padding_margin = LayoutProvider::Get()->GetDistanceMetric(
           DISTANCE_UNRELATED_CONTROL_VERTICAL);
-      if (last_field_content_type == DialogContentType::CONTROL &&
-          field_content_type == DialogContentType::CONTROL) {
+      if (last_field_content_type == DialogContentType::kControl &&
+          field_content_type == DialogContentType::kControl) {
         // TODO(pbos): Move DISTANCE_CONTROL_LIST_VERTICAL to
         // views::LayoutProvider and replace "12" here.
         padding_margin = 12;
@@ -439,10 +438,11 @@ void BubbleDialogModelHost::AddOrUpdateCheckbox(
     const int line_height = label->GetLineHeight();
     checkbox = std::make_unique<CheckboxControl>(std::move(label), line_height);
   }
+  checkbox->SetChecked(model_field->is_checked());
 
   checkbox->SetCallback(base::BindRepeating(
       [](ui::DialogModelCheckbox* model_field,
-         util::PassKey<DialogModelHost> pass_key, Checkbox* checkbox,
+         base::PassKey<DialogModelHost> pass_key, Checkbox* checkbox,
          const ui::Event& event) {
         model_field->OnChecked(pass_key, checkbox->GetChecked());
       },
@@ -462,18 +462,20 @@ void BubbleDialogModelHost::AddOrUpdateCombobox(
                                   : model_field->accessible_name(GetPassKey()));
   combobox->SetCallback(base::BindRepeating(
       [](ui::DialogModelCombobox* model_field,
-         util::PassKey<DialogModelHost> pass_key, Combobox* combobox) {
-        // TODO(pbos): This should be a subscription through the Combobox
-        // directly, but Combobox right now doesn't support listening to
-        // selected-index changes.
-        model_field->OnSelectedIndexChanged(pass_key,
-                                            combobox->GetSelectedIndex());
+         base::PassKey<DialogModelHost> pass_key, Combobox* combobox) {
         model_field->OnPerformAction(pass_key);
       },
       model_field, GetPassKey(), combobox.get()));
 
-  // TODO(pbos): Add subscription to combobox selected-index changes.
   combobox->SetSelectedIndex(model_field->selected_index());
+  property_changed_subscriptions_.push_back(
+      combobox->AddSelectedIndexChangedCallback(base::BindRepeating(
+          [](ui::DialogModelCombobox* model_field,
+             base::PassKey<DialogModelHost> pass_key, Combobox* combobox) {
+            model_field->OnSelectedIndexChanged(pass_key,
+                                                combobox->GetSelectedIndex());
+          },
+          model_field, GetPassKey(), combobox.get())));
   const gfx::FontList& font_list = combobox->GetFontList();
   AddViewForLabelAndField(model_field, model_field->label(GetPassKey()),
                           std::move(combobox), font_list);
@@ -490,10 +492,19 @@ void BubbleDialogModelHost::AddOrUpdateTextfield(
           : model_field->accessible_name(GetPassKey()));
   textfield->SetText(model_field->text());
 
+  // If this textfield is initially focused the text should be initially
+  // selected as well.
+  absl::optional<int> initially_focused_field_id =
+      model_->initially_focused_field(GetPassKey());
+  if (initially_focused_field_id &&
+      model_field->unique_id(GetPassKey()) == initially_focused_field_id) {
+    textfield->SelectAll(true);
+  }
+
   property_changed_subscriptions_.push_back(
       textfield->AddTextChangedCallback(base::BindRepeating(
           [](ui::DialogModelTextfield* model_field,
-             util::PassKey<DialogModelHost> pass_key, Textfield* textfield) {
+             base::PassKey<DialogModelHost> pass_key, Textfield* textfield) {
             model_field->OnTextChanged(pass_key, textfield->GetText());
           },
           model_field, GetPassKey(), textfield.get())));
@@ -505,7 +516,7 @@ void BubbleDialogModelHost::AddOrUpdateTextfield(
 
 void BubbleDialogModelHost::AddViewForLabelAndField(
     ui::DialogModelField* model_field,
-    const base::string16& label_text,
+    const std::u16string& label_text,
     std::unique_ptr<View> field,
     const gfx::FontList& field_font) {
   auto box_layout = std::make_unique<BoxLayoutView>();
@@ -610,9 +621,9 @@ BubbleDialogModelHost::CreateStyledLabelForDialogModelLabel(
   DCHECK_EQ(dialog_label.links(GetPassKey()).size(), 1u);
 
   size_t offset;
-  const base::string16 link_text = l10n_util::GetStringUTF16(
+  const std::u16string link_text = l10n_util::GetStringUTF16(
       dialog_label.links(GetPassKey()).front().message_id);
-  const base::string16 text = l10n_util::GetStringFUTF16(
+  const std::u16string text = l10n_util::GetStringFUTF16(
       dialog_label.message_id(GetPassKey()), link_text, &offset);
 
   auto styled_label = std::make_unique<StyledLabel>();

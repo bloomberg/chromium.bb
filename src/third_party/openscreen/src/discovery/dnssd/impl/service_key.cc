@@ -20,13 +20,11 @@ namespace discovery {
 // so there is no reason to continue processing.
 ServiceKey::ServiceKey(const MdnsRecord& record) {
   ErrorOr<ServiceKey> key = TryCreate(record);
-  OSP_DCHECK(key.is_value());
   *this = std::move(key.value());
 }
 
 ServiceKey::ServiceKey(const DomainName& domain) {
   ErrorOr<ServiceKey> key = TryCreate(domain);
-  OSP_DCHECK(key.is_value());
   *this = std::move(key.value());
 }
 

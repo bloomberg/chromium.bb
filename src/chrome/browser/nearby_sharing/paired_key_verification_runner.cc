@@ -16,6 +16,11 @@
 
 namespace {
 
+// The size of the random byte array used for the encryption frame's signed data
+// if a valid signature cannot be generated. This size is consistent with the
+// GmsCore implementation.
+const size_t kNearbyShareNumBytesRandomSignature = 72;
+
 std::ostream& operator<<(
     std::ostream& out,
     const PairedKeyVerificationRunner::PairedKeyVerificationResult& obj) {
@@ -53,7 +58,7 @@ PairedKeyVerificationRunner::PairedKeyVerificationRunner(
     const std::string& endpoint_id,
     const std::vector<uint8_t>& token,
     NearbyConnection* connection,
-    const base::Optional<NearbyShareDecryptedPublicCertificate>& certificate,
+    const absl::optional<NearbyShareDecryptedPublicCertificate>& certificate,
     NearbyShareCertificateManager* certificate_manager,
     nearby_share::mojom::Visibility visibility,
     bool restrict_to_contacts,
@@ -99,7 +104,7 @@ void PairedKeyVerificationRunner::Run(
 }
 
 void PairedKeyVerificationRunner::OnReadPairedKeyEncryptionFrame(
-    base::Optional<sharing::mojom::V1FramePtr> frame) {
+    absl::optional<sharing::mojom::V1FramePtr> frame) {
   if (!frame) {
     NS_LOG(WARNING) << __func__
                     << ": Failed to read remote paired key encrpytion";
@@ -123,7 +128,7 @@ void PairedKeyVerificationRunner::OnReadPairedKeyEncryptionFrame(
     NS_LOG(VERBOSE) << __func__
                     << ": we are only allowing connections with contacts. "
                        "Rejecting connection from unknown ShareTarget - "
-                    << share_target_.device_name;
+                    << share_target_.id;
     std::move(callback_).Run(PairedKeyVerificationResult::kFail);
     return;
   }
@@ -146,7 +151,7 @@ void PairedKeyVerificationRunner::OnReadPairedKeyEncryptionFrame(
 
 void PairedKeyVerificationRunner::OnReadPairedKeyResultFrame(
     std::vector<PairedKeyVerificationResult> verification_results,
-    base::Optional<sharing::mojom::V1FramePtr> frame) {
+    absl::optional<sharing::mojom::V1FramePtr> frame) {
   if (!frame) {
     NS_LOG(WARNING) << __func__ << ": Failed to read remote paired key result";
     std::move(callback_).Run(PairedKeyVerificationResult::kFail);
@@ -232,31 +237,31 @@ void PairedKeyVerificationRunner::SendCertificateInfo() {
 }
 
 void PairedKeyVerificationRunner::SendPairedKeyEncryptionFrame() {
+  absl::optional<std::vector<uint8_t>> signature =
+      certificate_manager_->SignWithPrivateCertificate(
+          visibility_, PadPrefix(local_prefix_, raw_token_));
+  if (!signature || signature->empty()) {
+    signature = GenerateRandomBytes(kNearbyShareNumBytesRandomSignature);
+  }
+
+  std::vector<uint8_t> certificate_id_hash;
+  if (certificate_) {
+    certificate_id_hash = certificate_->HashAuthenticationToken(raw_token_);
+  }
+  if (certificate_id_hash.empty()) {
+    certificate_id_hash =
+        GenerateRandomBytes(kNearbyShareNumBytesAuthenticationTokenHash);
+  }
+
   sharing::nearby::Frame frame;
   frame.set_version(sharing::nearby::Frame::V1);
   sharing::nearby::V1Frame* v1_frame = frame.mutable_v1();
   v1_frame->set_type(sharing::nearby::V1Frame::PAIRED_KEY_ENCRYPTION);
   sharing::nearby::PairedKeyEncryptionFrame* encryption_frame =
       v1_frame->mutable_paired_key_encryption();
-
-  base::Optional<std::vector<uint8_t>> signature =
-      certificate_manager_->SignWithPrivateCertificate(
-          visibility_, PadPrefix(local_prefix_, raw_token_));
-  if (signature) {
-    std::vector<uint8_t> certificate_id_hash;
-    if (certificate_)
-      certificate_id_hash = certificate_->HashAuthenticationToken(raw_token_);
-
-    if (certificate_id_hash.empty()) {
-      certificate_id_hash =
-          GenerateRandomBytes(kNearbyShareNumBytesAuthenticationTokenHash);
-    }
-
-    encryption_frame->set_signed_data(signature->data(), signature->size());
-    encryption_frame->set_secret_id_hash(certificate_id_hash.data(),
-                                         certificate_id_hash.size());
-  }
-
+  encryption_frame->set_signed_data(signature->data(), signature->size());
+  encryption_frame->set_secret_id_hash(certificate_id_hash.data(),
+                                       certificate_id_hash.size());
   std::vector<uint8_t> data(frame.ByteSize());
   frame.SerializeToArray(data.data(), frame.ByteSize());
 
@@ -266,7 +271,7 @@ void PairedKeyVerificationRunner::SendPairedKeyEncryptionFrame() {
 PairedKeyVerificationRunner::PairedKeyVerificationResult
 PairedKeyVerificationRunner::VerifyRemotePublicCertificate(
     const sharing::mojom::V1FramePtr& frame) {
-  base::Optional<std::vector<uint8_t>> hash =
+  absl::optional<std::vector<uint8_t>> hash =
       certificate_manager_->HashAuthenticationTokenWithPrivateCertificate(
           visibility_, raw_token_);
   if (hash && *hash == frame->get_paired_key_encryption()->secret_id_hash) {

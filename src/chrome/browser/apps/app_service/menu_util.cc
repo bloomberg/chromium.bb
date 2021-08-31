@@ -7,9 +7,13 @@
 #include <utility>
 
 #include "ash/public/cpp/app_menu_constants.h"
+#include "base/check.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -62,11 +66,11 @@ void AddSeparator(ui::MenuSeparatorType separator_type,
   (*menu_items)->items.push_back(std::move(menu_item));
 }
 
-void AddArcCommandItem(int command_id,
-                       const std::string& shortcut_id,
-                       const std::string& label,
-                       const gfx::ImageSkia& icon,
-                       apps::mojom::MenuItemsPtr* menu_items) {
+void AddShortcutCommandItem(int command_id,
+                            const std::string& shortcut_id,
+                            const std::string& label,
+                            const gfx::ImageSkia& icon,
+                            apps::mojom::MenuItemsPtr* menu_items) {
   apps::mojom::MenuItemPtr menu_item = apps::mojom::MenuItem::New();
   menu_item->type = apps::mojom::MenuItemType::kPublisherCommand;
   menu_item->command_id = command_id;
@@ -116,9 +120,10 @@ bool ShouldAddOpenItem(const std::string& app_id,
     return false;
   }
 
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile);
-  return proxy->InstanceRegistry().GetWindows(app_id).empty();
+  return apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->InstanceRegistry()
+      .GetWindows(app_id)
+      .empty();
 }
 
 bool ShouldAddCloseItem(const std::string& app_id,
@@ -128,9 +133,10 @@ bool ShouldAddCloseItem(const std::string& app_id,
     return false;
   }
 
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile);
-  return !proxy->InstanceRegistry().GetWindows(app_id).empty();
+  return !apps::AppServiceProxyFactory::GetForProfile(profile)
+              ->InstanceRegistry()
+              .GetWindows(app_id)
+              .empty();
 }
 
 void PopulateRadioItemFromMojoMenuItems(
@@ -189,10 +195,9 @@ bool PopulateNewItemFromMojoMenuItems(
   return true;
 }
 
-void PopulateItemFromMojoMenuItems(
-    apps::mojom::MenuItemPtr item,
-    ui::SimpleMenuModel* model,
-    arc::ArcAppShortcutItems* arc_shortcut_items) {
+void PopulateItemFromMojoMenuItems(apps::mojom::MenuItemPtr item,
+                                   ui::SimpleMenuModel* model,
+                                   apps::AppShortcutItems* arc_shortcut_items) {
   switch (item->type) {
     case apps::mojom::MenuItemType::kSeparator:
       model->AddSeparator(static_cast<ui::MenuSeparatorType>(item->command_id));
@@ -200,7 +205,7 @@ void PopulateItemFromMojoMenuItems(
     case apps::mojom::MenuItemType::kPublisherCommand: {
       model->AddItemWithIcon(item->command_id, base::UTF8ToUTF16(item->label),
                              ui::ImageModel::FromImageSkia(item->image));
-      arc::ArcAppShortcutItem arc_shortcut_item;
+      apps::AppShortcutItem arc_shortcut_item;
       arc_shortcut_item.shortcut_id = item->shortcut_id;
       arc_shortcut_items->push_back(arc_shortcut_item);
       break;
@@ -211,6 +216,53 @@ void PopulateItemFromMojoMenuItems(
       NOTREACHED();
       break;
   }
+}
+
+base::StringPiece MenuTypeToString(apps::mojom::MenuType menu_type) {
+  switch (menu_type) {
+    case apps::mojom::MenuType::kShelf:
+      return "shelf";
+    case apps::mojom::MenuType::kAppList:
+      return "applist";
+  }
+}
+
+apps::mojom::MenuType MenuTypeFromString(base::StringPiece menu_type) {
+  if (base::LowerCaseEqualsASCII(menu_type, "shelf"))
+    return apps::mojom::MenuType::kShelf;
+  if (base::LowerCaseEqualsASCII(menu_type, "applist"))
+    return apps::mojom::MenuType::kAppList;
+  return apps::mojom::MenuType::kShelf;
+}
+
+mojom::MenuItemsPtr CreateBrowserMenuItems(mojom::MenuType menu_type,
+                                           const Profile* profile) {
+  DCHECK(profile);
+  mojom::MenuItemsPtr menu_items = mojom::MenuItems::New();
+
+  // "Normal" windows are not allowed when incognito is enforced.
+  if (IncognitoModePrefs::GetAvailability(profile->GetPrefs()) !=
+      IncognitoModePrefs::FORCED) {
+    AddCommandItem((menu_type == mojom::MenuType::kAppList)
+                       ? ash::APP_CONTEXT_MENU_NEW_WINDOW
+                       : ash::MENU_NEW_WINDOW,
+                   IDS_APP_LIST_NEW_WINDOW, &menu_items);
+  }
+
+  // Incognito windows are not allowed when incognito is disabled.
+  if (!profile->IsOffTheRecord() &&
+      IncognitoModePrefs::GetAvailability(profile->GetPrefs()) !=
+          IncognitoModePrefs::DISABLED) {
+    AddCommandItem((menu_type == mojom::MenuType::kAppList)
+                       ? ash::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW
+                       : ash::MENU_NEW_INCOGNITO_WINDOW,
+                   IDS_APP_LIST_NEW_INCOGNITO_WINDOW, &menu_items);
+  }
+
+  AddCommandItem(ash::SHOW_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO,
+                 &menu_items);
+
+  return menu_items;
 }
 
 }  // namespace apps

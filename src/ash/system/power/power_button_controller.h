@@ -123,10 +123,9 @@ class ASH_EXPORT PowerButtonController
   // chromeos::PowerManagerClient::Observer:
   void ScreenBrightnessChanged(
       const power_manager::BacklightBrightnessChange& change) override;
-  void PowerButtonEventReceived(bool down,
-                                const base::TimeTicks& timestamp) override;
+  void PowerButtonEventReceived(bool down, base::TimeTicks timestamp) override;
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
-  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void SuspendDone(base::TimeDelta sleep_duration) override;
 
   // SessionObserver:
   void OnLoginStatusChanged(LoginStatus status) override;
@@ -134,17 +133,18 @@ class ASH_EXPORT PowerButtonController
   // Initializes |screenshot_controller_| according to the tablet mode switch in
   // |result|.
   void OnGetSwitchStates(
-      base::Optional<chromeos::PowerManagerClient::SwitchStates> result);
+      absl::optional<chromeos::PowerManagerClient::SwitchStates> result);
 
   // TODO(minch): Remove this if/when all applicable devices expose a tablet
   // mode switch: https://crbug.com/798646.
   // AccelerometerReader::Observer:
-  void OnAccelerometerUpdated(
-      scoped_refptr<const AccelerometerUpdate> update) override;
+  void OnECLidAngleDriverStatusChanged(bool is_supported) override {}
+  void OnAccelerometerUpdated(const AccelerometerUpdate& update) override;
 
   // BacklightsForcedOffSetter::Observer:
   void OnBacklightsForcedOffChanged(bool forced_off) override;
-  void OnScreenStateChanged(ScreenState screen_state) override;
+  void OnScreenBacklightStateChanged(
+      ScreenBacklightState screen_backlight_state) override;
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;
@@ -217,22 +217,9 @@ class ASH_EXPORT PowerButtonController
   // Saves the button type for this power button.
   ButtonType button_type_ = ButtonType::NORMAL;
 
-  // True if the device should observe accelerometer events to enter tablet
-  // mode.
-  bool observe_accelerometer_events_ = false;
-
   // True if the kForceTabletPowerButton flag is set. This forces tablet power
   // button behavior even while in laptop mode.
   bool force_tablet_power_button_ = false;
-
-  // True if the device has tablet mode switch.
-  bool has_tablet_mode_switch_ = false;
-
-  // When ChromeOS EC lid angle driver is supported, there's always tablet mode
-  // switch in device, so PowerButtonController doesn't need to listens to
-  // accelerometer events.
-  ECLidAngleDriverStatus ec_lid_angle_driver_status_ =
-      ECLidAngleDriverStatus::UNKNOWN;
 
   // True if the screen was off when the power button was pressed.
   bool screen_off_when_power_button_down_ = false;
@@ -286,8 +273,8 @@ class ASH_EXPORT PowerButtonController
   // display's height or width, respectively.
   double power_button_offset_percentage_ = 0.f;
 
-  ScopedObserver<BacklightsForcedOffSetter, ScreenBacklightObserver>
-      backlights_forced_off_observer_;
+  base::ScopedObservation<BacklightsForcedOffSetter, ScreenBacklightObserver>
+      backlights_forced_off_observation_{this};
 
   // Used to maintain active state of the active window that exists before
   // showing menu.

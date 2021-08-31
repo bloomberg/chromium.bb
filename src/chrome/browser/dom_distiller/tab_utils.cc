@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "components/back_forward_cache/back_forward_cache_disable.h"
 #include "components/dom_distiller/content/browser/distiller_page_web_contents.h"
 #include "components/dom_distiller/content/browser/uma_helper.h"
 #include "components/dom_distiller/core/distiller_page.h"
@@ -96,7 +97,9 @@ SelfDeletingRequestDelegate::SelfDeletingRequestDelegate(
   // cache.
   content::BackForwardCache::DisableForRenderFrameHost(
       web_contents->GetMainFrame(),
-      "browser::DomDistiller_SelfDeletingRequestDelegate");
+      back_forward_cache::DisabledReason(
+          back_forward_cache::DisabledReasonId::
+              kDomDistiller_SelfDeletingRequestDelegate));
 }
 
 SelfDeletingRequestDelegate::~SelfDeletingRequestDelegate() {}
@@ -162,6 +165,12 @@ void DistillCurrentPageAndView(content::WebContents* old_web_contents) {
   new_web_contents->GetController().CopyStateFrom(
       &old_web_contents->GetController(), /* needs_reload */ true);
 
+#if !defined(OS_ANDROID)
+  // Use the old_web_contents to log time on the distillable page before
+  // navigating away from these contents.
+  dom_distiller::UMAHelper::LogTimeOnDistillablePage(old_web_contents);
+#endif
+
   // StartNavigationToDistillerViewer must come before swapping the tab contents
   // to avoid triggering a reload of the page.  This reloadmakes it very
   // difficult to distinguish between the intermediate reload and a user hitting
@@ -177,10 +186,6 @@ void DistillCurrentPageAndView(content::WebContents* old_web_contents) {
       new SourcePageHandleWebContents(old_web_contents_owned.release(), true));
 
   MaybeStartDistillation(std::move(source_page_handle));
-
-#if !defined(OS_ANDROID)
-  dom_distiller::UMAHelper::LogTimeOnDistillablePage(old_web_contents);
-#endif
 }
 
 void DistillCurrentPage(content::WebContents* source_web_contents) {

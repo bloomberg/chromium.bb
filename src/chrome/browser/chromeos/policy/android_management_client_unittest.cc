@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -51,9 +52,12 @@ class AndroidManagementClientTest : public testing::Test {
     shared_url_loader_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &url_loader_factory_);
-    client_.reset(new AndroidManagementClient(
-        &service_, shared_url_loader_factory_, CoreAccountId(kAccountEmail),
-        identity_test_environment_.identity_manager()));
+    signin::IdentityManager* identity_manager =
+        identity_test_environment_.identity_manager();
+    CoreAccountId account_id = identity_manager->PickAccountIdForAccount(
+        signin::GetTestGaiaIdForEmail(kAccountEmail), kAccountEmail);
+    client_ = std::make_unique<AndroidManagementClient>(
+        &service_, shared_url_loader_factory_, account_id, identity_manager);
 
     service_.ScheduleInitialization(0);
     base::RunLoop().RunUntilIdle();
@@ -83,12 +87,9 @@ TEST_F(AndroidManagementClientTest, CheckAndroidManagementCall) {
               Run(AndroidManagementClient::Result::UNMANAGED))
       .Times(1);
 
-  // On ChromeOS platform, account_id and email are same.
   AccountInfo account_info =
       identity_test_environment_.MakeAccountAvailable(kAccountEmail);
-
   client_->StartCheckAndroidManagement(callback_observer_.Get());
-
   identity_test_environment_
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
           account_info.account_id, kOAuthToken, base::Time::Max());

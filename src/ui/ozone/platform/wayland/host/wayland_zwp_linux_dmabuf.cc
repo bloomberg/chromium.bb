@@ -25,7 +25,7 @@ WaylandZwpLinuxDmabuf::WaylandZwpLinuxDmabuf(
 
   // A roundtrip after binding guarantees that the client has received all
   // supported formats.
-  wl_display_roundtrip(connection_->display());
+  connection_->RoundTripQueue();
 }
 
 WaylandZwpLinuxDmabuf::~WaylandZwpLinuxDmabuf() = default;
@@ -72,7 +72,7 @@ void WaylandZwpLinuxDmabuf::CreateBuffer(base::ScopedFD fd,
 
 void WaylandZwpLinuxDmabuf::AddSupportedFourCCFormatAndModifier(
     uint32_t fourcc_format,
-    base::Optional<uint64_t> modifier) {
+    absl::optional<uint64_t> modifier) {
   // Return on not supported fourcc formats.
   if (!IsValidBufferFormat(fourcc_format))
     return;
@@ -130,7 +130,7 @@ void WaylandZwpLinuxDmabuf::Format(void* data,
                                    uint32_t format) {
   WaylandZwpLinuxDmabuf* self = static_cast<WaylandZwpLinuxDmabuf*>(data);
   if (self)
-    self->AddSupportedFourCCFormatAndModifier(format, base::nullopt);
+    self->AddSupportedFourCCFormatAndModifier(format, absl::nullopt);
 }
 
 // static

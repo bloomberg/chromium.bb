@@ -4,13 +4,11 @@
 
 package org.chromium.chrome.browser.browserservices.ui;
 
-import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
-
 import androidx.annotation.Nullable;
 import androidx.browser.trusted.TrustedWebActivityDisplayMode;
 import androidx.browser.trusted.TrustedWebActivityDisplayMode.ImmersiveMode;
 
-import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityBrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.browserservices.ui.controller.CurrentPageVerifier;
 import org.chromium.chrome.browser.browserservices.ui.controller.CurrentPageVerifier.VerificationStatus;
@@ -23,8 +21,6 @@ import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarC
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
-import org.chromium.chrome.browser.webapps.WebDisplayMode;
-import org.chromium.chrome.browser.webapps.WebappExtras;
 
 import javax.inject.Inject;
 
@@ -127,11 +123,6 @@ public class SharedActivityCoordinator implements InflationObserver {
 
     private ImmersiveMode computeImmersiveMode(
             BrowserServicesIntentDataProvider intentDataProvider) {
-        WebappExtras webappExtras = intentDataProvider.getWebappExtras();
-        if (webappExtras != null && webappExtras.displayMode == WebDisplayMode.FULLSCREEN) {
-            return new ImmersiveMode(false /* sticky */, LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT);
-        }
-
         TrustedWebActivityDisplayMode displayMode = intentDataProvider.getTwaDisplayMode();
         return (displayMode instanceof ImmersiveMode) ? (ImmersiveMode) displayMode : null;
     }

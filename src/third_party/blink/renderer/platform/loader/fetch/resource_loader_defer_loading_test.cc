@@ -64,13 +64,12 @@ class TestWebURLLoader final : public WebURLLoader {
   void LoadSynchronously(
       std::unique_ptr<network::ResourceRequest> request,
       scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-      int requestor_id,
       bool pass_response_pipe_to_client,
       bool no_mime_sniffing,
       base::TimeDelta timeout_interval,
       WebURLLoaderClient*,
       WebURLResponse&,
-      base::Optional<WebURLError>&,
+      absl::optional<WebURLError>&,
       WebData&,
       int64_t& encoded_data_length,
       int64_t& encoded_body_length,
@@ -82,7 +81,6 @@ class TestWebURLLoader final : public WebURLLoader {
   void LoadAsynchronously(
       std::unique_ptr<network::ResourceRequest> request,
       scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-      int requestor_id,
       bool no_mime_sniffing,
       std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
           resource_load_info_notifier_wrapper,
@@ -118,7 +116,8 @@ class DeferTestLoaderFactory final : public ResourceFetcher::LoaderFactory {
       const ResourceRequest& request,
       const ResourceLoaderOptions& options,
       scoped_refptr<base::SingleThreadTaskRunner> freezable_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner)
+      scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner,
+      WebBackForwardCacheLoaderHelper back_forward_cache_loader_helper)
       override {
     return std::make_unique<TestWebURLLoader>(defers_flag_);
   }
@@ -159,7 +158,8 @@ class ResourceLoaderDefersLoadingTest : public testing::Test {
         base::MakeRefCounted<scheduler::FakeTaskRunner>(),
         MakeGarbageCollected<DeferTestLoaderFactory>(
             &web_url_loader_defers_, process_code_cache_request_callback_),
-        MakeGarbageCollected<MockContextLifecycleNotifier>()));
+        MakeGarbageCollected<MockContextLifecycleNotifier>(),
+        nullptr /* back_forward_cache_loader_helper */));
   }
 
   void SetCodeCacheProcessFunction(ProcessCodeCacheRequestCallback callback) {

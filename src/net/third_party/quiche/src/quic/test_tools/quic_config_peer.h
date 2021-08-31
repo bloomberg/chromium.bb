@@ -5,10 +5,10 @@
 #ifndef QUICHE_QUIC_TEST_TOOLS_QUIC_CONFIG_PEER_H_
 #define QUICHE_QUIC_TEST_TOOLS_QUIC_CONFIG_PEER_H_
 
-#include "net/third_party/quiche/src/quic/core/quic_config.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
+#include "quic/core/quic_config.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_types.h"
 
 namespace quic {
 
@@ -55,7 +55,7 @@ class QuicConfigPeer {
                                          const QuicTagVector& options);
 
   static void SetReceivedStatelessResetToken(QuicConfig* config,
-                                             QuicUint128 token);
+                                             const StatelessResetToken& token);
 
   static void SetReceivedMaxPacketSize(QuicConfig* config,
                                        uint32_t max_udp_payload_size);
@@ -79,7 +79,6 @@ class QuicConfigPeer {
 
   static void SetReceivedMaxDatagramFrameSize(QuicConfig* config,
                                               uint64_t max_datagram_frame_size);
-  static void DisableSupportHandshakeDone(QuicConfig* config);
 };
 
 }  // namespace test

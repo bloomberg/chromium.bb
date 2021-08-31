@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebURLLoaderMock_h
-#define WebURLLoaderMock_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_WEBURL_LOADER_MOCK_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_WEBURL_LOADER_MOCK_H_
 
 #include <memory>
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 
@@ -37,7 +37,7 @@ class WebURLLoaderMock : public WebURLLoader {
   void ServeAsynchronousRequest(WebURLLoaderTestDelegate* delegate,
                                 const WebURLResponse& response,
                                 const WebData& data,
-                                const base::Optional<WebURLError>& error);
+                                const absl::optional<WebURLError>& error);
 
   // Simulates the redirect being served.
   WebURL ServeRedirect(const WebString& method,
@@ -47,13 +47,12 @@ class WebURLLoaderMock : public WebURLLoader {
   void LoadSynchronously(
       std::unique_ptr<network::ResourceRequest> request,
       scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-      int requestor_id,
       bool pass_response_pipe_to_client,
       bool no_mime_sniffing,
       base::TimeDelta timeout_interval,
       WebURLLoaderClient* client,
       WebURLResponse&,
-      base::Optional<WebURLError>&,
+      absl::optional<WebURLError>&,
       WebData&,
       int64_t& encoded_data_length,
       int64_t& encoded_body_length,
@@ -63,7 +62,6 @@ class WebURLLoaderMock : public WebURLLoader {
   void LoadAsynchronously(
       std::unique_ptr<network::ResourceRequest> request,
       scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-      int requestor_id,
       bool no_mime_sniffing,
       std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
           resource_load_info_notifier_wrapper,
@@ -93,4 +91,4 @@ class WebURLLoaderMock : public WebURLLoader {
 
 }  // namespace blink
 
-#endif  // WebURLLoaderMock_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_WEBURL_LOADER_MOCK_H_

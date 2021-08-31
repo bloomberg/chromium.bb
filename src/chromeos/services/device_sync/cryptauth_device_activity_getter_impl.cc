@@ -60,14 +60,14 @@ void CryptAuthDeviceActivityGetterImpl::Factory::SetFactoryForTesting(
 }
 
 // static
-base::Optional<base::TimeDelta>
+absl::optional<base::TimeDelta>
 CryptAuthDeviceActivityGetterImpl::GetTimeoutForState(State state) {
   switch (state) {
     case State::kWaitingForGetDevicesActivityStatusResponse:
       return kWaitingForGetDevicesActivityStatusResponseTimeout;
     default:
       // Signifies that there should not be a timeout.
-      return base::nullopt;
+      return absl::nullopt;
   }
 }
 
@@ -109,7 +109,7 @@ void CryptAuthDeviceActivityGetterImpl::SetState(State state) {
   state_ = state;
   last_state_change_timestamp_ = base::TimeTicks::Now();
 
-  base::Optional<base::TimeDelta> timeout_for_state = GetTimeoutForState(state);
+  absl::optional<base::TimeDelta> timeout_for_state = GetTimeoutForState(state);
   if (!timeout_for_state)
     return;
 
@@ -159,7 +159,11 @@ void CryptAuthDeviceActivityGetterImpl::OnGetDevicesActivityStatusSuccess(
     device_activity_statuses.emplace_back(mojom::DeviceActivityStatus::New(
         device_activity_status.device_id(),
         base::Time::FromTimeT(device_activity_status.last_activity_time_sec()),
-        std::move(device_activity_status.connectivity_status())));
+        std::move(device_activity_status.connectivity_status()),
+        base::Time::FromTimeT(
+            device_activity_status.last_update_time().seconds()) +
+            base::TimeDelta::FromNanoseconds(
+                device_activity_status.last_update_time().nanos())));
   }
 
   cryptauth_client_.reset();

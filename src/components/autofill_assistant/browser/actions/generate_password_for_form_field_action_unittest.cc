@@ -47,7 +47,7 @@ class GeneratePasswordForFormFieldActionTest : public testing::Test {
         .WillByDefault(Return(kGeneratedPassword));
 
     user_data_.selected_login_ =
-        base::make_optional<WebsiteLoginManager::Login>(GURL(kFakeUrl),
+        absl::make_optional<WebsiteLoginManager::Login>(GURL(kFakeUrl),
                                                         kFakeUsername);
   }
 
@@ -60,7 +60,7 @@ class GeneratePasswordForFormFieldActionTest : public testing::Test {
 };
 
 TEST_F(GeneratePasswordForFormFieldActionTest, GeneratedPassword) {
-  ON_CALL(mock_action_delegate_, OnRetrieveElementFormAndFieldData)
+  ON_CALL(mock_action_delegate_, RetrieveElementFormAndFieldData)
       .WillByDefault(RunOnceCallback<1>(ClientStatus(ACTION_APPLIED),
                                         autofill::FormData(),
                                         autofill::FormFieldData()));
@@ -82,7 +82,7 @@ TEST_F(GeneratePasswordForFormFieldActionTest, GeneratedPassword) {
 }
 
 TEST_F(GeneratePasswordForFormFieldActionTest, FormDataIsNotRetrieved) {
-  ON_CALL(mock_action_delegate_, OnRetrieveElementFormAndFieldData)
+  ON_CALL(mock_action_delegate_, RetrieveElementFormAndFieldData)
       .WillByDefault(RunOnceCallback<1>(ClientStatus(INVALID_SELECTOR),
                                         autofill::FormData(),
                                         autofill::FormFieldData()));

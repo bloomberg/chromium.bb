@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_BOX_STATE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_BOX_STATE_H_
 
+#include "base/dcheck_is_on.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
@@ -40,6 +42,12 @@ struct NGInlineBoxState {
   const NGInlineItem* item = nullptr;
   const ComputedStyle* style = nullptr;
 
+  // Points to style->GetFont(), or |scaled_font| in an SVG <text>.
+  const Font* font;
+  // A storage of SVG scaled font. Do not touch this outside of
+  // InitializeFont().
+  absl::optional<Font> scaled_font;
+
   // The united metrics for the current box. This includes all objects in this
   // box, including descendants, and adjusted by placement properties such as
   // 'vertical-align'.
@@ -70,6 +78,10 @@ struct NGInlineBoxState {
   bool has_box_placeholder = false;
   bool needs_box_fragment = false;
 
+  // Initialize |font| and |scaled_font|. This should be called after setting
+  // |style|.
+  void InitializeFont(bool is_svg_text, const LayoutObject& layout_object);
+
   // True if this box has a metrics, including pending ones. Pending metrics
   // will be activated in |EndBoxState()|.
   bool HasMetrics() const {
@@ -79,8 +91,12 @@ struct NGInlineBoxState {
   // Compute text metrics for a box. All text in a box share the same
   // metrics.
   // The computed metrics is included into the line height of the current box.
-  void ComputeTextMetrics(const ComputedStyle&, FontBaseline baseline_type);
-  void EnsureTextMetrics(const ComputedStyle&, FontBaseline);
+  void ComputeTextMetrics(const ComputedStyle&,
+                          const Font& fontref,
+                          FontBaseline baseline_type);
+  void EnsureTextMetrics(const ComputedStyle&,
+                         const Font& fontref,
+                         FontBaseline);
   void ResetTextMetrics();
 
   void AccumulateUsedFonts(const ShapeResultView*, FontBaseline);
@@ -113,7 +129,8 @@ class CORE_EXPORT NGInlineLayoutStateStack {
 
   // Initialize the box state stack for a new line.
   // @return The initial box state for the line.
-  NGInlineBoxState* OnBeginPlaceItems(const ComputedStyle&,
+  NGInlineBoxState* OnBeginPlaceItems(const NGInlineNode node,
+                                      const ComputedStyle&,
                                       FontBaseline,
                                       bool line_height_quirk,
                                       NGLogicalLineItems* line_box);
@@ -155,17 +172,6 @@ class CORE_EXPORT NGInlineLayoutStateStack {
   // data from the line box. Callers must call |PrepareForReorder()| before
   // reordering.
   void UpdateAfterReorder(NGLogicalLineItems*);
-
-  // Update start/end of the first BoxData found at |index|.
-  //
-  // If inline fragmentation is found, a new BoxData is added.
-  //
-  // Returns the index to process next. It should be given to the next call to
-  // this function.
-  unsigned UpdateBoxDataFragmentRange(NGLogicalLineItems*, unsigned index);
-
-  // Update edges of inline fragmented boxes.
-  void UpdateFragmentedBoxDataEdges();
 
   // Compute inline positions of fragments and boxes.
   LayoutUnit ComputeInlinePositions(NGLogicalLineItems*, LayoutUnit position);
@@ -259,10 +265,24 @@ class CORE_EXPORT NGInlineLayoutStateStack {
     scoped_refptr<const NGLayoutResult> CreateBoxFragment(NGLogicalLineItems*);
   };
 
+  // Update start/end of the first BoxData found at |index|.
+  //
+  // If inline fragmentation is found, a new BoxData is added.
+  //
+  // Returns the index to process next. It should be given to the next call to
+  // this function.
+  unsigned UpdateBoxDataFragmentRange(NGLogicalLineItems*,
+                                      unsigned index,
+                                      Vector<BoxData>* fragmented_boxes);
+
+  // Update edges of inline fragmented boxes.
+  void UpdateFragmentedBoxDataEdges(Vector<BoxData>* fragmented_boxes);
+
   Vector<NGInlineBoxState, 4> stack_;
   Vector<BoxData, 4> box_data_list_;
 
   bool is_empty_line_ = false;
+  bool is_svg_text_ = false;
 };
 
 }  // namespace blink

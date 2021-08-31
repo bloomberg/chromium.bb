@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoder_state.h"
+#include "http2/hpack/decoder/hpack_decoder_state.h"
 
 // Tests of HpackDecoderState.
 
@@ -10,12 +10,11 @@
 #include <vector>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/http2/hpack/hpack_string.h"
-#include "net/third_party/quiche/src/http2/hpack/http2_hpack_constants.h"
-#include "net/third_party/quiche/src/http2/http2_constants.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_test_helpers.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
+#include "http2/hpack/http2_hpack_constants.h"
+#include "http2/http2_constants.h"
+#include "http2/platform/api/http2_logging.h"
+#include "http2/platform/api/http2_test_helpers.h"
+#include "common/platform/api/quiche_test.h"
 
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
@@ -36,10 +35,12 @@ namespace {
 
 class MockHpackDecoderListener : public HpackDecoderListener {
  public:
-  MOCK_METHOD0(OnHeaderListStart, void());
-  MOCK_METHOD2(OnHeader,
-               void(const HpackString& name, const HpackString& value));
-  MOCK_METHOD0(OnHeaderListEnd, void());
+  MOCK_METHOD(void, OnHeaderListStart, (), (override));
+  MOCK_METHOD(void,
+              OnHeader,
+              (const std::string& name, const std::string& value),
+              (override));
+  MOCK_METHOD(void, OnHeaderListEnd, (), (override));
   MOCK_METHOD(void,
               OnHeaderErrorDetected,
               (absl::string_view error_message),
@@ -155,8 +156,8 @@ class HpackDecoderStateTest : public QuicheTest {
     const HpackStringPair* entry =
         Lookup(dynamic_index + kFirstDynamicTableIndex - 1);
     VERIFY_NE(entry, nullptr);
-    VERIFY_EQ(entry->name.ToStringPiece(), name);
-    VERIFY_EQ(entry->value.ToStringPiece(), value);
+    VERIFY_EQ(entry->name, name);
+    VERIFY_EQ(entry->value, value);
     return AssertionSuccess();
   }
   AssertionResult VerifyNoEntry(size_t dynamic_index) {

@@ -10,10 +10,10 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 class GoogleServiceAuthError;
@@ -50,8 +50,8 @@ class AuthenticatedLeakCheck : public LeakDetectionCheck {
 
   // LeakDetectionCheck:
   void Start(const GURL& url,
-             base::string16 username,
-             base::string16 password) override;
+             std::u16string username,
+             std::u16string password) override;
 
 #if defined(UNIT_TEST)
   void set_network_factory(
@@ -82,7 +82,7 @@ class AuthenticatedLeakCheck : public LeakDetectionCheck {
   // null.
   void OnLookupSingleLeakResponse(
       std::unique_ptr<SingleLookupResponse> response,
-      base::Optional<LeakDetectionError> error);
+      absl::optional<LeakDetectionError> error);
 
   // Called when the network response is analazyed on the background thread. The
   // method is called on the main thread.
@@ -100,9 +100,9 @@ class AuthenticatedLeakCheck : public LeakDetectionCheck {
   // |url| passed to Start().
   GURL url_;
   // |username| passed to Start().
-  base::string16 username_;
+  std::u16string username_;
   // |password| passed to Start().
-  base::string16 password_;
+  std::u16string password_;
   // Encryption key used during the request.
   std::string encryption_key_;
   // Weak pointers for different callbacks.

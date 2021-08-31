@@ -65,61 +65,48 @@ egl::Error DisplayAndroid::initialize(egl::Display *display)
     gl::Version eglVersion(mEGL->majorVersion, mEGL->minorVersion);
     ASSERT(eglVersion >= gl::Version(1, 4));
 
+    std::vector<EGLint> renderableTypes;
     static_assert(EGL_OPENGL_ES3_BIT == EGL_OPENGL_ES3_BIT_KHR, "Extension define must match core");
-    EGLint esBit = (eglVersion >= gl::Version(1, 5) || mEGL->hasExtension("EGL_KHR_create_context"))
-                       ? EGL_OPENGL_ES3_BIT
-                       : EGL_OPENGL_ES2_BIT;
-
-    // clang-format off
-    std::vector<EGLint> configAttribListBase =
+    if (eglVersion >= gl::Version(1, 5) || mEGL->hasExtension("EGL_KHR_create_context"))
     {
-        EGL_COLOR_BUFFER_TYPE, EGL_RGB_BUFFER,
-        // Android doesn't support pixmaps
-        EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
-        EGL_CONFIG_CAVEAT, EGL_NONE,
-        EGL_CONFORMANT, esBit,
-        EGL_RENDERABLE_TYPE, esBit,
-    };
-    // clang-format on
-
-    if (mEGL->hasExtension("EGL_EXT_pixel_format_float"))
-    {
-        // Don't request floating point configs
-        configAttribListBase.push_back(EGL_COLOR_COMPONENT_TYPE_EXT);
-        configAttribListBase.push_back(EGL_COLOR_COMPONENT_TYPE_FIXED_EXT);
+        renderableTypes.push_back(EGL_OPENGL_ES3_BIT);
     }
+    renderableTypes.push_back(EGL_OPENGL_ES2_BIT);
 
-    std::vector<EGLint> configAttribListWithFormat = configAttribListBase;
+    egl::AttributeMap baseConfigAttribs;
+    baseConfigAttribs.insert(EGL_COLOR_BUFFER_TYPE, EGL_RGB_BUFFER);
+    // Android doesn't support pixmaps
+    baseConfigAttribs.insert(EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT);
+
+    egl::AttributeMap configAttribsWithFormat(baseConfigAttribs);
+    // Choose RGBA8888
+    configAttribsWithFormat.insert(EGL_RED_SIZE, 8);
+    configAttribsWithFormat.insert(EGL_GREEN_SIZE, 8);
+    configAttribsWithFormat.insert(EGL_BLUE_SIZE, 8);
+    configAttribsWithFormat.insert(EGL_ALPHA_SIZE, 8);
+
+    // Choose D24S8
     // EGL1.5 spec Section 2.2 says that depth, multisample and stencil buffer depths
     // must match for contexts to be compatible.
-    // Choose RGBA8888
-    configAttribListWithFormat.push_back(EGL_RED_SIZE);
-    configAttribListWithFormat.push_back(8);
-    configAttribListWithFormat.push_back(EGL_GREEN_SIZE);
-    configAttribListWithFormat.push_back(8);
-    configAttribListWithFormat.push_back(EGL_BLUE_SIZE);
-    configAttribListWithFormat.push_back(8);
-    configAttribListWithFormat.push_back(EGL_ALPHA_SIZE);
-    configAttribListWithFormat.push_back(8);
-    // Choose DEPTH24_STENCIL8
-    configAttribListWithFormat.push_back(EGL_DEPTH_SIZE);
-    configAttribListWithFormat.push_back(24);
-    configAttribListWithFormat.push_back(EGL_STENCIL_SIZE);
-    configAttribListWithFormat.push_back(8);
-    // Choose no multisampling
-    configAttribListWithFormat.push_back(EGL_SAMPLE_BUFFERS);
-    configAttribListWithFormat.push_back(0);
+    configAttribsWithFormat.insert(EGL_DEPTH_SIZE, 24);
+    configAttribsWithFormat.insert(EGL_STENCIL_SIZE, 8);
 
-    // Complete the attrib lists
-    configAttribListBase.push_back(EGL_NONE);
-    configAttribListWithFormat.push_back(EGL_NONE);
+    EGLConfig configWithFormat = EGL_NO_CONFIG_KHR;
+    for (EGLint renderableType : renderableTypes)
+    {
+        baseConfigAttribs.insert(EGL_RENDERABLE_TYPE, renderableType);
+        configAttribsWithFormat.insert(EGL_RENDERABLE_TYPE, renderableType);
 
-    EGLint numConfig;
-    EGLConfig configWithFormat;
+        std::vector<EGLint> attribVector = configAttribsWithFormat.toIntVector();
 
-    EGLBoolean success =
-        mEGL->chooseConfig(configAttribListWithFormat.data(), &configWithFormat, 1, &numConfig);
-    if (success == EGL_FALSE)
+        EGLint numConfig = 0;
+        if (mEGL->chooseConfig(attribVector.data(), &configWithFormat, 1, &numConfig) == EGL_TRUE)
+        {
+            break;
+        }
+    }
+
+    if (configWithFormat == EGL_NO_CONFIG_KHR)
     {
         return egl::EglNotInitialized()
                << "eglChooseConfig failed with " << egl::Error(mEGL->getError());
@@ -143,16 +130,16 @@ egl::Error DisplayAndroid::initialize(egl::Display *display)
     // Create mMockPbuffer with a normal config, but create a no_config mContext, if possible
     if (mEGL->hasExtension("EGL_KHR_no_config_context"))
     {
-        mConfigAttribList = configAttribListBase;
+        mConfigAttribList = baseConfigAttribs.toIntVector();
         mConfig           = EGL_NO_CONFIG_KHR;
     }
     else
     {
-        mConfigAttribList = configAttribListWithFormat;
+        mConfigAttribList = configAttribsWithFormat.toIntVector();
         mConfig           = configWithFormat;
     }
 
-    ANGLE_TRY(createRenderer(EGL_NO_CONTEXT, true, &mRenderer));
+    ANGLE_TRY(createRenderer(EGL_NO_CONTEXT, true, false, &mRenderer));
 
     const gl::Version &maxVersion = mRenderer->getMaxSupportedESVersion();
     if (maxVersion < gl::Version(2, 0))
@@ -162,7 +149,7 @@ egl::Error DisplayAndroid::initialize(egl::Display *display)
 
     ANGLE_TRY(DisplayGL::initialize(display));
 
-    std::string rendererDescription = mRenderer->getRendererDescription();
+    std::string rendererDescription = getRendererDescription();
     __android_log_print(ANDROID_LOG_INFO, "ANGLE", "%s", rendererDescription.c_str());
     return egl::NoError();
 }
@@ -205,14 +192,19 @@ ContextImpl *DisplayAndroid::createContext(const gl::State &state,
                                            const egl::AttributeMap &attribs)
 {
     std::shared_ptr<RendererEGL> renderer;
-    if (mVirtualizedContexts)
+    bool usingExternalContext = attribs.get(EGL_EXTERNAL_CONTEXT_ANGLE, EGL_FALSE) == EGL_TRUE;
+    if (mVirtualizedContexts && !usingExternalContext)
     {
         renderer = mRenderer;
     }
     else
     {
         EGLContext nativeShareContext = EGL_NO_CONTEXT;
-        if (shareContext)
+        if (usingExternalContext)
+        {
+            ASSERT(!shareContext);
+        }
+        else if (shareContext)
         {
             ContextEGL *shareContextEGL = GetImplAs<ContextEGL>(shareContext);
             nativeShareContext          = shareContextEGL->getContext();
@@ -221,7 +213,8 @@ ContextImpl *DisplayAndroid::createContext(const gl::State &state,
         // Create a new renderer for this context.  It only needs to share with the user's requested
         // share context because there are no internal resources in DisplayAndroid that are shared
         // at the GL level.
-        egl::Error error = createRenderer(nativeShareContext, false, &renderer);
+        egl::Error error =
+            createRenderer(nativeShareContext, false, usingExternalContext, &renderer);
         if (error.isError())
         {
             ERR() << "Failed to create a shared renderer: " << error.getMessage();
@@ -233,9 +226,65 @@ ContextImpl *DisplayAndroid::createContext(const gl::State &state,
                           RobustnessVideoMemoryPurgeStatus::NOT_REQUESTED);
 }
 
+class ExternalSurfaceEGL : public SurfaceEGL
+{
+  public:
+    ExternalSurfaceEGL(const egl::SurfaceState &state,
+                       const FunctionsEGL *egl,
+                       EGLConfig config,
+                       EGLint width,
+                       EGLint height)
+        : SurfaceEGL(state, egl, config), mWidth(width), mHeight(height)
+    {}
+    ~ExternalSurfaceEGL() override = default;
+
+    egl::Error initialize(const egl::Display *display) override { return egl::NoError(); }
+    EGLint getSwapBehavior() const override { return EGL_BUFFER_DESTROYED; }
+    EGLint getWidth() const override { return mWidth; }
+    EGLint getHeight() const override { return mHeight; }
+    bool isExternal() const override { return true; }
+
+  private:
+    const EGLint mWidth;
+    const EGLint mHeight;
+};
+
+SurfaceImpl *DisplayAndroid::createPbufferFromClientBuffer(const egl::SurfaceState &state,
+                                                           EGLenum buftype,
+                                                           EGLClientBuffer clientBuffer,
+                                                           const egl::AttributeMap &attribs)
+{
+    if (buftype == EGL_EXTERNAL_SURFACE_ANGLE)
+    {
+        ASSERT(clientBuffer == nullptr);
+
+        EGLint width  = static_cast<EGLint>(attribs.get(EGL_WIDTH, 0));
+        EGLint height = static_cast<EGLint>(attribs.get(EGL_HEIGHT, 0));
+
+        // Use the ExternalSurfaceEGL, so ANGLE can know the framebuffer size.
+        return new ExternalSurfaceEGL(state, mEGL, EGL_NO_CONFIG_KHR, width, height);
+    }
+
+    return DisplayEGL::createPbufferFromClientBuffer(state, buftype, clientBuffer, attribs);
+}
+
 bool DisplayAndroid::isValidNativeWindow(EGLNativeWindowType window) const
 {
     return ANativeWindow_getFormat(window) >= 0;
+}
+
+egl::Error DisplayAndroid::validateClientBuffer(const egl::Config *configuration,
+                                                EGLenum buftype,
+                                                EGLClientBuffer clientBuffer,
+                                                const egl::AttributeMap &attribs) const
+{
+
+    if (buftype == EGL_EXTERNAL_SURFACE_ANGLE)
+    {
+        ASSERT(clientBuffer == nullptr);
+        return egl::NoError();
+    }
+    return DisplayEGL::validateClientBuffer(configuration, buftype, clientBuffer, attribs);
 }
 
 egl::Error DisplayAndroid::validateImageClientBuffer(const gl::Context *context,
@@ -290,12 +339,51 @@ egl::Error DisplayAndroid::makeCurrent(egl::Display *display,
         newContext             = contextEGL->getContext();
     }
 
-    // The context should never change when context virtualization is being used, even when a null
-    // context is being bound.
-    if (mVirtualizedContexts)
+    if (currentContext.isExternalContext || (context && context->isExternal()))
     {
-        ASSERT(newContext == EGL_NO_CONTEXT || currentContext.context == EGL_NO_CONTEXT ||
-               newContext == currentContext.context);
+        ASSERT(currentContext.surface == EGL_NO_SURFACE);
+        if (!currentContext.isExternalContext)
+        {
+            // Switch to an ANGLE external context.
+            ASSERT(context);
+            ASSERT(currentContext.context == EGL_NO_CONTEXT);
+            currentContext.context           = newContext;
+            currentContext.isExternalContext = true;
+
+            // We only support using external surface with external context.
+            ASSERT(GetImplAs<SurfaceEGL>(drawSurface)->isExternal());
+            ASSERT(GetImplAs<SurfaceEGL>(drawSurface)->getSurface() == EGL_NO_SURFACE);
+        }
+        else if (context)
+        {
+            // Switch surface but not context.
+            ASSERT(currentContext.context == newContext);
+            ASSERT(newSurface == EGL_NO_SURFACE);
+            ASSERT(newContext != EGL_NO_CONTEXT);
+            // We only support using external surface with external context.
+            ASSERT(GetImplAs<SurfaceEGL>(drawSurface)->isExternal());
+            ASSERT(GetImplAs<SurfaceEGL>(drawSurface)->getSurface() == EGL_NO_SURFACE);
+        }
+        else
+        {
+            // Release the ANGLE external context.
+            ASSERT(newSurface == EGL_NO_SURFACE);
+            ASSERT(newContext == EGL_NO_CONTEXT);
+            ASSERT(currentContext.context != EGL_NO_CONTEXT);
+            currentContext.context           = EGL_NO_CONTEXT;
+            currentContext.isExternalContext = false;
+        }
+
+        // Do not need to call eglMakeCurrent(), since we don't support swtiching EGLSurface for
+        // external context.
+        return DisplayGL::makeCurrent(display, drawSurface, readSurface, context);
+    }
+
+    // The context should never change when context virtualization is being used unless binding a
+    // null context.
+    if (mVirtualizedContexts && newContext != EGL_NO_CONTEXT)
+    {
+        ASSERT(currentContext.context == EGL_NO_CONTEXT || newContext == currentContext.context);
 
         newContext = mRenderer->getContext();
 
@@ -341,27 +429,46 @@ void DisplayAndroid::generateExtensions(egl::DisplayExtensions *outExtensions) c
     // Surfaceless can be support if the native driver supports it or we know that we are running on
     // a single thread (mVirtualizedContexts == true)
     outExtensions->surfacelessContext = mSupportsSurfaceless || mVirtualizedContexts;
+
+    outExtensions->externalContextAndSurface = true;
 }
 
 egl::Error DisplayAndroid::createRenderer(EGLContext shareContext,
                                           bool makeNewContextCurrent,
+                                          bool isExternalContext,
                                           std::shared_ptr<RendererEGL> *outRenderer)
 {
     EGLContext context = EGL_NO_CONTEXT;
     native_egl::AttributeVector attribs;
-    ANGLE_TRY(initializeContext(shareContext, mDisplayAttributes, &context, &attribs));
 
-    if (mEGL->makeCurrent(mMockPbuffer, context) == EGL_FALSE)
+    // If isExternalContext is true, the external context is current, so we don't need to make the
+    // mMockPbuffer current.
+    if (isExternalContext)
     {
-        return egl::EglNotInitialized()
-               << "eglMakeCurrent failed with " << egl::Error(mEGL->getError());
+        ASSERT(shareContext == EGL_NO_CONTEXT);
+        ASSERT(!makeNewContextCurrent);
+        // Should we consider creating a share context to avoid querying and restoring GL context
+        // state?
+        context = mEGL->getCurrentContext();
+        ASSERT(context != EGL_NO_CONTEXT);
+        // TODO: get the version from the current context.
+        attribs = {EGL_CONTEXT_MAJOR_VERSION, 2, EGL_CONTEXT_MINOR_VERSION, 0, EGL_NONE};
+    }
+    else
+    {
+        ANGLE_TRY(initializeContext(shareContext, mDisplayAttributes, &context, &attribs));
+        if (mEGL->makeCurrent(mMockPbuffer, context) == EGL_FALSE)
+        {
+            return egl::EglNotInitialized()
+                   << "eglMakeCurrent failed with " << egl::Error(mEGL->getError());
+        }
     }
 
     std::unique_ptr<FunctionsGL> functionsGL(mEGL->makeFunctionsGL());
     functionsGL->initialize(mDisplayAttributes);
 
-    outRenderer->reset(
-        new RendererEGL(std::move(functionsGL), mDisplayAttributes, this, context, attribs));
+    outRenderer->reset(new RendererEGL(std::move(functionsGL), mDisplayAttributes, this, context,
+                                       attribs, isExternalContext));
 
     CurrentNativeContext &currentContext = mCurrentNativeContexts[std::this_thread::get_id()];
     if (makeNewContextCurrent)
@@ -369,7 +476,7 @@ egl::Error DisplayAndroid::createRenderer(EGLContext shareContext,
         currentContext.surface = mMockPbuffer;
         currentContext.context = context;
     }
-    else
+    else if (!isExternalContext)
     {
         // Reset the current context back to the previous state
         if (mEGL->makeCurrent(currentContext.surface, currentContext.context) == EGL_FALSE)

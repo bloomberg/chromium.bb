@@ -15,7 +15,7 @@
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_cell.h"
+#import "ios/chrome/browser/ui/authentication/cells/table_view_identity_cell.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
@@ -61,7 +61,7 @@
       chrome_test_util::GetOriginalBrowserState();
   CoreAccountInfo info =
       IdentityManagerFactory::GetForBrowserState(browserState)
-          ->GetPrimaryAccountInfo();
+          ->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
 
   return base::SysUTF8ToNSString(info.gaia);
 }
@@ -71,7 +71,7 @@
       chrome_test_util::GetOriginalBrowserState();
   CoreAccountInfo info =
       IdentityManagerFactory::GetForBrowserState(browserState)
-          ->GetPrimaryAccountInfo();
+          ->GetPrimaryAccountInfo(signin::ConsentLevel::kSync);
 
   return base::SysUTF8ToNSString(info.email);
 }
@@ -81,12 +81,12 @@
       chrome_test_util::GetOriginalBrowserState();
 
   return !IdentityManagerFactory::GetForBrowserState(browserState)
-              ->HasPrimaryAccount();
+              ->HasPrimaryAccount(signin::ConsentLevel::kSync);
 }
 
 + (id<GREYMatcher>)identityCellMatcherForEmail:(NSString*)email {
   return grey_allOf(grey_accessibilityID(email),
-                    grey_kindOfClass([IdentityChooserCell class]),
+                    grey_kindOfClass([TableViewIdentityCell class]),
                     grey_sufficientlyVisible(), nil);
 }
 

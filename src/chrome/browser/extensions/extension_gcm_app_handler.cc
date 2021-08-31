@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_gcm_app_handler.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -34,7 +36,8 @@ base::LazyInstance<BrowserContextKeyedAPIFactory<ExtensionGCMAppHandler>>::
         LAZY_INSTANCE_INITIALIZER;
 
 bool IsGCMPermissionEnabled(const Extension* extension) {
-  return extension->permissions_data()->HasAPIPermission(APIPermission::kGcm);
+  return extension->permissions_data()->HasAPIPermission(
+      mojom::APIPermissionID::kGcm);
 }
 
 }  // namespace
@@ -48,8 +51,8 @@ ExtensionGCMAppHandler::GetFactoryInstance() {
 
 ExtensionGCMAppHandler::ExtensionGCMAppHandler(content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)) {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
-  js_event_router_.reset(new extensions::GcmJsEventRouter(profile_));
+  extension_registry_observation_.Observe(ExtensionRegistry::Get(profile_));
+  js_event_router_ = std::make_unique<extensions::GcmJsEventRouter>(profile_);
 }
 
 ExtensionGCMAppHandler::~ExtensionGCMAppHandler() = default;

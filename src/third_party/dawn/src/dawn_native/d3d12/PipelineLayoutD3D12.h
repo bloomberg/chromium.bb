@@ -26,8 +26,9 @@ namespace dawn_native { namespace d3d12 {
 
     class PipelineLayout final : public PipelineLayoutBase {
       public:
-        static ResultOrError<PipelineLayout*> Create(Device* device,
-                                                     const PipelineLayoutDescriptor* descriptor);
+        static ResultOrError<Ref<PipelineLayout>> Create(
+            Device* device,
+            const PipelineLayoutDescriptor* descriptor);
 
         uint32_t GetCbvUavSrvRootParameterIndex(BindGroupIndex group) const;
         uint32_t GetSamplerRootParameterIndex(BindGroupIndex group) const;
@@ -35,6 +36,10 @@ namespace dawn_native { namespace d3d12 {
         // Returns the index of the root parameter reserved for a dynamic buffer binding
         uint32_t GetDynamicRootParameterIndex(BindGroupIndex group,
                                               BindingIndex bindingIndex) const;
+
+        uint32_t GetFirstIndexOffsetRegisterSpace() const;
+        uint32_t GetFirstIndexOffsetShaderRegister() const;
+        uint32_t GetFirstIndexOffsetParameterIndex() const;
 
         ID3D12RootSignature* GetRootSignature() const;
 
@@ -48,6 +53,9 @@ namespace dawn_native { namespace d3d12 {
                     ityp::array<BindingIndex, uint32_t, kMaxDynamicBuffersPerPipelineLayout>,
                     kMaxBindGroups>
             mDynamicRootParameterIndices;
+        uint32_t mFirstIndexOffsetRegisterSpace;
+        uint32_t mFirstIndexOffsetShaderRegister;
+        uint32_t mFirstIndexOffsetParameterIndex;
         ComPtr<ID3D12RootSignature> mRootSignature;
     };
 

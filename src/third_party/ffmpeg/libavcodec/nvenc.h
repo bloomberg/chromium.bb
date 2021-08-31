@@ -81,7 +81,6 @@ typedef struct NvencSurface
 
     NV_ENC_OUTPUT_PTR output_surface;
     NV_ENC_BUFFER_FORMAT format;
-    int size;
 } NvencSurface;
 
 typedef struct NvencDynLoadFunctions
@@ -135,6 +134,8 @@ enum {
     NVENC_LOSSLESS   = 2,
     NVENC_ONE_PASS   = 4,
     NVENC_TWO_PASSES = 8,
+
+    NVENC_DEPRECATED_PRESET = 0x8000,
 };
 
 enum {
@@ -229,6 +230,6 @@ int ff_nvenc_receive_packet(AVCodecContext *avctx, AVPacket *pkt);
 void ff_nvenc_encode_flush(AVCodecContext *avctx);
 
 extern const enum AVPixelFormat ff_nvenc_pix_fmts[];
-extern const AVCodecHWConfigInternal *ff_nvenc_hw_configs[];
+extern const AVCodecHWConfigInternal *const ff_nvenc_hw_configs[];
 
 #endif /* AVCODEC_NVENC_H */

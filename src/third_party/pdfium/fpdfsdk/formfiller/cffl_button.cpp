@@ -7,12 +7,11 @@
 #include "fpdfsdk/formfiller/cffl_button.h"
 
 #include "core/fpdfdoc/cpdf_formcontrol.h"
+#include "third_party/base/check.h"
 
 CFFL_Button::CFFL_Button(CPDFSDK_FormFillEnvironment* pFormFillEnv,
                          CPDFSDK_Widget* pWidget)
-    : CFFL_FormFiller(pFormFillEnv, pWidget),
-      m_bMouseIn(false),
-      m_bMouseDown(false) {}
+    : CFFL_FormFiller(pFormFillEnv, pWidget) {}
 
 CFFL_Button::~CFFL_Button() = default;
 
@@ -25,7 +24,7 @@ void CFFL_Button::OnMouseExit(CPDFSDK_PageView* pPageView) {
   m_bMouseIn = false;
   InvalidateRect(GetViewBBox(pPageView));
   m_pTimer.reset();
-  ASSERT(m_pWidget);
+  DCHECK(m_pWidget);
 }
 
 bool CFFL_Button::OnLButtonDown(CPDFSDK_PageView* pPageView,
@@ -63,7 +62,7 @@ void CFFL_Button::OnDraw(CPDFSDK_PageView* pPageView,
                          CPDFSDK_Annot* pAnnot,
                          CFX_RenderDevice* pDevice,
                          const CFX_Matrix& mtUser2Device) {
-  ASSERT(pPageView);
+  DCHECK(pPageView);
   CPDFSDK_Widget* pWidget = ToCPDFSDKWidget(pAnnot);
   CPDF_FormControl* pCtrl = pWidget->GetFormControl();
   if (pCtrl->GetHighlightingMode() != CPDF_FormControl::Push) {

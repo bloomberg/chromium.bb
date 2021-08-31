@@ -27,9 +27,10 @@
 #endif
 
 #if defined(USE_X11) || defined(USE_OZONE_PLATFORM_X11)
+#include "ui/base/x/visual_picker_glx.h"                 // nogncheck
 #include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"  // nogncheck
+#include "ui/gfx/x/glx.h"                                // nogncheck
 #include "ui/gl/gl_implementation.h"                     // nogncheck
-#include "ui/gl/gl_visual_picker_glx.h"                  // nogncheck
 #endif
 
 namespace gl {
@@ -87,8 +88,7 @@ bool UsePassthroughCommandDecoder(const base::CommandLine* command_line) {
     return false;
   } else {
     // Unrecognized or missing switch, use the default.
-    return base::FeatureList::IsEnabled(
-        features::kDefaultPassthroughCommandDecoder);
+    return features::UsePassthroughCommandDecoder();
   }
 }
 
@@ -163,12 +163,9 @@ void CollectX11GpuExtraInfo(bool enable_native_gpu_memory_buffers,
   }
 
   if (GetGLImplementation() == kGLImplementationDesktopGL) {
-    // Create the GLVisualPickerGLX singleton now while the GbmSupportX11
+    // Create the VisualPickerGlx singleton now while the GbmSupportX11
     // singleton is busy being created on another thread.
-    GLVisualPickerGLX* visual_picker = GLVisualPickerGLX::GetInstance();
-
-    info.system_visual = static_cast<uint32_t>(visual_picker->system_visual());
-    info.rgba_visual = static_cast<uint32_t>(visual_picker->rgba_visual());
+    auto* visual_picker = ui::VisualPickerGlx::GetInstance();
 
     // With GLX, only BGR(A) buffer formats are supported.  EGL does not have
     // this restriction.

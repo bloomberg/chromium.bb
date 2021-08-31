@@ -36,11 +36,12 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_constraints.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_constraints.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_domexception_overconstrainederror.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -317,10 +318,17 @@ class UserMediaRequest::V8Callbacks final : public UserMediaRequest::Callbacks {
                  MediaStream* stream) override {
     success_callback_->InvokeAndReportException(callback_this_value, stream);
   }
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  void OnError(ScriptWrappable* callback_this_value,
+               const V8MediaStreamError* error) override {
+    error_callback_->InvokeAndReportException(callback_this_value, error);
+  }
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void OnError(ScriptWrappable* callback_this_value,
                DOMExceptionOrOverconstrainedError error) override {
     error_callback_->InvokeAndReportException(callback_this_value, error);
   }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
  private:
   Member<V8NavigatorUserMediaSuccessCallback> success_callback_;
@@ -497,18 +505,19 @@ bool UserMediaRequest::IsSecureContextUse(String& error_message) {
     window->CountUseOnlyInCrossOriginIframe(
         WebFeature::kGetUserMediaSecureOriginIframe);
 
-    // Feature policy deprecation messages.
+    // Permissions policy deprecation messages.
     if (Audio()) {
       if (!window->IsFeatureEnabled(
-              mojom::blink::FeaturePolicyFeature::kMicrophone,
+              mojom::blink::PermissionsPolicyFeature::kMicrophone,
               ReportOptions::kReportOnFailure)) {
         UseCounter::Count(
             window, WebFeature::kMicrophoneDisabledByFeaturePolicyEstimate);
       }
     }
     if (Video()) {
-      if (!window->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kCamera,
-                                    ReportOptions::kReportOnFailure)) {
+      if (!window->IsFeatureEnabled(
+              mojom::blink::PermissionsPolicyFeature::kCamera,
+              ReportOptions::kReportOnFailure)) {
         UseCounter::Count(window,
                           WebFeature::kCameraDisabledByFeaturePolicyEstimate);
       }
@@ -572,9 +581,15 @@ void UserMediaRequest::FailConstraint(const String& constraint_name,
   RecordIdentifiabilityMetric(surface_, GetExecutionContext(),
                               IdentifiabilityBenignStringToken(message));
   // After this call, the execution context may be invalid.
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  callbacks_->OnError(
+      nullptr, MakeGarbageCollected<V8MediaStreamError>(
+                   OverconstrainedError::Create(constraint_name, message)));
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   callbacks_->OnError(
       nullptr, DOMExceptionOrOverconstrainedError::FromOverconstrainedError(
                    OverconstrainedError::Create(constraint_name, message)));
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   is_resolved_ = true;
 }
 
@@ -616,10 +631,16 @@ void UserMediaRequest::Fail(Error name, const String& message) {
   RecordIdentifiabilityMetric(surface_, GetExecutionContext(),
                               IdentifiabilityBenignStringToken(message));
   // After this call, the execution context may be invalid.
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  callbacks_->OnError(nullptr, MakeGarbageCollected<V8MediaStreamError>(
+                                   MakeGarbageCollected<DOMException>(
+                                       exception_code, message)));
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   callbacks_->OnError(
       nullptr,
       DOMExceptionOrOverconstrainedError::FromDOMException(
           MakeGarbageCollected<DOMException>(exception_code, message)));
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   is_resolved_ = true;
 }
 
@@ -634,11 +655,18 @@ void UserMediaRequest::ContextDestroyed() {
           "audio constraints=%s, video constraints=%s",
           AudioConstraints().ToString().Utf8().c_str(),
           VideoConstraints().ToString().Utf8().c_str()));
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+      callbacks_->OnError(nullptr, MakeGarbageCollected<V8MediaStreamError>(
+                                       MakeGarbageCollected<DOMException>(
+                                           DOMExceptionCode::kAbortError,
+                                           "Context destroyed")));
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
       callbacks_->OnError(
           nullptr,
           DOMExceptionOrOverconstrainedError::FromDOMException(
               MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
                                                  "Context destroyed")));
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     }
     controller_ = nullptr;
   }

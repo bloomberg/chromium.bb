@@ -93,7 +93,7 @@ std::unique_ptr<net::test_server::BasicHttpResponse> CreateHttpResponseFromFile(
     const base::FilePath& file_path) {
   std::string content;
   if (!base::ReadFileToString(file_path, &content))
-    return std::unique_ptr<net::test_server::BasicHttpResponse>();
+    return nullptr;
 
   std::string content_type = "text/plain";
   if (base::EndsWith(file_path.AsUTF8Unsafe(), ".json",
@@ -117,7 +117,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleDownloadFileRequest(
   GURL absolute_url = base_url.Resolve(request.relative_url);
   std::string remaining_path;
   if (!RemovePrefix(absolute_url.path(), "/files/", &remaining_path))
-    return std::unique_ptr<net::test_server::HttpResponse>();
+    return nullptr;
   return CreateHttpResponseFromFile(GetTestFilePath(remaining_path));
 }
 
@@ -172,7 +172,8 @@ std::string TestGetContentCallback::GetConcatenatedData() const {
 }
 
 void TestGetContentCallback::OnGetContent(google_apis::DriveApiErrorCode error,
-                                          std::unique_ptr<std::string> data) {
+                                          std::unique_ptr<std::string> data,
+                                          bool first_chunk) {
   data_.push_back(std::move(data));
 }
 

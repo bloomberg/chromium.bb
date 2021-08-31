@@ -5,12 +5,11 @@
 #ifndef CHROMEOS_SERVICES_MULTIDEVICE_SETUP_WIFI_SYNC_FEATURE_MANAGER_H_
 #define CHROMEOS_SERVICES_MULTIDEVICE_SETUP_WIFI_SYNC_FEATURE_MANAGER_H_
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/multidevice_setup/host_status_provider.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 

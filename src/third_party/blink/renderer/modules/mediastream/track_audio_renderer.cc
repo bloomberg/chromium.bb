@@ -61,7 +61,7 @@ WebLocalFrame* ToWebLocalFrame(LocalFrame* frame) {
   if (!frame)
     return nullptr;
 
-  return static_cast<WebLocalFrame*>(WebFrame::FromFrame(frame));
+  return static_cast<WebLocalFrame*>(WebFrame::FromCoreFrame(frame));
 }
 
 }  // namespace
@@ -110,8 +110,6 @@ void TrackAudioRenderer::OnRenderError() {
 // WebMediaStreamAudioSink implementation
 void TrackAudioRenderer::OnData(const media::AudioBus& audio_bus,
                                 base::TimeTicks reference_time) {
-  DCHECK(!reference_time.is_null());
-
   TRACE_EVENT1("audio", "TrackAudioRenderer::OnData", "reference time (ms)",
                (reference_time - base::TimeTicks()).InMillisecondsF());
 
@@ -154,7 +152,7 @@ void TrackAudioRenderer::OnSetFormat(const media::AudioParameters& params) {
 
 TrackAudioRenderer::TrackAudioRenderer(
     MediaStreamComponent* audio_component,
-    LocalFrame* playout_frame,
+    LocalFrame& playout_frame,
     const base::UnguessableToken& session_id,
     const String& device_id,
     base::RepeatingCallback<void()> on_render_error_callback)
@@ -162,7 +160,7 @@ TrackAudioRenderer::TrackAudioRenderer(
       playout_frame_(playout_frame),
       session_id_(session_id),
       task_runner_(
-          playout_frame->GetTaskRunner(blink::TaskType::kInternalMedia)),
+          playout_frame.GetTaskRunner(blink::TaskType::kInternalMedia)),
       num_samples_rendered_(0),
       on_render_error_callback_(std::move(on_render_error_callback)),
       playing_(false),

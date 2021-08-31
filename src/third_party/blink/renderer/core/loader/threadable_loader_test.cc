@@ -18,6 +18,7 @@
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
@@ -36,7 +37,6 @@
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -61,7 +61,7 @@ class MockThreadableLoaderClient final
   MOCK_METHOD2(DidSendData, void(uint64_t, uint64_t));
   MOCK_METHOD2(DidReceiveResponse, void(uint64_t, const ResourceResponse&));
   MOCK_METHOD2(DidReceiveData, void(const char*, unsigned));
-  MOCK_METHOD2(DidReceiveCachedMetadata, void(const char*, int));
+  MOCK_METHOD1(DidReceiveCachedMetadata, void(mojo_base::BigBuffer));
   MOCK_METHOD1(DidFinishLoading, void(uint64_t));
   MOCK_METHOD1(DidFail, void(const ResourceError&));
   MOCK_METHOD0(DidFailRedirectCheck, void());
@@ -135,7 +135,8 @@ class ThreadableLoaderTestHelper final {
       : dummy_page_holder_(std::make_unique<DummyPageHolder>(IntSize(1, 1))) {
     KURL url("http://fake.url/");
     dummy_page_holder_->GetFrame().Loader().CommitNavigation(
-        WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(), url),
+        WebNavigationParams::CreateWithHTMLBufferForTesting(
+            SharedBuffer::Create(), url),
         nullptr /* extra_data */);
     blink::test::RunPendingTasks();
   }

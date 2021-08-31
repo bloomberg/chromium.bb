@@ -1,0 +1,11 @@
+FONTS:
+gpos9_font2.otf
+
+PROFILES:
+default.txt
+retain-gids.txt
+
+SUBSETS:
+A
+B
+AB

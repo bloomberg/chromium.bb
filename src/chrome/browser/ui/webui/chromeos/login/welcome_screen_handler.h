@@ -9,17 +9,19 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+
+namespace ash {
+class WelcomeScreen;
+}
 
 namespace base {
 class ListValue;
 }
 
 namespace chromeos {
-
 class CoreOobeView;
-class WelcomeScreen;
 
 // Interface for WelcomeScreenHandler.
 class WelcomeView {
@@ -35,7 +37,7 @@ class WelcomeView {
   virtual void Hide() = 0;
 
   // Binds `screen` to the view.
-  virtual void Bind(WelcomeScreen* screen) = 0;
+  virtual void Bind(ash::WelcomeScreen* screen) = 0;
 
   // Unbinds model from the view.
   virtual void Unbind() = 0;
@@ -50,6 +52,10 @@ class WelcomeView {
   virtual void ShowDemoModeConfirmationDialog() = 0;
   virtual void ShowEditRequisitionDialog(const std::string& requisition) = 0;
   virtual void ShowRemoraRequisitionDialog() = 0;
+
+  // ChromeVox hint.
+  virtual void GiveChromeVoxHint() = 0;
+  virtual void CancelChromeVoxHintIdleDetection() = 0;
 };
 
 // WebUI implementation of WelcomeScreenView. It is used to interact with
@@ -65,13 +71,15 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
   // WelcomeView:
   void Show() override;
   void Hide() override;
-  void Bind(WelcomeScreen* screen) override;
+  void Bind(ash::WelcomeScreen* screen) override;
   void Unbind() override;
   void ReloadLocalizedContent() override;
   void SetInputMethodId(const std::string& input_method_id) override;
   void ShowDemoModeConfirmationDialog() override;
   void ShowEditRequisitionDialog(const std::string& requisition) override;
   void ShowRemoraRequisitionDialog() override;
+  void GiveChromeVoxHint() override;
+  void CancelChromeVoxHintIdleDetection() override;
 
   // BaseScreenHandler:
   void DeclareLocalizedValues(
@@ -93,10 +101,11 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
   void HandleEnableSelectToSpeak(bool /* enabled */);
   void HandleEnableDockedMagnifier(bool /* enabled */);
   void HandleSetDeviceRequisition(const std::string& requisition);
+  void HandleRecordChromeVoxHintSpokenSuccess();
 
   // Notification of a change in the accessibility settings.
   void OnAccessibilityStatusChanged(
-      const AccessibilityStatusEventDetails& details);
+      const ash::AccessibilityStatusEventDetails& details);
 
   // Updates a11y menu state based on the current a11y features state(on/off).
   void UpdateA11yState();
@@ -105,16 +114,22 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
   static std::unique_ptr<base::ListValue> GetTimezoneList();
 
   CoreOobeView* core_oobe_view_ = nullptr;
-  WelcomeScreen* screen_ = nullptr;
+  ash::WelcomeScreen* screen_ = nullptr;
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_ = false;
 
-  std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
+  base::CallbackListSubscription accessibility_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(WelcomeScreenHandler);
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::WelcomeView;
+}
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_WELCOME_SCREEN_HANDLER_H_

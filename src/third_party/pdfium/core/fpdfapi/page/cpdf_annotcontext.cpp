@@ -10,13 +10,14 @@
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
+#include "third_party/base/check.h"
 
 CPDF_AnnotContext::CPDF_AnnotContext(CPDF_Dictionary* pAnnotDict,
                                      IPDF_Page* pPage)
     : m_pAnnotDict(pAnnotDict), m_pPage(pPage) {
-  ASSERT(m_pAnnotDict);
-  ASSERT(m_pPage);
-  ASSERT(m_pPage->AsPDFPage());
+  DCHECK(m_pAnnotDict);
+  DCHECK(m_pPage);
+  DCHECK(m_pPage->AsPDFPage());
 }
 
 CPDF_AnnotContext::~CPDF_AnnotContext() = default;
@@ -30,7 +31,6 @@ void CPDF_AnnotContext::SetForm(CPDF_Stream* pStream) {
   pStream->GetDict()->SetMatrixFor("Matrix", CFX_Matrix());
 
   m_pAnnotForm = std::make_unique<CPDF_Form>(
-      m_pPage->GetDocument(), m_pPage->AsPDFPage()->m_pResources.Get(),
-      pStream);
+      m_pPage->GetDocument(), m_pPage->AsPDFPage()->GetResources(), pStream);
   m_pAnnotForm->ParseContent();
 }

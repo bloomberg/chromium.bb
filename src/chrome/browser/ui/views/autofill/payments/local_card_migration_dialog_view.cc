@@ -32,6 +32,8 @@
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
@@ -48,6 +50,7 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace autofill {
@@ -102,9 +105,9 @@ std::unique_ptr<views::Label> CreateTitle(
 std::unique_ptr<views::Label> CreateExplanationText(
     LocalCardMigrationDialogState view_state,
     int card_list_size,
-    const base::string16& user_email) {
+    const std::u16string& user_email) {
   auto explanation_text = std::make_unique<views::Label>(
-      base::string16(), views::style::CONTEXT_DIALOG_BODY_TEXT,
+      std::u16string(), views::style::CONTEXT_DIALOG_BODY_TEXT,
       views::style::STYLE_SECONDARY);
   switch (view_state) {
     case LocalCardMigrationDialogState::kOffered:
@@ -171,7 +174,7 @@ std::unique_ptr<views::ScrollView> CreateCardList(
 
 // Create the view containing the |tip_message| shown to the user.
 std::unique_ptr<views::View> CreateTip(
-    const base::string16& tip_message,
+    const std::u16string& tip_message,
     LocalCardMigrationDialogView* dialog_view) {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   // Set up the tip text container with inset, background and a solid border.
@@ -243,7 +246,7 @@ std::unique_ptr<views::View> CreateFeedbackContentView(
   const int card_list_size = card_list.size();
 
   feedback_view->AddChildView(
-      CreateExplanationText(view_state, card_list_size, base::string16())
+      CreateExplanationText(view_state, card_list_size, std::u16string())
           .release());
 
   if (card_list_size > 0) {
@@ -271,6 +274,7 @@ std::unique_ptr<views::View> CreateFeedbackContentView(
 // option to upload all browser-saved credit cards.
 class LocalCardMigrationOfferView : public views::View {
  public:
+  METADATA_HEADER(LocalCardMigrationOfferView);
   LocalCardMigrationOfferView(LocalCardMigrationDialogController* controller,
                               LocalCardMigrationDialogView* dialog_view)
       : controller_(controller) {
@@ -315,14 +319,17 @@ class LocalCardMigrationOfferView : public views::View {
         views::CreateEmptyBorder(kMigrationDialogInsets));
   }
 
-  ~LocalCardMigrationOfferView() override {}
+  LocalCardMigrationOfferView(const LocalCardMigrationOfferView&) = delete;
+  LocalCardMigrationOfferView& operator=(const LocalCardMigrationOfferView&) =
+      delete;
+  ~LocalCardMigrationOfferView() override = default;
 
   const std::vector<std::string> GetSelectedCardGuids() const {
     std::vector<std::string> selected_cards;
     for (views::View* child : card_list_view_->children()) {
-      DCHECK_EQ(MigratableCardView::kViewClassName, child->GetClassName());
+      DCHECK(views::IsViewClass<MigratableCardView>(child));
       auto* card = static_cast<MigratableCardView*>(child);
-      if (card->IsSelected())
+      if (card->GetSelected())
         selected_cards.push_back(card->GetGuid());
     }
     return selected_cards;
@@ -338,9 +345,11 @@ class LocalCardMigrationOfferView : public views::View {
   // The view that contains legal message and handles legal message links
   // clicking.
   LegalMessageView* legal_message_container_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(LocalCardMigrationOfferView);
 };
+
+BEGIN_METADATA(LocalCardMigrationOfferView, views::View)
+ADD_READONLY_PROPERTY_METADATA(std::vector<std::string>, SelectedCardGuids)
+END_METADATA
 
 LocalCardMigrationDialogView::LocalCardMigrationDialogView(
     LocalCardMigrationDialogController* controller,
@@ -356,10 +365,16 @@ LocalCardMigrationDialogView::LocalCardMigrationDialogView(
                      base::Unretained(this)));
   SetAcceptCallback(base::BindOnce(
       &LocalCardMigrationDialogView::OnDialogAccepted, base::Unretained(this)));
+  RegisterWindowClosingCallback(base::BindOnce(
+      &LocalCardMigrationDialogView::OnWindowClosing, base::Unretained(this)));
+  // This should be a modal dialog blocking the browser since we don't want
+  // users to lose progress in the migration workflow until they are done.
+  SetModalType(ui::MODAL_TYPE_WINDOW);
   set_close_on_deactivate(false);
   set_margins(gfx::Insets());
   set_fixed_width(ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_LARGE_MODAL_DIALOG_PREFERRED_WIDTH));
+  SetShowCloseButton(false);
 }
 
 LocalCardMigrationDialogView::~LocalCardMigrationDialogView() {}
@@ -374,29 +389,6 @@ void LocalCardMigrationDialogView::ShowDialog() {
 void LocalCardMigrationDialogView::CloseDialog() {
   controller_ = nullptr;
   GetWidget()->Close();
-}
-
-ui::ModalType LocalCardMigrationDialogView::GetModalType() const {
-  // This should be a modal dialog blocking the browser since we don't want
-  // users to lose progress in the migration workflow until they are done.
-  return ui::MODAL_TYPE_WINDOW;
-}
-
-bool LocalCardMigrationDialogView::ShouldShowCloseButton() const {
-  return false;
-}
-
-// TODO(crbug.com/867194): Update this method when adding feedback.
-bool LocalCardMigrationDialogView::IsDialogButtonEnabled(
-    ui::DialogButton button) const {
-  // If the dialog is offer dialog and all checkboxes are unchecked, disable the
-  // save button.
-  if (controller_->GetViewState() == LocalCardMigrationDialogState::kOffered &&
-      button == ui::DIALOG_BUTTON_OK) {
-    DCHECK(offer_view_);
-    return !offer_view_->GetSelectedCardGuids().empty();
-  }
-  return true;
 }
 
 void LocalCardMigrationDialogView::OnDialogAccepted() {
@@ -424,17 +416,29 @@ void LocalCardMigrationDialogView::OnDialogCancelled() {
   }
 }
 
-void LocalCardMigrationDialogView::WindowClosing() {
+void LocalCardMigrationDialogView::OnWindowClosing() {
   if (controller_) {
     controller_->OnDialogClosed();
     controller_ = nullptr;
   }
 }
 
+bool LocalCardMigrationDialogView::GetEnableOkButton() const {
+  if (controller_->GetViewState() == LocalCardMigrationDialogState::kOffered) {
+    DCHECK(offer_view_) << "This method can't be called before ConstructView";
+    return !offer_view_->GetSelectedCardGuids().empty();
+  }
+  return true;
+}
+
 void LocalCardMigrationDialogView::DeleteCard(const std::string& guid) {
   controller_->DeleteCard(guid);
   ConstructView();
   UpdateLayout();
+}
+
+void LocalCardMigrationDialogView::OnCardCheckboxToggled() {
+  SetButtonEnabled(ui::DIALOG_BUTTON_OK, GetEnableOkButton());
 }
 
 // TODO(crbug.com/913571): Figure out a way to avoid two consecutive layouts.
@@ -481,12 +485,13 @@ void LocalCardMigrationDialogView::ConstructView() {
     offer_view_->SetID(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_OFFER_DIALOG);
     card_list_view_ = offer_view_->card_list_view_;
     AddChildView(offer_view_);
+    SetButtonEnabled(ui::DIALOG_BUTTON_OK, GetEnableOkButton());
   } else {
     AddChildView(CreateFeedbackContentView(controller_, this).release());
   }
 }
 
-base::string16 LocalCardMigrationDialogView::GetOkButtonLabel() const {
+std::u16string LocalCardMigrationDialogView::GetOkButtonLabel() const {
   switch (controller_->GetViewState()) {
     case LocalCardMigrationDialogState::kOffered:
       return l10n_util::GetStringUTF16(
@@ -498,7 +503,7 @@ base::string16 LocalCardMigrationDialogView::GetOkButtonLabel() const {
   }
 }
 
-base::string16 LocalCardMigrationDialogView::GetCancelButtonLabel() const {
+std::u16string LocalCardMigrationDialogView::GetCancelButtonLabel() const {
   switch (controller_->GetViewState()) {
     case LocalCardMigrationDialogState::kOffered:
       return l10n_util::GetStringUTF16(
@@ -515,5 +520,11 @@ LocalCardMigrationDialog* CreateLocalCardMigrationDialogView(
     content::WebContents* web_contents) {
   return new LocalCardMigrationDialogView(controller, web_contents);
 }
+
+BEGIN_METADATA(LocalCardMigrationDialogView, views::BubbleDialogDelegateView)
+ADD_READONLY_PROPERTY_METADATA(bool, EnableOkButton)
+ADD_READONLY_PROPERTY_METADATA(std::u16string, OkButtonLabel)
+ADD_READONLY_PROPERTY_METADATA(std::u16string, CancelButtonLabel)
+END_METADATA
 
 }  // namespace autofill

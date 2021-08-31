@@ -10,6 +10,7 @@
 #include "src/gpu/GrVx.h"
 #include "tests/Test.h"
 #include <limits>
+#include <numeric>
 
 using namespace grvx;
 using skvx::bit_pun;
@@ -42,7 +43,7 @@ DEF_TEST(grvx_cross_dot, r) {
 static bool check_approx_acos(skiatest::Reporter* r, float x, float approx_acos_x) {
     float acosf_x = acosf(x);
     float error = acosf_x - approx_acos_x;
-    if (!(fabsf(error) <= GRVX_FAST_ACOS_MAX_ERROR)) {
+    if (!(fabsf(error) <= GRVX_APPROX_ACOS_MAX_ERROR)) {
         ERRORF(r, "Larger-than-expected error from grvx::approx_acos\n"
                   "  x=              %f\n"
                   "  approx_acos_x=  %f  (%f degrees\n"
@@ -51,7 +52,7 @@ static bool check_approx_acos(skiatest::Reporter* r, float x, float approx_acos_
                   "  tolerance=      %f  (%f degrees)\n\n",
                   x, approx_acos_x, SkRadiansToDegrees(approx_acos_x), acosf_x,
                   SkRadiansToDegrees(acosf_x), error, SkRadiansToDegrees(error),
-                  GRVX_FAST_ACOS_MAX_ERROR, SkRadiansToDegrees(GRVX_FAST_ACOS_MAX_ERROR));
+                  GRVX_APPROX_ACOS_MAX_ERROR, SkRadiansToDegrees(GRVX_APPROX_ACOS_MAX_ERROR));
         return false;
     }
     return true;
@@ -145,7 +146,7 @@ static bool check_approx_angle_between_vectors(skiatest::Reporter* r, SkVector a
                                                float approxTheta) {
     float expectedTheta = precise_angle_between_vectors(a, b);
     float error = expectedTheta - approxTheta;
-    if (!(fabsf(error) <= GRVX_FAST_ACOS_MAX_ERROR + SK_ScalarNearlyZero)) {
+    if (!(fabsf(error) <= GRVX_APPROX_ACOS_MAX_ERROR + SK_ScalarNearlyZero)) {
         int expAx = SkFloat2Bits(a.fX) >> 23 & 0xff;
         int expAy = SkFloat2Bits(a.fY) >> 23 & 0xff;
         int expBx = SkFloat2Bits(b.fX) >> 23 & 0xff;
@@ -161,39 +162,40 @@ static bool check_approx_angle_between_vectors(skiatest::Reporter* r, SkVector a
                   "  tolerance=         %f  (%f degrees)\n\n",
                   a.fX, a.fY, b.fX, b.fY, expAx, expAy, expBx, expBy, approxTheta,
                   SkRadiansToDegrees(approxTheta), expectedTheta, SkRadiansToDegrees(expectedTheta),
-                  error, SkRadiansToDegrees(error), GRVX_FAST_ACOS_MAX_ERROR,
-                  SkRadiansToDegrees(GRVX_FAST_ACOS_MAX_ERROR));
+                  error, SkRadiansToDegrees(error), GRVX_APPROX_ACOS_MAX_ERROR,
+                  SkRadiansToDegrees(GRVX_APPROX_ACOS_MAX_ERROR));
         return false;
     }
     return true;
 }
 
 static bool check_approx_angle_between_vectors(skiatest::Reporter* r, SkVector a, SkVector b) {
-    float approxTheta = grvx::approx_angle_between_vectors<1>(a.fX, a.fY, b.fX, b.fY).val;
+    float approxTheta = grvx::approx_angle_between_vectors(bit_pun<float2>(a),
+                                                           bit_pun<float2>(b)).val;
     return check_approx_angle_between_vectors(r, a, b, approxTheta);
 }
 
 DEF_TEST(grvx_approx_angle_between_vectors, r) {
     // Test when a and/or b are zero.
-    REPORTER_ASSERT(r, SkScalarNearlyZero(grvx::approx_angle_between_vectors<1>(0,0,0,0).val));
-    REPORTER_ASSERT(r, SkScalarNearlyZero(grvx::approx_angle_between_vectors<1>(1,1,0,0).val));
-    REPORTER_ASSERT(r, SkScalarNearlyZero(grvx::approx_angle_between_vectors<1>(0,0,1,1).val));
+    REPORTER_ASSERT(r, SkScalarNearlyZero(grvx::approx_angle_between_vectors<2>({0,0}, {0,0}).val));
+    REPORTER_ASSERT(r, SkScalarNearlyZero(grvx::approx_angle_between_vectors<2>({1,1}, {0,0}).val));
+    REPORTER_ASSERT(r, SkScalarNearlyZero(grvx::approx_angle_between_vectors<2>({0,0}, {1,1}).val));
     check_approx_angle_between_vectors(r, {0,0}, {0,0});
     check_approx_angle_between_vectors(r, {1,1}, {0,0});
     check_approx_angle_between_vectors(r, {0,0}, {1,1});
 
     // Test infinities.
-    REPORTER_ASSERT(r, SkScalarNearlyZero(grvx::approx_angle_between_vectors<1>(
-            std::numeric_limits<float>::infinity(),1,2,3).val));
+    REPORTER_ASSERT(r, SkScalarNearlyZero(grvx::approx_angle_between_vectors<2>(
+            {std::numeric_limits<float>::infinity(),1}, {2,3}).val));
 
     // Test NaNs.
-    REPORTER_ASSERT(r, SkScalarNearlyZero(grvx::approx_angle_between_vectors<1>(
-            std::numeric_limits<float>::quiet_NaN(),1,2,3).val));
+    REPORTER_ASSERT(r, SkScalarNearlyZero(grvx::approx_angle_between_vectors<2>(
+            {std::numeric_limits<float>::quiet_NaN(),1}, {2,3}).val));
 
     // Test demorms.
     float epsilon = std::numeric_limits<float>::denorm_min();
-    REPORTER_ASSERT(r, SkScalarNearlyZero(grvx::approx_angle_between_vectors<1>(
-            epsilon, epsilon, epsilon, epsilon).val));
+    REPORTER_ASSERT(r, SkScalarNearlyZero(grvx::approx_angle_between_vectors<2>(
+            {epsilon, epsilon}, {epsilon, epsilon}).val));
 
     // Test random floats of all types.
     uint4 mantissas = {0,0,0,0};
@@ -218,7 +220,7 @@ DEF_TEST(grvx_approx_angle_between_vectors, r) {
         float4 y0 = bit_pun<float4>(signs | y0exp | mantissas[1]);
         float4 x1 = bit_pun<float4>(signs | x1exp | mantissas[2]);
         float4 y1 = bit_pun<float4>(signs | y1exp | mantissas[3]);
-        float4 rads = approx_angle_between_vectors(x0, y0, x1, y1);
+        float4 rads = approx_angle_between_vectors(skvx::join(x0, y0), skvx::join(x1, y1));
         for (int j = 0; j < 4; ++j) {
             if (!check_approx_angle_between_vectors(r, {x0[j], y0[j]}, {x1[j], y1[j]}, rads[j])) {
                 return;
@@ -228,4 +230,42 @@ DEF_TEST(grvx_approx_angle_between_vectors, r) {
         mantissas = (mantissas + uint4{123456791, 201345691, 198765433, 156789029}) & ((1<<23) - 1);
         exp = (exp + uint4{79, 83, 199, 7}) & 0xff;
     }
+}
+
+template<int N, typename T> void check_strided_loads(skiatest::Reporter* r) {
+    using Vec = skvx::Vec<N,T>;
+    T values[N*4];
+    std::iota(values, values + N*4, 0);
+    Vec a, b, c, d;
+    grvx::strided_load2(values, a, b);
+    for (int i = 0; i < N; ++i) {
+        REPORTER_ASSERT(r, a[i] == values[i*2]);
+        REPORTER_ASSERT(r, b[i] == values[i*2 + 1]);
+    }
+    grvx::strided_load4(values, a, b, c, d);
+    for (int i = 0; i < N; ++i) {
+        REPORTER_ASSERT(r, a[i] == values[i*4]);
+        REPORTER_ASSERT(r, b[i] == values[i*4 + 1]);
+        REPORTER_ASSERT(r, c[i] == values[i*4 + 2]);
+        REPORTER_ASSERT(r, d[i] == values[i*4 + 3]);
+    }
+}
+
+template<typename T> void check_strided_loads(skiatest::Reporter* r) {
+    check_strided_loads<1,T>(r);
+    check_strided_loads<2,T>(r);
+    check_strided_loads<4,T>(r);
+    check_strided_loads<8,T>(r);
+    check_strided_loads<16,T>(r);
+    check_strided_loads<32,T>(r);
+}
+
+DEF_TEST(GrVx_strided_loads, r) {
+    check_strided_loads<uint32_t>(r);
+    check_strided_loads<uint16_t>(r);
+    check_strided_loads<uint8_t>(r);
+    check_strided_loads<int32_t>(r);
+    check_strided_loads<int16_t>(r);
+    check_strided_loads<int8_t>(r);
+    check_strided_loads<float>(r);
 }

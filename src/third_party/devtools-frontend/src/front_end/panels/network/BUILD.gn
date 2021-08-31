@@ -1,0 +1,104 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("../../../scripts/build/ninja/devtools_entrypoint.gni")
+import("../../../scripts/build/ninja/devtools_module.gni")
+import("../visibility.gni")
+
+devtools_module("network") {
+  sources = [
+    "BinaryResourceView.ts",
+    "BlockedURLsPane.ts",
+    "EventSourceMessagesView.ts",
+    "NetworkConfigView.ts",
+    "NetworkDataGridNode.ts",
+    "NetworkFrameGrouper.ts",
+    "NetworkItemView.ts",
+    "NetworkLogView.ts",
+    "NetworkLogViewColumns.ts",
+    "NetworkManageCustomHeadersView.ts",
+    "NetworkOverview.ts",
+    "NetworkPanel.ts",
+    "NetworkSearchScope.ts",
+    "NetworkTimeCalculator.ts",
+    "NetworkWaterfallColumn.ts",
+    "RequestCookiesView.ts",
+    "RequestHTMLView.ts",
+    "RequestHeadersView.ts",
+    "RequestInitiatorView.ts",
+    "RequestPreviewView.ts",
+    "RequestResponseView.ts",
+    "RequestTimingView.ts",
+    "ResourceWebSocketFrameView.ts",
+    "SignedExchangeInfoView.ts",
+  ]
+
+  deps = [
+    "../../core/common:bundle",
+    "../../core/host:bundle",
+    "../../core/i18n:bundle",
+    "../../core/platform:bundle",
+    "../../core/root:bundle",
+    "../../core/sdk:bundle",
+    "../../models/bindings:bundle",
+    "../../models/har:bundle",
+    "../../models/issues_manager:bundle",
+    "../../models/logs:bundle",
+    "../../models/text_utils:bundle",
+    "../../models/workspace:bundle",
+    "../../panels/elements:bundle",
+    "../../panels/mobile_throttling:bundle",
+    "../../panels/search:bundle",
+    "../../third_party/chromium/client-variations:bundle",
+    "../../ui/components/expandable_list:bundle",
+    "../../ui/legacy:bundle",
+    "../../ui/legacy/components/cookie_table:bundle",
+    "../../ui/legacy/components/data_grid:bundle",
+    "../../ui/legacy/components/object_ui:bundle",
+    "../../ui/legacy/components/perf_ui:bundle",
+    "../../ui/legacy/components/source_frame:bundle",
+    "../../ui/legacy/components/utils:bundle",
+    "../../ui/legacy/theme_support:bundle",
+    "./components:bundle",
+  ]
+}
+
+devtools_entrypoint("bundle") {
+  entrypoint = "network.ts"
+
+  deps = [ ":network" ]
+
+  visibility = [
+    ":*",
+    "../../../test/unittests/front_end/entrypoints/missing_entrypoints/*",
+    "../../entrypoints/*",
+
+    # TODO(crbug.com/1202788): Remove invalid dependents
+    "../application/*",
+    "../issues/*",
+    "../security/*",
+  ]
+
+  visibility += devtools_panels_visibility
+}
+
+devtools_entrypoint("legacy") {
+  entrypoint = "network-legacy.ts"
+
+  deps = [ ":bundle" ]
+
+  visibility = [ "../..:legacy_entrypoints" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "network-meta.ts"
+
+  deps = [
+    ":bundle",
+    "../../core/root:bundle",
+    "../../ui/legacy:bundle",
+  ]
+
+  visibility = [ "../../entrypoints/*" ]
+}

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -66,7 +67,12 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
 
 ServiceWorkerRegistration::~ServiceWorkerRegistration() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK(!listeners_.might_have_observers());
+  DCHECK(listeners_.empty());
+
+  // TODO(crbug.com/1159778): Remove once the bug is fixed.
+  CHECK(!in_activate_waiting_version_)
+      << "ServiceWorkerRegistration was destroyed while activating waiting "
+         "version";
   if (context_)
     context_->RemoveLiveRegistration(registration_id_);
 }
@@ -284,7 +290,9 @@ void ServiceWorkerRegistration::ClaimClients() {
   const bool include_back_forward_cached_clients = true;
   for (std::unique_ptr<ServiceWorkerContextCore::ContainerHostIterator> it =
            context_->GetClientContainerHostIterator(
-               scope_.GetOrigin(), include_reserved_clients,
+               // TODO(crbug.com/1199077): Update this when
+               // ServiceWorkerRegistration implements StorageKey.
+               storage::StorageKey(origin_), include_reserved_clients,
                include_back_forward_cached_clients);
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerContainerHost* container_host = it->GetContainerHost();
@@ -329,9 +337,8 @@ void ServiceWorkerRegistration::DeleteAndClearWhenReady() {
   }
 
   context_->registry()->DeleteRegistration(
-      this, scope().GetOrigin(),
-      AdaptCallbackForRepeating(
-          base::BindOnce(&ServiceWorkerRegistration::OnDeleteFinished, this)));
+      this, storage::StorageKey(origin()),
+      base::BindOnce(&ServiceWorkerRegistration::OnDeleteFinished, this));
 
   if (!active_version() || !active_version()->HasControllee())
     Clear();
@@ -341,9 +348,8 @@ void ServiceWorkerRegistration::DeleteAndClearImmediately() {
   DCHECK(context_);
   if (!is_deleted()) {
     context_->registry()->DeleteRegistration(
-        this, scope().GetOrigin(),
-        AdaptCallbackForRepeating(base::BindOnce(
-            &ServiceWorkerRegistration::OnDeleteFinished, this)));
+        this, storage::StorageKey(origin()),
+        base::BindOnce(&ServiceWorkerRegistration::OnDeleteFinished, this));
   }
 
   if (is_uninstalling())
@@ -480,6 +486,8 @@ void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
   if (activating_version->is_redundant())
     return;  // Activation is no longer relevant.
 
+  in_activate_waiting_version_ = true;
+
   // "5. If exitingWorker is not null,
   if (exiting_version.get()) {
     // Whenever activation happens, evict bfcached controllees.
@@ -517,6 +525,7 @@ void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
   // "10. Queue a task to fire an event named activate..."
   // The browser could be shutting down. To avoid spurious start worker
   // failures, wait a bit before continuing.
+  in_activate_waiting_version_ = false;
   if (delay) {
     task_runner_->PostDelayedTask(
         FROM_HERE,
@@ -580,7 +589,7 @@ void ServiceWorkerRegistration::ForceDelete() {
   // Delete the registration and its state from storage.
   if (status() == Status::kIntact) {
     context_->registry()->DeleteRegistration(
-        this, scope().GetOrigin(),
+        this, storage::StorageKey(origin()),
         base::BindOnce(&ServiceWorkerRegistration::OnDeleteFinished, protect));
   }
   DCHECK(is_uninstalling());
@@ -673,7 +682,7 @@ void ServiceWorkerRegistration::OnActivateEventFinished(
   // "Run the Update State algorithm passing registration's active worker and
   // 'activated' as the arguments."
   activating_version->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  context_->registry()->UpdateToActiveState(id(), scope().GetOrigin(),
+  context_->registry()->UpdateToActiveState(id(), storage::StorageKey(origin()),
                                             base::DoNothing());
 }
 

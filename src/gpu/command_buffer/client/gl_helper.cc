@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -118,11 +119,11 @@ class I420ConverterImpl : public I420Converter {
   const std::unique_ptr<GLHelper::ScalerInterface> v_planerizer_;
 
   // Intermediate texture, holding the scaler's output.
-  base::Optional<TextureHolder> intermediate_;
+  absl::optional<TextureHolder> intermediate_;
 
   // Intermediate texture, holding the UV interim output (if the MRT shader
   // is being used).
-  base::Optional<ScopedTexture> uv_;
+  absl::optional<ScopedTexture> uv_;
 
   DISALLOW_COPY_AND_ASSIGN(I420ConverterImpl);
 };
@@ -500,14 +501,14 @@ void GLHelper::ReadbackTextureAsync(GLuint texture,
 void GLHelper::InitCopyTextToImpl() {
   // Lazily initialize |copy_texture_to_impl_|
   if (!copy_texture_to_impl_)
-    copy_texture_to_impl_.reset(
-        new CopyTextureToImpl(gl_, context_support_, this));
+    copy_texture_to_impl_ =
+        std::make_unique<CopyTextureToImpl>(gl_, context_support_, this);
 }
 
 void GLHelper::InitScalerImpl() {
   // Lazily initialize |scaler_impl_|
   if (!scaler_impl_)
-    scaler_impl_.reset(new GLHelperScaling(gl_, this));
+    scaler_impl_ = std::make_unique<GLHelperScaling>(gl_, this);
 }
 
 GLint GLHelper::MaxDrawBuffers() {
@@ -662,7 +663,7 @@ void I420ConverterImpl::EnsureTexturesSizedFor(
     if (!intermediate_ || intermediate_->size() != scaler_output_size)
       intermediate_.emplace(gl_, scaler_output_size);
   } else {
-    intermediate_ = base::nullopt;
+    intermediate_ = absl::nullopt;
   }
 
   // Size the interim UV plane and the three output planes.

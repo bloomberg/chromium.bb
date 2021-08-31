@@ -21,10 +21,14 @@ package perfetto.protos;
 import "protos/perfetto/metrics/android/batt_metric.proto";
 import "protos/perfetto/metrics/android/cpu_metric.proto";
 import "protos/perfetto/metrics/android/display_metrics.proto";
+import "protos/perfetto/metrics/android/dma_heap_metric.proto";
+import "protos/perfetto/metrics/android/fastrpc_metric.proto";
+import "protos/perfetto/metrics/android/g2d_metric.proto";
 import "protos/perfetto/metrics/android/gpu_metric.proto";
-import "protos/perfetto/metrics/android/heap_profile_callsites.proto";
+import "protos/perfetto/metrics/android/hwcomposer.proto";
 import "protos/perfetto/metrics/android/hwui_metric.proto";
 import "protos/perfetto/metrics/android/ion_metric.proto";
+import "protos/perfetto/metrics/android/jank_metric.proto";
 import "protos/perfetto/metrics/android/java_heap_histogram.proto";
 import "protos/perfetto/metrics/android/java_heap_stats.proto";
 import "protos/perfetto/metrics/android/lmk_metric.proto";
@@ -50,13 +54,43 @@ message TraceMetadata {
   optional int64 trace_size_bytes = 6;
   repeated string trace_trigger = 7;
   optional string unique_session_name = 8;
+  optional string trace_config_pbtxt = 9;
+  optional int64 sched_duration_ns = 10;
+}
+
+// Stats counters for the trace.
+// Defined in src/trace_processor/storage/stats.h
+message TraceAnalysisStats {
+  enum Severity {
+    SEVERITY_UNKNOWN = 0;
+    SEVERITY_INFO = 1;
+    SEVERITY_DATA_LOSS = 2;
+    SEVERITY_ERROR = 3;
+  }
+
+  enum Source {
+    SOURCE_UNKNOWN = 0;
+    SOURCE_TRACE = 1;
+    SOURCE_ANALYSIS = 2;
+  }
+
+  message Stat {
+    optional string name = 1;
+    optional uint32 idx = 2;
+    optional Severity severity = 3;
+    optional Source source = 4;
+
+    optional int64 count = 5;
+  }
+
+  repeated Stat stat = 1;
 }
 
 // Root message for all Perfetto-based metrics.
 //
-// Next id: 28
+// Next id: 34
 message TraceMetrics {
-  reserved 4, 10, 13, 14, 19;
+  reserved 4, 10, 13, 14, 16, 19;
 
   // Battery counters metric on Android.
   optional AndroidBatteryMetric android_batt = 5;
@@ -79,6 +113,9 @@ message TraceMetrics {
   // ion buffer memory metrics.
   optional AndroidIonMetric android_ion = 9;
 
+  // fastrpc subsystem memory metrics.
+  optional AndroidFastrpcMetric android_fastrpc = 31;
+
   // Statistics about low memory kills.
   optional AndroidLmkMetric android_lmk = 8;
 
@@ -88,11 +125,11 @@ message TraceMetrics {
   // Startup metrics on Android (owned by the Android Telemetry team).
   optional AndroidStartupMetric android_startup = 2;
 
-  // Heap profiler callsite statistics.
-  optional HeapProfileCallsites heap_profile_callsites = 16;
-
   // Trace metadata (applicable to all traces).
   optional TraceMetadata trace_metadata = 3;
+
+  // Trace stats (applicable to all traces).
+  optional TraceAnalysisStats trace_stats = 33;
 
   // Returns stack frames missing symbols.
   optional UnsymbolizedFrames unsymbolized_frames = 15;
@@ -122,6 +159,18 @@ message TraceMetrics {
 
   // Frame timing and jank root causes for system UI interactions.
   optional AndroidSysUiCujMetrics android_sysui_cuj = 27;
+
+  // Metric associated with hwcomposer.
+  optional AndroidHwcomposerMetrics android_hwcomposer = 28;
+
+  // Detects common bad patterns that might lead to jank.
+  optional AndroidJankMetrics android_jank = 29;
+
+  // G2D metrics.
+  optional G2dMetrics g2d = 30;
+
+  // Dmabuf heap metrics.
+  optional AndroidDmaHeapMetric android_dma_heap = 32;
 
   // Demo extensions.
   extensions 450 to 499;

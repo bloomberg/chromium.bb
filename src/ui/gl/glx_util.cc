@@ -4,10 +4,9 @@
 
 #include "ui/gl/glx_util.h"
 
-#include <dlfcn.h>
-
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "ui/gfx/x/future.h"
 #include "ui/gfx/x/glx.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -62,13 +61,6 @@ x11::Glx::FbConfig GetConfigForWindow(x11::Connection* conn,
   return {};
 }
 
-NO_SANITIZE("cfi-icall")
-void XlibFree(void* data) {
-  using xfree_type = void (*)(void*);
-  auto* xfree = reinterpret_cast<xfree_type>(dlsym(RTLD_DEFAULT, "XFree"));
-  xfree(data);
-}
-
 }  // namespace
 
 GLXFBConfig GetFbConfigForWindow(x11::Connection* connection,
@@ -89,7 +81,7 @@ GLXFBConfig GetGlxFbConfigForXProtoFbConfig(x11::Connection* connection,
   DCHECK_EQ(nitems, 1);
   DCHECK(glx_configs);
   GLXFBConfig glx_config = glx_configs[0];
-  XlibFree(glx_configs);
+  x11::XlibFree(glx_configs);
   return glx_config;
 }
 

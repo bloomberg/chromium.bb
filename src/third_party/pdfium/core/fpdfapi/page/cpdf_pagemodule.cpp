@@ -10,6 +10,7 @@
 #include "core/fpdfapi/page/cpdf_colorspace.h"
 #include "core/fpdfapi/page/cpdf_devicecs.h"
 #include "core/fpdfapi/page/cpdf_patterncs.h"
+#include "third_party/base/check.h"
 
 namespace {
 
@@ -19,27 +20,30 @@ CPDF_PageModule* g_PageModule = nullptr;
 
 // static
 void CPDF_PageModule::Create() {
-  ASSERT(!g_PageModule);
+  DCHECK(!g_PageModule);
   g_PageModule = new CPDF_PageModule();
 }
 
 // static
 void CPDF_PageModule::Destroy() {
-  ASSERT(g_PageModule);
+  DCHECK(g_PageModule);
   delete g_PageModule;
   g_PageModule = nullptr;
 }
 
 // static
 CPDF_PageModule* CPDF_PageModule::GetInstance() {
-  ASSERT(g_PageModule);
+  DCHECK(g_PageModule);
   return g_PageModule;
 }
 
 CPDF_PageModule::CPDF_PageModule()
-    : m_StockGrayCS(pdfium::MakeRetain<CPDF_DeviceCS>(PDFCS_DEVICEGRAY)),
-      m_StockRGBCS(pdfium::MakeRetain<CPDF_DeviceCS>(PDFCS_DEVICERGB)),
-      m_StockCMYKCS(pdfium::MakeRetain<CPDF_DeviceCS>(PDFCS_DEVICECMYK)),
+    : m_StockGrayCS(pdfium::MakeRetain<CPDF_DeviceCS>(
+          CPDF_ColorSpace::Family::kDeviceGray)),
+      m_StockRGBCS(pdfium::MakeRetain<CPDF_DeviceCS>(
+          CPDF_ColorSpace::Family::kDeviceRGB)),
+      m_StockCMYKCS(pdfium::MakeRetain<CPDF_DeviceCS>(
+          CPDF_ColorSpace::Family::kDeviceCMYK)),
       m_StockPatternCS(pdfium::MakeRetain<CPDF_PatternCS>(nullptr)) {
   m_StockPatternCS->InitializeStockPattern();
   CPDF_FontGlobals::Create();
@@ -50,14 +54,15 @@ CPDF_PageModule::~CPDF_PageModule() {
   CPDF_FontGlobals::Destroy();
 }
 
-RetainPtr<CPDF_ColorSpace> CPDF_PageModule::GetStockCS(int family) {
-  if (family == PDFCS_DEVICEGRAY)
+RetainPtr<CPDF_ColorSpace> CPDF_PageModule::GetStockCS(
+    CPDF_ColorSpace::Family family) {
+  if (family == CPDF_ColorSpace::Family::kDeviceGray)
     return m_StockGrayCS;
-  if (family == PDFCS_DEVICERGB)
+  if (family == CPDF_ColorSpace::Family::kDeviceRGB)
     return m_StockRGBCS;
-  if (family == PDFCS_DEVICECMYK)
+  if (family == CPDF_ColorSpace::Family::kDeviceCMYK)
     return m_StockCMYKCS;
-  if (family == PDFCS_PATTERN)
+  if (family == CPDF_ColorSpace::Family::kPattern)
     return m_StockPatternCS;
   return nullptr;
 }

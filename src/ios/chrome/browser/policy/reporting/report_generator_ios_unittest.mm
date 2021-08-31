@@ -141,6 +141,8 @@ TEST_F(ReportGeneratorIOSTest, GenerateBasicReport) {
   EXPECT_EQ(
       policy::GetBrowserDeviceIdentifier()->SerializePartialAsString(),
       basic_request->browser_device_identifier().SerializePartialAsString());
+  EXPECT_NE(std::string(), basic_request->device_model());
+  EXPECT_NE(std::string(), basic_request->brand_name());
 
   // Verify the OS report
   EXPECT_TRUE(basic_request->has_os_report());
@@ -164,8 +166,8 @@ TEST_F(ReportGeneratorIOSTest, GenerateBasicReport) {
   auto profile_info = browser_report.chrome_user_profile_infos(0);
   EXPECT_EQ(kProfilePath.AsUTF8Unsafe(), profile_info.id());
   EXPECT_EQ(kProfilePath.BaseName().AsUTF8Unsafe(), profile_info.name());
-  EXPECT_TRUE(profile_info.has_is_full_report());
-  EXPECT_TRUE(profile_info.is_full_report());
+  EXPECT_TRUE(profile_info.has_is_detail_available());
+  EXPECT_TRUE(profile_info.is_detail_available());
   EXPECT_EQ(2, profile_info.chrome_policies_size());
 }
 

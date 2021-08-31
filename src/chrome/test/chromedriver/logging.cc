@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -201,7 +202,7 @@ WebDriverLog::~WebDriverLog() {
 std::unique_ptr<base::ListValue> WebDriverLog::GetAndClearEntries() {
   std::unique_ptr<base::ListValue> ret;
   if (batches_of_entries_.empty()) {
-    ret.reset(new base::ListValue());
+    ret = std::make_unique<base::ListValue>();
     emptied_ = true;
   } else {
     ret = std::move(batches_of_entries_.front());
@@ -213,10 +214,9 @@ std::unique_ptr<base::ListValue> WebDriverLog::GetAndClearEntries() {
 
 bool GetFirstErrorMessageFromList(const base::ListValue* list,
                                   std::string* message) {
-  for (auto it = list->begin(); it != list->end(); ++it) {
-    const base::DictionaryValue* log_entry = NULL;
-    it->GetAsDictionary(&log_entry);
-    if (log_entry != NULL) {
+  for (const auto& entry : list->GetList()) {
+    const base::DictionaryValue* log_entry = nullptr;
+    if (entry.GetAsDictionary(&log_entry)) {
       std::string level;
       if (log_entry->GetString("level", &level))
         if (level == kLevelToName[Log::kError])
@@ -373,7 +373,9 @@ Status CreateLogs(
       if (level != Log::kOff) {
         logs.push_back(std::make_unique<WebDriverLog>(type, Log::kAll));
         devtools_listeners.push_back(std::make_unique<PerformanceLogger>(
-            logs.back().get(), session, capabilities.perf_logging_prefs));
+            logs.back().get(), session, capabilities.perf_logging_prefs,
+            base::Contains(capabilities.window_types,
+                           WebViewInfo::kServiceWorker)));
         PerformanceLogger* perf_log =
             static_cast<PerformanceLogger*>(devtools_listeners.back().get());
         // We use a proxy for |perf_log|'s |CommandListener| interface.

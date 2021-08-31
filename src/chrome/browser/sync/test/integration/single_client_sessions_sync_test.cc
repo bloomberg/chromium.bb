@@ -7,7 +7,9 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/test_timeouts.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -53,9 +55,6 @@
 
 namespace {
 
-using base::HistogramBase;
-using base::HistogramSamples;
-using base::HistogramTester;
 using fake_server::SessionsHierarchy;
 using sessions_helper::CheckInitialState;
 using sessions_helper::CloseTab;
@@ -87,19 +86,6 @@ static const char* kBaseFragmentURL =
     "data:text/html,<html><title>Fragment</title><body></body></html>";
 static const char* kSpecifiedFragmentURL =
     "data:text/html,<html><title>Fragment</title><body></body></html>#fragment";
-
-void ExpectUniqueSampleGE(const HistogramTester& histogram_tester,
-                          const std::string& name,
-                          HistogramBase::Sample sample,
-                          HistogramBase::Count expected_inclusive_lower_bound) {
-  std::unique_ptr<HistogramSamples> samples =
-      histogram_tester.GetHistogramSamplesSinceCreation(name);
-  int sample_count = samples->GetCount(sample);
-  EXPECT_GE(sample_count, expected_inclusive_lower_bound)
-      << " for histogram " << name << " sample " << sample;
-  EXPECT_EQ(sample_count, samples->TotalCount())
-      << " for histogram " << name << " sample " << sample;
-}
 
 std::unique_ptr<net::test_server::HttpResponse> FaviconServerRequestHandler(
     const net::test_server::HttpRequest& request) {
@@ -236,9 +222,7 @@ class FaviconForPageUrlAvailableChecker : public StatusChangeChecker {
   Profile* const profile_;
   const GURL page_url_;
   const bool should_be_available_;
-  std::unique_ptr<
-      history::HistoryService::FaviconsChangedCallbackList::Subscription>
-      callback_subscription_;
+  base::CallbackListSubscription callback_subscription_;
   bool exit_condition_satisfied_ = false;
   base::CancelableTaskTracker tracker_;
 };
@@ -456,21 +440,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, NavigateThenCloseTab) {
   EXPECT_TRUE(
       IsHistoryURLSyncedChecker(kURL3, GetFakeServer(), GetSyncService(0))
           .Wait());
-}
-
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
-                       ShouldDeleteLastClosedTab) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(CheckInitialState(0));
-
-  ASSERT_TRUE(OpenTab(0, GURL(kURL1)));
-  ASSERT_TRUE(OpenTab(0, GURL(kURL2)));
-  WaitForHierarchyOnServer(SessionsHierarchy({{kURL1, kURL2}}));
-
-  CloseTab(/*index=*/0, /*tab_index=*/0);
-  WaitForHierarchyOnServer(SessionsHierarchy({{kURL2}}));
-  CloseTab(/*index=*/0, /*tab_index=*/0);
-  WaitForHierarchyOnServer(SessionsHierarchy());
 }
 
 class SingleClientSessionsWithDeferRecyclingSyncTest
@@ -850,32 +819,19 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
 
   ASSERT_TRUE(CheckInitialState(0));
 
-  // Simulate empty list of accounts in the cookie jar. This will record cookie
-  // jar mismatch.
+  // Simulate empty list of accounts in the cookie jar.
   UpdateCookieJarAccountsAndWait({},
                                  /*expected_cookie_jar_mismatch=*/true);
-  // The HistogramTester objects are scoped to allow more precise verification.
-  {
-    HistogramTester histogram_tester;
 
-    // Add a new session to client 0 and wait for it to sync.
-    GURL url = GURL(kURL1);
-    ASSERT_TRUE(OpenTab(0, url));
-    WaitForURLOnServer(url);
+  // Add a new session to client 0 and wait for it to sync.
+  ASSERT_TRUE(OpenTab(0, GURL(kURL1)));
+  WaitForURLOnServer(GURL(kURL1));
 
-    sync_pb::ClientToServerMessage message;
-    ASSERT_TRUE(GetFakeServer()->GetLastCommitMessage(&message));
-    ASSERT_TRUE(message.commit().config_params().cookie_jar_mismatch());
-
-    // It is possible that multiple sync cycles occurred during the call to
-    // OpenTab, which would cause multiple identical samples.
-    ExpectUniqueSampleGE(histogram_tester, "Sync.CookieJarMatchOnNavigation",
-                         /*sample=*/false,
-                         /*expected_inclusive_lower_bound=*/1);
-    ExpectUniqueSampleGE(histogram_tester, "Sync.CookieJarEmptyOnMismatch",
-                         /*sample=*/true,
-                         /*expected_inclusive_lower_bound=*/1);
-  }
+  // Verify the cookie jar mismatch bool is set to true.
+  sync_pb::ClientToServerMessage first_commit;
+  ASSERT_TRUE(GetFakeServer()->GetLastCommitMessage(&first_commit));
+  EXPECT_TRUE(first_commit.commit().config_params().cookie_jar_mismatch())
+      << *syncer::ClientToServerMessageToValue(first_commit, true);
 
   // Avoid interferences from actual IdentityManager trying to fetch gaia
   // account information, which would exercise
@@ -886,35 +842,20 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
   // Trigger a cookie jar change (user signing in to content area).
   // Updating the cookie jar has to travel to the sync engine. It is possible
   // something is already running or scheduled to run on the sync thread. We
-  // want to block here and not create the HistogramTester below until we know
-  // the cookie jar stats have been updated.
+  // want to block here until we know the cookie jar stats have been updated.
   UpdateCookieJarAccountsAndWait(
       {GetClient(0)->service()->GetAuthenticatedAccountInfo().account_id},
       /*expected_cookie_jar_mismatch=*/false);
 
-  {
-    HistogramTester histogram_tester;
+  // Trigger a sync and wait for it.
+  NavigateTab(0, GURL(kURL2));
+  WaitForURLOnServer(GURL(kURL2));
 
-    // Trigger a sync and wait for it.
-    GURL url = GURL(kURL2);
-    NavigateTab(0, url);
-    WaitForURLOnServer(url);
-
-    ASSERT_NE(
-        0, histogram_tester.GetBucketCount("Sync.PostedClientToServerMessage",
-                                           /*COMMIT=*/1));
-
-    // Verify the cookie jar mismatch bool is set to false.
-    sync_pb::ClientToServerMessage message;
-    ASSERT_TRUE(GetFakeServer()->GetLastCommitMessage(&message));
-    EXPECT_FALSE(message.commit().config_params().cookie_jar_mismatch())
-        << *syncer::ClientToServerMessageToValue(message, true);
-
-    // Verify the histograms were recorded properly.
-    ExpectUniqueSampleGE(histogram_tester, "Sync.CookieJarMatchOnNavigation",
-                         /*sample=*/true, /*expected_inclusive_lower_bound=*/1);
-    histogram_tester.ExpectTotalCount("Sync.CookieJarEmptyOnMismatch", 0);
-  }
+  // Verify the cookie jar mismatch bool is set to false.
+  sync_pb::ClientToServerMessage second_commit;
+  ASSERT_TRUE(GetFakeServer()->GetLastCommitMessage(&second_commit));
+  EXPECT_FALSE(second_commit.commit().config_params().cookie_jar_mismatch())
+      << *syncer::ClientToServerMessageToValue(second_commit, true);
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
@@ -1021,5 +962,73 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTestWithFaviconTestServer,
                                                 /*should_be_available=*/false)
                   .Wait());
 }
+
+class SingleClientSessionsWithoutDestroyProfileSyncTest
+    : public SingleClientSessionsSyncTest {
+ public:
+  SingleClientSessionsWithoutDestroyProfileSyncTest() {
+    features_.InitAndDisableFeature(features::kDestroyProfileOnBrowserClose);
+  }
+
+ private:
+  base::test::ScopedFeatureList features_;
+};
+
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsWithoutDestroyProfileSyncTest,
+                       ShouldDeleteLastClosedTab) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(CheckInitialState(0));
+
+  ASSERT_TRUE(OpenTab(0, GURL(kURL1)));
+  ASSERT_TRUE(OpenTab(0, GURL(kURL2)));
+  WaitForHierarchyOnServer(SessionsHierarchy({{kURL1, kURL2}}));
+
+  CloseTab(/*browser_index=*/0, /*tab_index=*/0);
+  WaitForHierarchyOnServer(SessionsHierarchy({{kURL2}}));
+  CloseTab(/*browser_index=*/0, /*tab_index=*/0);
+  WaitForHierarchyOnServer(SessionsHierarchy());
+}
+
+#if !defined(OS_CHROMEOS)
+class SingleClientSessionsWithDestroyProfileSyncTest
+    : public SingleClientSessionsSyncTest {
+ public:
+  SingleClientSessionsWithDestroyProfileSyncTest() {
+    features_.InitAndEnableFeature(features::kDestroyProfileOnBrowserClose);
+  }
+
+ private:
+  base::test::ScopedFeatureList features_;
+};
+
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsWithDestroyProfileSyncTest,
+                       ShouldNotDeleteLastClosedTab) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(CheckInitialState(0));
+
+  ASSERT_TRUE(OpenTab(0, GURL(kURL1)));
+  ASSERT_TRUE(OpenTab(0, GURL(kURL2)));
+  WaitForHierarchyOnServer(SessionsHierarchy({{kURL1, kURL2}}));
+
+  CloseTab(/*browser_index=*/0, /*tab_index=*/0);
+  WaitForHierarchyOnServer(SessionsHierarchy({{kURL2}}));
+
+  CloseTab(/*browser_index=*/0, /*tab_index=*/0);
+
+  // TODO(crbug.com/1039234): When DestroyProfileOnBrowserClose is enabled, the
+  // last CloseTab() triggers Profile deletion (and SyncService deletion).
+  // This means the last tab close never gets synced. We should fix this
+  // regression eventually. Once that's done, merge this test with the
+  // WithoutDestroyProfile version.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_timeout());
+  run_loop.Run();
+
+  // Even after several seconds, state didn't change on the server.
+  fake_server::FakeServerVerifier verifier(GetFakeServer());
+  EXPECT_TRUE(verifier.VerifySessions(SessionsHierarchy({{kURL2}})));
+}
+#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace

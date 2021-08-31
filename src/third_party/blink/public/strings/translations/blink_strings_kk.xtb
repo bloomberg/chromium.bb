@@ -19,6 +19,7 @@
 <translation id="1359897965706325498">баннер</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> элемент</translation>
 <translation id="1480676835519562650">бірнешеуін таңдауға болады, <ph name="SELECTED" />/<ph name="COUNT" /> таңдалды.</translation>
+<translation id="1588438908519853928">Қалыпты</translation>
 <translation id="1589122976691792535">аймақ</translation>
 <translation id="1591562245178063882">Осы айда</translation>
 <translation id="1637811476055996098">Файлдарды таңдау</translation>
@@ -84,6 +85,7 @@
 <translation id="3175736971608411871">таймер</translation>
 <translation id="3199563858620722075">ашылмалы тізімді терезе</translation>
 <translation id="3220661731597678625">ағымдағы қадам</translation>
+<translation id="3321030238473337787">Ойнату жылдамдығы</translation>
 <translation id="3329013043687509092">Қанықтық</translation>
 <translation id="3450233048674729344">Мән <ph name="MAXIMUM" /> шамасынан кіші немесе оған тең болуы керек.</translation>
 <translation id="3486220673238053218">анықтама</translation>
@@ -111,6 +113,7 @@
 <translation id="4248100235867064564">мәзір жолағы</translation>
 <translation id="4293574643247337246">беттің үстіңгі деректемесі</translation>
 <translation id="4360991593054037559">Жарамды мән енгізіңіз. Екі ең жақын жарамды мән — <ph name="VALID_VALUE_LOW" /> және <ph name="VALID_VALUE_HIGHER" />.</translation>
+<translation id="4371899966896349864">ойнату жылдамдығы мәзірін жасыру</translation>
 <translation id="4384249794467006333">Бұл сурет белгіленбеген. Сурет сипаттамаларын алу үшін оң жақ жоғарыдағы "Қосымша опциялар" мәзірін ашыңыз.</translation>
 <translation id="4384583879834880242">Сұрақ-жауап</translation>
 <translation id="4444765639179266822">Келесі сөз шығатын сияқты: <ph name="OCR_TEXT" /></translation>
@@ -147,15 +150,18 @@
 <translation id="512758898067543763">жол тақырыбы</translation>
 <translation id="5143125788380636750">эпилог</translation>
 <translation id="5164977714490026579">Мән <ph name="MINIMUM" /> мәнінен үлкен немесе тең болуы керек.</translation>
+<translation id="5196716972587102051">2</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> ПБ</translation>
 <translation id="5307600278924710095">"<ph name="ATSIGN" />" болып жалғасатын бөлікті енгізіңіз. "<ph name="INVALIDADDRESS" />" толық емес.</translation>
 <translation id="5334352251556557839">Медиафайл ойнатылмады.</translation>
 <translation id="537648784377940524">Минималды күн (<ph name="MIN_DATE_OR_TIME" />) максималды күннен (<ph name="MAX_DATE_OR_TIME" />) бұрын болуы тиіс.</translation>
+<translation id="5378437566635403538">жайылды, диалогтік терезе ашылды.</translation>
 <translation id="5406322316791861025">пішін</translation>
 <translation id="5425179576310518467">ағымдағы күн</translation>
 <translation id="5453733299334684579">ағаш тәрізді элемент</translation>
 <translation id="5466621249238537318">Бір немесе бірнеше файлды таңдаңыз.</translation>
 <translation id="5468998798572797635">толық экраннан шығу</translation>
+<translation id="5516235301412634559">0,75</translation>
 <translation id="5516424706154626233">күн таңдағышы</translation>
 <translation id="5537725057119320332">Cast</translation>
 <translation id="5546461542133609677">дыбысын қосу</translation>
@@ -167,6 +173,8 @@
 <translation id="5677946354068040947">басқа да опциялар</translation>
 <translation id="576709008726043716">кіріспе</translation>
 <translation id="57838592816432529">Дыбысын өшіру</translation>
+<translation id="5786442179789148008">ойнату жылдамдығы мәзірін көрсету</translation>
+<translation id="5787939484346677755">жайылды, автоматты толтыру опциялары қолжетімді.</translation>
 <translation id="5860033963881614850">Өшірулі</translation>
 <translation id="588258955323874662">Толық экран</translation>
 <translation id="5888666972993069672"><ph name="DEVICE_FRIENDLY_NAME" /> құрылғысына трансляциялануда</translation>
@@ -174,12 +182,14 @@
 <translation id="5916664084637901428">Қосулы</translation>
 <translation id="5939518447894949180">Қалпына келтіру</translation>
 <translation id="5966707198760109579">Апта</translation>
+<translation id="5985507339671257014">0,5</translation>
 <translation id="5987525920412732405">айналдыру түймесі</translation>
 <translation id="6011459053400940133">дыбыс деңгейі ысырмасы</translation>
 <translation id="6015796118275082299">Жыл</translation>
 <translation id="6023896073578205740">тізім терезесі</translation>
 <translation id="6150588977291308318">пайдаланылған әдебиеттер</translation>
 <translation id="6164829606128959761">өлшегіш құрал</translation>
+<translation id="6165053282446038410">жайылды, <ph name="COUNT" /> автоматты толтыру опциясы қолжетімді.</translation>
 <translation id="6166809985690652833">соңғы сөз</translation>
 <translation id="6209276755895393898">Сурет сипаттамасы: <ph name="DESCRIPTION" /></translation>
 <translation id="6212595056017402527">ағымдағы бет</translation>
@@ -200,6 +210,7 @@
 <translation id="6643016212128521049">Тазалау</translation>
 <translation id="668171684555832681">Басқа…</translation>
 <translation id="6692633176391053278">санағыш</translation>
+<translation id="6696580792574109116">ай таңдағыш</translation>
 <translation id="6709093583001123835">Қажетті мән: <ph name="VALUE" />.</translation>
 <translation id="6709570249143506788">Ойнату сапасы нашар</translation>
 <translation id="6755330956360078551">қалқымалы сөзкөмек</translation>
@@ -210,16 +221,19 @@
 <translation id="6843725295806269523">үнсіз</translation>
 <translation id="6885760532393684712">каталог</translation>
 <translation id="689129560213475294">баспа белгісі</translation>
+<translation id="6919891270253167948">1,5</translation>
 <translation id="6934078000481955284">дәйексөз</translation>
 <translation id="693476918119313863">тақырып</translation>
 <translation id="6941933287844615239">мультимедиа файлын жүктеп алу</translation>
 <translation id="6981594929165378967">енгізу</translation>
+<translation id="698788488269350478">жайылды.</translation>
 <translation id="6989848892321993519">Бұл мәтінді <ph name="MIN_CHARACTERS" /> немесе одан көп таңбаға дейін ұзартыңыз (әзірге 1 таңба пайдаланылған).</translation>
 <translation id="7034405885550056553">ұсыныс</translation>
 <translation id="709897737746224366">Сұралған пішімге сәйкес толтырыңыз.</translation>
 <translation id="7102274145889307184">ағымдағы орын</translation>
 <translation id="7118469954320184356">Сипаттамасы жоқ.</translation>
 <translation id="7139483182332611405">алғысөз</translation>
+<translation id="7198226213493847604">мәзірді ашатын қалқымалы түйме</translation>
 <translation id="7214187073215825913">мазмұн туралы ақпарат</translation>
 <translation id="7238347055216017155">бөлектеу</translation>
 <translation id="7263440858009898357">Тізімдегі элементті таңдаңыз.</translation>
@@ -244,6 +258,7 @@
 <translation id="7745230546936012372">Жеткіліксіз сурет сипаттамаларын алу үшін контекстік мәзірді ашыңыз.</translation>
 <translation id="7750228210027921155">Суреттегі сурет</translation>
 <translation id="775297008183122718">Жазба жарамсыз.</translation>
+<translation id="7782515065589691344">1,25</translation>
 <translation id="7789962463072032349">кідірту</translation>
 <translation id="7802800022689234070">ашу үшбұрышы</translation>
 <translation id="7852167693871241274">Реңк сырғытпасы</translation>
@@ -257,6 +272,7 @@
 <translation id="8105797009065549151">ескертпе сілтемесі</translation>
 <translation id="811583516810654505">Сипаттамасы ашылуда…</translation>
 <translation id="8117451130807776954">Осы апта</translation>
+<translation id="8131955114056917397">0,25</translation>
 <translation id="8199524924445686405">жжжж</translation>
 <translation id="8208673686607688524">жергілікті күн мен уақыт таңдағышы</translation>
 <translation id="8261464734335370856">Емле қатесі</translation>
@@ -281,11 +297,14 @@
 <translation id="8613126697340063924">қашықтан ойнатуды басқару</translation>
 <translation id="862370744433916922">тақырыпша</translation>
 <translation id="8634971699417195529">Ай таңдау құралын көрсету</translation>
+<translation id="8637593834423658414">1,75</translation>
+<translation id="8668988909814782445">Жаңа жолға көшіру</translation>
 <translation id="8711688047404765493">шығыс</translation>
 <translation id="8750798805984357768">Осы параметрлердің біреуін таңдаңыз.</translation>
 <translation id="8808573423886751634">тарау</translation>
 <translation id="8845239796550121995">Қазір теледидарға трансляциялануда</translation>
 <translation id="8851136666856101339">басты</translation>
+<translation id="8861621546968757188">диалогтік терезені ашатын қалқымалы түйме</translation>
 <translation id="8875657656876809964">Бейне ойнату қатесі</translation>
 <translation id="8889402386540077796">Реңкі</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> КБ</translation>

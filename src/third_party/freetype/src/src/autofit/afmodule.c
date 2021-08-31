@@ -4,7 +4,7 @@
  *
  *   Auto-fitter module implementation (body).
  *
- * Copyright (C) 2003-2020 by
+ * Copyright (C) 2003-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -148,7 +148,7 @@
 
       if ( !af_style_classes[ss] )
       {
-        FT_TRACE0(( "af_property_set: Invalid value %d for property `%s'\n",
+        FT_TRACE2(( "af_property_set: Invalid value %d for property `%s'\n",
                     *fallback_script, property_name ));
         return FT_THROW( Invalid_Argument );
       }
@@ -307,7 +307,7 @@
       return error;
     }
 
-    FT_TRACE0(( "af_property_set: missing property `%s'\n",
+    FT_TRACE2(( "af_property_set: missing property `%s'\n",
                 property_name ));
     return FT_THROW( Missing_Property );
   }
@@ -410,7 +410,7 @@
       return error;
     }
 
-    FT_TRACE0(( "af_property_get: missing property `%s'\n",
+    FT_TRACE2(( "af_property_get: missing property `%s'\n",
                 property_name ));
     return FT_THROW( Missing_Property );
   }

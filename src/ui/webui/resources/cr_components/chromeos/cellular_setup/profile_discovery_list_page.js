@@ -14,45 +14,36 @@ Polymer({
 
   properties: {
     /**
-     * TODO(crbug.com/1093185) Fetch real profiles.
-     * @type {Array<!Object>}
+     * @type {Array<!chromeos.cellularSetup.mojom.ESimProfileRemote>}
      * @private
      */
-    profiles_: {
+    pendingProfiles: {
       type: Array,
-      value() {
-        return [
-          {
-            name: 'Profile 1',
-            provider: 'Google Fi',
-          },
-          {
-            name: 'Profile 2',
-            provider: 'Verizon',
-          },
-          {
-            name: 'Profile 3',
-            provider: 'Google Fi',
-          },
-        ];
-      },
     },
 
     /**
-     * @type {Array<!Object>}
+     * @type {?chromeos.cellularSetup.mojom.ESimProfileRemote}
      * @private
      */
-    selectedProfiles: {
+    selectedProfile: {
       type: Object,
       notify: true,
+    },
+
+    /**
+     * Indicates the UI is busy with an operation and cannot be interacted with.
+     */
+    showBusy: {
+      type: Boolean,
+      value: false,
     },
   },
 
   /**
-   * @param {Object} profile
+   * @param {chromeos.cellularSetup.mojom.ESimProfileRemote} profile
    * @private
    */
   isProfileSelected_(profile) {
-    return this.selectedProfiles.some(p => p === profile);
+    return this.selectedProfile === profile;
   }
 });

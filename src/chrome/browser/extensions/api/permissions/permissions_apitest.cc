@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
@@ -15,7 +17,6 @@
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/permissions/permission_set.h"
-#include "extensions/common/scoped_worker_based_extensions_channel.h"
 #include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"
 
@@ -51,33 +52,16 @@ class PermissionsApiTest : public ExtensionApiTest {
 class PermissionsApiTestWithContextType
     : public PermissionsApiTest,
       public testing::WithParamInterface<ContextType> {
- public:
-  PermissionsApiTestWithContextType() {
-    // Service Workers are currently only available on certain channels, so set
-    // the channel for those tests.
-    if (GetParam() == ContextType::kServiceWorker) {
-      current_channel_ = std::make_unique<ScopedWorkerBasedExtensionsChannel>();
-    }
-  }
-
  protected:
-  bool RunTest(const std::string& extension_name) {
-    // TODO(https://crbug.com/1146173): Change this to kFlagNone once the bug is
-    // fixed.
-    int browser_test_flags = kFlagEnableFileAccess;
-    if (GetParam() == ContextType::kServiceWorker)
-      browser_test_flags |= kFlagRunAsServiceWorkerBasedExtension;
-    return RunExtensionTestWithFlags(extension_name, browser_test_flags,
-                                     kFlagNone);
+  bool RunTest(const char* extension_name) {
+    return RunExtensionTest(
+        {.name = extension_name},
+        {.load_as_service_worker = GetParam() == ContextType::kServiceWorker});
   }
-
- private:
-  std::unique_ptr<extensions::ScopedWorkerBasedExtensionsChannel>
-      current_channel_;
 };
 
-IN_PROC_BROWSER_TEST_F(PermissionsApiTest, PermissionsFail) {
-  ASSERT_TRUE(RunExtensionTest("permissions/disabled")) << message_;
+IN_PROC_BROWSER_TEST_P(PermissionsApiTestWithContextType, PermissionsFail) {
+  ASSERT_TRUE(RunTest("permissions/disabled")) << message_;
 
   // Since the experimental APIs require a flag, this will fail even though
   // it's enabled.
@@ -92,13 +76,13 @@ IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, PermissionsSucceed) {
   ASSERT_TRUE(RunExtensionTest("permissions/enabled")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(PermissionsApiTest, ExperimentalPermissionsFail) {
+IN_PROC_BROWSER_TEST_P(PermissionsApiTestWithContextType,
+                       ExperimentalPermissionsFail) {
   // At the time this test is being created, there is no experimental
   // function that will not be graduating soon, and does not require a
   // tab id as an argument.  So, we need the tab permission to get
   // a tab id.
-  ASSERT_TRUE(RunExtensionTest("permissions/experimental_disabled"))
-      << message_;
+  ASSERT_TRUE(RunTest("permissions/experimental_disabled")) << message_;
 }
 
 // TODO(crbug/1065399): Flaky on ChromeOS and Linux non-dbg builds.
@@ -116,8 +100,10 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, MAYBE_FaviconPermission) {
 
 // Test functions and APIs that are always allowed (even if you ask for no
 // permissions).
-// Flaky on MacOS and Linux (see crbug/1064929, crbug/1101043).
-#if (defined(OS_MAC) || defined(OS_CHROMEOS))
+// Flaky on MacOS, Linux and CrOS (see crbug/1064929, crbug/1101043,
+// crbug/1181237).
+#if (defined(OS_MAC) || defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH) || \
+     defined(OS_WIN))
 #define MAYBE_AlwaysAllowed DISABLED_AlwaysAllowed
 #else
 #define MAYBE_AlwaysAllowed AlwaysAllowed
@@ -131,7 +117,7 @@ IN_PROC_BROWSER_TEST_P(PermissionsApiTestWithContextType,
                        OptionalPermissionsGranted) {
   // Mark all the tested APIs as granted to bypass the confirmation UI.
   APIPermissionSet apis;
-  apis.insert(APIPermission::kBookmark);
+  apis.insert(extensions::mojom::APIPermissionID::kBookmark);
   URLPatternSet explicit_hosts;
   AddPattern(&explicit_hosts, "http://*.c.com/*");
 
@@ -162,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, OptionalPermissionsDeny) {
   // Mark the management permission as already granted since we auto reject
   // user prompts.
   APIPermissionSet apis;
-  apis.insert(APIPermission::kManagement);
+  apis.insert(mojom::APIPermissionID::kManagement);
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser()->profile());
   prefs->AddRuntimeGrantedPermissions(
@@ -178,10 +164,11 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, OptionalPermissionsDeny) {
 
 // Tests that the permissions.request function must be called from within a
 // user gesture.
-IN_PROC_BROWSER_TEST_F(PermissionsApiTest, OptionalPermissionsGesture) {
+IN_PROC_BROWSER_TEST_P(PermissionsApiTestWithContextType,
+                       OptionalPermissionsGesture) {
   PermissionsRequestFunction::SetIgnoreUserGestureForTests(false);
   ASSERT_TRUE(StartEmbeddedTestServer());
-  EXPECT_TRUE(RunExtensionTest("permissions/optional_gesture")) << message_;
+  EXPECT_TRUE(RunTest("permissions/optional_gesture")) << message_;
 }
 
 // Tests that the user gesture is retained in the permissions.request function
@@ -219,20 +206,12 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, OptionalPermissionsFileAccess) {
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser()->profile());
 
-  EXPECT_TRUE(
-      RunExtensionTestNoFileAccess("permissions/file_access_no")) << message_;
-  EXPECT_FALSE(prefs->AllowFileAccess("dgloelfbnddbdacakahpogklfdcccbib"));
-
-  EXPECT_TRUE(RunExtensionTest("permissions/file_access_yes")) << message_;
-  // TODO(kalman): ugh, it would be nice to test this condition, but it seems
-  // like there's somehow a race here where the prefs aren't updated in time
-  // with the "allow file access" bit, so we'll just have to trust that
-  // RunExtensionTest (unlike RunExtensionTestNoFileAccess) does indeed
-  // not set the allow file access bit. Otherwise this test doesn't mean
-  // a whole lot (i.e. file access works - but it'd better not be the case
-  // that the extension actually has file access, since that'd be the bug
-  // that this is supposed to be testing).
-  // EXPECT_TRUE(prefs->AllowFileAccess("hlonmbgfjccgolnaboonlakjckinmhmd"));
+  EXPECT_TRUE(RunExtensionTest("permissions/file_access_no")) << message_;
+  EXPECT_FALSE(prefs->AllowFileAccess(last_loaded_extension_id()));
+  EXPECT_TRUE(RunExtensionTest({.name = "permissions/file_access_yes"},
+                               {.allow_file_access = true}))
+      << message_;
+  EXPECT_TRUE(prefs->AllowFileAccess(last_loaded_extension_id()));
 }
 
 // Tests loading of files or directory listings when an extension has file
@@ -249,9 +228,10 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, FileLoad) {
     EXPECT_TRUE(base::PathExists(original_empty_file));
     EXPECT_TRUE(base::CopyFile(original_empty_file, empty_file));
   }
-  EXPECT_TRUE(RunExtensionTestWithFlagsAndArg(
-      "permissions/file_load", temp_dir.GetPath().MaybeAsASCII().c_str(),
-      kFlagEnableFileAccess, kFlagNone))
+  EXPECT_TRUE(RunExtensionTest(
+      {.name = "permissions/file_load",
+       .custom_arg = temp_dir.GetPath().MaybeAsASCII().c_str()},
+      {.allow_file_access = true}))
       << message_;
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
@@ -261,10 +241,10 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, FileLoad) {
 
 // Test requesting, querying, and removing host permissions for host
 // permissions that are a subset of the optional permissions.
-IN_PROC_BROWSER_TEST_F(PermissionsApiTest, HostSubsets) {
+IN_PROC_BROWSER_TEST_P(PermissionsApiTestWithContextType, HostSubsets) {
   PermissionsRequestFunction::SetAutoConfirmForTests(true);
   PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
-  EXPECT_TRUE(RunExtensionTest("permissions/host_subsets")) << message_;
+  EXPECT_TRUE(RunTest("permissions/host_subsets")) << message_;
 }
 
 // Tests that requesting an optional permission from a background page, with

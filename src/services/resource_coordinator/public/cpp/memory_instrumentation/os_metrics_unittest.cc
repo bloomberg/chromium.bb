@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "base/files/file_util.h"
+#include "base/memory/page_size.h"
 #include "base/process/process_handle.h"
-#include "base/process/process_metrics.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,8 +18,9 @@
 #endif
 
 #if defined(OS_WIN)
-#include <base/strings/sys_string_conversions.h>
 #include <windows.h>
+
+#include "base/strings/sys_string_conversions.h"
 #endif
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
@@ -123,8 +124,7 @@ void CreateTempFileWithContents(const char* contents, base::ScopedFILE* file) {
   *file = CreateAndOpenTemporaryStream(&temp_path);
   ASSERT_TRUE(*file);
 
-  ASSERT_TRUE(base::WriteFileDescriptor(fileno(file->get()), contents,
-                                        strlen(contents)));
+  ASSERT_TRUE(base::WriteFileDescriptor(fileno(file->get()), contents));
 }
 
 }  // namespace

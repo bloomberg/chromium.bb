@@ -13,7 +13,6 @@
 #include "base/files/file_descriptor_watcher_posix.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
-#include "base/macros.h"
 
 namespace base {
 
@@ -31,6 +30,8 @@ namespace base {
 class FilePathWatcherKQueue : public FilePathWatcher::PlatformDelegate {
  public:
   FilePathWatcherKQueue();
+  FilePathWatcherKQueue(const FilePathWatcherKQueue&) = delete;
+  FilePathWatcherKQueue& operator=(const FilePathWatcherKQueue&) = delete;
   ~FilePathWatcherKQueue() override;
 
   // FilePathWatcher::PlatformDelegate overrides.
@@ -120,8 +121,6 @@ class FilePathWatcherKQueue : public FilePathWatcher::PlatformDelegate {
   // Throughout the lifetime of this, OnKQueueReadable() will be called when
   // data is available in |kqueue_|.
   std::unique_ptr<FileDescriptorWatcher::Controller> kqueue_watch_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(FilePathWatcherKQueue);
 };
 
 }  // namespace base

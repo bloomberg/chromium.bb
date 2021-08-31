@@ -23,10 +23,10 @@
 
 #include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -276,17 +276,28 @@ TEST(STLUtilTest, Data) {
   }
 }
 
-TEST(STLUtilTest, AsConst) {
-  int i = 123;
-  EXPECT_EQ(&i, &base::as_const(i));
-  static_assert(std::is_same<const int&, decltype(base::as_const(i))>::value,
-                "Error: base::as_const() returns an unexpected type");
+TEST(STLUtilTest, ToUnderlying) {
+  enum Enum : int {
+    kOne = 1,
+    kTwo = 2,
+  };
 
-  const int ci = 456;
-  static_assert(&ci == &base::as_const(ci),
-                "Error: base::as_const() returns an unexpected reference");
-  static_assert(std::is_same<const int&, decltype(base::as_const(ci))>::value,
-                "Error: base::as_const() returns an unexpected type");
+  enum class ScopedEnum : char {
+    kOne = 1,
+    kTwo = 2,
+  };
+
+  static_assert(std::is_same<decltype(to_underlying(kOne)), int>::value, "");
+  static_assert(std::is_same<decltype(to_underlying(kTwo)), int>::value, "");
+  static_assert(to_underlying(kOne) == 1, "");
+  static_assert(to_underlying(kTwo) == 2, "");
+
+  static_assert(
+      std::is_same<decltype(to_underlying(ScopedEnum::kOne)), char>::value, "");
+  static_assert(
+      std::is_same<decltype(to_underlying(ScopedEnum::kTwo)), char>::value, "");
+  static_assert(to_underlying(ScopedEnum::kOne) == 1, "");
+  static_assert(to_underlying(ScopedEnum::kTwo) == 2, "");
 }
 
 TEST(STLUtilTest, GetUnderlyingContainer) {
@@ -520,13 +531,13 @@ TEST(Erase, String) {
 }
 
 TEST(Erase, String16) {
-  std::pair<base::string16, base::string16> test_data[] = {
-      {base::string16(), base::string16()},
-      {UTF8ToUTF16("abc"), UTF8ToUTF16("bc")},
-      {UTF8ToUTF16("abca"), UTF8ToUTF16("bc")},
+  std::pair<std::u16string, std::u16string> test_data[] = {
+      {std::u16string(), std::u16string()},
+      {u"abc", u"bc"},
+      {u"abca", u"bc"},
   };
 
-  const base::string16 letters = UTF8ToUTF16("ab");
+  const std::u16string letters = u"ab";
   for (auto test_case : test_data) {
     Erase(test_case.first, letters[0]);
     EXPECT_EQ(test_case.second, test_case.first);
@@ -603,41 +614,6 @@ TEST(Erase, IsNotIn) {
   std::vector<int> expected = {2, 2, 4, 6};
   EXPECT_EQ(5u, EraseIf(lhs, IsNotIn<std::vector<int>>(rhs)));
   EXPECT_EQ(expected, lhs);
-}
-
-TEST(STLUtilTest, GenericContains) {
-  const char allowed_chars[] = {'a', 'b', 'c', 'd'};
-
-  EXPECT_TRUE(Contains(allowed_chars, 'a'));
-  EXPECT_FALSE(Contains(allowed_chars, 'z'));
-  EXPECT_FALSE(Contains(allowed_chars, 0));
-
-  const char allowed_chars_including_nul[] = "abcd";
-  EXPECT_TRUE(Contains(allowed_chars_including_nul, 0));
-}
-
-TEST(STLUtilTest, ContainsWithFindAndNpos) {
-  std::string str = "abcd";
-
-  EXPECT_TRUE(Contains(str, 'a'));
-  EXPECT_FALSE(Contains(str, 'z'));
-  EXPECT_FALSE(Contains(str, 0));
-}
-
-TEST(STLUtilTest, ContainsWithFindAndEnd) {
-  std::set<int> set = {1, 2, 3, 4};
-
-  EXPECT_TRUE(Contains(set, 1));
-  EXPECT_FALSE(Contains(set, 5));
-  EXPECT_FALSE(Contains(set, 0));
-}
-
-TEST(STLUtilTest, ContainsWithContains) {
-  flat_set<int> set = {1, 2, 3, 4};
-
-  EXPECT_TRUE(Contains(set, 1));
-  EXPECT_FALSE(Contains(set, 5));
-  EXPECT_FALSE(Contains(set, 0));
 }
 
 TEST(STLUtilTest, InsertOrAssign) {
@@ -739,7 +715,7 @@ TEST(STLUtilTest, TryEmplaceWrongHints) {
 }
 
 TEST(STLUtilTest, OptionalOrNullptr) {
-  Optional<float> optional;
+  absl::optional<float> optional;
   EXPECT_EQ(nullptr, base::OptionalOrNullptr(optional));
 
   optional = 0.1f;

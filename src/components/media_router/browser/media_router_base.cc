@@ -51,7 +51,7 @@ MediaRouterBase::~MediaRouterBase() {
   CHECK(!internal_routes_observer_);
 }
 
-std::unique_ptr<PresentationConnectionStateSubscription>
+base::CallbackListSubscription
 MediaRouterBase::AddPresentationConnectionStateChangedCallback(
     const MediaRoute::Id& route_id,
     const content::PresentationConnectionStateChangedCallback& callback) {
@@ -151,7 +151,8 @@ void MediaRouterBase::Initialize() {
   DCHECK(!initialized_);
   // The observer calls virtual methods on MediaRouter; it must be created
   // outside of the ctor
-  internal_routes_observer_.reset(new InternalMediaRoutesObserver(this));
+  internal_routes_observer_ =
+      std::make_unique<InternalMediaRoutesObserver>(this);
   initialized_ = true;
 }
 

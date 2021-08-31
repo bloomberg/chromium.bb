@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/sequence_token.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/condition_variable.h"
@@ -31,6 +30,7 @@
 #include "base/trace_event/base_tracing.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 namespace internal {
@@ -77,38 +77,6 @@ void TaskTracingInfo::AppendAsTraceFormat(std::string* out) const {
   std::string tmp;
   JSONWriter::Write(dict, &tmp);
   out->append(tmp);
-}
-
-// Constructs a histogram to track latency which is logging to
-// "ThreadPool.{histogram_name}.{histogram_label}.{task_type_suffix}".
-HistogramBase* GetLatencyHistogram(StringPiece histogram_name,
-                                   StringPiece histogram_label,
-                                   StringPiece task_type_suffix) {
-  DCHECK(!histogram_name.empty());
-  DCHECK(!task_type_suffix.empty());
-
-  if (histogram_label.empty())
-    return nullptr;
-
-  // Mimics the UMA_HISTOGRAM_HIGH_RESOLUTION_CUSTOM_TIMES macro. The minimums
-  // and maximums were chosen to place the 1ms mark at around the 70% range
-  // coverage for buckets giving us good info for tasks that have a latency
-  // below 1ms (most of them) and enough info to assess how bad the latency is
-  // for tasks that exceed this threshold.
-  const std::string histogram = JoinString(
-      {"ThreadPool", histogram_name, histogram_label, task_type_suffix}, ".");
-  return Histogram::FactoryMicrosecondsTimeGet(
-      histogram, TimeDelta::FromMicroseconds(1),
-      TimeDelta::FromMilliseconds(20), 50,
-      HistogramBase::kUmaTargetedHistogramFlag);
-}
-
-// Returns a histogram stored in an array indexed by task priority.
-// TODO(jessemckenna): use the STATIC_HISTOGRAM_POINTER_GROUP macro from
-// histogram_macros.h instead.
-HistogramBase* GetHistogramForTaskPriority(TaskPriority task_priority,
-                                           HistogramBase* const histograms[3]) {
-  return histograms[static_cast<int>(task_priority)];
 }
 
 bool HasLogBestEffortTasksSwitch() {
@@ -289,24 +257,12 @@ class TaskTracker::State {
   subtle::Atomic32 bits_ = 0;
 };
 
-// TODO(jessemckenna): Write a helper function to avoid code duplication below.
-TaskTracker::TaskTracker(StringPiece histogram_label)
-    : histogram_label_(histogram_label),
-      has_log_best_effort_tasks_switch_(HasLogBestEffortTasksSwitch()),
+TaskTracker::TaskTracker()
+    : has_log_best_effort_tasks_switch_(HasLogBestEffortTasksSwitch()),
       state_(new State),
       can_run_policy_(CanRunPolicy::kAll),
       flush_cv_(flush_lock_.CreateConditionVariable()),
       shutdown_lock_(&flush_lock_),
-      heartbeat_latency_histograms_{
-          GetLatencyHistogram("HeartbeatLatencyMicroseconds",
-                              histogram_label,
-                              "BackgroundTaskPriority"),
-          GetLatencyHistogram("HeartbeatLatencyMicroseconds",
-                              histogram_label,
-                              "UserVisibleTaskPriority"),
-          GetLatencyHistogram("HeartbeatLatencyMicroseconds",
-                              histogram_label,
-                              "UserBlockingTaskPriority")},
       tracked_ref_factory_(this) {}
 
 TaskTracker::~TaskTracker() = default;
@@ -341,8 +297,13 @@ void TaskTracker::CompleteShutdown() {
   // pointer never changes after being set by StartShutdown(), which must
   // happen-before this.
   DCHECK(TS_UNCHECKED_READ(shutdown_event_));
+
   {
     base::ScopedAllowBaseSyncPrimitives allow_wait;
+    // Allow tests to wait for and introduce logging about the shutdown tasks
+    // before we block this thread.
+    BeginCompleteShutdown(*TS_UNCHECKED_READ(shutdown_event_));
+    // Now block the thread until all tasks are done.
     TS_UNCHECKED_READ(shutdown_event_)->Wait();
   }
 
@@ -409,8 +370,13 @@ bool TaskTracker::WillPostTask(Task* task,
 }
 
 bool TaskTracker::WillPostTaskNow(const Task& task, TaskPriority priority) {
+  // Delayed tasks's TaskShutdownBehavior is implicitly capped at
+  // SKIP_ON_SHUTDOWN. i.e. it cannot BLOCK_SHUTDOWN, TaskTracker will not wait
+  // for a delayed task in a BLOCK_SHUTDOWN TaskSource and will also skip
+  // delayed tasks that happen to become ripe during shutdown.
   if (!task.delayed_run_time.is_null() && state_->HasShutdownStarted())
     return false;
+
   if (has_log_best_effort_tasks_switch_ &&
       priority == TaskPriority::BEST_EFFORT) {
     // A TaskPriority::BEST_EFFORT task is being posted.
@@ -452,7 +418,7 @@ RegisteredTaskSource TaskTracker::RunAndPopNextTask(
   const bool should_run_tasks = BeforeRunTask(task_source->shutdown_behavior());
 
   // Run the next task in |task_source|.
-  Optional<Task> task;
+  absl::optional<Task> task;
   TaskTraits traits;
   {
     auto transaction = task_source->BeginTransaction();
@@ -483,16 +449,6 @@ bool TaskTracker::IsShutdownComplete() const {
   return shutdown_event_ && shutdown_event_->IsSignaled();
 }
 
-void TaskTracker::RecordHeartbeatLatencyHistogram(TaskPriority priority,
-                                                  TimeTicks posted_time) const {
-  if (histogram_label_.empty())
-    return;
-
-  const TimeDelta task_latency = TimeTicks::Now() - posted_time;
-  GetHistogramForTaskPriority(priority, heartbeat_latency_histograms_)
-      ->AddTimeMicrosecondsGranularity(task_latency);
-}
-
 void TaskTracker::RunTask(Task task,
                           TaskSource* task_source,
                           const TaskTraits& traits) {
@@ -517,7 +473,7 @@ void TaskTracker::RunTask(Task task,
         scoped_set_task_priority_for_current_thread(traits.priority());
 
     // Local storage map used if none is provided by |environment|.
-    Optional<SequenceLocalStorageMap> local_storage_map;
+    absl::optional<SequenceLocalStorageMap> local_storage_map;
     if (!environment.sequence_local_storage)
       local_storage_map.emplace();
 
@@ -528,9 +484,9 @@ void TaskTracker::RunTask(Task task,
                 : &local_storage_map.value());
 
     // Set up TaskRunnerHandle as expected for the scope of the task.
-    Optional<SequencedTaskRunnerHandle> sequenced_task_runner_handle;
-    Optional<ThreadTaskRunnerHandle> single_thread_task_runner_handle;
-    Optional<EphemeralTaskExecutor> ephemeral_task_executor;
+    absl::optional<SequencedTaskRunnerHandle> sequenced_task_runner_handle;
+    absl::optional<ThreadTaskRunnerHandle> single_thread_task_runner_handle;
+    absl::optional<EphemeralTaskExecutor> ephemeral_task_executor;
     switch (task_source->execution_mode()) {
       case TaskSourceExecutionMode::kJob:
       case TaskSourceExecutionMode::kParallel:
@@ -576,6 +532,10 @@ void TaskTracker::RunTask(Task task,
   ThreadRestrictions::SetWaitAllowed(previous_wait_allowed);
   ThreadRestrictions::SetIOAllowed(previous_io_allowed);
   ThreadRestrictions::SetSingletonAllowed(previous_singleton_allowed);
+}
+
+void TaskTracker::BeginCompleteShutdown(base::WaitableEvent& shutdown_event) {
+  // Do nothing in production, tests may override this.
 }
 
 bool TaskTracker::HasIncompleteTaskSourcesForTesting() const {

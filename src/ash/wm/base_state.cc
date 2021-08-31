@@ -17,6 +17,7 @@
 #include "chromeos/ui/base/window_state_type.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer.h"
 
 namespace ash {
 
@@ -219,6 +220,18 @@ gfx::Rect BaseState::GetSnappedWindowBoundsInParent(
                            : GetDefaultRightSnappedWindowBoundsInParent(window);
   }
   return bounds_in_parent;
+}
+
+void BaseState::HandleWindowSnapping(WindowState* window_state,
+                                     WMEventType event_type) {
+  DCHECK(event_type == WM_EVENT_SNAP_LEFT || event_type == WM_EVENT_SNAP_RIGHT);
+  DCHECK(window_state->CanSnap());
+
+  window_state->set_bounds_changed_by_user(true);
+  aura::Window* window = window_state->window();
+  // SplitViewController will decide if the window needs to be snapped in split
+  // view.
+  SplitViewController::Get(window)->OnWindowSnapWMEvent(window, event_type);
 }
 
 }  // namespace ash

@@ -15,24 +15,28 @@ ChromeVoxLearnModeTest = class extends ChromeVoxNextE2ETest {
     super();
     window.doKeyDown = this.doKeyDown.bind(this);
     window.doKeyUp = this.doKeyUp.bind(this);
-    window.doGesture = this.doGesture.bind(this);
+    window.doLearnModeGesture = this.doLearnModeGesture.bind(this);
     window.doBrailleKeyEvent = this.doBrailleKeyEvent.bind(this);
   }
 
   runOnLearnModePage(callback) {
+    callback = this.newCallback(callback);
     const mockFeedback = this.createMockFeedback();
     chrome.automation.getDesktop((desktop) => {
-      desktop.addEventListener(
-          chrome.automation.EventType.LOAD_COMPLETE, (evt) => {
-            if (evt.target.docUrl.indexOf('learn_mode/kbexplorer.html') ===
-                    -1 ||
-                !evt.target.docLoaded) {
-              return;
-            }
+      function listener(evt) {
+        if (evt.target.docUrl.indexOf('learn_mode/kbexplorer.html') === -1 ||
+            !evt.target.docLoaded) {
+          return;
+        }
+        desktop.removeEventListener(
+            chrome.automation.EventType.LOAD_COMPLETE, listener);
 
-            mockFeedback.expectSpeech(/Press a qwerty key/);
-            callback(mockFeedback, evt);
-          });
+        mockFeedback.expectSpeech(/Press a qwerty key/);
+        callback(mockFeedback, evt);
+      }
+
+      desktop.addEventListener(
+          chrome.automation.EventType.LOAD_COMPLETE, listener);
       CommandHandler.onCommand('showKbExplorerPage');
     });
   }
@@ -72,7 +76,7 @@ ChromeVoxLearnModeTest = class extends ChromeVoxNextE2ETest {
     };
   }
 
-  doGesture(gesture) {
+  doLearnModeGesture(gesture) {
     return () => {
       this.getLearnModeWindow().KbExplorer.onAccessibilityGesture(gesture);
     };
@@ -85,7 +89,9 @@ ChromeVoxLearnModeTest = class extends ChromeVoxNextE2ETest {
   }
 };
 
-TEST_F('ChromeVoxLearnModeTest', 'KeyboardInput', function() {
+// TODO(crbug.com/1128926, crbug.com/1172387):
+// Test times out flakily.
+TEST_F('ChromeVoxLearnModeTest', 'DISABLED_KeyboardInput', function() {
   this.runOnLearnModePage((mockFeedback, evt) => {
     // Press Search+Right.
     mockFeedback.call(doKeyDown({keyCode: KeyCode.SEARCH, metaKey: true}))
@@ -129,19 +135,19 @@ TEST_F('ChromeVoxLearnModeTest', 'KeyboardInputRepeat', function() {
 TEST_F('ChromeVoxLearnModeTest', 'Gesture', function() {
   this.runOnLearnModePage((mockFeedback, evt) => {
     this.getLearnModeWindow().KbExplorer.MIN_TOUCH_EXPLORE_OUTPUT_TIME_MS_ = 0;
-    mockFeedback.call(doGesture('swipeRight1'))
+    mockFeedback.call(doLearnModeGesture(Gesture.SWIPE_RIGHT1))
         .expectSpeechWithQueueMode('Swipe one finger right', QueueMode.FLUSH)
         .expectSpeechWithQueueMode('Next Object', QueueMode.QUEUE)
 
-        .call(doGesture('swipeLeft1'))
+        .call(doLearnModeGesture(Gesture.SWIPE_LEFT1))
         .expectSpeechWithQueueMode('Swipe one finger left', QueueMode.FLUSH)
         .expectSpeechWithQueueMode('Previous Object', QueueMode.QUEUE)
 
-        .call(doGesture('touchExplore'))
+        .call(doLearnModeGesture(Gesture.TOUCH_EXPLORE))
         .expectSpeechWithQueueMode('Touch explore', QueueMode.FLUSH)
 
         // Test for inclusion of commandDescriptionMsgId when provided.
-        .call(doGesture('swipeLeft2'))
+        .call(doLearnModeGesture(Gesture.SWIPE_LEFT2))
         .expectSpeechWithQueueMode('Swipe two fingers left', QueueMode.FLUSH)
         .expectSpeechWithQueueMode('Escape', QueueMode.QUEUE)
 
@@ -182,7 +188,7 @@ TEST_F('ChromeVoxLearnModeTest', 'HardwareFunctionKeys', function() {
         .expectSpeechWithQueueMode('Search', QueueMode.FLUSH)
         .call(doKeyDown({keyCode: KeyCode.BRIGHTNESS_UP, metaKey: true}))
         .expectSpeechWithQueueMode('Brightness up', QueueMode.QUEUE)
-        .expectSpeechWithQueueMode('Toggle dark screen', QueueMode.QUEUE)
+        .expectSpeechWithQueueMode('Toggle screen on or off', QueueMode.QUEUE)
         .call(doKeyUp({keyCode: KeyCode.BRIGHTNESS_UP, metaKey: true}))
 
         // Search+Volume Down has no associated command.

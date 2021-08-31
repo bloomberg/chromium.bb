@@ -56,8 +56,7 @@ void RequestProxyResolvingSocketFactoryOnUIThread(
   if (!service)
     return;
   network::mojom::NetworkContext* network_context =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetNetworkContext();
+      profile->GetDefaultStoragePartition()->GetNetworkContext();
   network_context->CreateProxyResolvingSocketFactory(std::move(receiver));
 }
 
@@ -106,7 +105,8 @@ GCMProfileService* GCMProfileServiceFactory::GetForProfile(
 
 // static
 GCMProfileServiceFactory* GCMProfileServiceFactory::GetInstance() {
-  return base::Singleton<GCMProfileServiceFactory>::get();
+  static base::NoDestructor<GCMProfileServiceFactory> instance;
+  return instance.get();
 }
 
 GCMProfileServiceFactory::GCMProfileServiceFactory()
@@ -135,7 +135,7 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
       base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
-  std::unique_ptr<GCMProfileService> service = nullptr;
+  std::unique_ptr<GCMProfileService> service;
 #if defined(OS_ANDROID)
   service = std::make_unique<GCMProfileService>(profile->GetPath(),
                                                 blocking_task_runner);
@@ -143,14 +143,13 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
   service = std::make_unique<GCMProfileService>(
       profile->GetPrefs(), profile->GetPath(),
       base::BindRepeating(&RequestProxyResolvingSocketFactory, profile),
-      content::BrowserContext::GetDefaultStoragePartition(profile)
+      profile->GetDefaultStoragePartition()
           ->GetURLLoaderFactoryForBrowserProcess(),
       content::GetNetworkConnectionTracker(), chrome::GetChannel(),
       gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
       IdentityManagerFactory::GetForProfile(profile),
-      std::unique_ptr<GCMClientFactory>(new GCMClientFactory),
-      content::GetUIThreadTaskRunner({}), content::GetIOThreadTaskRunner({}),
-      blocking_task_runner);
+      std::make_unique<GCMClientFactory>(), content::GetUIThreadTaskRunner({}),
+      content::GetIOThreadTaskRunner({}), blocking_task_runner);
 #endif
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::PrefetchService* prefetch_service =

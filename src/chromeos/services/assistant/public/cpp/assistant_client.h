@@ -7,16 +7,21 @@
 
 #include "ash/public/mojom/assistant_volume_control.mojom.h"
 #include "base/component_export.h"
+#include "chromeos/assistant/buildflags.h"
 #include "chromeos/services/assistant/public/cpp/assistant_enums.h"
-#include "chromeos/services/assistant/public/cpp/assistant_notification.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
+#include "chromeos/services/libassistant/public/cpp/assistant_notification.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "media/mojo/mojom/audio_stream_factory.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/audio/public/mojom/stream_factory.mojom.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
+
+#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+#include "chromeos/services/libassistant/public/mojom/service.mojom-forward.h"
+#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
 
 namespace chromeos {
 namespace assistant {
@@ -48,9 +53,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantClient {
   virtual void RequestWakeLockProvider(
       mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) = 0;
 
-  // Requests an Audio Service StreamFactory from the browser.
+  // Requests an Audio Service AudioStreamFactory from the browser.
   virtual void RequestAudioStreamFactory(
-      mojo::PendingReceiver<audio::mojom::StreamFactory> receiver) = 0;
+      mojo::PendingReceiver<media::mojom::AudioStreamFactory> receiver) = 0;
 
   // Requests an audio decoder interface from the Assistant Audio Decoder
   // service, via the browser.
@@ -74,6 +79,13 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantClient {
   virtual void RequestNetworkConfig(
       mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
           receiver) = 0;
+
+#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+  // Requests a connection to Libassistant service interface via the browser.
+  virtual void RequestLibassistantService(
+      mojo::PendingReceiver<chromeos::libassistant::mojom::LibassistantService>
+          receiver) = 0;
+#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
 };
 
 }  // namespace assistant

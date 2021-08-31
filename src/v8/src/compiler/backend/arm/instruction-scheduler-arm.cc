@@ -76,6 +76,8 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kArmVabsF64:
     case kArmVnegF64:
     case kArmVsqrtF64:
+    case kArmVmullLow:
+    case kArmVmullHigh:
     case kArmVrintmF32:
     case kArmVrintmF64:
     case kArmVrintpF32:
@@ -103,6 +105,8 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kArmVmovHighF64U32:
     case kArmVmovF64U32U32:
     case kArmVmovU32U32F64:
+    case kArmVcnt:
+    case kArmVpaddl:
     case kArmFloat32Max:
     case kArmFloat64Max:
     case kArmFloat32Min:
@@ -130,6 +134,9 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kArmF64x2Floor:
     case kArmF64x2Trunc:
     case kArmF64x2NearestInt:
+    case kArmF64x2ConvertLowI32x4S:
+    case kArmF64x2ConvertLowI32x4U:
+    case kArmF64x2PromoteLowF32x4:
     case kArmF32x4Splat:
     case kArmF32x4ExtractLane:
     case kArmF32x4ReplaceLane:
@@ -141,7 +148,6 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kArmF32x4RecipApprox:
     case kArmF32x4RecipSqrtApprox:
     case kArmF32x4Add:
-    case kArmF32x4AddHoriz:
     case kArmF32x4Sub:
     case kArmF32x4Mul:
     case kArmF32x4Div:
@@ -153,8 +159,10 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kArmF32x4Le:
     case kArmF32x4Pmin:
     case kArmF32x4Pmax:
+    case kArmF32x4DemoteF64x2Zero:
     case kArmI64x2SplatI32Pair:
     case kArmI64x2ReplaceLaneI32Pair:
+    case kArmI64x2Abs:
     case kArmI64x2Neg:
     case kArmI64x2Shl:
     case kArmI64x2ShrS:
@@ -162,6 +170,15 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kArmI64x2Sub:
     case kArmI64x2Mul:
     case kArmI64x2ShrU:
+    case kArmI64x2BitMask:
+    case kArmI64x2Eq:
+    case kArmI64x2Ne:
+    case kArmI64x2GtS:
+    case kArmI64x2GeS:
+    case kArmI64x2SConvertI32x4Low:
+    case kArmI64x2SConvertI32x4High:
+    case kArmI64x2UConvertI32x4Low:
+    case kArmI64x2UConvertI32x4High:
     case kArmI32x4Splat:
     case kArmI32x4ExtractLane:
     case kArmI32x4ReplaceLane:
@@ -172,7 +189,6 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kArmI32x4Shl:
     case kArmI32x4ShrS:
     case kArmI32x4Add:
-    case kArmI32x4AddHoriz:
     case kArmI32x4Sub:
     case kArmI32x4Mul:
     case kArmI32x4MinS:
@@ -192,6 +208,8 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kArmI32x4Abs:
     case kArmI32x4BitMask:
     case kArmI32x4DotI16x8S:
+    case kArmI32x4TruncSatF64x2SZero:
+    case kArmI32x4TruncSatF64x2UZero:
     case kArmI16x8Splat:
     case kArmI16x8ExtractLaneS:
     case kArmI16x8ReplaceLane:
@@ -203,7 +221,6 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kArmI16x8SConvertI32x4:
     case kArmI16x8Add:
     case kArmI16x8AddSatS:
-    case kArmI16x8AddHoriz:
     case kArmI16x8Sub:
     case kArmI16x8SubSatS:
     case kArmI16x8Mul:
@@ -227,6 +244,7 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kArmI16x8RoundingAverageU:
     case kArmI16x8Abs:
     case kArmI16x8BitMask:
+    case kArmI16x8Q15MulRSatS:
     case kArmI8x16Splat:
     case kArmI8x16ExtractLaneS:
     case kArmI8x16ReplaceLane:
@@ -238,7 +256,6 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kArmI8x16AddSatS:
     case kArmI8x16Sub:
     case kArmI8x16SubSatS:
-    case kArmI8x16Mul:
     case kArmI8x16MinS:
     case kArmI8x16MaxS:
     case kArmI8x16Eq:
@@ -295,12 +312,11 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kArmS8x8Reverse:
     case kArmS8x4Reverse:
     case kArmS8x2Reverse:
-    case kArmV32x4AnyTrue:
-    case kArmV32x4AllTrue:
-    case kArmV16x8AnyTrue:
-    case kArmV16x8AllTrue:
-    case kArmV8x16AnyTrue:
-    case kArmV8x16AllTrue:
+    case kArmI64x2AllTrue:
+    case kArmI32x4AllTrue:
+    case kArmI16x8AllTrue:
+    case kArmV128AnyTrue:
+    case kArmI8x16AllTrue:
       return kNoOpcodeFlags;
 
     case kArmVldrF32:
@@ -326,6 +342,8 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kArmS128Load32x2U:
     case kArmS128Load32Zero:
     case kArmS128Load64Zero:
+    case kArmS128LoadLaneLow:
+    case kArmS128LoadLaneHigh:
       return kIsLoadOperation;
 
     case kArmVstrF32:
@@ -347,6 +365,8 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kArmWord32AtomicPairXor:
     case kArmWord32AtomicPairExchange:
     case kArmWord32AtomicPairCompareExchange:
+    case kArmS128StoreLaneLow:
+    case kArmS128StoreLaneHigh:
       return kHasSideEffect;
 
 #define CASE(Name) case k##Name:

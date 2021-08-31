@@ -10,7 +10,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -54,6 +53,7 @@ CertReportHelper::CertReportHelper(
     CertificateErrorReport::InterstitialReason interstitial_reason,
     bool overridable,
     const base::Time& interstitial_time,
+    bool can_show_enhanced_protection_message,
     security_interstitials::MetricsHelper* metrics_helper)
     : ssl_cert_reporter_(std::move(ssl_cert_reporter)),
       web_contents_(web_contents),
@@ -62,6 +62,8 @@ CertReportHelper::CertReportHelper(
       interstitial_reason_(interstitial_reason),
       overridable_(overridable),
       interstitial_time_(interstitial_time),
+      can_show_enhanced_protection_message_(
+          can_show_enhanced_protection_message),
       metrics_helper_(metrics_helper) {}
 
 CertReportHelper::~CertReportHelper() = default;
@@ -197,10 +199,15 @@ bool CertReportHelper::ShouldShowCertificateReporterCheckbox() {
 }
 
 bool CertReportHelper::ShouldShowEnhancedProtectionMessage() {
-  // Only show the enhanced protection message iff the user is part of the
-  // respective Finch group and the window is not incognito and Safe Browsing is
-  // not managed by policy and the user is not already in enhanced protection
-  // mode.
+  // Only show the enhanced protection message if all the following are true:
+  // |can_show_enhanced_protection_message_| is set to true AND
+  // the window is not incognito AND
+  // Safe Browsing is not managed by policy AND
+  // the user is not already in enhanced protection mode.
+  if (!can_show_enhanced_protection_message_) {
+    return false;
+  }
+
   const bool in_incognito =
       web_contents_->GetBrowserContext()->IsOffTheRecord();
   const PrefService* pref_service = GetPrefs(web_contents_);
@@ -208,8 +215,6 @@ bool CertReportHelper::ShouldShowEnhancedProtectionMessage() {
       safe_browsing::IsEnhancedProtectionEnabled(*pref_service);
   bool is_safe_browsing_managed =
       safe_browsing::IsSafeBrowsingPolicyManaged(*pref_service);
-  bool is_enhanced_protection_message_enabled =
-      safe_browsing::IsEnhancedProtectionMessageInInterstitialsEnabled();
 
   if (in_incognito) {
     return false;
@@ -218,9 +223,6 @@ bool CertReportHelper::ShouldShowEnhancedProtectionMessage() {
     return false;
   }
   if (is_safe_browsing_managed) {
-    return false;
-  }
-  if (!is_enhanced_protection_message_enabled) {
     return false;
   }
   return true;

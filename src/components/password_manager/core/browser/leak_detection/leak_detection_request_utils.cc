@@ -20,6 +20,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "crypto/sha2.h"
 #include "google_apis/gaia/core_account_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace password_manager {
 namespace {
@@ -30,8 +31,8 @@ constexpr char kAPIScope[] =
 // Returns a Google account that can be used for getting a token.
 CoreAccountId GetAccountForRequest(
     const signin::IdentityManager* identity_manager) {
-  CoreAccountInfo result = identity_manager->GetPrimaryAccountInfo(
-      signin::ConsentLevel::kNotRequired);
+  CoreAccountInfo result =
+      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
   if (result.IsEmpty()) {
     std::vector<CoreAccountInfo> all_accounts =
         identity_manager->GetAccountsWithRefreshTokens();
@@ -49,7 +50,8 @@ LookupSingleLeakPayload ProduceHashes(base::StringPiece username,
   LookupSingleLeakPayload payload;
   payload.username_hash_prefix = BucketizeUsername(canonicalized_username);
   payload.encrypted_payload =
-      ScryptHashUsernameAndPassword(canonicalized_username, password);
+      ScryptHashUsernameAndPassword(canonicalized_username, password)
+          .value_or("");
   if (payload.encrypted_payload.empty())
     return LookupSingleLeakPayload();
   return payload;
@@ -64,7 +66,8 @@ LookupSingleLeakData PrepareLookupSingleLeakData(base::StringPiece username,
   if (data.payload.encrypted_payload.empty())
     return LookupSingleLeakData();
   data.payload.encrypted_payload =
-      CipherEncrypt(data.payload.encrypted_payload, &data.encryption_key);
+      CipherEncrypt(data.payload.encrypted_payload, &data.encryption_key)
+          .value_or("");
   return data.payload.encrypted_payload.empty() ? LookupSingleLeakData()
                                                 : std::move(data);
 }
@@ -79,7 +82,8 @@ LookupSingleLeakPayload PrepareLookupSingleLeakDataWithKey(
   if (payload.encrypted_payload.empty())
     return LookupSingleLeakPayload();
   payload.encrypted_payload =
-      CipherEncryptWithKey(payload.encrypted_payload, encryption_key);
+      CipherEncryptWithKey(payload.encrypted_payload, encryption_key)
+          .value_or("");
   return payload.encrypted_payload.empty() ? LookupSingleLeakPayload()
                                            : std::move(payload);
 }
@@ -90,9 +94,9 @@ LookupSingleLeakPayload PrepareLookupSingleLeakDataWithKey(
 AnalyzeResponseResult CheckIfCredentialWasLeaked(
     std::unique_ptr<SingleLookupResponse> response,
     const std::string& encryption_key) {
-  std::string decrypted_username_password =
+  absl::optional<std::string> decrypted_username_password =
       CipherDecrypt(response->reencrypted_lookup_hash, encryption_key);
-  if (decrypted_username_password.empty()) {
+  if (!decrypted_username_password) {
     DLOG(ERROR) << "Can't decrypt data="
                 << base::HexEncode(base::as_bytes(
                        base::make_span(response->reencrypted_lookup_hash)));
@@ -100,7 +104,7 @@ AnalyzeResponseResult CheckIfCredentialWasLeaked(
   }
 
   std::string hash_username_password =
-      crypto::SHA256HashString(decrypted_username_password);
+      crypto::SHA256HashString(*decrypted_username_password);
 
   const ptrdiff_t matched_prefixes =
       std::count_if(response->encrypted_leak_match_prefixes.begin(),
@@ -167,7 +171,7 @@ std::unique_ptr<signin::AccessTokenFetcher> RequestAccessToken(
     signin::AccessTokenFetcher::TokenCallback callback) {
   return identity_manager->CreateAccessTokenFetcherForAccount(
       GetAccountForRequest(identity_manager),
-      /*consumer_name=*/"leak_detection_service", {kAPIScope},
+      /*oauth_consumer_name=*/"leak_detection_service", {kAPIScope},
       std::move(callback), signin::AccessTokenFetcher::Mode::kImmediate);
 }
 

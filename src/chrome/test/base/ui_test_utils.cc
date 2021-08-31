@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -188,7 +189,7 @@ class AutocompleteChangeObserver : public AutocompleteController::Observer {
 
 }  // namespace
 
-bool GetCurrentTabTitle(const Browser* browser, base::string16* title) {
+bool GetCurrentTabTitle(const Browser* browser, std::u16string* title) {
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   if (!web_contents)
@@ -215,19 +216,31 @@ void NavigateToURLWithPost(Browser* browser, const GURL& url) {
   NavigateToURL(&params);
 }
 
-content::RenderProcessHost* NavigateToURL(Browser* browser, const GURL& url) {
+content::RenderFrameHost* NavigateToURL(Browser* browser, const GURL& url) {
   return NavigateToURLWithDisposition(browser, url,
                                       WindowOpenDisposition::CURRENT_TAB,
                                       BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 }
 
-content::RenderProcessHost*
+content::RenderFrameHost*
 NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     Browser* browser,
     const GURL& url,
     int number_of_navigations,
     WindowOpenDisposition disposition,
     int browser_test_flags) {
+  TRACE_EVENT1("test",
+               "ui_test_utils::"
+               "NavigateToURLWithDispositionBlockUntilNavigationsComplete",
+               "params", [&](perfetto::TracedValue context) {
+                 // TODO(crbug.com/1183371): Replace this with passing more
+                 // parameters to TRACE_EVENT directly when available.
+                 auto dict = std::move(context).WriteDictionary();
+                 dict.Add("url", url);
+                 dict.Add("number_of_navigations", number_of_navigations);
+                 dict.Add("disposition", disposition);
+                 dict.Add("browser_test_flags", browser_test_flags);
+               });
   TabStripModel* tab_strip = browser->tab_strip_model();
   if (disposition == WindowOpenDisposition::CURRENT_TAB &&
       tab_strip->GetActiveWebContents())
@@ -242,7 +255,7 @@ NavigateToURLWithDispositionBlockUntilNavigationsComplete(
 
   AllBrowserTabAddedWaiter tab_added_waiter;
 
-  browser->OpenURL(OpenURLParams(
+  WebContents* web_contents = browser->OpenURL(OpenURLParams(
       url, Referrer(), disposition, ui::PAGE_TRANSITION_TYPED, false));
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_BROWSER)
     browser = WaitForBrowserNotInSet(initial_browsers);
@@ -252,11 +265,7 @@ NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     // Some other flag caused the wait prior to this.
     return nullptr;
   }
-  WebContents* web_contents = nullptr;
   if (disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB) {
-    // We've opened up a new tab, but not selected it.
-    TabStripModel* tab_strip = browser->tab_strip_model();
-    web_contents = tab_strip->GetWebContentsAt(tab_strip->active_index() + 1);
     EXPECT_TRUE(web_contents)
         << " Unable to wait for navigation to \"" << url.spec()
         << "\" because the new tab is not available yet";
@@ -265,18 +274,18 @@ NavigateToURLWithDispositionBlockUntilNavigationsComplete(
   } else if ((disposition == WindowOpenDisposition::CURRENT_TAB) ||
              (disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB) ||
              (disposition == WindowOpenDisposition::SINGLETON_TAB)) {
-    // The currently selected tab is the right one.
-    web_contents = browser->tab_strip_model()->GetActiveWebContents();
+    // The tab we navigated should be the active one.
+    EXPECT_EQ(web_contents, browser->tab_strip_model()->GetActiveWebContents());
   }
   if (disposition == WindowOpenDisposition::CURRENT_TAB) {
     same_tab_observer.Wait();
-    return web_contents->GetMainFrame()->GetProcess();
+    return web_contents->GetMainFrame();
   } else if (web_contents) {
     content::TestNavigationObserver observer(
         web_contents, number_of_navigations,
         content::MessageLoopRunner::QuitMode::DEFERRED);
     observer.Wait();
-    return web_contents->GetMainFrame()->GetProcess();
+    return web_contents->GetMainFrame();
   }
   EXPECT_TRUE(web_contents)
       << " Unable to wait for navigation to \"" << url.spec() << "\""
@@ -284,7 +293,7 @@ NavigateToURLWithDispositionBlockUntilNavigationsComplete(
   return nullptr;
 }
 
-content::RenderProcessHost* NavigateToURLWithDisposition(
+content::RenderFrameHost* NavigateToURLWithDisposition(
     Browser* browser,
     const GURL& url,
     WindowOpenDisposition disposition,
@@ -293,7 +302,7 @@ content::RenderProcessHost* NavigateToURLWithDisposition(
       browser, url, 1, disposition, browser_test_flags);
 }
 
-content::RenderProcessHost* NavigateToURLBlockUntilNavigationsComplete(
+content::RenderFrameHost* NavigateToURLBlockUntilNavigationsComplete(
     Browser* browser,
     const GURL& url,
     int number_of_navigations) {
@@ -387,7 +396,7 @@ void WaitForViewVisibility(Browser* browser, ViewID vid, bool visible) {
 #endif
 
 int FindInPage(WebContents* tab,
-               const base::string16& search_string,
+               const std::u16string& search_string,
                bool forward,
                bool match_case,
                int* ordinal,
@@ -408,7 +417,7 @@ int FindInPage(WebContents* tab,
 
 void DownloadURL(Browser* browser, const GURL& download_url) {
   content::DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(browser->profile());
+      browser->profile()->GetDownloadManager();
   std::unique_ptr<content::DownloadTestObserver> observer(
       new content::DownloadTestObserverTerminal(
           download_manager, 1,
@@ -507,7 +516,7 @@ HistoryEnumerator::HistoryEnumerator(Profile* profile) {
   HistoryServiceFactory::GetForProfile(profile,
                                        ServiceAccessType::EXPLICIT_ACCESS)
       ->QueryHistory(
-          base::string16(), history::QueryOptions(),
+          std::u16string(), history::QueryOptions(),
           base::BindLambdaForTesting([&](history::QueryResults results) {
             for (const auto& item : results)
               urls_.push_back(item.url());
@@ -574,6 +583,7 @@ TabAddedWaiter::TabAddedWaiter(Browser* browser) {
 }
 
 void TabAddedWaiter::Wait() {
+  TRACE_EVENT0("test", "TabAddedWaiter::Wait");
   run_loop_.Run();
 }
 

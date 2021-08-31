@@ -11,7 +11,6 @@ namespace blink {
 
 // This overrides the default LayoutText to reference LayoutNGInlineItems
 // instead of InlineTextBoxes.
-//
 class CORE_EXPORT LayoutNGTextFragment final : public LayoutTextFragment {
  public:
   LayoutNGTextFragment(Node* node,

@@ -9,6 +9,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_observation.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_observer.h"
 #include "ios/chrome/browser/overlays/public/overlay_modality.h"
 #import "ios/chrome/browser/overlays/public/overlay_presentation_context.h"
@@ -90,6 +92,7 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
                      OverlayDismissalCallback dismissal_callback) override;
   void HideOverlayUI(OverlayRequest* request) override;
   void CancelOverlayUI(OverlayRequest* request) override;
+  void SetUIDisabled(bool disabled) override;
 
  protected:
   // Constructor called by the Container to instantiate a presentation context
@@ -126,6 +129,9 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
   // UIViewControllers.
   void UpdatePresentationCapabilities();
 
+  // Creates the current UIPresentationCapabilities based on the current state.
+  UIPresentationCapabilities ConstructPresentationCapabilities();
+
   // Shows the UI for the presented request using the container coordinator.
   void ShowUIForPresentedRequest();
 
@@ -157,6 +163,9 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
     OverlayPresenter* presenter_ = nullptr;
     // OverlayPresentationContextImpl reference.
     OverlayPresentationContextImpl* presentation_context_ = nullptr;
+    // Scoped observation.
+    base::ScopedObservation<Browser, BrowserObserver> browser_observation_{
+        this};
   };
 
   // Helper object that listens for UI dismissal events.
@@ -197,6 +206,8 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
   // The UIViewController used as the base for overlays displayed using
   // presented UIViewControllers.
   __weak UIViewController* presentation_context_view_controller_ = nil;
+  // Whether the UI is temporarily disabled.
+  bool ui_disabled_ = false;
   // The presentation capabilities of |coordinator_|'s view controller.
   UIPresentationCapabilities presentation_capabilities_ =
       UIPresentationCapabilities::kNone;

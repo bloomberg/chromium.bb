@@ -18,6 +18,8 @@
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/render_defines.h"
 #include "core/fxge/win32/cwin32_platform.h"
+#include "third_party/base/check.h"
+#include "third_party/base/check_op.h"
 #include "third_party/base/notreached.h"
 
 #if !defined(_SKIA_SUPPORT_)
@@ -42,7 +44,7 @@ static_assert(
 HPEN CreateExtPen(const CFX_GraphStateData* pGraphState,
                   const CFX_Matrix* pMatrix,
                   uint32_t argb) {
-  ASSERT(pGraphState);
+  DCHECK(pGraphState);
 
   float scale = 1.0f;
   if (pMatrix) {
@@ -219,7 +221,8 @@ unsigned clip_liang_barsky(float x1,
   unsigned np = 0;
   if (deltax == 0)
     deltax = (x1 > clip_box.x1) ? -nearzero : nearzero;
-  float xin, xout;
+  float xin;
+  float xout;
   if (deltax > 0) {
     xin = clip_box.x1;
     xout = clip_box.x2;
@@ -230,7 +233,8 @@ unsigned clip_liang_barsky(float x1,
   float tinx = (xin - x1) / deltax;
   if (deltay == 0)
     deltay = (y1 > clip_box.y1) ? -nearzero : nearzero;
-  float yin, yout;
+  float yin;
+  float yout;
   if (deltay > 0) {
     yin = clip_box.y1;
     yout = clip_box.y2;
@@ -239,7 +243,8 @@ unsigned clip_liang_barsky(float x1,
     yout = clip_box.y1;
   }
   float tiny = (yin - y1) / deltay;
-  float tin1, tin2;
+  float tin1;
+  float tin2;
   if (tinx < tiny) {
     tin1 = tinx;
     tin2 = tiny;
@@ -523,7 +528,7 @@ void CGdiDeviceDriver::DrawLine(float x1, float y1, float x2, float y2) {
         x2 = x[0];
         y2 = y[0];
       } else {
-        ASSERT(np == 2);
+        DCHECK_EQ(np, 2);
         x1 = x[0];
         y1 = y[0];
         x2 = x[1];

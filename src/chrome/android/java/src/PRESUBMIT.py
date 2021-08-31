@@ -34,6 +34,8 @@ SPLIT_COMPAT_UTILS_IMPL_NAME_RE = re.compile(
 COMMENT_RE = re.compile(r'^\s*(//|/\*|\*)')
 
 BROWSER_ROOT = 'chrome/android/java/src/org/chromium/chrome/browser/'
+SIGNIN_UI_BROWSER_ROOT = 'chrome/browser/signin/ui/android'
+'/java/src/org/chromium/chrome/browser/signin/ui/'
 
 
 def CheckChangeOnUpload(input_api, output_api):
@@ -80,20 +82,21 @@ def _CheckNotificationConstructors(input_api, output_api):
 def _CheckAlertDialogBuilder(input_api, output_api):
   # In general, preference and FRE related UIs are not relevant to VR mode.
   files_to_skip = (
+      BROWSER_ROOT + 'autofill/AutofillPopupBridge.java',
       BROWSER_ROOT + 'browserservices/ClearDataDialogActivity.java',
       BROWSER_ROOT + 'browsing_data/ConfirmImportantSitesDialogFragment.java',
       BROWSER_ROOT + 'browsing_data/OtherFormsOfHistoryDialogFragment.java',
       BROWSER_ROOT + 'datareduction/settings/DataReductionStatsPreference.java',
+      BROWSER_ROOT + 'dom_distiller/DistilledPagePrefsView.java',
+      BROWSER_ROOT + 'download/OMADownloadHandler.java',
       BROWSER_ROOT + 'password_manager/AccountChooserDialog.java',
       BROWSER_ROOT + 'password_manager/AutoSigninFirstRunDialog.java',
       BROWSER_ROOT + r'settings[\\\/].*',
-      BROWSER_ROOT + 'signin/AccountPickerDialogFragment.java',
-      BROWSER_ROOT + 'signin/AccountSigninView.java',
-      BROWSER_ROOT + 'signin/ConfirmImportSyncDataDialog.java',
-      BROWSER_ROOT + 'signin/ConfirmManagedSyncDataDialog.java',
-      BROWSER_ROOT + 'signin/ConfirmSyncDataStateMachineDelegate.java',
-      BROWSER_ROOT + 'signin/SigninFragmentBase.java',
-      BROWSER_ROOT + 'signin/SignOutDialogFragment.java',
+      SIGNIN_UI_BROWSER_ROOT + 'ConfirmImportSyncDataDialog.java',
+      SIGNIN_UI_BROWSER_ROOT + 'ConfirmManagedSyncDataDialog.java',
+      SIGNIN_UI_BROWSER_ROOT + 'ConfirmSyncDataStateMachineDelegate.java',
+      BROWSER_ROOT + 'signin/SyncConsentFragmentBase.java',
+      SIGNIN_UI_BROWSER_ROOT + 'SignOutDialogFragment.java',
       BROWSER_ROOT + 'site_settings/AddExceptionPreference.java',
       BROWSER_ROOT + 'site_settings/ChosenObjectSettings.java',
       BROWSER_ROOT + 'site_settings/ManageSpaceActivity.java',
@@ -105,6 +108,7 @@ def _CheckAlertDialogBuilder(input_api, output_api):
       BROWSER_ROOT + 'sync/ui/PassphraseCreationDialogFragment.java',
       BROWSER_ROOT + 'sync/ui/PassphraseDialogFragment.java',
       BROWSER_ROOT + 'sync/ui/PassphraseTypeDialogFragment.java',
+      BROWSER_ROOT + 'webapps/WebApkOfflineDialog.java',
   )
   error_msg = '''
   AlertDialog.Builder Check failed:

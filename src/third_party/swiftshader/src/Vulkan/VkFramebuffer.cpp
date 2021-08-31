@@ -33,12 +33,12 @@ Framebuffer::Framebuffer(const VkFramebufferCreateInfo *pCreateInfo, void *mem)
 	{
 		switch(curInfo->sType)
 		{
-			case VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO:
-				attachmentsCreateInfo = reinterpret_cast<const VkFramebufferAttachmentsCreateInfo *>(curInfo);
-				break;
-			default:
-				LOG_TRAP("pFramebufferCreateInfo->pNext->sType = %s", vk::Stringify(curInfo->sType).c_str());
-				break;
+		case VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO:
+			attachmentsCreateInfo = reinterpret_cast<const VkFramebufferAttachmentsCreateInfo *>(curInfo);
+			break;
+		default:
+			LOG_TRAP("pFramebufferCreateInfo->pNext->sType = %s", vk::Stringify(curInfo->sType).c_str());
+			break;
 		}
 		curInfo = curInfo->pNext;
 	}
@@ -183,6 +183,17 @@ void Framebuffer::resolve(const RenderPass *renderPass, uint32_t subpassIndex)
 			}
 		}
 	}
+
+	if(renderPass->hasDepthStencilResolve() && subpass.pDepthStencilAttachment != nullptr)
+	{
+		VkSubpassDescriptionDepthStencilResolve dsResolve = renderPass->getSubpassDepthStencilResolve(subpassIndex);
+		uint32_t depthStencilAttachment = subpass.pDepthStencilAttachment->attachment;
+		if(depthStencilAttachment != VK_ATTACHMENT_UNUSED)
+		{
+			ImageView *imageView = attachments[depthStencilAttachment];
+			imageView->resolveDepthStencil(attachments[dsResolve.pDepthStencilResolveAttachment->attachment], dsResolve);
+		}
+	}
 }
 
 size_t Framebuffer::ComputeRequiredAllocationSize(const VkFramebufferCreateInfo *pCreateInfo)
@@ -193,12 +204,12 @@ size_t Framebuffer::ComputeRequiredAllocationSize(const VkFramebufferCreateInfo 
 	{
 		switch(curInfo->sType)
 		{
-			case VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO:
-				attachmentsInfo = reinterpret_cast<const VkFramebufferAttachmentsCreateInfo *>(curInfo);
-				break;
-			default:
-				LOG_TRAP("pFramebufferCreateInfo->pNext->sType = %s", vk::Stringify(curInfo->sType).c_str());
-				break;
+		case VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO:
+			attachmentsInfo = reinterpret_cast<const VkFramebufferAttachmentsCreateInfo *>(curInfo);
+			break;
+		default:
+			LOG_TRAP("pFramebufferCreateInfo->pNext->sType = %s", vk::Stringify(curInfo->sType).c_str());
+			break;
 		}
 
 		curInfo = curInfo->pNext;

@@ -9,7 +9,6 @@
 #include <cstring>
 
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -39,6 +38,7 @@ constexpr struct {
     {0x045e, 0x082f},  // Microsoft Bluetooth Mouse
     {0x045e, 0x0b05},  // Xbox One Elite Series 2 gamepad
     {0x046d, 0x4069},  // Logitech MX Master 2S (Unifying)
+    {0x046d, 0xb011},  // Logitech M558
     {0x046d, 0xb016},  // Logitech M535
     {0x046d, 0xb019},  // Logitech MX Master 2S (Bluetooth)
     {0x046d, 0xc093},  // Logitech M500s
@@ -47,7 +47,13 @@ constexpr struct {
     {0x056e, 0x0159},  // Elecom Blue LED Mouse 203
     {0x05e0, 0x1200},  // Zebra LS2208 barcode scanner
     {0x0c45, 0x7403},  // RDing FootSwitch1F1
+    {0x1050, 0x0010},  // Yubico.com Yubikey
+    {0x1050, 0x0407},  // Yubico.com Yubikey 4 OTP+U2F+CCID
     {0x1bcf, 0x08a0},  // Kensington Pro Fit Full-size
+    {0x256c, 0x006d},  // Huion HS64
+    {0x28bd, 0x0914},  // XP-Pen Star G640
+    {0x28bd, 0x091f},  // XP-Pen Artist 12 Pro
+    {0x28bd, 0x0928},  // XP-Pen Deco mini7W
 };
 
 constexpr struct {
@@ -56,6 +62,11 @@ constexpr struct {
 } kStylusButtonDevices[] = {
     {0x413c, 0x81d5},  // Dell Active Pen PN579X
 };
+
+// Note: this is not SteelSeries's actual VID; the Stratus Duo just reports it
+// incorrectly over Bluetooth.
+const uint16_t kSteelSeriesStratusDuoBluetoothVendorId = 0x0111;
+const uint16_t kSteelSeriesStratusDuoBluetoothProductId = 0x1431;
 
 bool GetEventBits(int fd,
                   const base::FilePath& path,
@@ -491,6 +502,10 @@ bool EventDeviceInfo::IsStylusButtonDevice() const {
   return false;
 }
 
+bool EventDeviceInfo::IsMicrophoneMuteSwitchDevice() const {
+  return HasSwEvent(SW_MUTE_DEVICE) && device_type_ == INPUT_DEVICE_INTERNAL;
+}
+
 bool IsInKeyboardBlockList(input_id input_id_) {
   for (const auto& blocklist_id : kKeyboardBlocklist) {
     if (input_id_.vendor == blocklist_id.vendor &&
@@ -519,6 +534,13 @@ bool EventDeviceInfo::HasKeyboard() const {
 }
 
 bool EventDeviceInfo::HasMouse() const {
+  // The SteelSeries Stratus Duo claims to be a mouse over Bluetooth, preventing
+  // it from being set up as a gamepad correctly, so check for its vendor and
+  // product ID. (b/189491809)
+  if (input_id_.vendor == kSteelSeriesStratusDuoBluetoothVendorId &&
+      input_id_.product == kSteelSeriesStratusDuoBluetoothProductId) {
+    return false;
+  }
   return HasRelXY() && !HasProp(INPUT_PROP_POINTING_STICK);
 }
 
@@ -536,6 +558,11 @@ bool EventDeviceInfo::HasTablet() const {
 
 bool EventDeviceInfo::HasTouchscreen() const {
   return HasAbsXY() && HasDirect();
+}
+
+bool EventDeviceInfo::HasStylusSwitch() const {
+  return HasSwEvent(SW_PEN_INSERTED) && (device_type_ == INPUT_DEVICE_UNKNOWN ||
+                                         device_type_ == INPUT_DEVICE_INTERNAL);
 }
 
 bool EventDeviceInfo::HasGamepad() const {
@@ -570,6 +597,8 @@ ui::InputDeviceType EventDeviceInfo::GetInputDeviceTypeFromId(input_id id) {
       {0x18d1, 0x503c},  // Google, Masterball PID (krane)
       {0x18d1, 0x503d},  // Google, Magnemite PID (kodama)
       {0x18d1, 0x5044},  // Google, Moonball PID (kakadu)
+      {0x18d1, 0x504c},  // Google, Zed PID (coachz)
+      {0x18d1, 0x5050},  // Google, Don PID (katsu)
       {0x1fd2, 0x8103},  // LG, Internal TouchScreen PID
   };
 

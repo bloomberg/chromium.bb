@@ -28,6 +28,7 @@ std::string ReadMetadataFromTestData(const std::string& filename) {
 }
 }  // namespace
 
+// Invalid json file that contains 2 input nodes.
 TEST(SmartDimMlAgentUtilTest, ParseInvalidMetadata) {
   const std::string json_string =
       ReadMetadataFromTestData("invalid_model_metadata.json");
@@ -39,7 +40,7 @@ TEST(SmartDimMlAgentUtilTest, ParseInvalidMetadata) {
   base::flat_map<std::string, int> inputs;
   base::flat_map<std::string, int> outputs;
 
-  const base::Optional<base::Value> root = base::JSONReader::Read(json_string);
+  const absl::optional<base::Value> root = base::JSONReader::Read(json_string);
   EXPECT_FALSE(ParseMetaInfoFromJsonObject(root.value(), &metrics_model_name,
                                            &threshold, &expected_feature_size,
                                            &inputs, &outputs));
@@ -61,15 +62,15 @@ TEST(SmartDimMlAgentUtilTest, ParseValidMetadata) {
   base::flat_map<std::string, int> inputs;
   base::flat_map<std::string, int> outputs;
 
-  const base::Optional<base::Value> root = base::JSONReader::Read(json_string);
+  const absl::optional<base::Value> root = base::JSONReader::Read(json_string);
   EXPECT_TRUE(ParseMetaInfoFromJsonObject(root.value(), &metrics_model_name,
                                           &threshold, &expected_feature_size,
                                           &inputs, &outputs));
   EXPECT_EQ(expected_feature_size, 343LU);
-  EXPECT_EQ(metrics_model_name, "smart_dim_model");
+  EXPECT_EQ(metrics_model_name, "SmartDimModel");
   EXPECT_DOUBLE_EQ(threshold, 0.7);
-  EXPECT_EQ(inputs, (base::flat_map<std::string, int>{{"x", 3}, {"y", 4}}));
-  EXPECT_EQ(outputs, (base::flat_map<std::string, int>{{"z", 5}}));
+  EXPECT_EQ(inputs, (base::flat_map<std::string, int>{{"input", 3}}));
+  EXPECT_EQ(outputs, (base::flat_map<std::string, int>{{"output", 5}}));
 }
 
 }  // namespace ml

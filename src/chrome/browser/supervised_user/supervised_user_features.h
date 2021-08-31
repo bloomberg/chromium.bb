@@ -9,10 +9,6 @@
 
 namespace supervised_users {
 
-extern const base::Feature kSupervisedUserIframeFilter;
-
-extern const base::Feature kSupervisedUserInitiatedExtensionInstall;
-
 extern const base::Feature kEduCoexistenceFlowV2;
 
 bool IsEduCoexistenceFlowV2Enabled();

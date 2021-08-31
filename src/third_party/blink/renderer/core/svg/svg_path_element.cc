@@ -50,8 +50,7 @@ Path SVGPathElement::AttributePath() const {
 
 const StylePath* SVGPathElement::GetStylePath() const {
   if (const ComputedStyle* style = GetComputedStyle()) {
-    const StylePath* style_path = style->SvgStyle().D();
-    if (style_path)
+    if (const StylePath* style_path = style->D())
       return style_path;
     return StylePath::EmptyPath();
   }
@@ -101,14 +100,16 @@ SVGPointTearOff* SVGPathElement::getPointAtLength(
   return SVGPointTearOff::CreateDetached(point);
 }
 
-void SVGPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+void SVGPathElement::SvgAttributeChanged(
+    const SvgAttributeChangedParams& params) {
+  const QualifiedName& attr_name = params.name;
   if (attr_name == svg_names::kDAttr) {
     InvalidateMPathDependencies();
     GeometryPresentationAttributeChanged(attr_name);
     return;
   }
 
-  SVGGeometryElement::SvgAttributeChanged(attr_name);
+  SVGGeometryElement::SvgAttributeChanged(params);
 }
 
 void SVGPathElement::CollectStyleForPresentationAttribute(
@@ -155,7 +156,7 @@ void SVGPathElement::RemovedFrom(ContainerNode& root_parent) {
 
 FloatRect SVGPathElement::GetBBox() {
   // We want the exact bounds.
-  return SVGPathElement::AsPath().BoundingRect();
+  return SVGPathElement::AsPath().TightBoundingRect();
 }
 
 }  // namespace blink

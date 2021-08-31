@@ -6,8 +6,8 @@
         "browse:media:flickr_infinite_scroll": {
             "DEFAULT": "system_health_desktop_057.wprgo"
         },
-        "browse:media:googleplaystore:2018": {
-            "DEFAULT": "system_health_desktop_ea41d8bc49.wprgo"
+        "browse:media:googleplaystore:2021": {
+            "DEFAULT": "system_health_desktop_3e15eebdff.wprgo"
         },
         "browse:media:imgur": {
             "DEFAULT": "system_health_desktop_025.wprgo"
@@ -43,20 +43,20 @@
         "browse:news:cnn": {
             "DEFAULT": "system_health_desktop_013.wprgo"
         },
-        "browse:news:cnn:2020": {
-            "DEFAULT": "system_health_desktop_4211dae280.wprgo"
+        "browse:news:cnn:2021": {
+            "DEFAULT": "system_health_desktop_56438410e1.wprgo"
         },
         "browse:news:flipboard": {
             "DEFAULT": "system_health_desktop_021.wprgo"
         },
-        "browse:news:flipboard:2018": {
-            "DEFAULT": "system_health_desktop_4c82ac641b.wprgo"
+        "browse:news:flipboard:2020": {
+            "DEFAULT": "system_health_desktop_c4fee655af.wprgo"
         },
         "browse:news:hackernews": {
             "DEFAULT": "system_health_desktop_014.wprgo"
         },
-        "browse:news:hackernews:2018": {
-            "DEFAULT": "system_health_desktop_45995e1b9c.wprgo"
+        "browse:news:hackernews:2020": {
+            "DEFAULT": "system_health_desktop_a28b400ce1.wprgo"
         },
         "browse:news:nytimes": {
             "DEFAULT": "system_health_desktop_015.wprgo"
@@ -67,20 +67,20 @@
         "browse:news:reddit": {
             "DEFAULT": "system_health_desktop_016.wprgo"
         },
-        "browse:news:reddit:2018": {
-            "DEFAULT": "system_health_desktop_907087980d.wprgo"
+        "browse:news:reddit:2020": {
+            "DEFAULT": "system_health_desktop_91d2763cf0.wprgo"
         },
         "browse:search:google": {
             "DEFAULT": "system_health_desktop_037.wprgo"
         },
-        "browse:search:google:2018": {
-            "DEFAULT": "system_health_desktop_066.wprgo"
+        "browse:search:google:2020": {
+            "DEFAULT": "system_health_desktop_2b7904b984.wprgo"
         },
         "browse:search:google_india": {
             "DEFAULT": "system_health_desktop_039.wprgo"
         },
-        "browse:search:google_india:2018": {
-            "DEFAULT": "system_health_desktop_b576da862c.wprgo"
+        "browse:search:google_india:2021": {
+            "DEFAULT": "system_health_desktop_2335ecc28f.wprgo"
         },
         "browse:social:facebook_infinite_scroll": {
             "DEFAULT": "system_health_desktop_055.wprgo"
@@ -111,6 +111,9 @@
         },
         "browse:tech:discourse_infinite_scroll:2018": {
             "DEFAULT": "system_health_desktop_065.wprgo"
+        },
+        "browse:tools:autocad:2021": {
+            "DEFAULT": "system_health_desktop_68c808e107.wprgo"
         },
         "browse:tools:docs": {
             "DEFAULT": "system_health_desktop_69209f77b1.wprgo"
@@ -244,8 +247,8 @@
         "load:news:cnn": {
             "DEFAULT": "system_health_desktop_006.wprgo"
         },
-        "load:news:cnn:2018": {
-            "DEFAULT": "system_health_desktop_3c603ac582.wprgo"
+        "load:news:cnn:2020": {
+            "DEFAULT": "system_health_desktop_a41a5ba414.wprgo"
         },
         "load:news:flipboard": {
             "DEFAULT": "system_health_desktop_020.wprgo"

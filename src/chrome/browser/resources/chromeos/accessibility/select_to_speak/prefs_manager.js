@@ -5,7 +5,7 @@
 /**
  * Manages getting and storing user preferences.
  */
-class PrefsManager {
+export class PrefsManager {
   constructor() {
     /** @private {?string} */
     this.voiceNameFromPrefs_ = null;
@@ -36,6 +36,9 @@ class PrefsManager {
 
     /** @private {boolean} */
     this.backgroundShadingEnabled_ = false;
+
+    /** @private {boolean} */
+    this.navigationControlsEnabled_ = true;
   }
 
   /**
@@ -54,13 +57,15 @@ class PrefsManager {
       }
 
       voices.forEach((voice) => {
-        if (!voice.eventTypes.includes('start') ||
-            !voice.eventTypes.includes('end') ||
-            !voice.eventTypes.includes('word') ||
-            !voice.eventTypes.includes('cancelled')) {
+        if (!voice.eventTypes.includes(chrome.tts.EventType.START) ||
+            !voice.eventTypes.includes(chrome.tts.EventType.END) ||
+            !voice.eventTypes.includes(chrome.tts.EventType.WORD) ||
+            !voice.eventTypes.includes(chrome.tts.EventType.CANCELLED)) {
           return;
         }
-        this.validVoiceNames_.add(voice.voiceName);
+        if (voice.voiceName) {
+          this.validVoiceNames_.add(voice.voiceName);
+        }
       });
 
       voices.sort(function(a, b) {
@@ -81,7 +86,10 @@ class PrefsManager {
         return score(b) - score(a);
       });
 
-      this.voiceNameFromLocale_ = voices[0].voiceName;
+      const firstVoiceName = voices[0].voiceName;
+      if (firstVoiceName) {
+        this.voiceNameFromLocale_ = firstVoiceName;
+      }
 
       chrome.storage.sync.get(['voice'], (prefs) => {
         if (!prefs['voice']) {
@@ -214,14 +222,13 @@ class PrefsManager {
    * Loads preferences from chrome.storage, sets default values if
    * necessary, and registers a listener to update prefs when they
    * change.
-   * @public
    */
   initPreferences() {
     var updatePrefs = () => {
       chrome.storage.sync.get(
           [
             'voice', 'rate', 'pitch', 'wordHighlight', 'highlightColor',
-            'backgroundShading'
+            'backgroundShading', 'navigationControls'
           ],
           (prefs) => {
             if (prefs['voice']) {
@@ -243,6 +250,12 @@ class PrefsManager {
               chrome.storage.sync.set(
                   {'backgroundShading': this.backgroundShadingEnabled_});
             }
+            if (prefs['navigationControls'] !== undefined) {
+              this.navigationControlsEnabled_ = prefs['navigationControls'];
+            } else {
+              chrome.storage.sync.set(
+                  {'navigationControls': this.navigationControlsEnabled_});
+            }
             if (prefs['rate'] && prefs['pitch']) {
               // Removes 'rate' and 'pitch' prefs after migrating data to global
               // TTS settings if appropriate.
@@ -263,11 +276,10 @@ class PrefsManager {
   /**
    * Generates the basic speech options for Select-to-Speak based on user
    * preferences. Call for each chrome.tts.speak.
-   * @return {!TtsOptions} options The TTS options.
-   * @public
+   * @return {!chrome.tts.TtsOptions} options The TTS options.
    */
   speechOptions() {
-    const options = {enqueue: true};
+    const options = /** @type {!chrome.tts.TtsOptions} */ ({});
 
     // To use the default (system) voice: don't specify options['voiceName'].
     if (this.voiceNameFromPrefs_ === PrefsManager.SYSTEM_VOICE) {
@@ -300,7 +312,6 @@ class PrefsManager {
   /**
    * Gets the user's word highlighting enabled preference.
    * @return {boolean} True if word highlighting is enabled.
-   * @public
    */
   wordHighlightingEnabled() {
     return this.wordHighlight_;
@@ -309,7 +320,6 @@ class PrefsManager {
   /**
    * Gets the user's word highlighting color preference.
    * @return {string} Highlight color.
-   * @public
    */
   highlightColor() {
     return this.highlightColor_;
@@ -319,7 +329,6 @@ class PrefsManager {
    * Gets the focus ring color. This is not currently a user preference but it
    * could be in the future; stored here for similarity to highlight color.
    * @return {string} Highlight color.
-   * @public
    */
   focusRingColor() {
     return this.color_;
@@ -329,17 +338,25 @@ class PrefsManager {
    * Gets the user's focus ring background color. If the user disabled greying
    * out the background, alpha will be set to fully transparent.
    * @return {boolean} True if the background shade should be drawn.
-   * @public
    */
   backgroundShadingEnabled() {
     return this.backgroundShadingEnabled_;
+  }
+
+  /**
+   * Gets the user's preference for showing navigation controls that allow them
+   * to navigate to next/previous sentences, paragraphs, and more.
+   * @return {boolean} True if navigation controls should be shown when STS is
+   *     active.
+   */
+  navigationControlsEnabled() {
+    return this.navigationControlsEnabled_;
   }
 }
 
 /**
  * Constant representing the system TTS voice.
  * @type {string}
- * @public
  */
 PrefsManager.SYSTEM_VOICE = 'select_to_speak_system_voice';
 

@@ -11,11 +11,10 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
-#include "base/optional.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
@@ -106,8 +105,8 @@ void QuickAnswersUiController::UpdateQuickAnswersBounds(
 
 void QuickAnswersUiController::CreateUserNoticeView(
     const gfx::Rect& anchor_bounds,
-    const base::string16& intent_type,
-    const base::string16& intent_text) {
+    const std::u16string& intent_type,
+    const std::u16string& intent_text) {
   DCHECK(!quick_answers_view_);
   DCHECK(!user_notice_view_);
   user_notice_view_ = new quick_answers::UserNoticeView(

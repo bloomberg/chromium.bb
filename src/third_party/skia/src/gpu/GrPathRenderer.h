@@ -17,7 +17,7 @@ class GrClip;
 class GrHardClip;
 class GrPaint;
 class GrRecordingContext;
-class GrRenderTargetContext;
+class GrSurfaceDrawContext;
 class GrRenderTargetProxy;
 class GrStyledShape;
 class GrStyle;
@@ -25,6 +25,7 @@ struct GrUserStencilSettings;
 struct SkIRect;
 class SkMatrix;
 class SkPath;
+class SkSurfaceProps;
 
 /**
  *  Base class for drawing paths into a GrOpsTask.
@@ -83,10 +84,10 @@ public:
         const SkMatrix*             fViewMatrix;
         const GrStyledShape*        fShape;
         const GrPaint*              fPaint;
+        const SkSurfaceProps*       fSurfaceProps;
         GrAAType                    fAAType;
-        bool                        fTargetIsWrappedVkSecondaryCB;
 
-        // This is only used by GrStencilAndCoverPathRenderer
+        // This is only used by GrTessellationPathRenderer
         bool                        fHasUserStencilSettings;
 
 #ifdef SK_DEBUG
@@ -96,6 +97,7 @@ public:
             SkASSERT(fClipConservativeBounds);
             SkASSERT(fViewMatrix);
             SkASSERT(fShape);
+            SkASSERT(fSurfaceProps);
         }
 #endif
     };
@@ -114,7 +116,7 @@ public:
         GrRecordingContext*          fContext;
         GrPaint&&                    fPaint;
         const GrUserStencilSettings* fUserStencilSettings;
-        GrRenderTargetContext*       fRenderTargetContext;
+        GrSurfaceDrawContext*        fRenderTargetContext;
         const GrClip*                fClip;
         const SkIRect*               fClipConservativeBounds;
         const SkMatrix*              fViewMatrix;
@@ -145,7 +147,7 @@ public:
         SkDEBUGCODE(StencilPathArgs() { memset(this, 0, sizeof(*this)); }) // For validation.
 
         GrRecordingContext*    fContext;
-        GrRenderTargetContext* fRenderTargetContext;
+        GrSurfaceDrawContext*  fRenderTargetContext;
         const GrHardClip*      fClip;
         const SkIRect*         fClipConservativeBounds;
         const SkMatrix*        fViewMatrix;

@@ -19,6 +19,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
@@ -32,21 +33,28 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "url/gurl.h"
 
 namespace {
 
 const char kReportingHost[] = "example.com";
 
-class ReportingBrowserTest : public CertVerifierBrowserTest {
+class ReportingBrowserTest : public CertVerifierBrowserTest,
+                             public ::testing::WithParamInterface<bool> {
  public:
   ReportingBrowserTest()
       : https_server_(net::test_server::EmbeddedTestServer::TYPE_HTTPS) {
+    std::vector<base::Feature> required_features = {
+        network::features::kReporting, network::features::kNetworkErrorLogging,
+        features::kCrashReporting,
+        net::features::kPartitionNelAndReportingByNetworkIsolationKey};
+    if (UseDocumentReporting()) {
+      required_features.push_back(net::features::kDocumentReporting);
+    }
     scoped_feature_list_.InitWithFeatures(
         // enabled_features
-        {network::features::kReporting, network::features::kNetworkErrorLogging,
-         features::kCrashReporting,
-         net::features::kPartitionNelAndReportingByNetworkIsolationKey},
+        required_features,
         // disabled_features
         {});
   }
@@ -74,6 +82,16 @@ class ReportingBrowserTest : public CertVerifierBrowserTest {
     return https_server_.GetURL(kReportingHost, "/upload");
   }
 
+  std::string GetAppropriateReportingHeader() const {
+    return UseDocumentReporting() ? GetReportingEndpointsHeader()
+                                  : GetReportToHeader();
+  }
+
+  std::string GetReportingEndpointsHeader() const {
+    return "Reporting-Endpoints: default=\"" + GetCollectorURL().spec() +
+           "\"\r\n";
+  }
+
   std::string GetReportToHeader() const {
     return "Report-To: {\"endpoints\":[{\"url\":\"" + GetCollectorURL().spec() +
            "\"}],\"max_age\":86400}\r\n";
@@ -84,6 +102,13 @@ class ReportingBrowserTest : public CertVerifierBrowserTest {
            "{\"report_to\":\"default\",\"max_age\":86400,\"success_fraction\":"
            "1.0}\r\n";
   }
+
+  std::string GetCSPHeader() const {
+    return "Content-Security-Policy: script-src 'none'; report-to default\r\n";
+  }
+
+ protected:
+  bool UseDocumentReporting() const { return GetParam(); }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -141,7 +166,11 @@ std::unique_ptr<base::Value> ParseReportUpload(const std::string& payload) {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, TestReportingHeadersProcessed) {
+// Tests that NEL reports are delivered correctly, whether or not reporting
+// isolation is enabled. NEL reports can only be configured with the Report-To
+// header, but this header should continue to function until support is
+// completely removed.
+IN_PROC_BROWSER_TEST_P(ReportingBrowserTest, TestNELHeadersProcessed) {
   NavigateParams params(browser(), GetReportingEnabledURL(),
                         ui::PAGE_TRANSITION_LINK);
   Navigate(&params);
@@ -162,9 +191,8 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, TestReportingHeadersProcessed) {
 
   // Verify the contents of the report that we received.
   ASSERT_TRUE(actual);
-  std::unique_ptr<base::Value> expected =
-      base::test::ParseJsonDeprecated(base::StringPrintf(
-          R"json(
+  base::Value expected = base::test::ParseJson(base::StringPrintf(
+      R"json(
         [
           {
             "body": {
@@ -183,11 +211,62 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, TestReportingHeadersProcessed) {
           },
         ]
       )json",
-          GetReportingEnabledURL().spec().c_str()));
-  EXPECT_EQ(*expected, *actual);
+      GetReportingEnabledURL().spec().c_str()));
+  EXPECT_EQ(expected, *actual);
 }
 
-IN_PROC_BROWSER_TEST_F(ReportingBrowserTest,
+// Tests that CSP reports are delivered properly whether configured with the
+// v0 Report-To header or the v1 Reporting-Endpoints header.
+IN_PROC_BROWSER_TEST_P(ReportingBrowserTest, TestReportingHeadersProcessed) {
+  NavigateParams params(browser(), GetReportingEnabledURL(),
+                        ui::PAGE_TRANSITION_LINK);
+  Navigate(&params);
+
+  original_response()->WaitForRequest();
+  original_response()->Send("HTTP/1.1 200 OK\r\n");
+  original_response()->Send("Content-Type: text/html\r\n");
+  original_response()->Send(GetAppropriateReportingHeader());
+  original_response()->Send(GetCSPHeader());
+  original_response()->Send("\r\n");
+  original_response()->Send("<script>alert(1);</script>\r\n");
+  original_response()->Done();
+
+  upload_response()->WaitForRequest();
+  std::unique_ptr<base::Value> actual =
+      ParseReportUpload(upload_response()->http_request()->content);
+  upload_response()->Send("HTTP/1.1 204 OK\r\n");
+  upload_response()->Send("\r\n");
+  upload_response()->Done();
+
+  // Verify the contents of the report that we received.
+  ASSERT_TRUE(actual);
+  base::Value expected = base::test::ParseJson(base::StringPrintf(
+      R"json(
+        [ {
+           "body": {
+              "blockedURL": "inline",
+              "disposition": "enforce",
+              "documentURL": "%s",
+              "effectiveDirective": "script-src-elem",
+              "lineNumber": 1,
+              "originalPolicy": "script-src 'none'; report-to default",
+              "referrer": "",
+              "sample": "",
+              "sourceFile": "%s",
+              "statusCode": 200
+           },
+           "type": "csp-violation",
+           "url": "%s",
+           "user_agent": "Mozilla/1.0"
+        } ]
+      )json",
+      GetReportingEnabledURL().spec().c_str(),
+      GetReportingEnabledURL().spec().c_str(),
+      GetReportingEnabledURL().spec().c_str()));
+  EXPECT_EQ(expected, *actual);
+}
+
+IN_PROC_BROWSER_TEST_P(ReportingBrowserTest,
                        ReportingRespectsNetworkIsolationKeys) {
   // Navigate main frame to a kReportingHost URL and learn NEL and Reporting
   // information for that host.
@@ -259,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest,
 #define MAYBE_CrashReportUnresponsive CrashReportUnresponsive
 #endif
 
-IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, MAYBE_CrashReport) {
+IN_PROC_BROWSER_TEST_P(ReportingBrowserTest, MAYBE_CrashReport) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver navigation_observer(contents);
@@ -271,14 +350,14 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, MAYBE_CrashReport) {
 
   original_response()->WaitForRequest();
   original_response()->Send("HTTP/1.1 200 OK\r\n");
-  original_response()->Send(GetReportToHeader());
+  original_response()->Send(GetAppropriateReportingHeader());
   original_response()->Send("\r\n");
   original_response()->Done();
   navigation_observer.Wait();
 
   // Simulate a crash on the page.
   content::ScopedAllowRendererCrashes allow_renderer_crashes(contents);
-  contents->GetController().LoadURL(GURL(content::kChromeUICrashURL),
+  contents->GetController().LoadURL(GURL(blink::kChromeUICrashURL),
                                     content::Referrer(),
                                     ui::PAGE_TRANSITION_TYPED, std::string());
 
@@ -298,7 +377,7 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, MAYBE_CrashReport) {
   EXPECT_EQ(GetReportingEnabledURL().spec(), url->GetString());
 }
 
-IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, MAYBE_CrashReportUnresponsive) {
+IN_PROC_BROWSER_TEST_P(ReportingBrowserTest, MAYBE_CrashReportUnresponsive) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver navigation_observer(contents);
@@ -310,7 +389,7 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, MAYBE_CrashReportUnresponsive) {
 
   original_response()->WaitForRequest();
   original_response()->Send("HTTP/1.1 200 OK\r\n");
-  original_response()->Send(GetReportToHeader());
+  original_response()->Send(GetAppropriateReportingHeader());
   original_response()->Send("\r\n");
   original_response()->Done();
   navigation_observer.Wait();
@@ -337,3 +416,5 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, MAYBE_CrashReportUnresponsive) {
   EXPECT_EQ(GetReportingEnabledURL().spec(), url->GetString());
   EXPECT_EQ("unresponsive", reason->GetString());
 }
+
+INSTANTIATE_TEST_SUITE_P(All, ReportingBrowserTest, ::testing::Bool());

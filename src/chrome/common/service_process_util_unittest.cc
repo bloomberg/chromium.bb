@@ -101,7 +101,7 @@ ServiceProcessStateTest::~ServiceProcessStateTest() {
 
 void ServiceProcessStateTest::SetUp() {
   base::Thread::Options options(base::MessagePumpType::IO, 0);
-  ASSERT_TRUE(io_thread_.StartWithOptions(options));
+  ASSERT_TRUE(io_thread_.StartWithOptions(std::move(options)));
 }
 
 void ServiceProcessStateTest::LaunchAndWait(const std::string& name) {
@@ -135,12 +135,12 @@ TEST_F(ServiceProcessStateTest, AutoRun) {
   std::unique_ptr<base::CommandLine> autorun_command_line;
 #if defined(OS_WIN)
   std::string value_name = GetServiceProcessScopedName("_service_run");
-  base::string16 value;
+  std::wstring value;
   EXPECT_TRUE(base::win::ReadCommandFromAutoRun(HKEY_CURRENT_USER,
                                                 base::UTF8ToWide(value_name),
                                                 &value));
-  autorun_command_line.reset(
-      new base::CommandLine(base::CommandLine::FromString(value)));
+  autorun_command_line =
+      std::make_unique<base::CommandLine>(base::CommandLine::FromString(value));
 #elif defined(OS_POSIX) && !defined(OS_MAC)
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   std::string base_desktop_name = "google-chrome-service.desktop";
@@ -236,7 +236,7 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
   base::RunLoop run_loop;
   base::Thread io_thread_("ServiceProcessStateTestShutdownIOThread");
   base::Thread::Options options(base::MessagePumpType::IO, 0);
-  EXPECT_TRUE(io_thread_.StartWithOptions(options));
+  EXPECT_TRUE(io_thread_.StartWithOptions(std::move(options)));
   ServiceProcessState state;
   EXPECT_TRUE(state.Initialize());
   EXPECT_TRUE(state.SignalReady(io_thread_.task_runner().get(),

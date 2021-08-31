@@ -33,8 +33,7 @@ class Event;
 
 // A View representing a button. A Button is focusable by default and will
 // be part of the focus chain.
-class VIEWS_EXPORT Button : public InkDropHostView,
-                            public AnimationDelegateViews {
+class VIEWS_EXPORT Button : public View, public AnimationDelegateViews {
  public:
   // Button states for various button sub-types.
   enum ButtonState {
@@ -117,8 +116,8 @@ class VIEWS_EXPORT Button : public InkDropHostView,
 
   static ButtonState GetButtonStateFrom(ui::NativeTheme::State state);
 
-  void SetTooltipText(const base::string16& tooltip_text);
-  base::string16 GetTooltipText() const;
+  void SetTooltipText(const std::u16string& tooltip_text);
+  std::u16string GetTooltipText() const;
 
   int tag() const { return tag_; }
   void set_tag(int tag) { tag_ = tag; }
@@ -127,8 +126,8 @@ class VIEWS_EXPORT Button : public InkDropHostView,
     callback_ = std::move(callback);
   }
 
-  void SetAccessibleName(const base::string16& name);
-  const base::string16& GetAccessibleName() const;
+  void SetAccessibleName(const std::u16string& name);
+  const std::u16string& GetAccessibleName() const;
 
   // Get/sets the current display state of the button.
   ButtonState GetState() const;
@@ -166,8 +165,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   void SetShowInkDropWhenHotTracked(bool value);
   bool GetShowInkDropWhenHotTracked() const;
 
-  void SetInkDropBaseColor(SkColor color);
-
   void SetHasInkDropActionOnClick(bool value);
   bool GetHasInkDropActionOnClick() const;
 
@@ -182,8 +179,11 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   // Highlights the ink drop for the button.
   void SetHighlighted(bool bubble_visible);
 
-  PropertyChangedSubscription AddStateChangedCallback(
+  base::CallbackListSubscription AddStateChangedCallback(
       PropertyChangedCallback callback);
+
+  InkDropHost* ink_drop() { return ink_drop_.get(); }
+  const InkDropHost* ink_drop() const { return ink_drop_.get(); }
 
   // Overridden from View:
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -198,7 +198,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
-  base::string16 GetTooltipText(const gfx::Point& p) const override;
+  std::u16string GetTooltipText(const gfx::Point& p) const override;
   void ShowContextMenu(const gfx::Point& p,
                        ui::MenuSourceType source_type) override;
   void OnDragDone() override;
@@ -211,10 +211,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
       const ViewHierarchyChangedDetails& details) override;
   void OnFocus() override;
   void OnBlur() override;
-
-  // Overridden from InkDropHostView:
-  std::unique_ptr<InkDrop> CreateInkDrop() override;
-  SkColor GetInkDropBaseColor() const override;
 
   // Overridden from views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -249,7 +245,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   virtual void OnClickCanceled(const ui::Event& event);
 
   // Called when the tooltip is set.
-  virtual void OnSetTooltipText(const base::string16& tooltip_text);
+  virtual void OnSetTooltipText(const std::u16string& tooltip_text);
 
   // Invoked from SetState() when SetState() is passed a value that differs from
   // the current node_data. Button's implementation of StateChanged() does
@@ -301,10 +297,10 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   void OnEnabledChanged();
 
   // The text shown in a tooltip.
-  base::string16 tooltip_text_;
+  std::u16string tooltip_text_;
 
   // Accessibility data.
-  base::string16 accessible_name_;
+  std::u16string accessible_name_;
 
   // The button's listener. Notified when clicked.
   PressedCallback callback_;
@@ -341,8 +337,8 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   // tracked with SetHotTracked().
   bool show_ink_drop_when_hot_tracked_ = false;
 
-  // The color of the ripple and hover.
-  SkColor ink_drop_base_color_;
+  // The InkDrop for this Button.
+  std::unique_ptr<InkDropHost> ink_drop_{std::make_unique<InkDropHost>(this)};
 
   // The focus ring for this Button.
   FocusRing* focus_ring_ = nullptr;
@@ -355,25 +351,24 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   // ButtonController.
   std::unique_ptr<ButtonController> button_controller_;
 
-  PropertyChangedSubscription enabled_changed_subscription_{
+  base::CallbackListSubscription enabled_changed_subscription_{
       AddEnabledChangedCallback(base::BindRepeating(&Button::OnEnabledChanged,
                                                     base::Unretained(this)))};
 
   DISALLOW_COPY_AND_ASSIGN(Button);
 };
 
-BEGIN_VIEW_BUILDER(VIEWS_EXPORT, Button, InkDropHostView)
-VIEW_BUILDER_PROPERTY(base::string16, AccessibleName)
+BEGIN_VIEW_BUILDER(VIEWS_EXPORT, Button, View)
+VIEW_BUILDER_PROPERTY(std::u16string, AccessibleName)
 VIEW_BUILDER_PROPERTY(Button::PressedCallback, Callback)
 VIEW_BUILDER_PROPERTY(base::TimeDelta, AnimationDuration)
 VIEW_BUILDER_PROPERTY(bool, AnimateOnStateChange)
 VIEW_BUILDER_PROPERTY(bool, HasInkDropActionOnClick)
 VIEW_BUILDER_PROPERTY(bool, HideInkDropWhenShowingContextMenu)
-VIEW_BUILDER_PROPERTY(SkColor, InkDropBaseColor)
 VIEW_BUILDER_PROPERTY(bool, InstallFocusRingOnFocus)
 VIEW_BUILDER_PROPERTY(bool, RequestFocusOnPress)
 VIEW_BUILDER_PROPERTY(Button::ButtonState, State)
-VIEW_BUILDER_PROPERTY(base::string16, TooltipText)
+VIEW_BUILDER_PROPERTY(std::u16string, TooltipText)
 VIEW_BUILDER_PROPERTY(int, TriggerableEventFlags)
 END_VIEW_BUILDER
 

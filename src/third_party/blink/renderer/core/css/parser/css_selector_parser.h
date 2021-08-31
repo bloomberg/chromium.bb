@@ -16,6 +16,7 @@ class CSSParserContext;
 class CSSParserTokenStream;
 class CSSParserObserver;
 class CSSSelectorList;
+class Node;
 class StyleSheetContents;
 
 // FIXME: We should consider building CSSSelectors directly instead of using
@@ -36,6 +37,13 @@ class CORE_EXPORT CSSSelectorParser {
 
   static bool SupportsComplexSelector(CSSParserTokenRange,
                                       const CSSParserContext*);
+
+  static CSSSelector::PseudoType ParsePseudoType(const AtomicString&,
+                                                 bool has_arguments);
+  static PseudoId ParsePseudoElement(const String&, const Node*);
+  // Returns the argument of a parameterized pseudo-element. For example, for
+  // '::highlight(foo)' it returns 'foo'.
+  static AtomicString ParsePseudoElementArgument(const String&);
 
  private:
   CSSSelectorParser(const CSSParserContext*, StyleSheetContents*);
@@ -97,12 +105,6 @@ class CORE_EXPORT CSSSelectorParser {
 
   bool failed_parsing_ = false;
   bool disallow_pseudo_elements_ = false;
-  // We don't allow mixing ShadowDOMv0 features and nested complex selectors,
-  // such as :is(). When :is() or :where() is encountered, ShadowDOM V0 features
-  // are disallowed, and whenever /deep/, ::content or ::shadow is encountered
-  // we disallow :is()/:where().
-  bool disallow_shadow_dom_v0_ = false;
-  bool disallow_nested_complex_ = false;
   // If we're inside a pseudo class that only accepts compound selectors,
   // for example :host, inner :is()/:where() pseudo classes are also only
   // allowed to contain compound selectors.

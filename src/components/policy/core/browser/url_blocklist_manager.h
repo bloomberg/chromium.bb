@@ -10,7 +10,6 @@
 
 #include <map>
 #include <memory>
-#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -53,7 +52,7 @@ class POLICY_EXPORT URLBlocklist {
 
   // URLs matching one of the |filters| will be blocked. The filter format is
   // documented at
-  // http://www.chromium.org/administrators/url-blacklist-filter-format.
+  // http://www.chromium.org/administrators/url-blocklist-filter-format.
   void Block(const base::ListValue* filters);
 
   // URLs matching one of the |filters| will be allowed. If a URL is both

@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -31,13 +32,13 @@ static const char kMissing[] = "Missing";
 static const char kCommandKeyNotSupported[] =
     "Command key is not supported. Note: Ctrl means Command on Mac";
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // ChromeOS supports an additional modifier 'Search', which can result in longer
 // sequences.
 static const int kMaxTokenSize = 4;
 #else
 static const int kMaxTokenSize = 3;
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // TODO(devlin): Expose this on Command, since many places implicitly check
 // this.
@@ -66,7 +67,7 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
                           const std::string& platform_key,
                           int index,
                           bool should_parse_media_keys,
-                          base::string16* error) {
+                          std::u16string* error) {
   error->clear();
   if (platform_key != values::kKeybindingPlatformWin &&
       platform_key != values::kKeybindingPlatformMac &&
@@ -272,11 +273,11 @@ std::string NormalizeShortcutSuggestion(const std::string& suggestion,
 Command::Command() : global_(false) {}
 
 Command::Command(const std::string& command_name,
-                 const base::string16& description,
+                 const std::u16string& description,
                  const std::string& accelerator,
                  bool global)
     : command_name_(command_name), description_(description), global_(global) {
-  base::string16 error;
+  std::u16string error;
   accelerator_ = ParseImpl(accelerator, CommandPlatform(), 0,
                            IsNamedCommand(command_name), &error);
 }
@@ -291,9 +292,9 @@ std::string Command::CommandPlatform() {
   return values::kKeybindingPlatformWin;
 #elif defined(OS_MAC)
   return values::kKeybindingPlatformMac;
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
   return values::kKeybindingPlatformChromeOs;
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   return values::kKeybindingPlatformLinux;
 #else
   return "";
@@ -303,7 +304,7 @@ std::string Command::CommandPlatform() {
 // static
 ui::Accelerator Command::StringToAccelerator(const std::string& accelerator,
                                              const std::string& command_name) {
-  base::string16 error;
+  std::u16string error;
   ui::Accelerator parsed =
       ParseImpl(accelerator, Command::CommandPlatform(), 0,
                 IsNamedCommand(command_name), &error);
@@ -323,7 +324,7 @@ std::string Command::AcceleratorToString(const ui::Accelerator& accelerator) {
     shortcut += values::kKeySeparator;
 
   if (accelerator.IsCmdDown()) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     // Chrome OS treats the Search key like the Command key.
     shortcut += values::kKeySearch;
 #else
@@ -417,10 +418,10 @@ bool Command::IsMediaKey(const ui::Accelerator& accelerator) {
 bool Command::Parse(const base::DictionaryValue* command,
                     const std::string& command_name,
                     int index,
-                    base::string16* error) {
+                    std::u16string* error) {
   DCHECK(!command_name.empty());
 
-  base::string16 description;
+  std::u16string description;
   if (IsNamedCommand(command_name)) {
     if (!command->GetString(keys::kDescription, &description) ||
         description.empty()) {

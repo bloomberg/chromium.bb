@@ -4,6 +4,7 @@
 
 #include "net/http/http_proxy_client_socket.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -401,8 +402,8 @@ int HttpProxyClientSocket::DoSendRequest() {
   }
 
   parser_buf_ = base::MakeRefCounted<GrowableIOBuffer>();
-  http_stream_parser_.reset(new HttpStreamParser(
-      socket_.get(), is_reused_, &request_, parser_buf_.get(), net_log_));
+  http_stream_parser_ = std::make_unique<HttpStreamParser>(
+      socket_.get(), is_reused_, &request_, parser_buf_.get(), net_log_);
   return http_stream_parser_->SendRequest(request_line_, request_headers_,
                                           traffic_annotation_, &response_,
                                           io_callback_);
@@ -463,8 +464,7 @@ int HttpProxyClientSocket::DoReadHeadersComplete(int result) {
       // authentication code is smart enough to avoid being tricked by an
       // active network attacker.
       // The next state is intentionally not set as it should be STATE_NONE;
-      if (!SanitizeProxyAuth(&response_))
-        return ERR_TUNNEL_CONNECTION_FAILED;
+      SanitizeProxyAuth(response_);
       return HandleProxyAuthChallenge(auth_.get(), &response_, net_log_);
 
     default:

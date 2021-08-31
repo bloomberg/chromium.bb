@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
+#include "third_party/blink/renderer/platform/heap/disallow_new_wrapper.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -43,9 +44,10 @@ class FrameCaret;
 class GraphicsContext;
 class LayoutBlock;
 class LocalFrame;
-class SelectionEditor;
+class NGPhysicalBoxFragment;
 struct PaintInvalidatorContext;
 struct PhysicalOffset;
+class SelectionEditor;
 
 class CORE_EXPORT FrameCaret final : public GarbageCollected<FrameCaret> {
  public:
@@ -66,15 +68,13 @@ class CORE_EXPORT FrameCaret final : public GarbageCollected<FrameCaret> {
   void SetCaretEnabled(bool);
   IntRect AbsoluteCaretBounds() const;
 
-  bool ShouldShowBlockCursor() const { return should_show_block_cursor_; }
-  void SetShouldShowBlockCursor(bool);
-
   // Paint invalidation methods delegating to DisplayItemClient.
   void LayoutBlockWillBeDestroyed(const LayoutBlock&);
   void UpdateStyleAndLayoutIfNeeded();
   void InvalidatePaint(const LayoutBlock&, const PaintInvalidatorContext&);
 
   bool ShouldPaintCaret(const LayoutBlock&) const;
+  bool ShouldPaintCaret(const NGPhysicalBoxFragment&) const;
   void PaintCaret(GraphicsContext&, const PhysicalOffset&) const;
 
   // For unit tests.
@@ -101,11 +101,10 @@ class CORE_EXPORT FrameCaret final : public GarbageCollected<FrameCaret> {
   const Member<LocalFrame> frame_;
   const std::unique_ptr<CaretDisplayItemClient> display_item_client_;
   // TODO(https://crbug.com/668758): Consider using BeginFrame update for this.
-  std::unique_ptr<TaskRunnerTimer<FrameCaret>> caret_blink_timer_;
+  HeapTaskRunnerTimer<FrameCaret> caret_blink_timer_;
   bool is_caret_enabled_ = false;
   bool should_show_caret_ = false;
   bool is_caret_blinking_suspended_ = false;
-  bool should_show_block_cursor_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FrameCaret);
 };

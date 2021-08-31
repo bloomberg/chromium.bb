@@ -5,13 +5,15 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_POINTER_H_
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_POINTER_H_
 
+#include <cstdint>
+
 #include "base/macros.h"
 #include "ui/events/types/event_type.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 
 namespace gfx {
 class PointF;
-class Vector2d;
+class Vector2dF;
 }  // namespace gfx
 
 namespace ui {
@@ -30,6 +32,7 @@ class WaylandPointer {
                  Delegate* delegate);
   virtual ~WaylandPointer();
 
+  uint32_t id() const { return obj_.id(); }
   wl_pointer* wl_object() const { return obj_.get(); }
 
  private:
@@ -80,18 +83,18 @@ class WaylandPointer {
 
 class WaylandPointer::Delegate {
  public:
-  virtual void OnPointerCreated(WaylandPointer* pointer) = 0;
-  virtual void OnPointerDestroyed(WaylandPointer* pointer) = 0;
   virtual void OnPointerFocusChanged(WaylandWindow* window,
                                      const gfx::PointF& location) = 0;
   virtual void OnPointerButtonEvent(EventType evtype,
                                     int changed_button,
                                     WaylandWindow* window = nullptr) = 0;
   virtual void OnPointerMotionEvent(const gfx::PointF& location) = 0;
-  virtual void OnPointerAxisEvent(const gfx::Vector2d& offset) = 0;
+  virtual void OnPointerAxisEvent(const gfx::Vector2dF& offset) = 0;
   virtual void OnPointerFrameEvent() = 0;
   virtual void OnPointerAxisSourceEvent(uint32_t axis_source) = 0;
   virtual void OnPointerAxisStopEvent(uint32_t axis) = 0;
+  virtual void OnResetPointerFlags() = 0;
+  virtual const gfx::PointF& GetPointerLocation() const = 0;
 };
 
 }  // namespace ui

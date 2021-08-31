@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "spdy/core/spdy_protocol.h"
 
 #include <iostream>
 #include <limits>
 #include <memory>
 
-#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_bitmasks.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_test_utils.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_test_helpers.h"
+#include "common/platform/api/quiche_test.h"
+#include "common/platform/api/quiche_test_helpers.h"
+#include "spdy/core/spdy_bitmasks.h"
+#include "spdy/core/spdy_test_utils.h"
 
 namespace spdy {
 
@@ -31,16 +31,16 @@ std::ostream& operator<<(std::ostream& os,
 namespace test {
 
 TEST(SpdyProtocolTest, ClampSpdy3Priority) {
-  EXPECT_SPDY_BUG(EXPECT_EQ(7, ClampSpdy3Priority(8)), "Invalid priority: 8");
+  EXPECT_QUICHE_BUG(EXPECT_EQ(7, ClampSpdy3Priority(8)), "Invalid priority: 8");
   EXPECT_EQ(kV3LowestPriority, ClampSpdy3Priority(kV3LowestPriority));
   EXPECT_EQ(kV3HighestPriority, ClampSpdy3Priority(kV3HighestPriority));
 }
 
 TEST(SpdyProtocolTest, ClampHttp2Weight) {
-  EXPECT_SPDY_BUG(EXPECT_EQ(kHttp2MinStreamWeight, ClampHttp2Weight(0)),
-                  "Invalid weight: 0");
-  EXPECT_SPDY_BUG(EXPECT_EQ(kHttp2MaxStreamWeight, ClampHttp2Weight(300)),
-                  "Invalid weight: 300");
+  EXPECT_QUICHE_BUG(EXPECT_EQ(kHttp2MinStreamWeight, ClampHttp2Weight(0)),
+                    "Invalid weight: 0");
+  EXPECT_QUICHE_BUG(EXPECT_EQ(kHttp2MaxStreamWeight, ClampHttp2Weight(300)),
+                    "Invalid weight: 300");
   EXPECT_EQ(kHttp2MinStreamWeight, ClampHttp2Weight(kHttp2MinStreamWeight));
   EXPECT_EQ(kHttp2MaxStreamWeight, ClampHttp2Weight(kHttp2MaxStreamWeight));
 }
@@ -121,7 +121,9 @@ TEST(SpdyProtocolTest, ParseSettingsId) {
   EXPECT_FALSE(ParseSettingsId(7, &setting_id));
   EXPECT_TRUE(ParseSettingsId(8, &setting_id));
   EXPECT_EQ(SETTINGS_ENABLE_CONNECT_PROTOCOL, setting_id);
-  EXPECT_FALSE(ParseSettingsId(9, &setting_id));
+  EXPECT_TRUE(ParseSettingsId(9, &setting_id));
+  EXPECT_EQ(SETTINGS_DEPRECATE_HTTP2_PRIORITIES, setting_id);
+  EXPECT_FALSE(ParseSettingsId(10, &setting_id));
   EXPECT_FALSE(ParseSettingsId(0xFF44, &setting_id));
   EXPECT_TRUE(ParseSettingsId(0xFF45, &setting_id));
   EXPECT_EQ(SETTINGS_EXPERIMENT_SCHEDULER, setting_id);
@@ -142,7 +144,9 @@ TEST(SpdyProtocolTest, SettingsIdToString) {
       {SETTINGS_MAX_HEADER_LIST_SIZE, "SETTINGS_MAX_HEADER_LIST_SIZE"},
       {7, "SETTINGS_UNKNOWN_7"},
       {SETTINGS_ENABLE_CONNECT_PROTOCOL, "SETTINGS_ENABLE_CONNECT_PROTOCOL"},
-      {9, "SETTINGS_UNKNOWN_9"},
+      {SETTINGS_DEPRECATE_HTTP2_PRIORITIES,
+       "SETTINGS_DEPRECATE_HTTP2_PRIORITIES"},
+      {0xa, "SETTINGS_UNKNOWN_a"},
       {0xFF44, "SETTINGS_UNKNOWN_ff44"},
       {0xFF45, "SETTINGS_EXPERIMENT_SCHEDULER"},
       {0xFF46, "SETTINGS_UNKNOWN_ff46"}};
@@ -171,14 +175,14 @@ TEST(SpdyStreamPrecedenceTest, Basic) {
 }
 
 TEST(SpdyStreamPrecedenceTest, Clamping) {
-  EXPECT_SPDY_BUG(EXPECT_EQ(7, SpdyStreamPrecedence(8).spdy3_priority()),
-                  "Invalid priority: 8");
-  EXPECT_SPDY_BUG(EXPECT_EQ(kHttp2MinStreamWeight,
-                            SpdyStreamPrecedence(3, 0, false).weight()),
-                  "Invalid weight: 0");
-  EXPECT_SPDY_BUG(EXPECT_EQ(kHttp2MaxStreamWeight,
-                            SpdyStreamPrecedence(3, 300, false).weight()),
-                  "Invalid weight: 300");
+  EXPECT_QUICHE_BUG(EXPECT_EQ(7, SpdyStreamPrecedence(8).spdy3_priority()),
+                    "Invalid priority: 8");
+  EXPECT_QUICHE_BUG(EXPECT_EQ(kHttp2MinStreamWeight,
+                              SpdyStreamPrecedence(3, 0, false).weight()),
+                    "Invalid weight: 0");
+  EXPECT_QUICHE_BUG(EXPECT_EQ(kHttp2MaxStreamWeight,
+                              SpdyStreamPrecedence(3, 300, false).weight()),
+                    "Invalid weight: 300");
 }
 
 TEST(SpdyStreamPrecedenceTest, Copying) {

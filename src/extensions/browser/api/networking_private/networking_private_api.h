@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/values.h"
 #include "extensions/browser/extension_function.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace extensions {
 
@@ -43,8 +43,8 @@ class NetworkingPrivateGetPropertiesFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void Result(base::Optional<base::Value> result,
-              base::Optional<std::string> error);
+  void Result(absl::optional<base::Value> result,
+              absl::optional<std::string> error);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetPropertiesFunction);
 };
@@ -63,8 +63,8 @@ class NetworkingPrivateGetManagedPropertiesFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void Result(base::Optional<base::Value> result,
-              base::Optional<std::string> error);
+  void Result(absl::optional<base::Value> result,
+              absl::optional<std::string> error);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetManagedPropertiesFunction);
 };
@@ -333,81 +333,6 @@ class NetworkingPrivateStartActivateFunction : public ExtensionFunction {
   void Failure(const std::string& error);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateStartActivateFunction);
-};
-
-// Implements the chrome.networkingPrivate.verifyDestination method.
-class NetworkingPrivateVerifyDestinationFunction : public ExtensionFunction {
- public:
-  NetworkingPrivateVerifyDestinationFunction() {}
-  DECLARE_EXTENSION_FUNCTION("networkingPrivate.verifyDestination",
-                             NETWORKINGPRIVATE_VERIFYDESTINATION)
-
- protected:
-  ~NetworkingPrivateVerifyDestinationFunction() override;
-
-  // ExtensionFunction:
-  ResponseAction Run() override;
-
-  void Success(bool result);
-  void Failure(const std::string& error);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateVerifyDestinationFunction);
-};
-
-// Implements the chrome.networkingPrivate.verifyAndEncryptData method.
-class NetworkingPrivateVerifyAndEncryptDataFunction : public ExtensionFunction {
- public:
-  NetworkingPrivateVerifyAndEncryptDataFunction() {}
-  DECLARE_EXTENSION_FUNCTION("networkingPrivate.verifyAndEncryptData",
-                             NETWORKINGPRIVATE_VERIFYANDENCRYPTDATA)
-
- protected:
-  ~NetworkingPrivateVerifyAndEncryptDataFunction() override;
-
-  // ExtensionFunction:
-  ResponseAction Run() override;
-
-  void Success(const std::string& result);
-  void Failure(const std::string& error);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateVerifyAndEncryptDataFunction);
-};
-
-// Deprecated chrome.networkingPrivate.setWifiTDLSEnabledState method.
-class NetworkingPrivateSetWifiTDLSEnabledStateFunction
-    : public ExtensionFunction {
- public:
-  NetworkingPrivateSetWifiTDLSEnabledStateFunction() {}
-  DECLARE_EXTENSION_FUNCTION("networkingPrivate.setWifiTDLSEnabledState",
-                             NETWORKINGPRIVATE_SETWIFITDLSENABLEDSTATE)
-
- protected:
-  ~NetworkingPrivateSetWifiTDLSEnabledStateFunction() override;
-
-  // ExtensionFunction:
-  ResponseAction Run() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateSetWifiTDLSEnabledStateFunction);
-};
-
-// Deprecated chrome.networkingPrivate.getWifiTDLSStatus method.
-class NetworkingPrivateGetWifiTDLSStatusFunction : public ExtensionFunction {
- public:
-  NetworkingPrivateGetWifiTDLSStatusFunction() {}
-  DECLARE_EXTENSION_FUNCTION("networkingPrivate.getWifiTDLSStatus",
-                             NETWORKINGPRIVATE_GETWIFITDLSSTATUS)
-
- protected:
-  ~NetworkingPrivateGetWifiTDLSStatusFunction() override;
-
-  // ExtensionFunction:
-  ResponseAction Run() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetWifiTDLSStatusFunction);
 };
 
 class NetworkingPrivateGetCaptivePortalStatusFunction

@@ -69,7 +69,7 @@ suite(history_list_test.suiteName, function() {
     window.history.replaceState({}, '', '/');
     document.body.innerHTML = '';
     testService = new TestBrowserService();
-    BrowserService.instance_ = testService;
+    BrowserService.setInstance(testService);
 
     app = document.createElement('history-app');
   });
@@ -253,8 +253,7 @@ suite(history_list_test.suiteName, function() {
           assertFalse(field.showingSearch);
 
           const modifier = isMac ? 'meta' : 'ctrl';
-          pressAndReleaseKeyOn(
-              document.body, 65, modifier, 'a');
+          pressAndReleaseKeyOn(document.body, 65, modifier, 'a');
 
           assertDeepEquals(
               [false, false, false, false],
@@ -637,12 +636,13 @@ suite(history_list_test.suiteName, function() {
           // are disabled.
           assertTrue(element.$$('#menuRemoveButton').disabled);
           assertEquals(2, toolbar.count);
-          assertTrue(toolbar.$$('cr-toolbar-selection-overlay').deleteDisabled);
+          assertTrue(
+              toolbar.shadowRoot.querySelector('cr-toolbar-selection-overlay')
+                  .deleteDisabled);
 
           // Key event should be ignored.
           assertEquals(1, testService.getCallCount('removeVisits'));
-          pressAndReleaseKeyOn(
-              document.body, 46, '', 'Delete');
+          pressAndReleaseKeyOn(document.body, 46, '', 'Delete');
 
           return flushTasks();
         })
@@ -661,7 +661,8 @@ suite(history_list_test.suiteName, function() {
           // Check that delete option is re-enabled.
           assertEquals(2, toolbar.count);
           assertFalse(
-              toolbar.$$('cr-toolbar-selection-overlay').deleteDisabled);
+              toolbar.shadowRoot.querySelector('cr-toolbar-selection-overlay')
+                  .deleteDisabled);
 
           // Menu button should also be re-enabled.
           items[1].$['menu-button'].click();
@@ -687,8 +688,7 @@ suite(history_list_test.suiteName, function() {
           items = polymerSelectAll(element, 'history-item');
 
           // Dialog should not appear when there is no item selected.
-          pressAndReleaseKeyOn(
-              document.body, 46, '', 'Delete');
+          pressAndReleaseKeyOn(document.body, 46, '', 'Delete');
           return flushTasks();
         })
         .then(function() {
@@ -699,8 +699,7 @@ suite(history_list_test.suiteName, function() {
 
           assertEquals(2, toolbar.count);
 
-          pressAndReleaseKeyOn(
-              document.body, 46, '', 'Delete');
+          pressAndReleaseKeyOn(document.body, 46, '', 'Delete');
           return flushTasks();
         })
         .then(function() {
@@ -708,8 +707,7 @@ suite(history_list_test.suiteName, function() {
           element.$$('.cancel-button').click();
           assertFalse(dialog.open);
 
-          pressAndReleaseKeyOn(
-              document.body, 8, '', 'Backspace');
+          pressAndReleaseKeyOn(document.body, 8, '', 'Backspace');
           return flushTasks();
         })
         .then(function() {
@@ -732,7 +730,9 @@ suite(history_list_test.suiteName, function() {
         return finishSetup([])
             .then(function() {
               testService.resetResolver('queryHistory');
-              app.$$('history-router').$$('iron-location').dwellTime = 0;
+              app.$$('history-router')
+                  .shadowRoot.querySelector('iron-location')
+                  .dwellTime = 0;
 
               testService.setQueryResult({
                 info: createHistoryInfo('something else'),

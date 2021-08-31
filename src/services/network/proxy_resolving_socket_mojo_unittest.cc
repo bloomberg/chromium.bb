@@ -9,6 +9,7 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "jingle/glue/fake_ssl_client_socket.h"
@@ -127,8 +128,8 @@ class ProxyResolvingSocketTestBase {
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
         std::move(receiver), std::move(socket_observer),
         base::BindLambdaForTesting(
-            [&](int result, const base::Optional<net::IPEndPoint>& local_addr,
-                const base::Optional<net::IPEndPoint>& peer_addr,
+            [&](int result, const absl::optional<net::IPEndPoint>& local_addr,
+                const absl::optional<net::IPEndPoint>& peer_addr,
                 mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
                 mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
               net_error = result;
@@ -407,8 +408,8 @@ TEST_F(ProxyResolvingSocketMojoTest, SocketDestroyedBeforeConnectCompletes) {
       socket.InitWithNewPipeAndPassReceiver(),
       mojo::NullRemote() /* observer */,
       base::BindLambdaForTesting(
-          [&](int result, const base::Optional<net::IPEndPoint>& local_addr,
-              const base::Optional<net::IPEndPoint>& peer_addr,
+          [&](int result, const absl::optional<net::IPEndPoint>& local_addr,
+              const absl::optional<net::IPEndPoint>& peer_addr,
               mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
               mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
             net_error = result;

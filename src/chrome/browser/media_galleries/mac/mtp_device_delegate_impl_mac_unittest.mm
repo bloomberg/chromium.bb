@@ -84,10 +84,10 @@ const char kTestFileContents[] = "test";
            downloadDelegate:(id<ICCameraDeviceDownloadDelegate>)downloadDelegate
         didDownloadSelector:(SEL)selector
                 contextInfo:(void*)contextInfo {
-  base::FilePath saveDir(base::SysNSStringToUTF8(
-      [[options objectForKey:ICDownloadsDirectoryURL] path]));
+  base::FilePath saveDir(
+      base::SysNSStringToUTF8([options[ICDownloadsDirectoryURL] path]));
   std::string saveAsFilename =
-      base::SysNSStringToUTF8([options objectForKey:ICSaveAsFilename]);
+      base::SysNSStringToUTF8(options[ICSaveAsFilename]);
   // It appears that the ImageCapture library adds an extension to the requested
   // filename. Do that here to require a rename.
   saveAsFilename += ".jpg";
@@ -96,8 +96,7 @@ const char kTestFileContents[] = "test";
 
   NSMutableDictionary* returnOptions =
       [NSMutableDictionary dictionaryWithDictionary:options];
-  [returnOptions setObject:base::SysUTF8ToNSString(saveAsFilename)
-                    forKey:ICSavedFilename];
+  returnOptions[ICSavedFilename] = base::SysUTF8ToNSString(saveAsFilename);
 
   [static_cast<NSObject<ICCameraDeviceDownloadDelegate>*>(downloadDelegate)
    didDownloadFile:file
@@ -114,13 +113,13 @@ const char kTestFileContents[] = "test";
   base::scoped_nsobject<NSDate> _date;
 }
 
-- (id)init:(NSString*)name;
+- (instancetype)init:(NSString*)name;
 
 @end
 
 @implementation MockMTPICCameraFile
 
-- (id)init:(NSString*)name {
+- (instancetype)init:(NSString*)name {
   if ((self = [super init])) {
     base::scoped_nsobject<NSDateFormatter> iso8601day(
         [[NSDateFormatter alloc] init]);
@@ -230,13 +229,11 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
     base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     delegate_->GetFileInfo(
-      path,
-      base::Bind(&MTPDeviceDelegateImplMacTest::OnFileInfo,
-                 base::Unretained(this),
-                 &wait),
-      base::Bind(&MTPDeviceDelegateImplMacTest::OnError,
-                 base::Unretained(this),
-                 &wait));
+        path,
+        base::BindOnce(&MTPDeviceDelegateImplMacTest::OnFileInfo,
+                       base::Unretained(this), &wait),
+        base::BindOnce(&MTPDeviceDelegateImplMacTest::OnError,
+                       base::Unretained(this), &wait));
     task_environment_.RunUntilIdle();
     EXPECT_TRUE(wait.IsSignaled());
     *info = info_;
@@ -250,8 +247,8 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
         path,
         base::BindRepeating(&MTPDeviceDelegateImplMacTest::OnReadDir,
                             base::Unretained(this), &wait),
-        base::Bind(&MTPDeviceDelegateImplMacTest::OnError,
-                   base::Unretained(this), &wait));
+        base::BindOnce(&MTPDeviceDelegateImplMacTest::OnError,
+                       base::Unretained(this), &wait));
     task_environment_.RunUntilIdle();
     wait.Wait();
     return error_;
@@ -264,12 +261,10 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     delegate_->CreateSnapshotFile(
         path, local_path,
-        base::Bind(&MTPDeviceDelegateImplMacTest::OnDownload,
-                   base::Unretained(this),
-                   &wait),
-        base::Bind(&MTPDeviceDelegateImplMacTest::OnError,
-                   base::Unretained(this),
-                   &wait));
+        base::BindOnce(&MTPDeviceDelegateImplMacTest::OnDownload,
+                       base::Unretained(this), &wait),
+        base::BindOnce(&MTPDeviceDelegateImplMacTest::OnError,
+                       base::Unretained(this), &wait));
     task_environment_.RunUntilIdle();
     wait.Wait();
     return error_;
@@ -331,15 +326,15 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestOverlappedReadDir) {
       base::FilePath(kDevicePath),
       base::BindRepeating(&MTPDeviceDelegateImplMacTest::OnReadDir,
                           base::Unretained(this), &wait),
-      base::Bind(&MTPDeviceDelegateImplMacTest::OnError, base::Unretained(this),
-                 &wait));
+      base::BindOnce(&MTPDeviceDelegateImplMacTest::OnError,
+                     base::Unretained(this), &wait));
 
   delegate_->ReadDirectory(
       base::FilePath(kDevicePath),
       base::BindRepeating(&MTPDeviceDelegateImplMacTest::OverlappedOnReadDir,
                           base::Unretained(this), &wait),
-      base::Bind(&MTPDeviceDelegateImplMacTest::OverlappedOnError,
-                 base::Unretained(this), &wait));
+      base::BindOnce(&MTPDeviceDelegateImplMacTest::OverlappedOnError,
+                     base::Unretained(this), &wait));
 
   // Signal the delegate that no files are coming.
   delegate_->NoMoreItems();

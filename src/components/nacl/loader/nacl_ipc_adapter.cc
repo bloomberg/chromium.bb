@@ -562,13 +562,13 @@ bool NaClIPCAdapter::RewriteMessage(const IPC::Message& msg, uint32_t type) {
           break;
         }
         case ppapi::proxy::SerializedHandle::SOCKET: {
-          nacl_desc.reset(new NaClDescWrapper(NaClDescSyncSocketMake(
+          nacl_desc = std::make_unique<NaClDescWrapper>(NaClDescSyncSocketMake(
 #if defined(OS_WIN)
               handle.descriptor().GetHandle()
 #else
               handle.descriptor().fd
 #endif
-                  )));
+                  ));
           break;
         }
         case ppapi::proxy::SerializedHandle::FILE: {
@@ -586,7 +586,7 @@ bool NaClIPCAdapter::RewriteMessage(const IPC::Message& msg, uint32_t type) {
                 locked_data_.nacl_msg_scanner_.GetFile(handle.file_io()), desc);
           }
           if (desc)
-            nacl_desc.reset(new NaClDescWrapper(desc));
+            nacl_desc = std::make_unique<NaClDescWrapper>(desc);
           break;
         }
 
@@ -645,7 +645,7 @@ void NaClIPCAdapter::SaveOpenResourceMessage(
     ppapi::proxy::SerializedHandle orig_sh;
 
     // These CHECKs could fail if the renderer sends this process a malformed
-    // message, but that's OK becuase in general the renderer can cause the NaCl
+    // message, but that's OK because in general the renderer can cause the NaCl
     // loader process to exit.
     CHECK(IPC::ReadParam(&orig_msg, &iter, &token_lo));
     CHECK(IPC::ReadParam(&orig_msg, &iter, &token_hi));

@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 
+#include "base/containers/contains.h"
 #include "chrome/services/ipp_parser/public/mojom/ipp_parser.mojom.h"
 
 namespace cups_proxy {
@@ -121,6 +122,9 @@ ValidateAttributeResult ValidateAttribute(ipp_op_t ipp_oper_id,
       {"pages-per-minute", {false, ValueType::INTEGER}},
       {"pages-per-minute-color", {false, ValueType::INTEGER}},
       {"pdl-override-supported", {false, ValueType::STRING}},
+      {"print-color-mode", {false, ValueType::STRING}},
+      {"print-color-mode-default", {false, ValueType::STRING}},
+      {"print-color-mode-supported", {true, ValueType::STRING}},
       {"print-quality", {false, ValueType::INTEGER}},
       {"print-quality-default", {false, ValueType::INTEGER}},
       {"print-quality-supported", {true, ValueType::INTEGER}},

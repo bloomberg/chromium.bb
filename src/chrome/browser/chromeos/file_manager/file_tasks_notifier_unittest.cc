@@ -10,7 +10,7 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/test/bind.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_observer.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -37,7 +37,7 @@ using testing::_;
 
 storage::FileSystemURL CreateFileSystemUrl(
     const base::FilePath& path,
-    storage::FileSystemType type = storage::kFileSystemTypeNativeLocal) {
+    storage::FileSystemType type = storage::kFileSystemTypeLocal) {
   return storage::FileSystemURL::CreateForTest({}, {}, {}, "", type, path, "",
                                                {});
 }
@@ -79,9 +79,8 @@ class FakeDriveFs : public drivefs::mojom::DriveFsInterceptorForTesting {
 
 class MockFileTasksObserver : public file_tasks::FileTasksObserver {
  public:
-  explicit MockFileTasksObserver(FileTasksNotifier* notifier)
-      : observer_(this) {
-    observer_.Add(notifier);
+  explicit MockFileTasksObserver(FileTasksNotifier* notifier) {
+    observation_.Observe(notifier);
   }
 
   MOCK_METHOD2(OnFilesOpenedImpl,
@@ -95,8 +94,9 @@ class MockFileTasksObserver : public file_tasks::FileTasksObserver {
   }
 
  private:
-  ScopedObserver<file_tasks::FileTasksNotifier, file_tasks::FileTasksObserver>
-      observer_;
+  base::ScopedObservation<file_tasks::FileTasksNotifier,
+                          file_tasks::FileTasksObserver>
+      observation_{this};
 };
 
 class FileTasksNotifierForTest : public FileTasksNotifier {
@@ -133,14 +133,14 @@ class FileTasksNotifierTest : public testing::Test {
 
     notifier_ = std::make_unique<FileTasksNotifierForTest>(
         profile_.get(), drivefs_receiver_.BindNewPipeAndPassRemote());
-    observer_ = std::make_unique<MockFileTasksObserver>(notifier_.get());
+    observation_ = std::make_unique<MockFileTasksObserver>(notifier_.get());
 
     auto* mount_points = storage::ExternalMountPoints::GetSystemInstance();
     my_files_ = util::GetMyFilesFolderForProfile(profile_.get());
     ASSERT_TRUE(base::CreateDirectory(my_files_));
     base::WriteFile(my_files_.Append("file"), "data", 4);
     ASSERT_TRUE(mount_points->RegisterFileSystem(
-        "downloads", storage::kFileSystemTypeNativeLocal, {}, my_files_));
+        "downloads", storage::kFileSystemTypeLocal, {}, my_files_));
     ASSERT_TRUE(mount_points->RegisterFileSystem(
         "drivefs", storage::kFileSystemTypeDriveFs, {},
         base::FilePath("/media/fuse/drivefs")));
@@ -155,13 +155,13 @@ class FileTasksNotifierTest : public testing::Test {
     mount_points->RevokeFileSystem("drivefs");
     mount_points->RevokeFileSystem("arc-documents-provider");
 
-    observer_.reset();
+    observation_.reset();
     notifier_.reset();
     profile_.reset();
   }
 
   Profile& profile() { return *profile_; }
-  MockFileTasksObserver& observer() { return *observer_; }
+  MockFileTasksObserver& observer() { return *observation_; }
   FileTasksNotifierForTest& notifier() { return *notifier_; }
 
   download::DownloadItem* CreateCompletedDownloadItem(
@@ -180,7 +180,7 @@ class FileTasksNotifierTest : public testing::Test {
   mojo::Receiver<drivefs::mojom::DriveFs> drivefs_receiver_{&fake_drivefs_};
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<FileTasksNotifierForTest> notifier_;
-  std::unique_ptr<MockFileTasksObserver> observer_;
+  std::unique_ptr<MockFileTasksObserver> observation_;
   std::unique_ptr<content::FakeDownloadItem> download_item_;
   base::FilePath my_files_;
 };

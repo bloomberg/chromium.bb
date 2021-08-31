@@ -43,6 +43,8 @@ import random
 import sys
 import time
 
+from six.moves import range
+
 from blinkpy.common import exit_codes
 from blinkpy.common import path_finder
 from blinkpy.common.net.file_uploader import FileUploader
@@ -269,7 +271,7 @@ class Manager(object):
         tests_to_retry = self._tests_to_retry(initial_results)
         all_retry_results = []
         if should_retry_failures and tests_to_retry:
-            for retry_attempt in xrange(1, self._options.num_retries + 1):
+            for retry_attempt in range(1, self._options.num_retries + 1):
                 if not tests_to_retry:
                     break
 
@@ -305,7 +307,7 @@ class Manager(object):
     def _collect_tests(self, args):
         return self._finder.find_tests(
             args,
-            test_list=self._options.test_list,
+            filter_files=self._options.test_list,
             fastest_percentile=self._options.fastest,
             filters=self._options.isolated_script_test_filter)
 
@@ -450,9 +452,9 @@ class Manager(object):
                    retry_attempt=0):
 
         test_inputs = []
-        for _ in xrange(iterations):
+        for _ in range(iterations):
             for test in tests_to_run:
-                for _ in xrange(repeat_each):
+                for _ in range(repeat_each):
                     test_inputs.append(
                         self._test_input_for_file(test, retry_attempt))
         return self._runner.run_tests(self._expectations, test_inputs,
@@ -522,7 +524,7 @@ class Manager(object):
         test_failures.AbstractTestResultType.result_directory = self._results_directory
         test_failures.AbstractTestResultType.filesystem = self._filesystem
 
-        for test, result in run_results.unexpected_results_by_name.iteritems():
+        for test, result in run_results.unexpected_results_by_name.items():
             if result.type != ResultType.Crash:
                 continue
             for failure in result.failures:
@@ -535,7 +537,7 @@ class Manager(object):
 
         sample_files = self._port.look_for_new_samples(crashed_processes,
                                                        start_time) or {}
-        for test, sample_file in sample_files.iteritems():
+        for test, sample_file in sample_files.items():
             test_failures.AbstractTestResultType.test_name = test
             test_result = run_results.unexpected_results_by_name[test]
             artifact_relative_path = self._port.output_filename(
@@ -554,7 +556,7 @@ class Manager(object):
 
         new_crash_logs = self._port.look_for_new_crash_logs(
             crashed_processes, start_time) or {}
-        for test, (crash_log, crash_site) in new_crash_logs.iteritems():
+        for test, (crash_log, crash_site) in new_crash_logs.items():
             test_failures.AbstractTestResultType.test_name = test
             failure.crash_log = crash_log
             failure.has_log = self._port.output_contains_sanitizer_messages(
@@ -722,6 +724,6 @@ class Manager(object):
                                 int(result.total_run_time * 1000))
                 }
         stats_trie = {}
-        for name, value in stats.iteritems():
+        for name, value in stats.items():
             json_results_generator.add_path_to_trie(name, value, stats_trie)
         return stats_trie

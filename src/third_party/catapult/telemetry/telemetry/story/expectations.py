@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 from telemetry.core import os_version as os_version_module
 
 
@@ -45,7 +46,7 @@ class _AllTestCondition(_TestCondition):
     return 'All'
 
   def GetSupportedPlatformNames(self):
-    return set(['all'])
+    return {'all'}
 
 
 class _TestConditionAndroidSvelte(_TestCondition):
@@ -58,7 +59,7 @@ class _TestConditionAndroidSvelte(_TestCondition):
     return 'Android Svelte'
 
   def GetSupportedPlatformNames(self):
-    return set(['android'])
+    return {'android'}
 
 class _TestConditionByAndroidModel(_TestCondition):
   def __init__(self, model, name=None):
@@ -73,7 +74,7 @@ class _TestConditionByAndroidModel(_TestCondition):
     return self._name
 
   def GetSupportedPlatformNames(self):
-    return set(['android'])
+    return {'android'}
 
 class _TestConditionAndroidWebview(_TestCondition):
   def ShouldDisable(self, platform, finder_options):
@@ -84,7 +85,7 @@ class _TestConditionAndroidWebview(_TestCondition):
     return 'Android Webview'
 
   def GetSupportedPlatformNames(self):
-    return set(['android'])
+    return {'android'}
 
 class _TestConditionAndroidNotWebview(_TestCondition):
   def ShouldDisable(self, platform, finder_options):
@@ -95,7 +96,7 @@ class _TestConditionAndroidNotWebview(_TestCondition):
     return 'Android but not webview'
 
   def GetSupportedPlatformNames(self):
-    return set(['android'])
+    return {'android'}
 
 class _TestConditionByMacVersion(_TestCondition):
   def __init__(self, version, name=None):
@@ -106,7 +107,7 @@ class _TestConditionByMacVersion(_TestCondition):
     return self._name
 
   def GetSupportedPlatformNames(self):
-    return set(['mac'])
+    return {'mac'}
 
   def ShouldDisable(self, platform, finder_options):
     if platform.GetOSName() != 'mac':
@@ -123,12 +124,24 @@ class _TestConditionByWinVersion(_TestCondition):
     return self._name
 
   def GetSupportedPlatformNames(self):
-    return set(['win'])
+    return {'win'}
 
   def ShouldDisable(self, platform, finder_options):
     if platform.GetOSName() != 'win':
       return False
     return platform.GetOSVersionName() == self._version
+
+
+class _TestConditionFuchsiaWebEngineShell(_TestCondition):
+  def ShouldDisable(self, platform, finder_options):
+    return (platform.GetOSName() == 'fuchsia' and
+            finder_options.browser_type.startswith('web-engine-shell'))
+
+  def __str__(self):
+    return 'Fuchsia with web-engine-shell'
+
+  def GetSupportedPlatformNames(self):
+    return {'fuchsia'}
 
 
 class _TestConditionLogicalAndConditions(_TestCondition):
@@ -177,10 +190,10 @@ WIN_10 = _TestConditionByWinVersion(os_version_module.WIN10, 'Win 10')
 ALL_LINUX = _TestConditionByPlatformList(['linux'], 'Linux')
 ALL_CHROMEOS = _TestConditionByPlatformList(['chromeos'], 'ChromeOS')
 ALL_ANDROID = _TestConditionByPlatformList(['android'], 'Android')
+# Fuchsia setup, while similar to mobile, renders, Desktop pages.
 ALL_DESKTOP = _TestConditionByPlatformList(
-    ['mac', 'linux', 'win', 'chromeos'], 'Desktop')
-# Fuchsia setup is similar to mobile, though it is not quite the same.
-ALL_MOBILE = _TestConditionByPlatformList(['android', 'fuchsia'], 'Mobile')
+    ['mac', 'linux', 'win', 'chromeos', 'fuchsia'], 'Desktop')
+ALL_MOBILE = _TestConditionByPlatformList(['android'], 'Mobile')
 ANDROID_NEXUS5 = _TestConditionByAndroidModel('Nexus 5')
 _ANDROID_NEXUS5X = _TestConditionByAndroidModel('Nexus 5X')
 _ANDROID_NEXUS5XAOSP = _TestConditionByAndroidModel('AOSP on BullHead')
@@ -214,6 +227,7 @@ ANDROID_GO_WEBVIEW = _TestConditionLogicalAndConditions(
     [ANDROID_GO, ANDROID_WEBVIEW], 'Android Go Webview')
 ANDROID_PIXEL2_WEBVIEW = _TestConditionLogicalAndConditions(
     [ANDROID_PIXEL2, ANDROID_WEBVIEW], 'Pixel2 Webview')
+FUCHSIA_WEB_ENGINE_SHELL = _TestConditionFuchsiaWebEngineShell()
 
 EXPECTATION_NAME_MAP = {
     'All': ALL,
@@ -244,4 +258,5 @@ EXPECTATION_NAME_MAP = {
     'Nexus5X_Webview': ANDROID_NEXUS5X_WEBVIEW,
     'Android_Go_Webview': ANDROID_GO_WEBVIEW,
     'Pixel2_Webview': ANDROID_PIXEL2_WEBVIEW,
+    'Fuchsia_WebEngineShell': FUCHSIA_WEB_ENGINE_SHELL,
 }

@@ -75,12 +75,18 @@ class NET_EXPORT_PRIVATE SpdyStream {
     // for push streams. Must not cause the stream to be closed.
     virtual void OnHeadersSent() = 0;
 
-    // OnHeadersReceived(), OnDataReceived(), OnTrailers(), and OnClose()
-    // are guaranteed to be called in the following order:
+    // OnEarlyHintsReceived(), OnHeadersReceived(), OnDataReceived(),
+    // OnTrailers(), and OnClose() are guaranteed to be called in the following
+    // order:
+    //   - OnEarlyHintsReceived() zero or more times;
     //   - OnHeadersReceived() exactly once;
     //   - OnDataReceived() zero or more times;
     //   - OnTrailers() zero or one times;
     //   - OnClose() exactly once.
+
+    // Called when a 103 Early Hints response is received.
+    virtual void OnEarlyHintsReceived(
+        const spdy::Http2HeaderBlock& headers) = 0;
 
     // Called when response headers have been received.  In case of a pushed
     // stream, the pushed request headers are also passed.
@@ -447,6 +453,9 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // |pending_send_data_| is set.
   void QueueNextDataFrame();
 
+  void OnEarlyHintsReceived(const spdy::Http2HeaderBlock& response_headers,
+                            base::TimeTicks recv_first_byte_time);
+
   // Saves the given headers into |response_headers_| and calls
   // OnHeadersReceived() on the delegate if attached.
   void SaveResponseHeaders(const spdy::Http2HeaderBlock& response_headers,
@@ -513,8 +522,20 @@ class NET_EXPORT_PRIVATE SpdyStream {
   NetLogWithSource net_log_;
 
   base::TimeTicks send_time_;
+
+  // The time at which the first / last byte of the HTTP headers were received.
+  //
+  // These correspond to |LoadTimingInfo::receive_headers_start| and
+  // |LoadTimingInfo::receive_headers_end|. See also comments there.
   base::TimeTicks recv_first_byte_time_;
   base::TimeTicks recv_last_byte_time_;
+
+  // The time at which the first byte of the HTTP headers for the
+  // non-informational response (non-1xx). This corresponds to
+  // |LoadTimingInfo::receive_non_informational_headers_start|. See also
+  // comments there.
+  base::TimeTicks recv_first_byte_time_for_non_informational_response_;
+
   // The time at which the first 103 Early Hints response is received.
   base::TimeTicks first_early_hints_time_;
 

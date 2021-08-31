@@ -8,21 +8,19 @@
 #include <map>
 #include <memory>
 #include <set>
-#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/predictors/loading_data_collector.h"
-#include "chrome/browser/predictors/navigation_id.h"
 #include "chrome/browser/predictors/preconnect_manager.h"
 #include "chrome/browser/predictors/prefetch_manager.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -59,8 +57,8 @@ class LoadingPredictor : public KeyedService,
   bool PrepareForPageLoad(const GURL& url,
                           HintOrigin origin,
                           bool preconnectable = false,
-                          base::Optional<PreconnectPrediction>
-                              preconnect_prediction = base::nullopt);
+                          absl::optional<PreconnectPrediction>
+                              preconnect_prediction = absl::nullopt);
 
   // Indicates that a page load hint is no longer active.
   void CancelPageLoadHint(const GURL& url);
@@ -77,12 +75,16 @@ class LoadingPredictor : public KeyedService,
   // KeyedService:
   void Shutdown() override;
 
-  // OnNavigationStarted is invoked when a navigation with |navigation_id| has
-  // started. It returns whether any actions were taken, such as preconnecting
-  // to known resource hosts, at that time.
-  bool OnNavigationStarted(const NavigationID& navigation_id);
-  void OnNavigationFinished(const NavigationID& old_navigation_id,
-                            const NavigationID& new_navigation_id,
+  // OnNavigationStarted is invoked when navigation |navigation_id| with
+  // |main_frame_url| has started navigating. It returns whether any actions
+  // were taken, such as preconnecting to known resource hosts, at that time.
+  bool OnNavigationStarted(NavigationId navigation_id,
+                           ukm::SourceId ukm_source_id,
+                           const GURL& main_frame_url,
+                           base::TimeTicks creation_time);
+  void OnNavigationFinished(NavigationId navigation_id,
+                            const GURL& old_main_frame_url,
+                            const GURL& new_main_frame_url,
                             bool is_error_page);
 
   base::WeakPtr<LoadingPredictor> GetWeakPtr() {
@@ -116,12 +118,18 @@ class LoadingPredictor : public KeyedService,
       const net::NetworkIsolationKey& network_isolation_key);
 
  private:
+  // Stores the information necessary to keep track of the active navigations.
+  struct NavigationInfo {
+    GURL main_frame_url;
+    base::TimeTicks creation_time;
+  };
+
   // Cancels an active hint, from its iterator inside |active_hints_|. If the
   // iterator is .end(), does nothing. Returns the iterator after deletion of
   // the entry.
   std::map<GURL, base::TimeTicks>::iterator CancelActiveHint(
       std::map<GURL, base::TimeTicks>::iterator hint_it);
-  void CleanupAbandonedHintsAndNavigations(const NavigationID& navigation_id);
+  void CleanupAbandonedHintsAndNavigations(NavigationId navigation_id);
 
   // May start preconnect and preresolve jobs according to |prediction| for
   // |url| with a given hint |origin|.
@@ -164,8 +172,8 @@ class LoadingPredictor : public KeyedService,
   std::unique_ptr<PreconnectManager> preconnect_manager_;
   std::unique_ptr<PrefetchManager> prefetch_manager_;
   std::map<GURL, base::TimeTicks> active_hints_;
-  std::set<NavigationID> active_navigations_;
-  std::map<GURL, std::set<NavigationID>> active_urls_to_navigations_;
+  std::map<NavigationId, NavigationInfo> active_navigations_;
+  std::map<GURL, std::set<NavigationId>> active_urls_to_navigations_;
   bool shutdown_ = false;
   size_t total_hints_activated_ = 0;
 

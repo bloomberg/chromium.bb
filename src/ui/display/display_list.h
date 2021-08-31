@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <memory>
 #include <vector>
 
 #include "base/observer_list.h"
@@ -16,24 +15,7 @@
 
 namespace display {
 
-class Display;
-class DisplayList;
 class DisplayObserver;
-
-// See description in DisplayLock::SuspendObserverUpdates.
-class DISPLAY_EXPORT DisplayListObserverLock {
- public:
-  ~DisplayListObserverLock();
-
- private:
-  friend class DisplayList;
-
-  explicit DisplayListObserverLock(DisplayList* display_list);
-
-  DisplayList* display_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(DisplayListObserverLock);
-};
 
 // Maintains an ordered list of Displays as well as operations to add, remove
 // and update said list. Additionally maintains DisplayObservers and updates
@@ -50,19 +32,31 @@ class DISPLAY_EXPORT DisplayList {
   DisplayList();
   ~DisplayList();
 
+  // WARNING: The copy constructor and assignment operator do not copy nor move
+  // observers; also, the comparison operator does not compare observers.
+  DisplayList(const Displays& displays, int64_t primary_id, int64_t current_id);
+  DisplayList(const DisplayList& other);
+  DisplayList& operator=(const DisplayList& other);
+  bool operator==(const DisplayList& other) const;
+
   void AddObserver(DisplayObserver* observer);
   void RemoveObserver(DisplayObserver* observer);
 
   const Displays& displays() const { return displays_; }
+  int64_t primary_id() const { return primary_id_; }
+  int64_t current_id() const { return current_id_; }
 
   Displays::const_iterator FindDisplayById(int64_t id) const;
 
+  // Get an iterator for the primary display. This returns an invalid iterator
+  // if no such display is available. Callers must check the returned value
+  // against `displays().end()` before dereferencing.
   Displays::const_iterator GetPrimaryDisplayIterator() const;
 
-  // Internally increments a counter that while non-zero results in observers
-  // not being called for any changes to the displays. It is assumed once
-  // callers release the last lock they call the observers appropriately.
-  std::unique_ptr<DisplayListObserverLock> SuspendObserverUpdates();
+  // Get a reference to the primary or current display. This will CHECK if no
+  // such display is available. Callers must know that the display is available.
+  const Display& GetPrimaryDisplay() const;
+  const Display& GetCurrentDisplay() const;
 
   void AddOrUpdateDisplay(const Display& display, Type type);
 
@@ -82,28 +76,36 @@ class DISPLAY_EXPORT DisplayList {
   // Removes the Display with the specified id.
   void RemoveDisplay(int64_t id);
 
+  // Checks for general struct validity. This permits empty lists, and the
+  // current display may be unspecified, but non-empty lists must specify a
+  // primary display and the displays must not use repeated id values.
+  // TODO(msw): Rename this IsValidOrEmpty().
+  bool IsValid() const;
+
+  // Checks for validity, and for the presence of primary and current displays.
+  // This is a stronger check than IsValid, which allows the list to be empty.
+  bool IsValidAndHasPrimaryAndCurrentDisplays() const;
+
   base::ObserverList<DisplayObserver>* observers() { return &observers_; }
 
  private:
-  friend class DisplayListObserverLock;
-
-  bool should_notify_observers() const {
-    return observer_suspend_lock_count_ == 0;
-  }
-  void IncrementObserverSuspendLockCount();
-  void DecrementObserverSuspendLockCount();
-
   Type GetTypeByDisplayId(int64_t display_id) const;
 
   Displays::iterator FindDisplayByIdInternal(int64_t id);
 
+  // The list of displays tracked by the display::Screen or other client.
   std::vector<Display> displays_;
-  int primary_display_index_ = -1;
+  // The id of the primary Display in `displays_` for the display::Screen.
+  int64_t primary_id_ = kInvalidDisplayId;
+  // The id of the current Display in `displays_`, for some client's context.
+  // This is used when DisplayList needs to track which display a client is on,
+  // typically for a cached DisplayList owned by the client window itself. This
+  // should be kInvalidDisplayId for the DisplayList owned by display::Screen,
+  // which represents the system-wide state and needs to work for all clients.
+  // This member is included in this structure to maintain consistency with some
+  // list of cached displays, perhaps that's not ideal. See crbug.com/1207996.
+  int64_t current_id_ = kInvalidDisplayId;
   base::ObserverList<DisplayObserver> observers_;
-
-  int observer_suspend_lock_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(DisplayList);
 };
 
 }  // namespace display

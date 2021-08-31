@@ -17,10 +17,13 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/strings/string16.h"
 #include "base/unguessable_token.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/range/range.h"
+
+namespace ui {
+class ImageModel;
+}  // namespace ui
 
 namespace ash {
 
@@ -39,6 +42,7 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   using Action = ash::SearchResultAction;
   using Actions = ash::SearchResultActions;
   using DisplayIndex = ash::SearchResultDisplayIndex;
+  using OmniboxType = ash::SearchResultOmniboxDisplayType;
 
   SearchResult();
   virtual ~SearchResult();
@@ -49,42 +53,42 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   const gfx::ImageSkia& chip_icon() const { return metadata_->chip_icon; }
   void SetChipIcon(const gfx::ImageSkia& chip_icon);
 
-  const gfx::ImageSkia& badge_icon() const { return metadata_->badge_icon; }
-  void SetBadgeIcon(const gfx::ImageSkia& badge_icon);
+  const ui::ImageModel& badge_icon() const { return metadata_->badge_icon; }
+  void SetBadgeIcon(const ui::ImageModel& badge_icon);
 
-  const base::string16& title() const { return metadata_->title; }
-  void set_title(const base::string16& title);
+  const std::u16string& title() const { return metadata_->title; }
+  void set_title(const std::u16string& title);
 
   const Tags& title_tags() const { return metadata_->title_tags; }
   void set_title_tags(const Tags& tags) { metadata_->title_tags = tags; }
 
-  const base::string16& details() const { return metadata_->details; }
-  void set_details(const base::string16& details) {
+  const std::u16string& details() const { return metadata_->details; }
+  void set_details(const std::u16string& details) {
     metadata_->details = details;
   }
 
   const Tags& details_tags() const { return metadata_->details_tags; }
   void set_details_tags(const Tags& tags) { metadata_->details_tags = tags; }
 
-  const base::string16& accessible_name() const {
+  const std::u16string& accessible_name() const {
     return metadata_->accessible_name;
   }
-  void set_accessible_name(const base::string16& name) {
+  void set_accessible_name(const std::u16string& name) {
     metadata_->accessible_name = name;
   }
 
   float rating() const { return metadata_->rating; }
   void SetRating(float rating);
 
-  const base::string16& formatted_price() const {
+  const std::u16string& formatted_price() const {
     return metadata_->formatted_price;
   }
-  void SetFormattedPrice(const base::string16& formatted_price);
+  void SetFormattedPrice(const std::u16string& formatted_price);
 
-  const base::Optional<GURL>& query_url() const { return metadata_->query_url; }
+  const absl::optional<GURL>& query_url() const { return metadata_->query_url; }
   void set_query_url(const GURL& url) { metadata_->query_url = url; }
 
-  const base::Optional<std::string>& equivalent_result_id() const {
+  const absl::optional<std::string>& equivalent_result_id() const {
     return metadata_->equivalent_result_id;
   }
   void set_equivalent_result_id(const std::string& equivalent_result_id) {
@@ -118,14 +122,14 @@ class APP_LIST_MODEL_EXPORT SearchResult {
     metadata_->display_index = display_index;
   }
 
+  OmniboxType omnibox_type() const { return metadata_->omnibox_type; }
+  void set_omnibox_type(OmniboxType omnibox_type) {
+    metadata_->omnibox_type = omnibox_type;
+  }
+
   float position_priority() const { return metadata_->position_priority; }
   void set_position_priority(float position_priority) {
     metadata_->position_priority = position_priority;
-  }
-
-  int result_subtype() const { return metadata_->result_subtype; }
-  void set_result_subtype(int result_subtype) {
-    metadata_->result_subtype = result_subtype;
   }
 
   const Actions& actions() const { return metadata_->actions; }
@@ -150,6 +154,10 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   bool is_recommendation() const { return metadata_->is_recommendation; }
   void set_is_recommendation(bool is_recommendation) {
     metadata_->is_recommendation = is_recommendation;
+  }
+
+  bool use_badge_icon_background() const {
+    return metadata_->use_badge_icon_background;
   }
 
   void AddObserver(SearchResultObserver* observer);
@@ -179,7 +187,7 @@ class APP_LIST_MODEL_EXPORT SearchResult {
 
   std::unique_ptr<SearchResultMetadata> metadata_;
 
-  base::ObserverList<SearchResultObserver>::Unchecked observers_;
+  base::ObserverList<SearchResultObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResult);
 };

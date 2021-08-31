@@ -106,12 +106,10 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   // Gets the primary user session.
   const UserSession* GetPrimaryUserSession() const;
 
-  // Returns true if the current user is supervised: has legacy supervised
-  // account or kid account.
-  bool IsUserSupervised() const;
-
-  // Returns true if the current user is legacy supervised.
-  bool IsUserLegacySupervised() const;
+  // Returns true if the current user is supervised: has deprecated legacy
+  // supervised account or kid account.
+  // TODO(crbug/1155729): Remove and replace all calls with IsUserChild().
+  bool IsUserChildOrDeprecatedSupervised() const;
 
   // Returns true if the current user is a child account.
   bool IsUserChild() const;
@@ -121,7 +119,7 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
 
   // Returns the type of the current user, or empty if there is no current user
   // logged in.
-  base::Optional<user_manager::UserType> GetUserType() const;
+  absl::optional<user_manager::UserType> GetUserType() const;
 
   // Returns true if the current user is the primary user in a multi-profile
   // scenario. This always return true if there is only one user logged in.

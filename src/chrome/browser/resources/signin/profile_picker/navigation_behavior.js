@@ -18,6 +18,8 @@ const Pages = {
   PROFILE_TYPE_CHOICE: 1,
   LOCAL_PROFILE_CUSTOMIZATION: 2,
   LOAD_SIGNIN: 3,
+  LOAD_FORCE_SIGNIN: 4,
+  PROFILE_SWITCH: 5,
 };
 
 /**
@@ -27,6 +29,7 @@ const Pages = {
 export const Routes = {
   MAIN: 'main-view',
   NEW_PROFILE: 'new-profile',
+  PROFILE_SWITCH: 'profile-switch',
 };
 
 /**
@@ -35,10 +38,9 @@ export const Routes = {
  */
 export const ProfileCreationSteps = {
   PROFILE_TYPE_CHOICE: 'profileTypeChoice',
-  // Not supported yet
   LOCAL_PROFILE_CUSTOMIZATION: 'localProfileCustomization',
-  // Not supported yet
   LOAD_SIGNIN: 'loadSignIn',
+  LOAD_FORCE_SIGNIN: 'loadForceSignIn',
 };
 
 /**
@@ -49,15 +51,16 @@ function computeStep(route) {
     case Routes.MAIN:
       return 'mainView';
     case Routes.NEW_PROFILE:
+      if (isForceSigninEnabled()) {
+        return ProfileCreationSteps.LOAD_FORCE_SIGNIN;
+      }
       // TODO(msalama): Adjust once sign in profile creation is supported.
       if (!isSignInProfileCreationSupported() || !isBrowserSigninAllowed()) {
-        assert(!isForceSigninEnabled());
         return ProfileCreationSteps.LOCAL_PROFILE_CUSTOMIZATION;
       }
-      if (isForceSigninEnabled()) {
-        return ProfileCreationSteps.LOAD_SIGNIN;
-      }
       return ProfileCreationSteps.PROFILE_TYPE_CHOICE;
+    case Routes.PROFILE_SWITCH:
+      return 'profileSwitch';
     default:
       assertNotReached();
   }
@@ -76,18 +79,29 @@ if (!history.state || !history.state.route || !history.state.step) {
           },
           '', path);
       break;
+    case `/${Routes.PROFILE_SWITCH}`:
+      history.replaceState(
+          {
+            route: Routes.PROFILE_SWITCH,
+            step: computeStep(Routes.PROFILE_SWITCH),
+            isFirst: true
+          },
+          '', path);
+      break;
     default:
       history.replaceState(
           {route: Routes.MAIN, step: computeStep(Routes.MAIN), isFirst: true},
           '', '/');
   }
-  recordNavigation();
+  recordPageVisited(history.state.step);
 }
 
-
-function recordNavigation() {
+/**
+ * @param {string} step
+ */
+export function recordPageVisited(step) {
   let page = /** @type {!Pages} */ (Pages.MAIN_VIEW);
-  switch (history.state.step) {
+  switch (step) {
     case 'mainView':
       page = Pages.MAIN_VIEW;
       break;
@@ -99,6 +113,13 @@ function recordNavigation() {
       break;
     case ProfileCreationSteps.LOAD_SIGNIN:
       page = Pages.LOAD_SIGNIN;
+      break;
+    case ProfileCreationSteps.LOAD_FORCE_SIGNIN:
+      page = Pages.LOAD_FORCE_SIGNIN;
+      break;
+    case 'profileSwitch':
+      page = Pages.PROFILE_SWITCH;
+      break;
     default:
       assertNotReached();
   }
@@ -113,6 +134,7 @@ const routeObservers = new Set();
 function notifyObservers() {
   const route = /** @type {!Routes} */ (history.state.route);
   const step = history.state.step;
+  recordPageVisited(step);
   routeObservers.forEach(observer => {
     (/** @type {{onRouteChange: Function}} */ (observer))
         .onRouteChange(route, step);
@@ -126,7 +148,8 @@ window.addEventListener('popstate', notifyObservers);
  * @param {!Routes} route
  */
 export function navigateTo(route) {
-  assert([Routes.MAIN, Routes.NEW_PROFILE].includes(route));
+  assert(
+      [Routes.MAIN, Routes.NEW_PROFILE, Routes.PROFILE_SWITCH].includes(route));
   navigateToStep(route, computeStep(route));
 }
 

@@ -13,7 +13,7 @@
 // in order to run any blocked actions the extension may have.
 class BlockedActionBubbleDelegate : public ToolbarActionsBarBubbleDelegate {
  public:
-  BlockedActionBubbleDelegate(const base::Callback<void(CloseAction)>& callback,
+  BlockedActionBubbleDelegate(base::OnceCallback<void(CloseAction)> callback,
                               const std::string& extension_id);
   ~BlockedActionBubbleDelegate() override;
 
@@ -21,19 +21,19 @@ class BlockedActionBubbleDelegate : public ToolbarActionsBarBubbleDelegate {
   // ToolbarActionsBarBubbleDelegate:
   bool ShouldShow() override;
   bool ShouldCloseOnDeactivate() override;
-  base::string16 GetHeadingText() override;
-  base::string16 GetBodyText(bool anchored_to_action) override;
-  base::string16 GetItemListText() override;
-  base::string16 GetActionButtonText() override;
-  base::string16 GetDismissButtonText() override;
+  std::u16string GetHeadingText() override;
+  std::u16string GetBodyText(bool anchored_to_action) override;
+  std::u16string GetItemListText() override;
+  std::u16string GetActionButtonText() override;
+  std::u16string GetDismissButtonText() override;
   ui::DialogButton GetDefaultDialogButton() override;
   std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
   GetExtraViewInfo() override;
   std::string GetAnchorActionId() override;
-  void OnBubbleShown(const base::Closure& close_bubble_callback) override;
+  void OnBubbleShown(base::OnceClosure close_bubble_callback) override;
   void OnBubbleClosed(CloseAction action) override;
 
-  base::Callback<void(CloseAction)> callback_;
+  base::OnceCallback<void(CloseAction)> callback_;
   std::string extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BlockedActionBubbleDelegate);

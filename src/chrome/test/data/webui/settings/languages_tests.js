@@ -7,9 +7,9 @@ import {isChromeOS, isWindows} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {LanguagesBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {CrSettingsPrefs} from 'chrome://settings/settings.js';
-import {getFakeLanguagePrefs} from 'chrome://test/settings/fake_language_settings_private.m.js';
-import {FakeSettingsPrivate} from 'chrome://test/settings/fake_settings_private.m.js';
-import {TestLanguagesBrowserProxy} from 'chrome://test/settings/test_languages_browser_proxy.m.js';
+import {getFakeLanguagePrefs} from 'chrome://test/settings/fake_language_settings_private.js';
+import {FakeSettingsPrivate} from 'chrome://test/settings/fake_settings_private.js';
+import {TestLanguagesBrowserProxy} from 'chrome://test/settings/test_languages_browser_proxy.js';
 import {fakeDataBind} from 'chrome://test/test_util.m.js';
 
 // clang-format on
@@ -157,16 +157,10 @@ suite('settings-languages', function() {
       languageHelper.addInputMethod(swUS);
       assertEquals(3, languageHelper.languages.inputMethods.enabled.length);
 
-      // Disable Swahili. The Swahili-only keyboard should be removed.
+      // Disable Swahili. The Swahili-only keyboard should NOT be removed,
+      // as enabled languages and input methods are decoupled.
       languageHelper.disableLanguage('sw');
-      assertEquals(2, languageHelper.languages.inputMethods.enabled.length);
-
-      // The US Swahili keyboard should still be enabled, because it supports
-      // English which is still enabled.
-      assertTrue(languageHelper.languages.inputMethods.enabled.some(function(
-          inputMethod) {
-        return inputMethod.id === swUS;
-      }));
+      assertEquals(3, languageHelper.languages.inputMethods.enabled.length);
     });
   }
 });

@@ -201,6 +201,7 @@ TEST_P(JsonPrefStoreTest, NonExistentFile) {
   EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE,
             pref_store->ReadPrefs());
   EXPECT_FALSE(pref_store->ReadOnly());
+  EXPECT_EQ(0u, pref_store->get_writer().previous_data_size());
 }
 
 // Test fallback behavior for an invalid file.
@@ -239,55 +240,51 @@ void RunBasicJsonPrefStoreTest(JsonPrefStore* pref_store,
 
   const Value* actual;
   EXPECT_TRUE(pref_store->GetValue(kHomePage, &actual));
-  std::string string_value;
-  EXPECT_TRUE(actual->GetAsString(&string_value));
-  EXPECT_EQ(cnn, string_value);
+  EXPECT_TRUE(actual->is_string());
+  EXPECT_EQ(cnn, actual->GetString());
 
   const char kSomeDirectory[] = "some_directory";
 
   EXPECT_TRUE(pref_store->GetValue(kSomeDirectory, &actual));
-  base::FilePath::StringType path;
-  EXPECT_TRUE(actual->GetAsString(&path));
-  EXPECT_EQ(base::FilePath::StringType(FILE_PATH_LITERAL("/usr/local/")), path);
+  EXPECT_TRUE(actual->is_string());
+  EXPECT_EQ("/usr/local/", actual->GetString());
   base::FilePath some_path(FILE_PATH_LITERAL("/usr/sbin/"));
 
   pref_store->SetValue(kSomeDirectory,
-                       std::make_unique<Value>(some_path.value()),
+                       std::make_unique<Value>(some_path.AsUTF8Unsafe()),
                        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   EXPECT_TRUE(pref_store->GetValue(kSomeDirectory, &actual));
-  EXPECT_TRUE(actual->GetAsString(&path));
-  EXPECT_EQ(some_path.value(), path);
+  EXPECT_TRUE(actual->is_string());
+  EXPECT_EQ(some_path.AsUTF8Unsafe(), actual->GetString());
 
   // Test reading some other data types from sub-dictionaries.
   EXPECT_TRUE(pref_store->GetValue(kNewWindowsInTabs, &actual));
-  bool boolean = false;
-  EXPECT_TRUE(actual->GetAsBoolean(&boolean));
-  EXPECT_TRUE(boolean);
+  EXPECT_TRUE(actual->is_bool());
+  EXPECT_TRUE(actual->GetBool());
 
   pref_store->SetValue(kNewWindowsInTabs, std::make_unique<Value>(false),
                        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   EXPECT_TRUE(pref_store->GetValue(kNewWindowsInTabs, &actual));
-  EXPECT_TRUE(actual->GetAsBoolean(&boolean));
-  EXPECT_FALSE(boolean);
+  EXPECT_TRUE(actual->is_bool());
+  EXPECT_FALSE(actual->GetBool());
 
   EXPECT_TRUE(pref_store->GetValue(kMaxTabs, &actual));
-  int integer = 0;
-  EXPECT_TRUE(actual->GetAsInteger(&integer));
-  EXPECT_EQ(20, integer);
+  ASSERT_TRUE(actual->is_int());
+  EXPECT_EQ(20, actual->GetInt());
   pref_store->SetValue(kMaxTabs, std::make_unique<Value>(10),
                        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   EXPECT_TRUE(pref_store->GetValue(kMaxTabs, &actual));
-  EXPECT_TRUE(actual->GetAsInteger(&integer));
-  EXPECT_EQ(10, integer);
+  ASSERT_TRUE(actual->is_int());
+  EXPECT_EQ(10, actual->GetInt());
 
   pref_store->SetValue(
       kLongIntPref,
       std::make_unique<Value>(base::NumberToString(214748364842LL)),
       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   EXPECT_TRUE(pref_store->GetValue(kLongIntPref, &actual));
-  EXPECT_TRUE(actual->GetAsString(&string_value));
+  EXPECT_TRUE(actual->is_string());
   int64_t value;
-  base::StringToInt64(string_value, &value);
+  base::StringToInt64(actual->GetString(), &value);
   EXPECT_EQ(214748364842LL, value);
 
   // Serialize and compare to expected output.
@@ -310,6 +307,7 @@ TEST_P(JsonPrefStoreTest, Basic) {
   ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE, pref_store->ReadPrefs());
   EXPECT_FALSE(pref_store->ReadOnly());
   EXPECT_TRUE(pref_store->IsInitializationComplete());
+  EXPECT_GT(pref_store->get_writer().previous_data_size(), 0u);
 
   // The JSON file looks like this:
   // {
@@ -348,6 +346,7 @@ TEST_P(JsonPrefStoreTest, BasicAsync) {
 
     EXPECT_FALSE(pref_store->ReadOnly());
     EXPECT_TRUE(pref_store->IsInitializationComplete());
+    EXPECT_GT(pref_store->get_writer().previous_data_size(), 0u);
   }
 
   // The JSON file looks like this:

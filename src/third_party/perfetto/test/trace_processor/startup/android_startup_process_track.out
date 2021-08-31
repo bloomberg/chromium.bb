@@ -20,7 +20,13 @@ android_startup {
         dur_ns: 2
         dur_ms: 2e-06
       }
+      mcycles_by_core_type {
+      }
       dur_ms: 4e-06
+    }
+    event_timestamps {
+      intent_received: 100
+      first_frame: 104
     }
     activity_hosting_process_count: 1
   }
@@ -45,7 +51,13 @@ android_startup {
         dur_ns: 2
         dur_ms: 2e-06
       }
+      mcycles_by_core_type {
+      }
       dur_ms: 4e-06
+    }
+    event_timestamps {
+      intent_received: 200
+      first_frame: 204
     }
     activity_hosting_process_count: 1
   }

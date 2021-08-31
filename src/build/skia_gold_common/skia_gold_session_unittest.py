@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,10 +7,14 @@
 
 import json
 import os
+import sys
 import tempfile
 import unittest
 
-import mock
+if sys.version_info[0] == 2:
+  import mock
+else:
+  import unittest.mock as mock
 
 from pyfakefs import fake_filesystem_unittest
 
@@ -423,13 +427,15 @@ class SkiaGoldSessionInitializeTest(fake_filesystem_unittest.TestCase):
                                                 sgp,
                                                 self._json_keys,
                                                 'corpus',
-                                                instance='instance')
+                                                instance='instance',
+                                                bucket='bucket')
     session.Initialize()
     call_args = cmd_mock.call_args[0][0]
     self.assertIn('imgtest', call_args)
     self.assertIn('init', call_args)
     self.assertIn('--passfail', call_args)
     assertArgWith(self, call_args, '--instance', 'instance')
+    assertArgWith(self, call_args, '--bucket', 'bucket')
     assertArgWith(self, call_args, '--corpus', 'corpus')
     # The keys file should have been copied to the working directory.
     assertArgWith(self, call_args, '--keys-file',

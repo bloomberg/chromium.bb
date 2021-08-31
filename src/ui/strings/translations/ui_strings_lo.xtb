@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">ຈໍສະແດງຜົນໃນຕົວ</translation>
 <translation id="335581015389089642">ການເວົ້າ</translation>
 <translation id="3389286852084373014">ຂໍ້ຄວາມໃຫຍ່ເກີນໄປ</translation>
+<translation id="3406306243914553062">ເນື້ອຫາ HTML</translation>
 <translation id="348799646910989694">ເຊື່ອງຊັ້ນວາງໂດຍອັດຕະໂນມັດແລ້ວ</translation>
 <translation id="3554637740840164787">ປັກໝຸດ <ph name="ITEM_TITLE" /> ແລ້ວ</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{ຍັງ​ເຫຼືອ 1 ວັນ}other{ຍັງ​ເຫຼືອ # ວັນ}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">ໝາຍເລກ</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/ວິນາທີ</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
 <translation id="3842239759367498783">ສືບຕໍ່ອ່ານຈາກອຸປະກອນມືຖືຂອງທ່ານ <ph name="TITLE" /></translation>
 <translation id="385051799172605136">ກັບ​ຄືນ​</translation>
 <translation id="3889424535448813030">ລູກ​ສອນ​ເບື້ອງຂວາ</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 ເດືອນກ່ອນນີ້}other{# ເດືອນກ່ອນນີ້}}</translation>
 <translation id="4289300219472526559">ເລີ່ມ​ຕົ້ນ​ເວົ້າ</translation>
 <translation id="430191667033048642">ຍ້າຍ <ph name="MOVED_APP_NAME" /> ໄປຫາໂຟນເດີ <ph name="FOLDER_NAME" /> ແລ້ວ.</translation>
+<translation id="4306392492252714209">ລຶບອອກຈາກຄລິບບອດ.</translation>
 <translation id="4316910396681052118">ທຸກແອັບ</translation>
 <translation id="4491109536499578614">ຮູບ​</translation>
 <translation id="4588090240171750605">ເລື່ອນໄປທາງຂວາ</translation>
@@ -190,7 +193,7 @@
 <translation id="6710213216561001401">ຜ່ານມາ</translation>
 <translation id="6786750046913594791">ປິດໂຟລເດີ</translation>
 <translation id="6808150112686056157">ຢຸດມີເດຍ</translation>
-<translation id="6845383723252244143">ເລືອກໂຟລເດີ</translation>
+<translation id="6845383723252244143">ເລືອກໂຟນເດີ</translation>
 <translation id="6845533974506654842">ກົດ</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{ຍັງ​ເຫຼືອ 1 ຊົ່ວ​ໂມງ}other{ຍັງ​ເຫຼືອ # ຊົ່ວ​ໂມງ}}</translation>
 <translation id="688711909580084195">ໜ້າເວັບບໍ່ມີຊື່</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">ລຶບການຊອກຫາອອກຈາກປະຫວັດຂອງທ່ານບໍ?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">ອີໂມຈິ</translation>
+<translation id="7620655452534002301">ລຶບອອກແລ້ວ.</translation>
 <translation id="7658239707568436148">ຍົກ​ເລີກ​</translation>
 <translation id="7781829728241885113">ມື້​ວານ​ນີ້</translation>
 <translation id="7814458197256864873">ກັອບປີ້</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{1 ຊົ່ວໂມງກ່ອນນີ້}other{# ຊົ່ວ​ໂມງ​ກ່ອນ​ນີ້}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{ຍັງ​ເຫຼື 1 ວິ​ນາ​ທີ}other{ຍັງ​ເຫຼືອ # ວິ​ນາ​ທີ}}</translation>
 <translation id="8134065097954893699">ກຳລັງໂຫຼດໜ້ານີ້ຄືນໃໝ່</translation>
-<translation id="8144660977431427332">ການຊອກຫາຂອງທ່ານຂັບເຄື່ອນໂດຍຜູ້ຊ່ວຍ Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, ຕື່ມອັດຕະໂນມັດ</translation>
 <translation id="815598010540052116">ເລື່ອນລົງ</translation>
 <translation id="8179976553408161302">ປ້ອນເຂົ້າ</translation>
 <translation id="8210608804940886430">ຫນ້າ​ລົງ</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">ແຖບ</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, ແອັບ</translation>
 <translation id="8259556432390118667">ຄ່າສີແບບເລກຖານສິບຫົກ</translation>

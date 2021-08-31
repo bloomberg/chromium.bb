@@ -4,10 +4,12 @@
 
 package org.chromium.chrome.browser.browserservices.digitalgoods;
 
+import android.app.Activity;
+
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.ActivityUtils;
+import org.chromium.chrome.browser.ChromeApplicationImpl;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.PaymentFeatureList;
@@ -39,7 +41,7 @@ public class DigitalGoodsFactoryImpl implements DigitalGoodsFactory {
         mRenderFrameHost = renderFrameHost;
         mDigitalGoodsDelegate = mRenderFrameHost::getLastCommittedURL;
         mAdapter = new DigitalGoodsAdapter(
-                ChromeApplication.getComponent().resolveTrustedWebActivityClient());
+                ChromeApplicationImpl.getComponent().resolveTrustedWebActivityClient());
     }
 
     private int getResponseCode(String paymentMethod) {
@@ -50,7 +52,7 @@ public class DigitalGoodsFactoryImpl implements DigitalGoodsFactory {
         // Ensure that the DigitalGoodsImpl is only created if we're in a TWA and on its verified
         // origin.
         WebContents wc = WebContentsStatics.fromRenderFrameHost(mRenderFrameHost);
-        ChromeActivity<?> activity = ChromeActivity.fromWebContents(wc);
+        Activity activity = ActivityUtils.getActivityFromWebContents(wc);
         if (!(activity instanceof CustomTabActivity)) {
             return CreateDigitalGoodsResponseCode.UNSUPPORTED_CONTEXT;
         }
@@ -74,6 +76,10 @@ public class DigitalGoodsFactoryImpl implements DigitalGoodsFactory {
             callback.call(CreateDigitalGoodsResponseCode.OK, sImplForTesting);
             return;
         }
+
+        // If the user is making Digital Goods payments, this is a good hint that we should enable
+        // site isolation for the site.
+        SiteIsolator.startIsolatingSite(mDigitalGoodsDelegate.getUrl());
 
         int code = getResponseCode(paymentMethod);
         CreateDigitalGoodsResponseCode.validate(code);

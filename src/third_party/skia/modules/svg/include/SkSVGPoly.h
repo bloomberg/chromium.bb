@@ -14,8 +14,6 @@
 // Handles <polygon> and <polyline> elements.
 class SkSVGPoly final : public SkSVGShape {
 public:
-    ~SkSVGPoly() override = default;
-
     static sk_sp<SkSVGPoly> MakePolygon() {
         return sk_sp<SkSVGPoly>(new SkSVGPoly(SkSVGTag::kPolygon));
     }
@@ -24,15 +22,17 @@ public:
         return sk_sp<SkSVGPoly>(new SkSVGPoly(SkSVGTag::kPolyline));
     }
 
-    void setPoints(const SkSVGPointsType&);
+    SVG_ATTR(Points, SkSVGPointsType, SkSVGPointsType())
 
 protected:
-    void onSetAttribute(SkSVGAttribute, const SkSVGValue&) override;
+    bool parseAndSetAttribute(const char*, const char*) override;
 
     void onDraw(SkCanvas*, const SkSVGLengthContext&, const SkPaint&,
                 SkPathFillType) const override;
 
     SkPath onAsPath(const SkSVGRenderContext&) const override;
+
+    SkRect onObjectBoundingBox(const SkSVGRenderContext&) const override;
 
 private:
     SkSVGPoly(SkSVGTag);

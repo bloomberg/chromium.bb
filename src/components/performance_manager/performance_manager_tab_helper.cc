@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
@@ -22,6 +22,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 
 namespace performance_manager {
@@ -63,10 +64,9 @@ bool ConnectWindowOpenRelationshipIfExists(PerformanceManagerTabHelper* helper,
     return false;
 
   PerformanceManagerImpl::CallOnGraphImpl(
-      FROM_HERE, base::BindOnce(&PageNodeImpl::SetOpenerFrameNodeAndOpenedType,
+      FROM_HERE, base::BindOnce(&PageNodeImpl::SetOpenerFrameNode,
                                 base::Unretained(helper->page_node()),
-                                base::Unretained(opener_frame_node),
-                                PageNode::OpenedType::kPopup));
+                                base::Unretained(opener_frame_node)));
   return true;
 }
 
@@ -185,14 +185,6 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
 void PerformanceManagerTabHelper::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   auto it = frames_.find(render_frame_host);
-  if (it == frames_.end()) {
-    // https://crbug.com/948088.
-    // At the present time (May 2019), it's possible for speculative render
-    // frame hosts to exist at the time this TabHelper is attached to a
-    // WebContents. These speculative render frame hosts are not exposed in
-    // enumeration, and so may be first observed at deletion time.
-    return;
-  }
   DCHECK(it != frames_.end());
 
   std::unique_ptr<FrameNodeImpl> frame_node = std::move(it->second);
@@ -235,14 +227,10 @@ void PerformanceManagerTabHelper::RenderFrameHostChanged(
   auto it = frames_.find(new_host);
   if (it != frames_.end()) {
     new_frame = it->second.get();
-  } else if (new_host->IsRenderFrameCreated()) {
-    // https://crbug.com/948088.
-    // In the case of speculative frames already existent and created at attach
-    // time, fake the creation event at this point.
-    RenderFrameCreated(new_host);
-
-    new_frame = frames_[new_host].get();
-    DCHECK_NE(nullptr, new_frame);
+  } else {
+    DCHECK(!new_host->IsRenderFrameCreated())
+        << "There shouldn't be a case where RenderFrameHostChanged is "
+           "dispatched before RenderFrameCreated with a live RenderFrame\n";
   }
   // If neither frame could be looked up there's nothing to do.
   if (!old_frame && !new_frame)
@@ -253,7 +241,14 @@ void PerformanceManagerTabHelper::RenderFrameHostChanged(
       FROM_HERE, base::BindOnce(
                      [](FrameNodeImpl* old_frame, FrameNodeImpl* new_frame) {
                        if (old_frame) {
-                         DCHECK(old_frame->is_current());
+                         // Prerendering is a special case where,
+                         // old_frame->is_current() would be set to false.
+                         // Ignore this check when Prerender2 is enabled.
+                         // TODO(https://crbug.com/1177859): Remove this check
+                         // once PerformanceManagerTabHelper is supported with
+                         // Prerender2.
+                         DCHECK(blink::features::IsPrerender2Enabled() ||
+                                old_frame->is_current());
                          old_frame->SetIsCurrent(false);
                        }
                        if (new_frame) {
@@ -263,7 +258,10 @@ void PerformanceManagerTabHelper::RenderFrameHostChanged(
                            // The very first frame to be created is already
                            // current by default. In which case the swap must be
                            // from no frame to a frame.
-                           DCHECK(!old_frame);
+                           // TODO(https://crbug.com/1179682): Make this
+                           // compatible with MPArch.
+                           DCHECK(!old_frame ||
+                                  blink::features::IsPrerender2Enabled());
                          }
                        }
                      },
@@ -373,10 +371,10 @@ void PerformanceManagerTabHelper::InnerWebContentsAttached(
   DCHECK(page);
   auto* frame = GetFrameNode(render_frame_host);
 
-  // Determine the opened type.
-  auto opened_type = PageNode::OpenedType::kInvalid;
+  // Determine the embedded type.
+  auto embedding_type = PageNode::EmbeddingType::kInvalid;
   if (inner_web_contents->IsPortal()) {
-    opened_type = PageNode::OpenedType::kPortal;
+    embedding_type = PageNode::EmbeddingType::kPortal;
 
     // In the case of portals there can be a temporary RFH that is created that
     // will never actually be committed to the frame tree (for which we'll never
@@ -386,15 +384,11 @@ void PerformanceManagerTabHelper::InnerWebContentsAttached(
     if (!frame)
       frame = GetFrameNode(render_frame_host->GetParent());
   } else {
-    opened_type = PageNode::OpenedType::kGuestView;
+    embedding_type = PageNode::EmbeddingType::kGuestView;
     // For a guest view, the RFH should already have been seen.
-
     // Note that guest views can simultaneously have openers *and* be embedded.
-    // The embedded relationship has higher priority, but we'll fall back to
-    // using the window.open relationship if the embedded relationship is
-    // severed.
   }
-  DCHECK_NE(PageNode::OpenedType::kInvalid, opened_type);
+  DCHECK_NE(PageNode::EmbeddingType::kInvalid, embedding_type);
   if (!frame) {
     DCHECK(!render_frame_host->IsRenderFrameCreated());
     DCHECK(!inner_web_contents->IsPortal());
@@ -407,24 +401,20 @@ void PerformanceManagerTabHelper::InnerWebContentsAttached(
   }
 
   PerformanceManagerImpl::CallOnGraphImpl(
-      FROM_HERE, base::BindOnce(&PageNodeImpl::SetOpenerFrameNodeAndOpenedType,
-                                base::Unretained(page), base::Unretained(frame),
-                                opened_type));
+      FROM_HERE,
+      base::BindOnce(&PageNodeImpl::SetEmbedderFrameNodeAndEmbeddingType,
+                     base::Unretained(page), base::Unretained(frame),
+                     embedding_type));
 }
 
 void PerformanceManagerTabHelper::InnerWebContentsDetached(
     content::WebContents* inner_web_contents) {
   auto* helper = FromWebContents(inner_web_contents);
   DCHECK(helper);
-
-  // Fall back to using the window.open opener if it exists. If not, simply
-  // clear the opener relationship entirely.
-  if (!ConnectWindowOpenRelationshipIfExists(helper, inner_web_contents)) {
-    PerformanceManagerImpl::CallOnGraphImpl(
-        FROM_HERE,
-        base::BindOnce(&PageNodeImpl::ClearOpenerFrameNodeAndOpenedType,
-                       base::Unretained(helper->page_node())));
-  }
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE,
+      base::BindOnce(&PageNodeImpl::ClearEmbedderFrameNodeAndEmbeddingType,
+                     base::Unretained(helper->page_node())));
 }
 
 void PerformanceManagerTabHelper::WebContentsDestroyed() {
@@ -459,24 +449,8 @@ void PerformanceManagerTabHelper::DidUpdateFaviconURL(
 void PerformanceManagerTabHelper::BindDocumentCoordinationUnit(
     content::RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<mojom::DocumentCoordinationUnit> receiver) {
-  // TODO(https://crbug.com/987445): Why else than due to speculative render
-  //     frame hosts would this happen? Is there a race between the RFH creation
-  //     notification and the mojo interface request?
   auto it = frames_.find(render_frame_host);
-  if (it == frames_.end()) {
-    if (render_frame_host->IsRenderFrameCreated()) {
-      // This must be a speculative render frame host, generate a creation event
-      // for it a this point
-      RenderFrameCreated(render_frame_host);
-
-      it = frames_.find(render_frame_host);
-      DCHECK(it != frames_.end());
-    } else {
-      // It would be nice to know what's up here, maybe there's a race between
-      // in-progress interface requests and the frame deletion?
-      return;
-    }
-  }
+  DCHECK(it != frames_.end());
 
   PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE,

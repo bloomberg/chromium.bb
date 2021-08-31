@@ -9,6 +9,7 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "ipc/ipc_message.h"
 #include "v8/include/v8.h"
 
@@ -59,9 +60,6 @@ class GuestViewContainer {
   // handled by GuestViewContainer.
   virtual bool OnMessage(const IPC::Message& message);
 
-  // Called to perform actions when a GuestViewContainer gets a geometry.
-  virtual void OnReady() {}
-
   // Called to perform actions when a GuestViewContainer is about to be
   // destroyed.
   // Note that this should be called exactly once.
@@ -74,8 +72,6 @@ class GuestViewContainer {
 
  protected:
   virtual ~GuestViewContainer();
-
-  bool ready_;
 
   void OnHandleCallback(const IPC::Message& message);
 
@@ -90,10 +86,6 @@ class GuestViewContainer {
   void HandlePendingResponseCallback(const IPC::Message& message);
   void RunDestructionCallback(bool embedder_frame_destroyed);
   void CallElementResizeCallback(const gfx::Size& new_size);
-
-  // TODO(533069): Remove since BrowserPlugin has been removed.
-  void Ready();
-  void DidDestroyElement();
 
   int element_instance_id_;
   content::RenderFrame* render_frame_;

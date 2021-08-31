@@ -9,7 +9,6 @@
 #include <cmath>
 #include <memory>
 
-#include "base/macros.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -151,7 +150,8 @@ class VideoUtilTest : public testing::Test {
         u_stride_(0),
         v_stride_(0) {
   }
-
+  VideoUtilTest(const VideoUtilTest&) = delete;
+  VideoUtilTest& operator=(const VideoUtilTest&) = delete;
   ~VideoUtilTest() override = default;
 
   void CreateSourceFrame(int width, int height,
@@ -187,8 +187,6 @@ class VideoUtilTest : public testing::Test {
   int v_stride_;
 
   scoped_refptr<VideoFrame> destination_frame_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoUtilTest);
 };
 
 TEST_F(VideoUtilTest, GetPixelAspectRatio) {
@@ -408,15 +406,14 @@ class VideoUtilRotationTest
   VideoUtilRotationTest() {
     dest_.reset(new uint8_t[GetParam().width * GetParam().height]);
   }
-
-  virtual ~VideoUtilRotationTest() = default;
+  VideoUtilRotationTest(const VideoUtilRotationTest&) = delete;
+  VideoUtilRotationTest& operator=(const VideoUtilRotationTest&) = delete;
+  ~VideoUtilRotationTest() override = default;
 
   uint8_t* dest_plane() { return dest_.get(); }
 
  private:
   std::unique_ptr<uint8_t[]> dest_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoUtilRotationTest);
 };
 
 TEST_P(VideoUtilRotationTest, Rotate) {
@@ -602,6 +599,32 @@ TEST_F(VideoUtilTest, I420CopyWithPadding) {
                                            base::TimeDelta());
   EXPECT_TRUE(I420CopyWithPadding(*src_frame, dst_frame.get()));
   EXPECT_TRUE(VerifyCopyWithPadding(*src_frame, *dst_frame));
+}
+
+TEST_F(VideoUtilTest, WrapAsI420VideoFrame) {
+  gfx::Size size(640, 480);
+  scoped_refptr<VideoFrame> src_frame =
+      VideoFrame::CreateFrame(PIXEL_FORMAT_I420A, size, gfx::Rect(size), size,
+                              base::TimeDelta::FromDays(1));
+
+  scoped_refptr<VideoFrame> dst_frame = WrapAsI420VideoFrame(src_frame);
+  EXPECT_EQ(dst_frame->format(), PIXEL_FORMAT_I420);
+  EXPECT_EQ(dst_frame->timestamp(), src_frame->timestamp());
+  EXPECT_EQ(dst_frame->coded_size(), src_frame->coded_size());
+  EXPECT_EQ(dst_frame->visible_rect(), src_frame->visible_rect());
+  EXPECT_EQ(dst_frame->natural_size(), src_frame->natural_size());
+
+  std::vector<size_t> planes = {VideoFrame::kYPlane, VideoFrame::kUPlane,
+                                VideoFrame::kVPlane};
+  for (auto plane : planes)
+    EXPECT_EQ(dst_frame->data(plane), src_frame->data(plane));
+
+  // Check that memory for planes is not released upon destruction of the
+  // original frame pointer (new frame holds a reference). This check relies on
+  // ASAN.
+  src_frame.reset();
+  for (auto plane : planes)
+    memset(dst_frame->data(plane), 1, dst_frame->stride(plane));
 }
 
 }  // namespace media

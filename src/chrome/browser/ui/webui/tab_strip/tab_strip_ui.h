@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_TAB_STRIP_TAB_STRIP_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_TAB_STRIP_TAB_STRIP_UI_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/tab_strip/thumbnail_tracker.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -43,6 +41,7 @@ class TabStripUI : public content::WebUIController {
 
   TabStripUIHandler* handler_ = nullptr;
 
+  WEB_UI_CONTROLLER_TYPE_DECL();
   DISALLOW_COPY_AND_ASSIGN(TabStripUI);
 };
 

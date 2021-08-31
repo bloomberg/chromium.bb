@@ -10,16 +10,20 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "cc/paint/frame_metadata.h"
 #include "cc/paint/image_animation_count.h"
 #include "cc/paint/paint_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkYUVAPixmaps.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+
+namespace blink {
+class VideoFrame;
+}
 
 namespace cc {
 
@@ -29,7 +33,17 @@ class PaintWorkletInput;
 class TextureBacking;
 using PaintRecord = PaintOpBuffer;
 
-enum class ImageType { kPNG, kJPEG, kWEBP, kGIF, kICO, kBMP, kAVIF, kInvalid };
+enum class ImageType {
+  kPNG,
+  kJPEG,
+  kWEBP,
+  kGIF,
+  kICO,
+  kBMP,
+  kAVIF,
+  kJXL,
+  kInvalid
+};
 
 enum class YUVSubsampling { k410, k411, k420, k422, k440, k444, kUnknown };
 
@@ -59,7 +73,7 @@ struct CC_PAINT_EXPORT ImageHeaderMetadata {
   // |image_size| for a 4:2:0 JPEG is 12x31, its coded size should be 16x32
   // because the size of a minimum-coded unit for 4:2:0 is 16x16.
   // A zero-initialized |coded_size| indicates an invalid image.
-  base::Optional<gfx::Size> coded_size;
+  absl::optional<gfx::Size> coded_size;
 
   // Whether the image embeds an ICC color profile.
   bool has_embedded_color_profile = false;
@@ -68,11 +82,11 @@ struct CC_PAINT_EXPORT ImageHeaderMetadata {
   bool all_data_received_prior_to_decode = false;
 
   // For JPEGs only: whether the image is progressive (as opposed to baseline).
-  base::Optional<bool> jpeg_is_progressive;
+  absl::optional<bool> jpeg_is_progressive;
 
   // For WebPs only: whether this is a simple-format lossy image. See
   // https://developers.google.com/speed/webp/docs/riff_container#simple_file_format_lossy.
-  base::Optional<bool> webp_is_non_extended_lossy;
+  absl::optional<bool> webp_is_non_extended_lossy;
 };
 
 // A representation of an image for the compositor.  This is the most abstract
@@ -235,11 +249,11 @@ class CC_PAINT_EXPORT PaintImage {
                   int src_x,
                   int src_y) const;
 
-  SkImageInfo GetSkImageInfo() const;
+  // Returned mailbox must not outlive this PaintImage.
+  gpu::Mailbox GetMailbox() const;
 
   Id stable_id() const { return id_; }
-  const sk_sp<SkImage>& GetSkImage() const;
-  gpu::Mailbox GetMailbox() const;
+  SkImageInfo GetSkImageInfo() const;
   AnimationType animation_type() const { return animation_type_; }
   CompletionState completion_state() const { return completion_state_; }
   bool is_multipart() const { return is_multipart_; }
@@ -262,7 +276,6 @@ class CC_PAINT_EXPORT PaintImage {
   // Skia internally buffers commands and flushes them as necessary but there
   // are some cases where we need to force a flush.
   void FlushPendingSkiaOps();
-  bool HasExclusiveTextureAccess() const;
   int width() const;
   int height() const;
   SkColorSpace* color_space() const {
@@ -324,6 +337,12 @@ class CC_PAINT_EXPORT PaintImage {
   friend class DrawImageRectOp;
   friend class DrawImageOp;
 
+  // TODO(crbug.com/1031051): Remove these once GetSkImage()
+  // is fully removed.
+  friend class ImagePaintFilter;
+  friend class PaintShader;
+  friend class blink::VideoFrame;
+
   bool DecodeFromGenerator(void* memory,
                            SkImageInfo* info,
                            sk_sp<SkColorSpace> color_space,
@@ -338,6 +357,10 @@ class CC_PAINT_EXPORT PaintImage {
 
   // Only supported in non-OOPR contexts by friend callers.
   sk_sp<SkImage> GetAcceleratedSkImage() const;
+
+  // GetSkImage() is being deprecated, see crbug.com/1031051.
+  // Prefer using GetSwSkImage() or GetSkImageInfo().
+  const sk_sp<SkImage>& GetSkImage() const;
 
   sk_sp<SkImage> sk_image_;
   sk_sp<PaintRecord> paint_record_;

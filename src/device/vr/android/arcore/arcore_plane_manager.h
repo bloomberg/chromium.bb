@@ -7,8 +7,8 @@
 
 #include <map>
 
+#include "base/types/pass_key.h"
 #include "base/util/type_safety/id_type.h"
-#include "base/util/type_safety/pass_key.h"
 #include "device/vr/android/arcore/address_to_id_map.h"
 #include "device/vr/android/arcore/arcore_sdk.h"
 #include "device/vr/android/arcore/scoped_arcore_objects.h"
@@ -33,7 +33,7 @@ device::internal::ScopedArCoreObject<ArPose*> GetArPoseFromMojomPose(
 
 class ArCorePlaneManager {
  public:
-  ArCorePlaneManager(util::PassKey<ArCoreImpl> pass_key,
+  ArCorePlaneManager(base::PassKey<ArCoreImpl> pass_key,
                      ArSession* arcore_session);
   ~ArCorePlaneManager();
 
@@ -48,17 +48,17 @@ class ArCorePlaneManager {
 
   bool PlaneExists(PlaneId id) const;
 
-  // Returns base::nullopt if plane with the given address does not exist.
-  base::Optional<PlaneId> GetPlaneId(void* plane_address) const;
+  // Returns absl::nullopt if plane with the given address does not exist.
+  absl::optional<PlaneId> GetPlaneId(void* plane_address) const;
 
-  // Returns base::nullopt if plane with the given id does not exist.
-  base::Optional<gfx::Transform> GetMojoFromPlane(PlaneId id) const;
+  // Returns absl::nullopt if plane with the given id does not exist.
+  absl::optional<gfx::Transform> GetMojoFromPlane(PlaneId id) const;
 
   // Creates Anchor object given a plane ID. This is needed since Plane objects
   // are managed by this class in its entirety and are not accessible outside
   // it. Callable only from ArCoreAnchorManager.
   device::internal::ScopedArCoreObject<ArAnchor*> CreateAnchor(
-      util::PassKey<ArCoreAnchorManager> pass_key,
+      base::PassKey<ArCoreAnchorManager> pass_key,
       PlaneId id,
       const device::mojom::Pose& pose) const;
 

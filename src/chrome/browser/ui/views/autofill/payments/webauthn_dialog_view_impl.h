@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_model_observer.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_view.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class AuthenticatorRequestSheetView;
@@ -21,8 +22,11 @@ class WebauthnDialogViewImpl : public WebauthnDialogView,
                                public WebauthnDialogModelObserver,
                                public views::DialogDelegateView {
  public:
+  METADATA_HEADER(WebauthnDialogViewImpl);
   WebauthnDialogViewImpl(WebauthnDialogController* controller,
                          WebauthnDialogState dialog_state);
+  WebauthnDialogViewImpl(const WebauthnDialogViewImpl&) = delete;
+  WebauthnDialogViewImpl& operator=(const WebauthnDialogViewImpl&) = delete;
   ~WebauthnDialogViewImpl() override;
 
   // WebauthnDialogView:
@@ -32,14 +36,10 @@ class WebauthnDialogViewImpl : public WebauthnDialogView,
   void OnDialogStateChanged() override;
 
   // views::DialogDelegateView:
-  gfx::Size CalculatePreferredSize() const override;
   bool Accept() override;
   bool Cancel() override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
-  ui::ModalType GetModalType() const override;
-  base::string16 GetWindowTitle() const override;
-  bool ShouldShowWindowTitle() const override;
-  bool ShouldShowCloseButton() const override;
+  std::u16string GetWindowTitle() const override;
 
  private:
   // Closes the dialog.
@@ -55,8 +55,6 @@ class WebauthnDialogViewImpl : public WebauthnDialogView,
   // Dialog model owned by |sheet_view_|. Since this dialog owns the
   // |sheet_view_|, the model_ will always be valid.
   WebauthnDialogModel* model_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(WebauthnDialogViewImpl);
 };
 
 }  // namespace autofill

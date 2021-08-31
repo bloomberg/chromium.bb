@@ -12,9 +12,9 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefService;
 
@@ -103,8 +103,8 @@ class ActivityStorage {
   // Retrieves all activity periods that are in the pref keys that can be parsed
   // by |ParseActivityPeriodPrefKey|.
   void ForEachActivityPeriodFromPref(
-      base::RepeatingCallback<
-          void(const int64_t, const int64_t, const std::string&)> f) const;
+      const base::RepeatingCallback<
+          void(const int64_t, const int64_t, const std::string&)>& f) const;
 
   PrefService* const pref_service_ = nullptr;
   const std::string pref_name_;

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import unittest
 import re
 
@@ -191,13 +192,15 @@ class FilterStoriesShardIndexUnittest(unittest.TestCase):
     self.s1 = FakeStory('1')
     self.s2 = FakeStory('2')
     self.s3 = FakeStory('3')
-    self.stories = (self.s1, self.s2, self.s3)
+    self.s4 = FakeStory('4')
+    self.s5 = FakeStory('5')
+    self.stories = (self.s1, self.s2, self.s3, self.s4, self.s5)
 
   def testStoryShardBegin(self):
     story_filter = story_filter_module.StoryFilter(
         shard_begin_index=1)
     output = story_filter.FilterStories(self.stories)
-    self.assertEqual([self.s2, self.s3], output)
+    self.assertEqual([self.s2, self.s3, self.s4, self.s5], output)
 
   def testStoryShardEnd(self):
     story_filter = story_filter_module.StoryFilter(
@@ -217,6 +220,54 @@ class FilterStoriesShardIndexUnittest(unittest.TestCase):
         shard_begin_index=-1)
     output = story_filter.FilterStories(self.stories)
     self.assertEqual(list(self.stories), output)
+
+  def testStoryIndexRange(self):
+    story_filter = story_filter_module.StoryFilter(
+        shard_indexes='1-3')
+    output = story_filter.FilterStories(self.stories)
+    self.assertEqual([self.s2, self.s3], output)
+
+  def testStoryIndexRangeOpenBegin(self):
+    story_filter = story_filter_module.StoryFilter(
+        shard_indexes='-3')
+    output = story_filter.FilterStories(self.stories)
+    self.assertEqual([self.s1, self.s2, self.s3], output)
+
+  def testStoryIndexRangeOpenEnd(self):
+    story_filter = story_filter_module.StoryFilter(
+        shard_indexes='1-')
+    output = story_filter.FilterStories(self.stories)
+    self.assertEqual([self.s2, self.s3, self.s4, self.s5], output)
+
+  def testStoryIndexRangeSingles(self):
+    story_filter = story_filter_module.StoryFilter(
+        shard_indexes='1,3')
+    output = story_filter.FilterStories(self.stories)
+    self.assertEqual([self.s2, self.s4], output)
+
+  def testStoryIndexRangeCombinations(self):
+    story_filter = story_filter_module.StoryFilter(
+        shard_indexes='0,2-')
+    output = story_filter.FilterStories(self.stories)
+    self.assertEqual([self.s1, self.s3, self.s4, self.s5], output)
+
+  def testStoryIndexRangeInvalidRange(self):
+    with self.assertRaises(ValueError):
+      story_filter = story_filter_module.StoryFilter(
+          shard_indexes='3-1')
+      story_filter.FilterStories(self.stories)
+
+  def testStoryIndexRangeRangeOverLap(self):
+    with self.assertRaises(ValueError):
+      story_filter = story_filter_module.StoryFilter(
+          shard_indexes='0-2,1-3')
+      story_filter.FilterStories(self.stories)
+
+  def testStoryIndexRangeOutOfOrder(self):
+    with self.assertRaises(ValueError):
+      story_filter = story_filter_module.StoryFilter(
+          shard_indexes='2,0-2')
+      story_filter.FilterStories(self.stories)
 
   def testStoryShardEndWraps(self):
     """This is needed since benchmarks may change size.

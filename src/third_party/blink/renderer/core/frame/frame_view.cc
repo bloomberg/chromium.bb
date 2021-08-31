@@ -43,10 +43,15 @@ bool FrameView::CanThrottleRenderingForPropagation() const {
 bool FrameView::DisplayLockedInParentFrame() {
   Frame& frame = GetFrame();
   LayoutEmbeddedContent* owner = frame.OwnerLayoutObject();
+  if (!owner)
+    return false;
+  DCHECK(owner->GetFrameView());
+  if (owner->GetFrameView()->IsDisplayLocked())
+    return true;
   // We check the inclusive ancestor to determine whether the subtree is locked,
   // since the contents of the frame are in the subtree of the frame, so they
   // would be locked if the frame owner is itself locked.
-  return owner && DisplayLockUtilities::NearestLockedInclusiveAncestor(*owner);
+  return DisplayLockUtilities::NearestLockedInclusiveAncestor(*owner);
 }
 
 void FrameView::UpdateViewportIntersection(unsigned flags,
@@ -202,17 +207,24 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
     GetFrame().Client()->OnMainFrameIntersectionChanged(projected_rect);
   }
 
-  // We don't throttle 0x0 or display:none iframes, because in practice they are
-  // sometimes used to drive UI logic.
-  bool hidden_for_throttling = viewport_intersection.IsEmpty() &&
-                               !FrameRect().IsEmpty() && owner_layout_object;
+  // We don't throttle zero-area or display:none iframes unless they are
+  // cross-origin and ThrottleCrossOriginIframes is enabled, because in practice
+  // they are sometimes used to drive UI logic.
+  bool hidden_for_throttling = viewport_intersection.IsEmpty();
+  bool is_display_none = !owner_layout_object;
+  bool has_zero_area = FrameRect().IsEmpty();
+  bool has_flag = RuntimeEnabledFeatures::
+      ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesEnabled();
+  if (!has_flag && (is_display_none || has_zero_area))
+    hidden_for_throttling = false;
   bool subtree_throttled = false;
   Frame* parent_frame = GetFrame().Tree().Parent();
   if (parent_frame && parent_frame->View()) {
     subtree_throttled =
         parent_frame->View()->CanThrottleRenderingForPropagation();
   }
-  UpdateRenderThrottlingStatus(hidden_for_throttling, subtree_throttled);
+  UpdateRenderThrottlingStatus(hidden_for_throttling, subtree_throttled,
+                               DisplayLockedInParentFrame());
 }
 
 void FrameView::UpdateFrameVisibility(bool intersects_viewport) {
@@ -235,12 +247,14 @@ void FrameView::UpdateFrameVisibility(bool intersects_viewport) {
 
 void FrameView::UpdateRenderThrottlingStatus(bool hidden_for_throttling,
                                              bool subtree_throttled,
+                                             bool display_locked,
                                              bool recurse) {
-  bool visibility_changed = (hidden_for_throttling_ || subtree_throttled_) !=
-                            (hidden_for_throttling || subtree_throttled ||
-                             DisplayLockedInParentFrame());
+  bool visibility_changed =
+      (hidden_for_throttling_ || subtree_throttled_ || display_locked_) !=
+      (hidden_for_throttling || subtree_throttled || display_locked);
   hidden_for_throttling_ = hidden_for_throttling;
-  subtree_throttled_ = subtree_throttled || DisplayLockedInParentFrame();
+  subtree_throttled_ = subtree_throttled;
+  display_locked_ = display_locked;
   if (visibility_changed)
     VisibilityForThrottlingChanged();
   if (recurse) {
@@ -250,7 +264,7 @@ void FrameView::UpdateRenderThrottlingStatus(bool hidden_for_throttling,
         child_view->UpdateRenderThrottlingStatus(
             child_view->IsHiddenForThrottling(),
             child_view->IsAttached() && CanThrottleRenderingForPropagation(),
-            true);
+            child_view->IsDisplayLocked(), true);
       }
     }
   }

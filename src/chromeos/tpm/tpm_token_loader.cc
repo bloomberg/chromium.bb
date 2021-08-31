@@ -14,6 +14,7 @@
 #include "base/system/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/tpm/buildflags.h"
 #include "chromeos/tpm/tpm_token_info_getter.h"
 #include "crypto/nss_util.h"
 
@@ -25,6 +26,15 @@ void PostResultToTaskRunner(scoped_refptr<base::SequencedTaskRunner> runner,
                             base::OnceCallback<void(bool)> callback,
                             bool success) {
   runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback), success));
+}
+
+// Checks if the build flag system_slot_software_fallback is enabled.
+bool IsSystemSlotSoftwareFallbackEnabled() {
+#if BUILDFLAG(SYSTEM_SLOT_SOFTWARE_FALLBACK)
+  return true;
+#else
+  return false;
+#endif
 }
 
 }  // namespace
@@ -66,10 +76,13 @@ TPMTokenLoader::TPMTokenLoader(bool initialized_for_test)
     : initialized_for_test_(initialized_for_test),
       tpm_token_state_(TPM_STATE_UNKNOWN),
       tpm_token_info_getter_(TPMTokenInfoGetter::CreateForSystemToken(
-          CryptohomeClient::Get(),
+          CryptohomePkcs11Client::Get(),
           base::ThreadTaskRunnerHandle::Get())),
       tpm_token_slot_id_(-1),
       can_start_before_login_(false) {
+  tpm_token_info_getter_->SetSystemSlotSoftwareFallback(
+      IsSystemSlotSoftwareFallbackEnabled());
+
   if (!initialized_for_test_ && LoginState::IsInitialized())
     LoginState::Get()->AddObserver(this);
 
@@ -194,15 +207,15 @@ void TPMTokenLoader::OnTPMTokenEnabledForNSS() {
 }
 
 void TPMTokenLoader::OnGotTpmTokenInfo(
-    base::Optional<CryptohomeClient::TpmTokenInfo> token_info) {
+    absl::optional<user_data_auth::TpmTokenInfo> token_info) {
   if (!token_info.has_value()) {
     tpm_token_state_ = TPM_DISABLED;
     ContinueTokenInitialization();
     return;
   }
 
-  tpm_token_slot_id_ = token_info->slot;
-  tpm_user_pin_ = token_info->user_pin;
+  tpm_token_slot_id_ = token_info->slot();
+  tpm_user_pin_ = token_info->user_pin();
   tpm_token_state_ = TPM_TOKEN_INFO_RECEIVED;
 
   ContinueTokenInitialization();

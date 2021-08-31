@@ -7,9 +7,10 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
@@ -36,7 +37,8 @@ class AppLoadObserver : public ExtensionRegistryObserver {
       content::BrowserContext* browser_context,
       const base::RepeatingCallback<void(const Extension*)>& callback)
       : callback_(callback) {
-    extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context));
+    extension_registry_observation_.Observe(
+        ExtensionRegistry::Get(browser_context));
   }
 
   void OnExtensionLoaded(content::BrowserContext* browser_context,
@@ -46,8 +48,8 @@ class AppLoadObserver : public ExtensionRegistryObserver {
 
  private:
   base::RepeatingCallback<void(const Extension*)> callback_;
-  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_{this};
+  base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observation_{this};
   DISALLOW_COPY_AND_ASSIGN(AppLoadObserver);
 };
 
@@ -157,7 +159,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPath) {
   base::FilePath test_file = test_root_folder_.AppendASCII("gold.txt");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/get_display_path"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/get_display_path",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -172,8 +175,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPathPrettify) {
   base::FilePath test_file = test_root_folder_.AppendASCII("gold.txt");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunPlatformAppTest(
-      "api_test/file_system/get_display_path_prettify")) << message_;
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/get_display_path_prettify",
+                               {.launch_as_platform_app = true}))
+      << message_;
 }
 #endif
 
@@ -194,8 +198,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
 
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunPlatformAppTest(
-      "api_test/file_system/get_display_path_prettify_mac")) << message_;
+  ASSERT_TRUE(
+      RunExtensionTest("api_test/file_system/get_display_path_prettify_mac",
+                       {.launch_as_platform_app = true}))
+      << message_;
 }
 #endif
 
@@ -204,7 +210,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenExistingFileTest) {
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_existing"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_existing",
+                               {.launch_as_platform_app = true}))
       << message_;
   CheckStoredDirectoryMatches(test_file);
 }
@@ -220,7 +227,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
         profile(),
         base::BindRepeating(SetLastChooseEntryDirectory, test_file.DirName(),
                             ExtensionPrefs::Get(profile())));
-    ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_existing"))
+    ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_existing",
+                                 {.launch_as_platform_app = true}))
         << message_;
   }
   CheckStoredDirectoryMatches(test_file);
@@ -245,7 +253,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
             test_file.DirName().Append(base::FilePath::FromUTF8Unsafe(
                 "fake_directory_does_not_exist")),
             ExtensionPrefs::Get(profile())));
-    ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_existing"))
+    ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_existing",
+                                 {.launch_as_platform_app = true}))
         << message_;
   }
   CheckStoredDirectoryMatches(test_file);
@@ -262,7 +271,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   }
   FileSystemChooseEntryFunction::
       SkipPickerAndSelectSuggestedPathForTest();
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_existing"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_existing",
+                               {.launch_as_platform_app = true}))
       << message_;
   CheckStoredDirectoryMatches(test_file);
 }
@@ -276,8 +286,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenMultipleSuggested) {
         chrome::DIR_USER_DOCUMENTS, test_file.DirName(), false, false));
   }
   FileSystemChooseEntryFunction::SkipPickerAndSelectSuggestedPathForTest();
-  ASSERT_TRUE(RunPlatformAppTest(
-      "api_test/file_system/open_multiple_with_suggested_name"))
+  ASSERT_TRUE(
+      RunExtensionTest("api_test/file_system/open_multiple_with_suggested_name",
+                       {.launch_as_platform_app = true}))
       << message_;
   CheckStoredDirectoryMatches(test_file);
 }
@@ -291,7 +302,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_EQ(2u, test_files.size());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathsForTest(
       &test_files);
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_multiple_existing"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_multiple_existing",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -301,7 +313,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenDirectoryTest) {
   base::FilePath test_directory = test_file.DirName();
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_directory);
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_directory"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_directory",
+                               {.launch_as_platform_app = true}))
       << message_;
   CheckStoredDirectoryMatches(test_file);
 }
@@ -313,8 +326,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   base::FilePath test_directory = test_file.DirName();
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_directory);
-  ASSERT_TRUE(
-      RunPlatformAppTest("api_test/file_system/open_directory_with_write"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_directory_with_write",
+                               {.launch_as_platform_app = true}))
       << message_;
   CheckStoredDirectoryMatches(test_file);
 }
@@ -326,8 +339,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   base::FilePath test_directory = test_file.DirName();
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_directory);
-  ASSERT_TRUE(RunPlatformAppTest(
-      "api_test/file_system/open_directory_without_permission"))
+  ASSERT_TRUE(
+      RunExtensionTest("api_test/file_system/open_directory_without_permission",
+                       {.launch_as_platform_app = true}))
       << message_;
   CheckStoredDirectoryMatches(base::FilePath());
 }
@@ -339,8 +353,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   base::FilePath test_directory = test_file.DirName();
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_directory);
-  ASSERT_TRUE(RunPlatformAppTest(
-      "api_test/file_system/open_directory_with_only_write"))
+  ASSERT_TRUE(
+      RunExtensionTest("api_test/file_system/open_directory_with_only_write",
+                       {.launch_as_platform_app = true}))
       << message_;
   CheckStoredDirectoryMatches(base::FilePath());
 }
@@ -359,7 +374,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   }
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_directory);
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_directory"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_directory",
+                               {.launch_as_platform_app = true}))
       << message_;
   CheckStoredDirectoryMatches(test_file);
 }
@@ -377,7 +393,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   }
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_directory);
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_directory_cancel"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_directory_cancel",
+                               {.launch_as_platform_app = true}))
       << message_;
   CheckStoredDirectoryMatches(test_file);
 }
@@ -396,7 +413,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   }
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &parent_directory);
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_directory_cancel"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_directory_cancel",
+                               {.launch_as_platform_app = true}))
       << message_;
   CheckStoredDirectoryMatches(test_directory);
 }
@@ -418,7 +436,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   }
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_directory);
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_directory"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_directory",
+                               {.launch_as_platform_app = true}))
       << message_;
   CheckStoredDirectoryMatches(test_file);
 }
@@ -430,8 +449,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunPlatformAppTest(
-      "api_test/file_system/invalid_choose_file_type")) << message_;
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/invalid_choose_file_type",
+                               {.launch_as_platform_app = true}))
+      << message_;
   CheckStoredDirectoryMatches(base::FilePath());
 }
 
@@ -441,8 +461,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunPlatformAppTest(
-      "api_test/file_system/open_existing_with_write")) << message_;
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_existing_with_write",
+                               {.launch_as_platform_app = true}))
+      << message_;
   CheckStoredDirectoryMatches(test_file);
 }
 
@@ -452,8 +473,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunPlatformAppTest(
-      "api_test/file_system/open_writable_existing")) << message_;
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_writable_existing",
+                               {.launch_as_platform_app = true}))
+      << message_;
   CheckStoredDirectoryMatches(base::FilePath());
 }
 
@@ -463,8 +485,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunPlatformAppTest(
-      "api_test/file_system/open_writable_existing_with_write")) << message_;
+  ASSERT_TRUE(
+      RunExtensionTest("api_test/file_system/open_writable_existing_with_write",
+                       {.launch_as_platform_app = true}))
+      << message_;
   CheckStoredDirectoryMatches(test_file);
 }
 
@@ -477,20 +501,23 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_EQ(2u, test_files.size());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathsForTest(
       &test_files);
-  ASSERT_TRUE(RunPlatformAppTest(
-      "api_test/file_system/open_multiple_writable_existing_with_write"))
+  ASSERT_TRUE(RunExtensionTest(
+      "api_test/file_system/open_multiple_writable_existing_with_write",
+      {.launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenCancelTest) {
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysCancelForTest();
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_cancel"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_cancel",
+                               {.launch_as_platform_app = true}))
       << message_;
   CheckStoredDirectoryMatches(base::FilePath());
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenBackgroundTest) {
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_background"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/open_background",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -499,7 +526,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiSaveNewFileTest) {
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/save_new"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/save_new",
+                               {.launch_as_platform_app = true}))
       << message_;
   CheckStoredDirectoryMatches(base::FilePath());
 }
@@ -509,7 +537,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiSaveExistingFileTest) {
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/save_existing"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/save_existing",
+                               {.launch_as_platform_app = true}))
       << message_;
   CheckStoredDirectoryMatches(base::FilePath());
 }
@@ -520,7 +549,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/save_new_with_write"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/save_new_with_write",
+                               {.launch_as_platform_app = true}))
       << message_;
   CheckStoredDirectoryMatches(test_file);
 }
@@ -531,8 +561,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunPlatformAppTest(
-      "api_test/file_system/save_existing_with_write")) << message_;
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/save_existing_with_write",
+                               {.launch_as_platform_app = true}))
+      << message_;
   CheckStoredDirectoryMatches(test_file);
 }
 
@@ -544,18 +575,21 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiSaveMultipleFilesTest) {
   ASSERT_EQ(2u, test_files.size());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathsForTest(
       &test_files);
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/save_multiple"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/save_multiple",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiSaveCancelTest) {
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysCancelForTest();
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/save_cancel"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/save_cancel",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiSaveBackgroundTest) {
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/save_background"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/save_background",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -564,8 +598,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetWritableTest) {
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunPlatformAppTest(
-      "api_test/file_system/get_writable_file_entry")) << message_;
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/get_writable_file_entry",
+                               {.launch_as_platform_app = true}))
+      << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
@@ -574,8 +609,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunPlatformAppTest(
-      "api_test/file_system/get_writable_file_entry_with_write")) << message_;
+  ASSERT_TRUE(RunExtensionTest(
+      "api_test/file_system/get_writable_file_entry_with_write",
+      {.launch_as_platform_app = true}))
+      << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
@@ -584,8 +621,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunPlatformAppTest(
-      "api_test/file_system/get_writable_root_entry")) << message_;
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/get_writable_root_entry",
+                               {.launch_as_platform_app = true}))
+      << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiIsWritableTest) {
@@ -593,7 +631,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiIsWritableTest) {
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/is_writable_file_entry"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/is_writable_file_entry",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -603,8 +642,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunPlatformAppTest(
-      "api_test/file_system/is_writable_file_entry_with_write"))
+  ASSERT_TRUE(
+      RunExtensionTest("api_test/file_system/is_writable_file_entry_with_write",
+                       {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -613,8 +653,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRetainEntry) {
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
-  ASSERT_TRUE(RunPlatformAppTest(
-      "api_test/file_system/retain_entry")) << message_;
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/retain_entry",
+                               {.launch_as_platform_app = true}))
+      << message_;
   std::vector<SavedFileEntry> file_entries =
       apps::SavedFilesService::Get(profile())->GetAllFileEntries(
           GetSingleLoadedExtension()->id());
@@ -630,7 +671,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRetainDirectoryEntry) {
   base::FilePath test_directory = test_file.DirName();
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_directory);
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/retain_directory"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/retain_directory",
+                               {.launch_as_platform_app = true}))
       << message_;
   std::vector<SavedFileEntry> file_entries =
       apps::SavedFilesService::Get(profile())->GetAllFileEntries(
@@ -649,7 +691,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRestoreEntry) {
   AppLoadObserver observer(
       profile(), base::BindRepeating(AddSavedEntry, test_file, false,
                                      apps::SavedFilesService::Get(profile())));
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/restore_entry"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/restore_entry",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
@@ -662,15 +705,16 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRestoreDirectoryEntry) {
   AppLoadObserver observer(
       profile(), base::BindRepeating(AddSavedEntry, test_directory, true,
                                      apps::SavedFilesService::Get(profile())));
-  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/restore_directory"))
+  ASSERT_TRUE(RunExtensionTest("api_test/file_system/restore_directory",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, RequestFileSystem_NotChromeOS) {
-  ASSERT_TRUE(RunPlatformAppTestWithFlags(
+  ASSERT_TRUE(RunExtensionTest(
       "api_test/file_system/request_file_system_not_chromeos",
-      kFlagIgnoreManifestWarnings, kFlagNone))
+      {.launch_as_platform_app = true}, {.ignore_manifest_warnings = true}))
       << message_;
 }
 #endif

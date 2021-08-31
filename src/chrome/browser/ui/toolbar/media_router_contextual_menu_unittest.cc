@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "build/branding_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/load_error_reporter.h"
@@ -73,7 +74,7 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
     MediaRouterActionController::SetAlwaysShowActionPref(profile(), true);
 
     media_router::MediaRouterUIServiceFactory::GetInstance()->SetTestingFactory(
-        profile()->GetPrimaryOTRProfile(),
+        profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
         base::BindRepeating(&BuildUIService));
   }
 
@@ -122,23 +123,21 @@ TEST_F(MediaRouterContextualMenuUnitTest, Basic) {
   // Always show icon (checkbox)
   // Optimize fullscreen videos (checkbox)
   // -----
-  // Enable cloud services (checkbox)
   // Report an issue
-  int expected_number_items = 9;
+
+  // Number of menu items, including separators.
+  int expected_number_items = 6;
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  expected_number_items += 2;
+#endif
 
   MediaRouterContextualMenu menu(browser(), kShownByUser, &observer_);
   std::unique_ptr<ui::SimpleMenuModel> model = menu.CreateMenuModel();
-  // Verify the number of menu items, including separators.
   EXPECT_EQ(model->GetItemCount(), expected_number_items);
 
   for (int i = 0; i < expected_number_items; i++) {
     EXPECT_TRUE(model->IsEnabledAt(i));
-
-    // The cloud services toggle exists and is enabled, but not visible until
-    // the user has authenticated their account.
-    const bool expected_visibility =
-        model->GetCommandIdAt(i) != IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE;
-    EXPECT_EQ(expected_visibility, model->IsVisibleAt(i));
+    EXPECT_TRUE(model->IsVisibleAt(i));
   }
 
   // Set up an authenticated account.
@@ -153,6 +152,7 @@ TEST_F(MediaRouterContextualMenuUnitTest, Basic) {
   }
 }
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // "Report an issue" should be present for normal profiles but not for
 // incognito.
 TEST_F(MediaRouterContextualMenuUnitTest, EnableAndDisableReportIssue) {
@@ -162,45 +162,15 @@ TEST_F(MediaRouterContextualMenuUnitTest, EnableAndDisableReportIssue) {
 
   std::unique_ptr<BrowserWindow> window(CreateBrowserWindow());
   std::unique_ptr<Browser> incognito_browser(
-      CreateBrowser(profile()->GetPrimaryOTRProfile(), Browser::TYPE_NORMAL,
-                    false, window.get()));
+      CreateBrowser(profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true),
+                    Browser::TYPE_NORMAL, false, window.get()));
 
   MediaRouterContextualMenu incognito_menu(incognito_browser.get(),
                                            kShownByPolicy, &observer_);
   EXPECT_EQ(-1, incognito_menu.CreateMenuModel()->GetIndexOfCommandId(
                     IDC_MEDIA_ROUTER_REPORT_ISSUE));
 }
-
-// Tests whether the cloud services item is correctly toggled. This menu item
-// is only availble on official Chrome builds.
-// TODO(takumif): Add a test case that checks that the cloud services dialog is
-// shown when the services are enabled for the first time.
-TEST_F(MediaRouterContextualMenuUnitTest, ToggleCloudServicesItem) {
-  // The Cast toolbar icon has a getter for the model, but not the delegate.
-  // Create the MediaRouterContextualMenu ui::SimpleMenuModel::Delegate here.
-  MediaRouterContextualMenu menu(browser(), kShownByPolicy, &observer_);
-
-  // Set up an authenticated account such that the cloud services menu item is
-  // surfaced. Whether or not it is surfaced is tested in the "Basic" test.
-  identity_test_env()->SetPrimaryAccount("foo@bar.com");
-
-  // Set this preference so that the cloud services can be enabled without
-  // showing the opt-in dialog.
-  browser()->profile()->GetPrefs()->SetBoolean(
-      media_router::prefs::kMediaRouterCloudServicesPrefSet, true);
-
-  // By default, the command is not checked.
-  EXPECT_FALSE(menu.IsCommandIdChecked(
-      IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE));
-
-  menu.ExecuteCommand(IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE, 0);
-  EXPECT_TRUE(menu.IsCommandIdChecked(
-      IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE));
-
-  menu.ExecuteCommand(IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE, 0);
-  EXPECT_FALSE(menu.IsCommandIdChecked(
-      IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE));
-}
+#endif
 
 TEST_F(MediaRouterContextualMenuUnitTest, ToggleMediaRemotingItem) {
   MediaRouterContextualMenu menu(browser(), kShownByPolicy, &observer_);

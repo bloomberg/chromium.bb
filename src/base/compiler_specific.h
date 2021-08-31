@@ -11,6 +11,26 @@
 #error "Only clang-cl is supported on Windows, see https://crbug.com/988071"
 #endif
 
+// This is a wrapper around `__has_cpp_attribute`, which can be used to test for
+// the presence of an attribute. In case the compiler does not support this
+// macro it will simply evaluate to 0.
+//
+// References:
+// https://wg21.link/sd6#testing-for-the-presence-of-an-attribute-__has_cpp_attribute
+// https://wg21.link/cpp.cond#:__has_cpp_attribute
+#if defined(__has_cpp_attribute)
+#define HAS_CPP_ATTRIBUTE(x) __has_cpp_attribute(x)
+#else
+#define HAS_CPP_ATTRIBUTE(x) 0
+#endif
+
+// A wrapper around `__has_builtin`, similar to HAS_CPP_ATTRIBUTE.
+#if defined(__has_builtin)
+#define HAS_BUILTIN(x) __has_builtin(x)
+#else
+#define HAS_BUILTIN(x) 0
+#endif
+
 // Annotate a variable indicating it's ok if the variable is not used.
 // (Typically used to silence a compiler warning when the assignment
 // is important for some other reason.)
@@ -52,7 +72,7 @@
 // To provide the complementary behavior (prevent the annotated function from
 // being omitted) look at NOINLINE. Also note that this doesn't prevent code
 // folding of multiple identical caller functions into a single signature. To
-// prevent code folding, see base::debug::Alias.
+// prevent code folding, see NO_CODE_FOLDING() in base/debug/alias.h.
 // Use like:
 //   void NOT_TAIL_CALLED FooBar();
 #if defined(__clang__) && __has_attribute(not_tail_called)
@@ -97,6 +117,20 @@
 #define WARN_UNUSED_RESULT __attribute__((warn_unused_result))
 #else
 #define WARN_UNUSED_RESULT
+#endif
+
+// In case the compiler supports it NO_UNIQUE_ADDRESS evaluates to the C++20
+// attribute [[no_unique_address]]. This allows annotating data members so that
+// they need not have an address distinct from all other non-static data members
+// of its class.
+//
+// References:
+// * https://en.cppreference.com/w/cpp/language/attributes/no_unique_address
+// * https://wg21.link/dcl.attr.nouniqueaddr
+#if HAS_CPP_ATTRIBUTE(no_unique_address)
+#define NO_UNIQUE_ADDRESS [[no_unique_address]]
+#else
+#define NO_UNIQUE_ADDRESS
 #endif
 
 // Tell the compiler a function is using a printf-style format string.
@@ -304,5 +338,59 @@ inline constexpr bool AnalyzerAssumeTrue(bool arg) {
 #define ANALYZER_ALLOW_UNUSED(var) static_cast<void>(var);
 
 #endif  // defined(__clang_analyzer__)
+
+// Use nomerge attribute to disable optimization of merging multiple same calls.
+#if defined(__clang__) && __has_attribute(nomerge)
+#define NOMERGE [[clang::nomerge]]
+#else
+#define NOMERGE
+#endif
+
+// Marks a type as being eligible for the "trivial" ABI despite having a
+// non-trivial destructor or copy/move constructor. Such types can be relocated
+// after construction by simply copying their memory, which makes them eligible
+// to be passed in registers. The canonical example is std::unique_ptr.
+//
+// Use with caution; this has some subtle effects on constructor/destructor
+// ordering and will be very incorrect if the type relies on its address
+// remaining constant. When used as a function argument (by value), the value
+// may be constructed in the caller's stack frame, passed in a register, and
+// then used and destructed in the callee's stack frame. A similar thing can
+// occur when values are returned.
+//
+// TRIVIAL_ABI is not needed for types which have a trivial destructor and
+// copy/move constructors, such as base::TimeTicks and other POD.
+//
+// It is also not likely to be effective on types too large to be passed in one
+// or two registers on typical target ABIs.
+//
+// See also:
+//   https://clang.llvm.org/docs/AttributeReference.html#trivial-abi
+//   https://libcxx.llvm.org/docs/DesignDocs/UniquePtrTrivialAbi.html
+#if defined(__clang__) && __has_attribute(trivial_abi)
+#define TRIVIAL_ABI [[clang::trivial_abi]]
+#else
+#define TRIVIAL_ABI
+#endif
+
+// Marks a member function as reinitializing a moved-from variable.
+// See also
+// https://clang.llvm.org/extra/clang-tidy/checks/bugprone-use-after-move.html#reinitialization
+#if defined(__clang__) && __has_attribute(reinitializes)
+#define REINITIALIZES_AFTER_MOVE [[clang::reinitializes]]
+#else
+#define REINITIALIZES_AFTER_MOVE
+#endif
+
+// Requires constant initialization. See constinit in C++20. Allows to rely on a
+// variable being initialized before execution, and not requiring a global
+// constructor.
+#if defined(__has_attribute)
+#if __has_attribute(require_constant_initialization)
+#define CONSTINIT __attribute__((require_constant_initialization))
+#else
+#define CONSTINIT
+#endif
+#endif
 
 #endif  // BASE_COMPILER_SPECIFIC_H_

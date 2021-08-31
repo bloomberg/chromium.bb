@@ -42,8 +42,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
   Properties GetProperties() const override;
   Permissions GetPermissions() const override;
   bool IsNotifying() const override;
-  void ReadRemoteCharacteristic(ValueCallback callback,
-                                ErrorCallback error_callback) override;
+  void ReadRemoteCharacteristic(ValueCallback callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
                                  WriteType write_type,
                                  base::OnceClosure callback,
@@ -90,7 +89,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
       std::unique_ptr<BTH_LE_GATT_CHARACTERISTIC_VALUE> value,
       HRESULT hr);
   void OnWriteRemoteCharacteristicValueCallback(HRESULT hr);
-  BluetoothRemoteGattService::GattErrorCode HRESULTToGattErrorCode(HRESULT hr);
+  BluetoothGattService::GattErrorCode HRESULTToGattErrorCode(HRESULT hr);
   void OnGattCharacteristicValueChanged(
       std::unique_ptr<std::vector<uint8_t>> new_value);
   void GattEventRegistrationCallback(base::OnceClosure callback,
@@ -113,8 +112,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
   // has been sent out to avoid duplicate notification.
   bool characteristic_added_notified_;
 
-  // ReadRemoteCharacteristic request callbacks.
-  std::pair<ValueCallback, ErrorCallback> read_characteristic_value_callbacks_;
+  // ReadRemoteCharacteristic request callback.
+  ValueCallback read_characteristic_value_callback_;
 
   // WriteRemoteCharacteristic request callbacks.
   std::pair<base::OnceClosure, ErrorCallback>

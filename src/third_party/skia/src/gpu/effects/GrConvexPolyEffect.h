@@ -52,15 +52,9 @@ public:
      */
     static GrFPResult Make(std::unique_ptr<GrFragmentProcessor>, GrClipEdgeType, const SkPath&);
 
-    /**
-     * Creates an effect that fills inside the rect with AA edges..
-     */
-    static GrFPResult Make(std::unique_ptr<GrFragmentProcessor>, GrClipEdgeType, const SkRect&);
-
     ~GrConvexPolyEffect() override;
 
     const char* name() const override { return "ConvexPoly"; }
-
     std::unique_ptr<GrFragmentProcessor> clone() const override;
 
     GrClipEdgeType getEdgeType() const { return fEdgeType; }
@@ -75,7 +69,7 @@ private:
                        int n, const SkScalar edges[]);
     GrConvexPolyEffect(const GrConvexPolyEffect&);
 
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
 
     void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
 

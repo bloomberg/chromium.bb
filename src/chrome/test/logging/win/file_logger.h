@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/win/event_trace_controller.h"
 
 namespace base {

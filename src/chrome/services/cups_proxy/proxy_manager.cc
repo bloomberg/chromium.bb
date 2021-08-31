@@ -23,7 +23,7 @@
 #include "chrome/services/cups_proxy/public/cpp/ipp_messages.h"
 #include "chrome/services/cups_proxy/public/cpp/type_conversions.h"
 #include "chrome/services/cups_proxy/socket_manager.h"
-#include "chrome/services/ipp_parser/ipp_parser_service.h"
+#include "chrome/services/ipp_parser/public/cpp/browser/ipp_parser_launcher.h"
 #include "chrome/services/ipp_parser/public/cpp/ipp_converter.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -52,6 +52,8 @@ class ProxyManagerImpl : public ProxyManager {
         socket_manager_(std::move(socket_manager)),
         receiver_(this, std::move(request)) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    receiver_.set_disconnect_handler(
+        base::BindOnce([] { LOG(ERROR) << "CupsProxy mojo connection lost"; }));
   }
 
   ~ProxyManagerImpl() override = default;
@@ -111,7 +113,7 @@ class ProxyManagerImpl : public ProxyManager {
   DISALLOW_COPY_AND_ASSIGN(ProxyManagerImpl);
 };
 
-base::Optional<std::vector<uint8_t>> RebuildIppRequest(
+absl::optional<std::vector<uint8_t>> RebuildIppRequest(
     const std::string& method,
     const std::string& url,
     const std::string& version,
@@ -120,12 +122,12 @@ base::Optional<std::vector<uint8_t>> RebuildIppRequest(
   auto request_line_buffer =
       ipp_converter::BuildRequestLine(method, url, version);
   if (!request_line_buffer.has_value()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   auto headers_buffer = ipp_converter::BuildHeaders(headers);
   if (!headers_buffer.has_value()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   std::vector<uint8_t> ret;
@@ -156,8 +158,8 @@ void ProxyManagerImpl::ProxyRequest(
       time - timestamp_.ReadBuffer(0) < base::TimeDelta::FromSeconds(1);
   timestamp_.SaveToBuffer(time);
   if (block_request) {
-    DVLOG(1) << "CupsPrintService Error: Rate limit (" << kRateLimit
-             << ") exceeded";
+    LOG(WARNING) << "CupsPrintService: Rate limit (" << kRateLimit
+                 << ") exceeded";
     std::move(cb).Run({}, {}, 429);  // HTTP_STATUS_TOO_MANY_REQUESTS
     return;
   }
@@ -257,7 +259,7 @@ void ProxyManagerImpl::SpoofGetPrinters() {
       delegate_->GetPrinters(chromeos::PrinterClass::kSaved),
       delegate_->GetPrinters(chromeos::PrinterClass::kEnterprise),
       delegate_->GetRecentlyUsedPrinters());
-  base::Optional<IppResponse> response =
+  absl::optional<IppResponse> response =
       BuildGetDestsResponse(in_flight_->request, printers);
   if (!response.has_value()) {
     return Fail("Failed to spoof CUPS-Get-Printers response",

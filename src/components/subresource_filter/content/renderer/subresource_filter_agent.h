@@ -47,6 +47,11 @@ class SubresourceFilterAgent
       std::unique_ptr<AdResourceTracker> ad_resource_tracker);
   ~SubresourceFilterAgent() override;
 
+  // Unit tests don't have a RenderFrame so the construction relies on virtual
+  // methods on this class instead to inject test behaviour. That can't happen
+  // in the constructor, so we need an Initialize() method.
+  void Initialize();
+
  protected:
   // Below methods are protected virtual so they can be mocked out in tests.
 
@@ -54,8 +59,9 @@ class SubresourceFilterAgent
   virtual GURL GetDocumentURL();
 
   virtual bool IsMainFrame();
-
-  virtual bool HasDocumentLoader();
+  virtual bool IsParentAdSubframe();
+  virtual bool IsProvisional();
+  virtual bool IsSubframeCreatedByAdScript();
 
   // Injects the provided subresource |filter| into the DocumentLoader
   // orchestrating the most recently created document.
@@ -71,21 +77,29 @@ class SubresourceFilterAgent
   virtual void SendDocumentLoadStatistics(
       const mojom::DocumentLoadStatistics& statistics);
 
-  // Tells the browser that the frame is an ad subframe.
+  // Tells the browser that the renderer tagged the frame as an ad subframe.
+  // This is not sent for frames tagged by the browser.
   virtual void SendFrameIsAdSubframe();
+
+  // Tells the browser that the frame is a subframe that was created by ad
+  // script.
+  virtual void SendSubframeWasCreatedByAdScript();
 
   // True if the frame has been heuristically determined to be an ad subframe.
   virtual bool IsAdSubframe();
-  virtual void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type);
 
-  void SetFirstDocument(bool first_document) {
-    first_document_ = first_document;
-  }
+  virtual const absl::optional<blink::FrameAdEvidence>& AdEvidence();
+  virtual void SetAdEvidence(const blink::FrameAdEvidence& ad_evidence);
+
+  // The browser will not inform the renderer of the (sub)frame's ad status and
+  // evidence in the case of an initial synchronous commit to about:blank. We
+  // thus fill in the frame's ad evidence and, if necessary, tag it as an ad.
+  void SetAdEvidenceForInitialEmptySubframe();
 
   // mojom::SubresourceFilterAgent:
   void ActivateForNextCommittedLoad(
       mojom::ActivationStatePtr activation_state,
-      blink::mojom::AdFrameType ad_frame_type) override;
+      const absl::optional<blink::FrameAdEvidence>& ad_evidence) override;
 
  private:
   // Returns the activation state for the `render_frame` to inherit. Main frames
@@ -116,6 +130,8 @@ class SubresourceFilterAgent
   void DidFailProvisionalLoad() override;
   void DidFinishLoad() override;
   void WillCreateWorkerFetchContext(blink::WebWorkerFetchContext*) override;
+  void OnOverlayPopupAdDetected() override;
+  void OnLargeStickyAdDetected() override;
 
   // Owned by the ChromeContentRendererClient and outlives us.
   UnverifiedRulesetDealer* ruleset_dealer_;
@@ -130,10 +146,6 @@ class SubresourceFilterAgent
   mojo::AssociatedRemote<mojom::SubresourceFilterHost> subresource_filter_host_;
 
   mojo::AssociatedReceiver<mojom::SubresourceFilterAgent> receiver_{this};
-
-  // If a document hasn't been created for this frame before. The first document
-  // for a new local subframe should be about:blank.
-  bool first_document_ = true;
 
   base::WeakPtr<WebDocumentSubresourceFilterImpl>
       filter_for_last_created_document_;

@@ -14,8 +14,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_api_call_flow_impl.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_http_notifier.h"
-#include "chrome/browser/nearby_sharing/client/nearby_share_switches.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_http_result.h"
+#include "chrome/browser/nearby_sharing/common/nearby_share_switches.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/nearby_sharing/proto/certificate_rpc.pb.h"
 #include "chrome/browser/nearby_sharing/proto/contact_rpc.pb.h"
@@ -239,7 +239,7 @@ void NearbyShareClientImpl::UpdateDevice(
   notifier_->NotifyOfRequest(request);
   MakeApiCall(CreateV1RequestUrl(request.device().name()), RequestType::kPatch,
               request.SerializeAsString(),
-              /*request_as_query_parameters=*/base::nullopt,
+              /*request_as_query_parameters=*/absl::nullopt,
               std::move(callback), std::move(error_callback),
               GetUpdateDeviceAnnotation());
 }
@@ -250,7 +250,7 @@ void NearbyShareClientImpl::ListContactPeople(
     ErrorCallback&& error_callback) {
   notifier_->NotifyOfRequest(request);
   MakeApiCall(CreateV1RequestUrl(kListContactPeoplePath), RequestType::kGet,
-              /*serialized_request=*/base::nullopt,
+              /*serialized_request=*/absl::nullopt,
               ListContactPeopleRequestToQueryParameters(request),
               std::move(callback), std::move(error_callback),
               GetContactsAnnotation());
@@ -263,7 +263,7 @@ void NearbyShareClientImpl::ListPublicCertificates(
   notifier_->NotifyOfRequest(request);
   MakeApiCall(
       CreateV1RequestUrl(request.parent() + "/" + kListPublicCertificatesPath),
-      RequestType::kGet, /*serialized_request=*/base::nullopt,
+      RequestType::kGet, /*serialized_request=*/absl::nullopt,
       ListPublicCertificatesRequestToQueryParameters(request),
       std::move(callback), std::move(error_callback),
       GetListPublicCertificatesAnnotation());
@@ -277,8 +277,8 @@ template <class ResponseProto>
 void NearbyShareClientImpl::MakeApiCall(
     const GURL& request_url,
     RequestType request_type,
-    const base::Optional<std::string>& serialized_request,
-    const base::Optional<NearbyShareApiCallFlow::QueryParameters>&
+    const absl::optional<std::string>& serialized_request,
+    const absl::optional<NearbyShareApiCallFlow::QueryParameters>&
         request_as_query_parameters,
     base::OnceCallback<void(const ResponseProto&)>&& response_callback,
     ErrorCallback&& error_callback,
@@ -305,14 +305,14 @@ void NearbyShareClientImpl::MakeApiCall(
               weak_ptr_factory_.GetWeakPtr(), request_type, serialized_request,
               request_as_query_parameters, std::move(response_callback)),
           signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable,
-          signin::ConsentLevel::kNotRequired);
+          signin::ConsentLevel::kSignin);
 }
 
 template <class ResponseProto>
 void NearbyShareClientImpl::OnAccessTokenFetched(
     RequestType request_type,
-    const base::Optional<std::string>& serialized_request,
-    const base::Optional<NearbyShareApiCallFlow::QueryParameters>&
+    const absl::optional<std::string>& serialized_request,
+    const absl::optional<NearbyShareApiCallFlow::QueryParameters>&
         request_as_query_parameters,
     base::OnceCallback<void(const ResponseProto&)>&& response_callback,
     GoogleServiceAuthError error,

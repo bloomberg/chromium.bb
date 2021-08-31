@@ -8,26 +8,25 @@
 #include <string>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/system_tray.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/strings/string16.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/ash/notifications/update_required_notification.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler_delegate_impl.h"
-#include "chrome/browser/chromeos/ui/update_required_notification.h"
-#include "chrome/browser/ui/ash/system_tray_client.h"
+#include "chrome/browser/ui/ash/system_tray_client_impl.h"
 #include "chrome/browser/upgrade_detector/build_state.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -63,18 +62,17 @@ MinimumVersionPolicyHandler::NetworkStatus GetCurrentNetworkStatus() {
 }
 
 void OpenNetworkSettings() {
-  ash::SystemTray::Get()->ShowNetworkDetailedViewBubble(
-      true /* show_by_click */);
+  ash::SystemTray::Get()->ShowNetworkDetailedViewBubble();
 }
 
 void OpenEnterpriseInfoPage() {
-  SystemTrayClient::Get()->ShowEnterpriseInfo();
+  SystemTrayClientImpl::Get()->ShowEnterpriseInfo();
 }
 
-std::string GetEnterpriseDomainName() {
+std::string GetEnterpriseManager() {
   return g_browser_process->platform_part()
       ->browser_policy_connector_chromeos()
-      ->GetEnterpriseDisplayDomain();
+      ->GetEnterpriseDomainManager();
 }
 
 BuildState* GetBuildState() {
@@ -155,14 +153,14 @@ int MinimumVersionRequirement::Compare(
 
 MinimumVersionPolicyHandler::MinimumVersionPolicyHandler(
     Delegate* delegate,
-    chromeos::CrosSettings* cros_settings)
+    ash::CrosSettings* cros_settings)
     : delegate_(delegate),
       cros_settings_(cros_settings),
       clock_(base::DefaultClock::GetInstance()) {
   policy_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kDeviceMinimumVersion,
-      base::Bind(&MinimumVersionPolicyHandler::OnPolicyChanged,
-                 weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&MinimumVersionPolicyHandler::OnPolicyChanged,
+                          weak_factory_.GetWeakPtr()));
 
   // Fire it once so we're sure we get an invocation on startup.
   OnPolicyChanged();
@@ -459,10 +457,10 @@ void MinimumVersionPolicyHandler::StartObservingUpdate() {
     build_state->AddObserver(this);
 }
 
-base::Optional<int> MinimumVersionPolicyHandler::GetTimeRemainingInDays() {
+absl::optional<int> MinimumVersionPolicyHandler::GetTimeRemainingInDays() {
   const base::Time now = clock_->Now();
   if (!state_ || update_required_deadline_ <= now)
-    return base::nullopt;
+    return absl::nullopt;
   base::TimeDelta time_remaining = update_required_deadline_ - now;
   return GetDaysRounded(time_remaining);
 }
@@ -471,7 +469,7 @@ void MinimumVersionPolicyHandler::MaybeShowNotificationOnLogin() {
   // |days| could be null if |update_required_deadline_timer_| expired while
   // login was in progress, else we would have shown the update required screen
   // at startup.
-  base::Optional<int> days = GetTimeRemainingInDays();
+  absl::optional<int> days = GetTimeRemainingInDays();
   if (days && days.value() <= 1)
     MaybeShowNotification(base::TimeDelta::FromDays(days.value()));
 }
@@ -485,14 +483,13 @@ void MinimumVersionPolicyHandler::MaybeShowNotification(
   }
 
   if (!notification_handler_) {
-    notification_handler_ =
-        std::make_unique<chromeos::UpdateRequiredNotification>();
+    notification_handler_ = std::make_unique<ash::UpdateRequiredNotification>();
   }
 
   NotificationType type = NotificationType::kNoConnection;
   base::OnceClosure button_click_callback;
-  std::string domain_name = GetEnterpriseDomainName();
-  base::string16 device_type = ui::GetChromeOSDeviceName();
+  std::string manager = GetEnterpriseManager();
+  std::u16string device_type = ui::GetChromeOSDeviceName();
   auto close_callback =
       base::BindOnce(&MinimumVersionPolicyHandler::StopObservingNetwork,
                      weak_factory_.GetWeakPtr());
@@ -513,7 +510,7 @@ void MinimumVersionPolicyHandler::MaybeShowNotification(
     NOTREACHED();
     return;
   }
-  notification_handler_->Show(type, warning, domain_name, device_type,
+  notification_handler_->Show(type, warning, manager, device_type,
                               std::move(button_click_callback),
                               std::move(close_callback));
 

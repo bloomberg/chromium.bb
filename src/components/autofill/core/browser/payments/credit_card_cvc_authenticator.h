@@ -6,8 +6,8 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_CREDIT_CARD_CVC_AUTHENTICATOR_H_
 
 #include <memory>
+#include <string>
 
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -34,17 +34,17 @@ class CreditCardCVCAuthenticator
       card = c;
       return *this;
     }
-    CVCAuthenticationResponse& with_cvc(const base::string16 s) {
-      cvc = base::string16(s);
+    CVCAuthenticationResponse& with_cvc(const std::u16string s) {
+      cvc = std::u16string(s);
       return *this;
     }
     CVCAuthenticationResponse& with_creation_options(
-        base::Optional<base::Value> v) {
+        absl::optional<base::Value> v) {
       creation_options = std::move(v);
       return *this;
     }
     CVCAuthenticationResponse& with_request_options(
-        base::Optional<base::Value> v) {
+        absl::optional<base::Value> v) {
       request_options = std::move(v);
       return *this;
     }
@@ -54,9 +54,9 @@ class CreditCardCVCAuthenticator
     }
     bool did_succeed = false;
     const CreditCard* card = nullptr;
-    base::string16 cvc = base::string16();
-    base::Optional<base::Value> creation_options = base::nullopt;
-    base::Optional<base::Value> request_options = base::nullopt;
+    std::u16string cvc = std::u16string();
+    absl::optional<base::Value> creation_options;
+    absl::optional<base::Value> request_options;
     std::string card_authorization_token = std::string();
   };
   class Requester {
@@ -94,8 +94,9 @@ class CreditCardCVCAuthenticator
   void OnFullCardRequestSucceeded(
       const payments::FullCardRequest& full_card_request,
       const CreditCard& card,
-      const base::string16& cvc) override;
-  void OnFullCardRequestFailed() override;
+      const std::u16string& cvc) override;
+  void OnFullCardRequestFailed(
+      payments::FullCardRequest::FailureType failure_type) override;
 
   // payments::FullCardRequest::UIDelegate
   void ShowUnmaskPrompt(const CreditCard& card,
@@ -115,7 +116,7 @@ class CreditCardCVCAuthenticator
 
  private:
   friend class AutofillAssistantTest;
-  friend class AutofillManagerTest;
+  friend class BrowserAutofillManagerTest;
   friend class AutofillMetricsTest;
   friend class CreditCardAccessManagerTest;
   friend class CreditCardCVCAuthenticatorTest;

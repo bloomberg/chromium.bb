@@ -80,10 +80,7 @@ Polymer({
      */
     quickUnlockDisabledByPolicy_: {
       type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('quickUnlockDisabledByPolicy');
-      },
-      readOnly: true,
+      value: loadTimeData.getBoolean('quickUnlockDisabledByPolicy'),
     },
 
     /**
@@ -102,6 +99,12 @@ Polymer({
     numFingerprints_: {
       type: Number,
       value: 0,
+      observer: 'updateNumFingerprintsDescription_',
+    },
+
+    /** @private */
+    numFingerprintsDescription_: {
+      type: String,
     },
 
     /**
@@ -158,6 +161,8 @@ Polymer({
       value: () => new Set([
         chromeos.settings.mojom.Setting.kLockScreen,
         chromeos.settings.mojom.Setting.kChangeAuthPin,
+        chromeos.settings.mojom.Setting.kLockScreenV2,
+        chromeos.settings.mojom.Setting.kChangeAuthPinV2,
       ]),
     },
   },
@@ -173,6 +178,13 @@ Polymer({
     this.fingerprintBrowserProxy_ =
         settings.FingerprintBrowserProxyImpl.getInstance();
     this.updateNumFingerprints_();
+
+    this.addWebUIListener(
+        'quick-unlock-disabled-by-policy-changed',
+        (quickUnlockDisabledByPolicy) => {
+          this.quickUnlockDisabledByPolicy_ = quickUnlockDisabledByPolicy;
+        });
+    chrome.send('RequestQuickUnlockDisabledByPolicy');
   },
 
   /**
@@ -252,11 +264,14 @@ Polymer({
       // small chance that CrOS fails to remove the quick unlock capability. See
       // https://crbug.com/1054327 for details.
       this.hasPin = false;
-      this.setModes.call(null, [], [], function(result) {
-        assert(result, 'Failed to clear quick unlock modes');
+      this.setModes.call(null, [], [], (result) => {
         // Revert |hasPin| to true in the event setModes fails to set lock state
         // to PASSWORD only.
-        this.hasPin = true;
+        if (!result) {
+          this.hasPin = true;
+        }
+
+        assert(result, 'Failed to clear quick unlock modes');
       });
     }
   },
@@ -336,13 +351,16 @@ Polymer({
   },
 
   /** @private */
-  getDescriptionText_() {
-    if (this.numFingerprints_ > 0) {
-      return this.i18n(
-          'lockScreenNumberFingerprints', this.numFingerprints_.toString());
+  updateNumFingerprintsDescription_() {
+    if (this.numFingerprints_ === 0) {
+      this.numFingerprintDescription_ =
+          this.i18n('lockScreenEditFingerprintsDescription');
+    } else {
+      PluralStringProxyImpl.getInstance()
+          .getPluralString(
+              'lockScreenNumberFingerprints', this.numFingerprints_)
+          .then(string => this.numFingerprintDescription_ = string);
     }
-
-    return this.i18n('lockScreenEditFingerprintsDescription');
   },
 
   /** @private */

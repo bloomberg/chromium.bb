@@ -18,12 +18,12 @@ InkDropEventHandler::InkDropEventHandler(View* host_view, Delegate* delegate)
           std::make_unique<ui::ScopedTargetHandler>(host_view, this)),
       host_view_(host_view),
       delegate_(delegate) {
-  observer_.Add(host_view_);
+  observation_.Observe(host_view_);
 }
 
 InkDropEventHandler::~InkDropEventHandler() = default;
 
-void InkDropEventHandler::AnimateInkDrop(InkDropState state,
+void InkDropEventHandler::AnimateToState(InkDropState state,
                                          const ui::LocatedEvent* event) {
 #if defined(OS_WIN)
   // On Windows, don't initiate ink-drops for touch/gesture events.
@@ -93,7 +93,7 @@ void InkDropEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     // case would prematurely pre-empt these animations.
     return;
   }
-  AnimateInkDrop(ink_drop_state, event);
+  AnimateToState(ink_drop_state, event);
 }
 
 void InkDropEventHandler::OnMouseEvent(ui::MouseEvent* event) {
@@ -111,6 +111,10 @@ void InkDropEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     default:
       break;
   }
+}
+
+base::StringPiece InkDropEventHandler::GetLogContext() const {
+  return "InkDropEventHandler";
 }
 
 void InkDropEventHandler::OnViewVisibilityChanged(View* observed_view,

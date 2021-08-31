@@ -52,7 +52,7 @@ class PageLiveStateDecoratorHelperTest
 
   void EndToEndStreamPropertyTest(
       blink::mojom::MediaStreamType stream_type,
-      base::Optional<media::mojom::DisplayMediaInformationPtr>
+      absl::optional<media::mojom::DisplayMediaInformationPtr>
           display_media_info,
       bool (PageLiveStateDecorator::Data::*pm_getter)() const);
 
@@ -67,10 +67,12 @@ class PageLiveStateDecoratorHelperTest
 
 void PageLiveStateDecoratorHelperTest::EndToEndStreamPropertyTest(
     blink::mojom::MediaStreamType stream_type,
-    base::Optional<media::mojom::DisplayMediaInformationPtr> display_media_info,
+    absl::optional<media::mojom::DisplayMediaInformationPtr> display_media_info,
     bool (PageLiveStateDecorator::Data::*pm_getter)() const) {
   // By default all properties are set to false.
-  testing::TestPageNodePropertyOnPMSequence(web_contents(), pm_getter, false);
+  testing::TestPageNodePropertyOnPMSequence(
+      web_contents(), &PageLiveStateDecorator::Data::GetOrCreateForPageNode,
+      pm_getter, false);
 
   // Create the fake stream device and start it, this should set the property to
   // true.
@@ -82,11 +84,15 @@ void PageLiveStateDecoratorHelperTest::EndToEndStreamPropertyTest(
   ui->OnStarted(base::OnceClosure(), content::MediaStreamUI::SourceCallback(),
                 /*label=*/std::string(), /*screen_capture_ids=*/{},
                 content::MediaStreamUI::StateChangeCallback());
-  testing::TestPageNodePropertyOnPMSequence(web_contents(), pm_getter, true);
+  testing::TestPageNodePropertyOnPMSequence(
+      web_contents(), &PageLiveStateDecorator::Data::GetOrCreateForPageNode,
+      pm_getter, true);
 
   // Switch back to the default state.
   ui.reset();
-  testing::TestPageNodePropertyOnPMSequence(web_contents(), pm_getter, false);
+  testing::TestPageNodePropertyOnPMSequence(
+      web_contents(), &PageLiveStateDecorator::Data::GetOrCreateForPageNode,
+      pm_getter, false);
 }
 
 }  // namespace
@@ -94,28 +100,28 @@ void PageLiveStateDecoratorHelperTest::EndToEndStreamPropertyTest(
 TEST_F(PageLiveStateDecoratorHelperTest, OnIsCapturingVideoChanged) {
   EndToEndStreamPropertyTest(
       blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE,
-      /*display_media_info=*/base::nullopt,
+      /*display_media_info=*/absl::nullopt,
       &PageLiveStateDecorator::Data::IsCapturingVideo);
 }
 
 TEST_F(PageLiveStateDecoratorHelperTest, OnIsCapturingAudioChanged) {
   EndToEndStreamPropertyTest(
       blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
-      /*display_media_info=*/base::nullopt,
+      /*display_media_info=*/absl::nullopt,
       &PageLiveStateDecorator::Data::IsCapturingAudio);
 }
 
 TEST_F(PageLiveStateDecoratorHelperTest, OnIsBeingMirroredChanged) {
   EndToEndStreamPropertyTest(
       blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE,
-      /*display_media_info=*/base::nullopt,
+      /*display_media_info=*/absl::nullopt,
       &PageLiveStateDecorator::Data::IsBeingMirrored);
 }
 
 TEST_F(PageLiveStateDecoratorHelperTest, OnIsCapturingWindowChanged) {
   EndToEndStreamPropertyTest(
       blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE,
-      /*display_media_info=*/base::nullopt,
+      /*display_media_info=*/absl::nullopt,
       &PageLiveStateDecorator::Data::IsCapturingWindow);
 }
 
@@ -124,23 +130,24 @@ TEST_F(PageLiveStateDecoratorHelperTest, OnIsCapturingDisplayChanged) {
       blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE,
       media::mojom::DisplayMediaInformation::New(
           media::mojom::DisplayCaptureSurfaceType::MONITOR,
-          /*logical_surface=*/true, media::mojom::CursorCaptureType::NEVER),
+          /*logical_surface=*/true, media::mojom::CursorCaptureType::NEVER,
+          /*capture_handle=*/nullptr),
       &PageLiveStateDecorator::Data::IsCapturingDisplay);
 }
 
 TEST_F(PageLiveStateDecoratorHelperTest, IsConnectedToBluetoothDevice) {
   testing::TestPageNodePropertyOnPMSequence(
-      web_contents(),
+      web_contents(), &PageLiveStateDecorator::Data::GetOrCreateForPageNode,
       &PageLiveStateDecorator::Data::IsConnectedToBluetoothDevice, false);
   content::WebContentsTester::For(web_contents())
       ->TestIncrementBluetoothConnectedDeviceCount();
   testing::TestPageNodePropertyOnPMSequence(
-      web_contents(),
+      web_contents(), &PageLiveStateDecorator::Data::GetOrCreateForPageNode,
       &PageLiveStateDecorator::Data::IsConnectedToBluetoothDevice, true);
   content::WebContentsTester::For(web_contents())
       ->TestDecrementBluetoothConnectedDeviceCount();
   testing::TestPageNodePropertyOnPMSequence(
-      web_contents(),
+      web_contents(), &PageLiveStateDecorator::Data::GetOrCreateForPageNode,
       &PageLiveStateDecorator::Data::IsConnectedToBluetoothDevice, false);
 }
 

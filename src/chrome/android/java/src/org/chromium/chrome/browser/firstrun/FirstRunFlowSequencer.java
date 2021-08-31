@@ -20,16 +20,16 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
+import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.services.AndroidChildAccountHelper;
-import org.chromium.chrome.browser.signin.IdentityServicesProvider;
-import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.search_engines.SearchEnginePromoType;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
@@ -70,23 +70,13 @@ public abstract class FirstRunFlowSequencer  {
      * Once finished, calls onFlowIsKnown().
      */
     public void start() {
-        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-                || ApiCompatibilityUtils.isDemoUser()
-                || ApiCompatibilityUtils.isRunningInUserTestHarness()) {
-            onFlowIsKnown(null);
-            return;
-        }
-
         long childAccountStatusStart = SystemClock.elapsedRealtime();
-        new AndroidChildAccountHelper() {
-            @Override
-            public void onParametersReady() {
-                RecordHistogram.recordTimesHistogram("MobileFre.ChildAccountStatusDuration",
-                        SystemClock.elapsedRealtime() - childAccountStatusStart);
-                initializeSharedState(getChildAccountStatus());
-                processFreEnvironmentPreNative();
-            }
-        }.start();
+        ChildAccountService.checkChildAccountStatus(status -> {
+            RecordHistogram.recordTimesHistogram("MobileFre.ChildAccountStatusDuration",
+                    SystemClock.elapsedRealtime() - childAccountStatusStart);
+            initializeSharedState(status);
+            processFreEnvironmentPreNative();
+        });
     }
 
     @VisibleForTesting
@@ -133,16 +123,10 @@ public abstract class FirstRunFlowSequencer  {
 
     @VisibleForTesting
     protected boolean shouldShowSearchEnginePage() {
-        @LocaleManager.SearchEnginePromoType
-        int searchPromoType = LocaleManager.getInstance().getSearchEnginePromoShowType();
-        return searchPromoType == LocaleManager.SearchEnginePromoType.SHOW_NEW
-                || searchPromoType == LocaleManager.SearchEnginePromoType.SHOW_EXISTING;
-    }
-
-    @VisibleForTesting
-    protected void setDefaultMetricsAndCrashReporting() {
-        PrivacyPreferencesManager.getInstance().setUsageAndCrashReporting(
-                FirstRunActivity.DEFAULT_METRICS_AND_CRASH_REPORTING);
+        @SearchEnginePromoType
+        int searchPromoType = AppHooks.get().getLocaleManager().getSearchEnginePromoShowType();
+        return searchPromoType == SearchEnginePromoType.SHOW_NEW
+                || searchPromoType == SearchEnginePromoType.SHOW_EXISTING;
     }
 
     @VisibleForTesting
@@ -159,19 +143,8 @@ public abstract class FirstRunFlowSequencer  {
     }
 
     void processFreEnvironmentPreNative() {
-        if (isFirstRunFlowComplete()) {
-            assert isFirstRunEulaAccepted();
-            // We do not need any interactive FRE.
-            onFlowIsKnown(null);
-            return;
-        }
-
         Bundle freProperties = new Bundle();
-        freProperties.putInt(SigninFirstRunFragment.CHILD_ACCOUNT_STATUS, mChildAccountStatus);
-
-        // Initialize usage and crash reporting according to the default value.
-        // The user can explicitly enable or disable the reporting on the Welcome page.
-        setDefaultMetricsAndCrashReporting();
+        freProperties.putInt(SyncConsentFirstRunFragment.CHILD_ACCOUNT_STATUS, mChildAccountStatus);
 
         onFlowIsKnown(freProperties);
         if (ChildAccountStatus.isChild(mChildAccountStatus)) {
@@ -180,23 +153,17 @@ public abstract class FirstRunFlowSequencer  {
     }
 
     /**
-     * Called onNativeInitialized() a given flow as completed.
+     * Will be called either when policies are initialized, or when native is initialized if we have
+     * no on-device policies.
      * @param freProperties Resulting FRE properties bundle.
      */
-    public void onNativeInitialized(Bundle freProperties) {
+    public void onNativeAndPoliciesInitialized(Bundle freProperties) {
         // We show the sign-in page if sync is allowed, and not signed in, and
         // - no "skip the first use hints" is set, or
         // - "skip the first use hints" is set, but there is at least one account.
         boolean offerSignInOk = isSyncAllowed() && !isSignedIn()
                 && (!shouldSkipFirstUseHints() || !mGoogleAccounts.isEmpty());
         freProperties.putBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE, offerSignInOk);
-        if (ChildAccountStatus.isChild(mChildAccountStatus)) {
-            // If the device has a child account, there should be
-            // exactly account on the device. Force sign-in in to that account.
-            freProperties.putString(
-                    SigninFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO, mGoogleAccounts.get(0).name);
-        }
-
         freProperties.putBoolean(
                 FirstRunActivity.SHOW_DATA_REDUCTION_PAGE, shouldShowDataReductionPage());
         freProperties.putBoolean(
@@ -250,11 +217,10 @@ public abstract class FirstRunFlowSequencer  {
             // Promo pages are removed, so there is nothing else to show in FRE.
             return false;
         }
-        if (FirstRunStatus.isEphemeralSkipFirstRun() && (isCct || preferLightweightFre)) {
+        if (FirstRunStatus.isFirstRunSkippedByPolicy() && (isCct || preferLightweightFre)) {
             // Domain policies may have caused CCTs to skip the FRE. While this needs to be figured
             // out at runtime for each app restart, it should apply to all CCTs for the duration of
             // the app's lifetime.
-            // TODO(https://crbug.com/1108582): Replace this with a shared pref.
             return false;
         }
         if (preferLightweightFre
@@ -297,7 +263,13 @@ public abstract class FirstRunFlowSequencer  {
             Intent freIntent = intentCreator.create(
                     caller, fromIntent, requiresBroadcast, preferLightweightFre);
 
-            if (!(caller instanceof Activity)) freIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            // Although the FRE tries to run in the same task now, this is still needed for
+            // non-activity entry points like the search widget to launch at all. This flag does not
+            // seem to preclude an old task from being reused.
+            if (!(caller instanceof Activity)) {
+                freIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            }
+
             boolean isVrIntent = VrModuleProvider.getIntentDelegate().isVrIntent(fromIntent);
             if (isVrIntent) {
                 freIntent =

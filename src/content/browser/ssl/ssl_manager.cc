@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/task/post_task.h"
+#include "base/trace_event/optional_trace_event.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/common/content_client.h"
+#include "net/cert/cert_status_flags.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -41,12 +43,12 @@ const char kSSLManagerKeyName[] = "content_ssl_manager";
 // Used to log type of mixed content displayed/ran, matches histogram enum
 // (MixedContentType). DO NOT REORDER.
 enum class MixedContentType {
-  kDisplayMixedContent = 0,
-  kDisplayWithCertErrors = 1,
+  kOptionallyBlockableMixedContent = 0,
+  kOptionallyBlockableWithCertErrors = 1,
   kMixedForm = 2,
-  kScriptingMixedContent = 3,
-  kScriptingWithCertErrors = 4,
-  kMaxValue = kScriptingWithCertErrors,
+  kBlockableMixedContent = 3,
+  kBlockableWithCertErrors = 4,
+  kMaxValue = kBlockableWithCertErrors,
 };
 
 void OnAllowCertificate(SSLErrorHandler* handler,
@@ -98,8 +100,8 @@ class SSLManagerSet : public base::SupportsUserData::Data {
 void LogMixedContentMetrics(MixedContentType type,
                             ukm::SourceId source_id,
                             ukm::UkmRecorder* recorder) {
-  UMA_HISTOGRAM_ENUMERATION("SSL.MixedContentShown", type);
-  ukm::builders::SSL_MixedContentShown(source_id)
+  UMA_HISTOGRAM_ENUMERATION("SSL.MixedContentShown2", type);
+  ukm::builders::SSL_MixedContentShown2(source_id)
       .SetType(static_cast<int64_t>(type))
       .Record(recorder);
 }
@@ -187,11 +189,14 @@ void SSLManager::DidCommitProvisionalLoad(const LoadCommittedDetails& details) {
     if (previous_entry) {
       add_content_status_flags = previous_entry->GetSSL().content_status;
     }
-  } else {
-    // For main-frame non-same-page navigations, clear content status
-    // flags. These flags are set based on the content on the page, and thus
-    // should reflect the current content, even if the navigation was to an
-    // existing entry that already had content status flags set.
+  } else if (!details.is_prerender_activation) {
+    // For main-frame navigations that are not same-document and not prerender
+    // activations, clear content status flags. These flags are set based on the
+    // content on the page, and thus should reflect the current content, even if
+    // the navigation was to an existing entry that already had content status
+    // flags set. The status flags are kept for prerender activations because
+    // |entry| points to the NavigationEntry that has just committed and it may
+    // contain existing ssl flags which we do not want to reset.
     remove_content_status_flags = ~0;
     // Also clear any UserData from the SSLStatus.
     if (entry)
@@ -207,19 +212,21 @@ void SSLManager::DidCommitProvisionalLoad(const LoadCommittedDetails& details) {
 }
 
 void SSLManager::DidDisplayMixedContent() {
+  OPTIONAL_TRACE_EVENT0("content", "SSLManager::DidDisplayMixedContent");
   NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
   if (entry && entry->GetURL().SchemeIsCryptographic() &&
       entry->GetSSL().certificate) {
     WebContentsImpl* contents = static_cast<WebContentsImpl*>(
         controller_->delegate()->GetWebContents());
     ukm::SourceId source_id = contents->GetMainFrame()->GetPageUkmSourceId();
-    LogMixedContentMetrics(MixedContentType::kDisplayMixedContent, source_id,
-                           ukm::UkmRecorder::Get());
+    LogMixedContentMetrics(MixedContentType::kOptionallyBlockableMixedContent,
+                           source_id, ukm::UkmRecorder::Get());
   }
   UpdateLastCommittedEntry(SSLStatus::DISPLAYED_INSECURE_CONTENT, 0);
 }
 
 void SSLManager::DidContainInsecureFormAction() {
+  OPTIONAL_TRACE_EVENT0("content", "SSLManager::DidContainInsecureFormAction");
   NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
   if (entry && entry->GetURL().SchemeIsCryptographic() &&
       entry->GetSSL().certificate) {
@@ -236,14 +243,18 @@ void SSLManager::DidDisplayContentWithCertErrors() {
   NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
   if (!entry)
     return;
-  // Only record information about subresources with cert errors if the
-  // main page is HTTPS with a certificate.
+
   if (entry->GetURL().SchemeIsCryptographic() && entry->GetSSL().certificate) {
-    WebContentsImpl* contents = static_cast<WebContentsImpl*>(
-        controller_->delegate()->GetWebContents());
-    ukm::SourceId source_id = contents->GetMainFrame()->GetPageUkmSourceId();
-    LogMixedContentMetrics(MixedContentType::kDisplayWithCertErrors, source_id,
-                           ukm::UkmRecorder::Get());
+    // Only record information about subresources with cert errors if the
+    // main page is HTTPS with a valid certificate.
+    if (!net::IsCertStatusError(entry->GetSSL().cert_status)) {
+      WebContentsImpl* contents = static_cast<WebContentsImpl*>(
+          controller_->delegate()->GetWebContents());
+      ukm::SourceId source_id = contents->GetMainFrame()->GetPageUkmSourceId();
+      LogMixedContentMetrics(
+          MixedContentType::kOptionallyBlockableWithCertErrors, source_id,
+          ukm::UkmRecorder::Get());
+    }
     UpdateLastCommittedEntry(SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS, 0);
   }
 }
@@ -257,7 +268,7 @@ void SSLManager::DidRunMixedContent(const GURL& security_origin) {
     WebContentsImpl* contents = static_cast<WebContentsImpl*>(
         controller_->delegate()->GetWebContents());
     ukm::SourceId source_id = contents->GetMainFrame()->GetPageUkmSourceId();
-    LogMixedContentMetrics(MixedContentType::kScriptingMixedContent, source_id,
+    LogMixedContentMetrics(MixedContentType::kBlockableMixedContent, source_id,
                            ukm::UkmRecorder::Get());
   }
 
@@ -279,11 +290,14 @@ void SSLManager::DidRunContentWithCertErrors(const GURL& security_origin) {
   if (!entry)
     return;
 
-  if (entry->GetURL().SchemeIsCryptographic() && entry->GetSSL().certificate) {
+  // Only record information about subresources with cert errors if the
+  // main page is HTTPS with a valid certificate.
+  if (entry->GetURL().SchemeIsCryptographic() && entry->GetSSL().certificate &&
+      !net::IsCertStatusError(entry->GetSSL().cert_status)) {
     WebContentsImpl* contents = static_cast<WebContentsImpl*>(
         controller_->delegate()->GetWebContents());
     ukm::SourceId source_id = contents->GetMainFrame()->GetPageUkmSourceId();
-    LogMixedContentMetrics(MixedContentType::kScriptingWithCertErrors,
+    LogMixedContentMetrics(MixedContentType::kBlockableWithCertErrors,
                            source_id, ukm::UkmRecorder::Get());
   }
 
@@ -381,7 +395,7 @@ bool SSLManager::UpdateEntry(NavigationEntryImpl* entry,
   // necessarily have site instances.  Without a process, the entry can't
   // possibly have insecure content.  See bug https://crbug.com/12423.
   if (site_instance && ssl_host_state_delegate_) {
-    const base::Optional<url::Origin>& entry_origin =
+    const absl::optional<url::Origin>& entry_origin =
         entry->root_node()->frame_entry->committed_origin();
     // In some cases (e.g., unreachable URLs), navigation entries might not have
     // origins attached to them. We don't care about tracking mixed content for

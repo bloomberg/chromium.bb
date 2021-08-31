@@ -39,8 +39,9 @@ namespace {
 
 // Fake scanner name used in the tests.
 constexpr char kScannerDeviceName[] = "test:MX3100_192.168.0.3";
-// Fake scan UUID used in the tests.
+// Fake scan UUIDs used in the tests.
 constexpr char kScanUuid[] = "uuid";
+constexpr char kSecondScanUuid[] = "second uuid";
 // Fake progress reported by the tests.
 constexpr uint32_t kProgress = 51;
 // Fake page numbers reported by the tests.
@@ -107,16 +108,21 @@ lorgnette::StartScanRequest CreateStartScanRequest() {
 // Convenience method for creating a dbus::Response containing a
 // lorgnette::StartScanResponse with the given |state|. If
 // |state| == lorgnette::ScanState::SCAN_STATE_FAILED, this method will add an
-// appropriate failure reason.
+// appropriate failure reason. Only specify |scan_uuid| if multiple scans are
+// necessary.
 std::unique_ptr<dbus::Response> CreateStartScanResponse(
-    lorgnette::ScanState state) {
+    lorgnette::ScanState state,
+    const std::string& scan_uuid = kScanUuid,
+    const lorgnette::ScanFailureMode failure_mode =
+        lorgnette::SCAN_FAILURE_MODE_NO_FAILURE) {
   lorgnette::StartScanResponse response;
   response.set_state(state);
-  response.set_scan_uuid(kScanUuid);
+  response.set_scan_uuid(scan_uuid);
 
   if (state == lorgnette::ScanState::SCAN_STATE_FAILED) {
     response.set_failure_reason(
         "The small elf inside the scanner is feeling overworked.");
+    response.set_scan_failure_mode(failure_mode);
   }
 
   std::unique_ptr<dbus::Response> start_scan_response =
@@ -127,22 +133,28 @@ std::unique_ptr<dbus::Response> CreateStartScanResponse(
   return start_scan_response;
 }
 
-// Convenience method for creating a lorgnette::GetNextImageRequest.
-lorgnette::GetNextImageRequest CreateGetNextImageRequest() {
+// Convenience method for creating a lorgnette::GetNextImageRequest. Only
+// specify |scan_uuid| if multiple scans are necessary.
+lorgnette::GetNextImageRequest CreateGetNextImageRequest(
+    const std::string& scan_uuid = kScanUuid) {
   lorgnette::GetNextImageRequest request;
-  request.set_scan_uuid(kScanUuid);
+  request.set_scan_uuid(scan_uuid);
   return request;
 }
 
 // Convenience method for creating a dbus::Response containing a
 // lorgnette::GetNextImageResponse. If |success| is false, this method will add
 // an appropriate failure reason.
-std::unique_ptr<dbus::Response> CreateGetNextImageResponse(bool success) {
+std::unique_ptr<dbus::Response> CreateGetNextImageResponse(
+    bool success,
+    const lorgnette::ScanFailureMode failure_mode =
+        lorgnette::SCAN_FAILURE_MODE_NO_FAILURE) {
   lorgnette::GetNextImageResponse response;
   response.set_success(success);
 
   if (!success) {
     response.set_failure_reason("PC LOAD LETTER");
+    response.set_scan_failure_mode(failure_mode);
   }
 
   std::unique_ptr<dbus::Response> get_next_image_response =
@@ -151,6 +163,27 @@ std::unique_ptr<dbus::Response> CreateGetNextImageResponse(bool success) {
                   .AppendProtoAsArrayOfBytes(response));
 
   return get_next_image_response;
+}
+
+// Convenience method for creating a lorgnette::CancelScanRequest.
+lorgnette::CancelScanRequest CreateCancelScanRequest() {
+  lorgnette::CancelScanRequest request;
+  request.set_scan_uuid(kScanUuid);
+  return request;
+}
+
+// Convenience method for creating a dbus::Response containing a
+// lorgnette::CancelScanResponse.
+std::unique_ptr<dbus::Response> CreateCancelScanResponse(bool success) {
+  lorgnette::CancelScanResponse response;
+  response.set_success(success);
+
+  std::unique_ptr<dbus::Response> cancel_scan_response =
+      dbus::Response::CreateEmpty();
+  EXPECT_TRUE(dbus::MessageWriter(cancel_scan_response.get())
+                  .AppendProtoAsArrayOfBytes(response));
+
+  return cancel_scan_response;
 }
 
 // Matcher that verifies that a dbus::Message has member |name|.
@@ -265,9 +298,11 @@ class LorgnetteManagerClientTest : public testing::Test {
 
   // Adds an expectation to |mock_proxy_| that kGetNextImageMethod will be
   // called. Adds |response| to the end of a FIFO queue of responses used by
-  // |mock_proxy_|.
-  void SetGetNextImageExpectation(dbus::Response* response) {
-    get_next_image_responses_.push(response);
+  // |mock_proxy_|. Only specify |scan_uuid| if multiple scans are
+  // necessary.
+  void SetGetNextImageExpectation(dbus::Response* response,
+                                  const std::string& scan_uuid = kScanUuid) {
+    get_next_image_responses_.push({response, scan_uuid});
     EXPECT_CALL(*mock_proxy_.get(),
                 DoCallMethod(HasMember(lorgnette::kGetNextImageMethod),
                              dbus::ObjectProxy::TIMEOUT_USE_DEFAULT, _))
@@ -275,19 +310,33 @@ class LorgnetteManagerClientTest : public testing::Test {
             Invoke(this, &LorgnetteManagerClientTest::OnCallGetNextImage));
   }
 
+  // Adds an expectation to |mock_proxy_| that kCancelScanMethod will be called.
+  // When called, |mock_proxy_| will respond with |response|.
+  void SetCancelScanExpectation(dbus::Response* response) {
+    cancel_scan_response_ = response;
+    EXPECT_CALL(*mock_proxy_.get(),
+                DoCallMethod(HasMember(lorgnette::kCancelScanMethod),
+                             dbus::ObjectProxy::TIMEOUT_USE_DEFAULT, _))
+        .WillOnce(Invoke(this, &LorgnetteManagerClientTest::OnCallCancelScan));
+  }
+
   // Tells |mock_proxy_| to emit a kScanStatusChangedSignal with the given
-  // |uuid|, |state|, |page|, |progress| and |more_pages|.
-  void EmitScanStatusChangedSignal(const std::string& uuid,
-                                   const lorgnette::ScanState state,
-                                   const int page,
-                                   const int progress,
-                                   const bool more_pages) {
+  // |uuid|, |state|, |page|, |progress|, |more_pages|, and |failure_mode|.
+  void EmitScanStatusChangedSignal(
+      const std::string& uuid,
+      const lorgnette::ScanState state,
+      const int page,
+      const int progress,
+      const bool more_pages,
+      const lorgnette::ScanFailureMode failure_mode =
+          lorgnette::SCAN_FAILURE_MODE_NO_FAILURE) {
     lorgnette::ScanStatusChangedSignal proto;
     proto.set_scan_uuid(uuid);
     proto.set_state(state);
     proto.set_page(page);
     proto.set_progress(progress);
     proto.set_more_pages(more_pages);
+    proto.set_scan_failure_mode(failure_mode);
 
     dbus::Signal signal(lorgnette::kManagerServiceInterface,
                         lorgnette::kScanStatusChangedSignal);
@@ -310,7 +359,7 @@ class LorgnetteManagerClientTest : public testing::Test {
   // only be called when a scan job exists.
   void WriteDataToScanJob(const std::string& data) {
     ASSERT_TRUE(fd_.is_valid());
-    EXPECT_TRUE(base::WriteFileDescriptor(fd_.get(), data.data(), data.size()));
+    EXPECT_TRUE(base::WriteFileDescriptor(fd_.get(), data));
     fd_.reset();
     task_environment_.RunUntilIdle();
   }
@@ -360,18 +409,35 @@ class LorgnetteManagerClientTest : public testing::Test {
                           int timeout_ms,
                           dbus::ObjectProxy::ResponseCallback* callback) {
     // Verify that the get next image request was sent correctly.
+    ASSERT_FALSE(get_next_image_responses_.empty());
+    auto response_and_uuid = get_next_image_responses_.front();
     dbus::MessageReader message_reader(method_call);
     lorgnette::GetNextImageRequest request;
     ASSERT_TRUE(message_reader.PopArrayOfBytesAsProto(&request));
-    EXPECT_THAT(request, ProtobufEquals(CreateGetNextImageRequest()));
+    EXPECT_THAT(
+        request,
+        ProtobufEquals(CreateGetNextImageRequest(response_and_uuid.second)));
     // Save the file descriptor so we can write to it later.
     EXPECT_TRUE(message_reader.PopFileDescriptor(&fd_));
 
-    ASSERT_FALSE(get_next_image_responses_.empty());
     task_environment_.GetMainThreadTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(*callback),
-                                  get_next_image_responses_.front()));
+        FROM_HERE,
+        base::BindOnce(std::move(*callback), response_and_uuid.first));
     get_next_image_responses_.pop();
+  }
+
+  // Responsible for responding to a kCancelScanMethod call and verifying that
+  // |method_call| was formatted correctly.
+  void OnCallCancelScan(dbus::MethodCall* method_call,
+                        int timeout_ms,
+                        dbus::ObjectProxy::ResponseCallback* callback) {
+    // Verify that the cancel scan request was created and sent correctly.
+    lorgnette::CancelScanRequest request;
+    ASSERT_TRUE(
+        dbus::MessageReader(method_call).PopArrayOfBytesAsProto(&request));
+    EXPECT_THAT(request, ProtobufEquals(CreateCancelScanRequest()));
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(*callback), cancel_scan_response_));
   }
 
   // A message loop to emulate asynchronous behavior.
@@ -389,10 +455,14 @@ class LorgnetteManagerClientTest : public testing::Test {
   dbus::Response* get_scanner_capabilities_response_ = nullptr;
   // Used to respond to kStartScanMethod D-Bus calls.
   dbus::Response* start_scan_response_ = nullptr;
+  // Used to respond to kCancelScanMethod D-Bus calls.
+  dbus::Response* cancel_scan_response_ = nullptr;
   // Used to respond to kGetNextImageMethod D-Bus calls. A single call to some
   // of LorgnetteManagerClient's methods can result in multiple
-  // kGetNextImageMethod D-Bus calls, so we need to queue the responses.
-  base::queue<dbus::Response*> get_next_image_responses_;
+  // kGetNextImageMethod D-Bus calls, so we need to queue the responses. Also
+  // records the scan_uuid used to make the kGetNextImageMethod call.
+  base::queue<std::pair<dbus::Response*, std::string>>
+      get_next_image_responses_;
   // Used to write data to ongoing scan jobs.
   base::ScopedFD fd_;
 };
@@ -408,7 +478,7 @@ TEST_F(LorgnetteManagerClientTest, ListScanners) {
 
   base::RunLoop run_loop;
   client()->ListScanners(base::BindLambdaForTesting(
-      [&](base::Optional<lorgnette::ListScannersResponse> result) {
+      [&](absl::optional<lorgnette::ListScannersResponse> result) {
         ASSERT_TRUE(result.has_value());
         EXPECT_THAT(result.value(), ProtobufEquals(kExpectedResponse));
         run_loop.Quit();
@@ -424,8 +494,8 @@ TEST_F(LorgnetteManagerClientTest, NullResponseToListScanners) {
 
   base::RunLoop run_loop;
   client()->ListScanners(base::BindLambdaForTesting(
-      [&](base::Optional<lorgnette::ListScannersResponse> result) {
-        EXPECT_EQ(result, base::nullopt);
+      [&](absl::optional<lorgnette::ListScannersResponse> result) {
+        EXPECT_EQ(result, absl::nullopt);
         run_loop.Quit();
       }));
 
@@ -440,8 +510,8 @@ TEST_F(LorgnetteManagerClientTest, EmptyResponseToListScanners) {
 
   base::RunLoop run_loop;
   client()->ListScanners(base::BindLambdaForTesting(
-      [&](base::Optional<lorgnette::ListScannersResponse> result) {
-        EXPECT_EQ(result, base::nullopt);
+      [&](absl::optional<lorgnette::ListScannersResponse> result) {
+        EXPECT_EQ(result, absl::nullopt);
         run_loop.Quit();
       }));
 
@@ -461,7 +531,7 @@ TEST_F(LorgnetteManagerClientTest, GetScannerCapabilities) {
   client()->GetScannerCapabilities(
       kScannerDeviceName,
       base::BindLambdaForTesting(
-          [&](base::Optional<lorgnette::ScannerCapabilities> result) {
+          [&](absl::optional<lorgnette::ScannerCapabilities> result) {
             ASSERT_TRUE(result.has_value());
             EXPECT_THAT(result.value(), ProtobufEquals(kExpectedResponse));
             run_loop.Quit();
@@ -479,8 +549,8 @@ TEST_F(LorgnetteManagerClientTest, NullResponseToGetScannerCapabilities) {
   client()->GetScannerCapabilities(
       kScannerDeviceName,
       base::BindLambdaForTesting(
-          [&](base::Optional<lorgnette::ScannerCapabilities> result) {
-            EXPECT_EQ(result, base::nullopt);
+          [&](absl::optional<lorgnette::ScannerCapabilities> result) {
+            EXPECT_EQ(result, absl::nullopt);
             run_loop.Quit();
           }));
 
@@ -497,8 +567,8 @@ TEST_F(LorgnetteManagerClientTest, EmptyResponseToGetScannerCapabilities) {
   client()->GetScannerCapabilities(
       kScannerDeviceName,
       base::BindLambdaForTesting(
-          [&](base::Optional<lorgnette::ScannerCapabilities> result) {
-            EXPECT_EQ(result, base::nullopt);
+          [&](absl::optional<lorgnette::ScannerCapabilities> result) {
+            EXPECT_EQ(result, absl::nullopt);
             run_loop.Quit();
           }));
 
@@ -548,8 +618,8 @@ TEST_F(LorgnetteManagerClientTest, ScanDataWrittenBeforeSignalReceived) {
   lorgnette::StartScanRequest request = CreateStartScanRequest();
   client()->StartScan(
       request.device_name(), request.settings(),
-      base::BindLambdaForTesting([&](bool completed) {
-        EXPECT_TRUE(completed);
+      base::BindLambdaForTesting([&](lorgnette::ScanFailureMode failure_mode) {
+        EXPECT_EQ(failure_mode, lorgnette::SCAN_FAILURE_MODE_NO_FAILURE);
         EXPECT_EQ(num_pages_scanned, 1);
         completion_run_loop.Quit();
       }),
@@ -593,8 +663,8 @@ TEST_F(LorgnetteManagerClientTest, SignalReceivedBeforeScanDataWritten) {
   lorgnette::StartScanRequest request = CreateStartScanRequest();
   client()->StartScan(
       request.device_name(), request.settings(),
-      base::BindLambdaForTesting([&](bool completed) {
-        EXPECT_TRUE(completed);
+      base::BindLambdaForTesting([&](lorgnette::ScanFailureMode failure_mode) {
+        EXPECT_EQ(failure_mode, lorgnette::SCAN_FAILURE_MODE_NO_FAILURE);
         EXPECT_EQ(num_pages_scanned, 1);
         completion_run_loop.Quit();
       }),
@@ -640,8 +710,8 @@ TEST_F(LorgnetteManagerClientTest, MultiPageScan) {
   lorgnette::StartScanRequest request = CreateStartScanRequest();
   client()->StartScan(
       request.device_name(), request.settings(),
-      base::BindLambdaForTesting([&](bool completed) {
-        EXPECT_TRUE(completed);
+      base::BindLambdaForTesting([&](lorgnette::ScanFailureMode failure_mode) {
+        EXPECT_EQ(failure_mode, lorgnette::SCAN_FAILURE_MODE_NO_FAILURE);
         EXPECT_EQ(num_pages_scanned, 2);
         completion_run_loop.Quit();
       }),
@@ -693,18 +763,20 @@ TEST_F(LorgnetteManagerClientTest, ScanStateFailedSignal) {
 
   base::RunLoop run_loop;
   lorgnette::StartScanRequest request = CreateStartScanRequest();
-  client()->StartScan(request.device_name(), request.settings(),
-                      base::BindLambdaForTesting([&](bool completed) {
-                        EXPECT_FALSE(completed);
-                        run_loop.Quit();
-                      }),
-                      base::NullCallback(), base::NullCallback());
+  client()->StartScan(
+      request.device_name(), request.settings(),
+      base::BindLambdaForTesting([&](lorgnette::ScanFailureMode failure_mode) {
+        EXPECT_EQ(failure_mode, lorgnette::SCAN_FAILURE_MODE_DEVICE_BUSY);
+        run_loop.Quit();
+      }),
+      base::NullCallback(), base::NullCallback());
 
   base::RunLoop().RunUntilIdle();
 
   EmitScanStatusChangedSignal(
       kScanUuid, lorgnette::ScanState::SCAN_STATE_FAILED, kFirstPageNum,
-      /*progress=*/100, /*more_pages=*/false);
+      /*progress=*/100, /*more_pages=*/false,
+      lorgnette::SCAN_FAILURE_MODE_DEVICE_BUSY);
 
   run_loop.Run();
 }
@@ -716,12 +788,13 @@ TEST_F(LorgnetteManagerClientTest, NullResponseToStartScan) {
 
   base::RunLoop run_loop;
   lorgnette::StartScanRequest request = CreateStartScanRequest();
-  client()->StartScan(request.device_name(), request.settings(),
-                      base::BindLambdaForTesting([&](bool completed) {
-                        EXPECT_FALSE(completed);
-                        run_loop.Quit();
-                      }),
-                      base::NullCallback(), base::NullCallback());
+  client()->StartScan(
+      request.device_name(), request.settings(),
+      base::BindLambdaForTesting([&](lorgnette::ScanFailureMode failure_mode) {
+        EXPECT_EQ(failure_mode, lorgnette::SCAN_FAILURE_MODE_UNKNOWN);
+        run_loop.Quit();
+      }),
+      base::NullCallback(), base::NullCallback());
 
   run_loop.Run();
 }
@@ -734,12 +807,13 @@ TEST_F(LorgnetteManagerClientTest, EmptyResponseToStartScan) {
 
   base::RunLoop run_loop;
   lorgnette::StartScanRequest request = CreateStartScanRequest();
-  client()->StartScan(request.device_name(), request.settings(),
-                      base::BindLambdaForTesting([&](bool completed) {
-                        EXPECT_FALSE(completed);
-                        run_loop.Quit();
-                      }),
-                      base::NullCallback(), base::NullCallback());
+  client()->StartScan(
+      request.device_name(), request.settings(),
+      base::BindLambdaForTesting([&](lorgnette::ScanFailureMode failure_mode) {
+        EXPECT_EQ(failure_mode, lorgnette::SCAN_FAILURE_MODE_UNKNOWN);
+        run_loop.Quit();
+      }),
+      base::NullCallback(), base::NullCallback());
 
   run_loop.Run();
 }
@@ -747,18 +821,20 @@ TEST_F(LorgnetteManagerClientTest, EmptyResponseToStartScan) {
 // Test that the client handles a response to a kStartScanMethod D-Bus call
 // with state lorgnette::SCAN_STATE_FAILED.
 TEST_F(LorgnetteManagerClientTest, StartScanScanStateFailed) {
-  auto response =
-      CreateStartScanResponse(lorgnette::ScanState::SCAN_STATE_FAILED);
+  auto response = CreateStartScanResponse(
+      lorgnette::ScanState::SCAN_STATE_FAILED, kScanUuid,
+      lorgnette::SCAN_FAILURE_MODE_ADF_JAMMED);
   SetStartScanExpectation(response.get());
 
   base::RunLoop run_loop;
   lorgnette::StartScanRequest request = CreateStartScanRequest();
-  client()->StartScan(request.device_name(), request.settings(),
-                      base::BindLambdaForTesting([&](bool completed) {
-                        EXPECT_FALSE(completed);
-                        run_loop.Quit();
-                      }),
-                      base::NullCallback(), base::NullCallback());
+  client()->StartScan(
+      request.device_name(), request.settings(),
+      base::BindLambdaForTesting([&](lorgnette::ScanFailureMode failure_mode) {
+        EXPECT_EQ(failure_mode, lorgnette::SCAN_FAILURE_MODE_ADF_JAMMED);
+        run_loop.Quit();
+      }),
+      base::NullCallback(), base::NullCallback());
 
   run_loop.Run();
 }
@@ -773,12 +849,13 @@ TEST_F(LorgnetteManagerClientTest, NullResponseToGetNextImage) {
 
   base::RunLoop run_loop;
   lorgnette::StartScanRequest request = CreateStartScanRequest();
-  client()->StartScan(request.device_name(), request.settings(),
-                      base::BindLambdaForTesting([&](bool completed) {
-                        EXPECT_FALSE(completed);
-                        run_loop.Quit();
-                      }),
-                      base::NullCallback(), base::NullCallback());
+  client()->StartScan(
+      request.device_name(), request.settings(),
+      base::BindLambdaForTesting([&](lorgnette::ScanFailureMode failure_mode) {
+        EXPECT_EQ(failure_mode, lorgnette::SCAN_FAILURE_MODE_UNKNOWN);
+        run_loop.Quit();
+      }),
+      base::NullCallback(), base::NullCallback());
 
   run_loop.Run();
 }
@@ -795,12 +872,13 @@ TEST_F(LorgnetteManagerClientTest, EmptyResponseToGetNextImage) {
 
   base::RunLoop run_loop;
   lorgnette::StartScanRequest request = CreateStartScanRequest();
-  client()->StartScan(request.device_name(), request.settings(),
-                      base::BindLambdaForTesting([&](bool completed) {
-                        EXPECT_FALSE(completed);
-                        run_loop.Quit();
-                      }),
-                      base::NullCallback(), base::NullCallback());
+  client()->StartScan(
+      request.device_name(), request.settings(),
+      base::BindLambdaForTesting([&](lorgnette::ScanFailureMode failure_mode) {
+        EXPECT_EQ(failure_mode, lorgnette::SCAN_FAILURE_MODE_UNKNOWN);
+        run_loop.Quit();
+      }),
+      base::NullCallback(), base::NullCallback());
 
   run_loop.Run();
 }
@@ -811,17 +889,19 @@ TEST_F(LorgnetteManagerClientTest, GetNextImageScanStateFailed) {
   auto start_scan_response =
       CreateStartScanResponse(lorgnette::ScanState::SCAN_STATE_IN_PROGRESS);
   SetStartScanExpectation(start_scan_response.get());
-  auto get_next_image_response = CreateGetNextImageResponse(false);
+  auto get_next_image_response =
+      CreateGetNextImageResponse(false, lorgnette::SCAN_FAILURE_MODE_IO_ERROR);
   SetGetNextImageExpectation(get_next_image_response.get());
 
   base::RunLoop run_loop;
   lorgnette::StartScanRequest request = CreateStartScanRequest();
-  client()->StartScan(request.device_name(), request.settings(),
-                      base::BindLambdaForTesting([&](bool completed) {
-                        EXPECT_FALSE(completed);
-                        run_loop.Quit();
-                      }),
-                      base::NullCallback(), base::NullCallback());
+  client()->StartScan(
+      request.device_name(), request.settings(),
+      base::BindLambdaForTesting([&](lorgnette::ScanFailureMode failure_mode) {
+        EXPECT_EQ(failure_mode, lorgnette::SCAN_FAILURE_MODE_IO_ERROR);
+        run_loop.Quit();
+      }),
+      base::NullCallback(), base::NullCallback());
 
   run_loop.Run();
 }
@@ -838,6 +918,162 @@ TEST_F(LorgnetteManagerClientTest, UnexpectedScanStatusChangedSignal) {
 // proto.
 TEST_F(LorgnetteManagerClientTest, EmptyScanStatusChangedSignal) {
   EmitEmptyScanStatusChangedSignal();
+}
+
+// Test that the client can cancel an existing scan job.
+TEST_F(LorgnetteManagerClientTest, CancelScanJob) {
+  const auto start_scan_response =
+      CreateStartScanResponse(lorgnette::ScanState::SCAN_STATE_IN_PROGRESS);
+  SetStartScanExpectation(start_scan_response.get());
+  const auto get_next_image_response = CreateGetNextImageResponse(true);
+  SetGetNextImageExpectation(get_next_image_response.get());
+  const auto cancel_scan_response = CreateCancelScanResponse(true);
+  SetCancelScanExpectation(cancel_scan_response.get());
+
+  lorgnette::StartScanRequest request = CreateStartScanRequest();
+  client()->StartScan(request.device_name(), request.settings(),
+                      base::NullCallback(), base::NullCallback(),
+                      base::NullCallback());
+
+  base::RunLoop().RunUntilIdle();
+
+  base::RunLoop run_loop;
+  client()->CancelScan(base::BindLambdaForTesting([&](bool success) {
+    EXPECT_TRUE(success);
+    run_loop.Quit();
+  }));
+
+  base::RunLoop().RunUntilIdle();
+
+  EmitScanStatusChangedSignal(
+      kScanUuid, lorgnette::ScanState::SCAN_STATE_CANCELLED, kFirstPageNum,
+      /*progress=*/67, /*more_pages=*/false);
+
+  run_loop.Run();
+}
+
+// Test that the client handles a cancel call with no existing scan jobs.
+TEST_F(LorgnetteManagerClientTest, CancelScanJobNoExistingJobs) {
+  base::RunLoop run_loop;
+  client()->CancelScan(base::BindLambdaForTesting([&](bool success) {
+    EXPECT_FALSE(success);
+    run_loop.Quit();
+  }));
+
+  run_loop.Run();
+}
+
+// Test that the client handles a cancel call when multiple scan jobs exist.
+TEST_F(LorgnetteManagerClientTest, CancelScanJobMultipleJobsExist) {
+  auto start_scan_response =
+      CreateStartScanResponse(lorgnette::ScanState::SCAN_STATE_IN_PROGRESS);
+  SetStartScanExpectation(start_scan_response.get());
+  const auto get_next_image_response = CreateGetNextImageResponse(true);
+  SetGetNextImageExpectation(get_next_image_response.get());
+
+  lorgnette::StartScanRequest request = CreateStartScanRequest();
+  client()->StartScan(request.device_name(), request.settings(),
+                      base::NullCallback(), base::NullCallback(),
+                      base::NullCallback());
+
+  base::RunLoop().RunUntilIdle();
+
+  start_scan_response = CreateStartScanResponse(
+      lorgnette::ScanState::SCAN_STATE_IN_PROGRESS, kSecondScanUuid);
+  SetStartScanExpectation(start_scan_response.get());
+  SetGetNextImageExpectation(get_next_image_response.get(), kSecondScanUuid);
+  client()->StartScan(request.device_name(), request.settings(),
+                      base::NullCallback(), base::NullCallback(),
+                      base::NullCallback());
+
+  base::RunLoop().RunUntilIdle();
+
+  base::RunLoop run_loop;
+  client()->CancelScan(base::BindLambdaForTesting([&](bool success) {
+    EXPECT_FALSE(success);
+    run_loop.Quit();
+  }));
+
+  run_loop.Run();
+}
+
+// Test that the client handles a null response to a kCancelScanMethod D-Bus
+// call.
+TEST_F(LorgnetteManagerClientTest, NullResponseToCancelScanJob) {
+  const auto start_scan_response =
+      CreateStartScanResponse(lorgnette::ScanState::SCAN_STATE_IN_PROGRESS);
+  SetStartScanExpectation(start_scan_response.get());
+  const auto get_next_image_response = CreateGetNextImageResponse(true);
+  SetGetNextImageExpectation(get_next_image_response.get());
+  SetCancelScanExpectation(nullptr);
+
+  lorgnette::StartScanRequest request = CreateStartScanRequest();
+  client()->StartScan(request.device_name(), request.settings(),
+                      base::NullCallback(), base::NullCallback(),
+                      base::NullCallback());
+
+  base::RunLoop().RunUntilIdle();
+
+  base::RunLoop run_loop;
+  client()->CancelScan(base::BindLambdaForTesting([&](bool success) {
+    EXPECT_FALSE(success);
+    run_loop.Quit();
+  }));
+
+  run_loop.Run();
+}
+
+// Test that the client handles a response to a kCancelScanMethod D-Bus call
+// which doesn't have a valid proto.
+TEST_F(LorgnetteManagerClientTest, EmptyResponseToCancelScanJob) {
+  const auto start_scan_response =
+      CreateStartScanResponse(lorgnette::ScanState::SCAN_STATE_IN_PROGRESS);
+  SetStartScanExpectation(start_scan_response.get());
+  const auto get_next_image_response = CreateGetNextImageResponse(true);
+  SetGetNextImageExpectation(get_next_image_response.get());
+  const auto cancel_scan_response = dbus::Response::CreateEmpty();
+  SetCancelScanExpectation(cancel_scan_response.get());
+
+  lorgnette::StartScanRequest request = CreateStartScanRequest();
+  client()->StartScan(request.device_name(), request.settings(),
+                      base::NullCallback(), base::NullCallback(),
+                      base::NullCallback());
+
+  base::RunLoop().RunUntilIdle();
+
+  base::RunLoop run_loop;
+  client()->CancelScan(base::BindLambdaForTesting([&](bool success) {
+    EXPECT_FALSE(success);
+    run_loop.Quit();
+  }));
+
+  run_loop.Run();
+}
+
+// Test that the client handles a kCancelScanMethod D-Bus call failing.
+TEST_F(LorgnetteManagerClientTest, CancelScanJobCallFails) {
+  const auto start_scan_response =
+      CreateStartScanResponse(lorgnette::ScanState::SCAN_STATE_IN_PROGRESS);
+  SetStartScanExpectation(start_scan_response.get());
+  const auto get_next_image_response = CreateGetNextImageResponse(true);
+  SetGetNextImageExpectation(get_next_image_response.get());
+  const auto cancel_scan_response = CreateCancelScanResponse(false);
+  SetCancelScanExpectation(cancel_scan_response.get());
+
+  lorgnette::StartScanRequest request = CreateStartScanRequest();
+  client()->StartScan(request.device_name(), request.settings(),
+                      base::NullCallback(), base::NullCallback(),
+                      base::NullCallback());
+
+  base::RunLoop().RunUntilIdle();
+
+  base::RunLoop run_loop;
+  client()->CancelScan(base::BindLambdaForTesting([&](bool success) {
+    EXPECT_FALSE(success);
+    run_loop.Quit();
+  }));
+
+  run_loop.Run();
 }
 
 }  // namespace chromeos

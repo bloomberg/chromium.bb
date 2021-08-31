@@ -14,8 +14,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_tracing.h"
 #include "base/files/platform_file.h"
-#include "base/macros.h"
 #include "base/time/time.h"
+#include "base/trace_event/base_tracing_forward.h"
 #include "build/build_config.h"
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -168,6 +168,9 @@ class BASE_EXPORT File {
 
   File(File&& other);
 
+  File(const File&) = delete;
+  File& operator=(const File&) = delete;
+
   ~File();
 
   File& operator=(File&& other);
@@ -315,6 +318,9 @@ class BASE_EXPORT File {
 
   bool async() const { return async_; }
 
+  // Serialise this object into a trace.
+  void WriteIntoTrace(perfetto::TracedValue context) const;
+
 #if defined(OS_WIN)
   // Sets or clears the DeleteFile disposition on the file. Returns true if
   // the disposition was set or cleared, as indicated by |delete_on_close|.
@@ -393,8 +399,6 @@ class BASE_EXPORT File {
   Error error_details_ = FILE_ERROR_FAILED;
   bool created_ = false;
   bool async_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(File);
 };
 
 }  // namespace base

@@ -115,23 +115,23 @@ uint32_t DescriptorSetLayout::GetDescriptorSize(VkDescriptorType type)
 {
 	switch(type)
 	{
-		case VK_DESCRIPTOR_TYPE_SAMPLER:
-		case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
-		case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
-		case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
-			return static_cast<uint32_t>(sizeof(SampledImageDescriptor));
-		case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
-		case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
-		case VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT:
-			return static_cast<uint32_t>(sizeof(StorageImageDescriptor));
-		case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
-		case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
-		case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC:
-		case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC:
-			return static_cast<uint32_t>(sizeof(BufferDescriptor));
-		default:
-			UNSUPPORTED("Unsupported Descriptor Type: %d", int(type));
-			return 0;
+	case VK_DESCRIPTOR_TYPE_SAMPLER:
+	case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+	case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+	case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
+		return static_cast<uint32_t>(sizeof(SampledImageDescriptor));
+	case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
+	case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
+	case VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT:
+		return static_cast<uint32_t>(sizeof(StorageImageDescriptor));
+	case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
+	case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
+	case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC:
+	case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC:
+		return static_cast<uint32_t>(sizeof(BufferDescriptor));
+	default:
+		UNSUPPORTED("Unsupported Descriptor Type: %d", int(type));
+		return 0;
 	}
 }
 
@@ -175,7 +175,7 @@ void DescriptorSetLayout::initialize(DescriptorSet *descriptorSet)
 			for(uint32_t j = 0; j < bindings[i].descriptorCount; j++)
 			{
 				SampledImageDescriptor *imageSamplerDescriptor = reinterpret_cast<SampledImageDescriptor *>(mem);
-				imageSamplerDescriptor->updateSampler(bindings[i].immutableSamplers[j]);
+				imageSamplerDescriptor->samplerId = bindings[i].immutableSamplers[j]->id;
 				mem += descriptorSize;
 			}
 		}
@@ -245,11 +245,6 @@ uint8_t *DescriptorSetLayout::getDescriptorPointer(DescriptorSet *descriptorSet,
 	return &descriptorSet->data[byteOffset];
 }
 
-void SampledImageDescriptor::updateSampler(const vk::Sampler *newSampler)
-{
-	memcpy(reinterpret_cast<void *>(&sampler), newSampler, sizeof(sampler));
-}
-
 void DescriptorSetLayout::WriteDescriptorSet(Device *device, DescriptorSet *dstSet, VkDescriptorUpdateTemplateEntry const &entry, char const *src)
 {
 	DescriptorSetLayout *dstLayout = dstSet->header.layout;
@@ -273,7 +268,7 @@ void DescriptorSetLayout::WriteDescriptorSet(Device *device, DescriptorSet *dstS
 			//  descriptorCount of zero, must all either use immutable samplers or must all not use immutable samplers."
 			if(!binding.immutableSamplers)
 			{
-				sampledImage[i].updateSampler(vk::Cast(update->sampler));
+				sampledImage[i].samplerId = vk::Cast(update->sampler)->id;
 			}
 			sampledImage[i].device = device;
 		}
@@ -287,11 +282,7 @@ void DescriptorSetLayout::WriteDescriptorSet(Device *device, DescriptorSet *dstS
 			auto update = reinterpret_cast<VkBufferView const *>(src + entry.offset + entry.stride * i);
 			auto bufferView = vk::Cast(*update);
 
-			sampledImage[i].type = VK_IMAGE_VIEW_TYPE_1D;
 			sampledImage[i].imageViewId = bufferView->id;
-			constexpr VkComponentMapping identityMapping = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
-			sampledImage[i].swizzle = ResolveComponentMapping(identityMapping, bufferView->getFormat());
-			sampledImage[i].format = bufferView->getFormat();
 
 			auto numElements = bufferView->getElementCount();
 			sampledImage[i].width = numElements;
@@ -336,7 +327,7 @@ void DescriptorSetLayout::WriteDescriptorSet(Device *device, DescriptorSet *dstS
 				//  descriptorCount of zero, must all either use immutable samplers or must all not use immutable samplers."
 				if(!binding.immutableSamplers)
 				{
-					sampledImage[i].updateSampler(vk::Cast(update->sampler));
+					sampledImage[i].samplerId = vk::Cast(update->sampler)->id;
 				}
 			}
 
@@ -348,9 +339,6 @@ void DescriptorSetLayout::WriteDescriptorSet(Device *device, DescriptorSet *dstS
 			sampledImage[i].depth = imageView->getDepthOrLayerCount(0);
 			sampledImage[i].mipLevels = imageView->getSubresourceRange().levelCount;
 			sampledImage[i].sampleCount = imageView->getSampleCount();
-			sampledImage[i].type = imageView->getType();
-			sampledImage[i].swizzle = imageView->getComponentMapping();
-			sampledImage[i].format = format;
 			sampledImage[i].device = device;
 			sampledImage[i].memoryOwner = imageView;
 
@@ -549,31 +537,31 @@ void DescriptorSetLayout::WriteDescriptorSet(Device *device, const VkWriteDescri
 	void const *ptr = nullptr;
 	switch(writeDescriptorSet.descriptorType)
 	{
-		case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
-		case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
-			ptr = writeDescriptorSet.pTexelBufferView;
-			e.stride = sizeof(VkBufferView);
-			break;
+	case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
+	case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
+		ptr = writeDescriptorSet.pTexelBufferView;
+		e.stride = sizeof(VkBufferView);
+		break;
 
-		case VK_DESCRIPTOR_TYPE_SAMPLER:
-		case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
-		case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
-		case VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT:
-		case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
-			ptr = writeDescriptorSet.pImageInfo;
-			e.stride = sizeof(VkDescriptorImageInfo);
-			break;
+	case VK_DESCRIPTOR_TYPE_SAMPLER:
+	case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+	case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+	case VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT:
+	case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
+		ptr = writeDescriptorSet.pImageInfo;
+		e.stride = sizeof(VkDescriptorImageInfo);
+		break;
 
-		case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
-		case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
-		case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC:
-		case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC:
-			ptr = writeDescriptorSet.pBufferInfo;
-			e.stride = sizeof(VkDescriptorBufferInfo);
-			break;
+	case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
+	case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
+	case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC:
+	case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC:
+		ptr = writeDescriptorSet.pBufferInfo;
+		e.stride = sizeof(VkDescriptorBufferInfo);
+		break;
 
-		default:
-			UNSUPPORTED("descriptor type %u", writeDescriptorSet.descriptorType);
+	default:
+		UNSUPPORTED("descriptor type %u", writeDescriptorSet.descriptorType);
 	}
 
 	WriteDescriptorSet(device, dstSet, e, reinterpret_cast<char const *>(ptr));

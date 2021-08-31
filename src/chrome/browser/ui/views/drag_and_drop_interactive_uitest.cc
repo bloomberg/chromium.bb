@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/pattern.h"
@@ -21,6 +22,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -53,14 +55,16 @@
 #include "ui/aura/window.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
 namespace chrome {
-
 namespace {
+
+using ::ui::mojom::DragOperation;
 
 // TODO(lukasza): Support testing on non-Aura platforms (i.e. Android + Mac?).
 //
@@ -162,7 +166,7 @@ class DragAndDropSimulator {
     gfx::PointF event_location;
     gfx::PointF event_root_location;
     CalculateEventLocations(location, &event_location, &event_root_location);
-    active_drag_event_.reset(new ui::DropTargetEvent(
+    active_drag_event_ = base::WrapUnique(new ui::DropTargetEvent(
         data, event_location, event_root_location, kDefaultSourceOperations));
 
     delegate->OnDragEntered(*active_drag_event_);
@@ -267,30 +271,30 @@ class DragStartWaiter : public aura::client::DragDropClient {
     suppress_passing_of_start_drag_further_ = true;
   }
 
-  void PostTaskWhenDragStarts(const base::Closure& callback) {
-    callback_to_run_inside_drag_and_drop_message_loop_ = callback;
+  void PostTaskWhenDragStarts(base::OnceClosure callback) {
+    callback_to_run_inside_drag_and_drop_message_loop_ = std::move(callback);
   }
 
   // aura::client::DragDropClient overrides:
-  int StartDragAndDrop(std::unique_ptr<ui::OSExchangeData> data,
-                       aura::Window* root_window,
-                       aura::Window* source_window,
-                       const gfx::Point& screen_location,
-                       int operation,
-                       ui::mojom::DragEventSource source) override {
+  DragOperation StartDragAndDrop(std::unique_ptr<ui::OSExchangeData> data,
+                                 aura::Window* root_window,
+                                 aura::Window* source_window,
+                                 const gfx::Point& screen_location,
+                                 int allowed_operations,
+                                 ui::mojom::DragEventSource source) override {
     DCHECK(!drag_started_);
     if (!drag_started_) {
       drag_started_ = true;
       message_loop_runner_->Quit();
 
-      base::string16 text;
+      std::u16string text;
       if (data->GetString(&text))
         text_ = base::UTF16ToUTF8(text);
       else
         text_ = "<no text>";
 
       GURL base_url;
-      base::string16 html;
+      std::u16string html;
       if (data->GetHtml(&html, &base_url))
         html_ = base::UTF16ToUTF8(html);
       else
@@ -301,7 +305,7 @@ class DragStartWaiter : public aura::client::DragDropClient {
       location_inside_web_contents_ =
           screen_location - gfx::Vector2d(bounds.x(), bounds.y());
 
-      operation_ = operation;
+      operation_ = allowed_operations;
     }
 
     if (!callback_to_run_inside_drag_and_drop_message_loop_.is_null()) {
@@ -312,12 +316,12 @@ class DragStartWaiter : public aura::client::DragDropClient {
     }
 
     if (suppress_passing_of_start_drag_further_)
-      return 0;
+      return DragOperation::kNone;
 
     // Start a nested drag-and-drop loop (might not return for a long time).
     return old_client_->StartDragAndDrop(std::move(data), root_window,
                                          source_window, screen_location,
-                                         operation, source);
+                                         allowed_operations, source);
   }
 
   void DragCancel() override {
@@ -334,7 +338,7 @@ class DragStartWaiter : public aura::client::DragDropClient {
   content::WebContents* web_contents_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   aura::client::DragDropClient* old_client_;
-  base::Closure callback_to_run_inside_drag_and_drop_message_loop_;
+  base::OnceClosure callback_to_run_inside_drag_and_drop_message_loop_;
   bool suppress_passing_of_start_drag_further_;
 
   // Data captured during the first intercepted StartDragAndDrop call.
@@ -579,7 +583,7 @@ class DragAndDropBrowserTest : public InProcessBrowserTest,
     host_resolver()->AddRule("*", "127.0.0.1");
     content::SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
-    drag_simulator_.reset(new DragAndDropSimulator(web_contents()));
+    drag_simulator_ = std::make_unique<DragAndDropSimulator>(web_contents());
   }
 
   void TearDownOnMainThread() override {
@@ -1067,9 +1071,10 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_DragImageBetweenFrames) {
 
   // Setup test expectations.
   DragAndDropBrowserTest::DragImageBetweenFrames_TestState state;
-  state.left_frame_events_counter.reset(new DOMDragEventCounter(left_frame()));
-  state.right_frame_events_counter.reset(
-      new DOMDragEventCounter(right_frame()));
+  state.left_frame_events_counter =
+      std::make_unique<DOMDragEventCounter>(left_frame());
+  state.right_frame_events_counter =
+      std::make_unique<DOMDragEventCounter>(right_frame());
   state.expected_dom_event_data.set_expected_client_position("(55, 50)");
   state.expected_dom_event_data.set_expected_drop_effect("none");
   // (dragstart event handler in image_source.html is asking for "copy" only).
@@ -1081,10 +1086,10 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_DragImageBetweenFrames) {
   // Start the drag in the left frame.
   DragStartWaiter drag_start_waiter(web_contents());
   drag_start_waiter.PostTaskWhenDragStarts(
-      base::Bind(&DragAndDropBrowserTest::DragImageBetweenFrames_Step2,
-                 base::Unretained(this), base::Unretained(&state)));
-  state.dragstart_event_waiter.reset(
-      new DOMDragEventWaiter("dragstart", left_frame()));
+      base::BindOnce(&DragAndDropBrowserTest::DragImageBetweenFrames_Step2,
+                     base::Unretained(this), base::Unretained(&state)));
+  state.dragstart_event_waiter =
+      std::make_unique<DOMDragEventWaiter>("dragstart", left_frame());
   EXPECT_TRUE(SimulateMouseDownAndDragStartInLeftFrame());
 
   // The next step of the test (DragImageBetweenFrames_Step2) runs inside the
@@ -1193,9 +1198,10 @@ void DragAndDropBrowserTest::DragImageBetweenFrames_Step2(
                    {"dragstart", "dragleave", "drop", "dragend"}));
 
   // Release the mouse button to end the drag.
-  state->drop_event_waiter.reset(new DOMDragEventWaiter("drop", right_frame()));
-  state->dragend_event_waiter.reset(
-      new DOMDragEventWaiter("dragend", left_frame()));
+  state->drop_event_waiter =
+      std::make_unique<DOMDragEventWaiter>("drop", right_frame());
+  state->dragend_event_waiter =
+      std::make_unique<DOMDragEventWaiter>("dragend", left_frame());
   state->left_frame_events_counter->Reset();
   state->right_frame_events_counter->Reset();
   SimulateMouseUp();
@@ -1250,9 +1256,12 @@ void DragAndDropBrowserTest::DragImageBetweenFrames_Step3(
                    {"dragstart", "dragleave", "dragenter", "dragend"}));
 }
 
-#if defined(OS_WIN)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 // There is no known way to execute test-controlled tasks during
 // a drag-and-drop loop run by Windows OS.
+// Also disable the test on Linux due to flaky: crbug.com/1164442
 #define MAYBE_DragImageFromDisappearingFrame \
   DISABLED_DragImageFromDisappearingFrame
 #else
@@ -1291,9 +1300,9 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest,
 
   // Start the drag in the left frame.
   DragStartWaiter drag_start_waiter(web_contents());
-  drag_start_waiter.PostTaskWhenDragStarts(
-      base::Bind(&DragAndDropBrowserTest::DragImageFromDisappearingFrame_Step2,
-                 base::Unretained(this), base::Unretained(&state)));
+  drag_start_waiter.PostTaskWhenDragStarts(base::BindOnce(
+      &DragAndDropBrowserTest::DragImageFromDisappearingFrame_Step2,
+      base::Unretained(this), base::Unretained(&state)));
   EXPECT_TRUE(SimulateMouseDownAndDragStartInLeftFrame());
 
   // The next step of the test (DragImageFromDisappearingFrame_Step2) runs
@@ -1349,7 +1358,8 @@ void DragAndDropBrowserTest::DragImageFromDisappearingFrame_Step2(
   }
 
   // Release the mouse button to end the drag.
-  state->drop_event_waiter.reset(new DOMDragEventWaiter("drop", right_frame()));
+  state->drop_event_waiter =
+      std::make_unique<DOMDragEventWaiter>("drop", right_frame());
   SimulateMouseUp();
   // The test will continue in DragImageFromDisappearingFrame_Step3.
 }
@@ -1397,15 +1407,16 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_CrossSiteDrag) {
 
   // Setup test expectations.
   DragAndDropBrowserTest::CrossSiteDrag_TestState state;
-  state.left_frame_events_counter.reset(new DOMDragEventCounter(left_frame()));
-  state.right_frame_events_counter.reset(
-      new DOMDragEventCounter(right_frame()));
+  state.left_frame_events_counter =
+      std::make_unique<DOMDragEventCounter>(left_frame());
+  state.right_frame_events_counter =
+      std::make_unique<DOMDragEventCounter>(right_frame());
 
   // Start the drag in the left frame.
   DragStartWaiter drag_start_waiter(web_contents());
   drag_start_waiter.PostTaskWhenDragStarts(
-      base::Bind(&DragAndDropBrowserTest::CrossSiteDrag_Step2,
-                 base::Unretained(this), base::Unretained(&state)));
+      base::BindOnce(&DragAndDropBrowserTest::CrossSiteDrag_Step2,
+                     base::Unretained(this), base::Unretained(&state)));
   EXPECT_TRUE(SimulateMouseDownAndDragStartInLeftFrame());
 
   // The next step of the test (CrossSiteDrag_Step2) runs inside the
@@ -1446,8 +1457,8 @@ void DragAndDropBrowserTest::CrossSiteDrag_Step2(
   }
 
   // Release the mouse button to end the drag.
-  state->dragend_event_waiter.reset(
-      new DOMDragEventWaiter("dragend", left_frame()));
+  state->dragend_event_waiter =
+      std::make_unique<DOMDragEventWaiter>("dragend", left_frame());
   SimulateMouseUp();
   // The test will continue in DragImageBetweenFrames_Step3.
 }

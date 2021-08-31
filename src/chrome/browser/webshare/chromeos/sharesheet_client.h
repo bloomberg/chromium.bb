@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chrome/browser/sharesheet/sharesheet_types.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
 #include "url/gurl.h"
 
@@ -27,12 +27,14 @@ class PrepareDirectoryTask;
 // sharesheet::SharesheetService.
 class SharesheetClient : public content::WebContentsObserver {
  public:
-  using CloseCallback = sharesheet::CloseCallback;
-  using SharesheetCallback =
-      base::RepeatingCallback<void(content::WebContents* web_contents,
-                                   std::vector<base::FilePath> file_paths,
-                                   std::vector<std::string> content_types,
-                                   CloseCallback close_callback)>;
+  using DeliveredCallback = sharesheet::DeliveredCallback;
+  using SharesheetCallback = base::RepeatingCallback<void(
+      content::WebContents* web_contents,
+      const std::vector<base::FilePath>& file_paths,
+      const std::vector<std::string>& content_types,
+      const std::string& text,
+      const std::string& title,
+      DeliveredCallback delivered_callback)>;
 
   explicit SharesheetClient(content::WebContents* web_contents);
   SharesheetClient(const SharesheetClient&) = delete;
@@ -55,9 +57,11 @@ class SharesheetClient : public content::WebContentsObserver {
   void OnShowSharesheet(sharesheet::SharesheetResult result);
 
   static void ShowSharesheet(content::WebContents* web_contents,
-                             std::vector<base::FilePath> file_paths,
-                             std::vector<std::string> content_types,
-                             CloseCallback close_callback);
+                             const std::vector<base::FilePath>& file_paths,
+                             const std::vector<std::string>& content_types,
+                             const std::string& text,
+                             const std::string& title,
+                             DeliveredCallback delivered_callback);
 
   static SharesheetCallback& GetSharesheetCallback();
 
@@ -76,12 +80,14 @@ class SharesheetClient : public content::WebContentsObserver {
     base::FilePath directory;
     std::vector<base::FilePath> file_paths;
     std::vector<std::string> content_types;
+    std::string text;
+    std::string title;
     blink::mojom::ShareService::ShareCallback callback;
 
     std::unique_ptr<PrepareDirectoryTask> prepare_directory_task;
   };
 
-  base::Optional<CurrentShare> current_share_;
+  absl::optional<CurrentShare> current_share_;
 
   base::WeakPtrFactory<SharesheetClient> weak_ptr_factory_{this};
 };

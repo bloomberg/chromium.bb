@@ -77,7 +77,8 @@ void av1_enc_build_one_inter_predictor(uint8_t *dst, int dst_stride,
                                        InterPredParams *inter_pred_params) {
   av1_build_one_inter_predictor(
       dst, dst_stride, src_mv, inter_pred_params, NULL /* xd */, 0 /* mi_x */,
-      0 /* mi_y */, 0 /* ref */, NULL /* mc_buf */, enc_calc_subpel_params);
+      0 /* mi_y */, inter_pred_params->conv_params.do_average /* ref */,
+      NULL /* mc_buf */, enc_calc_subpel_params);
 }
 
 static void enc_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,

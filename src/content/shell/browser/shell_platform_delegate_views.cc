@@ -9,9 +9,11 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/context_factory.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -21,6 +23,8 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/native_theme/native_theme_color_id.h"
@@ -36,9 +40,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/wm/test/wm_test_helper.h"
-#else  // !defined(OS_CHROMEOS)
+#else  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ui/display/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/wm/core/wm_state.h"
 #endif
@@ -57,10 +62,11 @@ struct ShellPlatformDelegate::ShellData {
 };
 
 struct ShellPlatformDelegate::PlatformData {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<wm::WMTestHelper> wm_test_helper;
 #else
   std::unique_ptr<wm::WMState> wm_state;
+  std::unique_ptr<display::Screen> screen;
 #endif
 
   // TODO(danakj): This looks unused?
@@ -72,11 +78,14 @@ namespace {
 // Maintain the UI controls and web view for content shell
 class ShellView : public views::View, public views::TextfieldController {
  public:
+  METADATA_HEADER(ShellView);
+
   enum UIControl { BACK_BUTTON, FORWARD_BUTTON, STOP_BUTTON };
 
   explicit ShellView(Shell* shell) : shell_(shell) { InitShellWindow(); }
-
-  ~ShellView() override {}
+  ShellView(const ShellView&) = delete;
+  ShellView& operator=(const ShellView&) = delete;
+  ~ShellView() override = default;
 
   // Update the state of UI controls
   void SetAddressBarURL(const GURL& url) {
@@ -106,7 +115,7 @@ class ShellView : public views::View, public views::TextfieldController {
 
     // Resizing a widget on chromeos doesn't automatically resize the root, need
     // to explicitly do that.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     GetWidget()->GetNativeWindow()->GetHost()->SetBoundsInPixels(bounds);
 #endif
   }
@@ -160,7 +169,7 @@ class ShellView : public views::View, public views::TextfieldController {
       auto back_button = std::make_unique<views::MdTextButton>(
           base::BindRepeating(&Shell::GoBackOrForward,
                               base::Unretained(shell_.get()), -1),
-          base::ASCIIToUTF16("Back"));
+          u"Back");
       gfx::Size back_button_size = back_button->GetPreferredSize();
       toolbar_column_set->AddColumn(
           views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
@@ -170,7 +179,7 @@ class ShellView : public views::View, public views::TextfieldController {
       auto forward_button = std::make_unique<views::MdTextButton>(
           base::BindRepeating(&Shell::GoBackOrForward,
                               base::Unretained(shell_.get()), 1),
-          base::ASCIIToUTF16("Forward"));
+          u"Forward");
       gfx::Size forward_button_size = forward_button->GetPreferredSize();
       toolbar_column_set->AddColumn(
           views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
@@ -179,7 +188,7 @@ class ShellView : public views::View, public views::TextfieldController {
       // Refresh button
       auto refresh_button = std::make_unique<views::MdTextButton>(
           base::BindRepeating(&Shell::Reload, base::Unretained(shell_.get())),
-          base::ASCIIToUTF16("Refresh"));
+          u"Refresh");
       gfx::Size refresh_button_size = refresh_button->GetPreferredSize();
       toolbar_column_set->AddColumn(
           views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
@@ -188,7 +197,7 @@ class ShellView : public views::View, public views::TextfieldController {
       // Stop button
       auto stop_button = std::make_unique<views::MdTextButton>(
           base::BindRepeating(&Shell::Stop, base::Unretained(shell_.get())),
-          base::ASCIIToUTF16("Stop"));
+          u"Stop");
       gfx::Size stop_button_size = stop_button->GetPreferredSize();
       toolbar_column_set->AddColumn(
           views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
@@ -197,7 +206,7 @@ class ShellView : public views::View, public views::TextfieldController {
       toolbar_column_set->AddPaddingColumn(0, 2);
       // URL entry
       auto url_entry = std::make_unique<views::Textfield>();
-      url_entry->SetAccessibleName(base::ASCIIToUTF16("Enter URL"));
+      url_entry->SetAccessibleName(u"Enter URL");
       url_entry->set_controller(this);
       url_entry->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_URL);
       toolbar_column_set->AddColumn(views::GridLayout::FILL,
@@ -240,7 +249,7 @@ class ShellView : public views::View, public views::TextfieldController {
   }
   // Overridden from TextfieldController
   void ContentsChanged(views::Textfield* sender,
-                       const base::string16& new_contents) override {}
+                       const std::u16string& new_contents) override {}
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override {
     if (key_event.type() == ui::ET_KEY_PRESSED && sender == url_entry_ &&
@@ -286,7 +295,7 @@ class ShellView : public views::View, public views::TextfieldController {
   std::unique_ptr<Shell> shell_;
 
   // Window title
-  base::string16 title_;
+  std::u16string title_;
 
   // Toolbar view contains forward/backward/reload button and URL entry
   View* toolbar_view_ = nullptr;
@@ -299,9 +308,10 @@ class ShellView : public views::View, public views::TextfieldController {
   // Contents view contains the web contents view
   View* contents_view_ = nullptr;
   views::WebView* web_view_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellView);
 };
+
+BEGIN_METADATA(ShellView, views::View)
+END_METADATA
 
 ShellView* ShellViewForWidget(views::Widget* widget) {
   return static_cast<ShellView*>(widget->widget_delegate()->GetContentsView());
@@ -319,12 +329,13 @@ void ShellPlatformDelegate::Initialize(const gfx::Size& default_window_size) {
 
   platform_ = std::make_unique<PlatformData>();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   platform_->wm_test_helper =
       std::make_unique<wm::WMTestHelper>(default_window_size);
 #else
   platform_->wm_state = std::make_unique<wm::WMState>();
-  views::InstallDesktopScreenIfNecessary();
+  CHECK(!display::Screen::GetScreen());
+  platform_->screen = views::CreateDesktopScreen();
 #endif
 
   platform_->views_delegate =
@@ -346,7 +357,7 @@ void ShellPlatformDelegate::CreatePlatformWindow(
   delegate->SetHasWindowSizeControls(true);
   delegate->SetOwnedByWidget(true);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   shell_data.window_widget = views::Widget::CreateWindowWithContext(
       std::move(delegate),
       platform_->wm_test_helper->GetDefaultParent(nullptr, gfx::Rect()),
@@ -424,14 +435,14 @@ void ShellPlatformDelegate::SetAddressBarURL(Shell* shell, const GURL& url) {
 void ShellPlatformDelegate::SetIsLoading(Shell* shell, bool loading) {}
 
 void ShellPlatformDelegate::SetTitle(Shell* shell,
-                                     const base::string16& title) {
+                                     const std::u16string& title) {
   DCHECK(base::Contains(shell_data_map_, shell));
   ShellData& shell_data = shell_data_map_[shell];
 
   shell_data.window_widget->widget_delegate()->SetTitle(title);
 }
 
-void ShellPlatformDelegate::RenderViewReady(Shell* shell) {}
+void ShellPlatformDelegate::MainFrameCreated(Shell* shell) {}
 
 bool ShellPlatformDelegate::DestroyShell(Shell* shell) {
   DCHECK(base::Contains(shell_data_map_, shell));

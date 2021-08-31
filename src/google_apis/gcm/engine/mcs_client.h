@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/containers/circular_deque.h"
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "google_apis/gcm/base/gcm_export.h"
@@ -73,7 +72,7 @@ class GCM_EXPORT MCSClient {
     APP_QUEUE_SIZE_LIMIT_REACHED,
     // Message too large to send.
     MESSAGE_TOO_LARGE,
-    // Message not send becuase of TTL = 0 and no working connection.
+    // Message not send because of TTL = 0 and no working connection.
     NO_CONNECTION_ON_ZERO_TTL,
     // Message exceeded TTL.
     TTL_EXCEEDED,

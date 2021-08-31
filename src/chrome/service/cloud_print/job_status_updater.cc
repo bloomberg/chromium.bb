@@ -80,11 +80,9 @@ void JobStatusUpdater::UpdateStatus() {
       request_ = CloudPrintURLFetcher::Create(partial_traffic_annotation_);
       request_->StartGetRequest(
           CloudPrintURLFetcher::REQUEST_UPDATE_JOB,
-          GetUrlForJobStatusUpdate(
-              cloud_print_server_url_, job_id_, last_job_details_),
-          this,
-          kCloudPrintAPIMaxRetryCount,
-          std::string());
+          GetUrlForJobStatusUpdate(cloud_print_server_url_, job_id_,
+                                   last_job_details_),
+          this, kCloudPrintAPIMaxRetryCount);
     }
   }
 }
@@ -117,7 +115,7 @@ CloudPrintURLFetcher::ResponseAction JobStatusUpdater::OnRequestAuthError() {
   return CloudPrintURLFetcher::STOP_PROCESSING;
 }
 
-std::string JobStatusUpdater::GetAuthHeader() {
+std::string JobStatusUpdater::GetAuthHeaderValue() {
   return GetCloudPrintAuthHeaderFromStore();
 }
 

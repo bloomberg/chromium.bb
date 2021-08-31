@@ -37,14 +37,14 @@ class RecentlyAudibleHelperTest : public testing::Test {
     RecentlyAudibleHelper::CreateForWebContents(contents_);
     helper_ = RecentlyAudibleHelper::FromWebContents(contents_);
     helper_->SetTickClockForTesting(task_runner_->GetMockTickClock());
-    subscription_ = helper_->RegisterCallback(base::BindRepeating(
+    subscription_ = helper_->RegisterCallbackForTesting(base::BindRepeating(
         &RecentlyAudibleHelperTest::OnRecentlyAudibleCallback,
         base::Unretained(this)));
   }
 
   void TearDown() override {
     helper_->SetTickClockForTesting(nullptr);
-    subscription_.reset();
+    subscription_ = {};
     task_runner_->RunUntilIdle();
     EXPECT_TRUE(recently_audible_messages_.empty());
 
@@ -115,7 +115,7 @@ class RecentlyAudibleHelperTest : public testing::Test {
   // A test WebContents and its associated helper.
   content::WebContents* contents_;
   RecentlyAudibleHelper* helper_;
-  std::unique_ptr<RecentlyAudibleHelper::Subscription> subscription_;
+  base::CallbackListSubscription subscription_;
 
   std::list<bool> recently_audible_messages_;
 

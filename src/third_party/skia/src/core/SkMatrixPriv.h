@@ -8,7 +8,6 @@
 #ifndef SkMatrixPriv_DEFINE
 #define SkMatrixPriv_DEFINE
 
-#include "include/core/SkFilterQuality.h"
 #include "include/core/SkM44.h"
 #include "include/core/SkMatrix.h"
 #include "include/private/SkNx.h"
@@ -148,10 +147,6 @@ public:
     static void MapHomogeneousPointsWithStride(const SkMatrix& mx, SkPoint3 dst[], size_t dstStride,
                                                const SkPoint3 src[], size_t srcStride, int count);
 
-    // Returns the recommended filterquality, assuming the caller originally wanted kHigh (bicubic)
-    static SkFilterQuality AdjustHighQualityFilterLevel(const SkMatrix&,
-                                                        bool matrixIsInverse = false);
-
     static bool PostIDiv(SkMatrix* matrix, int divx, int divy) {
         return matrix->postIDiv(divx, divy);
     }
@@ -171,6 +166,11 @@ public:
                m.rc(3,3) == 1;
 
     }
+
+    // Map the four corners of 'r' and return the bounding box of those points. The four corners of
+    // 'r' are assumed to have z = 0 and w = 1. If the matrix has perspective, the returned
+    // rectangle will be the bounding box of the projected points after being clipped to w > 0.
+    static SkRect MapRect(const SkM44& m, const SkRect& r);
 
     // Returns the differential area scale factor for a local point 'p' that will be transformed
     // by 'm' (which may have perspective). If 'm' does not have perspective, this scale factor is

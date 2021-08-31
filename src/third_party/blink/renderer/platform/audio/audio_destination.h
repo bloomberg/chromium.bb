@@ -64,17 +64,27 @@ class PLATFORM_EXPORT AudioDestination
   USING_FAST_MALLOC(AudioDestination);
 
  public:
+  // Represents the current state of the underlying |WebAudioDevice| object
+  // (RendererWebAudioDeviceImpl).
+  enum DeviceState {
+    kRunning,
+    kPaused,
+    kStopped,
+  };
+
   AudioDestination(AudioIOCallback&,
                    unsigned number_of_output_channels,
                    const WebAudioLatencyHint&,
-                   base::Optional<float> context_sample_rate);
+                   absl::optional<float> context_sample_rate,
+                   unsigned render_quantum_frames);
   ~AudioDestination() override;
 
   static scoped_refptr<AudioDestination> Create(
       AudioIOCallback&,
       unsigned number_of_output_channels,
       const WebAudioLatencyHint&,
-      base::Optional<float> context_sample_rate);
+      absl::optional<float> context_sample_rate,
+      unsigned render_quantum_frames);
 
   // The actual render function (WebAudioDevice::RenderCallback) isochronously
   // invoked by the media renderer. This is never called after Stop() is called.
@@ -113,31 +123,29 @@ class PLATFORM_EXPORT AudioDestination
   // hardware.
   int FramesPerBuffer() const;
 
-  // The information from the actual audio hardware. (via Platform::current)
+  // The information from the actual audio hardware. (via Platform::Current)
+  static size_t HardwareBufferSize();
   static float HardwareSampleRate();
   static uint32_t MaxChannelCount();
 
   // Sets the detect silence flag for |web_audio_device_|.
   void SetDetectSilence(bool detect_silence);
 
- private:
-  // Represents the current state of the underlying |WebAudioDevice| object
-  // (RendererWebAudioDeviceImpl).
-  enum DeviceState {
-    kRunning,
-    kPaused,
-    kStopped,
-  };
+  // This should only be called from the audio thread.
+  unsigned RenderQuantumFrames() const { return render_quantum_frames_; }
 
+ private:
   void SetDeviceState(DeviceState);
 
   // Provide input to the resampler (if used).
   void ProvideResamplerInput(int resampler_frame_delay, AudioBus* dest);
 
   // Check if the buffer size chosen by the WebAudioDevice is too large.
-  bool CheckBufferSize();
+  bool CheckBufferSize(unsigned render_quantum_frames);
 
-  size_t HardwareBufferSize();
+  void SendLogMessage(const String& message);
+
+  unsigned render_quantum_frames_;
 
   // Accessed by the main thread.
   std::unique_ptr<WebAudioDevice> web_audio_device_;

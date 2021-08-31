@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">Iebūvēts displejs</translation>
 <translation id="335581015389089642">Runa</translation>
 <translation id="3389286852084373014">Teksts ir pārāk liels</translation>
+<translation id="3406306243914553062">HTML saturs</translation>
 <translation id="348799646910989694">Plaukts tiek automātiski paslēpts</translation>
 <translation id="3554637740840164787">Vienums <ph name="ITEM_TITLE" /> tika piesprausts</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Atlikusi 1 diena}zero{Atlikušas # dienas}one{Atlikusi # diena}other{Atlikušas # dienas}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">Numurs</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
 <translation id="3842239759367498783">Turpiniet lasīt no savas mobilās ierīces <ph name="TITLE" /></translation>
 <translation id="385051799172605136">Atpakaļ</translation>
 <translation id="3889424535448813030">Labā bulta</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Pirms 1 mēneša}zero{Pirms # mēnešiem}one{Pirms # mēneša}other{Pirms # mēnešiem}}</translation>
 <translation id="4289300219472526559">Sākt runāt</translation>
 <translation id="430191667033048642">Lietotne <ph name="MOVED_APP_NAME" /> pārvietota uz mapi <ph name="FOLDER_NAME" />.</translation>
+<translation id="4306392492252714209">Noņemt no starpliktuves.</translation>
 <translation id="4316910396681052118">VISAS LIETOTNES</translation>
 <translation id="4491109536499578614">Attēls</translation>
 <translation id="4588090240171750605">Ritināt pa labi</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">Vai dzēst šo meklēšanas vaicājumu no vēstures?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emocijzīmes</translation>
+<translation id="7620655452534002301">Noņemts.</translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7781829728241885113">Vakar</translation>
 <translation id="7814458197256864873">Ko&amp;pēt</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{Pirms 1 stundas}zero{Pirms # stundām}one{Pirms # stundas}other{Pirms # stundām}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Atlikusi 1 s}zero{Atlikušas # s}one{Atlikusi # s}other{Atlikušas # s}}</translation>
 <translation id="8134065097954893699">Notiek atkārtota šīs lapas ielādēšana</translation>
-<translation id="8144660977431427332">Jūsu meklēšanas vaicājumus nodrošina Google asistents. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automātiski pabeigts</translation>
 <translation id="815598010540052116">Ritināt lejup</translation>
 <translation id="8179976553408161302">Ievadīt</translation>
 <translation id="8210608804940886430">Lejup</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">Tabulēšanas taustiņš</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, lietotne</translation>
 <translation id="8259556432390118667">Heksadecimāla krāsas vērtība</translation>

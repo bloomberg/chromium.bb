@@ -38,8 +38,7 @@ UsageStatsDatabase::UsageStatsDatabase(Profile* profile)
       suspension_db_initialized_(false),
       token_mapping_db_initialized_(false) {
   ProtoDatabaseProvider* db_provider =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetProtoDatabaseProvider();
+      profile->GetDefaultStoragePartition()->GetProtoDatabaseProvider();
 
   base::FilePath usage_stats_dir = profile->GetPath().Append(kNamespace);
 
@@ -219,9 +218,8 @@ void UsageStatsDatabase::DeleteEventsInRange(base::Time startTime,
     return;
   }
 
-  // TODO(crbug/927655): If/when leveldb_proto adds an UpdateEntriesInRange
-  // function, we should consolidate these two proto_db_ calls into a single
-  // call.
+  // If leveldb_proto adds a DeleteEntriesInRange function, these two proto_db_
+  // calls could be consolidated into a single call (crbug.com/939136).
 
   // Load all WebsiteEvents where the timestamp is in the specified range.
   // Function accepts a half-open range [startTime, endTime) as input, but the

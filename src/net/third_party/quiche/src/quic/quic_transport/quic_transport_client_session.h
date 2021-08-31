@@ -11,59 +11,42 @@
 #include "absl/strings/string_view.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.h"
-#include "net/third_party/quiche/src/quic/core/quic_config.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_client_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_server_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
-#include "net/third_party/quiche/src/quic/quic_transport/quic_transport_protocol.h"
-#include "net/third_party/quiche/src/quic/quic_transport/quic_transport_session_interface.h"
-#include "net/third_party/quiche/src/quic/quic_transport/quic_transport_stream.h"
+#include "quic/core/crypto/quic_crypto_client_config.h"
+#include "quic/core/quic_config.h"
+#include "quic/core/quic_connection.h"
+#include "quic/core/quic_crypto_client_stream.h"
+#include "quic/core/quic_crypto_stream.h"
+#include "quic/core/quic_datagram_queue.h"
+#include "quic/core/quic_server_id.h"
+#include "quic/core/quic_session.h"
+#include "quic/core/quic_stream.h"
+#include "quic/core/quic_versions.h"
+#include "quic/core/web_transport_interface.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_containers.h"
+#include "quic/quic_transport/quic_transport_protocol.h"
+#include "quic/quic_transport/quic_transport_session_interface.h"
+#include "quic/quic_transport/quic_transport_stream.h"
 
 namespace quic {
 
 // A client session for the QuicTransport protocol.
 class QUIC_EXPORT_PRIVATE QuicTransportClientSession
     : public QuicSession,
+      public WebTransportSession,
       public QuicTransportSessionInterface,
       public QuicCryptoClientStream::ProofHandler {
  public:
-  class QUIC_EXPORT_PRIVATE ClientVisitor {
-   public:
-    virtual ~ClientVisitor() {}
-
-    // Notifies the visitor when the client indication has been sent and the
-    // connection is ready to exchange application data.
-    virtual void OnSessionReady() = 0;
-
-    // Notifies the visitor when a new stream has been received.  The stream in
-    // question can be retrieved using AcceptIncomingBidirectionalStream() or
-    // AcceptIncomingUnidirectionalStream().
-    virtual void OnIncomingBidirectionalStreamAvailable() = 0;
-    virtual void OnIncomingUnidirectionalStreamAvailable() = 0;
-
-    // Notifies the visitor when a new datagram has been received.
-    virtual void OnDatagramReceived(absl::string_view datagram) = 0;
-
-    // Notifies the visitor that a new outgoing stream can now be created.
-    virtual void OnCanCreateNewOutgoingBidirectionalStream() = 0;
-    virtual void OnCanCreateNewOutgoingUnidirectionalStream() = 0;
-  };
-
-  QuicTransportClientSession(QuicConnection* connection,
-                             Visitor* owner,
-                             const QuicConfig& config,
-                             const ParsedQuicVersionVector& supported_versions,
-                             const GURL& url,
-                             QuicCryptoClientConfig* crypto_config,
-                             url::Origin origin,
-                             ClientVisitor* visitor);
+  QuicTransportClientSession(
+      QuicConnection* connection,
+      Visitor* owner,
+      const QuicConfig& config,
+      const ParsedQuicVersionVector& supported_versions,
+      const GURL& url,
+      QuicCryptoClientConfig* crypto_config,
+      url::Origin origin,
+      WebTransportVisitor* visitor,
+      std::unique_ptr<QuicDatagramQueue::Observer> datagram_observer);
 
   std::vector<std::string> GetAlpnsToOffer() const override {
     return std::vector<std::string>({QuicTransportAlpn()});
@@ -90,8 +73,9 @@ class QUIC_EXPORT_PRIVATE QuicTransportClientSession
 
   QuicStream* CreateIncomingStream(QuicStreamId id) override;
   QuicStream* CreateIncomingStream(PendingStream* /*pending*/) override {
-    QUIC_BUG << "QuicTransportClientSession::CreateIncomingStream("
-                "PendingStream) not implemented";
+    QUIC_BUG(quic_bug_10890_1)
+        << "QuicTransportClientSession::CreateIncomingStream("
+           "PendingStream) not implemented";
     return nullptr;
   }
 
@@ -102,14 +86,26 @@ class QUIC_EXPORT_PRIVATE QuicTransportClientSession
   // Return the earliest incoming stream that has been received by the session
   // but has not been accepted.  Returns nullptr if there are no incoming
   // streams.
-  QuicTransportStream* AcceptIncomingBidirectionalStream();
-  QuicTransportStream* AcceptIncomingUnidirectionalStream();
+  QuicTransportStream* AcceptIncomingBidirectionalStream() override;
+  QuicTransportStream* AcceptIncomingUnidirectionalStream() override;
 
-  using QuicSession::CanOpenNextOutgoingBidirectionalStream;
-  using QuicSession::CanOpenNextOutgoingUnidirectionalStream;
-  QuicTransportStream* OpenOutgoingBidirectionalStream();
-  QuicTransportStream* OpenOutgoingUnidirectionalStream();
+  bool CanOpenNextOutgoingBidirectionalStream() override {
+    return QuicSession::CanOpenNextOutgoingBidirectionalStream();
+  }
+  bool CanOpenNextOutgoingUnidirectionalStream() override {
+    return QuicSession::CanOpenNextOutgoingUnidirectionalStream();
+  }
+  QuicTransportStream* OpenOutgoingBidirectionalStream() override;
+  QuicTransportStream* OpenOutgoingUnidirectionalStream() override;
 
+  MessageStatus SendOrQueueDatagram(QuicMemSlice datagram) override {
+    return datagram_queue()->SendOrQueueDatagram(std::move(datagram));
+  }
+  void SetDatagramMaxTimeInQueue(QuicTime::Delta max_time_in_queue) override {
+    datagram_queue()->SetMaxTimeInQueue(max_time_in_queue);
+  }
+
+  // For unit tests.
   using QuicSession::datagram_queue;
 
   // QuicCryptoClientStream::ProofHandler implementation.
@@ -125,7 +121,7 @@ class QUIC_EXPORT_PRIVATE QuicTransportClientSession
     // This method should never be called, since the stream is client-initiated
     // unidirectional.
     void OnDataAvailable() override {
-      QUIC_BUG << "Received data on a write-only stream";
+      QUIC_BUG(quic_bug_10890_2) << "Received data on a write-only stream";
     }
   };
 
@@ -143,7 +139,7 @@ class QUIC_EXPORT_PRIVATE QuicTransportClientSession
   std::unique_ptr<QuicCryptoClientStream> crypto_stream_;
   GURL url_;
   url::Origin origin_;
-  ClientVisitor* visitor_;  // not owned
+  WebTransportVisitor* visitor_;  // not owned
   bool client_indication_sent_ = false;
   bool alpn_received_ = false;
   bool ready_ = false;
@@ -156,8 +152,10 @@ class QUIC_EXPORT_PRIVATE QuicTransportClientSession
   // has not accepted to a smaller number, by checking the size of
   // |incoming_bidirectional_streams_| and |incoming_unidirectional_streams_|
   // before sending MAX_STREAMS.
-  QuicCircularDeque<QuicTransportStream*> incoming_bidirectional_streams_;
-  QuicCircularDeque<QuicTransportStream*> incoming_unidirectional_streams_;
+  quiche::QuicheCircularDeque<QuicTransportStream*>
+      incoming_bidirectional_streams_;
+  quiche::QuicheCircularDeque<QuicTransportStream*>
+      incoming_unidirectional_streams_;
 };
 
 }  // namespace quic

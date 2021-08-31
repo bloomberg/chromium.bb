@@ -43,16 +43,16 @@ void ListChangesTask::RunPreflight(std::unique_ptr<SyncTaskToken> token) {
   }
 
   SyncTaskManager::UpdateTaskBlocker(
-      std::move(token), std::unique_ptr<TaskBlocker>(new TaskBlocker),
-      base::Bind(&ListChangesTask::StartListing,
-                 weak_ptr_factory_.GetWeakPtr()));
+      std::move(token), std::make_unique<TaskBlocker>(),
+      base::BindOnce(&ListChangesTask::StartListing,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ListChangesTask::StartListing(std::unique_ptr<SyncTaskToken> token) {
   drive_service()->GetChangeList(
       metadata_database()->GetLargestFetchedChangeID() + 1,
-      base::Bind(&ListChangesTask::DidListChanges,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
+      base::BindOnce(&ListChangesTask::DidListChanges,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(token)));
 }
 
 void ListChangesTask::DidListChanges(
@@ -93,10 +93,8 @@ void ListChangesTask::DidListChanges(
   if (!change_list->next_link().is_empty()) {
     drive_service()->GetRemainingChangeList(
         change_list->next_link(),
-        base::Bind(
-            &ListChangesTask::DidListChanges,
-            weak_ptr_factory_.GetWeakPtr(),
-            base::Passed(&token)));
+        base::BindOnce(&ListChangesTask::DidListChanges,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(token)));
     return;
   }
 
@@ -107,13 +105,13 @@ void ListChangesTask::DidListChanges(
     return;
   }
 
-  std::unique_ptr<TaskBlocker> task_blocker(new TaskBlocker);
+  auto task_blocker = std::make_unique<TaskBlocker>();
   task_blocker->exclusive = true;
   SyncTaskManager::UpdateTaskBlocker(
       std::move(token), std::move(task_blocker),
-      base::Bind(&ListChangesTask::CheckInChangeList,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 change_list->largest_change_id()));
+      base::BindOnce(&ListChangesTask::CheckInChangeList,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     change_list->largest_change_id()));
 }
 
 void ListChangesTask::CheckInChangeList(int64_t largest_change_id,

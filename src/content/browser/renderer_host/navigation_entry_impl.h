@@ -14,12 +14,10 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/back_forward_cache_metrics.h"
 #include "content/browser/renderer_host/frame_navigation_entry.h"
-#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/favicon_status.h"
@@ -30,13 +28,16 @@
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/ssl_status.h"
 #include "net/base/isolation_info.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/page_state/page_state.h"
 #include "url/origin.h"
 
 namespace content {
 
+class FrameTreeNode;
 class WebBundleNavigationInfo;
+class SubresourceWebBundleNavigationInfo;
 
 class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
  public:
@@ -88,8 +89,8 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       scoped_refptr<SiteInstanceImpl> instance,
       const GURL& url,
       const Referrer& referrer,
-      const base::Optional<url::Origin>& initiator_origin,
-      const base::string16& title,
+      const absl::optional<url::Origin>& initiator_origin,
+      const std::u16string& title,
       ui::PageTransition transition_type,
       bool is_renderer_initiated,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
@@ -112,11 +113,11 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   const Referrer& GetReferrer() override;
   void SetVirtualURL(const GURL& url) override;
   const GURL& GetVirtualURL() override;
-  void SetTitle(const base::string16& title) override;
-  const base::string16& GetTitle() override;
+  void SetTitle(const std::u16string& title) override;
+  const std::u16string& GetTitle() override;
   void SetPageState(const blink::PageState& state) override;
   blink::PageState GetPageState() override;
-  const base::string16& GetTitleForDisplay() override;
+  const std::u16string& GetTitleForDisplay() override;
   bool IsViewSourceMode() override;
   void SetTransitionType(ui::PageTransition transition_type) override;
   ui::PageTransition GetTransitionType() override;
@@ -142,7 +143,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   int GetHttpStatusCode() override;
   void SetRedirectChain(const std::vector<GURL>& redirects) override;
   const std::vector<GURL>& GetRedirectChain() override;
-  const base::Optional<ReplacedNavigationEntryData>& GetReplacedEntryData()
+  const absl::optional<ReplacedNavigationEntryData>& GetReplacedEntryData()
       override;
   bool IsRestored() override;
   std::string GetExtraHeaders() override;
@@ -186,7 +187,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   mojom::CommitNavigationParamsPtr ConstructCommitNavigationParams(
       const FrameNavigationEntry& frame_entry,
       const GURL& original_url,
-      const base::Optional<url::Origin>& origin_to_commit,
+      const absl::optional<url::Origin>& origin_to_commit,
       const std::string& original_method,
       const base::flat_map<std::string, bool>& subframe_unique_names,
       bool intended_as_new_entry,
@@ -225,15 +226,18 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       SiteInstanceImpl* site_instance,
       scoped_refptr<SiteInstanceImpl> source_site_instance,
       const GURL& url,
-      const base::Optional<url::Origin>& origin,
+      const absl::optional<url::Origin>& origin,
       const Referrer& referrer,
-      const base::Optional<url::Origin>& initiator_origin,
+      const absl::optional<url::Origin>& initiator_origin,
       const std::vector<GURL>& redirect_chain,
       const blink::PageState& page_state,
       const std::string& method,
       int64_t post_id,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-      std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info);
+      std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info,
+      std::unique_ptr<SubresourceWebBundleNavigationInfo>
+          subresource_web_bundle_navigation_info,
+      std::unique_ptr<PolicyContainerPolicies> policy_container_policies);
 
   // Returns the FrameNavigationEntry corresponding to |frame_tree_node|, if
   // there is one in this NavigationEntry.
@@ -377,7 +381,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
     isolation_info_ = isolation_info;
   }
 
-  const base::Optional<net::IsolationInfo>& isolation_info() const {
+  const absl::optional<net::IsolationInfo>& isolation_info() const {
     return isolation_info_;
   }
 
@@ -427,7 +431,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   PageType page_type_;
   GURL virtual_url_;
   bool update_virtual_url_with_url_;
-  base::string16 title_;
+  std::u16string title_;
   FaviconStatus favicon_;
   SSLStatus ssl_;
   ui::PageTransition transition_type_;
@@ -466,7 +470,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // us from having to do URL formatting on the URL every time the title is
   // displayed. When the URL, virtual URL, or title is set, this should be
   // cleared to force a refresh.
-  mutable base::string16 cached_display_title_;
+  mutable std::u16string cached_display_title_;
 
   // This is set to true when this entry is being reloaded and due to changes in
   // the state of the URL, it has to be reloaded in a different site instance.
@@ -515,14 +519,14 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // determines the IsolationInfo to be used when navigating to this
   // NavigationEntry; otherwise, it is determined based on the navigating frame
   // and top frame origins. For example, this is used for view-source.
-  base::Optional<net::IsolationInfo> isolation_info_;
+  absl::optional<net::IsolationInfo> isolation_info_;
 
   // Stores information about the entry prior to being replaced (e.g.
   // history.replaceState()). It is preserved after commit (session sync for
   // offline analysis) but should not be persisted. The concept is valid for
   // subframe navigations but we only need to track it for main frames, that's
   // why the field is listed here.
-  base::Optional<ReplacedNavigationEntryData> replaced_entry_data_;
+  absl::optional<ReplacedNavigationEntryData> replaced_entry_data_;
 
   // Set to true if this page does a navigation without ever receiving a user
   // gesture. If true, it will be skipped on subsequent back/forward button

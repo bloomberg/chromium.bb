@@ -181,7 +181,7 @@ DEF_TEST(SVGDevice_whitespace_pos, reporter) {
 void SetImageShader(SkPaint* paint, int imageWidth, int imageHeight, SkTileMode xTile,
                     SkTileMode yTile) {
     auto surface = SkSurface::MakeRasterN32Premul(imageWidth, imageHeight);
-    paint->setShader(surface->makeImageSnapshot()->makeShader(xTile, yTile, nullptr));
+    paint->setShader(surface->makeImageSnapshot()->makeShader(xTile, yTile, SkSamplingOptions()));
 }
 
 // Attempt to find the three nodes on which we have expectations:
@@ -567,5 +567,25 @@ DEF_TEST(SVGDevice_path_effect, reporter) {
     REPORTER_ASSERT(reporter, mCount == 3);
 }
 
+DEF_TEST(SVGDevice_relative_path_encoding, reporter) {
+    SkDOM dom;
+    {
+        auto svgCanvas = MakeDOMCanvas(&dom, SkSVGCanvas::kRelativePathEncoding_Flag);
+        SkPath path;
+        path.moveTo(100, 50);
+        path.lineTo(200, 50);
+        path.lineTo(200, 150);
+        path.close();
+
+        svgCanvas->drawPath(path, SkPaint());
+    }
+
+    const auto* rootElement = dom.finishParsing();
+    REPORTER_ASSERT(reporter, rootElement, "root element not found");
+    const auto* pathElement = dom.getFirstChild(rootElement, "path");
+    REPORTER_ASSERT(reporter, pathElement, "path element not found");
+    const auto* d = dom.findAttr(pathElement, "d");
+    REPORTER_ASSERT(reporter, !strcmp(d, "m100 50l100 0l0 100l-100 -100Z"));
+}
 
 #endif

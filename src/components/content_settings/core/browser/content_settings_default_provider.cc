@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
@@ -47,23 +48,16 @@ const char kObsoletePluginsDataDefaultPref[] =
 #endif  // !defined(OS_ANDROID)
 #endif  // !defined(OS_IOS)
 
-// These settings were renamed, and should be migrated on profile startup.
-// Deprecated 8/2020
-#if !defined(OS_ANDROID)
-const char kDeprecatedNativeFileSystemReadGuardDefaultPref[] =
-    "profile.default_content_setting_values.native_file_system_read_guard";
-const char kDeprecatedNativeFileSystemWriteGuardDefaultPref[] =
-    "profile.default_content_setting_values.native_file_system_write_guard";
-#endif  // !defined(OS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
+// This setting was moved and should be migrated on profile startup.
+const char kDeprecatedEnableDRM[] = "settings.privacy.drm_enabled";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
 
 ContentSetting GetDefaultValue(const WebsiteSettingsInfo* info) {
   const base::Value* initial_default = info->initial_default_value();
   if (!initial_default)
     return CONTENT_SETTING_DEFAULT;
-  int result = 0;
-  bool success = initial_default->GetAsInteger(&result);
-  DCHECK(success);
-  return static_cast<ContentSetting>(result);
+  return static_cast<ContentSetting>(initial_default->GetInt());
 }
 
 ContentSetting GetDefaultValue(ContentSettingsType type) {
@@ -118,8 +112,8 @@ void DefaultProvider::RegisterProfilePrefs(
 
   // Obsolete prefs -------------------------------------------------------
 
-  // These prefs have been removed, but need to be registered so they can
-  // be deleted on startup.
+  // These prefs have been deprecated, but need to be registered so they can
+  // be deleted on startup (see DiscardOrMigrateObsoletePreferences).
 #if !defined(OS_IOS)
   registry->RegisterIntegerPref(
       kObsoleteFullscreenDefaultPref, 0,
@@ -129,16 +123,13 @@ void DefaultProvider::RegisterProfilePrefs(
       kObsoleteMouseLockDefaultPref, 0,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(kObsoletePluginsDataDefaultPref, 0);
+  registry->RegisterIntegerPref(kObsoletePluginsDefaultPref, 0);
 #endif  // !defined(OS_ANDROID)
 #endif  // !defined(OS_IOS)
 
-#if !defined(OS_ANDROID)
-  registry->RegisterIntegerPref(kDeprecatedNativeFileSystemReadGuardDefaultPref,
-                                static_cast<int>(CONTENT_SETTING_ASK));
-  registry->RegisterIntegerPref(
-      kDeprecatedNativeFileSystemWriteGuardDefaultPref,
-      static_cast<int>(CONTENT_SETTING_ASK));
-#endif  // !defined(OS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
+  registry->RegisterBooleanPref(kDeprecatedEnableDRM, true);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
 }
 
 DefaultProvider::DefaultProvider(PrefService* prefs, bool off_the_record)
@@ -328,7 +319,7 @@ void DefaultProvider::ChangeSetting(ContentSettingsType content_type,
   DCHECK(!info || !value ||
          info->IsDefaultSettingValid(ValueToContentSetting(value)));
   default_settings_[content_type] =
-      value ? base::WrapUnique(value->DeepCopy())
+      value ? base::Value::ToUniquePtrValue(value->Clone())
             : ContentSettingToValue(GetDefaultValue(content_type));
 }
 
@@ -339,10 +330,7 @@ void DefaultProvider::WriteToPref(ContentSettingsType content_type,
     return;
   }
 
-  int int_value = GetDefaultValue(content_type);
-  bool is_integer = value->GetAsInteger(&int_value);
-  DCHECK(is_integer);
-  prefs_->SetInteger(GetPrefName(content_type), int_value);
+  prefs_->SetInteger(GetPrefName(content_type), value->GetInt());
 }
 
 void DefaultProvider::OnPreferenceChanged(const std::string& name) {
@@ -405,31 +393,21 @@ void DefaultProvider::DiscardOrMigrateObsoletePreferences() {
 #endif  // !defined(OS_ANDROID)
 #endif  // !defined(OS_IOS)
 
-#if !defined(OS_ANDROID)
-  // TODO(https://crbug.com/1111559): Remove this migration logic in M90.
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
+  // TODO(crbug.com/1191642): Remove this migration logic in M100.
   WebsiteSettingsRegistry* website_settings =
       WebsiteSettingsRegistry::GetInstance();
-
-  const PrefService::Preference* deprecated_nfs_read_guard_default_pref =
-      prefs_->FindPreference(kDeprecatedNativeFileSystemReadGuardDefaultPref);
-  if (!deprecated_nfs_read_guard_default_pref->IsDefaultValue()) {
-    prefs_->Set(
-        website_settings->Get(ContentSettingsType::FILE_SYSTEM_READ_GUARD)
+  const base::Value* deprecated_enable_drm_value =
+      prefs_->GetUserPrefValue(kDeprecatedEnableDRM);
+  if (deprecated_enable_drm_value) {
+    prefs_->SetInteger(
+        website_settings->Get(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER)
             ->default_value_pref_name(),
-        *deprecated_nfs_read_guard_default_pref->GetValue());
+        deprecated_enable_drm_value->GetBool() ? CONTENT_SETTING_ALLOW
+                                               : CONTENT_SETTING_BLOCK);
   }
-  prefs_->ClearPref(kDeprecatedNativeFileSystemReadGuardDefaultPref);
-
-  const PrefService::Preference* deprecated_nfs_write_guard_default_pref =
-      prefs_->FindPreference(kDeprecatedNativeFileSystemWriteGuardDefaultPref);
-  if (!deprecated_nfs_write_guard_default_pref->IsDefaultValue()) {
-    prefs_->Set(
-        website_settings->Get(ContentSettingsType::FILE_SYSTEM_WRITE_GUARD)
-            ->default_value_pref_name(),
-        *deprecated_nfs_write_guard_default_pref->GetValue());
-  }
-  prefs_->ClearPref(kDeprecatedNativeFileSystemWriteGuardDefaultPref);
-#endif  // !defined(OS_ANDROID)
+  prefs_->ClearPref(kDeprecatedEnableDRM);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
 }
 
 }  // namespace content_settings

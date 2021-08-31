@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_EXTENSIONS_PERMISSIONS_UPDATER_H__
 
 #include <memory>
-#include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -190,8 +189,7 @@ class PermissionsUpdater {
 
   // Issues the relevant events, messages and notifications when the default
   // scope management policy have changed.
-  // Specifically, this sends the ExtensionMsg_UpdateDefaultHostRestrictions
-  // IPC message.
+  // Specifically, this sends the UpdateDefaultHostRestrictions Mojo message.
   static void NotifyDefaultPolicyHostRestrictionsUpdated(
       content::BrowserContext* browser_context,
       const URLPatternSet default_runtime_blocked_hosts,

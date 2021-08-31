@@ -10,7 +10,6 @@
 
 #include "include/gpu/GrTypes.h"
 #include "include/gpu/d3d/GrD3DTypes.h"
-#include "include/private/SkColorData.h"
 #include "src/gpu/GrManagedResource.h"
 #include "src/gpu/GrRingBuffer.h"
 #include "src/gpu/d3d/GrD3DRootSignature.h"
@@ -21,7 +20,7 @@ class GrD3DGpu;
 class GrD3DBuffer;
 class GrD3DCommandSignature;
 class GrD3DConstantRingBuffer;
-class GrD3DPipelineState;
+class GrD3DPipeline;
 class GrD3DRenderTarget;
 class GrD3DRootSignature;
 class GrD3DAttachment;
@@ -50,11 +49,18 @@ public:
     // GraphicsCommandList commands
     ////////////////////////////////////////////////////////////////////////////
 
-    // For the moment we only support Transition barriers
     // All barriers should reference subresources of managedResource
     void resourceBarrier(sk_sp<GrManagedResource> managedResource,
                          int numBarriers,
                          const D3D12_RESOURCE_TRANSITION_BARRIER* barriers);
+
+    void uavBarrier(sk_sp<GrManagedResource> managedResource,
+                    ID3D12Resource* uavResource);
+
+    void aliasingBarrier(sk_sp<GrManagedResource> beforeManagedResource,
+                         ID3D12Resource* beforeResource,
+                         sk_sp<GrManagedResource> afterManagedResource,
+                         ID3D12Resource* afterResource);
 
     // Helper method that calls copyTextureRegion multiple times, once for each subresource
     // The srcBuffer comes from a staging buffer so we don't need to take any refs to it. Instead,
@@ -79,6 +85,10 @@ public:
                                     sk_sp<GrManagedResource> src,
                                     const D3D12_TEXTURE_COPY_LOCATION* srcLocation,
                                     const D3D12_BOX* srcBox);
+
+     void copyTextureToTexture(const GrD3DTexture* dst,
+                               const GrD3DTexture* src,
+                               UINT subresourceIndex = -1);
 
     // We don't take a ref to the src buffer because we assume the src buffer is coming from a
     // staging buffer which will get ref'd during submit.
@@ -150,7 +160,7 @@ public:
 
     ~GrD3DDirectCommandList() override = default;
 
-    void setPipelineState(sk_sp<GrD3DPipelineState> pipelineState);
+    void setPipelineState(const sk_sp<GrD3DPipeline>& pipeline);
 
     void setStencilRef(unsigned int stencilRef);
     void setBlendFactor(const float blendFactor[4]);
@@ -160,6 +170,7 @@ public:
     void setCenteredSamplePositions(unsigned int numSamples);
     void setDefaultSamplePositions();
     void setGraphicsRootSignature(const sk_sp<GrD3DRootSignature>& rootSignature);
+    void setComputeRootSignature(const sk_sp<GrD3DRootSignature>& rootSignature);
     void setVertexBuffers(unsigned int startSlot,
                           sk_sp<const GrBuffer> vertexBuffer, size_t vertexStride,
                           sk_sp<const GrBuffer> instanceBuffer, size_t instanceStride);
@@ -171,8 +182,11 @@ public:
                               unsigned int startInstance);
     void executeIndirect(const sk_sp<GrD3DCommandSignature> commandSig, unsigned int maxCommandCnt,
                          const GrD3DBuffer* argumentBuffer, size_t argumentBufferOffset);
+    void dispatch(unsigned int threadGroupCountX, unsigned int threadGroupCountY,
+                  unsigned int threadGroupCountZ = 1);
 
-    void clearRenderTargetView(const GrD3DRenderTarget* renderTarget, const SkPMColor4f& color,
+    void clearRenderTargetView(const GrD3DRenderTarget* renderTarget,
+                               std::array<float, 4> color,
                                const D3D12_RECT* rect);
     void clearDepthStencilView(const GrD3DAttachment*,
                                uint8_t stencilClearValue,
@@ -187,6 +201,10 @@ public:
                                            D3D12_GPU_VIRTUAL_ADDRESS bufferLocation);
     void setGraphicsRootDescriptorTable(unsigned int rootParameterIndex,
                                         D3D12_GPU_DESCRIPTOR_HANDLE bufferLocation);
+    void setComputeRootConstantBufferView(unsigned int rootParameterIndex,
+                                          D3D12_GPU_VIRTUAL_ADDRESS bufferLocation);
+    void setComputeRootDescriptorTable(unsigned int rootParameterIndex,
+                                       D3D12_GPU_DESCRIPTOR_HANDLE bufferLocation);
     void setDescriptorHeaps(sk_sp<GrRecycledResource> srvCrvHeapResource,
                             ID3D12DescriptorHeap* srvDescriptorHeap,
                             sk_sp<GrRecycledResource> samplerHeapResource,
@@ -200,19 +218,22 @@ private:
 
     void onReset() override;
 
-    const GrD3DPipelineState* fCurrentPipelineState;
-    const GrD3DRootSignature* fCurrentRootSignature;
-    const GrBuffer* fCurrentVertexBuffer;
-    size_t fCurrentVertexStride;
-    const GrBuffer* fCurrentInstanceBuffer;
-    size_t fCurrentInstanceStride;
-    const GrBuffer* fCurrentIndexBuffer;
-    bool fUsingCenteredSamples;
+    const GrD3DPipeline* fCurrentPipeline = nullptr;
+    const GrD3DRootSignature* fCurrentGraphicsRootSignature = nullptr;
+    const GrD3DRootSignature* fCurrentComputeRootSignature = nullptr;
+    const GrBuffer* fCurrentVertexBuffer = nullptr;
+    size_t fCurrentVertexStride = 0;
+    const GrBuffer* fCurrentInstanceBuffer = nullptr;
+    size_t fCurrentInstanceStride = 0;
+    const GrBuffer* fCurrentIndexBuffer = nullptr;
+    bool fUsingCenteredSamples = false;
 
-    D3D12_GPU_VIRTUAL_ADDRESS fCurrentConstantBufferAddress;
-    D3D12_GPU_DESCRIPTOR_HANDLE fCurrentRootDescriptorTable[GrD3DRootSignature::kParamIndexCount];
-    const ID3D12DescriptorHeap* fCurrentSRVCRVDescriptorHeap;
-    const ID3D12DescriptorHeap* fCurrentSamplerDescriptorHeap;
+    D3D12_GPU_VIRTUAL_ADDRESS fCurrentGraphicsConstantBufferAddress = 0;
+    D3D12_GPU_VIRTUAL_ADDRESS fCurrentComputeConstantBufferAddress = 0;
+    D3D12_GPU_DESCRIPTOR_HANDLE fCurrentGraphicsRootDescTable[GrD3DRootSignature::kParamIndexCount];
+    D3D12_GPU_DESCRIPTOR_HANDLE fCurrentComputeRootDescTable[GrD3DRootSignature::kParamIndexCount];
+    const ID3D12DescriptorHeap* fCurrentSRVCRVDescriptorHeap = nullptr;
+    const ID3D12DescriptorHeap* fCurrentSamplerDescriptorHeap = nullptr;
 };
 
 class GrD3DCopyCommandList : public GrD3DCommandList {

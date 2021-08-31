@@ -16,7 +16,6 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -30,7 +29,7 @@ class Rect;
 }  // namespace gfx
 
 namespace ui {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 class ContextFactory;
 #endif
 class TouchEditingControllerFactory;
@@ -112,8 +111,8 @@ class VIEWS_EXPORT ViewsDelegate {
 
   // For accessibility, notify the delegate that a menu item was focused
   // so that alternate feedback (speech / magnified text) can be provided.
-  virtual void NotifyMenuItemFocused(const base::string16& menu_name,
-                                     const base::string16& menu_item_name,
+  virtual void NotifyMenuItemFocused(const std::u16string& menu_name,
+                                     const std::u16string& menu_item_name,
                                      int item_index,
                                      int item_count,
                                      bool has_submenu);
@@ -125,6 +124,10 @@ class VIEWS_EXPORT ViewsDelegate {
   virtual ProcessMenuAcceleratorResult ProcessAcceleratorWhileMenuShowing(
       const ui::Accelerator& accelerator);
 
+  // If a menu is showing and its window loses mouse capture, it will close if
+  // this returns true.
+  virtual bool ShouldCloseMenuIfMouseCaptureLost() const;
+
 #if defined(OS_WIN)
   // Retrieves the default window icon to use for windows if none is specified.
   virtual HICON GetDefaultWindowIcon() const;
@@ -134,7 +137,7 @@ class VIEWS_EXPORT ViewsDelegate {
   // environment.
   virtual bool IsWindowInMetro(gfx::NativeWindow window) const;
 #elif BUILDFLAG(ENABLE_DESKTOP_AURA) && \
-  (defined(OS_LINUX) || defined(OS_CHROMEOS))
+    (defined(OS_LINUX) || defined(OS_CHROMEOS))
   virtual gfx::ImageSkia* GetDefaultWindowIcon() const;
 #endif
 
@@ -162,7 +165,7 @@ class VIEWS_EXPORT ViewsDelegate {
   // maximized windows; otherwise to restored windows.
   virtual bool WindowManagerProvidesTitleBar(bool maximized);
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // Returns the context factory for new windows.
   virtual ui::ContextFactory* GetContextFactory();
 #endif

@@ -27,6 +27,16 @@ namespace base {
 
 namespace {
 
+// A macro to work around the fact that lambdas are not constexpr in C++14.
+// This will define an unnamed struct with a constexpr call operator, similarly
+// to how lambdas behave in C++17+.
+// Note that this does not support capture groups, so all lambdas defined like
+// this must be stateless.
+// Example Usage: `CONSTEXPR_LAMBDA((int i, int j) { return i + j; }) lambda;`
+// TODO(crbug.com/752720): Remove once we have constexpr lambdas for real.
+#define CONSTEXPR_LAMBDA(fun) \
+  constexpr struct { constexpr bool operator() fun }
+
 struct Int {
   constexpr Int() = default;
   constexpr Int(int value) : value(value) {}
@@ -139,19 +149,28 @@ TEST(RangesTest, ForEach) {
 
   auto result = ranges::for_each(array, array + 3, times_two);
   EXPECT_EQ(result.in, array + 3);
-  EXPECT_EQ(result.fun, times_two);
+  // TODO(https://crbug.com/1191256): Fix googletest and switch this back to
+  // EXPECT_EQ.
+  EXPECT_TRUE(result.fun == times_two);
   EXPECT_THAT(array, ElementsAre(0, 2, 4, 3, 4, 5));
 
   ranges::for_each(array + 3, array + 6, times_two);
   EXPECT_EQ(result.in, array + 3);
-  EXPECT_EQ(result.fun, times_two);
+  // TODO(https://crbug.com/1191256): Fix googletest and switch this back to
+  // EXPECT_EQ.
+  EXPECT_TRUE(result.fun == times_two);
   EXPECT_THAT(array, ElementsAre(0, 2, 4, 6, 8, 10));
 
-  EXPECT_EQ(times_two, ranges::for_each(array, times_two).fun);
+  // TODO(https://crbug.com/1191256): Fix googletest and switch this back to
+  // EXPECT_EQ.
+  EXPECT_TRUE(times_two == ranges::for_each(array, times_two).fun);
   EXPECT_THAT(array, ElementsAre(0, 4, 8, 12, 16, 20));
 
   Int values[] = {0, 2, 4, 5};
-  EXPECT_EQ(times_two, ranges::for_each(values, times_two, &Int::value).fun);
+  // TODO(https://crbug.com/1191256): Fix googletest and switch this back to
+  // EXPECT_EQ.
+  EXPECT_TRUE(times_two ==
+              ranges::for_each(values, times_two, &Int::value).fun);
   EXPECT_THAT(values,
               ElementsAre(Field(&Int::value, 0), Field(&Int::value, 4),
                           Field(&Int::value, 8), Field(&Int::value, 10)));
@@ -163,26 +182,31 @@ TEST(RangesTest, ForEachN) {
 
   auto result = ranges::for_each_n(array, 3, times_two);
   EXPECT_EQ(result.in, array + 3);
-  EXPECT_EQ(result.fun, times_two);
+  // TODO(https://crbug.com/1191256): Fix googletest and switch this back to
+  // EXPECT_EQ.
+  EXPECT_TRUE(result.fun == times_two);
   EXPECT_THAT(array, ElementsAre(0, 2, 4, 3, 4, 5));
 
   Int values[] = {0, 2, 4, 5};
-  EXPECT_EQ(times_two,
-            ranges::for_each_n(values, 4, times_two, &Int::value).fun);
+  // TODO(https://crbug.com/1191256): Fix googletest and switch this back to
+  // EXPECT_EQ.
+  EXPECT_TRUE(times_two ==
+              ranges::for_each_n(values, 4, times_two, &Int::value).fun);
   EXPECT_THAT(values,
               ElementsAre(Field(&Int::value, 0), Field(&Int::value, 4),
                           Field(&Int::value, 8), Field(&Int::value, 10)));
 }
 
 TEST(RangesTest, Find) {
-  int array[] = {0, 1, 2, 3, 4, 5};
+  constexpr int array[] = {0, 1, 2, 3, 4, 5};
 
-  EXPECT_EQ(array + 6, ranges::find(array + 1, array + 6, 0));
-  EXPECT_EQ(array, ranges::find(array, 0));
+  static_assert(array + 6 == ranges::find(array + 1, array + 6, 0), "");
+  static_assert(array == ranges::find(array, 0), "");
 
-  Int values[] = {{0}, {2}, {4}, {5}};
-  EXPECT_EQ(values, ranges::find(values, values, 0, &Int::value));
-  EXPECT_EQ(ranges::end(values), ranges::find(values, 3, &Int::value));
+  constexpr Int values[] = {{0}, {2}, {4}, {5}};
+  static_assert(values == ranges::find(values, values, 0, &Int::value), "");
+  static_assert(ranges::end(values) == ranges::find(values, 3, &Int::value),
+                "");
 }
 
 TEST(RangesTest, FindIf) {
@@ -311,15 +335,27 @@ TEST(RangesTest, Mismatch) {
 }
 
 TEST(RangesTest, Equal) {
-  int array1[] = {1, 3, 6, 7};
-  int array2[] = {1, 3, 5, 7};
+  static constexpr int array1[] = {1, 3, 6, 7};
+  static constexpr int array2[] = {1, 3, 5, 7};
+
+  static_assert(ranges::equal(array1, array1 + 2, array2, array2 + 2), "");
   EXPECT_TRUE(ranges::equal(array1, array1 + 2, array2, array2 + 2));
+
+  static_assert(!ranges::equal(array1, array1 + 4, array2, array2 + 4), "");
   EXPECT_FALSE(ranges::equal(array1, array1 + 4, array2, array2 + 4));
+
+  static_assert(!ranges::equal(array1, array1 + 2, array2, array2 + 3), "");
   EXPECT_FALSE(ranges::equal(array1, array1 + 2, array2, array2 + 3));
 
-  Int ints[] = {{1}, {3}, {5}, {7}};
-  EXPECT_TRUE(ranges::equal(ints, array2,
-                            [](Int lhs, int rhs) { return lhs.value == rhs; }));
+  static constexpr Int ints[] = {{1}, {3}, {5}, {7}};
+
+  CONSTEXPR_LAMBDA((Int lhs, int rhs) { return lhs.value == rhs; }) lambda;
+  static_assert(ranges::equal(ints, array2, lambda), "");
+  EXPECT_TRUE(ranges::equal(ints, array2, lambda));
+
+  static_assert(
+      ranges::equal(array2, ints, ranges::equal_to{}, identity{}, &Int::value),
+      "");
   EXPECT_TRUE(
       ranges::equal(array2, ints, ranges::equal_to{}, identity{}, &Int::value));
 }

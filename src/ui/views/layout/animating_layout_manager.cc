@@ -11,7 +11,9 @@
 #include <vector>
 
 #include "base/auto_reset.h"
+#include "base/containers/contains.h"
 #include "base/stl_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/animation/animation_delegate_views.h"
@@ -145,8 +147,7 @@ class AnimatingLayoutManager::AnimationDelegate
     }
 
     void OnViewIsDeleting(View* observed_view) override {
-      if (animation_delegate_->scoped_observer_.IsObserving(observed_view))
-        animation_delegate_->scoped_observer_.Remove(observed_view);
+      animation_delegate_->scoped_observation_.Reset();
     }
 
    private:
@@ -164,7 +165,8 @@ class AnimatingLayoutManager::AnimationDelegate
   AnimatingLayoutManager* const target_layout_manager_;
   std::unique_ptr<gfx::SlideAnimation> animation_;
   ViewWidgetObserver view_widget_observer_{this};
-  ScopedObserver<View, ViewObserver> scoped_observer_{&view_widget_observer_};
+  base::ScopedObservation<View, ViewObserver> scoped_observation_{
+      &view_widget_observer_};
 };
 
 AnimatingLayoutManager::AnimationDelegate::AnimationDelegate(
@@ -178,7 +180,7 @@ AnimatingLayoutManager::AnimationDelegate::AnimationDelegate(
   if (host_view->GetWidget())
     MakeReadyForAnimation();
   else
-    scoped_observer_.Add(host_view);
+    scoped_observation_.Observe(host_view);
   UpdateAnimationParameters();
 }
 
@@ -204,8 +206,7 @@ void AnimatingLayoutManager::AnimationDelegate::MakeReadyForAnimation() {
   if (!ready_to_animate_) {
     target_layout_manager_->ResetLayout();
     ready_to_animate_ = true;
-    if (scoped_observer_.IsObserving(target_layout_manager_->host_view()))
-      scoped_observer_.Remove(target_layout_manager_->host_view());
+    scoped_observation_.Reset();
   }
 }
 
@@ -529,11 +530,13 @@ void AnimatingLayoutManager::LayoutImpl() {
   const gfx::Size host_size = host_view()->size();
 
   if (bounds_animation_mode_ == BoundsAnimationMode::kUseHostBounds) {
-    if (!cached_layout_size() || host_size != *cached_layout_size()) {
-      // Host size changed, so reset the layout.
+    if (!cached_layout_size()) {
+      // No previous layout, so snap to the target.
       ResetLayoutToTargetSize();
+    } else if (host_size != *cached_layout_size()) {
+      // Host size changed, so animate.
+      RecalculateTarget();
     }
-
   } else {
     const SizeBounds available_size = GetAvailableHostSize();
 
@@ -554,8 +557,8 @@ void AnimatingLayoutManager::LayoutImpl() {
       const int current_main =
           GetMainAxis(orientation(), current_layout_.host_size);
       if ((current_main > host_main) || (current_main > bounds_main)) {
-        // Reset the layout immediately if the current or target layout exceeds
-        // the host size or the available space.
+        // Reset the layout immediately if the current layout exceeds the host
+        // size or the available space.
         last_available_host_size_ = available_size;
         ResetLayoutToSize(host_size);
       } else if (available_size != last_available_host_size_) {
@@ -619,19 +622,6 @@ bool AnimatingLayoutManager::RecalculateTarget() {
   }
 
   const gfx::Size target_size = GetAvailableTargetLayoutSize();
-
-  // For layouts that are confined to available space, changing the available
-  // space causes a fresh layout, not an animation.
-  // TODO(dfried): define a way for views to animate into and out of empty
-  // space as adjacent child views appear/disappear. This will be useful in
-  // animating tab titles, which currently slide over when the favicon
-  // disappears.
-  if (bounds_animation_mode_ == BoundsAnimationMode::kUseHostBounds &&
-      *cached_layout_size() != target_size) {
-    ResetLayoutToSize(target_size);
-    return true;
-  }
-
   set_cached_layout_size(target_size);
 
   // If there has been no appreciable change in layout, there's no reason to
@@ -802,10 +792,10 @@ void AnimatingLayoutManager::CalculateFadeInfos() {
   fade_infos_.clear();
 
   struct ChildInfo {
-    base::Optional<size_t> start;
+    absl::optional<size_t> start;
     NormalizedRect start_bounds;
     bool start_visible = false;
-    base::Optional<size_t> target;
+    absl::optional<size_t> target;
     NormalizedRect target_bounds;
     bool target_visible = false;
   };

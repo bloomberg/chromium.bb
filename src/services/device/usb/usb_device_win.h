@@ -12,7 +12,6 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string16.h"
 #include "services/device/usb/usb_device.h"
 
 namespace device {
@@ -72,11 +71,11 @@ class UsbDeviceWin : public UsbDevice {
       uint8_t i_manufacturer,
       uint8_t i_product,
       uint8_t i_serial_number,
-      std::unique_ptr<std::map<uint8_t, base::string16>> string_map);
+      std::unique_ptr<std::map<uint8_t, std::u16string>> string_map);
   void OnReadWebUsbCapabilityDescriptor(
       base::OnceCallback<void(bool)> callback,
       scoped_refptr<UsbDeviceHandle> device_handle,
-      const base::Optional<WebUsbPlatformCapabilityDescriptor>& descriptor);
+      const absl::optional<WebUsbPlatformCapabilityDescriptor>& descriptor);
   void OnOpenedToReadWebUsbLandingPage(
       base::OnceCallback<void(bool)> callback,
       uint8_t vendor_code,

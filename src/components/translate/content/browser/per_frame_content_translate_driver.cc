@@ -63,7 +63,7 @@ static const char kTranslateSubframeErrorType[] =
 // TODO(dougarnett): Factor this out into a utility class that can be
 // shared here and with the original macos copy.
 void AddTextNodesToVector(const ui::AXNode* node,
-                          std::vector<base::string16>* strings) {
+                          std::vector<std::u16string>* strings) {
   const ui::AXNodeData& node_data = node->data();
 
   if (node_data.role == ax::mojom::Role::kStaticText) {
@@ -78,22 +78,21 @@ void AddTextNodesToVector(const ui::AXNode* node,
     AddTextNodesToVector(child, strings);
 }
 
-using PageContentsCallback = base::OnceCallback<void(const base::string16&)>;
+using PageContentsCallback = base::OnceCallback<void(const std::u16string&)>;
 void CombineTextNodesAndMakeCallback(PageContentsCallback callback,
                                      const ui::AXTreeUpdate& update) {
   ui::AXTree tree;
   if (!tree.Unserialize(update)) {
-    std::move(callback).Run(base::ASCIIToUTF16(""));
+    std::move(callback).Run(u"");
     return;
   }
 
-  std::vector<base::string16> text_node_contents;
+  std::vector<std::u16string> text_node_contents;
   text_node_contents.reserve(update.nodes.size());
 
   AddTextNodesToVector(tree.root(), &text_node_contents);
 
-  std::move(callback).Run(
-      base::JoinString(text_node_contents, base::ASCIIToUTF16("\n")));
+  std::move(callback).Run(base::JoinString(text_node_contents, u"\n"));
 }
 }  // namespace
 
@@ -130,7 +129,9 @@ void PerFrameContentTranslateDriver::PendingRequestStats::Report() {
 PerFrameContentTranslateDriver::PerFrameContentTranslateDriver(
     content::NavigationController* nav_controller,
     language::UrlLanguageHistogram* url_language_histogram)
-    : ContentTranslateDriver(nav_controller, url_language_histogram) {}
+    : ContentTranslateDriver(nav_controller,
+                             url_language_histogram,
+                             /*translate_model_service=*/nullptr) {}
 
 PerFrameContentTranslateDriver::~PerFrameContentTranslateDriver() = default;
 
@@ -202,28 +203,22 @@ void PerFrameContentTranslateDriver::RevertFrame(
     frame_agent->RevertTranslation();
 }
 
-// content::WebContentsObserver methods
-void PerFrameContentTranslateDriver::NavigationEntryCommitted(
-    const content::LoadCommittedDetails& load_details) {
+void PerFrameContentTranslateDriver::InitiateTranslationIfReload(
+    content::NavigationHandle* navigation_handle) {
   // Check whether this is a reload: When doing a page reload, the
   // TranslateLanguageDetermined IPC is not sent so the translation needs to be
   // explicitly initiated.
 
-  content::NavigationEntry* entry =
-      web_contents()->GetController().GetLastCommittedEntry();
-  if (!entry) {
-    NOTREACHED();
-    return;
-  }
-
   // If the navigation happened while offline don't show the translate
   // bar since there will be nothing to translate.
-  if (load_details.http_status_code == 0 ||
-      load_details.http_status_code == net::HTTP_INTERNAL_SERVER_ERROR) {
+  int response_code =
+      navigation_handle->GetResponseHeaders()
+          ? navigation_handle->GetResponseHeaders()->response_code()
+          : 0;
+  if (response_code == 0 || response_code == net::HTTP_INTERNAL_SERVER_ERROR)
     return;
-  }
 
-  if (!load_details.is_main_frame &&
+  if (!navigation_handle->IsInMainFrame() &&
       translate_manager()->GetLanguageState()->translation_declined()) {
     // Some sites (such as Google map) may trigger sub-frame navigations
     // when the user interacts with the page.  We don't want to show a new
@@ -232,13 +227,11 @@ void PerFrameContentTranslateDriver::NavigationEntryCommitted(
   }
 
   // If not a reload, return.
-  if (!ui::PageTransitionCoreTypeIs(entry->GetTransitionType(),
-                                    ui::PAGE_TRANSITION_RELOAD) &&
-      load_details.type != content::NAVIGATION_TYPE_SAME_PAGE) {
+  if (navigation_handle->GetReloadType() == content::ReloadType::NONE)
     return;
-  }
 
-  if (entry->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK) {
+  if (navigation_handle->GetPageTransition() &
+      ui::PAGE_TRANSITION_FORWARD_BACK) {
     // Workaround for http://crbug.com/653051: back navigation sometimes have
     // the reload core type. Once http://crbug.com/669008 got resolved, we
     // could revisit here for a thorough solution.
@@ -250,8 +243,11 @@ void PerFrameContentTranslateDriver::NavigationEntryCommitted(
     return;
   }
 
-  if (!translate_manager()->GetLanguageState()->page_needs_translation())
+  if (!translate_manager()
+           ->GetLanguageState()
+           ->page_level_translation_critiera_met()) {
     return;
+  }
 
   // Note that we delay it as the ordering of the processing of this callback
   // by WebContentsObservers is undefined and might result in the current
@@ -259,16 +255,19 @@ void PerFrameContentTranslateDriver::NavigationEntryCommitted(
   // an infobar, it must be done after that.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &PerFrameContentTranslateDriver::InitiateTranslation,
-          weak_pointer_factory_.GetWeakPtr(),
-          translate_manager()->GetLanguageState()->original_language(), 0));
+      base::BindOnce(&PerFrameContentTranslateDriver::InitiateTranslation,
+                     weak_pointer_factory_.GetWeakPtr(),
+                     translate_manager()->GetLanguageState()->source_language(),
+                     0));
 }
 
+// content::WebContentsObserver methods
 void PerFrameContentTranslateDriver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->HasCommitted())
     return;
+
+  InitiateTranslationIfReload(navigation_handle);
 
   if (navigation_handle->IsInMainFrame())
     finish_navigation_time_ = base::TimeTicks::Now();
@@ -278,7 +277,7 @@ void PerFrameContentTranslateDriver::DidFinishNavigation(
       navigation_handle->GetReloadType() != content::ReloadType::NONE ||
       navigation_handle->IsSameDocument();
 
-  const base::Optional<url::Origin>& initiator_origin =
+  const absl::optional<url::Origin>& initiator_origin =
       navigation_handle->GetInitiatorOrigin();
 
   bool navigation_from_google =
@@ -312,7 +311,8 @@ void PerFrameContentTranslateDriver::DOMContentLoaded(
   }
 }
 
-void PerFrameContentTranslateDriver::DocumentOnLoadCompletedInMainFrame() {
+void PerFrameContentTranslateDriver::DocumentOnLoadCompletedInMainFrame(
+    content::RenderFrameHost* render_frame_host) {
   if (translate::IsSubFrameLanguageDetectionEnabled() &&
       translate::IsTranslatableURL(web_contents()->GetURL())) {
     StartLanguageDetection();
@@ -330,7 +330,10 @@ void PerFrameContentTranslateDriver::StartLanguageDetection() {
           base::BindOnce(&PerFrameContentTranslateDriver::OnPageContents,
                          weak_pointer_factory_.GetWeakPtr(),
                          capture_begin_time)),
-      ui::AXMode::kWebContents);
+      ui::AXMode::kWebContents,
+      /* exclude_offscreen= */ false,
+      /* max_nodes= */ 5000,
+      /* timeout= */ {});
 
   // Kick off language detection by first requesting web language details.
   details_ = LanguageDetectionDetails();
@@ -345,23 +348,23 @@ void PerFrameContentTranslateDriver::StartLanguageDetection() {
 
 void PerFrameContentTranslateDriver::OnPageLanguageDetermined(
     const LanguageDetectionDetails& details,
-    bool page_needs_translation) {
+    bool page_level_translation_critiera_met) {
   language_determined_time_ = base::TimeTicks::Now();
   ReportLanguageDeterminedDuration(finish_navigation_time_,
                                    language_determined_time_);
 
   // If we have a language histogram (i.e. we're not in incognito), update it
   // with the detected language of every page visited.
-  if (language_histogram() && details.is_cld_reliable)
-    language_histogram()->OnPageVisited(details.cld_language);
+  if (language_histogram() && details.is_model_reliable)
+    language_histogram()->OnPageVisited(details.model_detected_language);
 
   if (translate_manager() && web_contents()) {
     translate_manager()->GetLanguageState()->LanguageDetermined(
-        details.adopted_language, page_needs_translation);
+        details.adopted_language, page_level_translation_critiera_met);
     translate_manager()->InitiateTranslation(details.adopted_language);
   }
 
-  for (auto& observer : observer_list())
+  for (auto& observer : language_detection_observers())
     observer.OnLanguageDetermined(details);
 }
 
@@ -382,7 +385,7 @@ void PerFrameContentTranslateDriver::OnWebLanguageDetectionDetails(
 
 void PerFrameContentTranslateDriver::OnPageContents(
     base::TimeTicks capture_begin_time,
-    const base::string16& contents) {
+    const std::u16string& contents) {
   details_.contents = contents;
   UMA_HISTOGRAM_TIMES(kTranslateCaptureText,
                       base::TimeTicks::Now() - capture_begin_time);
@@ -404,8 +407,8 @@ void PerFrameContentTranslateDriver::OnPageContentsLanguage(
     const std::string& contents_language,
     bool is_contents_language_reliable) {
   awaiting_contents_ = false;
-  details_.cld_language = contents_language;
-  details_.is_cld_reliable = is_contents_language_reliable;
+  details_.model_detected_language = contents_language;
+  details_.is_model_reliable = is_contents_language_reliable;
 
   if (!details_.url.is_empty())
     ComputeActualPageLanguage();
@@ -416,7 +419,7 @@ void PerFrameContentTranslateDriver::ComputeActualPageLanguage() {
   // utility process.
   std::string language = DeterminePageLanguage(
       details_.content_language, details_.html_root_language,
-      details_.cld_language, details_.is_cld_reliable);
+      details_.model_detected_language, details_.is_model_reliable);
 
   if (!language.empty()) {
     details_.time = base::Time::Now();
@@ -433,7 +436,7 @@ void PerFrameContentTranslateDriver::OnFrameTranslated(
     bool is_main_frame,
     mojo::AssociatedRemote<mojom::TranslateAgent> translate_agent,
     bool cancelled,
-    const std::string& original_lang,
+    const std::string& source_lang,
     const std::string& translated_lang,
     TranslateErrors::Type error_type) {
   if (cancelled)
@@ -458,10 +461,10 @@ void PerFrameContentTranslateDriver::OnFrameTranslated(
     // Post the callback on the thread's task runner in case the
     // info bar is in the process of going away.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&ContentTranslateDriver::OnPageTranslated,
-                                  weak_pointer_factory_.GetWeakPtr(), cancelled,
-                                  original_lang, translated_lang,
-                                  stats_.main_frame_error));
+        FROM_HERE,
+        base::BindOnce(&ContentTranslateDriver::OnPageTranslated,
+                       weak_pointer_factory_.GetWeakPtr(), cancelled,
+                       source_lang, translated_lang, stats_.main_frame_error));
     stats_.Report();
     stats_.Clear();
   }

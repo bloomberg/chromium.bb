@@ -55,16 +55,18 @@ class RenderThreadManager : public CompositorFrameConsumer {
       const viz::FrameSinkId& frame_sink_id,
       viz::FrameTimingDetailsMap timing_details,
       uint32_t frame_token);
-  void InsertReturnedResourcesOnRT(
-      const std::vector<viz::ReturnedResource>& resources,
-      const viz::FrameSinkId& frame_sink_id,
-      uint32_t layer_tree_frame_sink_id);
+  void InsertReturnedResourcesOnRT(std::vector<viz::ReturnedResource> resources,
+                                   const viz::FrameSinkId& frame_sink_id,
+                                   uint32_t layer_tree_frame_sink_id);
 
   void CommitFrameOnRT();
   void SetVulkanContextProviderOnRT(AwVulkanContextProvider* context_provider);
   void UpdateViewTreeForceDarkStateOnRT(bool view_tree_force_dark_state);
-  void DrawOnRT(bool save_restore, HardwareRendererDrawParams* params);
+  void DrawOnRT(bool save_restore,
+                const HardwareRendererDrawParams& params,
+                const OverlaysParams& overlays_params);
   void DestroyHardwareRendererOnRT(bool save_restore);
+  void RemoveOverlaysOnRT(OverlaysParams::MergeTransactionFn merge_transaction);
 
   // May be created on either thread.
   class InsideHardwareReleaseReset {

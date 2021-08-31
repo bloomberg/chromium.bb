@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_SESSIONS_SESSION_RESTORE_TEST_HELPER_H_
 #define CHROME_BROWSER_SESSIONS_SESSION_RESTORE_TEST_HELPER_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sessions/session_restore.h"
@@ -40,7 +38,7 @@ class SessionRestoreTestHelper {
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   // For automatically unsubscribing from callback-based notifications.
-  SessionRestore::CallbackSubscription callback_subscription_;
+  base::CallbackListSubscription callback_subscription_;
 
   // For safely binding pointers to callbacks.
   base::WeakPtrFactory<SessionRestoreTestHelper> weak_ptr_factory{this};

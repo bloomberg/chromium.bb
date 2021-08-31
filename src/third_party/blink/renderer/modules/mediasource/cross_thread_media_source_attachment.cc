@@ -29,7 +29,7 @@ std::ostream& operator<<(
 
 CrossThreadMediaSourceAttachment::CrossThreadMediaSourceAttachment(
     MediaSource* media_source,
-    util::PassKey<URLMediaSource> /* passkey */)
+    base::PassKey<URLMediaSource> /* passkey */)
     : registered_media_source_(media_source),
       // TODO(https://crbug.com/878133): Confirm if kMediaElementEvent remains
       // the appropriate task type when standardizing MSE-in-Workers, for
@@ -418,6 +418,23 @@ void CrossThreadMediaSourceAttachment::OnMediaSourceContextDestroyed() {
   // We shouldn't be notified more than once.
   DCHECK(!media_source_context_destroyed_);
   media_source_context_destroyed_ = true;
+}
+
+bool CrossThreadMediaSourceAttachment::FullyAttachedOrSameThread(
+    SourceBufferPassKey) const {
+  attachment_state_lock_.AssertAcquired();
+
+  // We must only be used by the MSE API on the worker thread.
+  DCHECK(!IsMainThread());
+  DCHECK(worker_runner_->BelongsToCurrentThread());
+
+  // We might be called while MSE worker context is being destroyed, but we must
+  // not be called if we've never been used yet to attach.
+  DCHECK(attached_media_source_);
+  DCHECK(have_ever_attached_);
+
+  return !media_element_context_destroyed_ && attached_element_ &&
+         !have_ever_started_closing_;
 }
 
 bool CrossThreadMediaSourceAttachment::RunExclusively(

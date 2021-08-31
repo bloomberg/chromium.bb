@@ -19,6 +19,8 @@ class GrMtlGpu;
 class GrMtlPipelineState;
 class GrMtlOpsRenderPass;
 
+GR_NORETAIN_BEGIN
+
 class GrMtlCommandBuffer : public SkRefCnt {
 public:
     static sk_sp<GrMtlCommandBuffer> Make(id<MTLCommandQueue> queue);
@@ -50,6 +52,10 @@ public:
     void waitUntilCompleted() {
         [fCmdBuffer waitUntilCompleted];
     }
+    bool isCompleted() {
+        return fCmdBuffer.status == MTLCommandBufferStatusCompleted ||
+               fCmdBuffer.status == MTLCommandBufferStatusError;
+    }
     void callFinishedCallbacks() { fFinishedCallbacks.reset(); }
 
 private:
@@ -57,6 +63,8 @@ private:
 
     GrMtlCommandBuffer(id<MTLCommandBuffer> cmdBuffer)
         : fCmdBuffer(cmdBuffer)
+        , fActiveBlitCommandEncoder(nil)
+        , fActiveRenderCommandEncoder(nil)
         , fPreviousRenderPassDescriptor(nil)
         , fHasWork(false) {}
 
@@ -72,5 +80,7 @@ private:
 
     SkSTArray<kInitialTrackedResourcesCount, sk_sp<const GrBuffer>> fTrackedGrBuffers;
 };
+
+GR_NORETAIN_END
 
 #endif

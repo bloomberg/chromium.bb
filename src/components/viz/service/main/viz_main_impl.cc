@@ -16,6 +16,8 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "components/ui_devtools/buildflags.h"
+#include "components/viz/common/features.h"
+#include "components/viz/service/debugger/viz_debugger.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/service/gpu_init.h"
@@ -24,6 +26,7 @@
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "skia/ext/legacy_display_globals.h"
+#include "ui/gfx/rendering_pipeline.h"
 
 namespace {
 
@@ -86,6 +89,15 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
         viz_compositor_thread_runner_->task_runner());
   }
 
+  if (features::IsAdpfEnabled()) {
+    gpu_pipeline_ = gfx::RenderingPipeline::CreateGpu();
+    gpu_pipeline_->AddSequenceManagerThread(
+        viz_compositor_thread_runner_->thread_id(),
+        viz_compositor_thread_runner_->task_runner());
+    gpu_pipeline_->AddSequenceManagerThread(
+        base::PlatformThread::CurrentId(), base::ThreadTaskRunnerHandle::Get());
+  }
+
   if (!gpu_init_->gpu_info().in_process_gpu && dependencies_.ukm_recorder) {
     // NOTE: If the GPU is running in the browser process, we can use the
     // browser's UKMRecorder.
@@ -100,6 +112,7 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
       gpu_init_->gpu_feature_info_for_hardware_gpu(),
       gpu_init_->gpu_extra_info(), gpu_init_->vulkan_implementation(),
       base::BindOnce(&VizMainImpl::ExitProcess, base::Unretained(this)));
+  VizDebugger::GetInstance();
 }
 
 VizMainImpl::~VizMainImpl() {
@@ -125,9 +138,8 @@ VizMainImpl::~VizMainImpl() {
         dependencies_.ukm_recorder.get());
 }
 
-void VizMainImpl::BindAssociated(
-    mojo::PendingAssociatedReceiver<mojom::VizMain> pending_receiver) {
-  receiver_.Bind(std::move(pending_receiver));
+void VizMainImpl::Bind(mojo::PendingReceiver<mojom::VizMain> receiver) {
+  receiver_.Bind(std::move(receiver));
 }
 
 void VizMainImpl::CreateGpuService(
@@ -170,13 +182,13 @@ void VizMainImpl::CreateGpuService(
       gfx::FontRenderParams::SubpixelRenderingToSkiaPixelGeometry(
           subpixel_rendering));
 
-  gpu_service_->Bind(std::move(pending_receiver));
   gpu_service_->InitializeWithHost(
       gpu_host.Unbind(),
       gpu::GpuProcessActivityFlags(std::move(activity_flags)),
       gpu_init_->TakeDefaultOffscreenSurface(),
       dependencies_.sync_point_manager, dependencies_.shared_image_manager,
       dependencies_.shutdown_event);
+  gpu_service_->Bind(std::move(pending_receiver));
 
   if (!pending_frame_sink_manager_params_.is_null()) {
     CreateFrameSinkManagerInternal(
@@ -246,7 +258,8 @@ void VizMainImpl::CreateFrameSinkManagerInternal(
       gpu_service_->gpu_channel_manager()->program_cache());
 
   viz_compositor_thread_runner_->CreateFrameSinkManager(
-      std::move(params), task_executor_.get(), gpu_service_.get());
+      std::move(params), task_executor_.get(), gpu_service_.get(),
+      gpu_pipeline_.get());
 }
 
 void VizMainImpl::CreateVizDevTools(mojom::VizDevToolsParamsPtr params) {
@@ -254,6 +267,21 @@ void VizMainImpl::CreateVizDevTools(mojom::VizDevToolsParamsPtr params) {
   viz_compositor_thread_runner_->CreateVizDevTools(std::move(params));
 #endif
 }
+
+#if BUILDFLAG(USE_VIZ_DEBUGGER)
+void VizMainImpl::FilterDebugStream(base::Value filter_data) {
+  VizDebugger::GetInstance()->FilterDebugStream(std::move(filter_data));
+}
+
+void VizMainImpl::StartDebugStream(
+    mojo::PendingRemote<mojom::VizDebugOutput> pending_debug_output) {
+  VizDebugger::GetInstance()->StartDebugStream(std::move(pending_debug_output));
+}
+
+void VizMainImpl::StopDebugStream() {
+  VizDebugger::GetInstance()->StopDebugStream();
+}
+#endif
 
 scoped_refptr<gpu::SharedContextState> VizMainImpl::GetSharedContextState() {
   return gpu_service_->GetContextState();
@@ -263,28 +291,21 @@ scoped_refptr<gl::GLShareGroup> VizMainImpl::GetShareGroup() {
   return gpu_service_->share_group();
 }
 
-void VizMainImpl::ExitProcess(base::Optional<ExitCode> immediate_exit_code) {
+void VizMainImpl::ExitProcess(ExitCode immediate_exit_code) {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
 
-  if (!gpu_init_->gpu_info().in_process_gpu && immediate_exit_code) {
+  if (!gpu_init_->gpu_info().in_process_gpu) {
     // Atomically shut down GPU process to make it faster and simpler.
     base::Process::TerminateCurrentProcessImmediately(
-        static_cast<int>(immediate_exit_code.value()));
+        static_cast<int>(immediate_exit_code));
     return;
   }
 
   // Close mojom::VizMain bindings first so the browser can't try to reconnect.
   receiver_.reset();
 
-  if (viz_compositor_thread_runner_) {
-    // Destroy RootCompositorFrameSinkImpls on the compositor while the GPU
-    // thread is still running to avoid deadlock. Quit GPU thread TaskRunner
-    // after cleanup on compositor thread is finished.
-    viz_compositor_thread_runner_->CleanupForShutdown(base::BindOnce(
-        &Delegate::QuitMainMessageLoop, base::Unretained(delegate_)));
-  } else {
-    delegate_->QuitMainMessageLoop();
-  }
+  DCHECK(!viz_compositor_thread_runner_);
+  delegate_->QuitMainMessageLoop();
 }
 
 }  // namespace viz

@@ -12,6 +12,7 @@
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "test/codec_factory.h"
 #include "test/video_source.h"
+#include "test/util.h"
 
 namespace {
 
@@ -22,10 +23,7 @@ class AV1FrameSizeTests : public ::testing::Test,
       : EncoderTest(&::libaom_test::kAV1), expected_res_(AOM_CODEC_OK) {}
   virtual ~AV1FrameSizeTests() {}
 
-  virtual void SetUp() {
-    InitializeConfig();
-    SetMode(::libaom_test::kRealTime);
-  }
+  virtual void SetUp() { InitializeConfig(::libaom_test::kRealTime); }
 
   virtual bool HandleDecodeResult(const aom_codec_err_t res_dec,
                                   libaom_test::Decoder *decoder) {
@@ -74,5 +72,64 @@ TEST_F(AV1FrameSizeTests, OneByOneVideo) {
   expected_res_ = AOM_CODEC_OK;
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 }
-#undef ONE_BY_ONE_VIDEO_NAME
+
+#if !CONFIG_REALTIME_ONLY
+typedef struct {
+  unsigned int width;
+  unsigned int height;
+} FrameSizeParam;
+
+const FrameSizeParam FrameSizeTestParams[] = { { 96, 96 }, { 176, 144 } };
+
+// This unit test is used to validate the allocated size of compressed data
+// (ctx->cx_data) buffer, by feeding pseudo random input to the encoder in
+// lossless encoding mode.
+//
+// If compressed data buffer is not large enough, the av1_get_compressed_data()
+// call in av1/av1_cx_iface.c will overflow the buffer.
+class AV1LosslessFrameSizeTests
+    : public ::libaom_test::CodecTestWith2Params<FrameSizeParam,
+                                                 ::libaom_test::TestMode>,
+      public ::libaom_test::EncoderTest {
+ protected:
+  AV1LosslessFrameSizeTests()
+      : EncoderTest(GET_PARAM(0)), frame_size_param_(GET_PARAM(1)),
+        encoding_mode_(GET_PARAM(2)) {}
+  virtual ~AV1LosslessFrameSizeTests() {}
+
+  virtual void SetUp() { InitializeConfig(encoding_mode_); }
+
+  virtual bool HandleDecodeResult(const aom_codec_err_t res_dec,
+                                  libaom_test::Decoder *decoder) {
+    EXPECT_EQ(expected_res_, res_dec) << decoder->DecodeError();
+    return !::testing::Test::HasFailure();
+  }
+
+  virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
+                                  ::libaom_test::Encoder *encoder) {
+    if (video->frame() == 0) {
+      encoder->Control(AOME_SET_CPUUSED, 6);
+      encoder->Control(AV1E_SET_LOSSLESS, 1);
+    }
+  }
+
+  const FrameSizeParam frame_size_param_;
+  const ::libaom_test::TestMode encoding_mode_;
+  int expected_res_;
+};
+
+TEST_P(AV1LosslessFrameSizeTests, LosslessEncode) {
+  ::libaom_test::RandomVideoSource video;
+
+  video.SetSize(frame_size_param_.width, frame_size_param_.height);
+  video.set_limit(10);
+  expected_res_ = AOM_CODEC_OK;
+  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+}
+
+AV1_INSTANTIATE_TEST_SUITE(AV1LosslessFrameSizeTests,
+                           ::testing::ValuesIn(FrameSizeTestParams),
+                           testing::Values(::libaom_test::kAllIntra));
+#endif  // !CONFIG_REALTIME_ONLY
+
 }  // namespace

@@ -13,6 +13,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #import "ui/base/cocoa/controls/textfield_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -38,7 +39,7 @@ NSString* GetDescriptionFromExtension(const base::FilePath::StringType& ext) {
   // In case no description is found, create a description based on the
   // unknown extension type (i.e. if the extension is .qqq, the we create
   // a description "QQQ File (.qqq)").
-  base::string16 ext_name = base::UTF8ToUTF16(ext);
+  std::u16string ext_name = base::UTF8ToUTF16(ext);
   return l10n_util::GetNSStringF(IDS_APP_SAVEAS_EXTENSION_FORMAT,
                                  base::i18n::ToUpper(ext_name), ext_name);
 }
@@ -100,7 +101,8 @@ NSSavePanel* g_last_created_panel_for_testing = nil;
   base::scoped_nsobject<NSArray> _fileTypeLists;
 }
 
-- (id)initWithDialog:(NSSavePanel*)dialog fileTypeLists:(NSArray*)fileTypeLists;
+- (instancetype)initWithDialog:(NSSavePanel*)dialog
+                 fileTypeLists:(NSArray*)fileTypeLists;
 
 - (void)popupAction:(id)sender;
 @end
@@ -127,8 +129,8 @@ NSSavePanel* g_last_created_panel_for_testing = nil;
 
 @implementation ExtensionDropdownHandler
 
-- (id)initWithDialog:(NSSavePanel*)dialog
-       fileTypeLists:(NSArray*)fileTypeLists {
+- (instancetype)initWithDialog:(NSSavePanel*)dialog
+                 fileTypeLists:(NSArray*)fileTypeLists {
   if ((self = [super init])) {
     _dialog = dialog;
     _fileTypeLists.reset([fileTypeLists retain]);
@@ -171,7 +173,7 @@ SelectFileDialogBridge::~SelectFileDialogBridge() {
 
 void SelectFileDialogBridge::Show(
     SelectFileDialogType type,
-    const base::string16& title,
+    const std::u16string& title,
     const base::FilePath& default_path,
     SelectFileTypeInfoPtr file_types,
     int file_type_index,
@@ -320,7 +322,7 @@ void SelectFileDialogBridge::SetAccessoryView(
 
     // Populate file_type_lists.
     // Set to store different extensions in the current extension group.
-    NSMutableSet* file_type_set = [NSMutableSet set];
+    NSMutableArray* file_type_array = [NSMutableArray array];
     for (const base::FilePath::StringType& ext : ext_list) {
       if (ext == default_extension)
         default_extension_index = i;
@@ -329,8 +331,11 @@ void SelectFileDialogBridge::SetAccessoryView(
       // we nil check before adding to |file_type_set|. See crbug.com/630101 and
       // rdar://27490414.
       base::ScopedCFTypeRef<CFStringRef> uti(CreateUTIFromExtension(ext));
-      if (uti)
-        [file_type_set addObject:base::mac::CFToNSCast(uti.get())];
+      if (uti) {
+        NSString* uti_ns = base::mac::CFToNSCast(uti.get());
+        if (![file_type_array containsObject:uti_ns])
+          [file_type_array addObject:uti_ns];
+      }
 
       // Always allow the extension itself, in case the UTI doesn't map
       // back to the original extension correctly. This occurs with dynamic
@@ -338,9 +343,11 @@ void SelectFileDialogBridge::SetAccessoryView(
       // See http://crbug.com/148840, http://openradar.me/12316273
       base::ScopedCFTypeRef<CFStringRef> ext_cf(
           base::SysUTF8ToCFStringRef(ext));
-      [file_type_set addObject:base::mac::CFToNSCast(ext_cf.get())];
+      NSString* ext_ns = base::mac::CFToNSCast(ext_cf.get());
+      if (![file_type_array containsObject:ext_ns])
+        [file_type_array addObject:ext_ns];
     }
-    [file_type_lists addObject:[file_type_set allObjects]];
+    [file_type_lists addObject:file_type_array];
   }
 
   if (file_types->include_all_files || file_types->extensions.empty()) {

@@ -7,13 +7,12 @@
 #include <iostream>
 
 #include "base/files/file_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/ash/system_logs/debug_log_writer.h"
+#include "chrome/browser/ash/system_logs/system_logs_writer.h"
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
-#include "chrome/browser/chromeos/system_logs/debug_log_writer.h"
-#include "chrome/browser/chromeos/system_logs/system_logs_writer.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/policy/chrome_policy_conversions_client.h"
 #include "chrome/browser/profiles/profile.h"
@@ -108,7 +107,7 @@ void NetworkLogsMessageHandler::OnStoreLogs(const base::ListValue* list) {
 void NetworkLogsMessageHandler::OnWriteSystemLogs(
     const std::string& callback_id,
     base::Value&& options,
-    base::Optional<base::FilePath> syslogs_path) {
+    absl::optional<base::FilePath> syslogs_path) {
   if (!syslogs_path) {
     Respond(callback_id, "Error writing system logs file.", /*is_error=*/true);
     return;
@@ -139,7 +138,7 @@ void NetworkLogsMessageHandler::MaybeWriteDebugLogs(
 void NetworkLogsMessageHandler::OnWriteDebugLogs(
     const std::string& callback_id,
     base::Value&& options,
-    base::Optional<base::FilePath> logs_path) {
+    absl::optional<base::FilePath> logs_path) {
   if (!logs_path) {
     Respond(callback_id, "Error writing debug logs.", /*is_error=*/true);
     return;

@@ -40,13 +40,8 @@ AXSlider::AXSlider(LayoutObject* layout_object,
                    AXObjectCacheImpl& ax_object_cache)
     : AXLayoutObject(layout_object, ax_object_cache) {}
 
-ax::mojom::Role AXSlider::DetermineAccessibilityRole() {
-  native_role_ = ax::mojom::blink::Role::kSlider;
-
-  if ((aria_role_ = DetermineAriaRoleAttribute()) != ax::mojom::Role::kUnknown)
-    return aria_role_;
-
-  return native_role_;
+ax::mojom::blink::Role AXSlider::NativeRoleIgnoringAria() const {
+  return ax::mojom::blink::Role::kSlider;
 }
 
 AccessibilityOrientation AXSlider::Orientation() const {
@@ -75,36 +70,6 @@ AccessibilityOrientation AXSlider::Orientation() const {
   }
 }
 
-void AXSlider::AddChildren() {
-  DCHECK(!IsDetached());
-  DCHECK(!have_children_);
-  have_children_ = true;
-
-  AXObjectCacheImpl& cache = AXObjectCache();
-  AXObject* thumb = cache.GetOrCreate(ax::mojom::Role::kSliderThumb);
-  DCHECK(thumb);
-  thumb->SetParent(this);
-
-  // Before actually adding the value indicator to the hierarchy,
-  // allow the platform to make a final decision about it.
-  if (!thumb->AccessibilityIsIncludedInTree()) {
-    cache.Remove(thumb->AXObjectID());
-    return;
-  }
-
-  children_.push_back(thumb);
-}
-
-AXObject* AXSlider::ElementAccessibilityHitTest(const IntPoint& point) const {
-  if (HasChildren()) {
-    DCHECK(children_.size() == 1);
-    if (children_[0]->GetBoundsInFrameCoordinates().Contains(point))
-      return children_[0].Get();
-  }
-
-  return AXObjectCache().GetOrCreate(layout_object_);
-}
-
 bool AXSlider::OnNativeSetValueAction(const String& value) {
   HTMLInputElement* input = GetInputElement();
 
@@ -122,36 +87,13 @@ bool AXSlider::OnNativeSetValueAction(const String& value) {
     return false;
 
   // Ensure the AX node is updated.
-  AXObjectCache().MarkAXObjectDirty(this, false);
+  AXObjectCache().MarkAXObjectDirtyWithCleanLayout(this, false);
 
   return true;
 }
 
 HTMLInputElement* AXSlider::GetInputElement() const {
   return To<HTMLInputElement>(layout_object_->GetNode());
-}
-
-AXSliderThumb::AXSliderThumb(AXObjectCacheImpl& ax_object_cache)
-    : AXMockObject(ax_object_cache) {}
-
-LayoutObject* AXSliderThumb::LayoutObjectForRelativeBounds() const {
-  if (!parent_)
-    return nullptr;
-
-  LayoutObject* slider_layout_object = parent_->GetLayoutObject();
-  if (!slider_layout_object)
-    return nullptr;
-  Element* thumb_element =
-      To<Element>(slider_layout_object->GetNode())
-          ->UserAgentShadowRoot()
-          ->getElementById(shadow_element_names::kIdSliderThumb);
-  DCHECK(thumb_element);
-  return thumb_element->GetLayoutObject();
-}
-
-bool AXSliderThumb::ComputeAccessibilityIsIgnored(
-    IgnoredReasons* ignored_reasons) const {
-  return AccessibilityIsIgnoredByDefault(ignored_reasons);
 }
 
 }  // namespace blink

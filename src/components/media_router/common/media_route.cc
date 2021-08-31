@@ -49,6 +49,17 @@ std::string MediaRoute::GetPresentationIdFromMediaRouteId(
 }
 
 // static
+std::string MediaRoute::GetSinkIdFromMediaRouteId(
+    const MediaRoute::Id route_id) {
+  if (!IsValidMediaRouteId(route_id)) {
+    return "";
+  }
+  auto begin = route_id.find("/");
+  auto end = route_id.find("/", begin + 1);
+  return route_id.substr(begin + 1, (end - begin - 1));
+}
+
+// static
 std::string MediaRoute::GetMediaSourceIdFromMediaRouteId(
     const MediaRoute::Id route_id) {
   if (!IsValidMediaRouteId(route_id)) {
@@ -87,7 +98,8 @@ bool MediaRoute::operator==(const MediaRoute& other) const {
          controller_type_ == other.controller_type_ &&
          for_display_ == other.for_display_ &&
          is_off_the_record_ == other.is_off_the_record_ &&
-         is_local_presentation_ == other.is_local_presentation_;
+         is_local_presentation_ == other.is_local_presentation_ &&
+         is_connecting_ == other.is_connecting_;
 }
 
 std::ostream& operator<<(std::ostream& stream, const MediaRoute& route) {

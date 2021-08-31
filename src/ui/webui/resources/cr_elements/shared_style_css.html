@@ -123,6 +123,7 @@
 
       paper-tooltip {
         --paper-tooltip: {
+          border-radius: var(--paper-tooltip-border-radius, 2px);
           font-size: 92.31%;  /* Effectively 12px if the host default is 13px. */
           font-weight: 500;
           max-width: 330px;
@@ -157,6 +158,29 @@
         letter-spacing: .4px;
         line-height: var(--cr-form-field-label-line-height);
         margin-bottom: 8px;
+      }
+
+      .cr-vertical-tab {
+        align-items: center;
+        display: flex;
+      }
+
+      .cr-vertical-tab::before {
+        border-radius: 0 3px 3px 0;
+        content: '';
+        display: block;
+        flex-shrink: 0;
+        height: var(--cr-vertical-tab-height, 100%);
+        width: 4px;
+      }
+
+      .cr-vertical-tab.selected::before {
+        background: var(--cr-vertical-tab-selected-color, var(--cr-checked-color));
+      }
+
+      :host-context([dir=rtl]) .cr-vertical-tab::before {
+        /* Border-radius based on block/inline is not yet supported. */
+        transform: scaleX(-1);
       }
     </style>
   </template>

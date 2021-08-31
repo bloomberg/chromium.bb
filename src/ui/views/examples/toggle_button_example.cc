@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
@@ -29,12 +28,18 @@ void ToggleButtonExample::CreateExampleView(View* container) {
   auto layout = std::make_unique<BoxLayout>(BoxLayout::Orientation::kVertical);
   layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kCenter);
   container->SetLayoutManager(std::move(layout));
-  button_ = container->AddChildView(
-      std::make_unique<ToggleButton>(base::BindRepeating(
+  container->AddChildView(std::make_unique<ToggleButton>(base::BindRepeating(
+      [](ToggleButtonExample* example) {
+        PrintStatus("Pressed 1! count: %d", ++example->count_1_);
+      },
+      base::Unretained(this))));
+  container
+      ->AddChildView(std::make_unique<ToggleButton>(base::BindRepeating(
           [](ToggleButtonExample* example) {
-            PrintStatus("Pressed! count: %d", ++example->count_);
+            PrintStatus("Pressed 2! count: %d", ++example->count_2_);
           },
-          base::Unretained(this))));
+          base::Unretained(this))))
+      ->SetIsOn(true);
 }
 
 }  // namespace examples

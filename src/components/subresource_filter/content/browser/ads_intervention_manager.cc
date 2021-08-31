@@ -41,6 +41,17 @@ AdsInterventionStatus GetAdsInterventionStatus(bool activation_status,
 
 }  // namespace
 
+// static
+base::TimeDelta AdsInterventionManager::GetInterventionDuration(
+    mojom::AdsViolation violation) {
+  switch (violation) {
+    case mojom::AdsViolation::kHeavyAdsInterventionAtHostLimit:
+      return base::TimeDelta::FromDays(1);
+    default:
+      return kAdsInterventionDuration.Get();
+  }
+}
+
 AdsInterventionManager::AdsInterventionManager(
     SubresourceFilterContentSettingsManager* settings_manager)
     : settings_manager_(settings_manager),
@@ -72,7 +83,7 @@ void AdsInterventionManager::TriggerAdsInterventionForUrlOnSubsequentLoads(
                             ads_violation);
 }
 
-base::Optional<AdsInterventionManager::LastAdsIntervention>
+absl::optional<AdsInterventionManager::LastAdsIntervention>
 AdsInterventionManager::GetLastAdsIntervention(const GURL& url) const {
   int ads_violation;
   double last_violation_time;
@@ -89,7 +100,7 @@ AdsInterventionManager::GetLastAdsIntervention(const GURL& url) const {
         {diff, static_cast<mojom::AdsViolation>(ads_violation)});
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool AdsInterventionManager::ShouldActivate(
@@ -98,18 +109,24 @@ bool AdsInterventionManager::ShouldActivate(
   // TODO(https://crbug.com/1136987): Add new ads intervention
   // manager function to return struct with all ads intervention
   // metadata to reduce metadata accesses.
-  base::Optional<AdsInterventionManager::LastAdsIntervention>
+  absl::optional<AdsInterventionManager::LastAdsIntervention>
       last_intervention = GetLastAdsIntervention(url);
 
   // Only activate the subresource filter if we are intervening on
   // ads.
   bool current_activation_status =
       settings_manager_->GetSiteActivationFromMetadata(url);
-  bool has_active_ads_intervention =
-      last_intervention &&
-      last_intervention->duration_since <
-          subresource_filter::kAdsInterventionDuration.Get();
+  bool has_active_ads_intervention = false;
+
+  // TODO(crbug.com/1131971): If a host triggers multiple times on a single
+  // navigate and the durations don't match, we'll use the last duration rather
+  // than the longest. The metadata should probably store the activation with
+  // the longest duration.
   if (last_intervention) {
+    has_active_ads_intervention =
+        last_intervention->duration_since <
+        AdsInterventionManager::GetInterventionDuration(
+            last_intervention->ads_violation);
     UMA_HISTOGRAM_COUNTS_1000(kTimeSinceAdsInterventionTriggeredHistogramName,
                               last_intervention->duration_since.InHours());
 

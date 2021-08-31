@@ -21,6 +21,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histograms>
 
+<variants name="FileOperations">
+  <variant name=".DeleteFile.NonRecursive" summary=""/>
+  <variant name=".DeleteFile.Recursive" summary=""/>
+</variants>
+
 <histogram name="Windows.ApplockerRunning" enum="Boolean" expires_after="M83">
   <owner>forshaw@chromium.org</owner>
   <owner>wfh@chromium.org</owner>
@@ -31,8 +36,30 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Windows.CetAvailable" enum="BooleanAvailable"
+    expires_after="2021-12-01">
+  <owner>ajgo@chromium.org</owner>
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    Records if CET (Control-flow Enforcement Technology / Hardware Enforced
+    Shadow Stack) is available, based on IsUserCetAvailableInEnvironment().
+    Reported once per browser session, on startup.
+  </summary>
+</histogram>
+
+<histogram name="Windows.CetEnabled" enum="BooleanEnabled"
+    expires_after="2021-12-01">
+  <owner>ajgo@chromium.org</owner>
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    Records if CET (Control-flow Enforcement Technology / Hardware Enforced
+    Shadow Stack) is enabled or if it has been disabled by IFEO. Reported only
+    if CetAvailable is true, once per browser session, on startup.
+  </summary>
+</histogram>
+
 <histogram name="Windows.ChromeDllPrefetchResult" enum="FilePrefetchResult"
-    expires_after="2021-07-01">
+    expires_after="2021-10-04">
   <owner>brucedawson@chromium.org</owner>
   <owner>jessemckenna@google.com</owner>
   <summary>
@@ -53,13 +80,41 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram base="true" name="Windows.FilesystemError" enum="WinGetLastError"
-    expires_after="M81">
+<histogram name="Windows.FileDeleteLastRetryError" enum="WinGetLastError"
+    expires_after="2021-12-31">
+  <owner>grt@chromium.org</owner>
+  <owner>davidbienvenu@chromium.org</owner>
+  <summary>
+    Last File deletion error in DeleteFileWithRetry when no retry succeeded,
+    because we exceeded the retry count.
+  </summary>
+</histogram>
+
+<histogram name="Windows.FileDeleteRetryCount" units="attempts"
+    expires_after="2021-12-31">
+  <owner>grt@chromium.org</owner>
+  <owner>davidbienvenu@chromium.org</owner>
+  <summary>
+    The number of retries needed to successfully delete a file from
+    GetDeleteFileCallback. 0 means it succeeded the first time, 9 means it never
+    succeeded.
+  </summary>
+</histogram>
+
+<histogram name="Windows.FilesystemError{FileOperations}"
+    enum="WinGetLastError" expires_after="M81">
   <owner>grt@chromium.org</owner>
   <summary>
     The Windows error code relating to a failed attempt to operate on a file or
-    a directory.
+    a directory. {FileOperations}
   </summary>
+  <token key="FileOperations" variants="FileOperations">
+    <variant name="">
+      <obsolete>
+        Base histogram. Use suffixes of this histogram instead.
+      </obsolete>
+    </variant>
+  </token>
 </histogram>
 
 <histogram name="Windows.GetVersionExVersion" enum="WindowsVersion"
@@ -79,7 +134,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Windows.HasHighResolutionTimeTicks" enum="Boolean"
-    expires_after="2021-03-30">
+    expires_after="2021-10-17">
   <owner>brucedawson@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
@@ -89,8 +144,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Windows.HighResolutionTimerUsage" units="%"
-    expires_after="M81">
-  <owner>stanisc@chromium.org</owner>
+    expires_after="2022-02-12">
+  <owner>olivierli@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
   <summary>
     Percentage of elapsed time the high resolution timer is activated. The usage
     is reported by each of Chrome processes individually (without aggregation)
@@ -99,7 +155,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Windows.HypervPresent" enum="BooleanEnabled"
-    expires_after="2021-05-02">
+    expires_after="2021-10-04">
   <owner>rkc@chromium.org</owner>
   <owner>rockot@chromium.org</owner>
   <summary>
@@ -270,16 +326,24 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram base="true" name="Windows.PostOperationState"
+<histogram name="Windows.PostOperationState{FileOperations}"
     enum="PostOperationState" expires_after="M81">
   <owner>grt@chromium.org</owner>
   <summary>
     The state of an item in the filesystem following an operation on it.
+    {FileOperations}
   </summary>
+  <token key="FileOperations" variants="FileOperations">
+    <variant name="">
+      <obsolete>
+        Base histogram. Use suffixes of this histogram instead.
+      </obsolete>
+    </variant>
+  </token>
 </histogram>
 
 <histogram name="Windows.ProcessorFamily" enum="ProcessorFamily"
-    expires_after="2021-05-02">
+    expires_after="2021-10-04">
   <owner>rkc@chromium.org</owner>
   <owner>rockot@chromium.org</owner>
   <summary>
@@ -291,12 +355,24 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Windows.ProcessorVirtualizationFirmwareEnabled"
-    enum="BooleanEnabled" expires_after="2021-05-02">
+    enum="BooleanEnabled" expires_after="2021-10-04">
   <owner>rkc@chromium.org</owner>
   <owner>rockot@chromium.org</owner>
   <summary>
     Whether virtualization has been enabled in the system firmware. Logged
     shortly after startup. This metric will only be logged on Windows 10+.
+  </summary>
+</histogram>
+
+<histogram name="Windows.ServiceStatus.SSP" units="WindowsServiceStatus"
+    expires_after="2021-10-04">
+  <owner>wfh@chromium.org</owner>
+  <owner>ajgo@chromium.org</owner>
+  <summary>
+    This records whether any SSP/AD providers are registered on the system. If
+    there are any then this typically means the network sandbox cannot
+    successfully engage. Recorded each time the browser attempts to start the
+    network service process. This metric is only recorded on Windows 10+.
   </summary>
 </histogram>
 
@@ -306,7 +382,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Windows.TmpFileDeleter.FailCount" units="files"
-    expires_after="2021-05-02">
+    expires_after="2021-08-09">
   <owner>grt@chromium.org</owner>
   <owner>etiennep@chromium.org</owner>
   <summary>
@@ -320,7 +396,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Windows.TmpFileDeleter.SuccessCount" units="files"
-    expires_after="2021-05-02">
+    expires_after="2021-08-09">
   <owner>grt@chromium.org</owner>
   <owner>etiennep@chromium.org</owner>
   <summary>
@@ -333,7 +409,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Windows.TouchDrag.Success" units="BooleanSuccess"
-    expires_after="2021-03-01">
+    expires_after="2021-08-01">
   <owner>davidbienvenu@chromium.org</owner>
   <owner>dfried@chromium.org</owner>
   <summary>

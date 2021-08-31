@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {assert} from 'chrome://resources/js/assert.m.js'
-// #import {FocusRow, FocusRowDelegate} from 'chrome://resources/js/cr/ui/focus_row.m.js';
+// #import {assert} from '../../assert.m.js'
+// #import {FocusRow, FocusRowDelegate} from './focus_row.m.js';
 // clang-format on
 
 cr.define('cr.ui', function() {
@@ -187,6 +187,7 @@ cr.define('cr.ui', function() {
   }
 
   // #cr_define_end
+  console.warn('crbug/1173575, non-JS module files deprecated.');
   return {
     FocusGrid: FocusGrid,
   };

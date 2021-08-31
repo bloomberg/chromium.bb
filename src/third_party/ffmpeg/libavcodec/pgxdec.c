@@ -95,7 +95,7 @@ error:
 }
 
 #define WRITE_FRAME(D, PIXEL, suffix)                                                       \
-    static inline void write_frame_ ##D(AVPacket *avpkt, AVFrame *frame, GetByteContext *g, \
+    static inline void write_frame_ ##D(AVFrame *frame, GetByteContext *g, \
                                         int width, int height, int sign, int depth)         \
     {                                                                                       \
         int i, j;                                                                           \
@@ -133,14 +133,14 @@ static int pgx_decode_frame(AVCodecContext *avctx, void *data,
     if ((ret = ff_set_dimensions(avctx, width, height)) < 0)
         return ret;
 
-    if (depth <= 8) {
+    if (depth > 0 && depth <= 8) {
         avctx->pix_fmt = AV_PIX_FMT_GRAY8;
         bpp = 8;
-    } else if (depth <= 16) {
+    } else if (depth > 0 && depth <= 16) {
         avctx->pix_fmt = AV_PIX_FMT_GRAY16;
         bpp = 16;
     } else {
-        av_log(avctx, AV_LOG_ERROR, "Maximum depth of 16 bits supported.\n");
+        av_log(avctx, AV_LOG_ERROR, "depth %d is invalid or unsupported.\n", depth);
         return AVERROR_PATCHWELCOME;
     }
     if (bytestream2_get_bytes_left(&g) < width * height * (bpp >> 3))
@@ -151,9 +151,9 @@ static int pgx_decode_frame(AVCodecContext *avctx, void *data,
     p->key_frame = 1;
     avctx->bits_per_raw_sample = depth;
     if (bpp == 8)
-        write_frame_8(avpkt, p, &g, width, height, sign, depth);
+        write_frame_8(p, &g, width, height, sign, depth);
     else if (bpp == 16)
-        write_frame_16(avpkt, p, &g, width, height, sign, depth);
+        write_frame_16(p, &g, width, height, sign, depth);
     *got_frame = 1;
     return 0;
 }

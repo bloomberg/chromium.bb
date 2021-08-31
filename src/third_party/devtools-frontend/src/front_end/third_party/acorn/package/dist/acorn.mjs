@@ -146,6 +146,7 @@ var types = {
   regexp: new TokenType("regexp", startsExpr),
   string: new TokenType("string", startsExpr),
   name: new TokenType("name", startsExpr),
+  privateId: new TokenType("privateId", startsExpr),
   eof: new TokenType("eof"),
 
   // Punctuation token types.
@@ -308,16 +309,16 @@ function getLineInfo(input, offset) {
   }
 }
 
-// A second optional argument can be given to further configure
-// the parser process. These options are recognized:
+// A second argument must be given to configure the parser process.
+// These options are recognized (only `ecmaVersion` is required):
 
 var defaultOptions = {
   // `ecmaVersion` indicates the ECMAScript version to parse. Must be
-  // either 3, 5, 6 (2015), 7 (2016), 8 (2017), 9 (2018), or 10
-  // (2019). This influences support for strict mode, the set of
-  // reserved words, and support for new syntax features. The default
-  // is 10.
-  ecmaVersion: 10,
+  // either 3, 5, 6 (or 2015), 7 (2016), 8 (2017), 9 (2018), 10
+  // (2019), 11 (2020), 12 (2021), or `"latest"` (the latest version
+  // the library supports). This influences support for strict mode,
+  // the set of reserved words, and support for new syntax features.
+  ecmaVersion: null,
   // `sourceType` indicates the mode the code should be parsed in.
   // Can be either `"script"` or `"module"`. This influences global
   // strict mode and parsing of `import` and `export` declarations.
@@ -340,7 +341,8 @@ var defaultOptions = {
   // error.
   allowReturnOutsideFunction: false,
   // When enabled, import/export statements are not constrained to
-  // appearing at the top of the program.
+  // appearing at the top of the program, and an import.meta expression
+  // in a script isn't considered an error.
   allowImportExportEverywhere: false,
   // When enabled, await identifiers are allowed to appear at the top-level scope,
   // but they are still not allowed in non-async functions.
@@ -398,14 +400,25 @@ var defaultOptions = {
 
 // Interpret and default an options object
 
+var warnedAboutEcmaVersion = false;
+
 function getOptions(opts) {
   var options = {};
 
   for (var opt in defaultOptions)
     { options[opt] = opts && has(opts, opt) ? opts[opt] : defaultOptions[opt]; }
 
-  if (options.ecmaVersion >= 2015)
-    { options.ecmaVersion -= 2009; }
+  if (options.ecmaVersion === "latest") {
+    options.ecmaVersion = 1e8;
+  } else if (options.ecmaVersion == null) {
+    if (!warnedAboutEcmaVersion && typeof console === "object" && console.warn) {
+      warnedAboutEcmaVersion = true;
+      console.warn("Since Acorn 8.0.0, options.ecmaVersion is required.\nDefaulting to 2020, but this will stop working in the future.");
+    }
+    options.ecmaVersion = 11;
+  } else if (options.ecmaVersion >= 2015) {
+    options.ecmaVersion -= 2009;
+  }
 
   if (options.allowReserved == null)
     { options.allowReserved = options.ecmaVersion < 5; }
@@ -452,7 +465,7 @@ function functionFlags(async, generator) {
   return SCOPE_FUNCTION | (async ? SCOPE_ASYNC : 0) | (generator ? SCOPE_GENERATOR : 0)
 }
 
-// Used in checkLVal and declareName to determine the type of a binding
+// Used in checkLVal* and declareName to determine the type of a binding
 var
     BIND_NONE = 0, // Not a binding
     BIND_VAR = 1, // Var-style binding
@@ -467,8 +480,7 @@ var Parser = function Parser(options, input, startPos) {
   this.keywords = wordsRegexp(keywords[options.ecmaVersion >= 6 ? 6 : options.sourceType === "module" ? "5module" : 5]);
   var reserved = "";
   if (options.allowReserved !== true) {
-    for (var v = options.ecmaVersion;; v--)
-      { if (reserved = reservedWords[v]) { break } }
+    reserved = reservedWords[options.ecmaVersion >= 6 ? 6 : options.ecmaVersion === 5 ? 5 : 3];
     if (options.sourceType === "module") { reserved += " await"; }
   }
   this.reservedWords = wordsRegexp(reserved);
@@ -521,13 +533,14 @@ var Parser = function Parser(options, input, startPos) {
 
   // Used to signify the start of a potential arrow function
   this.potentialArrowAt = -1;
+  this.potentialArrowInForAwait = false;
 
   // Positions to delayed-check that yield/await does not exist in default parameters.
   this.yieldPos = this.awaitPos = this.awaitIdentPos = 0;
   // Labels in scope.
   this.labels = [];
   // Thus-far undefined exports.
-  this.undefinedExports = {};
+  this.undefinedExports = Object.create(null);
 
   // If enabled, skip leading hashbang line.
   if (this.pos === 0 && options.allowHashBang && this.input.slice(0, 2) === "#!")
@@ -539,9 +552,14 @@ var Parser = function Parser(options, input, startPos) {
 
   // For RegExp validation
   this.regexpState = null;
+
+  // The stack of private names.
+  // Each element has two properties: 'declared' and 'used'.
+  // When it exited from the outermost class definition, all used private names must be declared.
+  this.privateNameStack = [];
 };
 
-var prototypeAccessors = { inFunction: { configurable: true },inGenerator: { configurable: true },inAsync: { configurable: true },allowSuper: { configurable: true },allowDirectSuper: { configurable: true },treatFunctionsAsVar: { configurable: true } };
+var prototypeAccessors = { inFunction: { configurable: true },inGenerator: { configurable: true },inAsync: { configurable: true },allowSuper: { configurable: true },allowDirectSuper: { configurable: true },treatFunctionsAsVar: { configurable: true },inNonArrowFunction: { configurable: true } };
 
 Parser.prototype.parse = function parse () {
   var node = this.options.program || this.startNode();
@@ -550,14 +568,22 @@ Parser.prototype.parse = function parse () {
 };
 
 prototypeAccessors.inFunction.get = function () { return (this.currentVarScope().flags & SCOPE_FUNCTION) > 0 };
-prototypeAccessors.inGenerator.get = function () { return (this.currentVarScope().flags & SCOPE_GENERATOR) > 0 };
-prototypeAccessors.inAsync.get = function () { return (this.currentVarScope().flags & SCOPE_ASYNC) > 0 };
-prototypeAccessors.allowSuper.get = function () { return (this.currentThisScope().flags & SCOPE_SUPER) > 0 };
+prototypeAccessors.inGenerator.get = function () { return (this.currentVarScope().flags & SCOPE_GENERATOR) > 0 && !this.currentVarScope().inClassFieldInit };
+prototypeAccessors.inAsync.get = function () { return (this.currentVarScope().flags & SCOPE_ASYNC) > 0 && !this.currentVarScope().inClassFieldInit };
+prototypeAccessors.allowSuper.get = function () {
+  var ref = this.currentThisScope();
+    var flags = ref.flags;
+    var inClassFieldInit = ref.inClassFieldInit;
+  return (flags & SCOPE_SUPER) > 0 || inClassFieldInit
+};
 prototypeAccessors.allowDirectSuper.get = function () { return (this.currentThisScope().flags & SCOPE_DIRECT_SUPER) > 0 };
 prototypeAccessors.treatFunctionsAsVar.get = function () { return this.treatFunctionsAsVarInScope(this.currentScope()) };
-
-// Switch to a getter for 7.0.0.
-Parser.prototype.inNonArrowFunction = function inNonArrowFunction () { return (this.currentThisScope().flags & SCOPE_FUNCTION) > 0 };
+prototypeAccessors.inNonArrowFunction.get = function () {
+  var ref = this.currentThisScope();
+    var flags = ref.flags;
+    var inClassFieldInit = ref.inClassFieldInit;
+  return (flags & SCOPE_FUNCTION) > 0 || inClassFieldInit
+};
 
 Parser.extend = function extend () {
     var plugins = [], len = arguments.length;
@@ -588,7 +614,7 @@ var pp = Parser.prototype;
 
 // ## Parser utilities
 
-var literal = /^(?:'((?:\\.|[^'])*?)'|"((?:\\.|[^"])*?)")/;
+var literal = /^(?:'((?:\\.|[^'\\])*?)'|"((?:\\.|[^"\\])*?)")/;
 pp.strictDirective = function(start) {
   for (;;) {
     // Try to find string literal.
@@ -743,7 +769,7 @@ var pp$1 = Parser.prototype;
 // to its body instead of creating a new node.
 
 pp$1.parseTopLevel = function(node) {
-  var exports = {};
+  var exports = Object.create(null);
   if (!node.body) { node.body = []; }
   while (this.type !== types.eof) {
     var stmt = this.parseStatement(null, true, exports);
@@ -964,7 +990,7 @@ pp$1.parseForStatement = function(node) {
     return this.parseFor(node, init$1)
   }
   var refDestructuringErrors = new DestructuringErrors;
-  var init = this.parseExpression(true, refDestructuringErrors);
+  var init = this.parseExpression(awaitAt > -1 ? "await" : true, refDestructuringErrors);
   if (this.type === types._in || (this.options.ecmaVersion >= 6 && this.isContextual("of"))) {
     if (this.options.ecmaVersion >= 9) {
       if (this.type === types._in) {
@@ -972,7 +998,7 @@ pp$1.parseForStatement = function(node) {
       } else { node.await = awaitAt > -1; }
     }
     this.toAssignable(init, false, refDestructuringErrors);
-    this.checkLVal(init);
+    this.checkLValPattern(init);
     return this.parseForIn(node, init)
   } else {
     this.checkExpressionErrors(refDestructuringErrors, true);
@@ -1073,7 +1099,7 @@ pp$1.parseTryStatement = function(node) {
       clause.param = this.parseBindingAtom();
       var simple = clause.param.type === "Identifier";
       this.enterScope(simple ? SCOPE_SIMPLE_CATCH : 0);
-      this.checkLVal(clause.param, simple ? BIND_SIMPLE_CATCH : BIND_LEXICAL);
+      this.checkLValPattern(clause.param, simple ? BIND_SIMPLE_CATCH : BIND_LEXICAL);
       this.expect(types.parenR);
     } else {
       if (this.options.ecmaVersion < 10) { this.unexpected(); }
@@ -1209,8 +1235,6 @@ pp$1.parseForIn = function(node, init) {
       init.start,
       ((isForIn ? "for-in" : "for-of") + " loop variable declaration may not have an initializer")
     );
-  } else if (init.type === "AssignmentPattern") {
-    this.raise(init.start, "Invalid left-hand side in for-loop");
   }
   node.left = init;
   node.right = isForIn ? this.parseExpression() : this.parseMaybeAssign();
@@ -1246,7 +1270,7 @@ pp$1.parseVar = function(node, isFor, kind) {
 
 pp$1.parseVarId = function(decl, kind) {
   decl.id = this.parseBindingAtom();
-  this.checkLVal(decl.id, kind === "var" ? BIND_VAR : BIND_LEXICAL, false);
+  this.checkLValPattern(decl.id, kind === "var" ? BIND_VAR : BIND_LEXICAL, false);
 };
 
 var FUNC_STATEMENT = 1, FUNC_HANGING_STATEMENT = 2, FUNC_NULLABLE_ID = 4;
@@ -1272,7 +1296,7 @@ pp$1.parseFunction = function(node, statement, allowExpressionBody, isAsync) {
       // subject to Annex B semantics (BIND_FUNCTION). Otherwise, the binding
       // mode depends on properties of the current scope (see
       // treatFunctionsAsVar).
-      { this.checkLVal(node.id, (this.strict || node.generator || node.async) ? this.treatFunctionsAsVar ? BIND_VAR : BIND_LEXICAL : BIND_FUNCTION); }
+      { this.checkLValSimple(node.id, (this.strict || node.generator || node.async) ? this.treatFunctionsAsVar ? BIND_VAR : BIND_LEXICAL : BIND_FUNCTION); }
   }
 
   var oldYieldPos = this.yieldPos, oldAwaitPos = this.awaitPos, oldAwaitIdentPos = this.awaitIdentPos;
@@ -1312,6 +1336,7 @@ pp$1.parseClass = function(node, isStatement) {
 
   this.parseClassId(node, isStatement);
   this.parseClassSuper(node);
+  var privateNameMap = this.enterClassBody();
   var classBody = this.startNode();
   var hadConstructor = false;
   classBody.body = [];
@@ -1323,82 +1348,159 @@ pp$1.parseClass = function(node, isStatement) {
       if (element.type === "MethodDefinition" && element.kind === "constructor") {
         if (hadConstructor) { this.raise(element.start, "Duplicate constructor in the same class"); }
         hadConstructor = true;
+      } else if (element.key.type === "PrivateIdentifier" && isPrivateNameConflicted(privateNameMap, element)) {
+        this.raiseRecoverable(element.key.start, ("Identifier '#" + (element.key.name) + "' has already been declared"));
       }
     }
   }
   this.strict = oldStrict;
   this.next();
   node.body = this.finishNode(classBody, "ClassBody");
+  this.exitClassBody();
   return this.finishNode(node, isStatement ? "ClassDeclaration" : "ClassExpression")
 };
 
 pp$1.parseClassElement = function(constructorAllowsSuper) {
-  var this$1 = this;
-
   if (this.eat(types.semi)) { return null }
 
-  var method = this.startNode();
-  var tryContextual = function (k, noLineBreak) {
-    if ( noLineBreak === void 0 ) noLineBreak = false;
-
-    var start = this$1.start, startLoc = this$1.startLoc;
-    if (!this$1.eatContextual(k)) { return false }
-    if (this$1.type !== types.parenL && (!noLineBreak || !this$1.canInsertSemicolon())) { return true }
-    if (method.key) { this$1.unexpected(); }
-    method.computed = false;
-    method.key = this$1.startNodeAt(start, startLoc);
-    method.key.name = k;
-    this$1.finishNode(method.key, "Identifier");
-    return false
-  };
-
-  method.kind = "method";
-  method.static = tryContextual("static");
-  var isGenerator = this.eat(types.star);
+  var ecmaVersion = this.options.ecmaVersion;
+  var node = this.startNode();
+  var keyName = "";
+  var isGenerator = false;
   var isAsync = false;
-  if (!isGenerator) {
-    if (this.options.ecmaVersion >= 8 && tryContextual("async", true)) {
-      isAsync = true;
-      isGenerator = this.options.ecmaVersion >= 9 && this.eat(types.star);
-    } else if (tryContextual("get")) {
-      method.kind = "get";
-    } else if (tryContextual("set")) {
-      method.kind = "set";
+  var kind = "method";
+
+  // Parse modifiers
+  node.static = false;
+  if (this.eatContextual("static")) {
+    if (this.isClassElementNameStart() || this.type === types.star) {
+      node.static = true;
+    } else {
+      keyName = "static";
     }
   }
-  if (!method.key) { this.parsePropertyName(method); }
-  var key = method.key;
-  var allowsDirectSuper = false;
-  if (!method.computed && !method.static && (key.type === "Identifier" && key.name === "constructor" ||
-      key.type === "Literal" && key.value === "constructor")) {
-    if (method.kind !== "method") { this.raise(key.start, "Constructor can't have get/set modifier"); }
-    if (isGenerator) { this.raise(key.start, "Constructor can't be a generator"); }
-    if (isAsync) { this.raise(key.start, "Constructor can't be an async method"); }
-    method.kind = "constructor";
-    allowsDirectSuper = constructorAllowsSuper;
-  } else if (method.static && key.type === "Identifier" && key.name === "prototype") {
-    this.raise(key.start, "Classes may not have a static property named prototype");
+  if (!keyName && ecmaVersion >= 8 && this.eatContextual("async")) {
+    if ((this.isClassElementNameStart() || this.type === types.star) && !this.canInsertSemicolon()) {
+      isAsync = true;
+    } else {
+      keyName = "async";
+    }
   }
-  this.parseClassMethod(method, isGenerator, isAsync, allowsDirectSuper);
-  if (method.kind === "get" && method.value.params.length !== 0)
-    { this.raiseRecoverable(method.value.start, "getter should have no params"); }
-  if (method.kind === "set" && method.value.params.length !== 1)
-    { this.raiseRecoverable(method.value.start, "setter should have exactly one param"); }
-  if (method.kind === "set" && method.value.params[0].type === "RestElement")
-    { this.raiseRecoverable(method.value.params[0].start, "Setter cannot use rest params"); }
-  return method
+  if (!keyName && (ecmaVersion >= 9 || !isAsync) && this.eat(types.star)) {
+    isGenerator = true;
+  }
+  if (!keyName && !isAsync && !isGenerator) {
+    var lastValue = this.value;
+    if (this.eatContextual("get") || this.eatContextual("set")) {
+      if (this.isClassElementNameStart()) {
+        kind = lastValue;
+      } else {
+        keyName = lastValue;
+      }
+    }
+  }
+
+  // Parse element name
+  if (keyName) {
+    // 'async', 'get', 'set', or 'static' were not a keyword contextually.
+    // The last token is any of those. Make it the element name.
+    node.computed = false;
+    node.key = this.startNodeAt(this.lastTokStart, this.lastTokStartLoc);
+    node.key.name = keyName;
+    this.finishNode(node.key, "Identifier");
+  } else {
+    this.parseClassElementName(node);
+  }
+
+  // Parse element value
+  if (ecmaVersion < 13 || this.type === types.parenL || kind !== "method" || isGenerator || isAsync) {
+    var isConstructor = !node.static && checkKeyName(node, "constructor");
+    var allowsDirectSuper = isConstructor && constructorAllowsSuper;
+    // Couldn't move this check into the 'parseClassMethod' method for backward compatibility.
+    if (isConstructor && kind !== "method") { this.raise(node.key.start, "Constructor can't have get/set modifier"); }
+    node.kind = isConstructor ? "constructor" : kind;
+    this.parseClassMethod(node, isGenerator, isAsync, allowsDirectSuper);
+  } else {
+    this.parseClassField(node);
+  }
+
+  return node
+};
+
+pp$1.isClassElementNameStart = function() {
+  return (
+    this.type === types.name ||
+    this.type === types.privateId ||
+    this.type === types.num ||
+    this.type === types.string ||
+    this.type === types.bracketL ||
+    this.type.keyword
+  )
+};
+
+pp$1.parseClassElementName = function(element) {
+  if (this.type === types.privateId) {
+    if (this.value === "constructor") {
+      this.raise(this.start, "Classes can't have an element named '#constructor'");
+    }
+    element.computed = false;
+    element.key = this.parsePrivateIdent();
+  } else {
+    this.parsePropertyName(element);
+  }
 };
 
 pp$1.parseClassMethod = function(method, isGenerator, isAsync, allowsDirectSuper) {
-  method.value = this.parseMethod(isGenerator, isAsync, allowsDirectSuper);
+  // Check key and flags
+  var key = method.key;
+  if (method.kind === "constructor") {
+    if (isGenerator) { this.raise(key.start, "Constructor can't be a generator"); }
+    if (isAsync) { this.raise(key.start, "Constructor can't be an async method"); }
+  } else if (method.static && checkKeyName(method, "prototype")) {
+    this.raise(key.start, "Classes may not have a static property named prototype");
+  }
+
+  // Parse value
+  var value = method.value = this.parseMethod(isGenerator, isAsync, allowsDirectSuper);
+
+  // Check value
+  if (method.kind === "get" && value.params.length !== 0)
+    { this.raiseRecoverable(value.start, "getter should have no params"); }
+  if (method.kind === "set" && value.params.length !== 1)
+    { this.raiseRecoverable(value.start, "setter should have exactly one param"); }
+  if (method.kind === "set" && value.params[0].type === "RestElement")
+    { this.raiseRecoverable(value.params[0].start, "Setter cannot use rest params"); }
+
   return this.finishNode(method, "MethodDefinition")
+};
+
+pp$1.parseClassField = function(field) {
+  if (checkKeyName(field, "constructor")) {
+    this.raise(field.key.start, "Classes can't have a field named 'constructor'");
+  } else if (field.static && checkKeyName(field, "prototype")) {
+    this.raise(field.key.start, "Classes can't have a static field named 'prototype'");
+  }
+
+  if (this.eat(types.eq)) {
+    // To raise SyntaxError if 'arguments' exists in the initializer.
+    var scope = this.currentThisScope();
+    var inClassFieldInit = scope.inClassFieldInit;
+    scope.inClassFieldInit = true;
+    field.value = this.parseMaybeAssign();
+    scope.inClassFieldInit = inClassFieldInit;
+  } else {
+    field.value = null;
+  }
+  this.semicolon();
+
+  return this.finishNode(field, "PropertyDefinition")
 };
 
 pp$1.parseClassId = function(node, isStatement) {
   if (this.type === types.name) {
     node.id = this.parseIdent();
     if (isStatement)
-      { this.checkLVal(node.id, BIND_LEXICAL, false); }
+      { this.checkLValSimple(node.id, BIND_LEXICAL, false); }
   } else {
     if (isStatement === true)
       { this.unexpected(); }
@@ -1409,6 +1511,65 @@ pp$1.parseClassId = function(node, isStatement) {
 pp$1.parseClassSuper = function(node) {
   node.superClass = this.eat(types._extends) ? this.parseExprSubscripts() : null;
 };
+
+pp$1.enterClassBody = function() {
+  var element = {declared: Object.create(null), used: []};
+  this.privateNameStack.push(element);
+  return element.declared
+};
+
+pp$1.exitClassBody = function() {
+  var ref = this.privateNameStack.pop();
+  var declared = ref.declared;
+  var used = ref.used;
+  var len = this.privateNameStack.length;
+  var parent = len === 0 ? null : this.privateNameStack[len - 1];
+  for (var i = 0; i < used.length; ++i) {
+    var id = used[i];
+    if (!has(declared, id.name)) {
+      if (parent) {
+        parent.used.push(id);
+      } else {
+        this.raiseRecoverable(id.start, ("Private field '#" + (id.name) + "' must be declared in an enclosing class"));
+      }
+    }
+  }
+};
+
+function isPrivateNameConflicted(privateNameMap, element) {
+  var name = element.key.name;
+  var curr = privateNameMap[name];
+
+  var next = "true";
+  if (element.type === "MethodDefinition" && (element.kind === "get" || element.kind === "set")) {
+    next = (element.static ? "s" : "i") + element.kind;
+  }
+
+  // `class { get #a(){}; static set #a(_){} }` is also conflict.
+  if (
+    curr === "iget" && next === "iset" ||
+    curr === "iset" && next === "iget" ||
+    curr === "sget" && next === "sset" ||
+    curr === "sset" && next === "sget"
+  ) {
+    privateNameMap[name] = "true";
+    return false
+  } else if (!curr) {
+    privateNameMap[name] = next;
+    return false
+  } else {
+    return true
+  }
+}
+
+function checkKeyName(node, name) {
+  var computed = node.computed;
+  var key = node.key;
+  return !computed && (
+    key.type === "Identifier" && key.name === name ||
+    key.type === "Literal" && key.value === name
+  )
+}
 
 // Parses module export declaration.
 
@@ -1578,7 +1739,7 @@ pp$1.parseImportSpecifiers = function() {
     // import defaultObj, { x, y as z } from '...'
     var node = this.startNode();
     node.local = this.parseIdent();
-    this.checkLVal(node.local, BIND_LEXICAL);
+    this.checkLValSimple(node.local, BIND_LEXICAL);
     nodes.push(this.finishNode(node, "ImportDefaultSpecifier"));
     if (!this.eat(types.comma)) { return nodes }
   }
@@ -1587,7 +1748,7 @@ pp$1.parseImportSpecifiers = function() {
     this.next();
     this.expectContextual("as");
     node$1.local = this.parseIdent();
-    this.checkLVal(node$1.local, BIND_LEXICAL);
+    this.checkLValSimple(node$1.local, BIND_LEXICAL);
     nodes.push(this.finishNode(node$1, "ImportNamespaceSpecifier"));
     return nodes
   }
@@ -1606,7 +1767,7 @@ pp$1.parseImportSpecifiers = function() {
       this.checkUnreserved(node$2.imported);
       node$2.local = node$2.imported;
     }
-    this.checkLVal(node$2.local, BIND_LEXICAL);
+    this.checkLValSimple(node$2.local, BIND_LEXICAL);
     nodes.push(this.finishNode(node$2, "ImportSpecifier"));
   }
   return nodes
@@ -1643,6 +1804,7 @@ pp$2.toAssignable = function(node, isBinding, refDestructuringErrors) {
 
     case "ObjectPattern":
     case "ArrayPattern":
+    case "AssignmentPattern":
     case "RestElement":
       break
 
@@ -1691,9 +1853,6 @@ pp$2.toAssignable = function(node, isBinding, refDestructuringErrors) {
       node.type = "AssignmentPattern";
       delete node.operator;
       this.toAssignable(node.left, isBinding);
-      // falls through to AssignmentPattern
-
-    case "AssignmentPattern":
       break
 
     case "ParenthesizedExpression":
@@ -1810,28 +1969,89 @@ pp$2.parseMaybeDefault = function(startPos, startLoc, left) {
   return this.finishNode(node, "AssignmentPattern")
 };
 
-// Verify that a node is an lval — something that can be assigned
-// to.
-// bindingType can be either:
-// 'var' indicating that the lval creates a 'var' binding
-// 'let' indicating that the lval creates a lexical ('let' or 'const') binding
-// 'none' indicating that the binding should be checked for illegal identifiers, but not for duplicate references
+// The following three functions all verify that a node is an lvalue —
+// something that can be bound, or assigned to. In order to do so, they perform
+// a variety of checks:
+//
+// - Check that none of the bound/assigned-to identifiers are reserved words.
+// - Record name declarations for bindings in the appropriate scope.
+// - Check duplicate argument names, if checkClashes is set.
+//
+// If a complex binding pattern is encountered (e.g., object and array
+// destructuring), the entire pattern is recursively checked.
+//
+// There are three versions of checkLVal*() appropriate for different
+// circumstances:
+//
+// - checkLValSimple() shall be used if the syntactic construct supports
+//   nothing other than identifiers and member expressions. Parenthesized
+//   expressions are also correctly handled. This is generally appropriate for
+//   constructs for which the spec says
+//
+//   > It is a Syntax Error if AssignmentTargetType of [the production] is not
+//   > simple.
+//
+//   It is also appropriate for checking if an identifier is valid and not
+//   defined elsewhere, like import declarations or function/class identifiers.
+//
+//   Examples where this is used include:
+//     a += …;
+//     import a from '…';
+//   where a is the node to be checked.
+//
+// - checkLValPattern() shall be used if the syntactic construct supports
+//   anything checkLValSimple() supports, as well as object and array
+//   destructuring patterns. This is generally appropriate for constructs for
+//   which the spec says
+//
+//   > It is a Syntax Error if [the production] is neither an ObjectLiteral nor
+//   > an ArrayLiteral and AssignmentTargetType of [the production] is not
+//   > simple.
+//
+//   Examples where this is used include:
+//     (a = …);
+//     const a = …;
+//     try { … } catch (a) { … }
+//   where a is the node to be checked.
+//
+// - checkLValInnerPattern() shall be used if the syntactic construct supports
+//   anything checkLValPattern() supports, as well as default assignment
+//   patterns, rest elements, and other constructs that may appear within an
+//   object or array destructuring pattern.
+//
+//   As a special case, function parameters also use checkLValInnerPattern(),
+//   as they also support defaults and rest constructs.
+//
+// These functions deliberately support both assignment and binding constructs,
+// as the logic for both is exceedingly similar. If the node is the target of
+// an assignment, then bindingType should be set to BIND_NONE. Otherwise, it
+// should be set to the appropriate BIND_* constant, like BIND_VAR or
+// BIND_LEXICAL.
+//
+// If the function is called with a non-BIND_NONE bindingType, then
+// additionally a checkClashes object may be specified to allow checking for
+// duplicate argument names. checkClashes is ignored if the provided construct
+// is an assignment (i.e., bindingType is BIND_NONE).
 
-pp$2.checkLVal = function(expr, bindingType, checkClashes) {
+pp$2.checkLValSimple = function(expr, bindingType, checkClashes) {
   if ( bindingType === void 0 ) bindingType = BIND_NONE;
+
+  var isBind = bindingType !== BIND_NONE;
 
   switch (expr.type) {
   case "Identifier":
-    if (bindingType === BIND_LEXICAL && expr.name === "let")
-      { this.raiseRecoverable(expr.start, "let is disallowed as a lexically bound name"); }
     if (this.strict && this.reservedWordsStrictBind.test(expr.name))
-      { this.raiseRecoverable(expr.start, (bindingType ? "Binding " : "Assigning to ") + expr.name + " in strict mode"); }
-    if (checkClashes) {
-      if (has(checkClashes, expr.name))
-        { this.raiseRecoverable(expr.start, "Argument name clash"); }
-      checkClashes[expr.name] = true;
+      { this.raiseRecoverable(expr.start, (isBind ? "Binding " : "Assigning to ") + expr.name + " in strict mode"); }
+    if (isBind) {
+      if (bindingType === BIND_LEXICAL && expr.name === "let")
+        { this.raiseRecoverable(expr.start, "let is disallowed as a lexically bound name"); }
+      if (checkClashes) {
+        if (has(checkClashes, expr.name))
+          { this.raiseRecoverable(expr.start, "Argument name clash"); }
+        checkClashes[expr.name] = true;
+      }
+      if (bindingType !== BIND_OUTSIDE) { this.declareName(expr.name, bindingType, expr.start); }
     }
-    if (bindingType !== BIND_NONE && bindingType !== BIND_OUTSIDE) { this.declareName(expr.name, bindingType, expr.start); }
     break
 
   case "ChainExpression":
@@ -1839,45 +2059,62 @@ pp$2.checkLVal = function(expr, bindingType, checkClashes) {
     break
 
   case "MemberExpression":
-    if (bindingType) { this.raiseRecoverable(expr.start, "Binding member expression"); }
+    if (isBind) { this.raiseRecoverable(expr.start, "Binding member expression"); }
     break
 
-  case "ObjectPattern":
-    for (var i = 0, list = expr.properties; i < list.length; i += 1)
-      {
-    var prop = list[i];
+  case "ParenthesizedExpression":
+    if (isBind) { this.raiseRecoverable(expr.start, "Binding parenthesized expression"); }
+    return this.checkLValSimple(expr.expression, bindingType, checkClashes)
 
-    this.checkLVal(prop, bindingType, checkClashes);
+  default:
+    this.raise(expr.start, (isBind ? "Binding" : "Assigning to") + " rvalue");
   }
-    break
+};
 
-  case "Property":
-    // AssignmentProperty has type === "Property"
-    this.checkLVal(expr.value, bindingType, checkClashes);
+pp$2.checkLValPattern = function(expr, bindingType, checkClashes) {
+  if ( bindingType === void 0 ) bindingType = BIND_NONE;
+
+  switch (expr.type) {
+  case "ObjectPattern":
+    for (var i = 0, list = expr.properties; i < list.length; i += 1) {
+      var prop = list[i];
+
+    this.checkLValInnerPattern(prop, bindingType, checkClashes);
+    }
     break
 
   case "ArrayPattern":
     for (var i$1 = 0, list$1 = expr.elements; i$1 < list$1.length; i$1 += 1) {
       var elem = list$1[i$1];
 
-    if (elem) { this.checkLVal(elem, bindingType, checkClashes); }
+    if (elem) { this.checkLValInnerPattern(elem, bindingType, checkClashes); }
     }
     break
 
+  default:
+    this.checkLValSimple(expr, bindingType, checkClashes);
+  }
+};
+
+pp$2.checkLValInnerPattern = function(expr, bindingType, checkClashes) {
+  if ( bindingType === void 0 ) bindingType = BIND_NONE;
+
+  switch (expr.type) {
+  case "Property":
+    // AssignmentProperty has type === "Property"
+    this.checkLValInnerPattern(expr.value, bindingType, checkClashes);
+    break
+
   case "AssignmentPattern":
-    this.checkLVal(expr.left, bindingType, checkClashes);
+    this.checkLValPattern(expr.left, bindingType, checkClashes);
     break
 
   case "RestElement":
-    this.checkLVal(expr.argument, bindingType, checkClashes);
-    break
-
-  case "ParenthesizedExpression":
-    this.checkLVal(expr.expression, bindingType, checkClashes);
+    this.checkLValPattern(expr.argument, bindingType, checkClashes);
     break
 
   default:
-    this.raise(expr.start, (bindingType ? "Binding" : "Assigning to") + " rvalue");
+    this.checkLValPattern(expr, bindingType, checkClashes);
   }
 };
 
@@ -1952,13 +2189,13 @@ pp$3.checkPropClash = function(prop, propHash, refDestructuringErrors) {
 // and object pattern might appear (so it's possible to raise
 // delayed syntax error at correct position).
 
-pp$3.parseExpression = function(noIn, refDestructuringErrors) {
+pp$3.parseExpression = function(forInit, refDestructuringErrors) {
   var startPos = this.start, startLoc = this.startLoc;
-  var expr = this.parseMaybeAssign(noIn, refDestructuringErrors);
+  var expr = this.parseMaybeAssign(forInit, refDestructuringErrors);
   if (this.type === types.comma) {
     var node = this.startNodeAt(startPos, startLoc);
     node.expressions = [expr];
-    while (this.eat(types.comma)) { node.expressions.push(this.parseMaybeAssign(noIn, refDestructuringErrors)); }
+    while (this.eat(types.comma)) { node.expressions.push(this.parseMaybeAssign(forInit, refDestructuringErrors)); }
     return this.finishNode(node, "SequenceExpression")
   }
   return expr
@@ -1967,9 +2204,9 @@ pp$3.parseExpression = function(noIn, refDestructuringErrors) {
 // Parse an assignment expression. This includes applications of
 // operators like `+=`.
 
-pp$3.parseMaybeAssign = function(noIn, refDestructuringErrors, afterLeftParse) {
+pp$3.parseMaybeAssign = function(forInit, refDestructuringErrors, afterLeftParse) {
   if (this.isContextual("yield")) {
-    if (this.inGenerator) { return this.parseYield(noIn) }
+    if (this.inGenerator) { return this.parseYield(forInit) }
     // The tokenizer will assume an expression is allowed after
     // `yield`, but this isn't that kind of yield
     else { this.exprAllowed = false; }
@@ -1986,22 +2223,29 @@ pp$3.parseMaybeAssign = function(noIn, refDestructuringErrors, afterLeftParse) {
   }
 
   var startPos = this.start, startLoc = this.startLoc;
-  if (this.type === types.parenL || this.type === types.name)
-    { this.potentialArrowAt = this.start; }
-  var left = this.parseMaybeConditional(noIn, refDestructuringErrors);
+  if (this.type === types.parenL || this.type === types.name) {
+    this.potentialArrowAt = this.start;
+    this.potentialArrowInForAwait = forInit === "await";
+  }
+  var left = this.parseMaybeConditional(forInit, refDestructuringErrors);
   if (afterLeftParse) { left = afterLeftParse.call(this, left, startPos, startLoc); }
   if (this.type.isAssign) {
     var node = this.startNodeAt(startPos, startLoc);
     node.operator = this.value;
-    node.left = this.type === types.eq ? this.toAssignable(left, false, refDestructuringErrors) : left;
+    if (this.type === types.eq)
+      { left = this.toAssignable(left, false, refDestructuringErrors); }
     if (!ownDestructuringErrors) {
       refDestructuringErrors.parenthesizedAssign = refDestructuringErrors.trailingComma = refDestructuringErrors.doubleProto = -1;
     }
-    if (refDestructuringErrors.shorthandAssign >= node.left.start)
+    if (refDestructuringErrors.shorthandAssign >= left.start)
       { refDestructuringErrors.shorthandAssign = -1; } // reset because shorthand default was used correctly
-    this.checkLVal(left);
+    if (this.type === types.eq)
+      { this.checkLValPattern(left); }
+    else
+      { this.checkLValSimple(left); }
+    node.left = left;
     this.next();
-    node.right = this.parseMaybeAssign(noIn);
+    node.right = this.parseMaybeAssign(forInit);
     return this.finishNode(node, "AssignmentExpression")
   } else {
     if (ownDestructuringErrors) { this.checkExpressionErrors(refDestructuringErrors, true); }
@@ -2013,16 +2257,16 @@ pp$3.parseMaybeAssign = function(noIn, refDestructuringErrors, afterLeftParse) {
 
 // Parse a ternary conditional (`?:`) operator.
 
-pp$3.parseMaybeConditional = function(noIn, refDestructuringErrors) {
+pp$3.parseMaybeConditional = function(forInit, refDestructuringErrors) {
   var startPos = this.start, startLoc = this.startLoc;
-  var expr = this.parseExprOps(noIn, refDestructuringErrors);
+  var expr = this.parseExprOps(forInit, refDestructuringErrors);
   if (this.checkExpressionErrors(refDestructuringErrors)) { return expr }
   if (this.eat(types.question)) {
     var node = this.startNodeAt(startPos, startLoc);
     node.test = expr;
     node.consequent = this.parseMaybeAssign();
     this.expect(types.colon);
-    node.alternate = this.parseMaybeAssign(noIn);
+    node.alternate = this.parseMaybeAssign(forInit);
     return this.finishNode(node, "ConditionalExpression")
   }
   return expr
@@ -2030,11 +2274,11 @@ pp$3.parseMaybeConditional = function(noIn, refDestructuringErrors) {
 
 // Start the precedence parser.
 
-pp$3.parseExprOps = function(noIn, refDestructuringErrors) {
+pp$3.parseExprOps = function(forInit, refDestructuringErrors) {
   var startPos = this.start, startLoc = this.startLoc;
   var expr = this.parseMaybeUnary(refDestructuringErrors, false);
   if (this.checkExpressionErrors(refDestructuringErrors)) { return expr }
-  return expr.start === startPos && expr.type === "ArrowFunctionExpression" ? expr : this.parseExprOp(expr, startPos, startLoc, -1, noIn)
+  return expr.start === startPos && expr.type === "ArrowFunctionExpression" ? expr : this.parseExprOp(expr, startPos, startLoc, -1, forInit)
 };
 
 // Parse binary operators with the operator precedence parsing
@@ -2043,9 +2287,9 @@ pp$3.parseExprOps = function(noIn, refDestructuringErrors) {
 // defer further parser to one of its callers when it encounters an
 // operator that has a lower precedence than the set it is parsing.
 
-pp$3.parseExprOp = function(left, leftStartPos, leftStartLoc, minPrec, noIn) {
+pp$3.parseExprOp = function(left, leftStartPos, leftStartLoc, minPrec, forInit) {
   var prec = this.type.binop;
-  if (prec != null && (!noIn || this.type !== types._in)) {
+  if (prec != null && (!forInit || this.type !== types._in)) {
     if (prec > minPrec) {
       var logical = this.type === types.logicalOR || this.type === types.logicalAND;
       var coalesce = this.type === types.coalesce;
@@ -2057,12 +2301,12 @@ pp$3.parseExprOp = function(left, leftStartPos, leftStartLoc, minPrec, noIn) {
       var op = this.value;
       this.next();
       var startPos = this.start, startLoc = this.startLoc;
-      var right = this.parseExprOp(this.parseMaybeUnary(null, false), startPos, startLoc, prec, noIn);
+      var right = this.parseExprOp(this.parseMaybeUnary(null, false), startPos, startLoc, prec, forInit);
       var node = this.buildBinary(leftStartPos, leftStartLoc, left, right, op, logical || coalesce);
       if ((logical && this.type === types.coalesce) || (coalesce && (this.type === types.logicalOR || this.type === types.logicalAND))) {
         this.raiseRecoverable(this.start, "Logical expressions and coalesce expressions cannot be mixed. Wrap either by parentheses");
       }
-      return this.parseExprOp(node, leftStartPos, leftStartLoc, minPrec, noIn)
+      return this.parseExprOp(node, leftStartPos, leftStartLoc, minPrec, forInit)
     }
   }
   return left
@@ -2078,7 +2322,7 @@ pp$3.buildBinary = function(startPos, startLoc, left, right, op, logical) {
 
 // Parse unary operators, both prefix and postfix.
 
-pp$3.parseMaybeUnary = function(refDestructuringErrors, sawUnary) {
+pp$3.parseMaybeUnary = function(refDestructuringErrors, sawUnary, incDec) {
   var startPos = this.start, startLoc = this.startLoc, expr;
   if (this.isContextual("await") && (this.inAsync || (!this.inFunction && this.options.allowAwaitOutsideFunction))) {
     expr = this.parseAwait();
@@ -2088,12 +2332,14 @@ pp$3.parseMaybeUnary = function(refDestructuringErrors, sawUnary) {
     node.operator = this.value;
     node.prefix = true;
     this.next();
-    node.argument = this.parseMaybeUnary(null, true);
+    node.argument = this.parseMaybeUnary(null, true, update);
     this.checkExpressionErrors(refDestructuringErrors, true);
-    if (update) { this.checkLVal(node.argument); }
+    if (update) { this.checkLValSimple(node.argument); }
     else if (this.strict && node.operator === "delete" &&
              node.argument.type === "Identifier")
       { this.raiseRecoverable(node.start, "Deleting local variable in strict mode"); }
+    else if (node.operator === "delete" && isPrivateFieldAccess(node.argument))
+      { this.raiseRecoverable(node.start, "Private fields can not be deleted"); }
     else { sawUnary = true; }
     expr = this.finishNode(node, update ? "UpdateExpression" : "UnaryExpression");
   } else {
@@ -2104,17 +2350,28 @@ pp$3.parseMaybeUnary = function(refDestructuringErrors, sawUnary) {
       node$1.operator = this.value;
       node$1.prefix = false;
       node$1.argument = expr;
-      this.checkLVal(expr);
+      this.checkLValSimple(expr);
       this.next();
       expr = this.finishNode(node$1, "UpdateExpression");
     }
   }
 
-  if (!sawUnary && this.eat(types.starstar))
-    { return this.buildBinary(startPos, startLoc, expr, this.parseMaybeUnary(null, false), "**", false) }
-  else
-    { return expr }
+  if (!incDec && this.eat(types.starstar)) {
+    if (sawUnary)
+      { this.unexpected(this.lastTokStart); }
+    else
+      { return this.buildBinary(startPos, startLoc, expr, this.parseMaybeUnary(null, false), "**", false) }
+  } else {
+    return expr
+  }
 };
+
+function isPrivateFieldAccess(node) {
+  return (
+    node.type === "MemberExpression" && node.property.type === "PrivateIdentifier" ||
+    node.type === "ChainExpression" && isPrivateFieldAccess(node.expression)
+  )
+}
 
 // Parse call, dot, and `[]`-subscript expressions.
 
@@ -2127,6 +2384,7 @@ pp$3.parseExprSubscripts = function(refDestructuringErrors) {
   if (refDestructuringErrors && result.type === "MemberExpression") {
     if (refDestructuringErrors.parenthesizedAssign >= result.start) { refDestructuringErrors.parenthesizedAssign = -1; }
     if (refDestructuringErrors.parenthesizedBind >= result.start) { refDestructuringErrors.parenthesizedBind = -1; }
+    if (refDestructuringErrors.trailingComma >= result.start) { refDestructuringErrors.trailingComma = -1; }
   }
   return result
 };
@@ -2163,9 +2421,15 @@ pp$3.parseSubscript = function(base, startPos, startLoc, noCalls, maybeAsyncArro
   if (computed || (optional && this.type !== types.parenL && this.type !== types.backQuote) || this.eat(types.dot)) {
     var node = this.startNodeAt(startPos, startLoc);
     node.object = base;
-    node.property = computed ? this.parseExpression() : this.parseIdent(this.options.allowReserved !== "never");
+    if (computed) {
+      node.property = this.parseExpression();
+      this.expect(types.bracketR);
+    } else if (this.type === types.privateId && base.type !== "Super") {
+      node.property = this.parsePrivateIdent();
+    } else {
+      node.property = this.parseIdent(this.options.allowReserved !== "never");
+    }
     node.computed = !!computed;
-    if (computed) { this.expect(types.bracketR); }
     if (optionalSupported) {
       node.optional = optional;
     }
@@ -2251,7 +2515,8 @@ pp$3.parseExprAtom = function(refDestructuringErrors) {
     if (canBeArrow && !this.canInsertSemicolon()) {
       if (this.eat(types.arrow))
         { return this.parseArrowExpression(this.startNodeAt(startPos, startLoc), [id], false) }
-      if (this.options.ecmaVersion >= 8 && id.name === "async" && this.type === types.name && !containsEsc) {
+      if (this.options.ecmaVersion >= 8 && id.name === "async" && this.type === types.name && !containsEsc &&
+          (!this.potentialArrowInForAwait || this.value !== "of" || this.containsEsc)) {
         id = this.parseIdent(false);
         if (this.canInsertSemicolon() || !this.eat(types.arrow))
           { this.unexpected(); }
@@ -2369,7 +2634,7 @@ pp$3.parseImportMeta = function(node) {
     { this.raiseRecoverable(node.property.start, "The only valid meta property for import is 'import.meta'"); }
   if (containsEsc)
     { this.raiseRecoverable(node.start, "'import.meta' must not contain escaped characters"); }
-  if (this.options.sourceType !== "module")
+  if (this.options.sourceType !== "module" && !this.options.allowImportExportEverywhere)
     { this.raiseRecoverable(node.start, "Cannot use 'import.meta' outside a module"); }
 
   return this.finishNode(node, "MetaProperty")
@@ -2379,7 +2644,7 @@ pp$3.parseLiteral = function(value) {
   var node = this.startNode();
   node.value = value;
   node.raw = this.input.slice(this.start, this.end);
-  if (node.raw.charCodeAt(node.raw.length - 1) === 110) { node.bigint = node.raw.slice(0, -1); }
+  if (node.raw.charCodeAt(node.raw.length - 1) === 110) { node.bigint = node.raw.slice(0, -1).replace(/_/g, ""); }
   this.next();
   return this.finishNode(node, "Literal")
 };
@@ -2481,7 +2746,7 @@ pp$3.parseNew = function() {
       { this.raiseRecoverable(node.property.start, "The only valid meta property for new is 'new.target'"); }
     if (containsEsc)
       { this.raiseRecoverable(node.start, "'new.target' must not contain escaped characters"); }
-    if (!this.inNonArrowFunction())
+    if (!this.inNonArrowFunction)
       { this.raiseRecoverable(node.start, "'new.target' can only be used in functions"); }
     return this.finishNode(node, "MetaProperty")
   }
@@ -2654,13 +2919,13 @@ pp$3.parsePropertyValue = function(prop, isPattern, isGenerator, isAsync, startP
       { this.awaitIdentPos = startPos; }
     prop.kind = "init";
     if (isPattern) {
-      prop.value = this.parseMaybeDefault(startPos, startLoc, prop.key);
+      prop.value = this.parseMaybeDefault(startPos, startLoc, this.copyNode(prop.key));
     } else if (this.type === types.eq && refDestructuringErrors) {
       if (refDestructuringErrors.shorthandAssign < 0)
         { refDestructuringErrors.shorthandAssign = this.start; }
-      prop.value = this.parseMaybeDefault(startPos, startLoc, prop.key);
+      prop.value = this.parseMaybeDefault(startPos, startLoc, this.copyNode(prop.key));
     } else {
-      prop.value = prop.key;
+      prop.value = this.copyNode(prop.key);
     }
     prop.shorthand = true;
   } else { this.unexpected(); }
@@ -2767,7 +3032,7 @@ pp$3.parseFunctionBody = function(node, isArrowFunction, isMethod) {
     // if a let/const declaration in the function clashes with one of the params.
     this.checkParams(node, !oldStrict && !useStrict && !isArrowFunction && !isMethod && this.isSimpleParamList(node.params));
     // Ensure the function name isn't a forbidden identifier in strict mode, e.g. 'eval'
-    if (this.strict && node.id) { this.checkLVal(node.id, BIND_OUTSIDE); }
+    if (this.strict && node.id) { this.checkLValSimple(node.id, BIND_OUTSIDE); }
     node.body = this.parseBlock(false, undefined, useStrict && !oldStrict);
     node.expression = false;
     this.adaptDirectivePrologue(node.body.body);
@@ -2790,12 +3055,12 @@ pp$3.isSimpleParamList = function(params) {
 // or "arguments" and duplicate parameters.
 
 pp$3.checkParams = function(node, allowDuplicates) {
-  var nameHash = {};
+  var nameHash = Object.create(null);
   for (var i = 0, list = node.params; i < list.length; i += 1)
     {
     var param = list[i];
 
-    this.checkLVal(param, BIND_VAR, allowDuplicates ? null : nameHash);
+    this.checkLValInnerPattern(param, BIND_VAR, allowDuplicates ? null : nameHash);
   }
 };
 
@@ -2837,6 +3102,8 @@ pp$3.checkUnreserved = function(ref) {
     { this.raiseRecoverable(start, "Cannot use 'yield' as identifier inside a generator"); }
   if (this.inAsync && name === "await")
     { this.raiseRecoverable(start, "Cannot use 'await' as identifier inside an async function"); }
+  if (this.currentThisScope().inClassFieldInit && name === "arguments")
+    { this.raiseRecoverable(start, "Cannot use 'arguments' in class field initializer"); }
   if (this.keywords.test(name))
     { this.raise(start, ("Unexpected keyword '" + name + "'")); }
   if (this.options.ecmaVersion < 6 &&
@@ -2881,9 +3148,29 @@ pp$3.parseIdent = function(liberal, isBinding) {
   return node
 };
 
+pp$3.parsePrivateIdent = function() {
+  var node = this.startNode();
+  if (this.type === types.privateId) {
+    node.name = this.value;
+  } else {
+    this.unexpected();
+  }
+  this.next();
+  this.finishNode(node, "PrivateIdentifier");
+
+  // For validating existence
+  if (this.privateNameStack.length === 0) {
+    this.raise(node.start, ("Private field '#" + (node.name) + "' must be declared in an enclosing class"));
+  } else {
+    this.privateNameStack[this.privateNameStack.length - 1].used.push(node);
+  }
+
+  return node
+};
+
 // Parses yield expression inside generator.
 
-pp$3.parseYield = function(noIn) {
+pp$3.parseYield = function(forInit) {
   if (!this.yieldPos) { this.yieldPos = this.start; }
 
   var node = this.startNode();
@@ -2893,7 +3180,7 @@ pp$3.parseYield = function(noIn) {
     node.argument = null;
   } else {
     node.delegate = this.eat(types.star);
-    node.argument = this.parseMaybeAssign(noIn);
+    node.argument = this.parseMaybeAssign(forInit);
   }
   return this.finishNode(node, "YieldExpression")
 };
@@ -2903,7 +3190,7 @@ pp$3.parseAwait = function() {
 
   var node = this.startNode();
   this.next();
-  node.argument = this.parseMaybeUnary(null, false);
+  node.argument = this.parseMaybeUnary(null, true);
   return this.finishNode(node, "AwaitExpression")
 };
 
@@ -2941,6 +3228,8 @@ var Scope = function Scope(flags) {
   this.lexical = [];
   // A list of lexically-declared FunctionDeclaration names in the current lexical scope
   this.functions = [];
+  // A switch to disallow the identifier reference 'arguments'
+  this.inClassFieldInit = false;
 };
 
 // The functions in this module keep track of declared variables in the current scope in order to detect duplicate variable names.
@@ -3068,6 +3357,12 @@ pp$6.finishNodeAt = function(node, type, pos, loc) {
   return finishNodeAt.call(this, node, type, pos, loc)
 };
 
+pp$6.copyNode = function(node) {
+  var newNode = new Node(this, node.start, this.startLoc);
+  for (var prop in node) { newNode[prop] = node[prop]; }
+  return newNode
+};
+
 // The algorithm used to determine whether a regexp can appear at a
 
 var TokContext = function TokContext(token, isExpr, preserveSpace, override, generator) {
@@ -3172,7 +3467,8 @@ types.incDec.updateContext = function() {
 };
 
 types._function.updateContext = types._class.updateContext = function(prevType) {
-  if (prevType.beforeExpr && prevType !== types.semi && prevType !== types._else &&
+  if (prevType.beforeExpr && prevType !== types._else &&
+      !(prevType === types.semi && this.curContext() !== types$1.p_stat) &&
       !(prevType === types._return && lineBreak.test(this.input.slice(this.lastTokEnd, this.start))) &&
       !((prevType === types.colon || prevType === types.braceL) && this.curContext() === types$1.b_stat))
     { this.context.push(types$1.f_expr); }
@@ -3218,10 +3514,12 @@ types.name.updateContext = function(prevType) {
 var ecma9BinaryProperties = "ASCII ASCII_Hex_Digit AHex Alphabetic Alpha Any Assigned Bidi_Control Bidi_C Bidi_Mirrored Bidi_M Case_Ignorable CI Cased Changes_When_Casefolded CWCF Changes_When_Casemapped CWCM Changes_When_Lowercased CWL Changes_When_NFKC_Casefolded CWKCF Changes_When_Titlecased CWT Changes_When_Uppercased CWU Dash Default_Ignorable_Code_Point DI Deprecated Dep Diacritic Dia Emoji Emoji_Component Emoji_Modifier Emoji_Modifier_Base Emoji_Presentation Extender Ext Grapheme_Base Gr_Base Grapheme_Extend Gr_Ext Hex_Digit Hex IDS_Binary_Operator IDSB IDS_Trinary_Operator IDST ID_Continue IDC ID_Start IDS Ideographic Ideo Join_Control Join_C Logical_Order_Exception LOE Lowercase Lower Math Noncharacter_Code_Point NChar Pattern_Syntax Pat_Syn Pattern_White_Space Pat_WS Quotation_Mark QMark Radical Regional_Indicator RI Sentence_Terminal STerm Soft_Dotted SD Terminal_Punctuation Term Unified_Ideograph UIdeo Uppercase Upper Variation_Selector VS White_Space space XID_Continue XIDC XID_Start XIDS";
 var ecma10BinaryProperties = ecma9BinaryProperties + " Extended_Pictographic";
 var ecma11BinaryProperties = ecma10BinaryProperties;
+var ecma12BinaryProperties = ecma11BinaryProperties + " EBase EComp EMod EPres ExtPict";
 var unicodeBinaryProperties = {
   9: ecma9BinaryProperties,
   10: ecma10BinaryProperties,
-  11: ecma11BinaryProperties
+  11: ecma11BinaryProperties,
+  12: ecma12BinaryProperties
 };
 
 // #table-unicode-general-category-values
@@ -3231,10 +3529,12 @@ var unicodeGeneralCategoryValues = "Cased_Letter LC Close_Punctuation Pe Connect
 var ecma9ScriptValues = "Adlam Adlm Ahom Ahom Anatolian_Hieroglyphs Hluw Arabic Arab Armenian Armn Avestan Avst Balinese Bali Bamum Bamu Bassa_Vah Bass Batak Batk Bengali Beng Bhaiksuki Bhks Bopomofo Bopo Brahmi Brah Braille Brai Buginese Bugi Buhid Buhd Canadian_Aboriginal Cans Carian Cari Caucasian_Albanian Aghb Chakma Cakm Cham Cham Cherokee Cher Common Zyyy Coptic Copt Qaac Cuneiform Xsux Cypriot Cprt Cyrillic Cyrl Deseret Dsrt Devanagari Deva Duployan Dupl Egyptian_Hieroglyphs Egyp Elbasan Elba Ethiopic Ethi Georgian Geor Glagolitic Glag Gothic Goth Grantha Gran Greek Grek Gujarati Gujr Gurmukhi Guru Han Hani Hangul Hang Hanunoo Hano Hatran Hatr Hebrew Hebr Hiragana Hira Imperial_Aramaic Armi Inherited Zinh Qaai Inscriptional_Pahlavi Phli Inscriptional_Parthian Prti Javanese Java Kaithi Kthi Kannada Knda Katakana Kana Kayah_Li Kali Kharoshthi Khar Khmer Khmr Khojki Khoj Khudawadi Sind Lao Laoo Latin Latn Lepcha Lepc Limbu Limb Linear_A Lina Linear_B Linb Lisu Lisu Lycian Lyci Lydian Lydi Mahajani Mahj Malayalam Mlym Mandaic Mand Manichaean Mani Marchen Marc Masaram_Gondi Gonm Meetei_Mayek Mtei Mende_Kikakui Mend Meroitic_Cursive Merc Meroitic_Hieroglyphs Mero Miao Plrd Modi Modi Mongolian Mong Mro Mroo Multani Mult Myanmar Mymr Nabataean Nbat New_Tai_Lue Talu Newa Newa Nko Nkoo Nushu Nshu Ogham Ogam Ol_Chiki Olck Old_Hungarian Hung Old_Italic Ital Old_North_Arabian Narb Old_Permic Perm Old_Persian Xpeo Old_South_Arabian Sarb Old_Turkic Orkh Oriya Orya Osage Osge Osmanya Osma Pahawh_Hmong Hmng Palmyrene Palm Pau_Cin_Hau Pauc Phags_Pa Phag Phoenician Phnx Psalter_Pahlavi Phlp Rejang Rjng Runic Runr Samaritan Samr Saurashtra Saur Sharada Shrd Shavian Shaw Siddham Sidd SignWriting Sgnw Sinhala Sinh Sora_Sompeng Sora Soyombo Soyo Sundanese Sund Syloti_Nagri Sylo Syriac Syrc Tagalog Tglg Tagbanwa Tagb Tai_Le Tale Tai_Tham Lana Tai_Viet Tavt Takri Takr Tamil Taml Tangut Tang Telugu Telu Thaana Thaa Thai Thai Tibetan Tibt Tifinagh Tfng Tirhuta Tirh Ugaritic Ugar Vai Vaii Warang_Citi Wara Yi Yiii Zanabazar_Square Zanb";
 var ecma10ScriptValues = ecma9ScriptValues + " Dogra Dogr Gunjala_Gondi Gong Hanifi_Rohingya Rohg Makasar Maka Medefaidrin Medf Old_Sogdian Sogo Sogdian Sogd";
 var ecma11ScriptValues = ecma10ScriptValues + " Elymaic Elym Nandinagari Nand Nyiakeng_Puachue_Hmong Hmnp Wancho Wcho";
+var ecma12ScriptValues = ecma11ScriptValues + " Chorasmian Chrs Diak Dives_Akuru Khitan_Small_Script Kits Yezi Yezidi";
 var unicodeScriptValues = {
   9: ecma9ScriptValues,
   10: ecma10ScriptValues,
-  11: ecma11ScriptValues
+  11: ecma11ScriptValues,
+  12: ecma12ScriptValues
 };
 
 var data = {};
@@ -3255,13 +3555,14 @@ function buildUnicodeData(ecmaVersion) {
 buildUnicodeData(9);
 buildUnicodeData(10);
 buildUnicodeData(11);
+buildUnicodeData(12);
 
 var pp$8 = Parser.prototype;
 
 var RegExpValidationState = function RegExpValidationState(parser) {
   this.parser = parser;
   this.validFlags = "gim" + (parser.options.ecmaVersion >= 6 ? "uy" : "") + (parser.options.ecmaVersion >= 9 ? "s" : "");
-  this.unicodeProperties = data[parser.options.ecmaVersion >= 11 ? 11 : parser.options.ecmaVersion];
+  this.unicodeProperties = data[parser.options.ecmaVersion >= 12 ? 12 : parser.options.ecmaVersion];
   this.source = "";
   this.flags = "";
   this.start = 0;
@@ -4405,9 +4706,9 @@ pp$9.readToken = function(code) {
 
 pp$9.fullCharCodeAtPos = function() {
   var code = this.input.charCodeAt(this.pos);
-  if (code <= 0xd7ff || code >= 0xe000) { return code }
+  if (code <= 0xd7ff || code >= 0xdc00) { return code }
   var next = this.input.charCodeAt(this.pos + 1);
-  return (code << 10) + next - 0x35fdc00
+  return next <= 0xdbff || next >= 0xe000 ? code : (code << 10) + next - 0x35fdc00
 };
 
 pp$9.skipBlockComment = function() {
@@ -4545,7 +4846,13 @@ pp$9.readToken_mult_modulo_exp = function(code) { // '%*'
 
 pp$9.readToken_pipe_amp = function(code) { // '|&'
   var next = this.input.charCodeAt(this.pos + 1);
-  if (next === code) { return this.finishOp(code === 124 ? types.logicalOR : types.logicalAND, 2) }
+  if (next === code) {
+    if (this.options.ecmaVersion >= 12) {
+      var next2 = this.input.charCodeAt(this.pos + 2);
+      if (next2 === 61) { return this.finishOp(types.assign, 3) }
+    }
+    return this.finishOp(code === 124 ? types.logicalOR : types.logicalAND, 2)
+  }
   if (next === 61) { return this.finishOp(types.assign, 2) }
   return this.finishOp(code === 124 ? types.bitwiseOR : types.bitwiseAND, 1)
 };
@@ -4602,15 +4909,36 @@ pp$9.readToken_eq_excl = function(code) { // '=!'
 };
 
 pp$9.readToken_question = function() { // '?'
-  if (this.options.ecmaVersion >= 11) {
+  var ecmaVersion = this.options.ecmaVersion;
+  if (ecmaVersion >= 11) {
     var next = this.input.charCodeAt(this.pos + 1);
     if (next === 46) {
       var next2 = this.input.charCodeAt(this.pos + 2);
       if (next2 < 48 || next2 > 57) { return this.finishOp(types.questionDot, 2) }
     }
-    if (next === 63) { return this.finishOp(types.coalesce, 2) }
+    if (next === 63) {
+      if (ecmaVersion >= 12) {
+        var next2$1 = this.input.charCodeAt(this.pos + 2);
+        if (next2$1 === 61) { return this.finishOp(types.assign, 3) }
+      }
+      return this.finishOp(types.coalesce, 2)
+    }
   }
   return this.finishOp(types.question, 1)
+};
+
+pp$9.readToken_numberSign = function() { // '#'
+  var ecmaVersion = this.options.ecmaVersion;
+  var code = 35; // '#'
+  if (ecmaVersion >= 13) {
+    ++this.pos;
+    code = this.fullCharCodeAtPos();
+    if (isIdentifierStart(code, true) || code === 92 /* '\' */) {
+      return this.finishToken(types.privateId, this.readWord1())
+    }
+  }
+
+  this.raise(this.pos, "Unexpected character '" + codePointToString$1(code) + "'");
 };
 
 pp$9.getTokenFromCode = function(code) {
@@ -4684,6 +5012,9 @@ pp$9.getTokenFromCode = function(code) {
 
   case 126: // '~'
     return this.finishOp(types.prefix, 1)
+
+  case 35: // '#'
+    return this.readToken_numberSign()
   }
 
   this.raise(this.pos, "Unexpected character '" + codePointToString$1(code) + "'");
@@ -4737,22 +5068,59 @@ pp$9.readRegexp = function() {
 // were read, the integer value otherwise. When `len` is given, this
 // will return `null` unless the integer has exactly `len` digits.
 
-pp$9.readInt = function(radix, len) {
-  var start = this.pos, total = 0;
-  for (var i = 0, e = len == null ? Infinity : len; i < e; ++i) {
+pp$9.readInt = function(radix, len, maybeLegacyOctalNumericLiteral) {
+  // `len` is used for character escape sequences. In that case, disallow separators.
+  var allowSeparators = this.options.ecmaVersion >= 12 && len === undefined;
+
+  // `maybeLegacyOctalNumericLiteral` is true if it doesn't have prefix (0x,0o,0b)
+  // and isn't fraction part nor exponent part. In that case, if the first digit
+  // is zero then disallow separators.
+  var isLegacyOctalNumericLiteral = maybeLegacyOctalNumericLiteral && this.input.charCodeAt(this.pos) === 48;
+
+  var start = this.pos, total = 0, lastCode = 0;
+  for (var i = 0, e = len == null ? Infinity : len; i < e; ++i, ++this.pos) {
     var code = this.input.charCodeAt(this.pos), val = (void 0);
+
+    if (allowSeparators && code === 95) {
+      if (isLegacyOctalNumericLiteral) { this.raiseRecoverable(this.pos, "Numeric separator is not allowed in legacy octal numeric literals"); }
+      if (lastCode === 95) { this.raiseRecoverable(this.pos, "Numeric separator must be exactly one underscore"); }
+      if (i === 0) { this.raiseRecoverable(this.pos, "Numeric separator is not allowed at the first of digits"); }
+      lastCode = code;
+      continue
+    }
+
     if (code >= 97) { val = code - 97 + 10; } // a
     else if (code >= 65) { val = code - 65 + 10; } // A
     else if (code >= 48 && code <= 57) { val = code - 48; } // 0-9
     else { val = Infinity; }
     if (val >= radix) { break }
-    ++this.pos;
+    lastCode = code;
     total = total * radix + val;
   }
+
+  if (allowSeparators && lastCode === 95) { this.raiseRecoverable(this.pos - 1, "Numeric separator is not allowed at the last of digits"); }
   if (this.pos === start || len != null && this.pos - start !== len) { return null }
 
   return total
 };
+
+function stringToNumber(str, isLegacyOctalNumericLiteral) {
+  if (isLegacyOctalNumericLiteral) {
+    return parseInt(str, 8)
+  }
+
+  // `parseFloat(value)` stops parsing at the first numeric separator then returns a wrong value.
+  return parseFloat(str.replace(/_/g, ""))
+}
+
+function stringToBigInt(str) {
+  if (typeof BigInt !== "function") {
+    return null
+  }
+
+  // `BigInt(value)` throws syntax error if the string contains numeric separators.
+  return BigInt(str.replace(/_/g, ""))
+}
 
 pp$9.readRadixNumber = function(radix) {
   var start = this.pos;
@@ -4760,7 +5128,7 @@ pp$9.readRadixNumber = function(radix) {
   var val = this.readInt(radix);
   if (val == null) { this.raise(this.start + 2, "Expected number in radix " + radix); }
   if (this.options.ecmaVersion >= 11 && this.input.charCodeAt(this.pos) === 110) {
-    val = typeof BigInt !== "undefined" ? BigInt(this.input.slice(start, this.pos)) : null;
+    val = stringToBigInt(this.input.slice(start, this.pos));
     ++this.pos;
   } else if (isIdentifierStart(this.fullCharCodeAtPos())) { this.raise(this.pos, "Identifier directly after number"); }
   return this.finishToken(types.num, val)
@@ -4770,13 +5138,12 @@ pp$9.readRadixNumber = function(radix) {
 
 pp$9.readNumber = function(startsWithDot) {
   var start = this.pos;
-  if (!startsWithDot && this.readInt(10) === null) { this.raise(start, "Invalid number"); }
+  if (!startsWithDot && this.readInt(10, undefined, true) === null) { this.raise(start, "Invalid number"); }
   var octal = this.pos - start >= 2 && this.input.charCodeAt(start) === 48;
   if (octal && this.strict) { this.raise(start, "Invalid number"); }
   var next = this.input.charCodeAt(this.pos);
   if (!octal && !startsWithDot && this.options.ecmaVersion >= 11 && next === 110) {
-    var str$1 = this.input.slice(start, this.pos);
-    var val$1 = typeof BigInt !== "undefined" ? BigInt(str$1) : null;
+    var val$1 = stringToBigInt(this.input.slice(start, this.pos));
     ++this.pos;
     if (isIdentifierStart(this.fullCharCodeAtPos())) { this.raise(this.pos, "Identifier directly after number"); }
     return this.finishToken(types.num, val$1)
@@ -4794,8 +5161,7 @@ pp$9.readNumber = function(startsWithDot) {
   }
   if (isIdentifierStart(this.fullCharCodeAtPos())) { this.raise(this.pos, "Identifier directly after number"); }
 
-  var str = this.input.slice(start, this.pos);
-  var val = octal ? parseInt(str, 8) : parseFloat(str);
+  var val = stringToNumber(this.input.slice(start, this.pos), octal);
   return this.finishToken(types.num, val)
 };
 
@@ -4958,6 +5324,12 @@ pp$9.readEscapedChar = function(inTemplate) {
     return ""
   case 56:
   case 57:
+    if (this.strict) {
+      this.invalidStringToken(
+        this.pos - 1,
+        "Invalid escape sequence"
+      );
+    }
     if (inTemplate) {
       var codePos = this.pos - 1;
 
@@ -5054,7 +5426,7 @@ pp$9.readWord = function() {
 
 // Acorn is a tiny, fast JavaScript parser written in JavaScript.
 
-var version = "7.1.0";
+var version = "8.2.4";
 
 Parser.acorn = {
   Parser: Parser,

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
 #include "base/unguessable_token.h"
@@ -89,7 +90,7 @@ class PaintPreviewCompositorBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  std::unique_ptr<SimpleFactoryKey> key_ = nullptr;
+  std::unique_ptr<SimpleFactoryKey> key_;
 };
 
 // Test that a "true" initialization works and doesn't crash.

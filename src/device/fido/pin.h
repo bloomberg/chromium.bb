@@ -17,12 +17,45 @@
 
 #include "base/component_export.h"
 #include "base/containers/span.h"
-#include "base/optional.h"
 #include "components/cbor/values.h"
 #include "device/fido/fido_constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
 namespace pin {
+
+// The reason we are prompting for a new PIN.
+enum class PINEntryReason {
+  // Indicates a new PIN is being set.
+  kSet,
+
+  // The existing PIN must be changed before using this authenticator.
+  kChange,
+
+  // The existing PIN is being collected to prove user verification.
+  kChallenge
+};
+
+// The errors that may prompt asking for a PIN.
+enum class PINEntryError {
+  // No error has occurred.
+  kNoError,
+
+  // Internal UV is locked, so we are falling back to PIN.
+  kInternalUvLocked,
+
+  // The PIN the user entered does not match the authenticator PIN.
+  kWrongPIN,
+
+  // The new PIN the user entered is too short.
+  kTooShort,
+
+  // The new PIN the user entered contains invalid characters.
+  kInvalidCharacters,
+
+  // The new PIN the user entered is the same as the currently set PIN.
+  kSameAsCurrentPIN,
+};
 
 // Permission list flags. See
 // https://drafts.fidoalliance.org/fido-2/stable-links-to-latest/fido-client-to-authenticator-protocol.html#permissions
@@ -41,9 +74,20 @@ constexpr std::array<uint8_t, 32> kPinUvAuthTokenSafetyPadding = {
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
-// IsValid returns true if |pin|, which must be UTF-8, is a syntactically valid
-// PIN.
-COMPONENT_EXPORT(DEVICE_FIDO) bool IsValid(const std::string& pin);
+// Validates |pin|, returning |kNoError| if valid or an appropriate error code
+// otherwise.
+COMPONENT_EXPORT(DEVICE_FIDO)
+PINEntryError ValidatePIN(
+    const std::string& pin,
+    uint32_t min_pin_length = kMinPinLength,
+    absl::optional<std::string> current_pin = absl::nullopt);
+
+// Like |ValidatePIN| above but takes a wide string.
+COMPONENT_EXPORT(DEVICE_FIDO)
+PINEntryError ValidatePIN(
+    const std::u16string& pin16,
+    uint32_t min_pin_length = kMinPinLength,
+    absl::optional<std::string> current_pin = absl::nullopt);
 
 // kMinBytes is the minimum number of *bytes* of PIN data that a CTAP2 device
 // will accept. Since the PIN is UTF-8 encoded, this could be a single code
@@ -74,19 +118,19 @@ struct UvRetriesRequest {
 // RetriesResponse reflects an authenticator's response to a |PinRetriesRequest|
 // or a |UvRetriesRequest|.
 struct RetriesResponse {
-  static base::Optional<RetriesResponse> ParsePinRetries(
-      const base::Optional<cbor::Value>& cbor);
+  static absl::optional<RetriesResponse> ParsePinRetries(
+      const absl::optional<cbor::Value>& cbor);
 
-  static base::Optional<RetriesResponse> ParseUvRetries(
-      const base::Optional<cbor::Value>& cbor);
+  static absl::optional<RetriesResponse> ParseUvRetries(
+      const absl::optional<cbor::Value>& cbor);
 
   // retries is the number of PIN attempts remaining before the authenticator
   // locks.
   int retries;
 
  private:
-  static base::Optional<RetriesResponse> Parse(
-      const base::Optional<cbor::Value>& cbor,
+  static absl::optional<RetriesResponse> Parse(
+      const absl::optional<cbor::Value>& cbor,
       const int retries_key);
 
   RetriesResponse();
@@ -102,9 +146,9 @@ struct KeyAgreementRequest {
 // |KeyAgreementRequest| and is also used as representation of the
 // authenticator's ephemeral key.
 struct COMPONENT_EXPORT(DEVICE_FIDO) KeyAgreementResponse {
-  static base::Optional<KeyAgreementResponse> Parse(
-      const base::Optional<cbor::Value>& cbor);
-  static base::Optional<KeyAgreementResponse> ParseFromCOSE(
+  static absl::optional<KeyAgreementResponse> Parse(
+      const absl::optional<cbor::Value>& cbor);
+  static absl::optional<KeyAgreementResponse> ParseFromCOSE(
       const cbor::Value::MapValue& cose_key);
 
   // X962 returns the public key from the response in X9.62 form.
@@ -127,7 +171,7 @@ class SetRequest {
              const std::string& pin,
              const KeyAgreementResponse& peer_key);
 
-  friend std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+  friend std::pair<CtapRequestCommand, absl::optional<cbor::Value>>
   AsCTAPRequestValuePair(const SetRequest&);
 
  private:
@@ -137,8 +181,8 @@ class SetRequest {
 };
 
 struct EmptyResponse {
-  static base::Optional<EmptyResponse> Parse(
-      const base::Optional<cbor::Value>& cbor);
+  static absl::optional<EmptyResponse> Parse(
+      const absl::optional<cbor::Value>& cbor);
 };
 
 // ChangeRequest changes the PIN on an authenticator that already has a PIN set.
@@ -151,7 +195,7 @@ class ChangeRequest {
                 const std::string& new_pin,
                 const KeyAgreementResponse& peer_key);
 
-  friend std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+  friend std::pair<CtapRequestCommand, absl::optional<cbor::Value>>
   AsCTAPRequestValuePair(const ChangeRequest&);
 
  private:
@@ -200,7 +244,7 @@ class PinTokenRequest : public TokenRequest {
   PinTokenRequest(const PinTokenRequest&) = delete;
   virtual ~PinTokenRequest();
 
-  friend std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+  friend std::pair<CtapRequestCommand, absl::optional<cbor::Value>>
   AsCTAPRequestValuePair(const PinTokenRequest&);
 
  protected:
@@ -213,35 +257,35 @@ class PinTokenWithPermissionsRequest : public PinTokenRequest {
                                  const std::string& pin,
                                  const KeyAgreementResponse& peer_key,
                                  base::span<const pin::Permissions> permissions,
-                                 const base::Optional<std::string> rp_id);
+                                 const absl::optional<std::string> rp_id);
   PinTokenWithPermissionsRequest(PinTokenWithPermissionsRequest&&);
   PinTokenWithPermissionsRequest(const PinTokenWithPermissionsRequest&) =
       delete;
   ~PinTokenWithPermissionsRequest() override;
 
-  friend std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+  friend std::pair<CtapRequestCommand, absl::optional<cbor::Value>>
   AsCTAPRequestValuePair(const PinTokenWithPermissionsRequest&);
 
  private:
   uint8_t permissions_;
-  base::Optional<std::string> rp_id_;
+  absl::optional<std::string> rp_id_;
 };
 
 class UvTokenRequest : public TokenRequest {
  public:
   UvTokenRequest(PINUVAuthProtocol protocol,
                  const KeyAgreementResponse& peer_key,
-                 base::Optional<std::string> rp_id,
+                 absl::optional<std::string> rp_id,
                  base::span<const pin::Permissions> permissions);
   UvTokenRequest(UvTokenRequest&&);
   UvTokenRequest(const UvTokenRequest&) = delete;
   virtual ~UvTokenRequest();
 
-  friend std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+  friend std::pair<CtapRequestCommand, absl::optional<cbor::Value>>
   AsCTAPRequestValuePair(const UvTokenRequest&);
 
  private:
-  base::Optional<std::string> rp_id_;
+  absl::optional<std::string> rp_id_;
   uint8_t permissions_;
 };
 
@@ -250,12 +294,12 @@ class HMACSecretRequest {
   HMACSecretRequest(PINUVAuthProtocol protocol,
                     const KeyAgreementResponse& peer_key,
                     base::span<const uint8_t, 32> salt1,
-                    const base::Optional<std::array<uint8_t, 32>>& salt2);
+                    const absl::optional<std::array<uint8_t, 32>>& salt2);
   HMACSecretRequest(const HMACSecretRequest&);
   ~HMACSecretRequest();
   HMACSecretRequest& operator=(const HMACSecretRequest&);
 
-  base::Optional<std::vector<uint8_t>> Decrypt(
+  absl::optional<std::vector<uint8_t>> Decrypt(
       base::span<const uint8_t> ciphertext);
 
  private:
@@ -278,10 +322,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TokenResponse {
   TokenResponse(const TokenResponse&);
   TokenResponse& operator=(const TokenResponse&);
 
-  static base::Optional<TokenResponse> Parse(
+  static absl::optional<TokenResponse> Parse(
       PINUVAuthProtocol protocol,
       base::span<const uint8_t> shared_key,
-      const base::Optional<cbor::Value>& cbor);
+      const absl::optional<cbor::Value>& cbor);
 
   std::pair<PINUVAuthProtocol, std::vector<uint8_t>> PinAuth(
       base::span<const uint8_t> client_data_hash) const;
@@ -296,25 +340,25 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TokenResponse {
   std::vector<uint8_t> token_;
 };
 
-std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+std::pair<CtapRequestCommand, absl::optional<cbor::Value>>
 AsCTAPRequestValuePair(const PinRetriesRequest&);
 
-std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+std::pair<CtapRequestCommand, absl::optional<cbor::Value>>
 AsCTAPRequestValuePair(const UvRetriesRequest&);
 
-std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+std::pair<CtapRequestCommand, absl::optional<cbor::Value>>
 AsCTAPRequestValuePair(const KeyAgreementRequest&);
 
-std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+std::pair<CtapRequestCommand, absl::optional<cbor::Value>>
 AsCTAPRequestValuePair(const SetRequest&);
 
-std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+std::pair<CtapRequestCommand, absl::optional<cbor::Value>>
 AsCTAPRequestValuePair(const ChangeRequest&);
 
-std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+std::pair<CtapRequestCommand, absl::optional<cbor::Value>>
 AsCTAPRequestValuePair(const ResetRequest&);
 
-std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+std::pair<CtapRequestCommand, absl::optional<cbor::Value>>
 AsCTAPRequestValuePair(const TokenRequest&);
 
 }  // namespace pin

@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/unsafe_shared_memory_region.h"
+#include "build/chromeos_buildflags.h"
 #include "components/exo/seat.h"
 
 #if defined(USE_OZONE)
@@ -29,7 +30,7 @@ namespace exo {
 class ClientControlledShellSurface;
 class DataDevice;
 class DataDeviceDelegate;
-class FileHelper;
+class DataExchangeDelegate;
 class InputMethodSurfaceManager;
 class NotificationSurface;
 class NotificationSurfaceManager;
@@ -37,7 +38,7 @@ class SharedMemory;
 class SubSurface;
 class Surface;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 class InputMethodSurface;
 class ShellSurface;
 class ToastSurface;
@@ -56,13 +57,13 @@ class Display {
  public:
   Display();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   Display(
       std::unique_ptr<NotificationSurfaceManager> notification_surface_manager,
       std::unique_ptr<InputMethodSurfaceManager> input_method_surface_manager,
       std::unique_ptr<ToastSurfaceManager> toast_surface_manager,
-      std::unique_ptr<FileHelper> file_helper);
-#endif  // defined(OS_CHROMEOS)
+      std::unique_ptr<DataExchangeDelegate> data_exchange_delegate);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   ~Display();
 
@@ -85,19 +86,21 @@ class Display {
       bool y_invert);
 #endif  // defined(USE_OZONE)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Creates a shell surface for an existing surface.
   std::unique_ptr<ShellSurface> CreateShellSurface(Surface* surface);
 
   // Creates a xdg shell surface for an existing surface.
   std::unique_ptr<XdgShellSurface> CreateXdgShellSurface(Surface* surface);
 
-  // Creates a remote shell surface for an existing surface using |container|.
+  // Returns a remote shell surface for an existing surface using |container|.
+  // If the existing surface has window session id associated, the remote shell
+  // will be get from PropertyResolver. Or it will create a new remote shell.
   std::unique_ptr<ClientControlledShellSurface>
-  CreateClientControlledShellSurface(Surface* surface,
-                                     int container,
-                                     double default_device_scale_factor,
-                                     bool default_scale_cancellation);
+  CreateOrGetClientControlledShellSurface(Surface* surface,
+                                          int container,
+                                          double default_device_scale_factor,
+                                          bool default_scale_cancellation);
 
   // Creates a notification surface for a surface and notification id.
   std::unique_ptr<NotificationSurface> CreateNotificationSurface(
@@ -115,7 +118,7 @@ class Display {
       Surface* surface,
       double default_device_scale_factor,
       bool default_scale_cancellation);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Creates a sub-surface for an existing surface. The sub-surface will be
   // a child of |parent|.
@@ -128,20 +131,19 @@ class Display {
   // Obtains seat instance.
   Seat* seat() { return &seat_; }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   InputMethodSurfaceManager* input_method_surface_manager() {
     return input_method_surface_manager_.get();
   }
 #endif
 
  private:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<NotificationSurfaceManager> notification_surface_manager_;
   std::unique_ptr<InputMethodSurfaceManager> input_method_surface_manager_;
   std::unique_ptr<ToastSurfaceManager> toast_surface_manager_;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-  std::unique_ptr<FileHelper> file_helper_;
   Seat seat_;
 
   bool shutdown_ = false;

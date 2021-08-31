@@ -26,8 +26,7 @@ namespace send_tab_to_self {
 void CreateNewEntry(content::WebContents* tab,
                     const std::string& target_device_name,
                     const std::string& target_device_guid,
-                    const GURL& link_url,
-                    bool show_notification) {
+                    const GURL& link_url) {
   DCHECK(tab);
 
   GURL shared_url = link_url;
@@ -59,23 +58,11 @@ void CreateNewEntry(content::WebContents* tab,
     return;
   }
 
-  const SendTabToSelfEntry* entry =
-      model->AddEntry(shared_url, title, navigation_time, target_device_guid);
+  model->AddEntry(shared_url, title, navigation_time, target_device_guid);
 
-  if (!show_notification ||
-      base::FeatureList::IsEnabled(kSendTabToSelfOmniboxSendingAnimation)) {
-    SendTabToSelfBubbleController* controller = send_tab_to_self::
-        SendTabToSelfBubbleController::CreateOrGetFromWebContents(tab);
-    controller->ShowConfirmationMessage();
-    return;
-  }
-
-  if (entry) {
-    DesktopNotificationHandler(profile).DisplaySendingConfirmation(
-        *entry, target_device_name);
-  } else {
-    DesktopNotificationHandler(profile).DisplayFailureMessage(shared_url);
-  }
+  SendTabToSelfBubbleController* controller = send_tab_to_self::
+      SendTabToSelfBubbleController::CreateOrGetFromWebContents(tab);
+  controller->ShowConfirmationMessage();
 }
 
 void ShareToSingleTarget(content::WebContents* tab, const GURL& link_url) {
@@ -89,12 +76,6 @@ void ShareToSingleTarget(content::WebContents* tab, const GURL& link_url) {
                  link_url);
 }
 
-void RecordSendTabToSelfClickResult(const std::string& entry_point,
-                                    SendTabToSelfClickResult state) {
-  base::UmaHistogramEnumeration("SendTabToSelf." + entry_point + ".ClickResult",
-                                state);
-}
-
 size_t GetValidDeviceCount(Profile* profile) {
   SendTabToSelfSyncService* service =
       SendTabToSelfSyncServiceFactory::GetForProfile(profile);
@@ -106,7 +87,7 @@ size_t GetValidDeviceCount(Profile* profile) {
   return devices.size();
 }
 
-base::string16 GetSingleTargetDeviceName(Profile* profile) {
+std::u16string GetSingleTargetDeviceName(Profile* profile) {
   DCHECK_EQ(GetValidDeviceCount(profile), 1u);
   return base::UTF8ToUTF16(
       SendTabToSelfSyncServiceFactory::GetForProfile(profile)

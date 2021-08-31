@@ -21,6 +21,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -42,7 +44,6 @@ constexpr int kSpacingBetweenWeatherIconAndTempDip = 8;
 constexpr int kWeatherIconSizeDip = 32;
 
 // Typography.
-constexpr SkColor kTextColor = SK_ColorWHITE;
 constexpr int kDefaultFontSizeDip = 64;
 constexpr int kWeatherTemperatureFontSizeDip = 32;
 
@@ -75,7 +76,7 @@ GlanceableInfoView::GlanceableInfoView(AmbientViewDelegate* delegate)
   DCHECK(delegate);
   SetID(AmbientViewID::kAmbientGlanceableInfoView);
   auto* backend_model = delegate_->GetAmbientBackendModel();
-  backend_model->AddObserver(this);
+  scoped_backend_model_observer_.Observe(backend_model);
 
   InitLayout();
 
@@ -85,16 +86,17 @@ GlanceableInfoView::GlanceableInfoView(AmbientViewDelegate* delegate)
   }
 }
 
-GlanceableInfoView::~GlanceableInfoView() {
-  delegate_->GetAmbientBackendModel()->RemoveObserver(this);
-}
-
-const char* GlanceableInfoView::GetClassName() const {
-  return "GlanceableInfoView";
-}
-
+GlanceableInfoView::~GlanceableInfoView() = default;
 void GlanceableInfoView::OnWeatherInfoUpdated() {
   Show();
+}
+
+void GlanceableInfoView::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  gfx::ShadowValues text_shadow_values =
+      ambient::util::GetTextShadowValues(GetNativeTheme());
+  time_view_->SetTextShadowValues(text_shadow_values);
+  temperature_->SetShadows(text_shadow_values);
 }
 
 void GlanceableInfoView::Show() {
@@ -114,7 +116,7 @@ void GlanceableInfoView::Show() {
   temperature_->SetText(GetTemperatureText());
 }
 
-base::string16 GlanceableInfoView::GetTemperatureText() const {
+std::u16string GlanceableInfoView::GetTemperatureText() const {
   AmbientBackendModel* ambient_backend_model =
       delegate_->GetAmbientBackendModel();
   if (ambient_backend_model->show_celsius()) {
@@ -139,17 +141,18 @@ void GlanceableInfoView::InitLayout() {
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(views::BoxLayout::CrossAxisAlignment::kEnd);
 
-  gfx::ShadowValues text_shadow_values = ambient::util::GetTextShadowValues();
-  gfx::Insets shadow_insets = gfx::ShadowValue::GetMargin(text_shadow_values);
+  gfx::Insets shadow_insets =
+      gfx::ShadowValue::GetMargin(ambient::util::GetTextShadowValues(nullptr));
 
   // Inits the time view.
   time_view_ = AddChildView(std::make_unique<tray::TimeView>(
       ash::tray::TimeView::ClockLayout::HORIZONTAL_CLOCK,
       Shell::Get()->system_tray_model()->clock()));
   time_view_->SetTextFont(GetTimeFontList());
-  time_view_->SetTextColor(kTextColor,
-                           /*auto_color_readability_enabled=*/false);
-  time_view_->SetTextShadowValues(text_shadow_values);
+  time_view_->SetTextColor(
+      ambient::util::GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kTextColorPrimary),
+      /*auto_color_readability_enabled=*/false);
   // Remove the internal spacing in `time_view_` and adjust spacing for shadows.
   time_view_->SetBorder(views::CreateEmptyBorder(
       -kUnifiedTrayTextTopPadding, -kUnifiedTrayTimeLeftPadding, 0,
@@ -169,11 +172,14 @@ void GlanceableInfoView::InitLayout() {
   // Inits the temp view.
   temperature_ = AddChildView(std::make_unique<views::Label>());
   temperature_->SetAutoColorReadabilityEnabled(false);
-  temperature_->SetEnabledColor(kTextColor);
+  temperature_->SetEnabledColor(ambient::util::GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorPrimary));
   temperature_->SetFontList(GetWeatherTemperatureFontList());
-  temperature_->SetShadows(text_shadow_values);
   temperature_->SetBorder(views::CreateEmptyBorder(
       0, 0, GetTimeFontDescent() - GetTemperatureFontDescent(), 0));
 }
+
+BEGIN_METADATA(GlanceableInfoView, views::View)
+END_METADATA
 
 }  // namespace ash

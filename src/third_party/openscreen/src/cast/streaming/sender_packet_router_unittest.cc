@@ -8,6 +8,7 @@
 
 #include "cast/streaming/constants.h"
 #include "cast/streaming/mock_environment.h"
+#include "cast/streaming/testing/simple_socket_subscriber.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/base/ip_address.h"
@@ -155,8 +156,7 @@ class SenderPacketRouterTest : public testing::Test {
         task_runner_(&clock_),
         env_(&FakeClock::now, &task_runner_),
         router_(&env_, kMaxPacketsPerBurst, kBurstInterval) {
-    env_.set_socket_error_handler(
-        [](Error error) { ASSERT_TRUE(error.ok()) << error; });
+    env_.SetSocketSubscriber(&socket_subscriber_);
   }
 
   ~SenderPacketRouterTest() override = default;
@@ -182,6 +182,7 @@ class SenderPacketRouterTest : public testing::Test {
   SenderPacketRouter router_;
   testing::NiceMock<MockSender> audio_sender_;
   testing::NiceMock<MockSender> video_sender_;
+  SimpleSubscriber socket_subscriber_;
 };
 
 // Tests that the SenderPacketRouter is correctly configured from the specific

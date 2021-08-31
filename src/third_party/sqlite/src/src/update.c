@@ -220,6 +220,10 @@ static void updateFromSelect(
 
   assert( pTabList->nSrc>1 );
   if( pSrc ){
+    if( pSrc->a[0].zDatabase==0 ){
+      int iSchema = sqlite3SchemaToIndex(db, pTab->pSchema);
+      pSrc->a[0].zDatabase = sqlite3DbStrDup(db, db->aDb[iSchema].zDbSName);
+    }
     pSrc->a[0].iCursor = -1;
     pSrc->a[0].pTab->nTabRef--;
     pSrc->a[0].pTab = 0;
@@ -643,6 +647,7 @@ void sqlite3Update(
   if( (db->flags&SQLITE_CountRows)!=0
    && !pParse->pTriggerTab
    && !pParse->nested
+   && !pParse->bReturning
    && pUpsert==0
   ){
     regRowCount = ++pParse->nMem;
@@ -1106,7 +1111,7 @@ void sqlite3Update(
   ** that information.
   */
   if( regRowCount ){
-    sqlite3VdbeAddOp2(v, OP_ResultRow, regRowCount, 1);
+    sqlite3VdbeAddOp2(v, OP_ChngCntRow, regRowCount, 1);
     sqlite3VdbeSetNumCols(v, 1);
     sqlite3VdbeSetColName(v, 0, COLNAME_NAME, "rows updated", SQLITE_STATIC);
   }

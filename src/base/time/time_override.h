@@ -8,6 +8,8 @@
 #include "base/base_export.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 
@@ -51,6 +53,12 @@ BASE_EXPORT Time TimeNowIgnoringOverride();
 BASE_EXPORT Time TimeNowFromSystemTimeIgnoringOverride();
 BASE_EXPORT TimeTicks TimeTicksNowIgnoringOverride();
 BASE_EXPORT ThreadTicks ThreadTicksNowIgnoringOverride();
+
+#if defined(OS_POSIX)
+// Equivalent to TimeTicksNowIgnoringOverride(), but is allowed to fail and
+// return absl::nullopt. This may safely be used in a signal handler.
+BASE_EXPORT absl::optional<TimeTicks> MaybeTimeTicksNowIgnoringOverride();
+#endif
 
 }  // namespace subtle
 

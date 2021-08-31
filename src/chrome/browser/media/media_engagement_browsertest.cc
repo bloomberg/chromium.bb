@@ -12,20 +12,24 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/mei_preload_component_installer.h"
 #include "chrome/browser/media/media_engagement_contents_observer.h"
 #include "chrome/browser/media/media_engagement_preloaded_list.h"
 #include "chrome/browser/media/media_engagement_service.h"
-#include "chrome/browser/prefetch/no_state_prefetch/prerender_manager_factory.h"
+#include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/prefetch/no_state_prefetch/prerender_test_utils.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_restore_test_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -33,8 +37,8 @@
 #include "components/component_updater/component_updater_service.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
-#include "components/no_state_prefetch/browser/prerender_handle.h"
-#include "components/no_state_prefetch/browser/prerender_manager.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_handle.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/no_state_prefetch/common/prerender_final_status.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test.h"
@@ -42,16 +46,16 @@
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
 
 const char* kMediaEngagementTestDataPath = "chrome/test/data/media/engagement";
 
-const base::string16 kReadyTitle = base::ASCIIToUTF16("Ready");
+const std::u16string kReadyTitle = u"Ready";
 
 // Watches WasRecentlyAudible changes on a WebContents, blocking until the
 // tab is audible. The audio stream monitor runs at 15Hz so we need have
@@ -334,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, RecordEngagement) {
 }
 
 // Flaky tests on CrOS: http://crbug.com/1020131.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_RecordEngagement_AudioOnly DISABLED_RecordEngagement_AudioOnly
 #else
 #define MAYBE_RecordEngagement_AudioOnly RecordEngagement_AudioOnly
@@ -356,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
 }
 
 // Flaky tests on CrOS: http://crbug.com/1019671.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_DoNotRecordEngagement_NotTime_AudioOnly \
   DISABLED_DoNotRecordEngagement_NotTime_AudioOnly
 #else
@@ -380,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
 }
 
 // Flaky tests on CrOS: http://crbug.com/1019671.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_DoNotRecordEngagement_TabMuted_AudioOnly \
   DISABLED_DoNotRecordEngagement_TabMuted_AudioOnly
 #else
@@ -413,8 +417,9 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   ExpectScores(1, 0);
 }
 
+// TODO(crbug.com/1177113) Re-enable test
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
-                       DoNotRecordEngagement_PlaybackStopped) {
+                       DISABLED_DoNotRecordEngagement_PlaybackStopped) {
   LoadTestPageAndWaitForPlayAndAudible("engagement_test.html", false);
   Advance(base::TimeDelta::FromSeconds(1));
   ExecuteScript("document.getElementById(\"media\").pause();");
@@ -424,7 +429,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
 }
 
 // Flaky tests on CrOS: http://crbug.com/1019671.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_DoNotRecordEngagement_PlaybackStopped_AudioOnly \
   DISABLED_DoNotRecordEngagement_PlaybackStopped_AudioOnly
 #else
@@ -451,7 +456,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
 }
 
 // Flaky tests on CrOS: http://crbug.com/1019671.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_RecordEngagement_NotVisible_AudioOnly \
   DISABLED_RecordEngagement_NotVisible_AudioOnly
 #else
@@ -543,7 +548,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
 }
 
 // Flaky tests on CrOS: http://crbug.com/1019671.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_DoNotRecordEngagement_SilentAudioTrack_AudioOnly \
   DISABLED_DoNotRecordEngagement_SilentAudioTrack_AudioOnly
 #else
@@ -598,7 +603,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
 }
 
 // Flaky tests on CrOS: http://crbug.com/1019671.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_MultipleElements DISABLED_MultipleElements
 #else
 #define MAYBE_MultipleElements MultipleElements
@@ -739,30 +744,30 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, MAYBE_Ignored) {
   const GURL& url = http_server().GetURL("/engagement_test.html");
 
-  prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForBrowserContext(
+  prerender::NoStatePrefetchManager* no_state_prefetch_manager =
+      prerender::NoStatePrefetchManagerFactory::GetForBrowserContext(
           browser()->profile());
-  ASSERT_TRUE(prerender_manager);
+  ASSERT_TRUE(no_state_prefetch_manager);
 
-  prerender::test_utils::TestPrerenderContentsFactory*
-      prerender_contents_factory =
-          new prerender::test_utils::TestPrerenderContentsFactory();
-  prerender_manager->SetPrerenderContentsFactoryForTest(
-      prerender_contents_factory);
+  prerender::test_utils::TestNoStatePrefetchContentsFactory*
+      no_state_prefetch_contents_factory =
+          new prerender::test_utils::TestNoStatePrefetchContentsFactory();
+  no_state_prefetch_manager->SetNoStatePrefetchContentsFactoryForTest(
+      no_state_prefetch_contents_factory);
 
   content::SessionStorageNamespace* storage_namespace =
       GetWebContents()->GetController().GetDefaultSessionStorageNamespace();
   ASSERT_TRUE(storage_namespace);
 
   std::unique_ptr<prerender::test_utils::TestPrerender> test_prerender =
-      prerender_contents_factory->ExpectPrerenderContents(
+      no_state_prefetch_contents_factory->ExpectNoStatePrefetchContents(
           prerender::FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
 
-  std::unique_ptr<prerender::PrerenderHandle> prerender_handle =
-      prerender_manager->AddPrerenderFromOmnibox(url, storage_namespace,
-                                                 gfx::Size(640, 480));
+  std::unique_ptr<prerender::NoStatePrefetchHandle> no_state_prefetch_handle =
+      no_state_prefetch_manager->AddPrerenderFromOmnibox(url, storage_namespace,
+                                                         gfx::Size(640, 480));
 
-  ASSERT_EQ(prerender_handle->contents(), test_prerender->contents());
+  ASSERT_EQ(no_state_prefetch_handle->contents(), test_prerender->contents());
 
   EXPECT_EQ(nullptr, GetService()->GetContentsObserverFor(
                          test_prerender->contents()->web_contents()));
@@ -780,15 +785,16 @@ class MediaEngagementSessionRestoreBrowserTest
 
     SessionStartupPref::SetStartupPref(
         profile, SessionStartupPref(SessionStartupPref::LAST));
-#if defined(OS_CHROMEOS)
-    SessionServiceTestHelper helper(
-        SessionServiceFactory::GetForProfile(profile));
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    SessionServiceTestHelper helper(profile);
     helper.SetForceBrowserNotAliveWithNoWindows(true);
-    helper.ReleaseService();
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     std::unique_ptr<ScopedKeepAlive> keep_alive(new ScopedKeepAlive(
         KeepAliveOrigin::SESSION_RESTORE, KeepAliveRestartOption::DISABLED));
+    std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive(
+        new ScopedProfileKeepAlive(profile,
+                                   ProfileKeepAliveOrigin::kBrowserWindow));
     CloseBrowserSynchronously(browser());
 
     chrome::NewEmptyWindow(profile);

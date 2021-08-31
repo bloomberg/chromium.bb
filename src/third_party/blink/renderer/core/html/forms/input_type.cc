@@ -165,7 +165,7 @@ double InputType::ValueAsDate() const {
   return DateComponents::InvalidMilliseconds();
 }
 
-void InputType::SetValueAsDate(const base::Optional<base::Time>&,
+void InputType::SetValueAsDate(const absl::optional<base::Time>&,
                                ExceptionState& exception_state) const {
   exception_state.ThrowDOMException(
       DOMExceptionCode::kInvalidStateError,
@@ -506,7 +506,7 @@ bool InputType::CanSetStringValue() const {
 }
 
 bool InputType::IsKeyboardFocusable() const {
-  return GetElement().IsFocusable();
+  return GetElement().IsBaseElementFocusable();
 }
 
 bool InputType::MayTriggerVirtualKeyboard() const {

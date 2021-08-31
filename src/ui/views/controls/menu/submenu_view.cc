@@ -13,6 +13,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -22,7 +23,6 @@
 #include "ui/views/controls/menu/menu_host.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -267,7 +267,8 @@ void SubmenuView::OnDragExited() {
   parent_menu_item_->GetMenuController()->OnDragExited(this);
 }
 
-int SubmenuView::OnPerformDrop(const ui::DropTargetEvent& event) {
+ui::mojom::DragOperation SubmenuView::OnPerformDrop(
+    const ui::DropTargetEvent& event) {
   DCHECK(parent_menu_item_->GetMenuController());
   return parent_menu_item_->GetMenuController()->OnPerformDrop(this, event);
 }
@@ -373,9 +374,9 @@ void SubmenuView::SetSelectedRow(int row) {
       GetMenuItemAt(row), MenuController::SELECTION_DEFAULT);
 }
 
-base::string16 SubmenuView::GetTextForRow(int row) {
+std::u16string SubmenuView::GetTextForRow(int row) {
   return MenuItemView::GetAccessibleNameForMenuItem(
-      GetMenuItemAt(row)->title(), base::string16(),
+      GetMenuItemAt(row)->title(), std::u16string(),
       GetMenuItemAt(row)->ShouldShowNewBadge());
 }
 
@@ -385,7 +386,8 @@ bool SubmenuView::IsShowing() const {
 
 void SubmenuView::ShowAt(Widget* parent,
                          const gfx::Rect& bounds,
-                         bool do_capture) {
+                         bool do_capture,
+                         gfx::NativeView native_view_for_gestures) {
   if (host_) {
     host_->SetMenuHostBounds(bounds);
     host_->ShowMenuHost(do_capture);
@@ -396,7 +398,8 @@ void SubmenuView::ShowAt(Widget* parent,
     // Force a layout since our preferred size may not have changed but our
     // content may have.
     InvalidateLayout();
-    host_->InitMenuHost(parent, bounds, scroll_view_container_, do_capture);
+    host_->InitMenuHost(parent, bounds, scroll_view_container_, do_capture,
+                        native_view_for_gestures);
   }
 
   // Only fire kMenuStart for the top level menu, not for each submenu.

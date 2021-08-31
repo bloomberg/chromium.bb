@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/base/region.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
 #include "components/exo/surface_delegate.h"
@@ -40,6 +41,7 @@ class TracedValue;
 namespace gfx {
 class ColorSpace;
 class GpuFence;
+struct PresentationFeedback;
 }
 
 namespace viz {
@@ -60,6 +62,10 @@ enum class Transform { NORMAL, ROTATE_90, ROTATE_180, ROTATE_270 };
 
 // A property key to store the surface Id set by the client.
 extern const ui::ClassProperty<std::string*>* const kClientSurfaceIdKey;
+
+// A property key to store the window session Id set by client or full_restore
+// component.
+extern const ui::ClassProperty<int32_t>* const kWindowSessionId;
 
 // This class represents a rectangular area that is displayed on the screen.
 // It has a location, size and pixel contents.
@@ -167,6 +173,9 @@ class Surface final : public ui::PropertyHandler {
   // Request that surface should have the specified frame type.
   void SetFrame(SurfaceFrameType type);
 
+  // Request that the server should start resize on this surface.
+  void SetServerStartResize();
+
   // Request that surface should use a specific set of frame colors.
   void SetFrameColors(SkColor active_color, SkColor inactive_color);
 
@@ -176,10 +185,24 @@ class Surface final : public ui::PropertyHandler {
   // Request that surface should have a specific application ID string.
   void SetApplicationId(const char* application_id);
 
-  // Whether to hide the shelf when fullscreen. If true, shelf is inaccessible
-  // (plain fullscreen). If false, shelf auto-hides and can be shown with a
-  // mouse gesture (immersive fullscreen).
+  // Whether to show/hide the shelf when fullscreen. If true, the titlebar/shelf
+  // will show when the mouse moves to the top/bottom of the screen. If false
+  // (plain fullscreen), the titlebar and shelf are always hidden.
   void SetUseImmersiveForFullscreen(bool value);
+
+  // Called to show the snap preview to the right or left, or to hide it.
+  void ShowSnapPreviewToRight();
+  void ShowSnapPreviewToLeft();
+  void HideSnapPreview();
+
+  // Called when the client was snapped to right or left, or reset.
+  void SetSnappedToRight();
+  void SetSnappedToLeft();
+  void UnsetSnap();
+
+  // Whether the current client window can go back, as per its navigation list.
+  void SetCanGoBack();
+  void UnsetCanGoBack();
 
   // This sets the color space for the buffer for this surface.
   void SetColorSpace(gfx::ColorSpace color_space);
@@ -296,6 +319,11 @@ class Surface final : public ui::PropertyHandler {
   // Triggers sending an occlusion update to observers.
   void OnWindowOcclusionChanged();
 
+  // Triggers sending a locking status to observers.
+  // true : lock a frame to normal or restore state
+  // false : unlock the previously locked frame
+  void SetFrameLocked(bool lock);
+
   // True if the window for this surface has its occlusion tracked.
   bool IsTrackingOcclusion();
 
@@ -304,6 +332,11 @@ class Surface final : public ui::PropertyHandler {
 
   // Requests that this surface should be made active (i.e. foregrounded).
   void RequestActivation();
+
+  // Requests that surface my have a window session ID assigned by client or
+  // full_restore component.
+  void SetWindowSessionId(int32_t window_session_id);
+  int32_t GetWindowSessionId();
 
  private:
   struct State {
@@ -314,7 +347,7 @@ class Surface final : public ui::PropertyHandler {
     bool operator!=(const State& other) const { return !(*this == other); }
 
     cc::Region opaque_region;
-    base::Optional<cc::Region> input_region;
+    absl::optional<cc::Region> input_region;
     int input_outset = 0;
     float buffer_scale = 1.0f;
     Transform buffer_transform = Transform::NORMAL;
@@ -455,9 +488,9 @@ class Surface final : public ui::PropertyHandler {
   // Surface observer list. Surface does not own the observers.
   base::ObserverList<SurfaceObserver, true>::Unchecked observers_;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<ash::OutputProtectionDelegate> output_protection_;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   viz::SurfaceId first_embedded_surface_id_;
   viz::SurfaceId latest_embedded_surface_id_;

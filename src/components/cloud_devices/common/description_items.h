@@ -15,9 +15,9 @@
 #include <vector>
 
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 
 namespace cloud_devices {
@@ -114,8 +114,8 @@ class SelectionCapability {
   }
 
   const Option& GetDefault() const {
-    CHECK_GE(default_idx_, 0);
-    return options_[default_idx_];
+    CHECK(!options_.empty());
+    return options_[std::max(default_idx_, 0)];
   }
 
   void AddOption(const Option& option) { AddDefaultOption(option, false); }

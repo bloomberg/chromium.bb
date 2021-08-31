@@ -23,14 +23,13 @@ UdevLoader* UdevLoader::Get() {
   if (g_udev_loader)
     return g_udev_loader;
 
-  std::unique_ptr<UdevLoader> udev_loader;
-  udev_loader.reset(new Udev1Loader);
+  std::unique_ptr<UdevLoader> udev_loader = std::make_unique<Udev1Loader>();
   if (udev_loader->Init()) {
     g_udev_loader = udev_loader.release();
     return g_udev_loader;
   }
 
-  udev_loader.reset(new Udev0Loader);
+  udev_loader = std::make_unique<Udev0Loader>();
   if (udev_loader->Init()) {
     g_udev_loader = udev_loader.release();
     return g_udev_loader;

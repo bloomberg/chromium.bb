@@ -49,30 +49,29 @@ class TextureSubresourceTest : public DawnTest {
     }
 
     void DrawTriangle(const wgpu::TextureView& view) {
-        wgpu::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-                #version 450
-                void main() {
-                    const vec2 pos[3] = vec2[3](
-                        vec2(-1.f, 1.f), vec2(-1.f, -1.f), vec2(1.f, -1.f));
-                    gl_Position = vec4(pos[gl_VertexIndex], 0.f, 1.f);
-                 })");
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
+            [[stage(vertex)]]
+            fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
+                let pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+                    vec2<f32>(-1.0,  1.0),
+                    vec2<f32>(-1.0, -1.0),
+                    vec2<f32>( 1.0, -1.0));
 
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-                #version 450
-                layout(location = 0) out vec4 fragColor;
-                void main() {
-                    fragColor = vec4(1.0, 0.0, 0.0, 1.0);
-                })");
+                return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
+            })");
 
-        utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.vertexStage.module = vsModule;
-        descriptor.cFragmentStage.module = fsModule;
-        descriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleList;
-        descriptor.cColorStates[0].format = kFormat;
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+                return vec4<f32>(1.0, 0.0, 0.0, 1.0);
+            })");
 
-        wgpu::RenderPipeline rp = device.CreateRenderPipeline(&descriptor);
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
+        descriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
+        descriptor.cTargets[0].format = kFormat;
+
+        wgpu::RenderPipeline rp = device.CreateRenderPipeline2(&descriptor);
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
@@ -87,36 +86,38 @@ class TextureSubresourceTest : public DawnTest {
     }
 
     void SampleAndDraw(const wgpu::TextureView& samplerView, const wgpu::TextureView& renderView) {
-        wgpu::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-                #version 450
-                void main() {
-                    const vec2 pos[6] = vec2[6](
-                        vec2(-1.f, -1.f), vec2(1.f, 1.f), vec2(-1.f, 1.f),
-                        vec2(-1.f, -1.f), vec2(1.f, -1.f), vec2(1.f, 1.f));
-                    gl_Position = vec4(pos[gl_VertexIndex], 0.f, 1.f);
-                 })");
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
+            [[stage(vertex)]]
+            fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
+                let pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+                    vec2<f32>(-1.0, -1.0),
+                    vec2<f32>( 1.0,  1.0),
+                    vec2<f32>(-1.0,  1.0),
+                    vec2<f32>(-1.0, -1.0),
+                    vec2<f32>( 1.0, -1.0),
+                    vec2<f32>( 1.0,  1.0));
 
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-                #version 450
-                layout (set = 0, binding = 0) uniform sampler samp;
-                layout (set = 0, binding = 1) uniform texture2D tex;
-                layout (location = 0) out vec4 fragColor;
-                void main() {
-                    fragColor = texture(sampler2D(tex, samp), gl_FragCoord.xy / 4);
-                })");
+                return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
+            })");
 
-        utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.vertexStage.module = vsModule;
-        descriptor.cFragmentStage.module = fsModule;
-        descriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleList;
-        descriptor.cColorStates[0].format = kFormat;
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
+            [[group(0), binding(0)]] var samp : sampler;
+            [[group(0), binding(1)]] var tex : texture_2d<f32>;
 
-        wgpu::SamplerDescriptor samplerDescriptor = {};
-        wgpu::Sampler sampler = device.CreateSampler(&samplerDescriptor);
+            [[stage(fragment)]]
+            fn main([[builtin(position)]] FragCoord : vec4<f32>) -> [[location(0)]] vec4<f32> {
+                return textureSample(tex, samp, FragCoord.xy / vec2<f32>(4.0, 4.0));
+            })");
 
-        wgpu::RenderPipeline rp = device.CreateRenderPipeline(&descriptor);
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
+        descriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
+        descriptor.cTargets[0].format = kFormat;
+
+        wgpu::Sampler sampler = device.CreateSampler();
+
+        wgpu::RenderPipeline rp = device.CreateRenderPipeline2(&descriptor);
         wgpu::BindGroupLayout bgl = rp.GetBindGroupLayout(0);
         wgpu::BindGroup bindGroup =
             utils::MakeBindGroup(device, bgl, {{0, sampler}, {1, samplerView}});
@@ -137,6 +138,9 @@ class TextureSubresourceTest : public DawnTest {
 
 // Test different mipmap levels
 TEST_P(TextureSubresourceTest, MipmapLevelsTest) {
+    // TODO(crbug.com/dawn/593): This test requires glTextureView, which is unsupported on GLES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
+
     // Create a texture with 2 mipmap levels and 1 layer
     wgpu::Texture texture =
         CreateTexture(2, 1,
@@ -157,12 +161,14 @@ TEST_P(TextureSubresourceTest, MipmapLevelsTest) {
     // black in render view (mip level 1).
     RGBA8 topRight = RGBA8::kBlack;
     RGBA8 bottomLeft = RGBA8::kRed;
-    EXPECT_TEXTURE_RGBA8_EQ(&topRight, texture, kSize / 2 - 1, 0, 1, 1, 1, 0);
-    EXPECT_TEXTURE_RGBA8_EQ(&bottomLeft, texture, 0, kSize / 2 - 1, 1, 1, 1, 0);
+    EXPECT_TEXTURE_EQ(&topRight, texture, {kSize / 2 - 1, 0}, {1, 1}, 1);
+    EXPECT_TEXTURE_EQ(&bottomLeft, texture, {0, kSize / 2 - 1}, {1, 1}, 1);
 }
 
 // Test different array layers
 TEST_P(TextureSubresourceTest, ArrayLayersTest) {
+    // TODO(crbug.com/dawn/593): This test requires glTextureView, which is unsupported on GLES.
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
     // Create a texture with 1 mipmap level and 2 layers
     wgpu::Texture texture =
         CreateTexture(1, 2,
@@ -183,8 +189,8 @@ TEST_P(TextureSubresourceTest, ArrayLayersTest) {
     // black in render view (array layer 1).
     RGBA8 topRight = RGBA8::kBlack;
     RGBA8 bottomLeft = RGBA8::kRed;
-    EXPECT_TEXTURE_RGBA8_EQ(&topRight, texture, kSize - 1, 0, 1, 1, 0, 1);
-    EXPECT_TEXTURE_RGBA8_EQ(&bottomLeft, texture, 0, kSize - 1, 1, 1, 0, 1);
+    EXPECT_TEXTURE_EQ(&topRight, texture, {kSize - 1, 0, 1}, {1, 1});
+    EXPECT_TEXTURE_EQ(&bottomLeft, texture, {0, kSize - 1, 1}, {1, 1});
 }
 
 // TODO (yunchao.he@intel.com):
@@ -199,4 +205,5 @@ DAWN_INSTANTIATE_TEST(TextureSubresourceTest,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

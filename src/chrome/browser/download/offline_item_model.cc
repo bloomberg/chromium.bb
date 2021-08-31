@@ -210,7 +210,7 @@ bool OfflineItemModel::GetFileExternallyRemoved() const {
 }
 
 GURL OfflineItemModel::GetURL() const {
-  return offline_item_ ? offline_item_->page_url : GURL();
+  return offline_item_ ? offline_item_->url : GURL();
 }
 
 bool OfflineItemModel::ShouldRemoveFromShelfWhenComplete() const {
@@ -233,7 +233,7 @@ void OfflineItemModel::OnItemRemoved(const ContentId& id) {
 
 void OfflineItemModel::OnItemUpdated(
     const OfflineItem& item,
-    const base::Optional<UpdateDelta>& update_delta) {
+    const absl::optional<UpdateDelta>& update_delta) {
   offline_item_ = std::make_unique<OfflineItem>(item);
   for (auto& obs : observers_)
     obs.OnDownloadUpdated();

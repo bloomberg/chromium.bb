@@ -54,22 +54,22 @@ void TabGroupViews::OnGroupVisualsChanged() {
 gfx::Rect TabGroupViews::GetBounds() const {
   gfx::Rect bounds = header_->bounds();
 
-  if (!tab_strip_->controller()->IsGroupCollapsed(group_)) {
-    const Tab* last_tab = GetLastTabInGroup();
-    if (last_tab) {
-      const int width = last_tab->bounds().right() - bounds.x();
-      if (width > 0)
-        bounds.set_width(width);
-    }
+  // If the group is (done animating to) collapsed, the tabs will be stacked at
+  // the right edge of the header, so this is a no-op. But if the group is mid
+  // collapse animation, this will set the header bounds correctly.
+  const Tab* last_tab = GetLastTabInGroup();
+  if (last_tab) {
+    const int width = last_tab->bounds().right() - bounds.x();
+    if (width > 0)
+      bounds.set_width(width);
   }
   return bounds;
 }
 
 const Tab* TabGroupViews::GetLastTabInGroup() const {
-  const std::vector<int> tabs_in_group =
-      tab_strip_->controller()->ListTabsInGroup(group_);
-  return tabs_in_group.empty() ? nullptr
-                               : tab_strip_->tab_at(tabs_in_group.back());
+  const absl::optional<int> last_tab =
+      tab_strip_->controller()->GetLastTabInGroup(group_);
+  return last_tab.has_value() ? tab_strip_->tab_at(last_tab.value()) : nullptr;
 }
 
 SkColor TabGroupViews::GetGroupColor() const {

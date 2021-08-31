@@ -53,6 +53,8 @@ bool AudioWorkletProcessor::Process(
   ScriptState::Scope scope(script_state);
   v8::Isolate* isolate = script_state->GetIsolate();
   v8::Local<v8::Context> context = script_state->GetContext();
+  v8::MicrotasksScope microtasks_scope(
+      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
   AudioWorkletProcessorDefinition* definition =
       global_scope_->FindDefinition(Name());
 
@@ -180,11 +182,14 @@ bool AudioWorkletProcessor::PortTopologyMatches(
   if (audio_port_2.IsEmpty())
     return false;
 
-  // Two AudioPorts are supposed to have the same length because the number of
-  // inputs and outputs of AudioNode cannot change after construction.
   v8::Local<v8::Array> port_2_local = audio_port_2.NewLocal(isolate);
   DCHECK(port_2_local->IsArray());
-  DCHECK_EQ(audio_port_1.size(), port_2_local->Length());
+
+  // Two audio ports may have a different number of inputs or outputs. See
+  // crbug.com/1202060
+  if (audio_port_1.size() != port_2_local->Length()) {
+    return false;
+  }
 
   v8::TryCatch try_catch(isolate);
 
@@ -323,10 +328,10 @@ void AudioWorkletProcessor::CopyPortToArrayBuffers(
     unsigned number_of_channels = audio_bus ? audio_bus->NumberOfChannels() : 0;
     for (uint32_t channel_index = 0; channel_index < number_of_channels;
          ++channel_index) {
-      const v8::ArrayBuffer::Contents& contents =
-          array_buffers[bus_index][channel_index].NewLocal(isolate)
-              ->GetContents();
-      memcpy(contents.Data(), audio_bus->Channel(channel_index)->Data(),
+      auto backing_store = array_buffers[bus_index][channel_index]
+                               .NewLocal(isolate)
+                               ->GetBackingStore();
+      memcpy(backing_store->Data(), audio_bus->Channel(channel_index)->Data(),
              bus_length * sizeof(float));
     }
   }
@@ -342,16 +347,16 @@ void AudioWorkletProcessor::CopyArrayBuffersToPort(
     const scoped_refptr<AudioBus>& audio_bus = audio_port[bus_index];
     for (uint32_t channel_index = 0;
          channel_index < audio_bus->NumberOfChannels(); ++channel_index) {
-      const v8::ArrayBuffer::Contents& contents =
-          array_buffers[bus_index][channel_index].NewLocal(isolate)
-              ->GetContents();
+      auto backing_store = array_buffers[bus_index][channel_index]
+                               .NewLocal(isolate)
+                               ->GetBackingStore();
       const size_t bus_length = audio_bus->length() * sizeof(float);
 
       // An ArrayBuffer might be transferred. So we need to check the byte
       // length and silence the output buffer if needed.
-      if (contents.ByteLength() == bus_length) {
+      if (backing_store->ByteLength() == bus_length) {
         memcpy(audio_bus->Channel(channel_index)->MutableData(),
-               contents.Data(), bus_length);
+               backing_store->Data(), bus_length);
       } else {
         memset(audio_bus->Channel(channel_index)->MutableData(), 0, bus_length);
       }
@@ -365,10 +370,10 @@ void AudioWorkletProcessor::ZeroArrayBuffers(
   for (uint32_t bus_index = 0; bus_index < array_buffers.size(); ++bus_index) {
     for (uint32_t channel_index = 0;
          channel_index < array_buffers[bus_index].size(); ++channel_index) {
-      const v8::ArrayBuffer::Contents& contents =
-          array_buffers[bus_index][channel_index].NewLocal(isolate)
-              ->GetContents();
-      memset(contents.Data(), 0, contents.ByteLength());
+      auto backing_store = array_buffers[bus_index][channel_index]
+                               .NewLocal(isolate)
+                               ->GetBackingStore();
+      memset(backing_store->Data(), 0, backing_store->ByteLength());
     }
   }
 }
@@ -502,8 +507,8 @@ bool AudioWorkletProcessor::CopyParamValueMapToObject(
         float32_array->Buffer()->ByteLength() == 0)
       return false;
 
-    memcpy(float32_array->Buffer()->GetContents().Data(), param_array->Data(),
-           array_length * sizeof(float));
+    memcpy(float32_array->Buffer()->GetBackingStore()->Data(),
+           param_array->Data(), array_length * sizeof(float));
   }
 
   return true;

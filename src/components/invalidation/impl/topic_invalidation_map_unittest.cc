@@ -8,7 +8,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer {
+namespace invalidation {
 
 namespace {
 
@@ -29,6 +29,8 @@ class TopicInvalidationMapTest : public testing::Test {
     invalidate_all_.Insert(Invalidation::InitUnknownVersion(kTopicOne));
     invalidate_all_.Insert(Invalidation::InitUnknownVersion(kTopicTwo));
   }
+
+  ~TopicInvalidationMapTest() override = default;
 
  protected:
   const Topic kTopicOne;
@@ -80,4 +82,4 @@ TEST_F(TopicInvalidationMapTest, GetSubsetWithTopics) {
 
 }  // namespace
 
-}  // namespace syncer
+}  // namespace invalidation

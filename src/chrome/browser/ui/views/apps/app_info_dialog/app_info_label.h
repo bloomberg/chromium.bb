@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/label.h"
 
 // Label styled for use in AppInfo dialog so accessible users can step through
@@ -14,11 +15,13 @@
 // TODO(dfried): merge functionality into views::Label.
 class AppInfoLabel : public views::Label {
  public:
-  explicit AppInfoLabel(const base::string16& text);
+  METADATA_HEADER(AppInfoLabel);
+
+  explicit AppInfoLabel(const std::u16string& text);
   ~AppInfoLabel() override;
 
   // See documentation on views::Label::Label().
-  AppInfoLabel(const base::string16& text,
+  AppInfoLabel(const std::u16string& text,
                int text_context,
                int text_style = views::style::STYLE_PRIMARY,
                gfx::DirectionalityMode directionality_mode =

@@ -20,13 +20,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "chrome/common/service_process.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #error "Not supported on ChromeOS"
 #endif
 
@@ -108,7 +109,7 @@ class ServiceProcessControl : public UpgradeObserver {
   // success or timeout. The method resets any previous callback.
   // Returns false if service is not running or other failure, callback will not
   // be called in this case.
-  bool GetHistograms(const base::Closure& cloud_print_status_callback,
+  bool GetHistograms(base::OnceClosure cloud_print_status_callback,
                      const base::TimeDelta& timeout);
 
   service_manager::InterfaceProvider& remote_interfaces() {
@@ -127,7 +128,7 @@ class ServiceProcessControl : public UpgradeObserver {
     // Execute the command line to start the process asynchronously. After the
     // command is executed |task| is called with the process handle on the UI
     // thread.
-    void Run(const base::Closure& task);
+    void Run(base::OnceClosure task);
 
     bool launched() const { return launched_; }
     base::ProcessId saved_pid() const { return saved_pid_; }
@@ -143,7 +144,7 @@ class ServiceProcessControl : public UpgradeObserver {
     void DoRun();
     void Notify();
     std::unique_ptr<base::CommandLine> cmd_line_;
-    base::Closure notify_task_;
+    base::OnceClosure notify_task_;
     bool launched_;
     uint32_t retry_count_;
     base::Process process_;
@@ -207,10 +208,10 @@ class ServiceProcessControl : public UpgradeObserver {
 
   // Callback that gets invoked when a message with histograms is received from
   // the service process.
-  base::Closure histograms_callback_;
+  base::OnceClosure histograms_callback_;
 
   // Callback that gets invoked if service didn't reply in time.
-  base::CancelableClosure histograms_timeout_callback_;
+  base::CancelableOnceClosure histograms_timeout_callback_;
 
   // If true changes to UpgradeObserver are applied, if false they are ignored.
   bool apply_changes_from_upgrade_observer_;

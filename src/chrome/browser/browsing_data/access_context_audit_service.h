@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_ACCESS_CONTEXT_AUDIT_SERVICE_H_
 #define CHROME_BROWSER_BROWSING_DATA_ACCESS_CONTEXT_AUDIT_SERVICE_H_
 
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/updateable_sequenced_task_runner.h"
 #include "chrome/browser/browsing_data/access_context_audit_database.h"
 #include "chrome/browser/profiles/profile.h"
@@ -65,8 +65,8 @@ class AccessContextAuditService
     AccessContextAuditService* service_;
     canonical_cookie::CookieHashSet accessed_cookies_;
     url::Origin last_seen_top_frame_origin_;
-    ScopedObserver<AccessContextAuditService, CookieAccessHelper>
-        deletion_observer_{this};
+    base::ScopedObservation<AccessContextAuditService, CookieAccessHelper>
+        deletion_observation_{this};
   };
 
   explicit AccessContextAuditService(Profile* profile);
@@ -85,14 +85,21 @@ class AccessContextAuditService
                               AccessContextAuditDatabase::StorageAPIType type,
                               const url::Origin& top_frame_origin);
 
+  // Queries database for all access context records for cookies, which are
+  // provided via |callback|.
+  void GetCookieAccessRecords(AccessContextRecordsCallback callback);
+
+  // Queries database for all access context records for storage, which are
+  // provided via |callback|.
+  void GetStorageAccessRecords(AccessContextRecordsCallback callback);
+
+  // Queries database for all access context records for storage that are
+  // accessed in a 3P context, which are provided via |callback|.
+  void GetThirdPartyStorageAccessRecords(AccessContextRecordsCallback callback);
+
   // Queries database for all access context records, which are provided via
   // |callback|.
   void GetAllAccessRecords(AccessContextRecordsCallback callback);
-
-  // Called on completion of GetAllAccessRecords.
-  void CompleteGetAllAccessRecordsInternal(
-      AccessContextRecordsCallback callback,
-      std::vector<AccessContextAuditDatabase::AccessRecord> records);
 
   // Remove all records of access to |origin|'s storage API of |type|.
   void RemoveAllRecordsForOriginKeyedStorage(
@@ -129,6 +136,9 @@ class AccessContextAuditService
   friend class AccessContextAuditServiceTest;
   FRIEND_TEST_ALL_PREFIXES(AccessContextAuditServiceTest, CookieRecords);
   FRIEND_TEST_ALL_PREFIXES(AccessContextAuditServiceTest, ExpiredCookies);
+  FRIEND_TEST_ALL_PREFIXES(AccessContextAuditServiceTest, GetStorageRecords);
+  FRIEND_TEST_ALL_PREFIXES(AccessContextAuditServiceTest,
+                           GetThirdPartyStorageRecords);
   FRIEND_TEST_ALL_PREFIXES(AccessContextAuditServiceTest, HistoryDeletion);
   FRIEND_TEST_ALL_PREFIXES(AccessContextAuditServiceTest, AllHistoryDeletion);
   FRIEND_TEST_ALL_PREFIXES(AccessContextAuditServiceTest,
@@ -145,6 +155,12 @@ class AccessContextAuditService
   // Removes any records which are session only from the database.
   void ClearSessionOnlyRecords();
 
+  // Called on completion of GetCookieRecords, GetStorageRecords, or
+  // GetAllAccessRecords.
+  void CompleteGetAccessRecordsInternal(
+      AccessContextRecordsCallback callback,
+      std::vector<AccessContextAuditDatabase::AccessRecord> records);
+
   scoped_refptr<AccessContextAuditDatabase> database_;
   scoped_refptr<base::UpdateableSequencedTaskRunner> database_task_runner_;
 
@@ -157,11 +173,12 @@ class AccessContextAuditService
 
   mojo::Receiver<network::mojom::CookieChangeListener>
       cookie_listener_receiver_{this};
-  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-      history_observer_{this};
-  ScopedObserver<content::StoragePartition,
-                 content::StoragePartition::DataRemovalObserver>
-      storage_partition_observer_{this};
+  base::ScopedObservation<history::HistoryService,
+                          history::HistoryServiceObserver>
+      history_observation_{this};
+  base::ScopedObservation<content::StoragePartition,
+                          content::StoragePartition::DataRemovalObserver>
+      storage_partition_observation_{this};
 
   base::WeakPtrFactory<AccessContextAuditService> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AccessContextAuditService);

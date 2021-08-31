@@ -4,11 +4,10 @@
 
 package org.chromium.android_webview.test;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.content.Context;
+import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.ActivityTestRule;
+import android.support.test.runner.lifecycle.Stage;
 import android.util.AndroidRuntimeException;
 import android.util.Base64;
 import android.view.ViewGroup;
@@ -28,9 +27,12 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.Log;
+import org.chromium.base.test.BaseActivityTestRule;
+import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.InMemorySharedPreferences;
+import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -51,8 +53,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /** Custom ActivityTestRunner for WebView instrumentation tests */
-public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
-    public static final long WAIT_TIMEOUT_MS = scaleTimeout(15000L);
+public class AwActivityTestRule extends BaseActivityTestRule<AwTestRunnerActivity> {
+    public static final long WAIT_TIMEOUT_MS = 15000L;
+
+    // Only use scaled timeout if you are certain it's not being called further up the call stack.
+    public static final long SCALED_WAIT_TIMEOUT_MS = ScalableTimeout.scaleTimeout(15000L);
 
     public static final int CHECK_INTERVAL = 100;
 
@@ -78,7 +83,7 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
     private List<WeakReference<AwContents>> mAwContentsDestroyedInTearDown = new ArrayList<>();
 
     public AwActivityTestRule() {
-        super(AwTestRunnerActivity.class, /* initialTouchMode */ false, /* launchActivity */ false);
+        super(AwTestRunnerActivity.class);
     }
 
     @Override
@@ -120,10 +125,28 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
         TestThreadUtils.runOnUiThreadBlocking(() -> { mAwContentsDestroyedInTearDown.clear(); });
     }
 
-    public AwTestRunnerActivity launchActivity() {
-        if (getActivity() == null) {
-            return launchActivity(null);
+    public boolean needsHideActionBar() {
+        return false;
+    }
+
+    private Intent getLaunchIntent() {
+        if (needsHideActionBar()) {
+            Intent intent = getActivityIntent();
+            intent.putExtra(AwTestRunnerActivity.FLAG_HIDE_ACTION_BAR, true);
+            return intent;
         }
+        return null;
+    }
+
+    @Override
+    public void launchActivity(Intent intent) {
+        if (getActivity() != null) return;
+        super.launchActivity(intent);
+        ApplicationTestUtils.waitForActivityState(getActivity(), Stage.RESUMED);
+    }
+
+    public AwTestRunnerActivity launchActivity() {
+        launchActivity(getLaunchIntent());
         return getActivity();
     }
 
@@ -174,17 +197,32 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
     }
 
     public void startBrowserProcess() {
+        doStartBrowserProcess(false);
+    }
+
+    public void startBrowserProcessWithVulkan() {
+        doStartBrowserProcess(true);
+    }
+
+    private void doStartBrowserProcess(boolean useVulkan) {
         // The Activity must be launched in order for proper webview statics to be setup.
         launchActivity();
         if (!sBrowserProcessStarted) {
             sBrowserProcessStarted = true;
-            TestThreadUtils.runOnUiThreadBlocking(() -> AwBrowserProcess.start());
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                AwTestContainerView.installDrawFnFunctionTable(useVulkan);
+                AwBrowserProcess.start();
+            });
         }
         if (mBrowserContext != null) {
             TestThreadUtils.runOnUiThreadBlocking(
                     () -> mBrowserContext.setNativePointer(
                             AwBrowserContext.getDefault().getNativePointer()));
         }
+    }
+
+    public void runOnUiThread(Runnable r) {
+        TestThreadUtils.runOnUiThreadBlocking(r);
     }
 
     public static void enableJavaScriptOnUiThread(final AwContents awContents) {
@@ -533,7 +571,7 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
      */
     public static <T> T waitForFuture(Future<T> future) {
         try {
-            return future.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            return future.get(SCALED_WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (ExecutionException e) {
             // ExecutionException means this Future has an associated Exception that we should
             // re-throw on the current thread. We throw the cause instead of ExecutionException,
@@ -564,7 +602,7 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
      * Takes an element out of the {@link BlockingQueue} (or times out).
      */
     public static <T> T waitForNextQueueElement(BlockingQueue<T> queue) throws Exception {
-        T value = queue.poll(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        T value = queue.poll(SCALED_WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         if (value == null) {
             // {@code null} is the special value which means {@link BlockingQueue#poll} has timed
             // out (also: there's no risk for collision with real values, because BlockingQueue does

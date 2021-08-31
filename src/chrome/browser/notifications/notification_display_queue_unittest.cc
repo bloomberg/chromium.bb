@@ -9,7 +9,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/test/bind.h"
 #include "chrome/browser/notifications/notification_blocker.h"
 #include "chrome/browser/notifications/notification_display_queue.h"
@@ -52,14 +51,14 @@ class FakeNotificationBlocker : public NotificationBlocker {
     NotifyBlockingStateChanged();
   }
 
-  void SetBlockedOrigin(const base::Optional<GURL>& blocked_origin) {
+  void SetBlockedOrigin(const absl::optional<GURL>& blocked_origin) {
     blocked_origin_ = blocked_origin;
     NotifyBlockingStateChanged();
   }
 
  private:
   bool should_block_ = false;
-  base::Optional<GURL> blocked_origin_;
+  absl::optional<GURL> blocked_origin_;
 };
 
 class NotificationDisplayServiceMock : public NotificationDisplayService {
@@ -94,9 +93,9 @@ MATCHER_P(EqualNotification, notification, "") {
 message_center::Notification CreateNotification(const std::string& id,
                                                 const GURL& origin) {
   return message_center::Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, id, /*title=*/base::string16(),
-      /*message=*/base::string16(), /*icon=*/gfx::Image(),
-      /*display_source=*/base::string16(), origin, message_center::NotifierId(),
+      message_center::NOTIFICATION_TYPE_SIMPLE, id, /*title=*/std::u16string(),
+      /*message=*/std::u16string(), /*icon=*/gfx::Image(),
+      /*display_source=*/std::u16string(), origin, message_center::NotifierId(),
       message_center::RichNotificationData(),
       base::MakeRefCounted<message_center::NotificationDelegate>());
 }

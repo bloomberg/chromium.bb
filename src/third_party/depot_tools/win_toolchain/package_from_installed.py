@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -81,8 +82,9 @@ def BuildRepackageFileList(src_dir):
   if src_dir.endswith('\\'):
     src_dir = src_dir[:-1]
 
-  # Ensure .\win_sdk\Debuggers exists and fail to repackage if it doesn't.
-  debuggers_path = os.path.join(src_dir, 'win_sdk', 'Debuggers')
+  # Ensure .\Windows Kits\10\Debuggers exists and fail to repackage if it
+  # doesn't.
+  debuggers_path = os.path.join(src_dir, 'Windows Kits', '10', 'Debuggers')
   if not os.path.exists(debuggers_path):
     raise Exception('Repacking failed. Missing %s.' % (debuggers_path))
 
@@ -124,13 +126,15 @@ def BuildFileList(override_dir, include_arm):
 
   paths += [
       ('VC/redist/MSVC/14.*.*/x86/Microsoft.VC*.CRT', 'sys32'),
-      ('VC/redist/MSVC/14.*.*/x86/Microsoft.VC*.CRT', 'win_sdk/bin/x86'),
+      ('VC/redist/MSVC/14.*.*/x86/Microsoft.VC*.CRT',
+       'Windows Kits/10//bin/x86'),
       ('VC/redist/MSVC/14.*.*/debug_nonredist/x86/Microsoft.VC*.DebugCRT',
        'sys32'),
       ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'sys64'),
       ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'VC/bin/amd64_x86'),
       ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'VC/bin/amd64'),
-      ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'win_sdk/bin/x64'),
+      ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT',
+       'Windows Kits/10/bin/x64'),
       ('VC/redist/MSVC/14.*.*/debug_nonredist/x64/Microsoft.VC*.DebugCRT',
        'sys64'),
   ]
@@ -139,7 +143,8 @@ def BuildFileList(override_dir, include_arm):
         ('VC/redist/MSVC/14.*.*/arm64/Microsoft.VC*.CRT', 'sysarm64'),
         ('VC/redist/MSVC/14.*.*/arm64/Microsoft.VC*.CRT', 'VC/bin/amd64_arm64'),
         ('VC/redist/MSVC/14.*.*/arm64/Microsoft.VC*.CRT', 'VC/bin/arm64'),
-        ('VC/redist/MSVC/14.*.*/arm64/Microsoft.VC*.CRT', 'win_sdk/bin/arm64'),
+        ('VC/redist/MSVC/14.*.*/arm64/Microsoft.VC*.CRT',
+         'Windows Kits/10/bin/arm64'),
         ('VC/redist/MSVC/14.*.*/debug_nonredist/arm64/Microsoft.VC*.DebugCRT',
          'sysarm64'),
     ]
@@ -201,7 +206,7 @@ def BuildFileList(override_dir, include_arm):
           tail.startswith('Source\\') or tail.startswith('bin\\')):
         if tail.count(WIN_VERSION) == 0:
           continue
-      to = os.path.join('win_sdk', tail)
+      to = os.path.join('Windows Kits', '10', tail)
       result.append((combined, to))
 
   # Copy the x86 ucrt DLLs to all directories with x86 binaries that are
@@ -214,7 +219,7 @@ def BuildFileList(override_dir, include_arm):
   assert(len(ucrt_paths) > 0)
   for ucrt_path in ucrt_paths:
     ucrt_file = os.path.split(ucrt_path)[1]
-    for dest_dir in [ r'win_sdk\bin\x86', 'sys32' ]:
+    for dest_dir in [ r'Windows Kits\10\bin\x86', 'sys32' ]:
       result.append((ucrt_path, os.path.join(dest_dir, ucrt_file)))
 
   # Copy the x64 ucrt DLLs to all directories with x64 binaries that are
@@ -227,7 +232,7 @@ def BuildFileList(override_dir, include_arm):
   for ucrt_path in ucrt_paths:
     ucrt_file = os.path.split(ucrt_path)[1]
     for dest_dir in [ r'VC\bin\amd64_x86', r'VC\bin\amd64',
-                      r'win_sdk\bin\x64', 'sys64']:
+                      r'Windows Kits\10\bin\x64', 'sys64']:
       result.append((ucrt_path, os.path.join(dest_dir, ucrt_file)))
 
   system_crt_files = [
@@ -268,21 +273,20 @@ def GenerateSetEnvCmd(target_dir):
   do it here manually since we do not do a full install."""
   vc_tools_parts = VC_TOOLS.split('/')
 
-  # All these paths are relative to the grandparent of the directory containing
-  # SetEnv.cmd.
+  # All these paths are relative to the root of the toolchain package.
   include_dirs = [
-    ['win_sdk', 'Include', WIN_VERSION, 'um'],
-    ['win_sdk', 'Include', WIN_VERSION, 'shared'],
-    ['win_sdk', 'Include', WIN_VERSION, 'winrt'],
+    ['Windows Kits', '10', 'Include', WIN_VERSION, 'um'],
+    ['Windows Kits', '10', 'Include', WIN_VERSION, 'shared'],
+    ['Windows Kits', '10', 'Include', WIN_VERSION, 'winrt'],
   ]
-  include_dirs.append(['win_sdk', 'Include', WIN_VERSION, 'ucrt'])
+  include_dirs.append(['Windows Kits', '10', 'Include', WIN_VERSION, 'ucrt'])
   include_dirs.extend([
     vc_tools_parts + ['include'],
     vc_tools_parts + ['atlmfc', 'include'],
   ])
   libpath_dirs = [
     vc_tools_parts + ['lib', 'x86', 'store', 'references'],
-    ['win_sdk', 'UnionMetadata', WIN_VERSION],
+    ['Windows Kits', '10', 'UnionMetadata', WIN_VERSION],
   ]
   # Common to x86, x64, and arm64
   env = collections.OrderedDict([
@@ -301,15 +305,15 @@ def GenerateSetEnvCmd(target_dir):
       (
           'PATH',
           [
-              ['win_sdk', 'bin', WIN_VERSION, 'x64'],
+              ['Windows Kits', '10', 'bin', WIN_VERSION, 'x64'],
               vc_tools_parts + ['bin', 'HostX64', 'x86'],
               vc_tools_parts + ['bin', 'HostX64', 'x64'
                                               ],  # Needed for mspdb1x0.dll.
           ]),
       ('LIB', [
           vc_tools_parts + ['lib', 'x86'],
-          ['win_sdk', 'Lib', WIN_VERSION, 'um', 'x86'],
-          ['win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'x86'],
+          ['Windows Kits', '10', 'Lib', WIN_VERSION, 'um', 'x86'],
+          ['Windows Kits', '10', 'Lib', WIN_VERSION, 'ucrt', 'x86'],
           vc_tools_parts + ['atlmfc', 'lib', 'x86'],
       ]),
   ])
@@ -317,13 +321,13 @@ def GenerateSetEnvCmd(target_dir):
   # x64.
   env_x64 = collections.OrderedDict([
       ('PATH', [
-          ['win_sdk', 'bin', WIN_VERSION, 'x64'],
+          ['Windows Kits', '10', 'bin', WIN_VERSION, 'x64'],
           vc_tools_parts + ['bin', 'HostX64', 'x64'],
       ]),
       ('LIB', [
           vc_tools_parts + ['lib', 'x64'],
-          ['win_sdk', 'Lib', WIN_VERSION, 'um', 'x64'],
-          ['win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'x64'],
+          ['Windows Kits', '10', 'Lib', WIN_VERSION, 'um', 'x64'],
+          ['Windows Kits', '10', 'Lib', WIN_VERSION, 'ucrt', 'x64'],
           vc_tools_parts + ['atlmfc', 'lib', 'x64'],
       ]),
   ])
@@ -331,27 +335,28 @@ def GenerateSetEnvCmd(target_dir):
   # arm64.
   env_arm64 = collections.OrderedDict([
       ('PATH', [
-          ['win_sdk', 'bin', WIN_VERSION, 'x64'],
+          ['Windows Kits', '10', 'bin', WIN_VERSION, 'x64'],
           vc_tools_parts + ['bin', 'HostX64', 'arm64'],
           vc_tools_parts + ['bin', 'HostX64', 'x64'],
       ]),
       ('LIB', [
           vc_tools_parts + ['lib', 'arm64'],
-          ['win_sdk', 'Lib', WIN_VERSION, 'um', 'arm64'],
-          ['win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'arm64'],
+          ['Windows Kits', '10', 'Lib', WIN_VERSION, 'um', 'arm64'],
+          ['Windows Kits', '10', 'Lib', WIN_VERSION, 'ucrt', 'arm64'],
           vc_tools_parts + ['atlmfc', 'lib', 'arm64'],
       ]),
   ])
 
   def BatDirs(dirs):
     return ';'.join(['%cd%\\' + os.path.join(*d) for d in dirs])
-  set_env_prefix = os.path.join(target_dir, r'win_sdk\bin\SetEnv')
+  set_env_prefix = os.path.join(target_dir, r'Windows Kits\10\bin\SetEnv')
   with open(set_env_prefix + '.cmd', 'w') as f:
-    # The prologue changes the current directory to the grandparent so that the
-    # path entries can be set up without needing ..\..\ components.
+    # The prologue changes the current directory to the root of the toolchain
+    # package, so that path entries can be set up without needing ..\..\..\
+    # components.
     f.write('@echo off\n'
             ':: Generated by win_toolchain\\package_from_installed.py.\n'
-            'pushd %~dp0..\..\n')
+            'pushd %~dp0..\..\..\n')
     for var, dirs in env.items():
       f.write('set %s=%s\n' % (var, BatDirs(dirs)))
     f.write('if "%1"=="/x64" goto x64\n')
@@ -394,17 +399,21 @@ def AddEnvSetup(files, include_arm):
   """We need to generate this file in the same way that the "from pieces"
   script does, so pull that in here."""
   tempdir = tempfile.mkdtemp()
-  os.makedirs(os.path.join(tempdir, 'win_sdk', 'bin'))
+  os.makedirs(os.path.join(tempdir, 'Windows Kits', '10', 'bin'))
   GenerateSetEnvCmd(tempdir)
-  files.append((os.path.join(tempdir, 'win_sdk', 'bin', 'SetEnv.cmd'),
-                'win_sdk\\bin\\SetEnv.cmd'))
-  files.append((os.path.join(tempdir, 'win_sdk', 'bin', 'SetEnv.x86.json'),
-                'win_sdk\\bin\\SetEnv.x86.json'))
-  files.append((os.path.join(tempdir, 'win_sdk', 'bin', 'SetEnv.x64.json'),
-                'win_sdk\\bin\\SetEnv.x64.json'))
+  files.append((
+      os.path.join(tempdir, 'Windows Kits', '10', 'bin', 'SetEnv.cmd'),
+      'Windows Kits\\10\\bin\\SetEnv.cmd'))
+  files.append((
+      os.path.join(tempdir, 'Windows Kits', '10', 'bin', 'SetEnv.x86.json'),
+      'Windows Kits\\10\\bin\\SetEnv.x86.json'))
+  files.append((
+      os.path.join(tempdir, 'Windows Kits', '10', 'bin', 'SetEnv.x64.json'),
+      'Windows Kits\\10\\bin\\SetEnv.x64.json'))
   if include_arm:
-    files.append((os.path.join(tempdir, 'win_sdk', 'bin', 'SetEnv.arm64.json'),
-                  'win_sdk\\bin\\SetEnv.arm64.json'))
+    files.append((
+        os.path.join(tempdir, 'Windows Kits', '10', 'bin', 'SetEnv.arm64.json'),
+        'Windows Kits\\10\\bin\\SetEnv.arm64.json'))
   vs_version_file = os.path.join(tempdir, 'VS_VERSION')
   with open(vs_version_file, 'wt', newline='') as version:
     print(VS_VERSION, file=version)

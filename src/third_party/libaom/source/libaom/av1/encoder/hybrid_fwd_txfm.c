@@ -14,6 +14,7 @@
 #include "config/aom_dsp_rtcd.h"
 
 #include "av1/common/idct.h"
+#include "av1/common/blockd.h"
 #include "av1/encoder/hybrid_fwd_txfm.h"
 
 /* 4-point reversible, orthonormal Walsh-Hadamard in 3.5 adds, 0.5 shifts per
@@ -134,6 +135,7 @@ static void highbd_fwd_txfm_32x16(const int16_t *src_diff, tran_low_t *coeff,
                        txfm_param->bd);
 }
 
+#if !CONFIG_REALTIME_ONLY
 static void highbd_fwd_txfm_16x4(const int16_t *src_diff, tran_low_t *coeff,
                                  int diff_stride, TxfmParam *txfm_param) {
   int32_t *dst_coeff = (int32_t *)coeff;
@@ -161,6 +163,7 @@ static void highbd_fwd_txfm_8x32(const int16_t *src_diff, tran_low_t *coeff,
   av1_fwd_txfm2d_8x32(src_diff, dst_coeff, diff_stride, txfm_param->tx_type,
                       txfm_param->bd);
 }
+#endif
 
 static void highbd_fwd_txfm_8x8(const int16_t *src_diff, tran_low_t *coeff,
                                 int diff_stride, TxfmParam *txfm_param) {
@@ -204,6 +207,7 @@ static void highbd_fwd_txfm_64x32(const int16_t *src_diff, tran_low_t *coeff,
                        bd);
 }
 
+#if !CONFIG_REALTIME_ONLY
 static void highbd_fwd_txfm_16x64(const int16_t *src_diff, tran_low_t *coeff,
                                   int diff_stride, TxfmParam *txfm_param) {
   assert(txfm_param->tx_type == DCT_DCT);
@@ -219,6 +223,7 @@ static void highbd_fwd_txfm_64x16(const int16_t *src_diff, tran_low_t *coeff,
   const int bd = txfm_param->bd;
   av1_fwd_txfm2d_64x16(src_diff, dst_coeff, diff_stride, DCT_DCT, bd);
 }
+#endif
 
 static void highbd_fwd_txfm_64x64(const int16_t *src_diff, tran_low_t *coeff,
                                   int diff_stride, TxfmParam *txfm_param) {
@@ -255,12 +260,7 @@ void av1_highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
     case TX_64X32:
       highbd_fwd_txfm_64x32(src_diff, coeff, diff_stride, txfm_param);
       break;
-    case TX_16X64:
-      highbd_fwd_txfm_16x64(src_diff, coeff, diff_stride, txfm_param);
-      break;
-    case TX_64X16:
-      highbd_fwd_txfm_64x16(src_diff, coeff, diff_stride, txfm_param);
-      break;
+
     case TX_32X32:
       highbd_fwd_txfm_32x32(src_diff, coeff, diff_stride, txfm_param);
       break;
@@ -291,6 +291,7 @@ void av1_highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
     case TX_4X4:
       highbd_fwd_txfm_4x4(src_diff, coeff, diff_stride, txfm_param);
       break;
+#if !CONFIG_REALTIME_ONLY
     case TX_4X16:
       highbd_fwd_txfm_4x16(src_diff, coeff, diff_stride, txfm_param);
       break;
@@ -303,6 +304,36 @@ void av1_highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
     case TX_32X8:
       highbd_fwd_txfm_32x8(src_diff, coeff, diff_stride, txfm_param);
       break;
+    case TX_16X64:
+      highbd_fwd_txfm_16x64(src_diff, coeff, diff_stride, txfm_param);
+      break;
+    case TX_64X16:
+      highbd_fwd_txfm_64x16(src_diff, coeff, diff_stride, txfm_param);
+      break;
+#endif
     default: assert(0); break;
+  }
+}
+
+void av1_quick_txfm(int use_hadamard, TX_SIZE tx_size, BitDepthInfo bd_info,
+                    const int16_t *src_diff, int src_stride,
+                    tran_low_t *coeff) {
+  if (use_hadamard) {
+    switch (tx_size) {
+      case TX_4X4: aom_hadamard_4x4(src_diff, src_stride, coeff); break;
+      case TX_8X8: aom_hadamard_8x8(src_diff, src_stride, coeff); break;
+      case TX_16X16: aom_hadamard_16x16(src_diff, src_stride, coeff); break;
+      case TX_32X32: aom_hadamard_32x32(src_diff, src_stride, coeff); break;
+      default: assert(0);
+    }
+  } else {
+    TxfmParam txfm_param;
+    txfm_param.tx_type = DCT_DCT;
+    txfm_param.tx_size = tx_size;
+    txfm_param.lossless = 0;
+    txfm_param.bd = bd_info.bit_depth;
+    txfm_param.is_hbd = bd_info.use_highbitdepth_buf;
+    txfm_param.tx_set_type = EXT_TX_SET_ALL16;
+    av1_fwd_txfm(src_diff, coeff, src_stride, &txfm_param);
   }
 }

@@ -13,6 +13,7 @@
 #include "components/zoom/zoom_controller.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -75,8 +76,7 @@ void ZoomView::ZoomChangedForActiveTab(bool can_show_bubble) {
                                    zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM
                 ? &kZoomMinusIcon
                 : &kZoomPlusIcon;
-    if (GetNativeTheme())
-      UpdateIconImage();
+    UpdateIconImage();
 
     // Visibility must be enabled before the bubble is shown to ensure the
     // bubble anchors correctly.
@@ -108,11 +108,10 @@ const gfx::VectorIcon& ZoomView::GetVectorIcon() const {
   return *icon_;
 }
 
-base::string16 ZoomView::GetTextForTooltipAndAccessibleName() const {
+std::u16string ZoomView::GetTextForTooltipAndAccessibleName() const {
   return l10n_util::GetStringFUTF16(IDS_TOOLTIP_ZOOM,
                                     base::FormatPercent(current_zoom_percent_));
 }
 
-const char* ZoomView::GetClassName() const {
-  return "ZoomView";
-}
+BEGIN_METADATA(ZoomView, PageActionIconView)
+END_METADATA

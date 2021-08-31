@@ -106,10 +106,10 @@ class AuthDialogContentsView : public views::View {
   void OnPinTextChanged(bool is_empty);
 
   // Called when the user submits password or PIN.
-  void OnAuthSubmit(const base::string16& password);
+  void OnAuthSubmit(const std::u16string& password);
 
   // Called when PIN authentication of the user completes.
-  void OnPinAuthComplete(base::Optional<bool> success);
+  void OnPinAuthComplete(absl::optional<bool> success);
 
   // Called when fingerprint authentication completes.
   void OnFingerprintAuthComplete(bool success,

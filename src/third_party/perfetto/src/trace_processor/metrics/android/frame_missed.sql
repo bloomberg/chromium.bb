@@ -13,7 +13,8 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-CREATE VIEW IF NOT EXISTS {{output}} AS
+DROP VIEW IF EXISTS {{output}};
+CREATE VIEW {{output}} AS
 WITH frame_missed_counters AS (
   SELECT
     LAG(ts) OVER (ORDER BY ts) AS ts,
@@ -28,6 +29,6 @@ WITH frame_missed_counters AS (
 )
 SELECT
   ts,
-  dur
-FROM frame_missed_counters
-WHERE value = 1 AND ts IS NOT NULL;
+  dur,
+  value
+FROM frame_missed_counters;

@@ -12,12 +12,11 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/synchronization/lock.h"
-#include "base/time/time.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/log/net_log_with_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 
@@ -75,6 +74,8 @@ class DelayedCookieMonster : public CookieStore {
                                   DeleteCallback callback) override;
 
   void DeleteSessionCookiesAsync(DeleteCallback) override;
+
+  void DeleteMatchingCookiesAsync(DeletePredicate, DeleteCallback) override;
 
   void FlushStore(base::OnceClosure callback) override;
 

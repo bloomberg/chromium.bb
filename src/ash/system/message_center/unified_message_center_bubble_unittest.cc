@@ -15,6 +15,7 @@
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/test/ash_test_base.h"
+#include "base/strings/stringprintf.h"
 #include "ui/message_center/message_center.h"
 
 using message_center::MessageCenter;
@@ -38,10 +39,10 @@ class UnifiedMessageCenterBubbleTest : public AshTestBase {
   std::string AddNotification() {
     std::string id = base::NumberToString(id_++);
     MessageCenter::Get()->AddNotification(std::make_unique<Notification>(
-        message_center::NOTIFICATION_TYPE_BASE_FORMAT, id,
-        base::UTF8ToUTF16("test title"), base::UTF8ToUTF16("test message"),
-        gfx::Image(), base::string16() /* display_source */, GURL(),
-        message_center::NotifierId(), message_center::RichNotificationData(),
+        message_center::NOTIFICATION_TYPE_BASE_FORMAT, id, u"test title",
+        u"test message", gfx::Image(), std::u16string() /* display_source */,
+        GURL(), message_center::NotifierId(),
+        message_center::RichNotificationData(),
         new message_center::NotificationDelegate()));
     return id;
   }
@@ -123,7 +124,7 @@ class UnifiedMessageCenterBubbleTest : public AshTestBase {
 
 TEST_F(UnifiedMessageCenterBubbleTest, PositionedAboveSystemTray) {
   const int total_notifications = 5;
-  GetPrimaryUnifiedSystemTray()->ShowBubble(true);
+  GetPrimaryUnifiedSystemTray()->ShowBubble();
   AddNotification();
 
   const int reference_separation = MessageCenterSeparationHeight();
@@ -151,7 +152,7 @@ TEST_F(UnifiedMessageCenterBubbleTest, PositionedAboveSystemTray) {
 }
 
 TEST_F(UnifiedMessageCenterBubbleTest, FocusCycle) {
-  GetPrimaryUnifiedSystemTray()->ShowBubble(true);
+  GetPrimaryUnifiedSystemTray()->ShowBubble();
   AddNotification();
   AddNotification();
 
@@ -199,7 +200,7 @@ TEST_F(UnifiedMessageCenterBubbleTest, FocusCycle) {
 }
 
 TEST_F(UnifiedMessageCenterBubbleTest, ReverseFocusCycle) {
-  GetPrimaryUnifiedSystemTray()->ShowBubble(true);
+  GetPrimaryUnifiedSystemTray()->ShowBubble();
   AddNotification();
   AddNotification();
 
@@ -250,7 +251,7 @@ TEST_F(UnifiedMessageCenterBubbleTest, CollapseState) {
   AddNotification();
   AddNotification();
 
-  GetPrimaryUnifiedSystemTray()->ShowBubble(true);
+  GetPrimaryUnifiedSystemTray()->ShowBubble();
   int small_display_height =
       GetSystemTrayBubble()->unified_view()->GetCollapsedSystemTrayHeight() +
       (2 * kMessageCenterCollapseThreshold);
@@ -262,7 +263,7 @@ TEST_F(UnifiedMessageCenterBubbleTest, CollapseState) {
   // Message center should open in expanded state when screen height is
   // limited.
   UpdateDisplay(base::StringPrintf("1000x%d", small_display_height));
-  GetPrimaryUnifiedSystemTray()->ShowBubble(true);
+  GetPrimaryUnifiedSystemTray()->ShowBubble();
   WaitForAnimation();
   EXPECT_TRUE(IsQuickSettingsCollapsed());
   EXPECT_FALSE(IsMessageCenterCollapsed());
@@ -280,7 +281,7 @@ TEST_F(UnifiedMessageCenterBubbleTest, CollapseState) {
   GetPrimaryUnifiedSystemTray()->CloseBubble();
 
   UpdateDisplay(base::StringPrintf("1000x%d", large_display_height));
-  GetPrimaryUnifiedSystemTray()->ShowBubble(true);
+  GetPrimaryUnifiedSystemTray()->ShowBubble();
   EXPECT_FALSE(IsMessageCenterCollapsed());
 
   ToggleExpanded();
@@ -293,7 +294,7 @@ TEST_F(UnifiedMessageCenterBubbleTest, CollapseState) {
 }
 
 TEST_F(UnifiedMessageCenterBubbleTest, FocusCycleWithNoNotifications) {
-  GetPrimaryUnifiedSystemTray()->ShowBubble(true);
+  GetPrimaryUnifiedSystemTray()->ShowBubble();
 
   views::Widget* quick_settings_widget =
       GetSystemTrayBubble()->GetBubbleWidget();

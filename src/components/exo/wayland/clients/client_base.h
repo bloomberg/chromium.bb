@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "components/exo/wayland/clients/client_helper.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -63,6 +64,7 @@ class ClientBase {
     bool use_memfd = false;
     bool use_touch = false;
     bool use_vulkan = false;
+    bool use_xdg = false;
   };
 
   struct Globals {
@@ -79,6 +81,8 @@ class ClientBase {
     std::unique_ptr<wl_subcompositor> subcompositor;
     std::unique_ptr<wl_touch> touch;
     std::unique_ptr<zaura_shell> aura_shell;
+    std::unique_ptr<zxdg_shell_v6> xdg_shell_v6;
+    std::unique_ptr<xdg_wm_base> xdg_wm_base;
     std::unique_ptr<zwp_fullscreen_shell_v1> fullscreen_shell;
     std::unique_ptr<zwp_input_timestamps_manager_v1> input_timestamps_manager;
     std::unique_ptr<zwp_linux_explicit_synchronization_v1>
@@ -196,6 +200,10 @@ class ClientBase {
   std::unique_ptr<wl_registry> registry_;
   std::unique_ptr<wl_surface> surface_;
   std::unique_ptr<wl_shell_surface> shell_surface_;
+  std::unique_ptr<xdg_surface> xdg_surface_;
+  std::unique_ptr<xdg_toplevel> xdg_toplevel_;
+  std::unique_ptr<zxdg_surface_v6> zxdg_surface_;
+  std::unique_ptr<zxdg_toplevel_v6> zxdg_toplevel_;
   Globals globals_;
 #if defined(USE_GBM)
   base::ScopedFD drm_fd_;
@@ -215,9 +223,11 @@ class ClientBase {
   unsigned egl_sync_type_ = 0;
   std::vector<std::unique_ptr<Buffer>> buffers_;
   sk_sp<GrDirectContext> gr_context_;
+  base::flat_set<uint32_t> bug_fix_ids_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientBase);
+  void SetupAuraShellIfAvailable();
 };
 
 }  // namespace clients

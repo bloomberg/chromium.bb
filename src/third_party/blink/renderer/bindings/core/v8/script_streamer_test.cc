@@ -12,6 +12,7 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/platform/web_url_request_extra_data.h"
@@ -72,7 +73,8 @@ class NoopLoaderFactory final : public ResourceFetcher::LoaderFactory {
       const ResourceRequest& request,
       const ResourceLoaderOptions& options,
       scoped_refptr<base::SingleThreadTaskRunner>,
-      scoped_refptr<base::SingleThreadTaskRunner>) override {
+      scoped_refptr<base::SingleThreadTaskRunner>,
+      WebBackForwardCacheLoaderHelper) override {
     return std::make_unique<NoopWebURLLoader>();
   }
   std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader() override {
@@ -85,13 +87,12 @@ class NoopLoaderFactory final : public ResourceFetcher::LoaderFactory {
     void LoadSynchronously(
         std::unique_ptr<network::ResourceRequest> request,
         scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-        int requestor_id,
         bool pass_response_pipe_to_client,
         bool no_mime_sniffing,
         base::TimeDelta timeout_interval,
         WebURLLoaderClient*,
         WebURLResponse&,
-        base::Optional<WebURLError>&,
+        absl::optional<WebURLError>&,
         WebData&,
         int64_t& encoded_data_length,
         int64_t& encoded_body_length,
@@ -103,7 +104,6 @@ class NoopLoaderFactory final : public ResourceFetcher::LoaderFactory {
     void LoadAsynchronously(
         std::unique_ptr<network::ResourceRequest> request,
         scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-        int requestor_id,
         bool no_mime_sniffing,
         std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
             resource_load_info_notifier_wrapper,
@@ -130,7 +130,11 @@ class ScriptStreamingTest : public testing::Test {
     auto* fetcher = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
         properties->MakeDetachable(), context, freezable_task_runner_,
         unfreezable_task_runner_, MakeGarbageCollected<NoopLoaderFactory>(),
-        MakeGarbageCollected<MockContextLifecycleNotifier>()));
+        MakeGarbageCollected<MockContextLifecycleNotifier>(),
+        nullptr /* back_forward_cache_loader_helper */));
+
+    EXPECT_EQ(mojo::CreateDataPipe(nullptr, producer_handle_, consumer_handle_),
+              MOJO_RESULT_OK);
 
     ResourceRequest request(url_);
     request.SetRequestContext(mojom::blink::RequestContextType::SCRIPT);
@@ -149,7 +153,7 @@ class ScriptStreamingTest : public testing::Test {
 
     resource_->Loader()->DidReceiveResponse(WrappedResourceResponse(response));
     resource_->Loader()->DidStartLoadingResponseBody(
-        std::move(data_pipe_.consumer_handle));
+        std::move(consumer_handle_));
   }
 
   ScriptSourceCode GetScriptSourceCode() const {
@@ -172,7 +176,7 @@ class ScriptStreamingTest : public testing::Test {
  protected:
   void AppendData(const char* data) {
     uint32_t data_len = strlen(data);
-    MojoResult result = data_pipe_.producer_handle->WriteData(
+    MojoResult result = producer_handle_->WriteData(
         data, &data_len, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
     EXPECT_EQ(result, MOJO_RESULT_OK);
 
@@ -195,7 +199,7 @@ class ScriptStreamingTest : public testing::Test {
 
   void Finish() {
     resource_->Loader()->DidFinishLoading(base::TimeTicks(), 0, 0, 0, false);
-    data_pipe_.producer_handle.reset();
+    producer_handle_.reset();
     resource_->SetStatus(ResourceStatus::kCached);
   }
 
@@ -210,7 +214,8 @@ class ScriptStreamingTest : public testing::Test {
 
   Persistent<TestResourceClient> resource_client_;
   Persistent<ScriptResource> resource_;
-  mojo::DataPipe data_pipe_;
+  mojo::ScopedDataPipeProducerHandle producer_handle_;
+  mojo::ScopedDataPipeConsumerHandle consumer_handle_;
 
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };

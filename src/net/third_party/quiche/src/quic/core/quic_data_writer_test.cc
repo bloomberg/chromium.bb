@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
+#include "quic/core/quic_data_writer.h"
 
 #include <cstdint>
 #include <cstring>
 
 #include "absl/base/macros.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_data_reader.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/quiche_endian.h"
-#include "net/third_party/quiche/src/common/test_tools/quiche_test_utils.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_data_reader.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_expect_bug.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "common/quiche_endian.h"
+#include "common/test_tools/quiche_test_utils.h"
 
 namespace quic {
 namespace test {
@@ -37,7 +37,7 @@ struct TestParams {
 
 // Used by ::testing::PrintToStringParamName().
 std::string PrintToString(const TestParams& p) {
-  return quiche::QuicheStrCat(
+  return absl::StrCat(
       (p.endianness == quiche::NETWORK_BYTE_ORDER ? "Network" : "Host"),
       "ByteOrder");
 }
@@ -1127,6 +1127,21 @@ TEST_P(QuicDataWriterTest, WriteRandomBytes) {
   EXPECT_FALSE(writer.WriteRandomBytes(&random, 30));
 
   EXPECT_TRUE(writer.WriteRandomBytes(&random, 20));
+  quiche::test::CompareCharArraysWithHexError("random", buffer, 20, expected,
+                                              20);
+}
+
+TEST_P(QuicDataWriterTest, WriteInsecureRandomBytes) {
+  char buffer[20];
+  char expected[20];
+  for (size_t i = 0; i < 20; ++i) {
+    expected[i] = 'r';
+  }
+  MockRandom random;
+  QuicDataWriter writer(20, buffer, GetParam().endianness);
+  EXPECT_FALSE(writer.WriteInsecureRandomBytes(&random, 30));
+
+  EXPECT_TRUE(writer.WriteInsecureRandomBytes(&random, 20));
   quiche::test::CompareCharArraysWithHexError("random", buffer, 20, expected,
                                               20);
 }

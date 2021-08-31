@@ -104,10 +104,10 @@ double ChromeZoomLevelPrefs::GetDefaultZoomLevelPref() const {
   return default_zoom_level;
 }
 
-std::unique_ptr<ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>
+base::CallbackListSubscription
 ChromeZoomLevelPrefs::RegisterDefaultZoomLevelCallback(
-    const base::Closure& callback) {
-  return default_zoom_changed_callbacks_.Add(callback);
+    base::RepeatingClosure callback) {
+  return default_zoom_changed_callbacks_.Add(std::move(callback));
 }
 
 void ChromeZoomLevelPrefs::OnZoomLevelChanged(
@@ -233,8 +233,8 @@ void ChromeZoomLevelPrefs::InitHostZoomMap(
   if (host_zoom_dictionaries->GetDictionary(partition_key_,
                                             &host_zoom_dictionary)) {
     // Since we're calling this before setting up zoom_subscription_ below we
-    // don't need to worry that host_zoom_dictionary is indirectly affected
-    // by calls to HostZoomMap::SetZoomLevelForHost().
+    // don't need to worry that host_zoom_dictionary is indirectly affected by
+    // calls to HostZoomMap::SetZoomLevelForHost().
     ExtractPerHostZoomLevels(host_zoom_dictionary,
                              true /* sanitize_partition_host_zoom_levels */);
   }

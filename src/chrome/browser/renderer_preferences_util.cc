@@ -4,13 +4,21 @@
 
 #include "chrome/browser/renderer_preferences_util.h"
 
+#include <stdint.h>
+
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/convert_explicitly_allowed_network_ports_pref.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/demo_mode/demo_session.h"
+#endif
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -34,7 +42,7 @@
 #include "ui/base/cocoa/defaults_utils.h"
 #endif
 
-#if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(USE_AURA) && (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "ui/views/linux_ui/linux_ui.h"
@@ -90,6 +98,21 @@ std::vector<std::string> GetLocalIpsAllowedUrls(
   return ret;
 }
 
+std::string GetLanguageListForProfile(Profile* profile,
+                                      const std::string& language_list) {
+  if (profile->IsOffTheRecord()) {
+    // In incognito mode return only the first language.
+    return language::GetFirstLanguage(language_list);
+  }
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // On Chrome OS, if in demo mode, add the demo mode private language list.
+  if (ash::DemoSession::IsDeviceInDemoMode()) {
+    return language_list + "," + ash::DemoSession::GetAdditionalLanguageList();
+  }
+#endif
+  return language_list;
+}
+
 }  // namespace
 
 namespace renderer_preferences_util {
@@ -97,14 +120,8 @@ namespace renderer_preferences_util {
 void UpdateFromSystemSettings(blink::RendererPreferences* prefs,
                               Profile* profile) {
   const PrefService* pref_service = profile->GetPrefs();
-  if (profile->IsOffTheRecord()) {
-    // In incognito mode return only the first language.
-    prefs->accept_languages = language::GetFirstLanguage(
-        pref_service->GetString(language::prefs::kAcceptLanguages));
-  } else {
-    prefs->accept_languages =
-        pref_service->GetString(language::prefs::kAcceptLanguages);
-  }
+  prefs->accept_languages = GetLanguageListForProfile(
+      profile, pref_service->GetString(language::prefs::kAcceptLanguages));
   prefs->enable_referrers = pref_service->GetBoolean(prefs::kEnableReferrers);
   prefs->enable_do_not_track =
       pref_service->GetBoolean(prefs::kEnableDoNotTrack);
@@ -134,7 +151,7 @@ void UpdateFromSystemSettings(blink::RendererPreferences* prefs,
       pref_service->GetBoolean(prefs::kWebRTCAllowLegacyTLSProtocols);
 #if defined(USE_AURA)
   prefs->focus_ring_color = SkColorSetRGB(0x4D, 0x90, 0xFE);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // This color is 0x544d90fe modulated with 0xffffff.
   prefs->active_selection_bg_color = SkColorSetRGB(0xCB, 0xE4, 0xFA);
   prefs->active_selection_fg_color = SK_ColorBLACK;
@@ -153,7 +170,7 @@ void UpdateFromSystemSettings(blink::RendererPreferences* prefs,
     prefs->caret_blink_interval = interval;
 #endif
 
-#if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(USE_AURA) && (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
   views::LinuxUI* linux_ui = views::LinuxUI::instance();
   if (linux_ui) {
     if (ThemeServiceFactory::GetForProfile(profile)->UsingSystemTheme()) {
@@ -186,6 +203,9 @@ void UpdateFromSystemSettings(blink::RendererPreferences* prefs,
   if (local_state) {
     prefs->allow_cross_origin_auth_prompt =
         local_state->GetBoolean(prefs::kAllowCrossOriginAuthPrompt);
+
+    prefs->explicitly_allowed_network_ports =
+        ConvertExplicitlyAllowedNetworkPortsPref(local_state);
   }
 
   if (::features::IsFormControlsRefreshEnabled()) {

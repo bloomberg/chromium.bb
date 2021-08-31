@@ -22,6 +22,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/html_script_element_or_svg_script_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/js_event_handler_for_content_attribute.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_htmlscriptelement_svgscriptelement.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -53,14 +54,15 @@ void SVGScriptElement::ParseAttribute(
   }
 }
 
-void SVGScriptElement::SvgAttributeChanged(const QualifiedName& attr_name) {
-  if (SVGURIReference::IsKnownAttribute(attr_name)) {
+void SVGScriptElement::SvgAttributeChanged(
+    const SvgAttributeChangedParams& params) {
+  if (SVGURIReference::IsKnownAttribute(params.name)) {
     SVGElement::InvalidationGuard invalidation_guard(this);
     loader_->HandleSourceAttribute(LegacyHrefString(*this));
     return;
   }
 
-  SVGElement::SvgAttributeChanged(attr_name);
+  SVGElement::SvgAttributeChanged(params);
 }
 
 Node::InsertionNotificationRequest SVGScriptElement::InsertedInto(
@@ -169,12 +171,6 @@ void SVGScriptElement::DispatchErrorEvent() {
   DispatchEvent(*Event::Create(event_type_names::kError));
 }
 
-void SVGScriptElement::SetScriptElementForBinding(
-    HTMLScriptElementOrSVGScriptElement& element) {
-  if (!IsInV1ShadowTree())
-    element.SetSVGScriptElement(this);
-}
-
 ScriptElementBase::Type SVGScriptElement::GetScriptElementType() {
   return ScriptElementBase::Type::kSVGScriptElement;
 }
@@ -197,6 +193,20 @@ const AttrNameToTrustedType& SVGScriptElement::GetCheckedAttributeTypes()
       }));
   return attribute_map;
 }
+
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+V8HTMLOrSVGScriptElement* SVGScriptElement::AsV8HTMLOrSVGScriptElement() {
+  if (IsInShadowTree())
+    return nullptr;
+  return MakeGarbageCollected<V8HTMLOrSVGScriptElement>(this);
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+void SVGScriptElement::SetScriptElementForBinding(
+    HTMLScriptElementOrSVGScriptElement& element) {
+  if (!IsInShadowTree())
+    element.SetSVGScriptElement(this);
+}
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void SVGScriptElement::Trace(Visitor* visitor) const {
   visitor->Trace(loader_);

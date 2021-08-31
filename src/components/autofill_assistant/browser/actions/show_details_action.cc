@@ -26,7 +26,7 @@ ShowDetailsAction::ShowDetailsAction(ActionDelegate* delegate,
 ShowDetailsAction::~ShowDetailsAction() {}
 
 void ShowDetailsAction::InternalProcessAction(ProcessActionCallback callback) {
-  std::unique_ptr<Details> details = nullptr;
+  std::unique_ptr<Details> details;
   bool details_valid = true;
 
   switch (proto_.show_details().data_to_show_case()) {
@@ -60,7 +60,13 @@ void ShowDetailsAction::InternalProcessAction(ProcessActionCallback callback) {
     VLOG(1) << "Failed to fill the details";
     UpdateProcessedAction(INVALID_ACTION);
   } else {
-    delegate_->SetDetails(std::move(details));
+    base::TimeDelta delay =
+        base::TimeDelta::FromMilliseconds(proto_.show_details().delay_ms());
+    if (proto_.show_details().append()) {
+      delegate_->AppendDetails(std::move(details), delay);
+    } else {
+      delegate_->SetDetails(std::move(details), delay);
+    }
     UpdateProcessedAction(ACTION_APPLIED);
   }
 

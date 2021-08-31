@@ -4,11 +4,14 @@
 
 #include "chrome/browser/ui/signin/profile_colors_util.h"
 
+#include "base/containers/contains.h"
+#include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_init_params.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -20,6 +23,7 @@
 #include "components/account_id/account_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace {
 
@@ -53,6 +57,14 @@ SkColor GetHighlightColor(size_t index) {
   return theme_colors.profile_highlight_color;
 }
 
+bool IsColorMatchingColorScheme(SkColor color, bool should_use_dark_colors) {
+  SkColor default_color = GetDefaultProfileThemeColors(should_use_dark_colors)
+                              .profile_highlight_color;
+  color_utils::HSL hsl;
+  color_utils::SkColorToHSL(default_color, &hsl);
+  return IsLightForAutoselection(color, hsl.l);
+}
+
 class ProfileColorsUtilTest : public testing::Test {
  public:
   ProfileColorsUtilTest()
@@ -62,22 +74,28 @@ class ProfileColorsUtilTest : public testing::Test {
  protected:
   void SetUp() override { ASSERT_TRUE(testing_profile_manager_.SetUp()); }
 
-  ProfileAttributesEntry* AddProfile(base::Optional<SkColor> color) {
+  ProfileAttributesEntry* AddProfile(absl::optional<SkColor> color) {
     size_t number_of_profiles = storage()->GetNumberOfProfiles();
 
     base::FilePath profile_path =
         testing_profile_manager_.profile_manager()->user_data_dir().AppendASCII(
             base::StringPrintf("testing_profile_path%" PRIuS,
                                number_of_profiles));
-    base::string16 name = base::ASCIIToUTF16(
+    std::u16string name = base::ASCIIToUTF16(
         base::StringPrintf("testing_profile_name%" PRIuS, number_of_profiles));
-    storage()->AddProfile(profile_path, name, std::string(), name, true,
-                          number_of_profiles, std::string(), EmptyAccountId());
+    ProfileAttributesInitParams params;
+    params.profile_path = profile_path;
+    params.profile_name = name;
+    params.user_name = name;
+    params.is_consented_primary_account = true;
+    params.icon_index = number_of_profiles;
+    storage()->AddProfile(std::move(params));
 
     EXPECT_EQ(number_of_profiles + 1, storage()->GetNumberOfProfiles());
 
-    ProfileAttributesEntry* entry = nullptr;
-    EXPECT_TRUE(storage()->GetProfileAttributesWithPath(profile_path, &entry));
+    ProfileAttributesEntry* entry =
+        storage()->GetProfileAttributesWithPath(profile_path);
+    EXPECT_NE(entry, nullptr);
 
     if (color.has_value()) {
       entry->SetProfileThemeColors(
@@ -96,7 +114,7 @@ class ProfileColorsUtilTest : public testing::Test {
     // Instead of providing a random number generator, return an arbitrary value
     // and capture the count of options.
     GenerateNewProfileColorWithGenerator(
-        *storage(), base::Bind(&CaptureCountAndReturnZero, &count), entry);
+        *storage(), base::BindOnce(&CaptureCountAndReturnZero, &count), entry);
     return count;
   }
 
@@ -104,7 +122,7 @@ class ProfileColorsUtilTest : public testing::Test {
     // Instead of providing a random number generator, return the nth option
     // deterministically.
     return GenerateNewProfileColorWithGenerator(
-               *storage(), base::Bind(&ReturnNth, n), entry)
+               *storage(), base::BindOnce(&ReturnNth, n), entry)
         .id;
   }
 
@@ -174,19 +192,47 @@ TEST_F(ProfileColorsUtilTest, IsLightForAutoselection) {
   EXPECT_FALSE(IsLightForAutoselection(very_dark, very_light_hsl.l));
 }
 
-// Test that all colors are available with no other profiles.
-TEST_F(ProfileColorsUtilTest, GenerateNewProfileColorWithNoColoredProfile) {
-  ExpectAllSaturatedColorsAvailable();
+class ProfileColorsUtilTestDarkModeParam
+    : public ProfileColorsUtilTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  void ExpectAllSaturatedColorsMatchingColorSchemeAvailable(
+      bool should_use_dark_colors) {
+    std::set<int> available_colors = GetAvailableColorsIds();
+    for (size_t i = 0; i < kColorsCount; ++i) {
+      SkColor highlight_color = GetHighlightColor(i);
+      if (IsSaturatedForAutoselection(highlight_color) &&
+          IsColorMatchingColorScheme(highlight_color, should_use_dark_colors)) {
+        EXPECT_TRUE(base::Contains(available_colors, GetColor(i).id));
+      } else {
+        EXPECT_FALSE(base::Contains(available_colors, GetColor(i).id));
+      }
+    }
+  }
+};
+
+// Test that all colors matching the native light-or-dark color scheme are
+// available with no other profiles.
+TEST_P(ProfileColorsUtilTestDarkModeParam,
+       GenerateNewProfileColorWithNoColoredProfile) {
+  bool should_use_dark_colors = GetParam();
+  ui::NativeTheme::GetInstanceForNativeUi()->set_use_dark_colors(
+      should_use_dark_colors);
+  ExpectAllSaturatedColorsMatchingColorSchemeAvailable(should_use_dark_colors);
 
   // Add some profiles with the default theme.
-  AddProfile(base::nullopt);
-  AddProfile(base::nullopt);
+  AddProfile(absl::nullopt);
+  AddProfile(absl::nullopt);
   // Add a profile with a custom color.
   AddProfile(SK_ColorRED);
 
   // It still behaves the same, all colors are available.
-  ExpectAllSaturatedColorsAvailable();
+  ExpectAllSaturatedColorsMatchingColorSchemeAvailable(should_use_dark_colors);
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ProfileColorsUtilTestDarkModeParam,
+                         testing::Bool());
 
 // Test that the taken colors are not available.
 TEST_F(ProfileColorsUtilTest,

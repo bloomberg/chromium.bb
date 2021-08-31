@@ -8,6 +8,7 @@
 
 #include "src/base/lazy-instance.h"
 #include "src/compiler/js-graph.h"
+#include "src/compiler/js-heap-broker.h"
 #include "src/compiler/node-matchers.h"
 #include "src/compiler/operator.h"
 #include "src/handles/handles-inl.h"
@@ -22,7 +23,7 @@ namespace {
 
 // Returns properties for the given binary op.
 constexpr Operator::Properties BinopProperties(Operator::Opcode opcode) {
-  CONSTEXPR_DCHECK(JSOperator::IsBinaryWithFeedback(opcode));
+  DCHECK(JSOperator::IsBinaryWithFeedback(opcode));
   return opcode == IrOpcode::kJSStrictEqual ? Operator::kPure
                                             : Operator::kNoProperties;
 }
@@ -41,7 +42,7 @@ FeedbackCellRef JSCreateClosureNode::GetFeedbackCellRefChecked(
     JSHeapBroker* broker) const {
   HeapObjectMatcher m(feedback_cell());
   CHECK(m.HasResolvedValue());
-  return FeedbackCellRef(broker, m.ResolvedValue());
+  return MakeRef(broker, Handle<FeedbackCell>::cast(m.ResolvedValue()));
 }
 
 std::ostream& operator<<(std::ostream& os, CallFrequency const& f) {
@@ -338,12 +339,13 @@ bool operator!=(LoadGlobalParameters const& lhs,
 
 
 size_t hash_value(LoadGlobalParameters const& p) {
-  return base::hash_combine(p.name().location(), p.typeof_mode());
+  return base::hash_combine(p.name().location(),
+                            static_cast<int>(p.typeof_mode()));
 }
 
 
 std::ostream& operator<<(std::ostream& os, LoadGlobalParameters const& p) {
-  return os << Brief(*p.name()) << ", " << p.typeof_mode();
+  return os << Brief(*p.name()) << ", " << static_cast<int>(p.typeof_mode());
 }
 
 
@@ -676,6 +678,52 @@ ForInParameters const& ForInParametersOf(const Operator* op) {
   return OpParameter<ForInParameters>(op);
 }
 
+#if V8_ENABLE_WEBASSEMBLY
+JSWasmCallParameters const& JSWasmCallParametersOf(const Operator* op) {
+  DCHECK_EQ(IrOpcode::kJSWasmCall, op->opcode());
+  return OpParameter<JSWasmCallParameters>(op);
+}
+
+std::ostream& operator<<(std::ostream& os, JSWasmCallParameters const& p) {
+  return os << p.module() << ", " << p.signature() << ", " << p.feedback();
+}
+
+size_t hash_value(JSWasmCallParameters const& p) {
+  return base::hash_combine(p.module(), p.signature(),
+                            FeedbackSource::Hash()(p.feedback()));
+}
+
+bool operator==(JSWasmCallParameters const& lhs,
+                JSWasmCallParameters const& rhs) {
+  return lhs.module() == rhs.module() && lhs.signature() == rhs.signature() &&
+         lhs.feedback() == rhs.feedback();
+}
+
+int JSWasmCallParameters::arity_without_implicit_args() const {
+  return static_cast<int>(signature_->parameter_count());
+}
+
+int JSWasmCallParameters::input_count() const {
+  return static_cast<int>(signature_->parameter_count()) +
+         JSWasmCallNode::kExtraInputCount;
+}
+
+// static
+Type JSWasmCallNode::TypeForWasmReturnType(const wasm::ValueType& type) {
+  switch (type.kind()) {
+    case wasm::kI32:
+      return Type::Signed32();
+    case wasm::kI64:
+      return Type::BigInt();
+    case wasm::kF32:
+    case wasm::kF64:
+      return Type::Number();
+    default:
+      UNREACHABLE();
+  }
+}
+#endif  // V8_ENABLE_WEBASSEMBLY
+
 #define CACHED_OP_LIST(V)                                                \
   V(ToLength, Operator::kNoProperties, 1, 1)                             \
   V(ToName, Operator::kNoProperties, 1, 1)                               \
@@ -873,6 +921,19 @@ const Operator* JSOperatorBuilder::CallRuntime(const Runtime::Function* f,
       parameters.arity(), 1, 1, f->result_size, 1, 2,     // inputs/outputs
       parameters);                                        // parameter
 }
+
+#if V8_ENABLE_WEBASSEMBLY
+const Operator* JSOperatorBuilder::CallWasm(
+    const wasm::WasmModule* wasm_module,
+    const wasm::FunctionSig* wasm_signature, FeedbackSource const& feedback) {
+  JSWasmCallParameters parameters(wasm_module, wasm_signature, feedback);
+  return zone()->New<Operator1<JSWasmCallParameters>>(
+      IrOpcode::kJSWasmCall, Operator::kNoProperties,  // opcode
+      "JSWasmCall",                                    // name
+      parameters.input_count(), 1, 1, 1, 1, 2,         // inputs/outputs
+      parameters);                                     // parameter
+}
+#endif  // V8_ENABLE_WEBASSEMBLY
 
 const Operator* JSOperatorBuilder::ConstructForwardVarargs(
     size_t arity, uint32_t start_index) {

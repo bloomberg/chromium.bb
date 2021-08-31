@@ -50,14 +50,14 @@ signin_metrics::Reason GetSigninReasonFromMode(profiles::BubbleViewMode mode) {
   DCHECK(SigninViewController::ShouldShowSigninForMode(mode));
   switch (mode) {
     case profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN:
-      return signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT;
+      return signin_metrics::Reason::kSigninPrimaryAccount;
     case profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
-      return signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT;
+      return signin_metrics::Reason::kAddSecondaryAccount;
     case profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH:
-      return signin_metrics::Reason::REASON_REAUTHENTICATION;
+      return signin_metrics::Reason::kReauthentication;
     default:
       NOTREACHED();
-      return signin_metrics::Reason::REASON_UNKNOWN_REASON;
+      return signin_metrics::Reason::kUnknownReason;
   }
 }
 
@@ -167,8 +167,9 @@ void SigninViewController::ShowSignin(profiles::BubbleViewMode mode,
   signin_metrics::Reason signin_reason = GetSigninReasonFromMode(mode);
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  if (signin_reason == signin_metrics::Reason::REASON_REAUTHENTICATION) {
-    email = identity_manager->GetPrimaryAccountInfo().email;
+  if (signin_reason == signin_metrics::Reason::kReauthentication) {
+    email = identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
+                .email;
   }
   signin_metrics::PromoAction promo_action =
       GetPromoActionForNewAccount(identity_manager);
@@ -204,7 +205,7 @@ SigninViewController::ShowReauthPrompt(
   // For now, Reauth is restricted to the primary account only.
   // TODO(crbug.com/1083429): add support for secondary accounts.
   CoreAccountId primary_account_id =
-      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired);
+      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
 
   if (account_id != primary_account_id) {
     signin_ui_util::RecordTransactionalReauthResult(
@@ -218,7 +219,7 @@ SigninViewController::ShowReauthPrompt(
   // is closed.
   delegate_ = new SigninReauthViewController(
       browser_, account_id, access_point, std::move(wrapped_reauth_callback));
-  delegate_observer_.Add(delegate_);
+  delegate_observation_.Observe(delegate_);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGNIN_REAUTH);
   return abort_handle;
 }
@@ -230,7 +231,7 @@ void SigninViewController::ShowModalSyncConfirmationDialog() {
   // is closed.
   delegate_ =
       SigninViewControllerDelegate::CreateSyncConfirmationDelegate(browser_);
-  delegate_observer_.Add(delegate_);
+  delegate_observation_.Observe(delegate_);
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::SIGN_IN_SYNC_CONFIRMATION);
 }
@@ -240,7 +241,7 @@ void SigninViewController::ShowModalSigninErrorDialog() {
   // The delegate will delete itself on request of the UI code when the widget
   // is closed.
   delegate_ = SigninViewControllerDelegate::CreateSigninErrorDelegate(browser_);
-  delegate_observer_.Add(delegate_);
+  delegate_observation_.Observe(delegate_);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGN_IN_ERROR);
 }
 
@@ -261,7 +262,8 @@ void SigninViewController::SetModalSigninHeight(int height) {
 }
 
 void SigninViewController::OnModalSigninClosed() {
-  delegate_observer_.Remove(delegate_);
+  DCHECK(delegate_observation_.IsObservingSource(delegate_));
+  delegate_observation_.Reset();
   delegate_ = nullptr;
 }
 
@@ -308,7 +310,7 @@ void SigninViewController::ShowDiceSigninTab(
           : redirect_url.spec();
 
   GURL signin_url =
-      signin_reason == signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT
+      signin_reason == signin_metrics::Reason::kAddSecondaryAccount
           ? signin::GetAddAccountURLForDice(email_hint, continue_url)
           : signin::GetChromeSyncURLForDice(email_hint, continue_url);
 
@@ -354,14 +356,15 @@ void SigninViewController::ShowDiceEnableSyncTab(
     signin_metrics::AccessPoint access_point,
     signin_metrics::PromoAction promo_action,
     const std::string& email_hint) {
-  signin_metrics::Reason reason =
-      signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT;
+  signin_metrics::Reason reason = signin_metrics::Reason::kSigninPrimaryAccount;
   std::string email_to_use = email_hint;
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(browser_->profile());
-  if (identity_manager->HasPrimaryAccount()) {
-    reason = signin_metrics::Reason::REASON_REAUTHENTICATION;
-    email_to_use = identity_manager->GetPrimaryAccountInfo().email;
+  if (identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
+    reason = signin_metrics::Reason::kReauthentication;
+    email_to_use =
+        identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
+            .email;
     DCHECK(email_hint.empty() || gaia::AreEmailsSame(email_hint, email_to_use));
   }
   ShowDiceSigninTab(reason, access_point, promo_action, email_to_use);
@@ -370,9 +373,9 @@ void SigninViewController::ShowDiceEnableSyncTab(
 void SigninViewController::ShowDiceAddAccountTab(
     signin_metrics::AccessPoint access_point,
     const std::string& email_hint) {
-  ShowDiceSigninTab(
-      signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT, access_point,
-      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO, email_hint);
+  ShowDiceSigninTab(signin_metrics::Reason::kAddSecondaryAccount, access_point,
+                    signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
+                    email_hint);
 }
 
 void SigninViewController::ShowGaiaLogoutTab(
@@ -410,7 +413,7 @@ void SigninViewController::ShowModalSigninEmailConfirmationDialog(
   delegate_ = SigninEmailConfirmationDialog::AskForConfirmation(
       active_contents, browser_->profile(), last_email, email,
       std::move(callback));
-  delegate_observer_.Add(delegate_);
+  delegate_observation_.Observe(delegate_);
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::SIGN_IN_EMAIL_CONFIRMATION);
 }

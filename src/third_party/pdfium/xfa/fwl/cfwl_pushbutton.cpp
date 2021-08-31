@@ -50,18 +50,15 @@ void CFWL_PushButton::DrawWidget(CFGAS_GEGraphics* pGraphics,
   if (HasBorder())
     DrawBorder(pGraphics, CFWL_Part::Border, matrix);
 
-  DrawBkground(pGraphics, &matrix);
+  DrawBkground(pGraphics, matrix);
 }
 
 void CFWL_PushButton::DrawBkground(CFGAS_GEGraphics* pGraphics,
-                                   const CFX_Matrix* pMatrix) {
-  CFWL_ThemeBackground param;
-  param.m_pWidget = this;
+                                   const CFX_Matrix& matrix) {
+  CFWL_ThemeBackground param(this, pGraphics);
   param.m_iPart = CFWL_Part::Background;
   param.m_dwStates = GetPartStates();
-  param.m_pGraphics = pGraphics;
-  if (pMatrix)
-    param.m_matrix.Concat(*pMatrix);
+  param.m_matrix = matrix;
   param.m_PartRect = m_ClientRect;
   if (m_Properties.m_dwStates & FWL_WGTSTATE_Focused)
     param.m_pRtData = &m_CaptionRect;
@@ -208,8 +205,7 @@ void CFWL_PushButton::OnKeyDown(CFWL_MessageKey* pMsg) {
   if (pMsg->m_dwKeyCode != XFA_FWL_VKEY_Return)
     return;
 
-  CFWL_EventMouse wmMouse(this);
-  wmMouse.m_dwCmd = FWL_MouseCommand::LeftButtonUp;
+  CFWL_EventMouse wmMouse(this, nullptr, FWL_MouseCommand::LeftButtonUp);
   DispatchEvent(&wmMouse);
   if (!wmMouse.GetSrcTarget())
     return;

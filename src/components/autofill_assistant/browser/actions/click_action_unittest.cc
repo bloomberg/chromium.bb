@@ -10,6 +10,7 @@
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/web/mock_web_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
@@ -20,25 +21,32 @@ using ::testing::_;
 using ::testing::InSequence;
 using ::testing::Pointee;
 using ::testing::Property;
+using ::testing::Return;
 
 class ClickActionTest : public testing::Test {
  public:
   ClickActionTest() {}
 
   void SetUp() override {
+    ON_CALL(mock_action_delegate_, GetWebController)
+        .WillByDefault(Return(&mock_web_controller_));
     ON_CALL(mock_action_delegate_, OnShortWaitForElement(_, _))
         .WillByDefault(RunOnceCallback<1>(OkClientStatus(),
                                           base::TimeDelta::FromSeconds(0)));
     ON_CALL(mock_action_delegate_, WaitUntilDocumentIsInReadyState(_, _, _, _))
-        .WillByDefault(RunOnceCallback<3>(OkClientStatus()));
-    ON_CALL(mock_action_delegate_, ScrollIntoView(_, _))
-        .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
-    ON_CALL(mock_action_delegate_, WaitUntilElementIsStable(_, _, _, _))
-        .WillByDefault(RunOnceCallback<3>(OkClientStatus()));
-    ON_CALL(mock_action_delegate_, CheckOnTop(_, _))
-        .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
-    ON_CALL(mock_action_delegate_, ClickOrTapElement(_, _, _))
+        .WillByDefault(RunOnceCallback<3>(OkClientStatus(),
+                                          base::TimeDelta::FromSeconds(0)));
+    ON_CALL(mock_web_controller_, ScrollIntoView(_, _, _))
         .WillByDefault(RunOnceCallback<2>(OkClientStatus()));
+    ON_CALL(mock_web_controller_, WaitUntilElementIsStable(_, _, _, _))
+        .WillByDefault(RunOnceCallback<3>(OkClientStatus(),
+                                          base::TimeDelta::FromSeconds(0)));
+    ON_CALL(mock_web_controller_, CheckOnTop(_, _))
+        .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
+    ON_CALL(mock_web_controller_, ClickOrTapElement(_, _, _))
+        .WillByDefault(RunOnceCallback<2>(OkClientStatus()));
+    ON_CALL(mock_web_controller_, JsClickElement(_, _))
+        .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
   }
 
  protected:
@@ -60,6 +68,7 @@ class ClickActionTest : public testing::Test {
   }
 
   MockActionDelegate mock_action_delegate_;
+  MockWebController mock_web_controller_;
   base::MockCallback<Action::ProcessActionCallback> callback_;
   ClickProto proto_;
 };
@@ -87,16 +96,18 @@ TEST_F(ClickActionTest, CheckExpectedCallChain) {
   EXPECT_CALL(mock_action_delegate_,
               WaitUntilDocumentIsInReadyState(
                   _, DOCUMENT_INTERACTIVE, EqualsElement(expected_element), _))
-      .WillOnce(RunOnceCallback<3>(OkClientStatus()));
-  EXPECT_CALL(mock_action_delegate_,
-              ScrollIntoView(EqualsElement(expected_element), _))
-      .WillOnce(RunOnceCallback<1>(OkClientStatus()));
+      .WillOnce(RunOnceCallback<3>(OkClientStatus(),
+                                   base::TimeDelta::FromSeconds(0)));
+  EXPECT_CALL(mock_web_controller_,
+              ScrollIntoView(true, EqualsElement(expected_element), _))
+      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
   EXPECT_CALL(
-      mock_action_delegate_,
+      mock_web_controller_,
       WaitUntilElementIsStable(_, _, EqualsElement(expected_element), _))
-      .WillOnce(RunOnceCallback<3>(OkClientStatus()));
+      .WillOnce(RunOnceCallback<3>(OkClientStatus(),
+                                   base::TimeDelta::FromSeconds(0)));
   EXPECT_CALL(
-      mock_action_delegate_,
+      mock_web_controller_,
       ClickOrTapElement(ClickType::CLICK, EqualsElement(expected_element), _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
   EXPECT_CALL(
@@ -114,13 +125,12 @@ TEST_F(ClickActionTest, JavaScriptClickSkipsWaitForElementStable) {
   ElementFinder::Result expected_element =
       test_util::MockFindElement(mock_action_delegate_, expected_selector);
 
-  EXPECT_CALL(mock_action_delegate_, WaitUntilElementIsStable(_, _, _, _))
+  EXPECT_CALL(mock_web_controller_, WaitUntilElementIsStable(_, _, _, _))
       .Times(0);
-  EXPECT_CALL(mock_action_delegate_, CheckOnTop(_, _)).Times(0);
-  EXPECT_CALL(mock_action_delegate_,
-              ClickOrTapElement(ClickType::JAVASCRIPT,
-                                EqualsElement(expected_element), _))
-      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+  EXPECT_CALL(mock_web_controller_, CheckOnTop(_, _)).Times(0);
+  EXPECT_CALL(mock_web_controller_,
+              JsClickElement(EqualsElement(expected_element), _))
+      .WillOnce(RunOnceCallback<1>(OkClientStatus()));
 
   EXPECT_CALL(
       callback_,
@@ -137,7 +147,7 @@ TEST_F(ClickActionTest, SkipCheckOnTop) {
   ElementFinder::Result expected_element =
       test_util::MockFindElement(mock_action_delegate_, expected_selector);
 
-  EXPECT_CALL(mock_action_delegate_, CheckOnTop(_, _)).Times(0);
+  EXPECT_CALL(mock_web_controller_, CheckOnTop(_, _)).Times(0);
 
   EXPECT_CALL(
       callback_,
@@ -156,12 +166,12 @@ TEST_F(ClickActionTest, RequireCheckOnTop) {
 
   InSequence seq;
   EXPECT_CALL(
-      mock_action_delegate_,
+      mock_web_controller_,
       WaitUntilElementIsStable(_, _, EqualsElement(expected_element), _));
-  EXPECT_CALL(mock_action_delegate_,
+  EXPECT_CALL(mock_web_controller_,
               CheckOnTop(EqualsElement(expected_element), _));
   EXPECT_CALL(
-      mock_action_delegate_,
+      mock_web_controller_,
       ClickOrTapElement(ClickType::TAP, EqualsElement(expected_element), _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
@@ -182,12 +192,12 @@ TEST_F(ClickActionTest, OptionalCheckOnTop) {
 
   InSequence seq;
   EXPECT_CALL(
-      mock_action_delegate_,
+      mock_web_controller_,
       WaitUntilElementIsStable(_, _, EqualsElement(expected_element), _));
-  EXPECT_CALL(mock_action_delegate_,
+  EXPECT_CALL(mock_web_controller_,
               CheckOnTop(EqualsElement(expected_element), _));
   EXPECT_CALL(
-      mock_action_delegate_,
+      mock_web_controller_,
       ClickOrTapElement(ClickType::TAP, EqualsElement(expected_element), _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
@@ -207,12 +217,12 @@ TEST_F(ClickActionTest, RequiredCheckOnTopFails) {
       test_util::MockFindElement(mock_action_delegate_, expected_selector);
 
   // CheckOnTop fails.
-  EXPECT_CALL(mock_action_delegate_,
+  EXPECT_CALL(mock_web_controller_,
               CheckOnTop(EqualsElement(expected_element), _))
       .WillOnce(RunOnceCallback<1>(NotOnTopStatus()));
 
   // The action must not tap.
-  EXPECT_CALL(mock_action_delegate_, ClickOrTapElement(_, _, _)).Times(0);
+  EXPECT_CALL(mock_web_controller_, ClickOrTapElement(_, _, _)).Times(0);
 
   ProcessedActionProto result;
   EXPECT_CALL(callback_, Run(_)).WillOnce(testing::SaveArgPointee<0>(&result));
@@ -234,13 +244,13 @@ TEST_F(ClickActionTest, OptionalCheckOnTopFails) {
       test_util::MockFindElement(mock_action_delegate_, expected_selector);
 
   // CheckOnTop fails.
-  EXPECT_CALL(mock_action_delegate_,
+  EXPECT_CALL(mock_web_controller_,
               CheckOnTop(EqualsElement(expected_element), _))
       .WillOnce(RunOnceCallback<1>(NotOnTopStatus()));
 
   // The action must tap anyway.
   EXPECT_CALL(
-      mock_action_delegate_,
+      mock_web_controller_,
       ClickOrTapElement(ClickType::TAP, EqualsElement(expected_element), _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 

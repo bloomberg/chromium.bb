@@ -8,6 +8,7 @@
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/x/connection.h"
+#include "ui/gfx/x/future.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image_glx.h"
 #include "ui/gl/scoped_binders.h"
@@ -90,7 +91,7 @@ Status VaapiTFPPicture::Allocate(gfx::BufferFormat format) {
   auto root = connection_->default_root();
 
   uint8_t depth = 0;
-  if (auto reply = connection_->GetGeometry({root}).Sync())
+  if (auto reply = connection_->GetGeometry(root).Sync())
     depth = reply->depth;
   else
     return StatusCode::kVaapiNoPixmap;

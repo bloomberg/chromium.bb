@@ -9,23 +9,17 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
 void NGFragmentPainter::PaintOutline(const PaintInfo& paint_info,
-                                     const PhysicalOffset& paint_offset) {
-  DCHECK(ShouldPaintSelfOutline(paint_info.phase));
-
+                                     const PhysicalOffset& paint_offset,
+                                     const ComputedStyle& style_to_use) {
   const NGPhysicalBoxFragment& fragment = PhysicalFragment();
-  if (!NGOutlineUtils::HasPaintedOutline(fragment.Style(), fragment.GetNode()))
-    return;
-
+  DCHECK(NGOutlineUtils::HasPaintedOutline(style_to_use, fragment.GetNode()));
   Vector<PhysicalRect> outline_rects;
   fragment.AddSelfOutlineRects(
-      paint_offset,
-      fragment.GetLayoutObject()
-          ->OutlineRectsShouldIncludeBlockVisualOverflow(),
+      paint_offset, style_to_use.OutlineRectsShouldIncludeBlockVisualOverflow(),
       &outline_rects);
 
   if (outline_rects.IsEmpty())
@@ -38,10 +32,10 @@ void NGFragmentPainter::PaintOutline(const PaintInfo& paint_info,
 
   IntRect visual_rect =
       PixelSnappedIntRect(UnionRectEvenIfEmpty(outline_rects));
-  visual_rect.Inflate(fragment.Style().OutlineOutsetExtent());
+  visual_rect.Inflate(style_to_use.OutlineOutsetExtent());
   DrawingRecorder recorder(paint_info.context, display_item_client,
                            paint_info.phase, visual_rect);
-  PaintOutlineRects(paint_info, outline_rects, fragment.Style());
+  PaintOutlineRects(paint_info, outline_rects, style_to_use);
 }
 
 void NGFragmentPainter::AddURLRectIfNeeded(const PaintInfo& paint_info,

@@ -7,16 +7,16 @@
 
 #include <ostream>
 
-#include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
-#include "net/third_party/quiche/src/quic/core/quic_alarm.h"
-#include "net/third_party/quiche/src/quic/core/quic_alarm_factory.h"
-#include "net/third_party/quiche/src/quic/core/quic_arena_scoped_ptr.h"
-#include "net/third_party/quiche/src/quic/core/quic_clock.h"
-#include "net/third_party/quiche/src/quic/core/quic_one_block_arena.h"
-#include "net/third_party/quiche/src/quic/core/quic_packet_writer.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/quic/platform/impl/quic_export_impl.h"
+#include "quic/core/crypto/quic_random.h"
+#include "quic/core/quic_alarm.h"
+#include "quic/core/quic_alarm_factory.h"
+#include "quic/core/quic_arena_scoped_ptr.h"
+#include "quic/core/quic_clock.h"
+#include "quic/core/quic_one_block_arena.h"
+#include "quic/core/quic_packet_writer.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_socket_address.h"
 
 namespace quic {
 
@@ -31,7 +31,16 @@ class QUIC_EXPORT_PRIVATE QuicPathValidationContext {
  public:
   QuicPathValidationContext(const QuicSocketAddress& self_address,
                             const QuicSocketAddress& peer_address)
-      : self_address_(self_address), peer_address_(peer_address) {}
+      : self_address_(self_address),
+        peer_address_(peer_address),
+        effective_peer_address_(peer_address) {}
+
+  QuicPathValidationContext(const QuicSocketAddress& self_address,
+                            const QuicSocketAddress& peer_address,
+                            const QuicSocketAddress& effective_peer_address)
+      : self_address_(self_address),
+        peer_address_(peer_address),
+        effective_peer_address_(effective_peer_address) {}
 
   virtual ~QuicPathValidationContext() = default;
 
@@ -39,6 +48,9 @@ class QUIC_EXPORT_PRIVATE QuicPathValidationContext {
 
   const QuicSocketAddress& self_address() const { return self_address_; }
   const QuicSocketAddress& peer_address() const { return peer_address_; }
+  const QuicSocketAddress& effective_peer_address() const {
+    return effective_peer_address_;
+  }
 
  private:
   QUIC_EXPORT_PRIVATE friend std::ostream& operator<<(
@@ -46,7 +58,11 @@ class QUIC_EXPORT_PRIVATE QuicPathValidationContext {
       const QuicPathValidationContext& context);
 
   QuicSocketAddress self_address_;
+  // The address to send PATH_CHALLENGE.
   QuicSocketAddress peer_address_;
+  // The actual peer address which is different from |peer_address_| if the peer
+  // is behind a proxy.
+  QuicSocketAddress effective_peer_address_;
 };
 
 // Used to validate a path by sending up to 3 PATH_CHALLENGE frames before
@@ -64,10 +80,12 @@ class QUIC_EXPORT_PRIVATE QuicPathValidator {
     // Send a PATH_CHALLENGE with |data_buffer| as the frame payload using given
     // path information. Return false if the delegate doesn't want to continue
     // the validation.
-    virtual bool SendPathChallenge(const QuicPathFrameBuffer& data_buffer,
-                                   const QuicSocketAddress& self_address,
-                                   const QuicSocketAddress& peer_address,
-                                   QuicPacketWriter* writer) = 0;
+    virtual bool SendPathChallenge(
+        const QuicPathFrameBuffer& data_buffer,
+        const QuicSocketAddress& self_address,
+        const QuicSocketAddress& peer_address,
+        const QuicSocketAddress& effective_peer_address,
+        QuicPacketWriter* writer) = 0;
     // Return the time to retry sending PATH_CHALLENGE again based on given peer
     // address and writer.
     virtual QuicTime GetRetryTimeout(const QuicSocketAddress& peer_address,
@@ -75,6 +93,8 @@ class QUIC_EXPORT_PRIVATE QuicPathValidator {
   };
 
   // Handles the validation result.
+  // TODO(danzh) consider to simplify this interface and its life time to
+  // outlive a validation.
   class QUIC_EXPORT_PRIVATE ResultDelegate {
    public:
     virtual ~ResultDelegate() = default;
@@ -92,8 +112,8 @@ class QUIC_EXPORT_PRIVATE QuicPathValidator {
                     QuicRandom* random);
 
   // Send PATH_CHALLENGE and start the retry timer.
-  void StartValidingPath(std::unique_ptr<QuicPathValidationContext> context,
-                         std::unique_ptr<ResultDelegate> result_delegate);
+  void StartPathValidation(std::unique_ptr<QuicPathValidationContext> context,
+                           std::unique_ptr<ResultDelegate> result_delegate);
 
   // Called when a PATH_RESPONSE frame has been received. Matches the received
   // PATH_RESPONSE payload with the payloads previously sent in PATH_CHALLANGE
@@ -106,9 +126,13 @@ class QUIC_EXPORT_PRIVATE QuicPathValidator {
 
   bool HasPendingPathValidation() const;
 
+  QuicPathValidationContext* GetContext() const;
+
   // Send another PATH_CHALLENGE on the same path. After retrying
   // |kMaxRetryTimes| times, fail the current path validation.
   void OnRetryTimeout();
+
+  bool IsValidatingPeerAddress(const QuicSocketAddress& effective_peer_address);
 
  private:
   friend class test::QuicPathValidatorPeer;

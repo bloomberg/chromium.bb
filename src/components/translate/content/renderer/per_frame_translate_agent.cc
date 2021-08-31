@@ -4,6 +4,8 @@
 
 #include "components/translate/content/renderer/per_frame_translate_agent.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
@@ -11,7 +13,6 @@
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/translate/content/renderer/isolated_world_util.h"
@@ -182,7 +183,7 @@ bool PerFrameTranslateAgent::StartTranslation() {
       BuildTranslationScript(source_lang_, target_lang_), false);
 }
 
-std::string PerFrameTranslateAgent::GetOriginalPageLanguage() {
+std::string PerFrameTranslateAgent::GetPageSourceLanguage() {
   return ExecuteScriptAndGetStringResult("cr.googleTranslate.sourceLang");
 }
 
@@ -199,7 +200,8 @@ void PerFrameTranslateAgent::ExecuteScript(const std::string& script) {
     return;
 
   WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
-  local_frame->ExecuteScriptInIsolatedWorld(world_id_, source);
+  local_frame->ExecuteScriptInIsolatedWorld(
+      world_id_, source, blink::BackForwardCacheAware::kAllow);
 }
 
 bool PerFrameTranslateAgent::ExecuteScriptAndGetBoolResult(
@@ -213,8 +215,8 @@ bool PerFrameTranslateAgent::ExecuteScriptAndGetBoolResult(
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
   v8::Local<v8::Value> result =
-      local_frame->ExecuteScriptInIsolatedWorldAndReturnValue(world_id_,
-                                                              source);
+      local_frame->ExecuteScriptInIsolatedWorldAndReturnValue(
+          world_id_, source, blink::BackForwardCacheAware::kAllow);
   DCHECK(result->IsBoolean());
 
   return result.As<v8::Boolean>()->Value();
@@ -231,8 +233,8 @@ std::string PerFrameTranslateAgent::ExecuteScriptAndGetStringResult(
   v8::HandleScope handle_scope(isolate);
   WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
   v8::Local<v8::Value> result =
-      local_frame->ExecuteScriptInIsolatedWorldAndReturnValue(world_id_,
-                                                              source);
+      local_frame->ExecuteScriptInIsolatedWorldAndReturnValue(
+          world_id_, source, blink::BackForwardCacheAware::kAllow);
   DCHECK(result->IsString());
 
   v8::Local<v8::String> v8_str = result.As<v8::String>();
@@ -252,8 +254,8 @@ double PerFrameTranslateAgent::ExecuteScriptAndGetDoubleResult(
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
   v8::Local<v8::Value> result =
-      local_frame->ExecuteScriptInIsolatedWorldAndReturnValue(world_id_,
-                                                              source);
+      local_frame->ExecuteScriptInIsolatedWorldAndReturnValue(
+          world_id_, source, blink::BackForwardCacheAware::kAllow);
   DCHECK(result->IsNumber());
 
   return result.As<v8::Number>()->Value();
@@ -269,8 +271,8 @@ int64_t PerFrameTranslateAgent::ExecuteScriptAndGetIntegerResult(
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
   v8::Local<v8::Value> result =
-      local_frame->ExecuteScriptInIsolatedWorldAndReturnValue(world_id_,
-                                                              source);
+      local_frame->ExecuteScriptInIsolatedWorldAndReturnValue(
+          world_id_, source, blink::BackForwardCacheAware::kAllow);
   DCHECK(result->IsNumber());
 
   return result.As<v8::Integer>()->Value();
@@ -292,7 +294,7 @@ void PerFrameTranslateAgent::CheckTranslateStatus(int check_count) {
     // Translation was successful, if it was auto, retrieve the source
     // language the Translate Element detected.
     if (source_lang_ == kAutoDetectionLanguage) {
-      actual_source_lang = GetOriginalPageLanguage();
+      actual_source_lang = GetPageSourceLanguage();
       if (actual_source_lang.empty()) {
         NotifyBrowserTranslationFailed(TranslateErrors::UNKNOWN_LANGUAGE);
         return;
@@ -411,6 +413,7 @@ void PerFrameTranslateAgent::CancelPendingTranslation() {
 
 void PerFrameTranslateAgent::BindReceiver(
     mojo::PendingAssociatedReceiver<mojom::TranslateAgent> receiver) {
+  receiver_.reset();
   receiver_.Bind(std::move(receiver));
 }
 

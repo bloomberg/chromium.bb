@@ -1314,22 +1314,6 @@ static void check_convexity(skiatest::Reporter* reporter, const SkPath& path,
     SkPath copy(path);  // NOLINT(performance-unnecessary-copy-initialization)
     bool convexity = copy.isConvex();
     REPORTER_ASSERT(reporter, convexity == expectedConvexity);
-
-    // test points-by-array interface
-    SkPath::Iter iter(path, true);
-    int initialMoves = 0;
-    SkPoint pts[4];
-    while (SkPath::kMove_Verb == iter.next(pts)) {
-        ++initialMoves;
-    }
-    if (initialMoves > 0) {
-        std::vector<SkPoint> points;
-        points.resize(path.getPoints(nullptr, 0));
-        (void) path.getPoints(&points.front(), points.size());
-        int skip = initialMoves - 1;
-        bool isConvex = SkPathPriv::IsConvex(&points.front() + skip, points.size() - skip);
-        REPORTER_ASSERT(reporter, isConvex == expectedConvexity);
-    }
 }
 
 static void test_path_crbug389050(skiatest::Reporter* reporter) {
@@ -1340,9 +1324,6 @@ static void test_path_crbug389050(skiatest::Reporter* reporter) {
     tinyConvexPolygon.lineTo(600.134891f, 800.137724f);
     tinyConvexPolygon.close();
     tinyConvexPolygon.isConvex();
-    // This is convex, but so small that it fails many of our checks, and the three "backwards"
-    // bends convince the checker that it's concave. That's okay though, we draw it correctly.
-    check_convexity(reporter, tinyConvexPolygon, false);
     check_direction(reporter, tinyConvexPolygon, SkPathFirstDirection::kCW);
 
     SkPath  platTriangle;
@@ -1987,9 +1968,9 @@ static void test_conservativelyContains(skiatest::Reporter* reporter) {
     path.moveTo(0, 0);
     path.lineTo(SkIntToScalar(100), 0);
     path.lineTo(0, SkIntToScalar(100));
-    // Convexity logic is now more conservative, so that multiple (non-trailing) moveTos make a
-    // path non-convex.
-    REPORTER_ASSERT(reporter, !path.conservativelyContainsRect(
+    // Convexity logic treats a path as filled and closed, so that multiple (non-trailing) moveTos
+    // have no effect on convexity
+    REPORTER_ASSERT(reporter, path.conservativelyContainsRect(
         SkRect::MakeXYWH(SkIntToScalar(50), 0,
                          SkIntToScalar(10),
                          SkIntToScalar(10))));
@@ -3702,11 +3683,6 @@ static void test_rrect(skiatest::Reporter* reporter) {
     SkRect infR = {0, 0, SK_ScalarMax, SK_ScalarInfinity};
     rr.setRectRadii(infR, radii);
     REPORTER_ASSERT(reporter, rr.isEmpty());
-
-    // We consider any path with very small (numerically unstable) edges to be concave.
-    SkRect tinyR = {0, 0, 1e-9f, 1e-9f};
-    p.addRoundRect(tinyR, 5e-11f, 5e-11f);
-    test_rrect_convexity_is_unknown(reporter, &p, SkPathDirection::kCW);
 }
 
 static void test_arc(skiatest::Reporter* reporter) {
@@ -4308,10 +4284,10 @@ static void test_operatorEqual(skiatest::Reporter* reporter) {
     REPORTER_ASSERT(reporter, a == b);
 }
 
-static void compare_dump(skiatest::Reporter* reporter, const SkPath& path, bool force,
-        bool dumpAsHex, const char* str) {
+static void compare_dump(skiatest::Reporter* reporter, const SkPath& path, bool dumpAsHex,
+                         const char* str) {
     SkDynamicMemoryWStream wStream;
-    path.dump(&wStream, force, dumpAsHex);
+    path.dump(&wStream, dumpAsHex);
     sk_sp<SkData> data = wStream.detachAsData();
     REPORTER_ASSERT(reporter, data->size() == strlen(str));
     if (strlen(str) > 0) {
@@ -4323,51 +4299,45 @@ static void compare_dump(skiatest::Reporter* reporter, const SkPath& path, bool 
 
 static void test_dump(skiatest::Reporter* reporter) {
     SkPath p;
-    compare_dump(reporter, p, false, false, "path.setFillType(SkPathFillType::kWinding);\n");
-    compare_dump(reporter, p, true, false,  "path.setFillType(SkPathFillType::kWinding);\n");
+    compare_dump(reporter, p, false, "path.setFillType(SkPathFillType::kWinding);\n");
     p.moveTo(1, 2);
     p.lineTo(3, 4);
-    compare_dump(reporter, p, false, false, "path.setFillType(SkPathFillType::kWinding);\n"
+    compare_dump(reporter, p, false, "path.setFillType(SkPathFillType::kWinding);\n"
                                             "path.moveTo(1, 2);\n"
                                             "path.lineTo(3, 4);\n");
-    compare_dump(reporter, p, true, false,  "path.setFillType(SkPathFillType::kWinding);\n"
-                                            "path.moveTo(1, 2);\n"
-                                            "path.lineTo(3, 4);\n"
-                                            "path.lineTo(1, 2);\n"
-                                            "path.close();\n");
     p.reset();
     p.setFillType(SkPathFillType::kEvenOdd);
     p.moveTo(1, 2);
     p.quadTo(3, 4, 5, 6);
-    compare_dump(reporter, p, false, false, "path.setFillType(SkPathFillType::kEvenOdd);\n"
+    compare_dump(reporter, p, false, "path.setFillType(SkPathFillType::kEvenOdd);\n"
                                             "path.moveTo(1, 2);\n"
                                             "path.quadTo(3, 4, 5, 6);\n");
     p.reset();
     p.setFillType(SkPathFillType::kInverseWinding);
     p.moveTo(1, 2);
     p.conicTo(3, 4, 5, 6, 0.5f);
-    compare_dump(reporter, p, false, false, "path.setFillType(SkPathFillType::kInverseWinding);\n"
+    compare_dump(reporter, p, false, "path.setFillType(SkPathFillType::kInverseWinding);\n"
                                             "path.moveTo(1, 2);\n"
                                             "path.conicTo(3, 4, 5, 6, 0.5f);\n");
     p.reset();
     p.setFillType(SkPathFillType::kInverseEvenOdd);
     p.moveTo(1, 2);
     p.cubicTo(3, 4, 5, 6, 7, 8);
-    compare_dump(reporter, p, false, false, "path.setFillType(SkPathFillType::kInverseEvenOdd);\n"
+    compare_dump(reporter, p, false, "path.setFillType(SkPathFillType::kInverseEvenOdd);\n"
                                             "path.moveTo(1, 2);\n"
                                             "path.cubicTo(3, 4, 5, 6, 7, 8);\n");
     p.reset();
     p.setFillType(SkPathFillType::kWinding);
     p.moveTo(1, 2);
     p.lineTo(3, 4);
-    compare_dump(reporter, p, false, true,
+    compare_dump(reporter, p, true,
                  "path.setFillType(SkPathFillType::kWinding);\n"
                  "path.moveTo(SkBits2Float(0x3f800000), SkBits2Float(0x40000000));  // 1, 2\n"
                  "path.lineTo(SkBits2Float(0x40400000), SkBits2Float(0x40800000));  // 3, 4\n");
     p.reset();
     p.moveTo(SkBits2Float(0x3f800000), SkBits2Float(0x40000000));
     p.lineTo(SkBits2Float(0x40400000), SkBits2Float(0x40800000));
-    compare_dump(reporter, p, false, false, "path.setFillType(SkPathFillType::kWinding);\n"
+    compare_dump(reporter, p, false, "path.setFillType(SkPathFillType::kWinding);\n"
                                             "path.moveTo(1, 2);\n"
                                             "path.lineTo(3, 4);\n");
 }
@@ -5817,4 +5787,70 @@ DEF_TEST(path_addpath_crbug_1153516, r) {
     p1.addRect({143,226,200,241});
     p1.addPath(p1);
     p1.lineTo(262,513); // this should not assert
+}
+
+DEF_TEST(path_convexity_scale_way_down, r) {
+    SkPath path = SkPathBuilder().moveTo(0,0).lineTo(1, 0)
+                                 .lineTo(1,1).lineTo(0,1)
+                                 .detach();
+
+    REPORTER_ASSERT(r, path.isConvex());
+    SkPath path2;
+    const SkScalar scale = 1e-8f;
+    path.transform(SkMatrix::Scale(scale, scale), &path2);
+    SkPathPriv::ForceComputeConvexity(path2);
+    REPORTER_ASSERT(r, path2.isConvex());
+}
+
+// crbug.com/1187385
+DEF_TEST(path_moveto_addrect, r) {
+    // Test both an empty and non-empty rect passed to SkPath::addRect
+    SkRect rects[] = {{207.0f, 237.0f, 300.0f, 237.0f},
+                      {207.0f, 237.0f, 300.0f, 267.0f}};
+
+    for (SkRect rect: rects) {
+        for (int numExtraMoveTos : {0, 1, 2, 3}) {
+            SkPath path;
+            // Convexity and contains functions treat the path as a simple fill, so consecutive
+            // moveTos are collapsed together.
+            for (int i = 0; i < numExtraMoveTos; ++i) {
+                path.moveTo(i, i);
+            }
+            path.addRect(rect);
+
+            REPORTER_ASSERT(r, (numExtraMoveTos + 1) == SkPathPriv::LeadingMoveToCount(path));
+
+            // addRect should mark the path as known convex automatically (i.e. it wasn't set
+            // to unknown after edits)
+            SkPathConvexity origConvexity = SkPathPriv::GetConvexityOrUnknown(path);
+            REPORTER_ASSERT(r, origConvexity == SkPathConvexity::kConvex);
+
+            // but it should also agree with the regular convexity computation
+            SkPathPriv::ForceComputeConvexity(path);
+            REPORTER_ASSERT(r, path.isConvex());
+
+            SkRect query = rect.makeInset(10.f, 0.f);
+            REPORTER_ASSERT(r, path.conservativelyContainsRect(query));
+        }
+    }
+}
+
+// crbug.com/1220754
+DEF_TEST(path_moveto_twopass_convexity, r) {
+    // There had been a bug when the last moveTo index > 0, the calculated point count was incorrect
+    // and the BySign convexity pass would not evaluate the entire path, effectively only using the
+    // winding rule for determining convexity.
+    SkPath path;
+    path.setFillType(SkPathFillType::kWinding);
+    path.moveTo(3.25f, 115.5f);
+    path.conicTo(9.98099e+17f, 2.83874e+15f, 1.75098e-30f, 1.75097e-30f, 1.05385e+18f);
+    path.conicTo(9.96938e+17f, 6.3804e+19f, 9.96934e+17f, 1.75096e-30f, 1.75096e-30f);
+    path.quadTo(1.28886e+10f, 9.9647e+17f, 9.98101e+17f, 2.61006e+15f);
+    REPORTER_ASSERT(r, !path.isConvex());
+
+    SkPath pathWithExtraMoveTo;
+    pathWithExtraMoveTo.setFillType(SkPathFillType::kWinding);
+    pathWithExtraMoveTo.moveTo(5.90043e-39f, 1.34525e-43f);
+    pathWithExtraMoveTo.addPath(path);
+    REPORTER_ASSERT(r, !pathWithExtraMoveTo.isConvex());
 }

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import sys
 
 from telemetry.testing import serially_executed_browser_test_case
@@ -17,7 +18,7 @@ class SetUpClassFailedTest(
   @classmethod
   def GenerateTestCases_DummyTest(cls, options):
     del options  # Unused.
-    for i in xrange(0, 3):
+    for i in range(0, 3):
       yield 'dummy_test_%i' % i, ()
 
   def DummyTest(self):
@@ -34,7 +35,7 @@ class TearDownClassFailedTest(
   @classmethod
   def GenerateTestCases_DummyTest(cls, options):
     del options  # Unused.
-    for i in xrange(0, 3):
+    for i in range(0, 3):
       yield 'dummy_test_%i' % i, ()
 
   def DummyTest(self):

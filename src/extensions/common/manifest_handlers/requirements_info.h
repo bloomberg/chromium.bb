@@ -17,11 +17,11 @@ namespace extensions {
 
 // Declared requirements for the extension.
 struct RequirementsInfo : public Extension::ManifestData {
-  explicit RequirementsInfo(const Manifest* manifest);
+  RequirementsInfo();
   ~RequirementsInfo() override;
 
-  bool webgl;
-  bool window_shape;
+  bool webgl = false;
+  bool window_shape = false;
 
   static const RequirementsInfo& GetRequirements(const Extension* extension);
 };
@@ -32,7 +32,7 @@ class RequirementsHandler : public ManifestHandler {
   RequirementsHandler();
   ~RequirementsHandler() override;
 
-  bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, std::u16string* error) override;
 
   bool AlwaysParseForType(Manifest::Type type) const override;
 

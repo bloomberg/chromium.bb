@@ -32,7 +32,7 @@
       },
       {
         "args": [
-          "--skip-validation",
+          "--enable-toggles=skip_validation",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -132,7 +132,8 @@
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "gl_tests",
         "test_id_prefix": "ninja://gpu:gl_tests/"
@@ -191,9 +192,9 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--no-xvfb",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
@@ -224,10 +225,10 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--no-xvfb",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
@@ -287,7 +288,7 @@
       },
       {
         "args": [
-          "--skip-validation",
+          "--enable-toggles=skip_validation",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -387,7 +388,8 @@
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "gl_tests",
         "test_id_prefix": "ninja://gpu:gl_tests/"
@@ -446,9 +448,9 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--no-xvfb",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
@@ -479,10 +481,10 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--no-xvfb",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
@@ -542,7 +544,7 @@
       },
       {
         "args": [
-          "--skip-validation",
+          "--enable-toggles=skip_validation",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -642,7 +644,8 @@
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "gl_tests",
         "test_id_prefix": "ninja://gpu:gl_tests/"
@@ -701,9 +704,9 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--no-xvfb",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
@@ -734,10 +737,10 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--no-xvfb",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
@@ -797,7 +800,7 @@
       },
       {
         "args": [
-          "--skip-validation",
+          "--enable-toggles=skip_validation",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -897,7 +900,8 @@
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "gl_tests",
         "test_id_prefix": "ninja://gpu:gl_tests/"
@@ -956,9 +960,9 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--no-xvfb",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
@@ -989,10 +993,10 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--no-xvfb",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
@@ -1041,6 +1045,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.14.6",
@@ -1054,7 +1060,7 @@
       },
       {
         "args": [
-          "--skip-validation",
+          "--enable-toggles=skip_validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1068,6 +1074,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.14.6",
@@ -1095,6 +1103,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.14.6",
@@ -1122,6 +1132,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.14.6",
@@ -1147,6 +1159,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.14.6",
@@ -1170,6 +1184,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.14.6",
@@ -1201,6 +1217,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.14.6",
@@ -1213,9 +1231,9 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--platform=mac-mac10.13"
         ],
@@ -1234,6 +1252,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.14.6",
@@ -1246,10 +1266,10 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--platform=mac-mac10.13"
         ],
@@ -1268,6 +1288,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.14.6",
@@ -1296,8 +1318,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5"
+              "os": "Mac-10.15.5|Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1307,7 +1331,7 @@
       },
       {
         "args": [
-          "--skip-validation",
+          "--enable-toggles=skip_validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1321,8 +1345,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5"
+              "os": "Mac-10.15.5|Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1346,8 +1372,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5"
+              "os": "Mac-10.15.5|Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1371,8 +1399,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5"
+              "os": "Mac-10.15.5|Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1394,8 +1424,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5"
+              "os": "Mac-10.15.5|Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1415,8 +1447,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5"
+              "os": "Mac-10.15.5|Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1444,8 +1478,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5"
+              "os": "Mac-10.15.5|Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1454,9 +1490,9 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--platform=mac-mac10.13"
         ],
@@ -1475,8 +1511,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5"
+              "os": "Mac-10.15.5|Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1485,10 +1523,10 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--platform=mac-mac10.13"
         ],
@@ -1507,8 +1545,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5"
+              "os": "Mac-10.15.5|Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1533,6 +1573,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.14.6",
@@ -1546,7 +1588,7 @@
       },
       {
         "args": [
-          "--skip-validation",
+          "--enable-toggles=skip_validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1560,6 +1602,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.14.6",
@@ -1587,6 +1631,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.14.6",
@@ -1614,6 +1660,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.14.6",
@@ -1639,6 +1687,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.14.6",
@@ -1662,6 +1712,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.14.6",
@@ -1693,6 +1745,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.14.6",
@@ -1705,9 +1759,9 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--platform=mac-mac10.13"
         ],
@@ -1726,6 +1780,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.14.6",
@@ -1738,10 +1794,10 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--platform=mac-mac10.13"
         ],
@@ -1760,6 +1816,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.14.6",
@@ -1788,8 +1846,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5"
+              "os": "Mac-10.15.5|Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1799,7 +1859,7 @@
       },
       {
         "args": [
-          "--skip-validation",
+          "--enable-toggles=skip_validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1813,8 +1873,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5"
+              "os": "Mac-10.15.5|Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1838,8 +1900,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5"
+              "os": "Mac-10.15.5|Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1863,8 +1927,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5"
+              "os": "Mac-10.15.5|Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1886,8 +1952,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5"
+              "os": "Mac-10.15.5|Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1907,8 +1975,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5"
+              "os": "Mac-10.15.5|Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1936,8 +2006,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5"
+              "os": "Mac-10.15.5|Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1946,9 +2018,9 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--platform=mac-mac10.13"
         ],
@@ -1967,8 +2039,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5"
+              "os": "Mac-10.15.5|Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1977,10 +2051,10 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--platform=mac-mac10.13"
         ],
@@ -1999,8 +2073,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86-64",
+              "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5"
+              "os": "Mac-10.15.5|Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2030,8 +2106,8 @@
               "pool": "chromium.tests.gpu"
             },
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2042,7 +2118,7 @@
       },
       {
         "args": [
-          "--skip-validation",
+          "--enable-toggles=skip_validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2061,8 +2137,8 @@
               "pool": "chromium.tests.gpu"
             },
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2092,8 +2168,8 @@
               "pool": "chromium.tests.gpu"
             },
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2122,12 +2198,13 @@
               "pool": "chromium.tests.gpu"
             },
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "gl_tests",
         "test_id_prefix": "ninja://gpu:gl_tests/"
@@ -2149,8 +2226,8 @@
               "pool": "chromium.tests.gpu"
             },
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2184,8 +2261,8 @@
               "pool": "chromium.tests.gpu"
             },
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2195,9 +2272,9 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--target=Release_x64"
         ],
@@ -2221,8 +2298,8 @@
               "pool": "chromium.tests.gpu"
             },
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2250,8 +2327,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2262,7 +2339,7 @@
       },
       {
         "args": [
-          "--skip-validation",
+          "--enable-toggles=skip_validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2276,8 +2353,34 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--enable-backend-validation=partial",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_validation_layers_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2302,8 +2405,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2327,12 +2430,13 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "gl_tests",
         "test_id_prefix": "ninja://gpu:gl_tests/"
@@ -2349,8 +2453,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2379,8 +2483,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2390,9 +2494,9 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--target=Release_x64"
         ],
@@ -2411,8 +2515,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2422,10 +2526,10 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
-          "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--enable-dawn-backend-validation=partial",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--target=Release_x64"
         ],
@@ -2444,8 +2548,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2483,7 +2587,7 @@
       },
       {
         "args": [
-          "--skip-validation",
+          "--enable-toggles=skip_validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2579,7 +2683,8 @@
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "gl_tests",
         "test_id_prefix": "ninja://gpu:gl_tests/"
@@ -2637,9 +2742,9 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--target=Release_x64"
         ],
@@ -2669,10 +2774,10 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--target=Release_x64"
         ],
@@ -2718,8 +2823,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2730,7 +2835,7 @@
       },
       {
         "args": [
-          "--skip-validation",
+          "--enable-toggles=skip_validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2744,8 +2849,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2756,7 +2861,7 @@
       },
       {
         "args": [
-          "--enable-backend-validation",
+          "--enable-backend-validation=partial",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2770,8 +2875,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2796,8 +2901,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2821,12 +2926,13 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "gl_tests",
         "test_id_prefix": "ninja://gpu:gl_tests/"
@@ -2843,8 +2949,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2873,8 +2979,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2884,9 +2990,9 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--target=Release_x64"
         ],
@@ -2905,8 +3011,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2916,10 +3022,10 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
-          "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--enable-dawn-backend-validation=partial",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--target=Release_x64"
         ],
@@ -2938,8 +3044,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2977,7 +3083,7 @@
       },
       {
         "args": [
-          "--skip-validation",
+          "--enable-toggles=skip_validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3073,7 +3179,8 @@
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "gl_tests",
         "test_id_prefix": "ninja://gpu:gl_tests/"
@@ -3131,9 +3238,9 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--target=Release_x64"
         ],
@@ -3163,10 +3270,10 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
           "--target=Release_x64"
         ],
@@ -3214,8 +3321,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -3226,7 +3333,7 @@
       },
       {
         "args": [
-          "--skip-validation",
+          "--enable-toggles=skip_validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3240,8 +3347,34 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--enable-backend-validation=partial",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_validation_layers_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -3266,8 +3399,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -3291,12 +3424,13 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "gl_tests",
         "test_id_prefix": "ninja://gpu:gl_tests/"
@@ -3313,8 +3447,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -3343,8 +3477,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -3354,9 +3488,9 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3374,8 +3508,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -3385,10 +3519,10 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
-          "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--enable-dawn-backend-validation=partial",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3406,8 +3540,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -3445,7 +3579,7 @@
       },
       {
         "args": [
-          "--skip-validation",
+          "--enable-toggles=skip_validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3541,7 +3675,8 @@
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "gl_tests",
         "test_id_prefix": "ninja://gpu:gl_tests/"
@@ -3599,9 +3734,9 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3630,10 +3765,10 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3678,8 +3813,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -3690,7 +3825,7 @@
       },
       {
         "args": [
-          "--skip-validation",
+          "--enable-toggles=skip_validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3704,8 +3839,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -3716,7 +3851,7 @@
       },
       {
         "args": [
-          "--enable-backend-validation",
+          "--enable-backend-validation=partial",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3730,8 +3865,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -3756,8 +3891,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -3781,12 +3916,13 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "gl_tests",
         "test_id_prefix": "ninja://gpu:gl_tests/"
@@ -3803,8 +3939,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -3833,8 +3969,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -3844,9 +3980,9 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3864,8 +4000,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -3875,10 +4011,10 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
-          "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--enable-dawn-backend-validation=partial",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3896,8 +4032,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286|8086:5912-26.20.100.8141",
-              "os": "Windows-10-17134|Windows-10-18363",
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -3935,7 +4071,7 @@
       },
       {
         "args": [
-          "--skip-validation",
+          "--enable-toggles=skip_validation",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -4031,7 +4167,8 @@
               "pool": "chromium.tests.gpu"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "gl_tests",
         "test_id_prefix": "ninja://gpu:gl_tests/"
@@ -4089,9 +4226,9 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -4120,10 +4257,10 @@
       },
       {
         "args": [
-          "--driver-logging",
           "--jobs=1",
           "--order=natural",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests"
         ],
         "isolate_name": "webgpu_blink_web_tests",

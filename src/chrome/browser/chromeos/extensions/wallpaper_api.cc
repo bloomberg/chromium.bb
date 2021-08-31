@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/wallpaper_api.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -16,13 +17,13 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/user_manager/user.h"
@@ -39,7 +40,8 @@
 using base::Value;
 using content::BrowserThread;
 
-typedef base::Callback<void(bool success, const std::string&)> FetchCallback;
+using FetchCallback =
+    base::OnceCallback<void(bool success, const std::string&)>;
 
 namespace set_wallpaper = extensions::api::wallpaper::SetWallpaper;
 
@@ -52,7 +54,7 @@ class WallpaperFetcher {
   void FetchWallpaper(const GURL& url, FetchCallback callback) {
     CancelPreviousFetch();
     original_url_ = url;
-    callback_ = callback;
+    callback_ = std::move(callback);
 
     net::NetworkTrafficAnnotationTag traffic_annotation =
         net::DefineNetworkTrafficAnnotation("wallpaper_fetcher", R"(
@@ -106,14 +108,13 @@ class WallpaperFetcher {
     }
 
     simple_loader_.reset();
-    callback_.Run(success, response);
-    callback_.Reset();
+    std::move(callback_).Run(success, response);
   }
 
   void CancelPreviousFetch() {
     if (simple_loader_.get()) {
-      callback_.Run(false, wallpaper_api_util::kCancelWallpaperMessage);
-      callback_.Reset();
+      std::move(callback_).Run(false,
+                               wallpaper_api_util::kCancelWallpaperMessage);
       simple_loader_.reset();
     }
   }
@@ -155,7 +156,7 @@ ExtensionFunction::ResponseAction WallpaperSetWallpaperFunction::Run() {
   const user_manager::User* user = GetUserFromBrowserContext(browser_context());
   account_id_ = user->GetAccountId();
   wallpaper_files_id_ =
-      WallpaperControllerClient::Get()->GetFilesId(account_id_);
+      WallpaperControllerClientImpl::Get()->GetFilesId(account_id_);
 
   if (params_->details.data) {
     StartDecode(*params_->details.data);
@@ -172,7 +173,7 @@ ExtensionFunction::ResponseAction WallpaperSetWallpaperFunction::Run() {
 
   g_wallpaper_fetcher.Get().FetchWallpaper(
       wallpaper_url,
-      base::Bind(&WallpaperSetWallpaperFunction::OnWallpaperFetched, this));
+      base::BindOnce(&WallpaperSetWallpaperFunction::OnWallpaperFetched, this));
   // FetchWallpaper() repsonds asynchronously.
   return RespondLater();
 }
@@ -185,7 +186,7 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
 
   const std::string file_name =
       base::FilePath(params_->details.filename).BaseName().value();
-  WallpaperControllerClient::Get()->SetCustomWallpaper(
+  WallpaperControllerClientImpl::Get()->SetCustomWallpaper(
       account_id_, wallpaper_files_id_, file_name, layout, image,
       /*preview_mode=*/false);
   unsafe_wallpaper_decoder_ = nullptr;
@@ -203,11 +204,11 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
     extensions::EventRouter* event_router =
         extensions::EventRouter::Get(profile);
 
-    base::Value event_args(Value::Type::LIST);
-    event_args.Append(Value(GenerateThumbnail(image, image.size())));
-    event_args.Append(Value(thumbnail_data));
-    event_args.Append(
-        extensions::api::wallpaper::ToString(params_->details.layout));
+    std::vector<base::Value> event_args;
+    event_args.push_back(base::Value(GenerateThumbnail(image, image.size())));
+    event_args.push_back(base::Value(thumbnail_data));
+    event_args.push_back(base::Value(
+        extensions::api::wallpaper::ToString(params_->details.layout)));
     // Setting wallpaper from right click menu in 'Files' app is a feature that
     // was implemented in crbug.com/578935. Since 'Files' app is a built-in v1
     // app in ChromeOS, we should treat it slightly differently with other third
@@ -215,14 +216,15 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
     // and it should not appear in the wallpaper grid in the Wallpaper Picker.
     // But we should not display the 'wallpaper-set-by-mesage' since it might
     // introduce confusion as shown in crbug.com/599407.
-    event_args.Append((extension()->id() == file_manager::kFileManagerAppId)
-                          ? base::StringPiece()
-                          : extension()->name());
+    base::StringPiece ext_name;
+    if (extension()->id() != file_manager::kFileManagerAppId)
+      ext_name = extension()->name();
+    event_args.push_back(base::Value(ext_name));
     std::unique_ptr<extensions::Event> event(new extensions::Event(
         extensions::events::WALLPAPER_PRIVATE_ON_WALLPAPER_CHANGED_BY_3RD_PARTY,
         extensions::api::wallpaper_private::OnWallpaperChangedBy3rdParty::
             kEventName,
-        base::ListValue::From(std::make_unique<Value>(std::move(event_args)))));
+        std::move(event_args)));
     event_router->DispatchEventToExtension(extension_misc::kWallpaperManagerId,
                                            std::move(event));
   }
@@ -236,8 +238,8 @@ void WallpaperSetWallpaperFunction::OnWallpaperFetched(
     bool success,
     const std::string& response) {
   if (success) {
-    params_->details.data.reset(
-        new std::vector<uint8_t>(response.begin(), response.end()));
+    params_->details.data = std::make_unique<std::vector<uint8_t>>(
+        response.begin(), response.end());
     StartDecode(*params_->details.data);
     // StartDecode() will Respond later through OnWallpaperDecoded()
   } else {

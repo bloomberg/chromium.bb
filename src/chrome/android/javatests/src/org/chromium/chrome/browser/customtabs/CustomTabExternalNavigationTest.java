@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 
 import androidx.test.filters.SmallTest;
@@ -18,6 +19,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityTestUtil;
 import org.chromium.chrome.browser.browserservices.ui.controller.CurrentPageVerifier.VerificationStatus;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory.CustomTabNavigationDelegate;
@@ -28,8 +30,10 @@ import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
+import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResultType;
 import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.url.GURL;
 
 import java.util.concurrent.TimeoutException;
 
@@ -104,12 +108,12 @@ public class CustomTabExternalNavigationTest {
     @Test
     @SmallTest
     public void testExternalActivityStartedForDefaultUrl() {
-        final String testUrl = "customtab://customtabtest/intent";
+        final GURL testUrl = new GURL("customtab://customtabtest/intent");
         ExternalNavigationParams params = new ExternalNavigationParams.Builder(testUrl, false)
                 .build();
-        @OverrideUrlLoadingResult
-        int result = mUrlHandler.shouldOverrideUrlLoading(params);
-        Assert.assertEquals(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, result);
+        OverrideUrlLoadingResult result = mUrlHandler.shouldOverrideUrlLoading(params);
+        Assert.assertEquals(
+                OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT, result.getResultType());
         Assert.assertTrue("A dummy activity should have been started to handle the special url.",
                 mNavigationDelegate.hasExternalActivityStarted());
     }
@@ -120,13 +124,15 @@ public class CustomTabExternalNavigationTest {
      */
     @Test
     @SmallTest
-    public void testIntentPickerNotShownForNormalUrl() {
-        final String testUrl = "http://customtabtest.com";
+    @DisableIf.Build(supported_abis_includes = "x86", sdk_is_greater_than = VERSION_CODES.O_MR1,
+            sdk_is_less_than = VERSION_CODES.Q, message = "crbug.com/1188920")
+    public void
+    testIntentPickerNotShownForNormalUrl() {
+        final GURL testUrl = new GURL("http://customtabtest.com");
         ExternalNavigationParams params = new ExternalNavigationParams.Builder(testUrl, false)
                 .build();
-        @OverrideUrlLoadingResult
-        int result = mUrlHandler.shouldOverrideUrlLoading(params);
-        Assert.assertEquals(OverrideUrlLoadingResult.NO_OVERRIDE, result);
+        OverrideUrlLoadingResult result = mUrlHandler.shouldOverrideUrlLoading(params);
+        Assert.assertEquals(OverrideUrlLoadingResultType.NO_OVERRIDE, result.getResultType());
         Assert.assertFalse("External activities should not be started to handle the url",
                 mNavigationDelegate.hasExternalActivityStarted());
     }
@@ -144,9 +150,9 @@ public class CustomTabExternalNavigationTest {
     @Test
     @SmallTest
     public void testShouldDisableExternalIntentRequestsForUrl() throws TimeoutException {
-        String insideVerifiedOriginUrl =
-                mTestServer.getURL("/chrome/test/data/android/simple.html");
-        String outsideVerifiedOriginUrl = "https://example.com/test.html";
+        GURL insideVerifiedOriginUrl =
+                new GURL(mTestServer.getURL("/chrome/test/data/android/simple.html"));
+        GURL outsideVerifiedOriginUrl = new GURL("https://example.com/test.html");
 
         TrustedWebActivityTestUtil.waitForCurrentPageVerifierToFinish(
                 mCustomTabActivityTestRule.getActivity());

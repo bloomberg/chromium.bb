@@ -9,17 +9,13 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/notifications/notification_interactive_uitest_support.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,6 +32,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/notification_service.h"
@@ -47,6 +44,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
@@ -96,10 +94,7 @@ class ToggledNotificationBlocker : public message_center::NotificationBlocker {
 // selects it when requesting one via navigator.mediaDevices.getDisplayMedia().
 class NotificationsTestWithFakeMediaStream : public NotificationsTest {
  public:
-  NotificationsTestWithFakeMediaStream() {
-    feature_list_.InitAndEnableFeature(
-        features::kMuteNotificationsDuringScreenShare);
-  }
+  NotificationsTestWithFakeMediaStream() = default;
   ~NotificationsTestWithFakeMediaStream() override = default;
 
   // InProcessBrowserTest:
@@ -111,9 +106,6 @@ class NotificationsTestWithFakeMediaStream : public NotificationsTest {
     command_line->AppendSwitchASCII(switches::kAutoSelectDesktopCaptureSource,
                                     "Entire screen");
   }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 #endif  // !defined(OS_ANDROID)
 
@@ -142,9 +134,10 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, DISABLED_TestUserGestureInfobar) {
       "window.domAutomationController.send(request());", &result));
   EXPECT_TRUE(result);
 
-  InfoBarService* infobar_service = InfoBarService::FromWebContents(
-      browser()->tab_strip_model()->GetWebContentsAt(0));
-  EXPECT_EQ(1U, infobar_service->infobar_count());
+  infobars::ContentInfoBarManager* infobar_manager =
+      infobars::ContentInfoBarManager::FromWebContents(
+          browser()->tab_strip_model()->GetWebContentsAt(0));
+  EXPECT_EQ(1U, infobar_manager->infobar_count());
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateSimpleNotification) {
@@ -161,10 +154,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateSimpleNotification) {
   ASSERT_EQ(1, GetNotificationCount());
   message_center::NotificationList::Notifications notifications =
       message_center::MessageCenter::Get()->GetVisibleNotifications();
-  EXPECT_EQ(base::ASCIIToUTF16("My Title"),
-            (*notifications.rbegin())->title());
-  EXPECT_EQ(base::ASCIIToUTF16("My Body"),
-            (*notifications.rbegin())->message());
+  EXPECT_EQ(u"My Title", (*notifications.rbegin())->title());
+  EXPECT_EQ(u"My Body", (*notifications.rbegin())->message());
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, NotificationBlockerTest) {
@@ -403,17 +394,9 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, InlinePermissionRevokeUkm) {
   AllowAllOrigins();
   ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
 
-  Profile* profile = Profile::FromBrowserContext(browser()
-                                                     ->tab_strip_model()
-                                                     ->GetActiveWebContents()
-                                                     ->GetBrowserContext());
-  history::HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
   base::RunLoop origin_queried_waiter;
-  history_service->set_origin_queried_closure_for_testing(
-      origin_queried_waiter.QuitClosure());
-
+  ukm_recorder.SetOnAddEntryCallback(ukm::builders::Permission::kEntryName,
+                                     origin_queried_waiter.QuitClosure());
   CreateSimpleNotification(browser(), true);
   ASSERT_EQ(1, GetNotificationCount());
 
@@ -433,8 +416,10 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, InlinePermissionRevokeUkm) {
   EXPECT_EQ(
       *ukm_recorder.GetEntryMetric(entry, "Source"),
       static_cast<int64_t>(permissions::PermissionSourceUI::INLINE_SETTINGS));
+  size_t num_values = 0;
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "PermissionType"),
-            static_cast<int64_t>(ContentSettingsType::NOTIFICATIONS));
+            ContentSettingTypeToHistogramValue(
+                ContentSettingsType::NOTIFICATIONS, &num_values));
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Action"),
             static_cast<int64_t>(permissions::PermissionAction::REVOKED));
 }
@@ -523,9 +508,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationReplacement) {
   ASSERT_EQ(1, GetNotificationCount());
   message_center::NotificationList::Notifications notifications =
       message_center::MessageCenter::Get()->GetVisibleNotifications();
-  EXPECT_EQ(base::ASCIIToUTF16("Title2"), (*notifications.rbegin())->title());
-  EXPECT_EQ(base::ASCIIToUTF16("Body2"),
-            (*notifications.rbegin())->message());
+  EXPECT_EQ(u"Title2", (*notifications.rbegin())->title());
+  EXPECT_EQ(u"Body2", (*notifications.rbegin())->message());
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest,
@@ -782,7 +766,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayPopupNotification) {
 // TODO(knollr): Test fails on Windows and macOS on the bots as there is no real
 // display to test with. Need to find a way to run these without a display and
 // figure out why Lacros is timing out. Tests pass locally with a real display.
-#if defined(OS_MAC) || defined(OS_WIN) || BUILDFLAG(IS_LACROS)
+#if defined(OS_MAC) || defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_ShouldQueueDuringScreenPresent \
   DISABLED_ShouldQueueDuringScreenPresent
 #else
@@ -806,8 +790,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsTestWithFakeMediaStream,
   message_center::NotificationList::Notifications notifications =
       message_center::MessageCenter::Get()->GetVisibleNotifications();
   ASSERT_EQ(1u, notifications.size());
-  EXPECT_EQ(base::ASCIIToUTF16("My Title"), (*notifications.begin())->title());
-  EXPECT_EQ(base::ASCIIToUTF16("My Body"), (*notifications.begin())->message());
+  EXPECT_EQ(u"My Title", (*notifications.begin())->title());
+  EXPECT_EQ(u"My Body", (*notifications.begin())->message());
 
   // Open a new tab to a diffent origin from the one that shows notifications.
   chrome::NewTab(browser());
@@ -861,8 +845,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsTestWithFakeMediaStream,
       message_center::MessageCenter::Get()->GetVisibleNotifications();
   ASSERT_EQ(3u, notifications.size());
   for (const auto* notification : notifications) {
-    EXPECT_EQ(base::ASCIIToUTF16("My Title"), notification->title());
-    EXPECT_EQ(base::ASCIIToUTF16("My Body"), notification->message());
+    EXPECT_EQ(u"My Title", notification->title());
+    EXPECT_EQ(u"My Body", notification->message());
   }
 }
 #endif  // !defined(OS_ANDROID)

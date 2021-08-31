@@ -7,15 +7,16 @@
 
 #include <list>
 #include <memory>
+#include <queue>
 #include <string>
-#include <unordered_map>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/callback_forward.h"
+#include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_fcm_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/multipart_uploader.h"
@@ -23,6 +24,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -34,6 +36,10 @@ class BinaryUploadService : public KeyedService {
  public:
   // The maximum size of data that can be uploaded via this service.
   constexpr static size_t kMaxUploadSizeBytes = 50 * 1024 * 1024;  // 50 MB
+
+  // The maximum number of uploads that can happen in parallel.
+  // TODO(crbug.com/1191061): Tweak this number to an "optimal" value.
+  constexpr static size_t kParallelActiveRequestsMax = 50;
 
   explicit BinaryUploadService(Profile* profile);
 
@@ -79,7 +85,11 @@ class BinaryUploadService : public KeyedService {
     // The file's type is not supported and the file was not uploaded.
     DLP_SCAN_UNSUPPORTED_FILE_TYPE = 8,
 
-    kMaxValue = DLP_SCAN_UNSUPPORTED_FILE_TYPE,
+    // The server returned a 429 HTTP status indicating too many requests are
+    // being sent.
+    TOO_MANY_REQUESTS = 9,
+
+    kMaxValue = TOO_MANY_REQUESTS,
   };
 
   // Callbacks used to pass along the results of scanning. The response protos
@@ -141,6 +151,9 @@ class BinaryUploadService : public KeyedService {
     void set_tab_url(const GURL& tab_url);
     const GURL& tab_url() const;
 
+    void set_per_profile_request(bool per_profile_request);
+    bool per_profile_request() const;
+
     // Methods for modifying the ContentAnalysisRequest.
     void set_analysis_connector(
         enterprise_connectors::AnalysisConnector connector);
@@ -154,6 +167,7 @@ class BinaryUploadService : public KeyedService {
     void set_filename(const std::string& filename);
     void set_digest(const std::string& digest);
     void clear_dlp_scan_request();
+    void set_client_metadata(enterprise_connectors::ClientMetadata metadata);
 
     // Methods for accessing the ContentAnalysisRequest.
     enterprise_connectors::AnalysisConnector analysis_connector();
@@ -180,20 +194,26 @@ class BinaryUploadService : public KeyedService {
 
     // The URL of the page that initially triggered the scan.
     GURL tab_url_;
+
+    // Indicates if the request was triggered by a profile-level policy or not.
+    bool per_profile_request_ = false;
   };
 
   // Upload the given file contents for deep scanning if the browser is
   // authorized to upload data, otherwise queue the request.
   virtual void MaybeUploadForDeepScanning(std::unique_ptr<Request> request);
 
-  // Indicates whether the browser is allowed to upload data.
+  // Indicates whether the DM token/Connector combination is allowed to upload
+  // data.
   using AuthorizationCallback = base::OnceCallback<void(bool)>;
   void IsAuthorized(const GURL& url,
                     AuthorizationCallback callback,
+                    const std::string& dm_token,
                     enterprise_connectors::AnalysisConnector connector);
 
-  // Run every callback in |authorization_callbacks_| and empty it.
+  // Run every matching callback in |authorization_callbacks_| and remove them.
   void RunAuthorizationCallbacks(
+      const std::string& dm_token,
       enterprise_connectors::AnalysisConnector connector);
 
   // Resets |can_upload_data_|. Called every 24 hour by |timer_|.
@@ -203,11 +223,12 @@ class BinaryUploadService : public KeyedService {
   void Shutdown() override;
 
   // Sets |can_upload_data_| for tests.
-  void SetAuthForTesting(bool authorized);
+  void SetAuthForTesting(const std::string& dm_token, bool authorized);
 
   // Returns the URL that requests are uploaded to. Scans for enterprise go to a
-  // different URL than scans for Advanced Protection users.
-  static GURL GetUploadUrl(bool is_advanced_protection_request);
+  // different URL than scans for Advanced Protection users and Enhanced
+  // Protection users.
+  static GURL GetUploadUrl(bool is_consumer_scan_eligible);
 
  protected:
   void FinishRequest(Request* request,
@@ -215,7 +236,13 @@ class BinaryUploadService : public KeyedService {
                      enterprise_connectors::ContentAnalysisResponse response);
 
  private:
+  using TokenAndConnector =
+      std::pair<std::string, enterprise_connectors::AnalysisConnector>;
   friend class BinaryUploadServiceTest;
+
+  // Queue the file for deep scanning. This method should be the only caller of
+  // UploadForDeepScanning to avoid consuming too many user resources.
+  void QueueForDeepScanning(std::unique_ptr<Request> request);
 
   // Upload the given file contents for deep scanning. The results will be
   // returned asynchronously by calling |request|'s |callback|. This must be
@@ -230,6 +257,7 @@ class BinaryUploadService : public KeyedService {
 
   void OnUploadComplete(Request* request,
                         bool success,
+                        int http_status,
                         const std::string& response_data);
 
   void OnGetResponse(Request* request,
@@ -246,12 +274,14 @@ class BinaryUploadService : public KeyedService {
 
   // Callback once the response from the backend is received.
   void ValidateDataUploadRequestConnectorCallback(
+      const std::string& dm_token,
       enterprise_connectors::AnalysisConnector connector,
       BinaryUploadService::Result result,
       enterprise_connectors::ContentAnalysisResponse response);
 
   // Callback once a request's instance ID is unregistered.
   void InstanceIDUnregisteredCallback(
+      const std::string& dm_token,
       enterprise_connectors::AnalysisConnector connector,
       bool);
 
@@ -264,10 +294,19 @@ class BinaryUploadService : public KeyedService {
   // Called at the end of the FinishRequest method.
   void FinishRequestCleanup(Request* request, const std::string& instance_id);
 
+  // Tries to start uploads from |request_queue_| depending on the number of
+  // currently active requests. This should be called whenever
+  // |active_requests_| shrinks so queued requests are started as soon as
+  // possible.
+  void PopRequestQueue();
+
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<BinaryFCMService> binary_fcm_service_;
 
   Profile* const profile_;
+
+  // Request queued for upload.
+  std::queue<std::unique_ptr<Request>> request_queue_;
 
   // Resources associated with an in-progress request.
   base::flat_map<Request*, std::unique_ptr<Request>> active_requests_;
@@ -284,22 +323,19 @@ class BinaryUploadService : public KeyedService {
                      enterprise_connectors::ContentAnalysisResponse::Result>>
       received_connector_results_;
 
-  // Indicates whether this browser can upload data for enterprise requests.
-  // Advanced Protection scans are validated using the user's Advanced
-  // Protection enrollment status.
-  // base::nullopt means the response from the backend has not been received
-  // yet.
-  // true means the response indicates data can be uploaded.
-  // false means the response indicates data cannot be uploaded.
-  base::flat_map<enterprise_connectors::AnalysisConnector, bool>
-      can_upload_enterprise_data_;
+  // Indicates whether this DM token + Connector combination can be used to
+  // upload data for enterprise requests. Advanced Protection scans are
+  // validated using the user's Advanced Protection enrollment status.
+  base::flat_map<TokenAndConnector, bool> can_upload_enterprise_data_;
 
-  // Callbacks waiting on IsAuthorized request.
-  std::list<base::OnceCallback<void(bool)>> authorization_callbacks_;
+  // Callbacks waiting on IsAuthorized request. These are organized by DM token
+  // and Connector.
+  base::flat_map<TokenAndConnector, std::list<base::OnceCallback<void(bool)>>>
+      authorization_callbacks_;
 
   // Indicates if this service is waiting on the backend to validate event
   // reporting. Used to avoid spamming the backend.
-  bool pending_validate_data_upload_request_ = false;
+  base::flat_set<TokenAndConnector> pending_validate_data_upload_request_;
 
   // Ensures we validate the browser is registered with the backend every 24
   // hours.

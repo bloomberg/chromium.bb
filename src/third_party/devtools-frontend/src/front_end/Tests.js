@@ -32,16 +32,13 @@
 /**
  * @fileoverview This file contains small testing framework along with the
  * test suite for the frontend. These tests are a part of the continues build
- * and are executed by the devtools_sanity_unittest.cc as a part of the
+ * and are executed by the devtools_browsertest.cc as a part of the
  * Interactive UI Test suite.
  * FIXME: change field naming style to use trailing underscore.
  */
 
 (function createTestSuite(window) {
 
-  /**
-   * @unrestricted
-   */
   const TestSuite = class {
     /**
      * Test suite for interactive UI tests.
@@ -96,19 +93,22 @@
    * @param {string} opt_message User message to print if the test fails.
    */
   TestSuite.prototype.assertTrue = function(value, opt_message) {
-    this.assertEquals(true, !!value, opt_message);
+    this.assertEquals(true, Boolean(value), opt_message);
   };
 
   /**
    * Takes control over execution.
+   * @param {{slownessFactor:number}=} options
    */
-  TestSuite.prototype.takeControl = function() {
+  TestSuite.prototype.takeControl = function(options) {
+    const {slownessFactor} = {slownessFactor: 1, ...options};
     this.controlTaken_ = true;
     // Set up guard timer.
     const self = this;
+    const timeoutInSec = 20 * slownessFactor;
     this.timerId_ = setTimeout(function() {
-      self.reportFailure_('Timeout exceeded: 20 sec');
-    }, 20000);
+      self.reportFailure_(`Timeout exceeded: ${timeoutInSec} sec`);
+    }, timeoutInSec * 1000);
   };
 
   /**
@@ -346,7 +346,7 @@
     });
 
     // Wait until all scripts are added to the debugger.
-    this.takeControl();
+    this.takeControl({slownessFactor: 10});
   };
 
   // Tests that debugger works correctly if pause event occurs when DevTools
@@ -407,7 +407,7 @@
     // Reload inspected page to sniff network events
     test.evaluateInConsole_('window.location.reload(true);', function(resultText) {});
 
-    this.takeControl();
+    this.takeControl({slownessFactor: 10});
   };
 
   /**
@@ -427,7 +427,7 @@
     test.evaluateInConsole_(
         'let xhr = new XMLHttpRequest(); xhr.open("GET", "chunked", false); xhr.send(null);', function() {});
 
-    this.takeControl();
+    this.takeControl({slownessFactor: 10});
   };
 
   /**
@@ -451,7 +451,7 @@
     // Reload inspected page to sniff network events
     test.evaluateInConsole_('window.location.reload(true);', function(resultText) {});
 
-    this.takeControl();
+    this.takeControl({slownessFactor: 10});
   };
 
   /**
@@ -486,7 +486,7 @@
     // Reload inspected page to sniff network events
     test.evaluateInConsole_('window.location.reload(true);', function(resultText) {});
 
-    this.takeControl();
+    this.takeControl({slownessFactor: 10});
   };
 
   TestSuite.prototype.testPushTimes = function(url) {
@@ -524,7 +524,7 @@
   TestSuite.prototype.testConsoleOnNavigateBack = function() {
 
     function filteredMessages() {
-      return self.SDK.consoleModel.messages().filter(a => a.source !== SDK.ConsoleMessage.MessageSource.Violation);
+      return self.SDK.consoleModel.messages().filter(a => a.source !== Protocol.Log.LogEntrySource.Violation);
     }
 
     if (filteredMessages().length === 1) {
@@ -535,7 +535,7 @@
 
 
     function firstConsoleMessageReceived(event) {
-      if (event && event.data.source === SDK.ConsoleMessage.MessageSource.Violation) {
+      if (event && event.data.source === Protocol.Log.LogEntrySource.Violation) {
         return;
       }
       self.SDK.consoleModel.removeEventListener(
@@ -650,7 +650,8 @@
 
       function checkMetrics(consoleResult) {
         test.assertEquals(
-            '"' + JSON.stringify(metrics) + '"', consoleResult, 'Wrong metrics for params: ' + JSON.stringify(params));
+            JSON.stringify(JSON.stringify(metrics)), consoleResult,
+            'Wrong metrics for params: ' + JSON.stringify(params));
         callback();
       }
     }
@@ -725,7 +726,7 @@
       }
     }
 
-    this.takeControl();
+    this.takeControl({slownessFactor: 10});
 
     // It is possible for the ready console messagage to be already received but not handled
     // or received later. This ensures we can catch both cases.
@@ -875,7 +876,7 @@
     ]);
   };
 
-  // Simple sanity check to make sure network throttling is wired up
+  // Simple check to make sure network throttling is wired up
   // See crbug.com/747724
   TestSuite.prototype.testOfflineNetworkConditions = async function() {
     const test = this;
@@ -889,7 +890,8 @@
 
     this.addSniffer(SDK.NetworkDispatcher.prototype, '_finishNetworkRequest', finishRequest);
 
-    test.takeControl();
+    // Allow more time for this test as it needs to reload the inspected page.
+    test.takeControl({slownessFactor: 10});
     test.evaluateInConsole_('window.location.reload(true);', function(resultText) {});
   };
 
@@ -987,7 +989,7 @@
 
       function onGotImageData(data) {
         const image = new Image();
-        test.assertTrue(!!data, 'No image data for frame');
+        test.assertTrue(Boolean(data), 'No image data for frame');
         image.addEventListener('load', onLoad);
         image.src = 'data:image/jpg;base64,' + data;
       }
@@ -1025,7 +1027,7 @@
           test.fail('Unexpected color: ' + color);
         }
       }
-      test.assertTrue(redCount && greenCount && blueCount, 'Color sanity check failed');
+      test.assertTrue(redCount && greenCount && blueCount, 'Color check failed');
       test.releaseControl();
     }
 
@@ -1104,7 +1106,7 @@
 
   TestSuite.prototype.testRawHeadersWithHSTS = function(url) {
     const test = this;
-    test.takeControl();
+    test.takeControl({slownessFactor: 10});
     self.SDK.targetManager.addModelListener(
         SDK.NetworkManager, SDK.NetworkManager.Events.ResponseReceived, onResponseReceived);
 
@@ -1175,7 +1177,7 @@
     }
 
     self.SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, onConsoleMessage, this);
-    this.takeControl();
+    this.takeControl({slownessFactor: 10});
   };
 
   TestSuite.prototype.waitForTestResultsAsMessage = function() {
@@ -1318,8 +1320,8 @@
     const {browserContextId} = await targetAgent.invoke_createBrowserContext();
 
     // Cause a Browser to be created with the temp profile.
-    const {targetId} =
-        await targetAgent.invoke_createTarget({url: 'data:text/html,', browserContextId, newWindow: true});
+    const {targetId} = await targetAgent.invoke_createTarget(
+        {url: 'data:text/html,<!DOCTYPE html>', browserContextId, newWindow: true});
     await targetAgent.invoke_attachToTarget({targetId, flatten: true});
 
     // Destroy the temp profile.
@@ -1465,7 +1467,7 @@
       });
     }
 
-    this.takeControl();
+    this.takeControl({slownessFactor: 10});
     await testCase(baseURL + 'non-existent.html', undefined, 404, [], '');
     await testCase(baseURL + 'hello.html', undefined, 200, [], '<!doctype html>\n<p>hello</p>\n');
     await testCase(baseURL + 'echoheader?x-devtools-test', {'x-devtools-test': 'Foo'}, 200, ['cache-control'], 'Foo');
@@ -1486,7 +1488,7 @@
     await testCase(
         baseURL + 'echoheader?Cookie', undefined, 200, ['cache-control'], 'devtools-test-cookie=same-site-cookie');
     await testCase('data:text/html,<body>hello</body>', undefined, 200, [], '<body>hello</body>');
-    await testCase(fileURL, undefined, 200, [], '<html>\n<body>\nDummy page.\n</body>\n</html>\n');
+    await testCase(fileURL, undefined, 200, [], '<!DOCTYPE html>\n<html>\n<body>\nDummy page.\n</body>\n</html>\n');
     await testCase(fileURL + 'thisfileshouldnotbefound', undefined, 404, [], '');
 
     this.releaseControl();

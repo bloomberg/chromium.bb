@@ -21,7 +21,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
-#import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
@@ -35,6 +34,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller.h"
@@ -128,9 +128,6 @@ enum class PresentedState {
 @property(nonatomic, strong)
     BookmarkTransitioningDelegate* bookmarkTransitioningDelegate;
 
-// Builds a controller and brings it on screen.
-- (void)presentBookmarkEditorForBookmarkedURL:(const GURL&)URL;
-
 // Dismisses the bookmark browser.  If |urlsToOpen| is not empty, then the user
 // has selected to navigate to those URLs with specified tab mode.
 - (void)dismissBookmarkBrowserAnimated:(BOOL)animated
@@ -186,41 +183,46 @@ enum class PresentedState {
 }
 
 - (void)dealloc {
-  _bookmarkBrowser.homeDelegate = nil;
-  _bookmarkEditor.delegate = nil;
+  [self shutdown];
 }
 
-- (void)presentBookmarkEditorForBookmarkedURL:(const GURL&)URL {
+- (void)shutdown {
+  [self bookmarkBrowserDismissed];
+
+  _bookmarkBrowser.homeDelegate = nil;
+  [_bookmarkBrowser shutdown];
+  _bookmarkBrowser = nil;
+
+  _bookmarkEditor.delegate = nil;
+  [_bookmarkEditor shutdown];
+  _bookmarkEditor = nil;
+}
+
+- (void)bookmarkURL:(const GURL&)URL title:(NSString*)title {
+  if (!self.bookmarkModel->loaded())
+    return;
+
+  __weak BookmarkInteractionController* weakSelf = self;
+  // Copy of |URL| to be captured in block.
+  GURL bookmarkedURL(URL);
+  void (^editAction)() = ^{
+    [weakSelf presentBookmarkEditorForURL:bookmarkedURL];
+  };
+  [self.handler
+      showSnackbarMessage:[self.mediator addBookmarkWithTitle:title
+                                                          URL:bookmarkedURL
+                                                   editAction:editAction]];
+}
+
+- (void)presentBookmarkEditorForURL:(const GURL&)URL {
+  if (!self.bookmarkModel->loaded())
+    return;
+
   const BookmarkNode* bookmark =
       self.bookmarkModel->GetMostRecentlyAddedUserNodeForURL(URL);
   if (!bookmark)
     return;
   [self presentEditorForNode:bookmark];
-}
-
-- (void)presentBookmarkEditorForWebState:(web::WebState*)webState
-                     currentlyBookmarked:(BOOL)bookmarked {
-  if (!self.bookmarkModel->loaded())
-    return;
-  if (!webState)
-    return;
-
-  GURL bookmarkedURL = webState->GetLastCommittedURL();
-
-  if (bookmarked) {
-    [self presentBookmarkEditorForBookmarkedURL:bookmarkedURL];
-  } else {
-    __weak BookmarkInteractionController* weakSelf = self;
-    void (^editAction)() = ^{
-      [weakSelf presentBookmarkEditorForBookmarkedURL:bookmarkedURL];
-    };
-    [self.handler
-        showSnackbarMessage:[self.mediator
-                                addBookmarkWithTitle:tab_util::GetTabTitle(
-                                                         webState)
-                                                 URL:bookmarkedURL
-                                          editAction:editAction]];
-  }
 }
 
 - (void)presentBookmarks {
@@ -314,17 +316,7 @@ enum class PresentedState {
   }
 
   ProceduralBlock completion = ^{
-    // TODO(crbug.com/940856): Make sure navigaton
-    // controller doesn't keep any controllers. Without
-    // this there's a memory leak of (almost) every BHVC
-    // the user visits.
-    [self.bookmarkNavigationController setViewControllers:@[] animated:NO];
-
-    self.bookmarkBrowser.homeDelegate = nil;
-    self.bookmarkBrowser = nil;
-    self.bookmarkTransitioningDelegate = nil;
-    self.bookmarkNavigationController = nil;
-    self.bookmarkNavigationControllerDelegate = nil;
+    [self bookmarkBrowserDismissed];
 
     if (!openUrlsAfterDismissal) {
       return;
@@ -341,6 +333,20 @@ enum class PresentedState {
     completion();
   }
   self.currentPresentedState = PresentedState::NONE;
+}
+
+- (void)bookmarkBrowserDismissed {
+  // TODO(crbug.com/940856): Make sure navigaton
+  // controller doesn't keep any controllers. Without
+  // this there's a memory leak of (almost) every BHVC
+  // the user visits.
+  [self.bookmarkNavigationController setViewControllers:@[] animated:NO];
+
+  self.bookmarkBrowser.homeDelegate = nil;
+  self.bookmarkBrowser = nil;
+  self.bookmarkTransitioningDelegate = nil;
+  self.bookmarkNavigationController = nil;
+  self.bookmarkNavigationControllerDelegate = nil;
 }
 
 - (void)dismissBookmarkEditorAnimated:(BOOL)animated {
@@ -473,6 +479,7 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
                                      new_tab_page_uma::ACTION_OPENED_BOOKMARK);
       base::RecordAction(
           base::UserMetricsAction("MobileBookmarkManagerEntryOpened"));
+      LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeAllTabs);
 
       if (newTab ||
           ((!!inIncognito) != _currentBrowserState->IsOffTheRecord())) {

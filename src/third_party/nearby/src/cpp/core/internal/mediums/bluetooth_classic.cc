@@ -271,19 +271,20 @@ bool BluetoothClassic::StartAcceptingConnections(
   // Start the accept loop on a dedicated thread - this stays alive and
   // listening for new incoming connections until StopAcceptingConnections() is
   // invoked.
-  accept_loops_runner_.Execute([callback = std::move(callback),
-                                server_socket = std::move(owned_socket),
-                                service_name]() mutable {
-    while (true) {
-      BluetoothSocket client_socket = server_socket.Accept();
-      if (!client_socket.IsValid()) {
-        server_socket.Close();
-        break;
-      }
+  accept_loops_runner_.Execute(
+      "bt-accept",
+      [callback = std::move(callback), server_socket = std::move(owned_socket),
+       service_name]() mutable {
+        while (true) {
+          BluetoothSocket client_socket = server_socket.Accept();
+          if (!client_socket.IsValid()) {
+            server_socket.Close();
+            break;
+          }
 
-      callback.accepted_cb(std::move(client_socket));
-    }
-  });
+          callback.accepted_cb(std::move(client_socket));
+        }
+      });
 
   return true;
 }
@@ -345,7 +346,22 @@ bool BluetoothClassic::StopAcceptingConnections(
 }
 
 BluetoothSocket BluetoothClassic::Connect(BluetoothDevice& bluetooth_device,
-                                          const std::string& service_name) {
+                                          const std::string& service_name,
+                                          CancellationFlag* cancellation_flag) {
+  for (int attempts_count = 0; attempts_count < kConnectAttemptsLimit;
+       attempts_count++) {
+    auto wrapper_result =
+        AttemptToConnect(bluetooth_device, service_name, cancellation_flag);
+    if (wrapper_result.IsValid()) {
+      return wrapper_result;
+    }
+  }
+  return BluetoothSocket();
+}
+
+BluetoothSocket BluetoothClassic::AttemptToConnect(
+    BluetoothDevice& bluetooth_device, const std::string& service_name,
+    CancellationFlag* cancellation_flag) {
   MutexLock lock(&mutex_);
   NEARBY_LOG(INFO, "BluetoothClassic::Connect: device=%p", &bluetooth_device);
   // Socket to return. To allow for NRVO to work, it has to be a single object.
@@ -372,8 +388,14 @@ BluetoothSocket BluetoothClassic::Connect(BluetoothDevice& bluetooth_device,
     return socket;
   }
 
+  if (cancellation_flag->Cancelled()) {
+    NEARBY_LOGS(INFO) << "Can't create client BT socket due to cancel.";
+    return socket;
+  }
+
   socket = medium_.ConnectToService(bluetooth_device,
-                                    GenerateUuidFromString(service_name));
+                                    GenerateUuidFromString(service_name),
+                                    cancellation_flag);
   if (!socket.IsValid()) {
     NEARBY_LOG(INFO, "Failed to Connect via BT [service=%s]",
                service_name.c_str());

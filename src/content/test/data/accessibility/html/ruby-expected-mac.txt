@@ -1,4 +1,10 @@
 AXWebArea
-++AXGroup
-++++AXStaticText AXValue='ruby text'
+++AXGroup AXHelp='ruby text'
 ++++AXStaticText AXValue='ruby base'
+++AXGroup
+++++AXGroup AXHelp='ruby text'
+++++++AXStaticText AXValue='ruby base'
+++AXGroup
+++++AXStaticText AXValue='Hi! '
+++++AXGroup AXHelp='ruby text'
+++++++AXStaticText AXValue='ruby base'

@@ -12,6 +12,7 @@
 #include <wrl/client.h>
 
 #include "media/base/media_log.h"
+#include "media/base/status_codes.h"
 #include "media/gpu/vp9_decoder.h"
 #include "media/gpu/windows/d3d11_com_defs.h"
 #include "media/gpu/windows/d3d11_video_context_wrapper.h"
@@ -30,11 +31,11 @@ class D3D11VP9Accelerator : public VP9Decoder::VP9Accelerator {
 
   scoped_refptr<VP9Picture> CreateVP9Picture() override;
 
-  bool SubmitDecode(scoped_refptr<VP9Picture> picture,
-                    const Vp9SegmentationParams& segmentation_params,
-                    const Vp9LoopFilterParams& loop_filter_params,
-                    const Vp9ReferenceFrameVector& reference_frames,
-                    base::OnceClosure on_finished_cb) override;
+  Status SubmitDecode(scoped_refptr<VP9Picture> picture,
+                      const Vp9SegmentationParams& segmentation_params,
+                      const Vp9LoopFilterParams& loop_filter_params,
+                      const Vp9ReferenceFrameVector& reference_frames,
+                      base::OnceClosure on_finished_cb) override;
 
   bool OutputPicture(scoped_refptr<VP9Picture> picture) override;
 
@@ -66,7 +67,9 @@ class D3D11VP9Accelerator : public VP9Decoder::VP9Accelerator {
   bool SubmitDecoderBuffer(const DXVA_PicParams_VP9& pic_params,
                            const D3D11VP9Picture& pic);
 
-  void RecordFailure(const std::string& fail_type, const std::string& reason);
+  void RecordFailure(const std::string& fail_type,
+                     const std::string& reason,
+                     StatusCode code);
 
   void SetVideoDecoder(ComD3D11VideoDecoder video_decoder);
 

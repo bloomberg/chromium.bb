@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/application_breadcrumbs_not_user_action.inc"
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_persistent_storage_manager.h"
+#include "components/breadcrumbs/core/application_breadcrumbs_not_user_action.inc"
+#include "components/breadcrumbs/core/breadcrumb_manager.h"
+#include "components/breadcrumbs/core/breadcrumb_persistent_storage_manager.h"
 #import "ios/chrome/browser/crash_report/crash_report_helper.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -18,7 +18,7 @@
 const char kBreadcrumbOrientation[] = "Orientation";
 
 ApplicationBreadcrumbsLogger::ApplicationBreadcrumbsLogger(
-    BreadcrumbManager* breadcrumb_manager)
+    breadcrumbs::BreadcrumbManager* breadcrumb_manager)
     : breadcrumb_manager_(breadcrumb_manager),
       user_action_callback_(
           base::BindRepeating(&ApplicationBreadcrumbsLogger::OnUserAction,
@@ -81,7 +81,7 @@ ApplicationBreadcrumbsLogger::~ApplicationBreadcrumbsLogger() {
 }
 
 void ApplicationBreadcrumbsLogger::SetPersistentStorageManager(
-    std::unique_ptr<BreadcrumbPersistentStorageManager>
+    std::unique_ptr<breadcrumbs::BreadcrumbPersistentStorageManager>
         persistent_storage_manager) {
   if (persistent_storage_manager_) {
     persistent_storage_manager_->StopMonitoringBreadcrumbManager(
@@ -92,7 +92,7 @@ void ApplicationBreadcrumbsLogger::SetPersistentStorageManager(
   persistent_storage_manager_->MonitorBreadcrumbManager(breadcrumb_manager_);
 }
 
-BreadcrumbPersistentStorageManager*
+breadcrumbs::BreadcrumbPersistentStorageManager*
 ApplicationBreadcrumbsLogger::GetPersistentStorageManager() const {
   return persistent_storage_manager_.get();
 }

@@ -4,17 +4,14 @@
 
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/confirm/confirm_infobar_banner_interaction_handler.h"
 
-#include "base/test/scoped_feature_list.h"
-#include "components/infobars/core/infobar_feature.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
 #import "ios/chrome/browser/infobars/test/fake_infobar_ios.h"
 #include "ios/chrome/browser/infobars/test/mock_infobar_delegate.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
-#import "ios/web/public/test/fakes/test_navigation_manager.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_navigation_manager.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -25,10 +22,8 @@
 class ConfirmInfobarBannerInteractionHandlerTest : public PlatformTest {
  public:
   ConfirmInfobarBannerInteractionHandlerTest() {
-    scoped_feature_list_.InitWithFeatures({kIOSInfobarUIReboot},
-                                          {kInfobarUIRebootOnlyiOS13});
     web_state_.SetNavigationManager(
-        std::make_unique<web::TestNavigationManager>());
+        std::make_unique<web::FakeNavigationManager>());
     InfobarOverlayRequestInserter::CreateForWebState(&web_state_);
     InfoBarManagerImpl::CreateForWebState(&web_state_);
 
@@ -46,9 +41,8 @@ class ConfirmInfobarBannerInteractionHandlerTest : public PlatformTest {
   }
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
   ConfirmInfobarBannerInteractionHandler handler_;
-  web::TestWebState web_state_;
+  web::FakeWebState web_state_;
   InfoBarIOS* infobar_;
 };
 

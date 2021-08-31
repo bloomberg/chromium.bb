@@ -4,6 +4,8 @@
 # found in the LICENSE file.
 """Script to ensure that the same tags are in all expectation files."""
 
+from __future__ import print_function
+
 import argparse
 import logging
 import os
@@ -12,7 +14,7 @@ import sys
 TAG_HEADER = """\
 # OS
 # tags: [ android android-lollipop android-marshmallow android-nougat
-#             android-pie
+#             android-pie android-r
 #         chromeos
 #         fuchsia
 #         linux ubuntu
@@ -20,8 +22,8 @@ TAG_HEADER = """\
 #             sierra
 #         win win7 win8 win10 ]
 # Devices
-# tags: [ android-nexus-5 android-nexus-5x android-nexus-6 android-nexus-6p
-#             android-nexus-9 android-pixel-2 android-shield-android-tv
+# tags: [ android-nexus-5 android-nexus-5x android-nexus-6 android-nexus-9
+#             android-pixel-2 android-pixel-4 android-shield-android-tv
 #         chromeos-board-amd64-generic chromeos-board-kevin
 #         fuchsia-board-astro fuchsia-board-qemu-x64 ]
 # Platform
@@ -32,8 +34,8 @@ TAG_HEADER = """\
 #         debug debug-x64
 #         release release-x64 ]
 # GPU
-# tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 amd-0x699f
-#         apple apple-apple-a12z
+# tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 amd-0x7340
+#         apple apple-apple-m1 apple-angle-metal-renderer:-apple-m1
 #         arm
 #         google google-0xffff
 #         intel intel-0xa2e intel-0xd26 intel-0xa011 intel-0x3e92 intel-0x3e9b
@@ -64,6 +66,8 @@ TAG_HEADER = """\
 #         mesa_lt_19.1 mesa_ge_20.1 ]
 # ASan
 # tags: [ asan no-asan ]
+# Display Server
+# tags: [ display-server-wayland display-server-x ]
 # results: [ Failure RetryOnFailure Skip ]
 """
 

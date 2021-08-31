@@ -146,9 +146,9 @@ TEST(PaintPreviewSerialUtils, TestImageContextLimitBudget) {
   canvas1.drawRect(SkRect::MakeWH(1, 4), paint);
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(SkRect::MakeWH(40, 40));
-  canvas->drawBitmap(bitmap1, 0, 0);
-  canvas->drawBitmap(bitmap1, 0, 0);
-  canvas->drawBitmap(bitmap1, 0, 0);
+  canvas->drawImage(bitmap1.asImage(), 0, 0);
+  canvas->drawImage(bitmap1.asImage(), 0, 0);
+  canvas->drawImage(bitmap1.asImage(), 0, 0);
   auto pic = recorder.finishRecordingAsPicture();
 
   PictureSerializationContext picture_ctx;
@@ -165,6 +165,7 @@ TEST(PaintPreviewSerialUtils, TestImageContextLimitBudget) {
 
   sk_sp<SkData> data = pic->serialize(&serial_procs);
   EXPECT_NE(data, nullptr);
+  EXPECT_TRUE(ictx.memory_budget_exceeded);
   SkDeserialProcs deserial_procs;
   size_t deserialized_images = 0;
   deserial_procs.fImageCtx = &deserialized_images;
@@ -194,15 +195,15 @@ TEST(PaintPreviewSerialUtils, TestImageContextLimitSize) {
   canvas2.drawRect(SkRect::MakeWH(20, 5), paint);
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(SkRect::MakeWH(40, 40));
-  canvas->drawBitmap(bitmap1, 0, 0);
-  canvas->drawBitmap(bitmap2, 0, 0);
+  canvas->drawImage(bitmap1.asImage(), 0, 0);
+  canvas->drawImage(bitmap2.asImage(), 0, 0);
   auto pic = recorder.finishRecordingAsPicture();
 
   PictureSerializationContext picture_ctx;
   TypefaceUsageMap usage_map;
   TypefaceSerializationContext typeface_ctx(&usage_map);
   ImageSerializationContext ictx;
-  ictx.max_representation_size = 200;
+  ictx.max_decoded_image_size_bytes = 200;
 
   SkSerialProcs serial_procs =
       MakeSerialProcs(&picture_ctx, &typeface_ctx, &ictx);
@@ -212,6 +213,7 @@ TEST(PaintPreviewSerialUtils, TestImageContextLimitSize) {
 
   sk_sp<SkData> data = pic->serialize(&serial_procs);
   EXPECT_NE(data, nullptr);
+  EXPECT_FALSE(ictx.memory_budget_exceeded);
   SkDeserialProcs deserial_procs;
   size_t deserialized_images = 0;
   deserial_procs.fImageCtx = &deserialized_images;

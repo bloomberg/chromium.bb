@@ -90,3 +90,6 @@ testing_support/google_appengine
 
 # Ignore git traces produced by git push on git-cl upload.
 /traces
+
+# Ignore VsChromium configuration file.
+/vs-chromium-project.txt

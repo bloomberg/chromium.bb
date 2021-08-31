@@ -84,16 +84,16 @@ int TabModalConfirmDialogDelegate::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
-base::string16 TabModalConfirmDialogDelegate::GetAcceptButtonTitle() {
+std::u16string TabModalConfirmDialogDelegate::GetAcceptButtonTitle() {
   return l10n_util::GetStringUTF16(IDS_OK);
 }
 
-base::string16 TabModalConfirmDialogDelegate::GetCancelButtonTitle() {
+std::u16string TabModalConfirmDialogDelegate::GetCancelButtonTitle() {
   return l10n_util::GetStringUTF16(IDS_CANCEL);
 }
 
-base::string16 TabModalConfirmDialogDelegate::GetLinkText() const {
-  return base::string16();
+std::u16string TabModalConfirmDialogDelegate::GetLinkText() const {
+  return std::u16string();
 }
 
 const char* TabModalConfirmDialogDelegate::GetAcceptButtonIcon() {
@@ -118,12 +118,12 @@ void TabModalConfirmDialogDelegate::CloseDialog() {
     close_delegate_->CloseDialog();
 }
 
-base::Optional<int> TabModalConfirmDialogDelegate::GetDefaultDialogButton() {
+absl::optional<int> TabModalConfirmDialogDelegate::GetDefaultDialogButton() {
   // Use the default, don't override.
-  return base::nullopt;
+  return absl::nullopt;
 }
 
-base::Optional<int> TabModalConfirmDialogDelegate::GetInitiallyFocusedButton() {
+absl::optional<int> TabModalConfirmDialogDelegate::GetInitiallyFocusedButton() {
   // Use the default, don't override.
-  return base::nullopt;
+  return absl::nullopt;
 }

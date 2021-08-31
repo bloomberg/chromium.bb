@@ -19,7 +19,7 @@ import sys
 
 def FindGclientRoot(from_dir, filename='.gclient'):
   """Tries to find the gclient root."""
-  real_from_dir = os.path.realpath(from_dir)
+  real_from_dir = os.path.abspath(from_dir)
   path = real_from_dir
   while not os.path.exists(os.path.join(path, filename)):
     split_path = os.path.split(path)

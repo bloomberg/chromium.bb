@@ -74,12 +74,12 @@ SharingService::SharingDeviceList SharingService::GetDeviceCandidates(
   return device_source_->GetDeviceCandidates(required_feature);
 }
 
-void SharingService::SendMessageToDevice(
+base::OnceClosure SharingService::SendMessageToDevice(
     const syncer::DeviceInfo& device,
     base::TimeDelta response_timeout,
     chrome_browser_sharing::SharingMessage message,
     SharingMessageSender::ResponseCallback callback) {
-  message_sender_->SendMessageToDevice(
+  return message_sender_->SendMessageToDevice(
       device, response_timeout, std::move(message),
       SharingMessageSender::DelegateType::kFCM, std::move(callback));
 }
@@ -131,6 +131,11 @@ SharingFCMHandler* SharingService::GetFCMHandlerForTesting() const {
 
 SharingMessageSender* SharingService::GetMessageSenderForTesting() const {
   return message_sender_.get();
+}
+
+SharingMessageHandler* SharingService::GetSharingHandlerForTesting(
+    chrome_browser_sharing::SharingMessage::PayloadCase payload_case) const {
+  return handler_registry_->GetSharingHandler(payload_case);
 }
 
 void SharingService::OnSyncShutdown(syncer::SyncService* sync) {
@@ -225,7 +230,7 @@ void SharingService::OnDeviceRegistered(
 
 void SharingService::OnDeviceUnregistered(
     SharingDeviceRegistrationResult result) {
-  LogSharingUnegistrationResult(result);
+  LogSharingUnregistrationResult(result);
   if (IsSyncEnabledForSharing(sync_service_)) {
     // In case sync is enabled during un-registration, register it.
     state_ = State::REGISTERING;

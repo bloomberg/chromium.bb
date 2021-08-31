@@ -5,11 +5,9 @@
 #ifndef CHROME_BROWSER_ANDROID_EXPLORE_SITES_HISTORY_STATISTICS_REPORTER_H_
 #define CHROME_BROWSER_ANDROID_EXPLORE_SITES_HISTORY_STATISTICS_REPORTER_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
@@ -50,8 +48,9 @@ class HistoryStatisticsReporter : public history::HistoryServiceObserver {
   PrefService* prefs_;
 
   base::CancelableTaskTracker cancelable_task_tracker_;
-  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-      history_service_observer_;
+  base::ScopedObservation<history::HistoryService,
+                          history::HistoryServiceObserver>
+      history_service_observation_{this};
   bool attempted_to_report_once_ = false;
   base::WeakPtrFactory<HistoryStatisticsReporter> weak_ptr_factory_{this};
 

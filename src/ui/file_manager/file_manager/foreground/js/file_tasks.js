@@ -2,11 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {Menu} from 'chrome://resources/js/cr/ui/menu.m.js';
+// #import {MultiMenuButton} from './ui/multi_menu_button.m.js';
+// #import {VolumeInfo} from '../../externs/volume_info.m.js';
+// #import {ProgressCenter} from '../../externs/background/progress_center.m.js';
+// #import {Crostini} from '../../externs/background/crostini.m.js';
+// #import {NamingController} from './naming_controller.m.js';
+// #import {TaskHistory} from './task_history.m.js';
+// #import {FileManagerUI} from './ui/file_manager_ui.m.js';
+// #import {DirectoryModel} from './directory_model.m.js';
+// #import {MetadataModel} from './metadata/metadata_model.m.js';
+// #import {VolumeManager} from '../../externs/volume_manager.m.js';
+// #import {FilesMenuItem} from './ui/files_menu.m.js';
+// #import {decorate} from 'chrome://resources/js/cr/ui.m.js';
+// #import {FilesPasswordDialog} from '../elements/files_password_dialog.m.js';
+// #import {ProgressCenterItem, ProgressItemType, ProgressItemState} from '../../common/js/progress_center_common.m.js';
+// #import {FileTransferController} from './file_transfer_controller.m.js';
+// #import {FilesConfirmDialog} from './ui/files_confirm_dialog.m.js';
+// #import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
+// #import {FileType} from '../../common/js/file_type.m.js';
+// #import {constants} from './constants.m.js';
+// #import {util, strf, str} from '../../common/js/util.m.js';
+// #import {AsyncUtil} from '../../common/js/async_util.m.js'
+// #import {metrics} from '../../common/js/metrics.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {DefaultTaskDialog} from './ui/default_task_dialog.m.js';
+// #import {ComboButton} from './ui/combobutton.m.js';
+// clang-format on
+
 /**
  * Represents a collection of available tasks to execute for a specific list
  * of entries.
  */
-class FileTasks {
+/* #export */ class FileTasks {
   /**
    * @param {!VolumeManager} volumeManager
    * @param {!MetadataModel} metadataModel
@@ -173,48 +203,6 @@ class FileTasks {
    */
   getNonOpenTaskItems() {
     return this.tasks_.filter(task => !FileTasks.isOpenTask(task));
-  }
-
-  /**
-   * Opens the suggest file dialog.
-   *
-   * @param {function()} onSuccess Success callback.
-   * @param {function()} onCancelled User-cancelled callback.
-   * @param {function()} onFailure Failure callback.
-   */
-  openSuggestAppsDialog(onSuccess, onCancelled, onFailure) {
-    if (this.entries_.length !== 1) {
-      onFailure();
-      return;
-    }
-
-    const entry = this.entries_[0];
-    const mimeType = this.mimeTypes_[0];
-    const basename = entry.name;
-    const splitted = util.splitExtension(basename);
-    const extension = splitted[1];
-
-    // Returns with failure if the file has neither extension nor MIME type.
-    if (!extension && !mimeType) {
-      onFailure();
-      return;
-    }
-
-    const onDialogClosed = (result, itemId) => {
-      switch (result) {
-        case SuggestAppsDialog.Result.SUCCESS:
-          onSuccess();
-          break;
-        case SuggestAppsDialog.Result.FAILED:
-          onFailure();
-          break;
-        default:
-          onCancelled();
-      }
-    };
-
-    this.ui_.suggestAppsDialog.showByExtensionAndMime(
-        extension, mimeType, onDialogClosed);
   }
 
   /**
@@ -482,6 +470,57 @@ class FileTasks {
   }
 
   /**
+   * @param {!Entry} entry
+   * @param {!VolumeManager} volumeManager
+   * @return {boolean} True if the entry is from MyFiles.
+   */
+  static isMyFilesEntry(entry, volumeManager) {
+    const location = volumeManager.getLocationInfo(entry);
+    return !!location &&
+        location.rootType === VolumeManagerCommon.RootType.DOWNLOADS;
+  }
+
+  /**
+   * Show dialog when user opens or drags a file with PluginVM and the file
+   * is not in PvmSharedDir or shared with PluginVM. The dialog tells the
+   * user to move or copy the file to PvmSharedDir and offers an action to do
+   * that.
+   *
+   * @param {!Array<!Entry>} entries Selected entries to be moved or copied.
+   * @param {!VolumeManager} volumeManager
+   * @param {!MetadataModel} metadataModel
+   * @param {!FileManagerUI} ui FileManager UI to show dialog.
+   * @param {string} moveMessage Message if files are local and can be moved.
+   * @param {string} copyMessage Message if files should be copied.
+   * @param {?FileTransferController} fileTransferController
+   * @param {!DirectoryModel} directoryModel
+   */
+  static showPluginVmNotSharedDialog(
+      entries, volumeManager, metadataModel, ui, moveMessage, copyMessage,
+      fileTransferController, directoryModel) {
+    assert(entries.length > 0);
+    const isMyFiles = FileTasks.isMyFilesEntry(entries[0], volumeManager);
+    const dialog = new FilesConfirmDialog(ui.element);
+    dialog.setOkLabel(strf(
+        isMyFiles ? 'CONFIRM_MOVE_BUTTON_LABEL' : 'CONFIRM_COPY_BUTTON_LABEL'));
+    dialog.show(isMyFiles ? moveMessage : copyMessage, async () => {
+      if (!fileTransferController) {
+        console.error('FileTransferController not set');
+        return;
+      }
+
+      const pvmDir = await FileTasks.getPvmSharedDir_(volumeManager);
+
+      assert(volumeManager.getLocationInfo(pvmDir));
+
+      fileTransferController.executePaste(new FileTransferController.PastePlan(
+          entries.map(e => e.toURL()), [], pvmDir, metadataModel,
+          /*isMove=*/ isMyFiles));
+      directoryModel.changeDirectoryEntry(pvmDir);
+    });
+  }
+
+  /**
    * Executes default task.
    *
    * @param {function(boolean, Array<!Entry>)=} opt_callback Called when the
@@ -553,45 +592,14 @@ class FileTasks {
           textMessageId = 'NO_TASK_FOR_FILE';
       }
 
-      const webStoreUrl = webStoreUtils.createWebStoreLink(extension, mimeType);
-      const text =
-          strf(textMessageId, webStoreUrl, str('NO_TASK_FOR_FILE_URL'));
+      const text = strf(textMessageId, str('NO_TASK_FOR_FILE_URL'));
       const title = titleMessageId ? str(titleMessageId) : filename;
       this.ui_.alertDialog.showHtml(title, text, null, null, null);
       callback(false, this.entries_);
     };
 
     const onViewFilesFailure = () => {
-      if (extension &&
-          (FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_.indexOf(extension) !==
-               -1 ||
-           constants.EXECUTABLE_EXTENSIONS.indexOf(assert(extension)) !== -1)) {
-        showAlert();
-        return;
-      }
-
-      this.openSuggestAppsDialog(
-          () => {
-            FileTasks
-                .create(
-                    this.volumeManager_, this.metadataModel_,
-                    this.directoryModel_, this.ui_,
-                    this.fileTransferController_, this.entries_,
-                    this.mimeTypes_, this.taskHistory_, this.namingController_,
-                    this.crostini_, this.progressCenter_)
-                .then(
-                    tasks => {
-                      tasks.executeDefault();
-                      callback(true, this.entries_);
-                    },
-                    () => {
-                      callback(false, this.entries_);
-                    });
-          },
-          () => {
-            callback(false, this.entries_);
-          },
-          showAlert);
+      showAlert();
     };
 
     const onViewFiles = result => {
@@ -666,38 +674,17 @@ class FileTasks {
             }
           });
           break;
-        case taskResult.FAILED_PLUGIN_VM_TASK_DIRECTORY_NOT_SHARED:
-        case taskResult.FAILED_PLUGIN_VM_TASK_EXTERNAL_DRIVE:
-          const [messageId, buttonId, toMove] =
-              result == taskResult.FAILED_PLUGIN_VM_TASK_DIRECTORY_NOT_SHARED ?
-              [
-                'UNABLE_TO_OPEN_WITH_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE',
-                'CONFIRM_MOVE_BUTTON_LABEL',
-                true,
-              ] :
-              [
-                'UNABLE_TO_OPEN_WITH_PLUGIN_VM_EXTERNAL_DRIVE_MESSAGE',
-                'CONFIRM_COPY_BUTTON_LABEL',
-                false,
-              ];
-          const dialog = new FilesConfirmDialog(this.ui_.element);
-          dialog.setOkLabel(strf(buttonId));
-          dialog.show(
-              strf(messageId, task.title), async () => {
-                if (!this.fileTransferController_) {
-                  console.error('FileTransferController not set');
-                  return;
-                }
-
-                const pvmDir = await this.getPvmSharedDir_();
-
-                this.fileTransferController_.executePaste(
-                    new FileTransferController.PastePlan(
-                        this.entries_.map(e => e.toURL()), pvmDir,
-                        assert(this.volumeManager_.getLocationInfo(pvmDir)),
-                        toMove));
-                this.directoryModel_.changeDirectoryEntry(pvmDir);
-              });
+        case taskResult.FAILED_PLUGIN_VM_DIRECTORY_NOT_SHARED:
+          const moveMessage = strf(
+              'UNABLE_TO_OPEN_WITH_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE',
+              task.title);
+          const copyMessage = strf(
+              'UNABLE_TO_OPEN_WITH_PLUGIN_VM_EXTERNAL_DRIVE_MESSAGE',
+              task.title);
+          FileTasks.showPluginVmNotSharedDialog(
+              this.entries_, this.volumeManager_, this.metadataModel_, this.ui_,
+              moveMessage, copyMessage, this.fileTransferController_,
+              this.directoryModel_);
           break;
       }
     };
@@ -705,7 +692,7 @@ class FileTasks {
     this.checkAvailability_(() => {
       this.taskHistory_.recordTaskExecuted(task.taskId);
       let msg;
-      if (this.entries.length === 1) {
+      if (this.entries_.length === 1) {
         msg = strf('OPEN_A11Y', this.entries_[0].name);
       } else {
         msg = strf('OPEN_A11Y_PLURAL', this.entries_.length);
@@ -964,7 +951,10 @@ class FileTasks {
       const item = new ProgressCenterItem();
       item.id = 'Cannot mount: ' + url;
       item.type = ProgressItemType.MOUNT_ARCHIVE;
-      item.message = strf('ARCHIVE_MOUNT_FAILED', filename);
+      const msgId = error === VolumeManagerCommon.VolumeError.INVALID_PATH ?
+          'ARCHIVE_MOUNT_INVALID_PATH' :
+          'ARCHIVE_MOUNT_FAILED';
+      item.message = strf(msgId, filename);
       item.state = ProgressItemState.ERROR;
       this.progressCenter_.updateItem(item);
 
@@ -1280,9 +1270,12 @@ class FileTasks {
     return null;
   }
 
-  async getPvmSharedDir_() {
+  /**
+   * @param {!VolumeManager} volumeManager
+   */
+  static async getPvmSharedDir_(volumeManager) {
     return new Promise((resolve, reject) => {
-      this.volumeManager_
+      volumeManager
           .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DOWNLOADS)
           .fileSystem.root.getDirectory(
               'PvmDefault', {create: false},
@@ -1403,17 +1396,6 @@ FileTasks.UMA_INDEX_KNOWN_EXTENSIONS = Object.freeze([
 ]);
 
 /**
- * The list of extensions to skip the suggest app dialog.
- * @private @const {Array<string>}
- */
-FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_ = Object.freeze([
-  '.crdownload',
-  '.dsc',
-  '.inf',
-  '.crx',
-]);
-
-/**
  * Task IDs of the zip file handlers to be recorded.
  * The indexes of the IDs must match with the values of
  * FileManagerZipHandlerType in enums.xml, and should not change.
@@ -1432,6 +1414,7 @@ FileTasks.SharingActionSourceForUMA = {
   UNKNOWN: 'Unknown',
   CONTEXT_MENU: 'Context Menu',
   SHARE_BUTTON: 'Share Button',
+  SHARE_SHEET: 'Share Sheet',
 };
 
 /**
@@ -1442,6 +1425,7 @@ FileTasks.ValidSharingActionSource = Object.freeze([
   FileTasks.SharingActionSourceForUMA.UNKNOWN,
   FileTasks.SharingActionSourceForUMA.CONTEXT_MENU,
   FileTasks.SharingActionSourceForUMA.SHARE_BUTTON,
+  FileTasks.SharingActionSourceForUMA.SHARE_SHEET,
 ]);
 
 /**

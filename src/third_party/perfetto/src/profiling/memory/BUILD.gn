@@ -48,12 +48,13 @@ if (perfetto_build_with_android) {
     cflags = [ "-DPERFETTO_ANDROID_ASYNC_SAFE_LOG" ]
     deps = [
       ":heapprofd_client_api",
-      ":malloc_hooks",
+      ":malloc_interceptor_bionic_hooks",
     ]
   }
 
-  # This will export publicly visible symbols for the malloc_hooks.
-  source_set("malloc_hooks") {
+  # This will export publicly visible symbols for the
+  # malloc_interceptor_bionic_hooks.
+  source_set("malloc_interceptor_bionic_hooks") {
     deps = [
       ":bionic_libc_platform_headers_on_android",
       ":wrap_allocators",
@@ -64,7 +65,7 @@ if (perfetto_build_with_android) {
       "-isystem",
       rebase_path("../../../buildtools/bionic/libc", root_build_dir),
     ]
-    sources = [ "malloc_hooks.cc" ]
+    sources = [ "malloc_interceptor_bionic_hooks.cc" ]
   }
 }  # if (perfetto_build_with_android)
 
@@ -78,6 +79,7 @@ executable("heapprofd_standalone_client_example") {
 
 source_set("client_api_standalone") {
   deps = [
+    ":client",
     ":client_api",
     ":daemon",
     "../../../gn:default_deps",
@@ -85,7 +87,7 @@ source_set("client_api_standalone") {
     "../../base",
     "../common:proc_utils",
   ]
-  sources = [ "client_api_standalone.cc" ]
+  sources = [ "client_api_factory_standalone.cc" ]
 }
 
 # This can be used to instrument custom allocators to report their allocations
@@ -103,12 +105,16 @@ shared_library("heapprofd_standalone_client") {
   ]
 }
 
-shared_library("heapprofd_standalone_client_noop") {
+shared_library("heapprofd_api_noop") {
   deps = [ "../../../gn:default_deps" ]
   ldflags = [
     "-Wl,--version-script",
     rebase_path("heapprofd_client_api.map.txt", root_build_dir),
   ]
+
+  # This target does absolutely nothing, so we do not want to depend on
+  # liblog.
+  configs -= [ "//gn/standalone:android_liblog" ]
   sources = [ "client_api_noop.cc" ]
 }
 
@@ -124,13 +130,13 @@ shared_library("heapprofd_client_api") {
   }
   deps = [ ":client_api" ]
   if (perfetto_build_with_android) {
-    sources = [ "client_api_android.cc" ]
+    sources = [ "client_api_factory_android.cc" ]
   }
 }
 
 # On GLibc Linux, this can be used to override the allocators using
 # LD_PRELOAD. On non-GLibc, this will probably fail to link.
-shared_library("heapprofd_preload") {
+shared_library("heapprofd_glibc_preload") {
   deps = [
     ":client_api_standalone",
     ":wrap_allocators",
@@ -141,7 +147,7 @@ shared_library("heapprofd_preload") {
     "-Wl,--version-script",
     rebase_path("heapprofd_preload.map.txt", root_build_dir),
   ]
-  sources = [ "malloc_preload.cc" ]
+  sources = [ "malloc_interceptor_glibc_preload.cc" ]
 }
 
 # On Android builds, this is converted to
@@ -241,6 +247,8 @@ source_set("daemon") {
     "../common:interner",
     "../common:interning_output",
     "../common:proc_utils",
+    "../common:producer_support",
+    "../common:profiler_guardrails",
     "../common:unwind_support",
   ]
   public_deps = [
@@ -259,6 +267,8 @@ source_set("daemon") {
     "heapprofd_producer.h",
     "java_hprof_producer.cc",
     "java_hprof_producer.h",
+    "log_histogram.cc",
+    "log_histogram.h",
     "system_property.cc",
     "system_property.h",
     "unwinding.cc",
@@ -291,6 +301,7 @@ perfetto_unittest_source_set("unittests") {
   deps = [
     ":client",
     ":daemon",
+    ":ring_buffer",
     ":wire_protocol",
     "../../../gn:default_deps",
     "../../../gn:gtest_and_gmock",
@@ -311,6 +322,13 @@ perfetto_unittest_source_set("unittests") {
     "unwinding_unittest.cc",
     "wire_protocol_unittest.cc",
   ]
+
+  # Do not build with Android to avoid applying PERFETTO_ANDROID_ASYNC_SAFE_LOG
+  # to the whole perfetto_unittests target.
+  if (!perfetto_build_with_android) {
+    sources += [ "client_api_unittest.cc" ]
+    deps += [ ":client_api" ]
+  }
 }
 
 source_set("end_to_end_tests") {
@@ -328,6 +346,7 @@ source_set("end_to_end_tests") {
     "../../../test:test_helper",
     "../../base",
     "../../base:test_support",
+    "../../trace_processor:lib",
   ]
   sources = [ "heapprofd_end_to_end_test.cc" ]
   if (perfetto_build_with_android) {
@@ -372,4 +391,19 @@ perfetto_fuzzer_test("shared_ring_buffer_write_fuzzer") {
     "../../../gn:default_deps",
     "../../base",
   ]
+}
+
+if (enable_perfetto_benchmarks) {
+  source_set("benchmarks") {
+    testonly = true
+    deps = [
+      ":client",
+      ":client_api",
+      "../../../gn:benchmark",
+      "../../../gn:default_deps",
+      "../../base",
+      "../../base:test_support",
+    ]
+    sources = [ "client_api_benchmark.cc" ]
+  }
 }

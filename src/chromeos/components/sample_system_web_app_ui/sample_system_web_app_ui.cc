@@ -17,18 +17,6 @@
 #include "ui/webui/webui_allowlist.h"
 
 namespace chromeos {
-namespace {
-content::WebUIDataSource* CreateUntrustedSampleSystemWebAppDataSource() {
-  content::WebUIDataSource* untrusted_source =
-      content::WebUIDataSource::Create(kChromeUIUntrustedSampleSystemWebAppURL);
-  untrusted_source->AddResourcePath(
-      "untrusted.html", IDR_CHROMEOS_SAMPLE_SYSTEM_WEB_APP_UNTRUSTED_HTML);
-  untrusted_source->AddResourcePath(
-      "untrusted.js", IDR_CHROMEOS_SAMPLE_SYSTEM_WEB_APP_UNTRUSTED_JS);
-  untrusted_source->AddFrameAncestor(GURL(kChromeUISampleSystemWebAppURL));
-  return untrusted_source;
-}
-}  // namespace
 
 SampleSystemWebAppUI::SampleSystemWebAppUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui) {
@@ -40,7 +28,26 @@ SampleSystemWebAppUI::SampleSystemWebAppUI(content::WebUI* web_ui)
   trusted_source->AddResourcePath(
       "sandbox.html", IDR_CHROMEOS_SAMPLE_SYSTEM_WEB_APP_SANDBOX_HTML);
   trusted_source->AddResourcePath(
-      "app_icon_192.png", IDR_CHROMEOS_SAMPLE_SYSTEM_WEB_APP_APP_ICON_192_PNG);
+      "timer.html", IDR_CHROMEOS_SAMPLE_SYSTEM_WEB_APP_TIMER_HTML);
+  trusted_source->AddResourcePath("main.js",
+                                  IDR_CHROMEOS_SAMPLE_SYSTEM_WEB_APP_MAIN_JS);
+  trusted_source->AddResourcePath("worker.js",
+                                  IDR_CHROMEOS_SAMPLE_SYSTEM_WEB_APP_WORKER_JS);
+  trusted_source->AddResourcePath("timer.js",
+                                  IDR_CHROMEOS_SAMPLE_SYSTEM_WEB_APP_TIMER_JS);
+  trusted_source->AddResourcePath(
+      "component_playground.html",
+      IDR_CHROMEOS_SAMPLE_SYSTEM_WEB_APP_COMPONENT_PLAYGROUND_HTML);
+  trusted_source->AddResourcePath(
+      "component_playground.rollup.js",
+      IDR_CHROMEOS_SAMPLE_SYSTEM_WEB_APP_COMPONENT_PLAYGROUND_ROLLUP_JS);
+
+  // TODO(https://crbug/1169829): Don't simply disable trusted types. Do the
+  // right thing.
+  trusted_source->DisableTrustedTypesCSP();
+  trusted_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::WorkerSrc,
+      std::string("worker-src 'self';"));
 
 #if !DCHECK_IS_ON()
   // If a user goes to an invalid url and non-DCHECK mode (DHECK = debug mode)
@@ -56,10 +63,11 @@ SampleSystemWebAppUI::SampleSystemWebAppUI(content::WebUI* web_ui)
       std::string("frame-src ") + kChromeUIUntrustedSampleSystemWebAppURL + ";";
   trusted_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::FrameSrc, csp);
+  trusted_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::TrustedTypes,
+      "trusted-types lit-html;");
   auto* browser_context = web_ui->GetWebContents()->GetBrowserContext();
   content::WebUIDataSource::Add(browser_context, trusted_source.release());
-  content::WebUIDataSource::Add(browser_context,
-                                CreateUntrustedSampleSystemWebAppDataSource());
 
   // Add ability to request chrome-untrusted: URLs
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);

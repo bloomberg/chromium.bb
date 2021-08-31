@@ -10,14 +10,16 @@
 #include "base/check.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/feed/core/proto/v2/xsurface.pb.h"
+#include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_stream.h"
 #include "components/feed/core/v2/metrics_reporter.h"
+#include "components/feed/core/v2/public/feed_stream_surface.h"
 
 namespace feed {
 namespace {
 
 using DrawState = SurfaceUpdater::DrawState;
-using SurfaceInterface = FeedStreamApi::SurfaceInterface;
+using FeedStreamSurface = FeedStreamSurface;
 
 // Give each kind of zero state a unique name, so that the UI knows if it
 // changes.
@@ -53,6 +55,11 @@ void AddSliceUpdate(const StreamModel& model,
     const feedstore::Content* content = model.FindContent(content_revision);
     DCHECK(content);
     slice->mutable_xsurface_slice()->set_xsurface_frame(content->frame());
+    if (content->prefetch_metadata_size() > 0) {
+      auto metadata = content->prefetch_metadata(0);
+      slice->mutable_slice_metadata()->set_uri(metadata.uri());
+      slice->mutable_slice_metadata()->set_title(metadata.title());
+    }
   } else {
     stream_update->add_updated_slices()->set_slice_id(
         ToString(content_revision));
@@ -154,6 +161,12 @@ feedui::ZeroStateSlice::Type GetZeroStateType(LoadStreamStatus status) {
     case LoadStreamStatus::kLoadMoreModelIsNotLoaded:
     case LoadStreamStatus::kLoadNotAllowedDisabledByEnterprisePolicy:
     case LoadStreamStatus::kCannotLoadMoreNoNextPageToken:
+    case LoadStreamStatus::kDataInStoreStaleMissedLastRefresh:
+    case LoadStreamStatus::kLoadedStaleDataFromStoreDueToNetworkFailure:
+    case LoadStreamStatus::kDataInStoreIsExpired:
+    case LoadStreamStatus::kDataInStoreIsForAnotherUser:
+    case LoadStreamStatus::kAbortWithPendingClearAll:
+    case LoadStreamStatus::kAlreadyHaveUnreadContent:
       break;
   }
   return feedui::ZeroStateSlice::NO_CARDS_AVAILABLE;
@@ -201,7 +214,7 @@ void SurfaceUpdater::OnUiUpdate(const StreamModel::UiUpdate& update) {
   SendStreamUpdate(updated_shared_state_ids);
 }
 
-void SurfaceUpdater::SurfaceAdded(SurfaceInterface* surface) {
+void SurfaceUpdater::SurfaceAdded(FeedStreamSurface* surface) {
   SendUpdateToSurface(surface, GetUpdateForNewSurface(GetState(), model_));
 
   for (const auto& datastore_entry : xsurface_datastore_entries_) {
@@ -212,7 +225,7 @@ void SurfaceUpdater::SurfaceAdded(SurfaceInterface* surface) {
   surfaces_.AddObserver(surface);
 }
 
-void SurfaceUpdater::SurfaceRemoved(SurfaceInterface* surface) {
+void SurfaceUpdater::SurfaceRemoved(FeedStreamSurface* surface) {
   surfaces_.RemoveObserver(surface);
 }
 
@@ -244,7 +257,7 @@ int SurfaceUpdater::GetSliceIndexFromSliceId(const std::string& slice_id) {
 }
 
 bool SurfaceUpdater::HasSurfaceAttached() const {
-  return surfaces_.might_have_observers();
+  return !surfaces_.empty();
 }
 
 void SurfaceUpdater::SetLoadingMore(bool is_loading) {
@@ -277,7 +290,7 @@ void SurfaceUpdater::SendStreamUpdate(
   feedui::StreamUpdate stream_update =
       MakeStreamUpdate(updated_shared_state_ids, sent_content_, model_, state);
 
-  for (SurfaceInterface& surface : surfaces_) {
+  for (FeedStreamSurface& surface : surfaces_) {
     SendUpdateToSurface(&surface, stream_update);
   }
 
@@ -285,7 +298,7 @@ void SurfaceUpdater::SendStreamUpdate(
   last_draw_state_ = state;
 }
 
-void SurfaceUpdater::SendUpdateToSurface(SurfaceInterface* surface,
+void SurfaceUpdater::SendUpdateToSurface(FeedStreamSurface* surface,
                                          const feedui::StreamUpdate& update) {
   surface->StreamUpdate(update);
 
@@ -319,14 +332,14 @@ void SurfaceUpdater::SetOfflinePageAvailability(const std::string& badge_id,
 void SurfaceUpdater::InsertDatastoreEntry(const std::string& key,
                                           const std::string& value) {
   xsurface_datastore_entries_[key] = value;
-  for (SurfaceInterface& surface : surfaces_) {
+  for (FeedStreamSurface& surface : surfaces_) {
     surface.ReplaceDataStoreEntry(key, value);
   }
 }
 
 void SurfaceUpdater::RemoveDatastoreEntry(const std::string& key) {
   if (xsurface_datastore_entries_.erase(key) == 1) {
-    for (SurfaceInterface& surface : surfaces_) {
+    for (FeedStreamSurface& surface : surfaces_) {
       surface.RemoveDataStoreEntry(key);
     }
   }

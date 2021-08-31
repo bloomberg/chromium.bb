@@ -259,6 +259,17 @@ enum class CpuProfilingStatus {
 };
 
 /**
+ * Delegate for when max samples reached and samples are discarded.
+ */
+class V8_EXPORT DiscardedSamplesDelegate {
+ public:
+  DiscardedSamplesDelegate() {}
+
+  virtual ~DiscardedSamplesDelegate() = default;
+  virtual void Notify() = 0;
+};
+
+/**
  * Optional profiling attributes.
  */
 class V8_EXPORT CpuProfilingOptions {
@@ -278,8 +289,8 @@ class V8_EXPORT CpuProfilingOptions {
    *                             interval, set via SetSamplingInterval(). If
    *                             zero, the sampling interval will be equal to
    *                             the profiler's sampling interval.
-   * \param filter_context Deprecated option to filter by context, currently a
-   *                       no-op.
+   * \param filter_context If specified, profiles will only contain frames
+   *                       using this context. Other frames will be elided.
    */
   CpuProfilingOptions(
       CpuProfilingMode mode = kLeafNodeLineNumbers,
@@ -293,9 +304,13 @@ class V8_EXPORT CpuProfilingOptions {
  private:
   friend class internal::CpuProfile;
 
+  bool has_filter_context() const { return !filter_context_.IsEmpty(); }
+  void* raw_filter_context() const;
+
   CpuProfilingMode mode_;
   unsigned max_samples_;
   int sampling_interval_us_;
+  CopyablePersistentTraits<Context>::CopyablePersistent filter_context_;
 };
 
 /**
@@ -346,8 +361,9 @@ class V8_EXPORT CpuProfiler {
    * profiles may be collected at once. Attempts to start collecting several
    * profiles with the same title are silently ignored.
    */
-  CpuProfilingStatus StartProfiling(Local<String> title,
-                                    CpuProfilingOptions options);
+  CpuProfilingStatus StartProfiling(
+      Local<String> title, CpuProfilingOptions options,
+      std::unique_ptr<DiscardedSamplesDelegate> delegate = nullptr);
 
   /**
    * Starts profiling with the same semantics as above, except with expanded
@@ -480,7 +496,7 @@ class V8_EXPORT HeapGraphNode {
 /**
  * An interface for exporting data from V8, using "push" model.
  */
-class V8_EXPORT OutputStream {  // NOLINT
+class V8_EXPORT OutputStream {
  public:
   enum WriteResult {
     kContinue = 0,
@@ -506,7 +522,6 @@ class V8_EXPORT OutputStream {  // NOLINT
     return kAbort;
   }
 };
-
 
 /**
  * HeapSnapshots record the state of the JS heap at some moment.
@@ -574,7 +589,7 @@ class V8_EXPORT HeapSnapshot {
  * An interface for reporting progress and controlling long-running
  * activities.
  */
-class V8_EXPORT ActivityControl {  // NOLINT
+class V8_EXPORT ActivityControl {
  public:
   enum ControlOption {
     kContinue = 0,
@@ -587,7 +602,6 @@ class V8_EXPORT ActivityControl {  // NOLINT
    */
   virtual ControlOption ReportProgressValue(int done, int total) = 0;
 };
-
 
 /**
  * AllocationProfile is a sampled profile of allocations done by the program.
@@ -888,7 +902,8 @@ class V8_EXPORT HeapProfiler {
   const HeapSnapshot* TakeHeapSnapshot(
       ActivityControl* control = nullptr,
       ObjectNameResolver* global_object_name_resolver = nullptr,
-      bool treat_global_objects_as_roots = true);
+      bool treat_global_objects_as_roots = true,
+      bool capture_numeric_value = false);
 
   /**
    * Starts tracking of heap objects population statistics. After calling

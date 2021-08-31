@@ -11,6 +11,8 @@
 #include "net/http/http_util.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/loader/referrer.mojom.h"
+#include "weblayer/browser/navigation_ui_data_impl.h"
+#include "weblayer/browser/page_impl.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_array.h"
@@ -55,12 +57,6 @@ NavigationImpl::TakeParamsToLoadWhenSafe() {
 }
 
 #if defined(OS_ANDROID)
-void NavigationImpl::SetJavaNavigation(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& java_navigation) {
-  java_navigation_ = java_navigation;
-}
-
 ScopedJavaLocalRef<jstring> NavigationImpl::GetUri(JNIEnv* env) {
   return ScopedJavaLocalRef<jstring>(
       base::android::ConvertUTF8ToJavaString(env, GetURL().spec()));
@@ -71,6 +67,23 @@ ScopedJavaLocalRef<jobjectArray> NavigationImpl::GetRedirectChain(JNIEnv* env) {
   for (const GURL& redirect : GetRedirectChain())
     jni_redirects.push_back(redirect.spec());
   return base::android::ToJavaArrayOfStrings(env, jni_redirects);
+}
+
+ScopedJavaLocalRef<jobjectArray> NavigationImpl::GetResponseHeaders(
+    JNIEnv* env) {
+  std::vector<std::string> jni_headers;
+  auto* headers = GetResponseHeaders();
+  if (headers) {
+    size_t iterator = 0;
+    std::string name;
+    std::string value;
+    while (headers->EnumerateHeaderLines(&iterator, &name, &value)) {
+      jni_headers.push_back(name);
+      jni_headers.push_back(value);
+    }
+  }
+
+  return base::android::ToJavaArrayOfStrings(env, jni_headers);
 }
 
 jboolean NavigationImpl::SetRequestHeader(
@@ -101,6 +114,32 @@ jboolean NavigationImpl::DisableNetworkErrorAutoReload(JNIEnv* env) {
   return true;
 }
 
+jboolean NavigationImpl::AreIntentLaunchesAllowedInBackground(JNIEnv* env) {
+  NavigationUIDataImpl* navigation_ui_data = static_cast<NavigationUIDataImpl*>(
+      navigation_handle_->GetNavigationUIData());
+
+  if (!navigation_ui_data)
+    return false;
+
+  return navigation_ui_data->are_intent_launches_allowed_in_background();
+}
+
+base::android::ScopedJavaLocalRef<jstring> NavigationImpl::GetReferrer(
+    JNIEnv* env) {
+  return ScopedJavaLocalRef<jstring>(
+      base::android::ConvertUTF8ToJavaString(env, GetReferrer().spec()));
+}
+
+jlong NavigationImpl::GetPage(JNIEnv* env) {
+  if (!safe_to_get_page_)
+    return -1;
+  return reinterpret_cast<intptr_t>(GetPage());
+}
+
+jint NavigationImpl::GetNavigationEntryOffset(JNIEnv* env) {
+  return GetNavigationEntryOffset();
+}
+
 void NavigationImpl::SetResponse(
     std::unique_ptr<embedder_support::WebResourceResponse> response) {
   response_ = std::move(response);
@@ -111,6 +150,13 @@ NavigationImpl::TakeResponse() {
   return std::move(response_);
 }
 
+void NavigationImpl::SetJavaNavigation(
+    const base::android::ScopedJavaGlobalRef<jobject>& java_navigation) {
+  // SetJavaNavigation() should only be called once.
+  DCHECK(!java_navigation_);
+  java_navigation_ = java_navigation;
+}
+
 #endif
 
 bool NavigationImpl::IsPageInitiated() {
@@ -119,6 +165,22 @@ bool NavigationImpl::IsPageInitiated() {
 
 bool NavigationImpl::IsReload() {
   return navigation_handle_->GetReloadType() != content::ReloadType::NONE;
+}
+
+bool NavigationImpl::IsServedFromBackForwardCache() {
+  return navigation_handle_->IsServedFromBackForwardCache();
+}
+
+Page* NavigationImpl::GetPage() {
+  if (!safe_to_get_page_)
+    return nullptr;
+
+  return PageImpl::GetForCurrentDocument(
+      navigation_handle_->GetRenderFrameHost());
+}
+
+int NavigationImpl::GetNavigationEntryOffset() {
+  return navigation_handle_->GetNavigationEntryOffset();
 }
 
 GURL NavigationImpl::GetURL() {
@@ -144,6 +206,10 @@ int NavigationImpl::GetHttpStatusCode() {
   return response_headers ? response_headers->response_code() : 0;
 }
 
+const net::HttpResponseHeaders* NavigationImpl::GetResponseHeaders() {
+  return navigation_handle_->GetResponseHeaders();
+}
+
 bool NavigationImpl::IsSameDocument() {
   return navigation_handle_->IsSameDocument();
 }
@@ -154,6 +220,10 @@ bool NavigationImpl::IsErrorPage() {
 
 bool NavigationImpl::IsDownload() {
   return navigation_handle_->IsDownload();
+}
+
+bool NavigationImpl::IsKnownProtocol() {
+  return !navigation_handle_->IsExternalProtocol();
 }
 
 bool NavigationImpl::WasStopCalled() {
@@ -220,6 +290,14 @@ void NavigationImpl::SetUserAgentString(const std::string& value) {
 void NavigationImpl::DisableNetworkErrorAutoReload() {
   DCHECK(safe_to_disable_network_error_auto_reload_);
   disable_network_error_auto_reload_ = true;
+}
+
+bool NavigationImpl::IsFormSubmission() {
+  return navigation_handle_->IsFormSubmission();
+}
+
+GURL NavigationImpl::GetReferrer() {
+  return navigation_handle_->GetReferrer().url;
 }
 
 #if defined(OS_ANDROID)

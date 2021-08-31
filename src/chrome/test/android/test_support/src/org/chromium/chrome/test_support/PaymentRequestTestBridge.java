@@ -14,6 +14,8 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.payments.ChromePaymentRequestFactory;
 import org.chromium.chrome.browser.payments.ChromePaymentRequestService;
 import org.chromium.components.autofill.EditableOption;
+import org.chromium.components.payments.BrowserPaymentRequest;
+import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentRequestService;
 import org.chromium.components.payments.PaymentRequestService.NativeObserverForTest;
 import org.chromium.components.payments.PaymentUiServiceTestInterface;
@@ -48,6 +50,12 @@ public class PaymentRequestTestBridge {
         public boolean skipUiForBasicCard() {
             return mSkipUiForBasicCard;
         }
+
+        @Override
+        public BrowserPaymentRequest createBrowserPaymentRequest(
+                PaymentRequestService paymentRequestService) {
+            return new ChromePaymentRequestService(paymentRequestService, this);
+        }
     }
 
     /**
@@ -55,7 +63,8 @@ public class PaymentRequestTestBridge {
      * answers about the state of the system, in order to control which paths should be tested in
      * the ChromePaymentRequestService.
      */
-    private static class PaymentRequestDelegateForTest implements PaymentRequestService.Delegate {
+    private abstract static class PaymentRequestDelegateForTest
+            implements PaymentRequestService.Delegate {
         private final boolean mIsOffTheRecord;
         private final boolean mIsValidSsl;
         private final boolean mPrefsCanMakePayment;
@@ -108,14 +117,14 @@ public class PaymentRequestTestBridge {
         private final long mOnNotSupportedErrorPtr;
         private final long mOnConnectionTerminatedPtr;
         private final long mOnAbortCalledPtr;
-        private final long mOnCompleteCalledPtr;
+        private final long mOnCompleteHandledPtr;
         private final long mOnMinimalUIReadyPtr;
 
         PaymentRequestNativeObserverBridgeToNativeForTest(long onCanMakePaymentCalledPtr,
                 long onCanMakePaymentReturnedPtr, long onHasEnrolledInstrumentCalledPtr,
                 long onHasEnrolledInstrumentReturnedPtr, long onAppListReadyPtr,
                 long setAppDescriptionPtr, long onNotSupportedErrorPtr,
-                long onConnectionTerminatedPtr, long onAbortCalledPtr, long onCompleteCalledPtr,
+                long onConnectionTerminatedPtr, long onAbortCalledPtr, long onCompleteHandledPtr,
                 long onMinimalUIReadyPtr) {
             mOnCanMakePaymentCalledPtr = onCanMakePaymentCalledPtr;
             mOnCanMakePaymentReturnedPtr = onCanMakePaymentReturnedPtr;
@@ -126,7 +135,7 @@ public class PaymentRequestTestBridge {
             mOnNotSupportedErrorPtr = onNotSupportedErrorPtr;
             mOnConnectionTerminatedPtr = onConnectionTerminatedPtr;
             mOnAbortCalledPtr = onAbortCalledPtr;
-            mOnCompleteCalledPtr = onCompleteCalledPtr;
+            mOnCompleteHandledPtr = onCompleteHandledPtr;
             mOnMinimalUIReadyPtr = onMinimalUIReadyPtr;
         }
 
@@ -159,14 +168,7 @@ public class PaymentRequestTestBridge {
         }
 
         @Override
-        public void onAppListReady(@Nullable List<EditableOption> apps, PaymentItem total) {
-            if (apps == null) {
-                nativeSetAppDescriptions(
-                        mSetAppDescriptionsPtr, new String[0], new String[0], new String[0]);
-                nativeResolvePaymentRequestObserverCallback(mOnAppListReadyPtr);
-                return;
-            }
-
+        public void onAppListReady(List<PaymentApp> apps, PaymentItem total) {
             String[] appLabels = new String[apps.size()];
             String[] appSublabels = new String[apps.size()];
             String[] appTotals = new String[apps.size()];
@@ -203,8 +205,8 @@ public class PaymentRequestTestBridge {
             nativeResolvePaymentRequestObserverCallback(mOnAbortCalledPtr);
         }
         @Override
-        public void onCompleteCalled() {
-            nativeResolvePaymentRequestObserverCallback(mOnCompleteCalledPtr);
+        public void onCompleteHandled() {
+            nativeResolvePaymentRequestObserverCallback(mOnCompleteHandledPtr);
         }
         @Override
         public void onMinimalUIReady() {

@@ -23,12 +23,16 @@
       'getEndOfLifeInfo',
       'launchReleaseNotes',
       'openOsHelpPage',
+      'openDiagnostics',
       'refreshTPMFirmwareUpdateStatus',
       'setChannel',
     ]);
 
     /** @private {!UpdateStatus} */
     this.updateStatus_ = UpdateStatus.UPDATED;
+
+    /** @private {!boolean} */
+    this.sendUpdateStatus_ = true;
 
     /** @private {!VersionInfo} */
     this.versionInfo_ = {
@@ -65,6 +69,10 @@
     this.updateStatus_ = updateStatus;
   }
 
+  blockRefreshUpdateStatus() {
+    this.sendUpdateStatus_ = false;
+  }
+
   sendStatusNoInternet() {
     cr.webUIListenerCallback('update-status-changed', {
       progress: 0,
@@ -81,10 +89,12 @@
 
   /** @override */
   refreshUpdateStatus() {
-    cr.webUIListenerCallback('update-status-changed', {
-      progress: 1,
-      status: this.updateStatus_,
-    });
+    if (this.sendUpdateStatus_) {
+      cr.webUIListenerCallback('update-status-changed', {
+        progress: 1,
+        status: this.updateStatus_,
+      });
+    }
     this.methodCalled('refreshUpdateStatus');
   }
 
@@ -188,6 +198,11 @@
   /** @override */
   openOsHelpPage() {
     this.methodCalled('openOsHelpPage');
+  }
+
+  /** @override */
+  openDiagnostics() {
+    this.methodCalled('openDiagnostics');
   }
 
   /** @override */

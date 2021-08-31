@@ -59,6 +59,13 @@ template("system_webview_apk_or_module_tmpl") {
           "//android_webview:android_webview_no_weblayer_java",
           "//weblayer/browser/java:base_module_java",
         ]
+        if (defined(invoker.expected_android_manifest)) {
+          _bundle_target_gen_dir =
+              get_label_info(invoker.bundle_target, "target_gen_dir")
+          _bundle_name = get_label_info(invoker.bundle_target, "name")
+          extra_verification_manifest = "${_bundle_target_gen_dir}/${_bundle_name}__weblayer_bundle_module_manifest/AndroidManifest.xml"
+          extra_verification_manifest_dep = "${invoker.bundle_target}__weblayer_bundle_module__merge_manifests"
+        }
       } else {
         deps += [ "//android_webview:android_webview_java" ]
       }
@@ -172,15 +179,6 @@ template("system_webview_apk_or_module_tmpl") {
       }
     }
 
-    if (!_use_trichrome_library || android_64bit_target_cpu) {
-      # 32-bit TrichromeWebView doesn't have a native library, so only do this
-      # for other configs.
-      native_lib_version_rule = "//build/util:chrome_version_json"
-      _native_lib_file =
-          rebase_path("$root_gen_dir/CHROME_VERSION.json", root_out_dir)
-      native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
-    }
-
     aapt_locale_allowlist = locales
 
     resource_exclusion_regex = common_resource_exclusion_regex
@@ -211,13 +209,6 @@ template("system_webview_apk_or_module_tmpl") {
         "//base/android/proguard/chromium_apk.flags",
         "//base/android/proguard/chromium_code.flags",
       ]
-      if (enable_proguard_obfuscation) {
-        proguard_configs +=
-            [ "//base/android/proguard/enable_obfuscation.flags" ]
-      } else {
-        proguard_configs +=
-            [ "//base/android/proguard/disable_all_obfuscation.flags" ]
-      }
       png_to_webp = true
     }
 

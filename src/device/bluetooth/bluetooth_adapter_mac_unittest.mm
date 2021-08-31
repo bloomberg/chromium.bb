@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
@@ -166,7 +165,7 @@ class BluetoothAdapterMacTest : public testing::Test {
   NSDictionary* AdvertisementData() {
     NSDictionary* advertisement_data = @{
       CBAdvertisementDataIsConnectable : @(YES),
-      CBAdvertisementDataServiceDataKey : [NSDictionary dictionary],
+      CBAdvertisementDataServiceDataKey : @{},
     };
     return [advertisement_data retain];
   }

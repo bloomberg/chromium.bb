@@ -49,6 +49,7 @@ enum TestStatusCode
 	TESTSTATUSCODE_CRASH,					//!< Test executable crashed before finishing the test.
 	TESTSTATUSCODE_DISABLED,				//!< Test case disabled (for current target)
 	TESTSTATUSCODE_TERMINATED,				//!< Terminated for other reason.
+	TESTSTATUSCODE_WAIVER,					//!< Test case waived.
 
 	TESTSTATUSCODE_LAST
 };
@@ -319,6 +320,12 @@ public:
 		SHADERTYPE_TESS_CONTROL,
 		SHADERTYPE_TESS_EVALUATION,
 		SHADERTYPE_COMPUTE,
+		SHADERTYPE_RAYGEN,
+		SHADERTYPE_ANY_HIT,
+		SHADERTYPE_CLOSEST_HIT,
+		SHADERTYPE_MISS,
+		SHADERTYPE_INTERSECTION,
+		SHADERTYPE_CALLABLE,
 
 		SHADERTYPE_LAST
 	};

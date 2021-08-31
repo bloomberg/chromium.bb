@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/task.h"
 #include "base/task_runner.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 namespace internal {
@@ -105,8 +106,13 @@ void DelayedTaskManager::ProcessRipeTasks() {
   {
     CheckedAutoLock auto_lock(queue_lock_);
     const TimeTicks now = tick_clock_->NowTicks();
+    // A delayed task is ripe if it reached its delayed run time or if it is
+    // canceled. If it is canceled, schedule its deletion on the correct
+    // sequence now rather than in the future, to minimize CPU wake ups and save
+    // power.
     while (!delayed_task_queue_.empty() &&
-           delayed_task_queue_.Min().task.delayed_run_time <= now) {
+           (delayed_task_queue_.Min().task.delayed_run_time <= now ||
+            !delayed_task_queue_.Min().task.task.MaybeValid())) {
       // The const_cast on top is okay since the DelayedTask is
       // transactionally being popped from |delayed_task_queue_| right after
       // and the move doesn't alter the sort order.
@@ -123,10 +129,10 @@ void DelayedTaskManager::ProcessRipeTasks() {
   }
 }
 
-Optional<TimeTicks> DelayedTaskManager::NextScheduledRunTime() const {
+absl::optional<TimeTicks> DelayedTaskManager::NextScheduledRunTime() const {
   CheckedAutoLock auto_lock(queue_lock_);
   if (delayed_task_queue_.empty())
-    return nullopt;
+    return absl::nullopt;
   return delayed_task_queue_.Min().task.delayed_run_time;
 }
 

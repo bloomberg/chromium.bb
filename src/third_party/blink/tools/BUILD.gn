@@ -6,9 +6,10 @@
 group("wpt_tests_isolate") {
   testonly = true
   data = [
-    "//testing/scripts/common.py",
     "//testing/scripts/wpt_common.py",
-    "//testing/xvfb.py",
+
+    # WPT tooling
+    "//third_party/wpt_tools/",
 
     # Include blinkpy tools for setting up expectations.
     "//third_party/blink/tools/build_wpt_metadata.py",
@@ -18,6 +19,9 @@ group("wpt_tests_isolate") {
     # The web_tests/external directory contains all WPT components including
     # the test runner codebase, manifest file, and the tests themselves.
     "//third_party/blink/web_tests/external/",
+
+    # The web_tests/platform directory contains platform specific WPT baselines.
+    "//third_party/blink/web_tests/platform/",
 
     # Include a single file from wpt_internal only to initialize that directory.
     # We don't need to run these tests but still need to create a MANIFEST here.
@@ -38,7 +42,10 @@ group("wpt_tests_isolate") {
     "//third_party/blink/web_tests/VirtualTestSuites",
     "//third_party/blink/web_tests/WPTOverrideExpectations",
   ]
-  data_deps = [ ":wpt_tests_mojo_bindings" ]
+  data_deps = [
+    ":wpt_tests_mojo_bindings",
+    "//testing:test_scripts_shared",
+  ]
   if (is_win) {
     data_deps += [ "//build/win:copy_cdb_to_output" ]
   }
@@ -51,10 +58,11 @@ group("wpt_tests_android_isolate") {
   testonly = true
   data_deps = [ "//third_party/blink/tools:wpt_tests_isolate" ]
   data = [
-    "//third_party/blink/web_tests/android/WeblayerWPTExpectations",
-    "//third_party/blink/web_tests/android/ChromiumWPTExpectations",
+    "//third_party/blink/web_tests/android/WebLayerWPTOverrideExpectations",
+    "//third_party/blink/web_tests/android/ChromeWPTOverrideExpectations",
     "//third_party/blink/web_tests/android/WebviewWPTExpectations",
     "//third_party/blink/web_tests/android/AndroidWPTNeverFixTests",
+    "//third_party/blink/web_tests/android/WPTSmokeTestCases",
   ]
 }
 

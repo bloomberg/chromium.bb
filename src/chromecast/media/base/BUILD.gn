@@ -71,19 +71,6 @@ cast_source_set("base") {
   assert_no_deps = [ "//media" ]
 }
 
-cast_source_set("media_resource_tracker") {
-  sources = [
-    "media_resource_tracker.cc",
-    "media_resource_tracker.h",
-  ]
-
-  deps = [
-    "//base",
-    "//chromecast/base",
-    "//chromecast/media:libcast_media",
-  ]
-}
-
 cast_source_set("media_codec_support") {
   sources = [
     "media_codec_support.cc",
@@ -136,18 +123,4 @@ cast_source_set("monotonic_clock") {
     "//base",
     "//chromecast/media/api:api",
   ]
-}
-
-cast_source_set("test_media_resource_tracker") {
-  sources = [
-    "test_media_resource_tracker.cc",
-    "test_media_resource_tracker.h",
-  ]
-  deps = [
-    ":media_resource_tracker",
-    "//base",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
-  testonly = true
 }

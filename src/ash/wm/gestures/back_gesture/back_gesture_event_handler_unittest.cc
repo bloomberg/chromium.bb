@@ -5,12 +5,12 @@
 #include "ash/wm/gestures/back_gesture/back_gesture_event_handler.h"
 
 #include "ash/accelerators/accelerator_controller_impl.h"
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
-#include "ash/home_screen/home_screen_controller.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
@@ -100,6 +100,8 @@ class BackGestureEventHandlerTest : public AshTestBase {
   void RecreateTopWindow(AppType app_type) {
     top_window_ = CreateAppWindow(gfx::Rect(), app_type);
   }
+
+  void ResetTopWindow() { top_window_.reset(); }
 
   // Generates a scroll sequence that will create a back gesture.
   void GenerateBackSequence() {
@@ -208,9 +210,18 @@ TEST_F(BackGestureEventHandlerTestCantGoBack, GoBackInOverviewMode) {
   // Should trigger go back instead of minimize the window since it is in
   // overview mode.
   EXPECT_EQ(1, target_back_release.accelerator_count());
+
+  // Swipe back at overview mode without opened window should still trigger
+  // going back.
+  shell->overview_controller()->EndOverview();
+  ResetTopWindow();
+  shell->overview_controller()->StartOverview();
+  GenerateBackSequence();
+  EXPECT_EQ(2, target_back_release.accelerator_count());
+  EXPECT_TRUE(shell->app_list_controller()->IsHomeScreenVisible());
 }
 
-TEST_F(BackGestureEventHandlerTest, DonotStartGoingBack) {
+TEST_F(BackGestureEventHandlerTest, GoBackInHomeScreenPage) {
   ui::TestAcceleratorTarget target_back_press, target_back_release;
   RegisterBackPressAndRelease(&target_back_press, &target_back_release);
 
@@ -218,26 +229,28 @@ TEST_F(BackGestureEventHandlerTest, DonotStartGoingBack) {
 
   // Should not go back if it is not in ACTIVE session.
   ASSERT_FALSE(shell->overview_controller()->InOverviewSession());
-  ASSERT_FALSE(shell->home_screen_controller()->IsHomeScreenVisible());
+  ASSERT_FALSE(shell->app_list_controller()->IsHomeScreenVisible());
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::LOCKED);
   GenerateBackSequence();
   EXPECT_EQ(0, target_back_press.accelerator_count());
   EXPECT_EQ(0, target_back_release.accelerator_count());
 
-  // Should not go back if home screen is visible and in |kFullscreenAllApps|
-  // state.
+  // Reset the top window to make sure the back behavior in home screen is not
+  // because of sending back event to the top window.
+  ResetTopWindow();
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::ACTIVE);
-  shell->home_screen_controller()->GoHome(GetPrimaryDisplay().id());
-  ASSERT_TRUE(shell->home_screen_controller()->IsHomeScreenVisible());
+  shell->app_list_controller()->GoHome(GetPrimaryDisplay().id());
+  ASSERT_TRUE(shell->app_list_controller()->IsHomeScreenVisible());
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
   GenerateBackSequence();
+  // Stay in home screen and none back event will be triggered.
+  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
   EXPECT_EQ(0, target_back_press.accelerator_count());
   EXPECT_EQ(0, target_back_release.accelerator_count());
+  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 
-  // Should exit |kFullscreenSearch| to enter |kFullscreenAllApps| state while
-  // home screen search result page is opened.
   GetEventGenerator()->GestureTapAt(GetAppListTestHelper()
                                         ->GetAppListView()
                                         ->search_box_view()
@@ -245,7 +258,10 @@ TEST_F(BackGestureEventHandlerTest, DonotStartGoingBack) {
                                         .CenterPoint());
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenSearch);
   GenerateBackSequence();
-  EXPECT_EQ(1, target_back_release.accelerator_count());
+  // Exit home screen search page and back to |kFullscreenAllApps| state. But
+  // this is not triggered by sending back event.
+  EXPECT_EQ(0, target_back_press.accelerator_count());
+  EXPECT_EQ(0, target_back_release.accelerator_count());
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 }
 
@@ -357,6 +373,10 @@ TEST_F(BackGestureEventHandlerTest, BackInSplitViewMode) {
 
   std::unique_ptr<aura::Window> left_window = CreateTestWindow();
   std::unique_ptr<aura::Window> right_window = CreateTestWindow();
+
+  // Start overview first and then snap window in splitview to make sure
+  // window activation order remains the same.
+  Shell::Get()->overview_controller()->StartOverview();
   auto* split_view_controller =
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
   split_view_controller->SnapWindow(left_window.get(),
@@ -750,7 +770,7 @@ TEST_F(BackGestureEventHandlerTest, IgnoreSecondFinger) {
 
   // Scenario 1:
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->PressTouchId(0, base::make_optional(start_point));
+  generator->PressTouchId(0, absl::make_optional(start_point));
   generator->MoveTouch(end_point);
   // Without releasing the first finger, now press and release the second
   // finger.
@@ -763,7 +783,7 @@ TEST_F(BackGestureEventHandlerTest, IgnoreSecondFinger) {
 
   // Scenario 2:
   wm::ActivateWindow(top_window());
-  generator->PressTouchId(0, base::make_optional(start_point));
+  generator->PressTouchId(0, absl::make_optional(start_point));
   generator->MoveTouch(end_point);
   // Without releasing the first finger, now press the second finger.
   generator->PressTouchId(1);
@@ -778,7 +798,7 @@ TEST_F(BackGestureEventHandlerTest, IgnoreSecondFinger) {
   wm::ActivateWindow(top_window());
   GetShellDelegate()->SetShouldWaitForTouchAck(
       /*should_wait_for_touch_ack=*/true);
-  generator->PressTouchId(0, base::make_optional(start_point));
+  generator->PressTouchId(0, absl::make_optional(start_point));
   generator->MoveTouch(end_point);
   // Without releasing the first finger, now press and release the second
   // finger.
@@ -791,7 +811,7 @@ TEST_F(BackGestureEventHandlerTest, IgnoreSecondFinger) {
 
   // Scenario 4:
   wm::ActivateWindow(top_window());
-  generator->PressTouchId(0, base::make_optional(start_point));
+  generator->PressTouchId(0, absl::make_optional(start_point));
   generator->MoveTouch(end_point);
   // Without releasing the first finger, now press the second finger.
   generator->PressTouchId(1);
@@ -811,7 +831,7 @@ TEST_F(BackGestureEventHandlerTest, CancelledEventOnSecondFinger) {
   const gfx::Point end_point(200, 100);
 
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->PressTouchId(0, base::make_optional(start_point));
+  generator->PressTouchId(0, absl::make_optional(start_point));
   generator->MoveTouch(end_point);
   // Without releasing the first finger, now press the second finger.
   generator->PressTouchId(1);
@@ -831,7 +851,7 @@ TEST_F(BackGestureEventHandlerTest, CancelledEventOnSecondFinger) {
   Shell::Get()->back_gesture_event_handler()->OnTouchEvent(&event);
 
   wm::ActivateWindow(top_window());
-  generator->PressTouchId(0, base::make_optional(start_point));
+  generator->PressTouchId(0, absl::make_optional(start_point));
   generator->MoveTouch(end_point);
   generator->ReleaseTouchId(0);
   // Test that back should still be able to be performed.

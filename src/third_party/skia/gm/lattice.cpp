@@ -125,7 +125,7 @@ protected:
             { 200, 200, },
         };
 
-        canvas->drawImage(image, 10, 10, nullptr);
+        canvas->drawImage(image, 10, 10);
 
         SkScalar x = SkIntToScalar(100);
         SkScalar y = SkIntToScalar(100);
@@ -299,7 +299,7 @@ public:
 
         sk_sp<SkImage> image = makeImage(canvas, padLeft, padTop, padRight, padBottom);
 
-        canvas->drawImage(image, 10, 10, nullptr);
+        canvas->drawImage(image, 10, 10);
 
         SkCanvas::Lattice lattice;
         lattice.fXCount = 2;
@@ -325,13 +325,15 @@ public:
         lattice.fColors = colors;
         paint.setColor(0xFFFFFFFF);
         canvas->drawImageLattice(image.get(), lattice,
-                                 SkRect::MakeXYWH(100, 100, 200, 200), &paint);
+                                 SkRect::MakeXYWH(100, 100, 200, 200),
+                                 SkFilterMode::kNearest, &paint);
 
         //draw the same content with alpha
         canvas->translate(400, 0);
         paint.setColor(0x80000FFF);
         canvas->drawImageLattice(image.get(), lattice,
-                                 SkRect::MakeXYWH(100, 100, 200, 200), &paint);
+                                 SkRect::MakeXYWH(100, 100, 200, 200),
+                                 SkFilterMode::kNearest, &paint);
 
         canvas->restore();
     }
@@ -379,5 +381,6 @@ DEF_SIMPLE_GM_BG(lattice_alpha, canvas, 120, 120, SK_ColorWHITE) {
 
     SkPaint paint;
     paint.setColor(SK_ColorMAGENTA);
-    canvas->drawImageLattice(image.get(), lattice, SkRect::MakeWH(120, 120), &paint);
+    canvas->drawImageLattice(image.get(), lattice, SkRect::MakeWH(120, 120),
+                             SkFilterMode::kNearest, &paint);
 }

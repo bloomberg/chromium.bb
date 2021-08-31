@@ -61,10 +61,6 @@ class VIEWS_EXPORT PlatformStyle {
   // Whether ripples should be used for visual feedback on control activation.
   static const bool kUseRipples;
 
-  // Whether to scroll text fields to the beginning when they gain or lose
-  // focus.
-  static const bool kTextfieldScrollsToStartOnFocusChange;
-
   // Whether text fields should use a "drag" cursor when not actually
   // dragging but available to do so.
   static const bool kTextfieldUsesDragCursorWhenDraggable;
@@ -79,6 +75,9 @@ class VIEWS_EXPORT PlatformStyle {
   // Default setting at bubble creation time for whether arrow will be adjusted
   // for bubbles going off-screen to bring more bubble area into view.
   static const bool kAdjustBubbleIfOffscreen;
+
+  // Default focus behavior on the platform.
+  static const View::FocusBehavior kDefaultFocusBehavior;
 
   // Creates the default scrollbar for the given orientation.
   static std::unique_ptr<ScrollBar> CreateScrollBar(bool is_horizontal);
@@ -96,11 +95,8 @@ class VIEWS_EXPORT PlatformStyle {
   // This is to support deleting entire graphemes instead of individual
   // characters when necessary on Mac, and code points made from surrogate
   // pairs on other platforms.
-  static gfx::Range RangeToDeleteBackwards(const base::string16& text,
+  static gfx::Range RangeToDeleteBackwards(const std::u16string& text,
                                            size_t cursor_position);
-
-  // Returns the default focus behavior based on the platform.
-  static View::FocusBehavior DefaultFocusBehavior();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PlatformStyle);

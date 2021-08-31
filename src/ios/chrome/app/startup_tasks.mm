@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #include "ios/chrome/app/intents/SearchInChromeIntent.h"
 #include "ios/chrome/browser/application_context.h"
@@ -58,9 +59,6 @@ NSString* const kStartProfileStartupTaskRunners =
                     [self performDeferredInitializationForBrowserState:
                               browserState];
                   }];
-
-  // Allow the embedder to schedule tasks.
-  ios::GetChromeBrowserProvider()->ScheduleDeferredStartupTasks(browserState);
 }
 
 - (void)initializeOmaha {

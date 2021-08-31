@@ -4,13 +4,13 @@
 
 #include "chromeos/services/secure_channel/bluetooth_helper_impl.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/components/multidevice/beacon_seed.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_cache.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/secure_channel/background_eid_generator.h"
 #include "chromeos/services/secure_channel/ble_advertisement_generator.h"
 #include "chromeos/services/secure_channel/ble_constants.h"
@@ -65,9 +65,9 @@ BluetoothHelperImpl::~BluetoothHelperImpl() = default;
 std::unique_ptr<DataWithTimestamp>
 BluetoothHelperImpl::GenerateForegroundAdvertisement(
     const DeviceIdPair& device_id_pair) {
-  base::Optional<multidevice::RemoteDeviceRef> local_device =
+  absl::optional<multidevice::RemoteDeviceRef> local_device =
       remote_device_cache_->GetRemoteDevice(
-          base::nullopt /* instance_id */,
+          absl::nullopt /* instance_id */,
           device_id_pair.local_device_id() /* legacy_device_id */);
   if (!local_device) {
     PA_LOG(ERROR) << "Requested local device does not exist: "
@@ -76,9 +76,9 @@ BluetoothHelperImpl::GenerateForegroundAdvertisement(
     return nullptr;
   }
 
-  base::Optional<multidevice::RemoteDeviceRef> remote_device =
+  absl::optional<multidevice::RemoteDeviceRef> remote_device =
       remote_device_cache_->GetRemoteDevice(
-          base::nullopt /* instance_id */,
+          absl::nullopt /* instance_id */,
           device_id_pair.remote_device_id() /* legacy_device_id */);
   if (!remote_device) {
     PA_LOG(ERROR) << "Requested remote device does not exist: "
@@ -91,7 +91,7 @@ BluetoothHelperImpl::GenerateForegroundAdvertisement(
       *remote_device, local_device->public_key());
 }
 
-base::Optional<BluetoothHelper::DeviceWithBackgroundBool>
+absl::optional<BluetoothHelper::DeviceWithBackgroundBool>
 BluetoothHelperImpl::PerformIdentifyRemoteDevice(
     const std::string& service_data,
     const DeviceIdPairSet& device_id_pair_set) {
@@ -99,7 +99,7 @@ BluetoothHelperImpl::PerformIdentifyRemoteDevice(
       local_device_id_to_remote_device_ids_map;
   for (const auto& device_id_pair : device_id_pair_set) {
     if (!remote_device_cache_->GetRemoteDevice(
-            base::nullopt /* instance_id */,
+            absl::nullopt /* instance_id */,
             device_id_pair.local_device_id() /* legacy_device_id */)) {
       PA_LOG(ERROR) << "Requested local device does not exist"
                     << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
@@ -108,7 +108,7 @@ BluetoothHelperImpl::PerformIdentifyRemoteDevice(
     }
 
     if (!remote_device_cache_->GetRemoteDevice(
-            base::nullopt /* instance_id */,
+            absl::nullopt /* instance_id */,
             device_id_pair.remote_device_id() /* legacy_device_id */)) {
       PA_LOG(ERROR) << "Requested remote device does not exist"
                     << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
@@ -127,20 +127,54 @@ BluetoothHelperImpl::PerformIdentifyRemoteDevice(
       return device_with_background_bool;
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 std::string BluetoothHelperImpl::GetBluetoothPublicAddress(
     const std::string& device_id) {
-  base::Optional<multidevice::RemoteDeviceRef> device =
-      remote_device_cache_->GetRemoteDevice(base::nullopt /* instance_id */,
+  absl::optional<multidevice::RemoteDeviceRef> device =
+      remote_device_cache_->GetRemoteDevice(absl::nullopt /* instance_id */,
                                             device_id /* legacy_device_id */);
   if (device)
     return device->bluetooth_public_address();
   return std::string();
 }
 
-base::Optional<BluetoothHelper::DeviceWithBackgroundBool>
+std::string BluetoothHelperImpl::ExpectedServiceDataToString(
+    const DeviceIdPairSet& device_id_pair_set) {
+  std::stringstream ss;
+
+  for (const DeviceIdPair& pair : device_id_pair_set) {
+    ss << "{Device ID: "
+       << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
+              pair.remote_device_id())
+       << " - ";
+
+    absl::optional<multidevice::RemoteDeviceRef> device =
+        remote_device_cache_->GetRemoteDevice(
+            absl::nullopt /* instance_id */,
+            pair.remote_device_id() /* legacy_device_id */);
+
+    if (!device) {
+      ss << "<missing metadata>},";
+      continue;
+    }
+
+    std::vector<DataWithTimestamp> data_for_device =
+        background_eid_generator_->GenerateNearestEids(
+            multidevice::ToCryptAuthSeedList(device->beacon_seeds()));
+    if (data_for_device.empty()) {
+      ss << "[]},";
+      continue;
+    }
+
+    ss << DataWithTimestamp::ToDebugString(data_for_device) << "},";
+  }
+
+  return ss.str();
+}
+
+absl::optional<BluetoothHelper::DeviceWithBackgroundBool>
 BluetoothHelperImpl::PerformIdentifyRemoteDevice(
     const std::string& service_data,
     const std::string& local_device_id,
@@ -153,7 +187,7 @@ BluetoothHelperImpl::PerformIdentifyRemoteDevice(
     std::vector<cryptauth::BeaconSeed> beacon_seeds =
         multidevice::ToCryptAuthSeedList(
             remote_device_cache_
-                ->GetRemoteDevice(base::nullopt /* instance_id */,
+                ->GetRemoteDevice(absl::nullopt /* instance_id */,
                                   local_device_id /* legacy_device_id */)
                 ->beacon_seeds());
 
@@ -172,7 +206,7 @@ BluetoothHelperImpl::PerformIdentifyRemoteDevice(
     std::transform(remote_device_ids.begin(), remote_device_ids.end(),
                    std::back_inserter(remote_devices), [this](auto device_id) {
                      return *remote_device_cache_->GetRemoteDevice(
-                         base::nullopt /* instance_id */,
+                         absl::nullopt /* instance_id */,
                          device_id /* legacy_device_id */);
                    });
 
@@ -185,11 +219,11 @@ BluetoothHelperImpl::PerformIdentifyRemoteDevice(
   // If the service data does not correspond to an advertisement from a device
   // on this account, ignore it.
   if (identified_device_id.empty())
-    return base::nullopt;
+    return absl::nullopt;
 
   return BluetoothHelper::DeviceWithBackgroundBool(
       *remote_device_cache_->GetRemoteDevice(
-          base::nullopt /* instance_id */,
+          absl::nullopt /* instance_id */,
           identified_device_id /* legacy_device_id */),
       is_background_advertisement);
 }

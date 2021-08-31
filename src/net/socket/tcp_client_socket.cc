@@ -4,6 +4,7 @@
 
 #include "net/socket/tcp_client_socket.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -57,7 +58,7 @@ TCPClientSocket::TCPClientSocket(std::unique_ptr<TCPSocket> connected_socket,
 TCPClientSocket::~TCPClientSocket() {
   Disconnect();
 #if defined(TCP_CLIENT_SOCKET_OBSERVES_SUSPEND)
-  base::PowerMonitor::RemoveObserver(this);
+  base::PowerMonitor::RemovePowerSuspendObserver(this);
 #endif  // defined(TCP_CLIENT_SOCKET_OBSERVES_SUSPEND)
 }
 
@@ -89,7 +90,7 @@ int TCPClientSocket::Bind(const IPEndPoint& address) {
   if (result != OK)
     return result;
 
-  bind_address_.reset(new IPEndPoint(address));
+  bind_address_ = std::make_unique<IPEndPoint>(address);
   return OK;
 }
 
@@ -159,7 +160,7 @@ TCPClientSocket::TCPClientSocket(
   if (socket_->IsValid())
     socket_->SetDefaultOptionsForClient();
 #if defined(TCP_CLIENT_SOCKET_OBSERVES_SUSPEND)
-  base::PowerMonitor::AddObserver(this);
+  base::PowerMonitor::AddPowerSuspendObserver(this);
 #endif  // defined(TCP_CLIENT_SOCKET_OBSERVES_SUSPEND)
 }
 
@@ -277,7 +278,7 @@ int TCPClientSocket::DoConnect() {
 int TCPClientSocket::DoConnectComplete(int result) {
   if (start_connect_attempt_) {
     EmitConnectAttemptHistograms(result);
-    start_connect_attempt_ = base::nullopt;
+    start_connect_attempt_ = absl::nullopt;
     connect_attempt_timer_.Stop();
   }
 
@@ -334,7 +335,7 @@ void TCPClientSocket::Disconnect() {
 void TCPClientSocket::DoDisconnect() {
   if (start_connect_attempt_) {
     EmitConnectAttemptHistograms(ERR_ABORTED);
-    start_connect_attempt_ = base::nullopt;
+    start_connect_attempt_ = absl::nullopt;
     connect_attempt_timer_.Stop();
   }
 
@@ -588,7 +589,7 @@ void TCPClientSocket::EmitConnectAttemptHistograms(int result) {
     UMA_HISTOGRAM_MEDIUM_TIMES("Net.TcpConnectAttempt.Latency.Error", duration);
   }
 
-  base::Optional<base::TimeDelta> transport_rtt = base::nullopt;
+  absl::optional<base::TimeDelta> transport_rtt = absl::nullopt;
   if (network_quality_estimator_)
     transport_rtt = network_quality_estimator_->GetTransportRTT();
 
@@ -624,7 +625,7 @@ base::TimeDelta TCPClientSocket::GetConnectAttemptTimeout() {
   if (!base::FeatureList::IsEnabled(features::kTimeoutTcpConnectAttempt))
     return base::TimeDelta::Max();
 
-  base::Optional<base::TimeDelta> transport_rtt = base::nullopt;
+  absl::optional<base::TimeDelta> transport_rtt = absl::nullopt;
   if (network_quality_estimator_)
     transport_rtt = network_quality_estimator_->GetTransportRTT();
 

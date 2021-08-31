@@ -45,6 +45,9 @@ mojom::DeviceInfoPtr Device::ConstructDeviceInfoStruct(
     device_info->rssi->value = device->GetInquiryRSSI().value();
   }
 
+  for (auto const& it : device->GetManufacturerData())
+    device_info->manufacturer_data_map.insert_or_assign(it.first, it.second);
+
   for (auto const& it : device->GetServiceData())
     device_info->service_data_map.insert_or_assign(it.first, it.second);
 
@@ -109,7 +112,7 @@ void Device::GetCharacteristics(const std::string& service_id,
   device::BluetoothRemoteGattService* service =
       device->GetGattService(service_id);
   if (service == nullptr) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
     return;
   }
 
@@ -140,7 +143,7 @@ void Device::ReadValueForCharacteristic(
       device->GetGattService(service_id);
   if (service == nullptr) {
     std::move(callback).Run(mojom::GattResult::SERVICE_NOT_FOUND,
-                            base::nullopt /* value */);
+                            absl::nullopt /* value */);
     return;
   }
 
@@ -148,16 +151,13 @@ void Device::ReadValueForCharacteristic(
       service->GetCharacteristic(characteristic_id);
   if (characteristic == nullptr) {
     std::move(callback).Run(mojom::GattResult::CHARACTERISTIC_NOT_FOUND,
-                            base::nullopt /* value */);
+                            absl::nullopt /* value */);
     return;
   }
 
-  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   characteristic->ReadRemoteCharacteristic(
       base::BindOnce(&Device::OnReadRemoteCharacteristic,
-                     weak_ptr_factory_.GetWeakPtr(), copyable_callback),
-      base::BindOnce(&Device::OnReadRemoteCharacteristicError,
-                     weak_ptr_factory_.GetWeakPtr(), copyable_callback));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void Device::WriteValueForCharacteristic(
@@ -182,13 +182,15 @@ void Device::WriteValueForCharacteristic(
     return;
   }
 
-  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
   characteristic->DeprecatedWriteRemoteCharacteristic(
       value,
       base::BindOnce(&Device::OnWriteRemoteCharacteristic,
-                     weak_ptr_factory_.GetWeakPtr(), copyable_callback),
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(split_callback.first)),
       base::BindOnce(&Device::OnWriteRemoteCharacteristicError,
-                     weak_ptr_factory_.GetWeakPtr(), copyable_callback));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(split_callback.second)));
 }
 
 void Device::GetDescriptors(const std::string& service_id,
@@ -196,21 +198,21 @@ void Device::GetDescriptors(const std::string& service_id,
                             GetDescriptorsCallback callback) {
   device::BluetoothDevice* device = adapter_->GetDevice(GetAddress());
   if (!device) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
     return;
   }
 
   device::BluetoothRemoteGattService* service =
       device->GetGattService(service_id);
   if (!service) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
     return;
   }
 
   device::BluetoothRemoteGattCharacteristic* characteristic =
       service->GetCharacteristic(characteristic_id);
   if (!characteristic) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
     return;
   }
 
@@ -240,7 +242,7 @@ void Device::ReadValueForDescriptor(const std::string& service_id,
       device->GetGattService(service_id);
   if (!service) {
     std::move(callback).Run(mojom::GattResult::SERVICE_NOT_FOUND,
-                            base::nullopt /* value */);
+                            absl::nullopt /* value */);
     return;
   }
 
@@ -248,7 +250,7 @@ void Device::ReadValueForDescriptor(const std::string& service_id,
       service->GetCharacteristic(characteristic_id);
   if (!characteristic) {
     std::move(callback).Run(mojom::GattResult::CHARACTERISTIC_NOT_FOUND,
-                            base::nullopt /* value */);
+                            absl::nullopt /* value */);
     return;
   }
 
@@ -256,16 +258,13 @@ void Device::ReadValueForDescriptor(const std::string& service_id,
       characteristic->GetDescriptor(descriptor_id);
   if (!descriptor) {
     std::move(callback).Run(mojom::GattResult::DESCRIPTOR_NOT_FOUND,
-                            base::nullopt /* value */);
+                            absl::nullopt /* value */);
     return;
   }
 
-  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   descriptor->ReadRemoteDescriptor(
       base::BindOnce(&Device::OnReadRemoteDescriptor,
-                     weak_ptr_factory_.GetWeakPtr(), copyable_callback),
-      base::BindOnce(&Device::OnReadRemoteDescriptorError,
-                     weak_ptr_factory_.GetWeakPtr(), copyable_callback));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void Device::WriteValueForDescriptor(const std::string& service_id,
@@ -297,13 +296,15 @@ void Device::WriteValueForDescriptor(const std::string& service_id,
     return;
   }
 
-  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
   descriptor->WriteRemoteDescriptor(
       value,
       base::BindOnce(&Device::OnWriteRemoteDescriptor,
-                     weak_ptr_factory_.GetWeakPtr(), copyable_callback),
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(split_callback.first)),
       base::BindOnce(&Device::OnWriteRemoteDescriptorError,
-                     weak_ptr_factory_.GetWeakPtr(), copyable_callback));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(split_callback.second)));
 }
 
 Device::Device(scoped_refptr<device::BluetoothAdapter> adapter,
@@ -339,15 +340,15 @@ mojom::ServiceInfoPtr Device::ConstructServiceInfoStruct(
 
 void Device::OnReadRemoteCharacteristic(
     ReadValueForCharacteristicCallback callback,
+    absl::optional<device::BluetoothGattService::GattErrorCode> error_code,
     const std::vector<uint8_t>& value) {
+  if (error_code.has_value()) {
+    std::move(callback).Run(
+        mojo::ConvertTo<mojom::GattResult>(error_code.value()),
+        absl::nullopt /* value */);
+    return;
+  }
   std::move(callback).Run(mojom::GattResult::SUCCESS, std::move(value));
-}
-
-void Device::OnReadRemoteCharacteristicError(
-    ReadValueForCharacteristicCallback callback,
-    device::BluetoothGattService::GattErrorCode error_code) {
-  std::move(callback).Run(mojo::ConvertTo<mojom::GattResult>(error_code),
-                          base::nullopt /* value */);
 }
 
 void Device::OnWriteRemoteCharacteristic(
@@ -361,16 +362,17 @@ void Device::OnWriteRemoteCharacteristicError(
   std::move(callback).Run(mojo::ConvertTo<mojom::GattResult>(error_code));
 }
 
-void Device::OnReadRemoteDescriptor(ReadValueForDescriptorCallback callback,
-                                    const std::vector<uint8_t>& value) {
-  std::move(callback).Run(mojom::GattResult::SUCCESS, std::move(value));
-}
-
-void Device::OnReadRemoteDescriptorError(
+void Device::OnReadRemoteDescriptor(
     ReadValueForDescriptorCallback callback,
-    device::BluetoothGattService::GattErrorCode error_code) {
-  std::move(callback).Run(mojo::ConvertTo<mojom::GattResult>(error_code),
-                          base::nullopt /* value */);
+    absl::optional<device::BluetoothGattService::GattErrorCode> error_code,
+    const std::vector<uint8_t>& value) {
+  if (error_code.has_value()) {
+    std::move(callback).Run(
+        mojo::ConvertTo<mojom::GattResult>(error_code.value()),
+        /*value=*/absl::nullopt);
+    return;
+  }
+  std::move(callback).Run(mojom::GattResult::SUCCESS, std::move(value));
 }
 
 void Device::OnWriteRemoteDescriptor(WriteValueForDescriptorCallback callback) {

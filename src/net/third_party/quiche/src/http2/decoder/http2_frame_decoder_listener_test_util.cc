@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/decoder/http2_frame_decoder_listener_test_util.h"
+#include "http2/decoder/http2_frame_decoder_listener_test_util.h"
 
-#include "net/third_party/quiche/src/http2/decoder/http2_frame_decoder_listener.h"
-#include "net/third_party/quiche/src/http2/http2_constants.h"
-#include "net/third_party/quiche/src/http2/http2_structures.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
+#include "http2/decoder/http2_frame_decoder_listener.h"
+#include "http2/http2_constants.h"
+#include "http2/http2_structures.h"
+#include "http2/platform/api/http2_logging.h"
+#include "common/platform/api/quiche_test.h"
 
 namespace http2 {
 
@@ -166,6 +166,23 @@ void FailingHttp2FrameDecoderListener::OnAltSvcValueData(const char* /*data*/,
 
 void FailingHttp2FrameDecoderListener::OnAltSvcEnd() {
   FAIL() << "OnAltSvcEnd";
+}
+
+void FailingHttp2FrameDecoderListener::OnPriorityUpdateStart(
+    const Http2FrameHeader& header,
+    const Http2PriorityUpdateFields& priority_update) {
+  FAIL() << "OnPriorityUpdateStart: " << header << "; prioritized_stream_id: "
+         << priority_update.prioritized_stream_id;
+}
+
+void FailingHttp2FrameDecoderListener::OnPriorityUpdatePayload(
+    const char* /*data*/,
+    size_t len) {
+  FAIL() << "OnPriorityUpdatePayload: len=" << len;
+}
+
+void FailingHttp2FrameDecoderListener::OnPriorityUpdateEnd() {
+  FAIL() << "OnPriorityUpdateEnd";
 }
 
 void FailingHttp2FrameDecoderListener::OnUnknownStart(
@@ -442,6 +459,30 @@ void LoggingHttp2FrameDecoderListener::OnAltSvcEnd() {
   HTTP2_VLOG(1) << "OnAltSvcEnd";
   if (wrapped_ != nullptr) {
     wrapped_->OnAltSvcEnd();
+  }
+}
+
+void LoggingHttp2FrameDecoderListener::OnPriorityUpdateStart(
+    const Http2FrameHeader& header,
+    const Http2PriorityUpdateFields& priority_update) {
+  HTTP2_VLOG(1) << "OnPriorityUpdateStart";
+  if (wrapped_ != nullptr) {
+    wrapped_->OnPriorityUpdateStart(header, priority_update);
+  }
+}
+
+void LoggingHttp2FrameDecoderListener::OnPriorityUpdatePayload(const char* data,
+                                                               size_t len) {
+  HTTP2_VLOG(1) << "OnPriorityUpdatePayload";
+  if (wrapped_ != nullptr) {
+    wrapped_->OnPriorityUpdatePayload(data, len);
+  }
+}
+
+void LoggingHttp2FrameDecoderListener::OnPriorityUpdateEnd() {
+  HTTP2_VLOG(1) << "OnPriorityUpdateEnd";
+  if (wrapped_ != nullptr) {
+    wrapped_->OnPriorityUpdateEnd();
   }
 }
 

@@ -27,7 +27,7 @@
 // support for CSS2 :before and :after pseudo elements.
 namespace blink {
 
-class LayoutBR final : public LayoutText {
+class LayoutBR : public LayoutText {
  public:
   explicit LayoutBR(Node*);
   ~LayoutBR() override;
@@ -77,7 +77,7 @@ class LayoutBR final : public LayoutText {
   PositionWithAffinity PositionForPoint(const PhysicalOffset&) const final;
 
   Position PositionForCaretOffset(unsigned) const final;
-  base::Optional<unsigned> CaretOffsetForPosition(const Position&) const final;
+  absl::optional<unsigned> CaretOffsetForPosition(const Position&) const final;
 
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;

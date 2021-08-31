@@ -192,7 +192,7 @@ TEST_F(CompositorTestWithMessageLoop, MoveThroughputTracker) {
           // May be called since Stop() is called.
         }));
     auto moved_tracker = std::move(tracker);
-    moved_tracker.Stop();
+    EXPECT_TRUE(moved_tracker.Stop());
   }
 
   // Move a started instance and cancel.
@@ -214,7 +214,7 @@ TEST_F(CompositorTestWithMessageLoop, MoveThroughputTracker) {
         [&](const cc::FrameSequenceMetrics::CustomReportData& data) {
           // May be called since Stop() is called.
         }));
-    tracker.Stop();
+    EXPECT_TRUE(tracker.Stop());
     auto moved_tracker = std::move(tracker);
   }
 
@@ -257,7 +257,7 @@ TEST_F(CompositorTestWithMessageLoop, ThroughputTracker) {
     DrawWaiterForTest::WaitForCompositingEnded(compositor());
   }
 
-  tracker.Stop();
+  EXPECT_TRUE(tracker.Stop());
 
   // Generates a few frames after tracker stops. Note the number of frames
   // must be at least two: one to trigger underlying cc::FrameSequenceTracker to
@@ -279,8 +279,85 @@ TEST_F(CompositorTestWithMessageLoop, ThroughputTrackerOutliveCompositor) {
 
   DestroyCompositor();
 
-  // No crash, no use-after-free and no report.
-  tracker.Stop();
+  // Stop() fails but no crash, no use-after-free and no report.
+  EXPECT_FALSE(tracker.Stop());
+}
+
+TEST_F(CompositorTestWithMessageLoop, ThroughputTrackerCallbackStateChange) {
+  auto root_layer = std::make_unique<Layer>(ui::LAYER_SOLID_COLOR);
+  viz::ParentLocalSurfaceIdAllocator allocator;
+  allocator.GenerateId();
+  root_layer->SetBounds(gfx::Rect(10, 10));
+  compositor()->SetRootLayer(root_layer.get());
+  compositor()->SetScaleAndSize(1.0f, gfx::Size(10, 10),
+                                allocator.GetCurrentLocalSurfaceId());
+  ASSERT_TRUE(compositor()->IsVisible());
+
+  ThroughputTracker tracker = compositor()->RequestNewThroughputTracker();
+
+  base::RunLoop run_loop;
+  tracker.Start(base::BindLambdaForTesting(
+      [&](const cc::FrameSequenceMetrics::CustomReportData& data) {
+        // The following Cancel() call should not DCHECK or crash.
+        tracker.Cancel();
+
+        // Starting another tracker should not DCHECK or crash.
+        ThroughputTracker another_tracker =
+            compositor()->RequestNewThroughputTracker();
+        another_tracker.Start(base::DoNothing());
+
+        run_loop.Quit();
+      }));
+
+  // Generates a few frames after tracker starts to have some data collected.
+  for (int i = 0; i < 5; ++i) {
+    compositor()->ScheduleFullRedraw();
+    DrawWaiterForTest::WaitForCompositingEnded(compositor());
+  }
+
+  EXPECT_TRUE(tracker.Stop());
+
+  // Generates a few frames after tracker stops. Note the number of frames
+  // must be at least two: one to trigger underlying cc::FrameSequenceTracker to
+  // be scheduled for termination and one to report data.
+  for (int i = 0; i < 5; ++i) {
+    compositor()->ScheduleFullRedraw();
+    DrawWaiterForTest::WaitForCompositingEnded(compositor());
+  }
+
+  run_loop.Run();
+}
+
+TEST_F(CompositorTestWithMessageLoop, ThroughputTrackerInvoluntaryReport) {
+  auto root_layer = std::make_unique<Layer>(ui::LAYER_SOLID_COLOR);
+  viz::ParentLocalSurfaceIdAllocator allocator;
+  allocator.GenerateId();
+  root_layer->SetBounds(gfx::Rect(10, 10));
+  compositor()->SetRootLayer(root_layer.get());
+  compositor()->SetScaleAndSize(1.0f, gfx::Size(10, 10),
+                                allocator.GetCurrentLocalSurfaceId());
+  ASSERT_TRUE(compositor()->IsVisible());
+
+  ThroughputTracker tracker = compositor()->RequestNewThroughputTracker();
+
+  tracker.Start(base::BindLambdaForTesting(
+      [&](const cc::FrameSequenceMetrics::CustomReportData& data) {
+        ADD_FAILURE() << "No report should happen";
+      }));
+
+  // Generates a few frames after tracker starts to have some data collected.
+  for (int i = 0; i < 5; ++i) {
+    compositor()->ScheduleFullRedraw();
+    DrawWaiterForTest::WaitForCompositingEnded(compositor());
+  }
+
+  // ReleaseAcceleratedWidget() destroys underlying cc::FrameSequenceTracker
+  // and triggers reports before Stop(). Such reports are dropped.
+  compositor()->SetVisible(false);
+  compositor()->ReleaseAcceleratedWidget();
+
+  // Stop() fails but no DCHECK or crash.
+  EXPECT_FALSE(tracker.Stop());
 }
 
 #if defined(OS_WIN)

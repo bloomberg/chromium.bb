@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_child_process_observer.h"
@@ -110,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, Basic) {
   EXPECT_FALSE(test_request.decode_succeeded());
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, BasicDecodeWithOptionsString) {
   base::RunLoop run_loop;
@@ -118,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, BasicDecodeWithOptionsString) {
   const std::vector<uint8_t> data = GetValidPngData();
   ImageDecoder::StartWithOptions(&test_request,
                                  std::string(data.begin(), data.end()),
-                                 ImageDecoder::ROBUST_PNG_CODEC,
+                                 ImageDecoder::PNG_CODEC,
                                  /*shrink_to_fit=*/false);
   run_loop.Run();
   EXPECT_TRUE(test_request.decode_succeeded());
@@ -138,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, RobustPngCodecWithPngData) {
   base::RunLoop run_loop;
   TestImageRequest test_request(run_loop.QuitClosure());
   ImageDecoder::StartWithOptions(
-      &test_request, GetValidPngData(), ImageDecoder::ROBUST_PNG_CODEC,
+      &test_request, GetValidPngData(), ImageDecoder::PNG_CODEC,
       /*shrink_to_fit=*/false, /*desired_image_frame_size=*/gfx::Size());
   run_loop.Run();
   EXPECT_TRUE(test_request.decode_succeeded());
@@ -148,14 +149,14 @@ IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, RobustPngCodecWithJpegData) {
   base::RunLoop run_loop;
   TestImageRequest test_request(run_loop.QuitClosure());
   ImageDecoder::StartWithOptions(
-      &test_request, GetValidJpgData(), ImageDecoder::ROBUST_PNG_CODEC,
+      &test_request, GetValidJpgData(), ImageDecoder::PNG_CODEC,
       /*shrink_to_fit=*/false, /*desired_image_frame_size=*/gfx::Size());
   run_loop.Run();
   // Should fail with JPEG data because only PNG data is allowed.
   EXPECT_FALSE(test_request.decode_succeeded());
 }
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, BasicDecode) {
   base::RunLoop run_loop;

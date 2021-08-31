@@ -22,6 +22,8 @@ CascadeFilter AddValidPropertiesFilter(
       return filter.Add(CSSProperty::kValidForCue, false);
     case ValidPropertyFilter::kFirstLetter:
       return filter.Add(CSSProperty::kValidForFirstLetter, false);
+    case ValidPropertyFilter::kFirstLine:
+      return filter.Add(CSSProperty::kValidForFirstLine, false);
     case ValidPropertyFilter::kMarker:
       return filter.Add(CSSProperty::kValidForMarker, false);
     case ValidPropertyFilter::kHighlight:
@@ -105,9 +107,16 @@ void CascadeExpansion::Next() {
   } while (!AtEnd() && filter_.Rejects(*property_));
 }
 
-bool CascadeExpansion::IsAffectedByAll(CSSPropertyID id) {
+bool CascadeExpansion::IsInAllExpansion(CSSPropertyID id) {
   const CSSProperty& property = CSSProperty::Get(id);
-  return !property.IsShorthand() && property.IsAffectedByAll();
+  // Only web-exposed properties are affected by 'all' (IsAffectedByAll).
+  // This excludes -internal-visited properties from being affected, but for
+  // the purposes of cascade expansion, they need to be included, otherwise
+  // rules like :visited { all:unset; } will not work.
+  const CSSProperty* unvisited = property.GetUnvisitedProperty();
+  return !property.IsShorthand() &&
+         (property.IsAffectedByAll() ||
+          (unvisited && unvisited->IsAffectedByAll()));
 }
 
 bool CascadeExpansion::ShouldEmitVisited() const {
@@ -137,12 +146,12 @@ void CascadeExpansion::AdvanceNormal() {
       break;
     case CSSPropertyID::kAll:
       state_ = State::kAll;
-      id_ = firstCSSProperty;
+      id_ = kFirstCSSProperty;
       property_ = &CSSProperty::Get(id_);
       // If this DCHECK is triggered, it means firstCSSProperty is not affected
       // by 'all', and we need a function for figuring out the first property
       // that _is_ affected by 'all'.
-      DCHECK(IsAffectedByAll(id_));
+      DCHECK(IsInAllExpansion(id_));
       break;
     default:
       property_ = &CSSProperty::Get(id_);
@@ -171,8 +180,8 @@ void CascadeExpansion::AdvanceAll() {
   int end = kIntLastCSSProperty + 1;
 
   for (; i < end; ++i) {
-    id_ = convertToCSSPropertyID(i);
-    if (IsAffectedByAll(id_))
+    id_ = ConvertToCSSPropertyID(i);
+    if (IsInAllExpansion(id_))
       break;
   }
 

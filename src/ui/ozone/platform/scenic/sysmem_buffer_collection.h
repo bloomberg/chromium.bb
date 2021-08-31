@@ -12,10 +12,11 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_pixmap_handle.h"
@@ -59,7 +60,6 @@ class SysmemBufferCollection
                   gfx::BufferUsage usage,
                   VkDevice vk_device,
                   size_t min_buffer_count,
-                  bool force_protected,
                   bool register_with_image_pipe);
 
   // Must not be called more than once.
@@ -78,7 +78,7 @@ class SysmemBufferCollection
                      VkImageCreateInfo* vk_image_info,
                      VkDeviceMemory* vk_device_memory,
                      VkDeviceSize* mem_allocation_size,
-                     base::Optional<gpu::VulkanYCbCrInfo>* ycbcr_info);
+                     absl::optional<gpu::VulkanYCbCrInfo>* ycbcr_info);
 
   gfx::SysmemBufferCollectionId id() const { return id_; }
   size_t num_buffers() const { return buffers_info_.buffer_count; }
@@ -88,8 +88,7 @@ class SysmemBufferCollection
     return buffers_info_.settings.buffer_settings.size_bytes;
   }
   ScenicOverlayView* scenic_overlay_view() {
-    return scenic_overlay_view_.has_value() ? &scenic_overlay_view_.value()
-                                            : nullptr;
+    return scenic_overlay_view_ ? scenic_overlay_view_.get() : nullptr;
   }
   ScenicSurfaceFactory* surface_factory() { return surface_factory_; }
 
@@ -131,10 +130,13 @@ class SysmemBufferCollection
   // that is referenced by |collection_|.
   VkBufferCollectionFUCHSIA vk_buffer_collection_ = VK_NULL_HANDLE;
 
+  // |scenic_overlay_view_| view should be used and deleted on the same thread
+  // as creation.
+  scoped_refptr<base::SingleThreadTaskRunner> overlay_view_task_runner_;
   // If ScenicOverlayView is created and its ImagePipe is added as a participant
   // in buffer allocation negotiations, the associated images can be displayed
   // as overlays.
-  base::Optional<ScenicOverlayView> scenic_overlay_view_;
+  std::unique_ptr<ScenicOverlayView> scenic_overlay_view_;
   ScenicSurfaceFactory* surface_factory_ = nullptr;
 
   // Thread checker used to verify that CreateVkImage() is always called from

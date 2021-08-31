@@ -1,0 +1,12 @@
+import("../../../../../third_party/typescript/typescript.gni")
+
+ts_library("elements") {
+  testonly = true
+  sources = [ "StylesSidebarPane_test.ts" ]
+
+  deps = [
+    "../../../../../front_end/panels/elements:bundle",
+    "../../helpers",
+    "./components",
+  ]
+}

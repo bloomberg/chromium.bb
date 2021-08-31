@@ -41,15 +41,21 @@ Polymer({
     /** @type {!LanguageHelper} */
     languageHelper: Object,
 
-    /** @private {!Array<!LanguageState|!ForcedLanguageState>|undefined} */
+    /** @private {!Array<!LanguageState|!SpellCheckLanguageState>|undefined} */
     spellCheckLanguages_: {
       type: Array,
-      computed:
-          'getSpellCheckLanguages_(languages.enabled.*, languages.forcedSpellCheckLanguages.*)',
+      computed: `getSpellCheckLanguages_(languageSettingsV2Update2Enabled_,
+          languages.spellCheckOnLanguages.*, languages.enabled.*)`,
     },
 
     /** @private */
     showAddInputMethodsDialog_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
+    showAddSpellcheckLanguagesDialog_: {
       type: Boolean,
       value: false,
     },
@@ -66,6 +72,46 @@ Polymer({
         chromeos.settings.mojom.Setting.kSpellCheck,
       ]),
     },
+
+    /** @private */
+    languageSettingsV2Update2Enabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('enableLanguageSettingsV2Update2');
+      },
+    },
+
+    /**
+     * Whether the shortcut reminder for the last used IME is currently showing.
+     * @private
+     */
+    showLastUsedIMEShortcutReminder_: {
+      type: Boolean,
+      computed: `shouldShowLastUsedIMEShortcutReminder_(
+          languages.inputMethods.enabled.length,
+          prefs.ash.shortcut_reminders.last_used_ime_dismissed.value)`,
+    },
+
+    /**
+     * Whether the shortcut reminder for the next IME is currently showing.
+     * @private
+     */
+    showNextIMEShortcutReminder_: {
+      type: Boolean,
+      computed: `shouldShowNextIMEShortcutReminder_(
+          languages.inputMethods.enabled.length,
+          prefs.ash.shortcut_reminders.next_ime_dismissed.value)`,
+    },
+
+    /**
+     * The body of the currently showing shortcut reminders.
+     * @private {!Array<string>}
+     */
+    shortcutReminderBody_: {
+      type: Array,
+      computed: `getShortcutReminderBody_(showLastUsedIMEShortcutReminder_,
+          showNextIMEShortcutReminder_)`,
+    },
   },
 
   /** @private {?settings.LanguagesMetricsProxy} */
@@ -76,10 +122,6 @@ Polymer({
     this.languagesMetricsProxy_ =
         settings.LanguagesMetricsProxyImpl.getInstance();
   },
-
-  observers: [
-    'updateSpellcheckPref_(spellCheckLanguages_)',
-  ],
 
   /**
    * @param {!settings.Route} route
@@ -248,6 +290,29 @@ Polymer({
     cr.ui.focusWithoutInk(assert(this.$.addInputMethod));
   },
 
+  /** @private */
+  onAddSpellcheckLanguagesClick_() {
+    this.showAddSpellcheckLanguagesDialog_ = true;
+  },
+
+  /** @private */
+  onAddSpellcheckLanguagesDialogClose_() {
+    this.showAddSpellcheckLanguagesDialog_ = false;
+
+    if (this.languages.spellCheckOnLanguages.length === 0) {
+      // User closed the dialog right after turning on spell check without any
+      // existing spell check languages - turn off spell checking if this is
+      // the case.
+      this.setPrefValue('browser.enable_spellchecking', false);
+    }
+
+    // Because #addSpellcheckLanguages is not statically created (as it is
+    // within a <template is="dom-if">), we need to use
+    // this.$$("#addSpellcheckLanguages") instead of
+    // this.$.addSpellCheckLanguages.
+    cr.ui.focusWithoutInk(assert(this.$$('#addSpellcheckLanguages')));
+  },
+
   /**
    * @param {!chrome.languageSettingsPrivate.InputMethod} targetInputMethod
    * @private
@@ -283,12 +348,59 @@ Polymer({
   },
 
   /**
+   * @param {!SpellCheckLanguageState} lang
+   * @private
+   */
+  getRemoveSpellcheckLanguageTooltip_(lang) {
+    return this.i18n(
+        'removeSpellCheckLanguageTooltip', lang.language.displayName);
+  },
+
+  /**
+   * @param {!{model: !{item: SpellCheckLanguageState}}} e
+   * @private
+   */
+  onRemoveSpellcheckLanguageClick_(e) {
+    this.languageHelper.toggleSpellCheck(e.model.item.language.code, false);
+    settings.recordSettingChange();
+  },
+
+  /**
    * @return {string|undefined}
    * @param {!Event} e
    * @private
    */
   onSpellcheckToggleChange_(e) {
     this.languagesMetricsProxy_.recordToggleSpellCheck(e.target.checked);
+
+    if (this.languageSettingsV2Update2Enabled_ && e.target.checked &&
+        this.languages.spellCheckOnLanguages.length === 0) {
+      // In LSV2 Update 2, we never want to enable spell check without the user
+      // having a spell check language. When this happens, we try estimating
+      // their expected spell check language (their device language, assuming
+      // that the user has an input method which supports that language).
+      // If that doesn't work, we fall back on prompting the user to enable a
+      // spell check language. If the user dismisses this dialog without adding
+      // a spell check language, we disable spell check again
+      // (see |onAddSpellcheckLanguagesDialogClose_|).
+
+      // This assert is safe as prospectiveUILanguage is always defined in
+      // languages.js' |createModel_()|.
+      const deviceLanguageCode = assert(this.languages.prospectiveUILanguage);
+      // However, deviceLanguage itself may be undefined as it is possible that
+      // it was set outside of CrOS language settings (normally when debugging
+      // or in tests).
+      const deviceLanguage =
+          this.languageHelper.getLanguage(deviceLanguageCode);
+      if (deviceLanguage && deviceLanguage.supportsSpellcheck &&
+          this.languages.inputMethods.enabled.some(
+              inputMethod =>
+                  inputMethod.languageCodes.includes(deviceLanguageCode))) {
+        this.languageHelper.toggleSpellCheck(deviceLanguageCode, true);
+      } else {
+        this.onAddSpellcheckLanguagesClick_();
+      }
+    }
   },
 
   /**
@@ -299,21 +411,27 @@ Polymer({
    */
   getIndicatorPrefForManagedSpellcheckLanguage_(isEnabled) {
     return isEnabled ? this.getPref('spellcheck.forced_dictionaries') :
-                       this.getPref('spellcheck.blacklisted_dictionaries');
+                       this.getPref('spellcheck.blocked_dictionaries');
   },
 
   /**
-   * Returns an array of enabled languages that support spell check, plus
-   * spellcheck languages that are force-enabled by policy.
-   * @return {!Array<!LanguageState|!ForcedLanguageState>|undefined}
+   * Returns an array of spell check languages for the UI.
+   * @return {!Array<!LanguageState|!SpellCheckLanguageState>|undefined}
    * @private
    */
   getSpellCheckLanguages_() {
     if (this.languages === undefined) {
       return undefined;
     }
+    if (this.languageSettingsV2Update2Enabled_) {
+      const languages = [...this.languages.spellCheckOnLanguages];
+      languages.sort(
+          (a, b) =>
+              a.language.displayName.localeCompare(b.language.displayName));
+      return languages;
+    }
     const combinedLanguages =
-        this.languages.enabled.concat(this.languages.forcedSpellCheckLanguages);
+        this.languages.enabled.concat(this.languages.spellCheckOnLanguages);
     const supportedSpellcheckLanguagesSet = new Set();
     const supportedSpellcheckLanguages = [];
 
@@ -326,21 +444,6 @@ Polymer({
     });
 
     return supportedSpellcheckLanguages;
-  },
-
-  /** @private */
-  updateSpellcheckPref_() {
-    if (this.spellCheckLanguages_ === undefined) {
-      return;
-    }
-
-    // TODO(crbug/1126239): Investigate feasibility of moving this pref update
-    // to spellcheck_service.
-    if (this.spellCheckLanguages_.length === 0) {
-      // If there are no supported spell check languages, automatically turn
-      // off spell check to indicate no spell check will happen.
-      this.setPrefValue('browser.enable_spellchecking', false);
-    }
   },
 
   /**
@@ -372,7 +475,7 @@ Polymer({
   /**
    * Name only supports clicking when language is not managed, supports
    * spellcheck, and the dictionary has been downloaded with no errors.
-   * @param {!LanguageState|!ForcedLanguageState} item
+   * @param {!LanguageState|!SpellCheckLanguageState} item
    * @return {boolean}
    * @private
    */
@@ -412,5 +515,91 @@ Polymer({
         settings.LanguagesPageInteraction.OPEN_CUSTOM_SPELL_CHECK);
     settings.Router.getInstance().navigateTo(
         settings.routes.OS_LANGUAGES_EDIT_DICTIONARY);
-  }
+  },
+
+  /**
+   * Gets the appropriate CSS class for the Enhanced spell check toggle
+   * depending on whether Update 2 is enabled or not.
+   * @private
+   */
+  getEnhancedSpellCheckClass_() {
+    return this.languageSettingsV2Update2Enabled_ ? '' : 'hr';
+  },
+
+  /**
+   * @private
+   */
+  isEnableSpellcheckingDisabled_() {
+    return !this.languageSettingsV2Update2Enabled_ &&
+        (this.spellCheckLanguages_ && this.spellCheckLanguages_.length === 0);
+  },
+
+  /**
+   * @param {boolean} update2Enabled
+   * @param {boolean} spellCheckOn
+   * @return {boolean}
+   */
+  isCollapseOpened_(update2Enabled, spellCheckOn) {
+    return !update2Enabled || spellCheckOn;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowLastUsedIMEShortcutReminder_() {
+    // User has already dismissed the shortcut reminder.
+    if (this.getPref('ash.shortcut_reminders.last_used_ime_dismissed').value) {
+      return false;
+    }
+    // Need at least 2 input methods to be shown the reminder.
+    return !!this.languages && this.languages.inputMethods.enabled.length >= 2;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowNextIMEShortcutReminder_() {
+    // User has already dismissed the shortcut reminder.
+    if (this.getPref('ash.shortcut_reminders.next_ime_dismissed').value) {
+      return false;
+    }
+    // Need at least 3 input methods to be shown the reminder.
+    return !!this.languages && this.languages.inputMethods.enabled.length >= 3;
+  },
+
+  /**
+   * @return {!Array<string>}
+   * @private
+   */
+  getShortcutReminderBody_() {
+    const /** !Array<string> */ reminderBody = [];
+    if (this.showLastUsedIMEShortcutReminder_) {
+      reminderBody.push(this.i18nAdvanced('imeShortcutReminderLastUsed'));
+    }
+    if (this.showNextIMEShortcutReminder_) {
+      reminderBody.push(this.i18nAdvanced('imeShortcutReminderNext'));
+    }
+    return reminderBody;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowShortcutReminder_() {
+    return this.languageSettingsV2Update2Enabled_ &&
+        this.shortcutReminderBody_ && this.shortcutReminderBody_.length > 0;
+  },
+
+  /** @private */
+  onShortcutReminderDismiss_() {
+    if (this.showLastUsedIMEShortcutReminder_) {
+      this.setPrefValue('ash.shortcut_reminders.last_used_ime_dismissed', true);
+    }
+    if (this.showNextIMEShortcutReminder_) {
+      this.setPrefValue('ash.shortcut_reminders.next_ime_dismissed', true);
+    }
+  },
 });

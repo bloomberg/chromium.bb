@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/deferred_sequenced_task_runner.h"
@@ -87,7 +89,7 @@ class TestNetworkQualityObserver
     run_loop_wait_effective_connection_type_ =
         run_loop_wait_effective_connection_type;
     run_loop_->Run();
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
   }
 
   size_t num_notifications() const { return num_notifications_; }
@@ -132,8 +134,7 @@ class NetworkQualityTrackerBrowserTest : public InProcessBrowserTest {
 
     mojo::ScopedAllowSyncCallForTesting allow_sync_call;
     content::StoragePartition* partition =
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile());
+        browser()->profile()->GetDefaultStoragePartition();
     DCHECK(partition->GetNetworkContext());
     DCHECK(content::GetNetworkService());
 
@@ -257,7 +258,9 @@ IN_PROC_BROWSER_TEST_F(NetworkQualityTrackerBrowserTest,
 
   SimulateNetworkServiceCrash();
   // Flush the network interface to make sure it notices the crash.
-  content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+  browser()
+      ->profile()
+      ->GetDefaultStoragePartition()
       ->FlushNetworkInterfaceForTesting();
 
   base::RunLoop().RunUntilIdle();

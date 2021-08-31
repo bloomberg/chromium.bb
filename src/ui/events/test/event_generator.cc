@@ -17,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/events/event.h"
 #include "ui/events/event_source.h"
 #include "ui/events/event_utils.h"
@@ -177,7 +178,7 @@ void EventGenerator::SendMouseExit() {
   Dispatch(&mouseev);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void EventGenerator::MoveMouseToWithNative(const gfx::Point& point_in_host,
                                            const gfx::Point& point_for_native) {
   // Ozone uses the location in native event as a system location.
@@ -265,15 +266,16 @@ void EventGenerator::SetTouchTilt(float x, float y) {
 }
 
 void EventGenerator::PressTouch(
-    const base::Optional<gfx::Point>& touch_location_in_screen) {
+    const absl::optional<gfx::Point>& touch_location_in_screen) {
   PressTouchId(0, touch_location_in_screen);
 }
 
 void EventGenerator::PressTouchId(
     int touch_id,
-    const base::Optional<gfx::Point>& touch_location_in_screen) {
+    const absl::optional<gfx::Point>& touch_location_in_screen) {
   if (touch_location_in_screen.has_value())
     current_screen_location_ = *touch_location_in_screen;
+  UpdateCurrentDispatcher(current_screen_location_);
   TestTouchEvent touchev(ui::ET_TOUCH_PRESSED, GetLocationInCurrentRoot(),
                          touch_id, flags_, ui::EventTimeForNow());
   Dispatch(&touchev);
@@ -669,6 +671,15 @@ void EventGenerator::DispatchKeyEvent(bool is_press,
 #else
   ui::EventType type = is_press ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED;
   ui::KeyEvent keyev(type, key_code, flags);
+  if (is_press) {
+    // Set a property as if this is a key event not consumed by IME.
+    // Ozone/X11+GTK IME works so already. Ozone/wayland IME relies on this
+    // flag to work properly.
+    keyev.SetProperties({{
+        kPropertyKeyboardImeFlag,
+        std::vector<uint8_t>{kPropertyKeyboardImeIgnoredFlag},
+    }});
+  }
 #endif  // OS_WIN
   keyev.set_source_device_id(source_device_id);
   Dispatch(&keyev);

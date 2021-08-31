@@ -82,7 +82,8 @@ class DurableStoragePermissionContextTest
     : public ChromeRenderViewHostTestHarness {
  protected:
   void MakeOriginImportant(const GURL& origin) {
-    ImportantSitesUtil::MarkOriginAsImportantForTesting(profile(), origin);
+    site_engagement::ImportantSitesUtil::MarkOriginAsImportantForTesting(
+        profile(), origin);
   }
 };
 
@@ -94,7 +95,8 @@ TEST_F(DurableStoragePermissionContextTest, Bookmarked) {
 
   const permissions::PermissionRequestID id(
       web_contents()->GetMainFrame()->GetProcess()->GetID(),
-      web_contents()->GetMainFrame()->GetRoutingID(), -1);
+      web_contents()->GetMainFrame()->GetRoutingID(),
+      permissions::PermissionRequestID::RequestLocalId());
 
   ASSERT_EQ(0, permission_context.permission_set_count());
   ASSERT_FALSE(permission_context.last_permission_set_persisted());
@@ -112,14 +114,15 @@ TEST_F(DurableStoragePermissionContextTest, Bookmarked) {
 
 TEST_F(DurableStoragePermissionContextTest, BookmarkAndIncognitoMode) {
   TestDurablePermissionContext permission_context(
-      profile()->GetPrimaryOTRProfile());
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true));
   GURL url("https://www.google.com");
   MakeOriginImportant(url);
   NavigateAndCommit(url);
 
   const permissions::PermissionRequestID id(
       web_contents()->GetMainFrame()->GetProcess()->GetID(),
-      web_contents()->GetMainFrame()->GetRoutingID(), -1);
+      web_contents()->GetMainFrame()->GetRoutingID(),
+      permissions::PermissionRequestID::RequestLocalId());
 
   ASSERT_EQ(0, permission_context.permission_set_count());
   ASSERT_FALSE(permission_context.last_permission_set_persisted());
@@ -138,14 +141,16 @@ TEST_F(DurableStoragePermissionContextTest, BookmarkAndIncognitoMode) {
 TEST_F(DurableStoragePermissionContextTest, BookmarkAndNonPrimaryOTRProfile) {
   TestDurablePermissionContext permission_context(
       profile()->GetOffTheRecordProfile(
-          Profile::OTRProfileID("Test::DurableStorage")));
+          Profile::OTRProfileID::CreateUniqueForTesting(),
+          /*create_if_needed=*/true));
   GURL url("https://www.google.com");
   MakeOriginImportant(url);
   NavigateAndCommit(url);
 
   const permissions::PermissionRequestID id(
       web_contents()->GetMainFrame()->GetProcess()->GetID(),
-      web_contents()->GetMainFrame()->GetRoutingID(), -1);
+      web_contents()->GetMainFrame()->GetRoutingID(),
+      permissions::PermissionRequestID::RequestLocalId());
 
   ASSERT_EQ(0, permission_context.permission_set_count());
   ASSERT_FALSE(permission_context.last_permission_set_persisted());
@@ -168,7 +173,8 @@ TEST_F(DurableStoragePermissionContextTest, NoBookmark) {
 
   const permissions::PermissionRequestID id(
       web_contents()->GetMainFrame()->GetProcess()->GetID(),
-      web_contents()->GetMainFrame()->GetRoutingID(), -1);
+      web_contents()->GetMainFrame()->GetRoutingID(),
+      permissions::PermissionRequestID::RequestLocalId());
 
   ASSERT_EQ(0, permission_context.permission_set_count());
   ASSERT_FALSE(permission_context.last_permission_set_persisted());
@@ -198,7 +204,8 @@ TEST_F(DurableStoragePermissionContextTest, CookiesNotAllowed) {
 
   const permissions::PermissionRequestID id(
       web_contents()->GetMainFrame()->GetProcess()->GetID(),
-      web_contents()->GetMainFrame()->GetRoutingID(), -1);
+      web_contents()->GetMainFrame()->GetRoutingID(),
+      permissions::PermissionRequestID::RequestLocalId());
 
   ASSERT_EQ(0, permission_context.permission_set_count());
   ASSERT_FALSE(permission_context.last_permission_set_persisted());
@@ -223,7 +230,8 @@ TEST_F(DurableStoragePermissionContextTest, EmbeddedFrame) {
 
   const permissions::PermissionRequestID id(
       web_contents()->GetMainFrame()->GetProcess()->GetID(),
-      web_contents()->GetMainFrame()->GetRoutingID(), -1);
+      web_contents()->GetMainFrame()->GetRoutingID(),
+      permissions::PermissionRequestID::RequestLocalId());
 
   ASSERT_EQ(0, permission_context.permission_set_count());
   ASSERT_FALSE(permission_context.last_permission_set_persisted());

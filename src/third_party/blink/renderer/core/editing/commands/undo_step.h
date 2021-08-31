@@ -43,15 +43,16 @@ class UndoStep final : public GarbageCollected<UndoStep> {
  public:
   UndoStep(Document*,
            const SelectionForUndoStep& starting_selection,
-           const SelectionForUndoStep& ending_selection,
-           InputEvent::InputType);
+           const SelectionForUndoStep& ending_selection);
 
+  // Returns true if associated root editable elements are connected.
+  bool IsConnected() const;
   void Unapply();
   void Reapply();
-  InputEvent::InputType GetInputType() const;
   void Append(SimpleEditCommand*);
   void Append(UndoStep*);
 
+  Document& GetDocument() const { return *document_; }
   const SelectionForUndoStep& StartingSelection() const {
     return starting_selection_;
   }
@@ -65,10 +66,10 @@ class UndoStep final : public GarbageCollected<UndoStep> {
     selection_is_directional_ = is_directional;
   }
   Element* StartingRootEditableElement() const {
-    return starting_root_editable_element_.Get();
+    return starting_selection_.RootEditableElement();
   }
   Element* EndingRootEditableElement() const {
-    return ending_root_editable_element_.Get();
+    return ending_selection_.RootEditableElement();
   }
 
   uint64_t SequenceNumber() const { return sequence_number_; }
@@ -80,13 +81,10 @@ class UndoStep final : public GarbageCollected<UndoStep> {
   SelectionForUndoStep starting_selection_;
   SelectionForUndoStep ending_selection_;
   HeapVector<Member<SimpleEditCommand>> commands_;
-  Member<Element> starting_root_editable_element_;
-  Member<Element> ending_root_editable_element_;
-  InputEvent::InputType input_type_;
   const uint64_t sequence_number_;
   bool selection_is_directional_ = false;
 };
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_UNDO_STEP_H_

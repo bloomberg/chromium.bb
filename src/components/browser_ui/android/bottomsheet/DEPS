@@ -1,7 +1,0 @@
-noparent = True
-include_rules = [
-  "+base/android",
-  "+base/test/android",
-  "+components/browser_ui/widget/android",
-  "+ui/android",
-]

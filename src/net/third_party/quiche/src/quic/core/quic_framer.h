@@ -11,13 +11,13 @@
 #include <string>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/crypto/quic_decrypter.h"
+#include "quic/core/crypto/quic_encrypter.h"
+#include "quic/core/crypto/quic_random.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -96,11 +96,11 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // Called only when |perspective_| is IS_CLIENT and a retry packet has been
   // parsed. |new_connection_id| contains the value of the Source Connection
   // ID field, and |retry_token| contains the value of the Retry Token field.
-  // On versions where HasRetryIntegrityTag() is false,
+  // On versions where UsesTls() is false,
   // |original_connection_id| contains the value of the Original Destination
   // Connection ID field, and both |retry_integrity_tag| and
   // |retry_without_tag| are empty.
-  // On versions where HasRetryIntegrityTag() is true,
+  // On versions where UsesTls() is true,
   // |original_connection_id| is empty, |retry_integrity_tag| contains the
   // value of the Retry Integrity Tag field, and |retry_without_tag| contains
   // the entire RETRY packet except the Retry Integrity Tag field.
@@ -121,9 +121,9 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // cease.
   virtual bool OnUnauthenticatedHeader(const QuicPacketHeader& header) = 0;
 
-  // Called when a packet has been decrypted. |level| is the encryption level
-  // of the packet.
-  virtual void OnDecryptedPacket(EncryptionLevel level) = 0;
+  // Called when a packet has been decrypted. |length| is the packet length,
+  // and |level| is the encryption level of the packet.
+  virtual void OnDecryptedPacket(size_t length, EncryptionLevel level) = 0;
 
   // Called when the complete header of a packet had been parsed.
   // If OnPacketHeader returns false, framing for this packet will cease.
@@ -225,7 +225,8 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   virtual void OnPacketComplete() = 0;
 
   // Called to check whether |token| is a valid stateless reset token.
-  virtual bool IsValidStatelessResetToken(QuicUint128 token) const = 0;
+  virtual bool IsValidStatelessResetToken(
+      const StatelessResetToken& token) const = 0;
 
   // Called when an IETF stateless reset packet has been parsed and validated
   // with the stateless reset token.
@@ -299,8 +300,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   void set_version(const ParsedQuicVersion version);
 
-  // Does not DCHECK for supported version. Used by tests to set unsupported
-  // version to trigger version negotiation.
+  // Does not QUICHE_DCHECK for supported version. Used by tests to set
+  // unsupported version to trigger version negotiation.
   void set_version_for_tests(const ParsedQuicVersion version) {
     version_ = version;
   }
@@ -470,10 +471,14 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   static std::unique_ptr<QuicEncryptedPacket> BuildPublicResetPacket(
       const QuicPublicResetPacket& packet);
 
+  // Returns the minimal stateless reset packet length.
+  static size_t GetMinStatelessResetPacketLength();
+
   // Returns a new IETF stateless reset packet.
   static std::unique_ptr<QuicEncryptedPacket> BuildIetfStatelessResetPacket(
       QuicConnectionId connection_id,
-      QuicUint128 stateless_reset_token);
+      size_t received_packet_length,
+      StatelessResetToken stateless_reset_token);
 
   // Returns a new version negotiation packet.
   static std::unique_ptr<QuicEncryptedPacket> BuildVersionNegotiationPacket(
@@ -520,10 +525,10 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                                QuicDataWriter* writer);
 
   // SetDecrypter sets the primary decrypter, replacing any that already exists.
-  // If an alternative decrypter is in place then the function DCHECKs. This is
-  // intended for cases where one knows that future packets will be using the
-  // new decrypter and the previous decrypter is now obsolete. |level| indicates
-  // the encryption level of the new decrypter.
+  // If an alternative decrypter is in place then the function QUICHE_DCHECKs.
+  // This is intended for cases where one knows that future packets will be
+  // using the new decrypter and the previous decrypter is now obsolete. |level|
+  // indicates the encryption level of the new decrypter.
   void SetDecrypter(EncryptionLevel level,
                     std::unique_ptr<QuicDecrypter> decrypter);
 
@@ -629,6 +634,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   Perspective perspective() const { return perspective_; }
 
+  QuicStreamFrameDataProducer* data_producer() const { return data_producer_; }
+
   void set_data_producer(QuicStreamFrameDataProducer* data_producer) {
     data_producer_ = data_producer;
   }
@@ -704,6 +711,10 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
     peer_ack_delay_exponent_ = exponent;
   }
   uint32_t peer_ack_delay_exponent() const { return peer_ack_delay_exponent_; }
+
+  void set_drop_incoming_retry_packets(bool drop_incoming_retry_packets) {
+    drop_incoming_retry_packets_ = drop_incoming_retry_packets;
+  }
 
  private:
   friend class test::QuicFramerPeer;
@@ -822,8 +833,13 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
       QuicPacketNumber base_packet_number,
       uint64_t* packet_number);
   bool ProcessFrameData(QuicDataReader* reader, const QuicPacketHeader& header);
+
+  static bool IsIetfFrameTypeExpectedForEncryptionLevel(uint64_t frame_type,
+                                                        EncryptionLevel level);
+
   bool ProcessIetfFrameData(QuicDataReader* reader,
-                            const QuicPacketHeader& header);
+                            const QuicPacketHeader& header,
+                            EncryptionLevel decrypted_level);
   bool ProcessStreamFrame(QuicDataReader* reader,
                           uint8_t frame_type,
                           QuicStreamFrame* frame);
@@ -849,7 +865,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                            bool no_message_length,
                            QuicMessageFrame* frame);
 
-  bool DecryptPayload(absl::string_view encrypted,
+  bool DecryptPayload(size_t udp_packet_length,
+                      absl::string_view encrypted,
                       absl::string_view associated_data,
                       const QuicPacketHeader& header,
                       char* decrypted_buffer,
@@ -1107,6 +1124,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // The value of the current key phase bit, which is toggled when the keys are
   // changed.
   bool current_key_phase_bit_;
+  // Whether we have performed a key update at least once.
+  bool key_update_performed_ = false;
   // Tracks the first packet received in the current key phase. Will be
   // uninitialized before the first one-RTT packet has been received or after a
   // locally initiated key update but before the first packet from the peer in
@@ -1149,6 +1168,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   // Indicates whether this framer supports multiple packet number spaces.
   bool supports_multiple_packet_number_spaces_;
+
+  // Indicates whether received RETRY packets should be dropped.
+  bool drop_incoming_retry_packets_ = false;
 
   // The length in bytes of the last packet number written to an IETF-framed
   // packet.

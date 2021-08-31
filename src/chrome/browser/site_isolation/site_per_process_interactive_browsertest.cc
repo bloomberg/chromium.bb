@@ -3,16 +3,19 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -26,12 +29,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
@@ -48,7 +45,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/test/ui_controls.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/point.h"
@@ -420,17 +416,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   EXPECT_EQ(main_frame, web_contents->GetFocusedFrame());
 }
 
-#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_WIN)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || defined(OS_WIN)
 // Ensures that renderers know to advance focus to sibling frames and parent
 // frames in the presence of mouse click initiated focus changes.
 // Verifies against regression of https://crbug.com/702330
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
                        TabAndMouseFocusNavigation) {
-#if defined(USE_OZONE)
-  // TODO(https://crbug.com/1109696): enable for ozone.
-  if (features::IsUsingOzonePlatform())
-    return;
-#endif
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,c)"));
   ui_test_utils::NavigateToURL(browser(), main_url);
@@ -1248,6 +1241,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractivePDFTest,
   auto send_right_mouse_event = [](content::RenderWidgetHost* host, int x,
                                    int y, blink::WebInputEvent::Type type) {
     blink::WebMouseEvent event;
+    event.SetTimeStamp(blink::WebInputEvent::GetStaticTimeStampForTests());
     event.SetPositionInWidget(x, y);
     event.button = blink::WebMouseEvent::Button::kRight;
     event.SetType(type);
@@ -1432,50 +1426,6 @@ class SitePerProcessAutofillTest : public SitePerProcessInteractiveBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SitePerProcessAutofillTest);
 };
 
-// Observes the notifications for changes in focused node/element in the page.
-class FocusedEditableNodeChangedObserver : content::NotificationObserver {
- public:
-  FocusedEditableNodeChangedObserver() : observed_(false) {
-    registrar_.Add(this, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-                   content::NotificationService::AllSources());
-  }
-  ~FocusedEditableNodeChangedObserver() override {}
-
-  void WaitForFocusChangeInPage() {
-    if (observed_)
-      return;
-    loop_runner_ = new content::MessageLoopRunner();
-    loop_runner_->Run();
-  }
-
-  // content::NotificationObserver override.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    auto focused_node_details =
-        content::Details<content::FocusedNodeDetails>(details);
-    if (!focused_node_details->is_editable_node)
-      return;
-    focused_node_bounds_in_screen_ =
-        focused_node_details->node_bounds_in_screen.origin();
-    observed_ = true;
-    if (loop_runner_)
-      loop_runner_->Quit();
-  }
-
-  const gfx::Point& focused_node_bounds_in_screen() const {
-    return focused_node_bounds_in_screen_;
-  }
-
- private:
-  content::NotificationRegistrar registrar_;
-  bool observed_;
-  gfx::Point focused_node_bounds_in_screen_;
-  scoped_refptr<content::MessageLoopRunner> loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(FocusedEditableNodeChangedObserver);
-};
-
 // Waits until transforming |sample_point| from |render_frame_host| coordinates
 // to its root frame's view's coordinates matches |transformed_point| within a
 // reasonable error margin less than or equal to |bound|. This method is used to
@@ -1552,6 +1502,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 
     // Now simulate a click outside the bounds of the popup.
     blink::WebMouseEvent event;
+    event.SetTimeStamp(blink::WebInputEvent::GetStaticTimeStampForTests());
     // Click a little bit to the right and top of the <input>.
     event.SetPositionInWidget(130, 10);
     event.button = blink::WebMouseEvent::Button::kLeft;
@@ -1587,13 +1538,19 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 // the NSEvent is sent to NSApplication in ui/base/test/ui_controls_mac.mm .
 // This test is disabled on only the Mac until the problem is resolved.
 // See http://crbug.com/425859 for more information.
-#if !defined(OS_MAC)
+#if defined(OS_MAC)
+#define MAYBE_SubframeAnchorOpenedInBackgroundTab \
+  DISABLED_SubframeAnchorOpenedInBackgroundTab
+#else
+#define MAYBE_SubframeAnchorOpenedInBackgroundTab \
+  SubframeAnchorOpenedInBackgroundTab
+#endif
 // Tests that ctrl-click in a subframe results in a background, not a foreground
 // tab - see https://crbug.com/804838.  This test is somewhat similar to
 // CtrlClickShouldEndUpIn*ProcessTest tests, but this test has to simulate an
 // actual mouse click.
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
-                       SubframeAnchorOpenedInBackgroundTab) {
+                       MAYBE_SubframeAnchorOpenedInBackgroundTab) {
   // Setup the test page - the ctrl-clicked link should be in a subframe.
   GURL main_url(embedded_test_server()->GetURL("foo.com", "/iframe.html"));
   ui_test_utils::NavigateToURL(browser(), main_url);
@@ -1637,4 +1594,3 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   EXPECT_EQ(1,
             browser()->tab_strip_model()->GetIndexOfWebContents(new_contents));
 }
-#endif

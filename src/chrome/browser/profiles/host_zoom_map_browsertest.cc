@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -77,7 +78,7 @@ class ZoomLevelChangeObserver {
 
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   std::vector<std::string> changed_hosts_;
-  std::unique_ptr<content::HostZoomMap::Subscription> subscription_;
+  base::CallbackListSubscription subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomLevelChangeObserver);
 };
@@ -146,7 +147,7 @@ class HostZoomMapBrowserTest : public InProcessBrowserTest {
 
   // BrowserTestBase:
   void SetUpOnMainThread() override {
-    embedded_test_server()->RegisterRequestHandler(base::Bind(
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         &HostZoomMapBrowserTest::HandleRequest, base::Unretained(this)));
     ASSERT_TRUE(embedded_test_server()->Start());
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -245,13 +246,13 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest, ZoomEventsWorkForOffTheRecord) {
                                 test_scheme, test_host));
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(
     HostZoomMapBrowserTest,
     WebviewBasedSigninUsesDefaultStoragePartitionForEmbedder) {
   GURL signin_url = signin::GetEmbeddedPromoURL(
       signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
-      signin_metrics::Reason::REASON_FORCED_SIGNIN_PRIMARY_ACCOUNT, false);
+      signin_metrics::Reason::kForcedSigninPrimaryAccount, false);
   GURL test_url = ConstructTestServerURL(signin_url.spec().c_str());
   std::string test_host(test_url.host());
   std::string test_scheme(test_url.scheme());
@@ -333,7 +334,8 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest,
 
   Profile* parent_profile = browser()->profile();
   Profile* child_profile =
-      static_cast<ProfileImpl*>(parent_profile)->GetPrimaryOTRProfile();
+      static_cast<ProfileImpl*>(parent_profile)
+          ->GetPrimaryOTRProfile(/*create_if_needed=*/true);
   HostZoomMap* parent_zoom_map =
       HostZoomMap::GetDefaultForBrowserContext(parent_profile);
   ASSERT_TRUE(parent_zoom_map);
@@ -378,7 +380,8 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest,
                        ParentDefaultZoomPropagatesToIncognitoChild) {
   Profile* parent_profile = browser()->profile();
   Profile* child_profile =
-      static_cast<ProfileImpl*>(parent_profile)->GetPrimaryOTRProfile();
+      static_cast<ProfileImpl*>(parent_profile)
+          ->GetPrimaryOTRProfile(/*create_if_needed=*/true);
 
   double new_default_zoom_level =
       parent_profile->GetZoomLevelPrefs()->GetDefaultZoomLevelPref() + 1.f;

@@ -19,6 +19,7 @@
 #include "chrome/grit/locale_settings.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -47,6 +48,8 @@ void ImportLockDialogView::Show(gfx::NativeWindow parent,
 ImportLockDialogView::ImportLockDialogView(
     base::OnceCallback<void(bool)> callback)
     : callback_(std::move(callback)) {
+  SetTitle(IDS_IMPORTER_LOCK_TITLE);
+
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_OK));
 
@@ -60,32 +63,26 @@ ImportLockDialogView::ImportLockDialogView(
       base::BindOnce(done_callback, base::Unretained(this), true));
   SetCancelCallback(
       base::BindOnce(done_callback, base::Unretained(this), false));
+  SetCloseCallback(
+      base::BindOnce(done_callback, base::Unretained(this), false));
+
+  SetShowCloseButton(false);
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   views::Label* description_label =
       new views::Label(l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_TEXT));
   description_label->SetBorder(views::CreateEmptyBorder(
-      ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(views::TEXT,
-                                                                 views::TEXT)));
+      ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+          views::DialogContentType::kText, views::DialogContentType::kText)));
   description_label->SetMultiLine(true);
   description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(description_label);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::IMPORT_LOCK);
 }
 
-ImportLockDialogView::~ImportLockDialogView() {
-}
+ImportLockDialogView::~ImportLockDialogView() = default;
 
-gfx::Size ImportLockDialogView::CalculatePreferredSize() const {
-  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
-  return gfx::Size(width, GetHeightForWidth(width));
-}
-
-base::string16 ImportLockDialogView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_TITLE);
-}
-
-bool ImportLockDialogView::ShouldShowCloseButton() const {
-  return false;
-}
+BEGIN_METADATA(ImportLockDialogView, views::DialogDelegateView)
+END_METADATA

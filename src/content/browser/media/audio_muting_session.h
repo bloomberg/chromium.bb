@@ -5,12 +5,10 @@
 #ifndef CONTENT_BROWSER_MEDIA_AUDIO_MUTING_SESSION_H_
 #define CONTENT_BROWSER_MEDIA_AUDIO_MUTING_SESSION_H_
 
-#include <utility>
-
 #include "base/unguessable_token.h"
 #include "content/common/content_export.h"
+#include "media/mojo/mojom/audio_stream_factory.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#include "services/audio/public/mojom/stream_factory.mojom.h"
 
 namespace content {
 
@@ -19,11 +17,11 @@ class CONTENT_EXPORT AudioMutingSession {
   explicit AudioMutingSession(const base::UnguessableToken& group_id);
   ~AudioMutingSession();
 
-  void Connect(audio::mojom::StreamFactory* factory);
+  void Connect(media::mojom::AudioStreamFactory* factory);
 
  private:
   const base::UnguessableToken group_id_;
-  mojo::AssociatedRemote<audio::mojom::LocalMuter> muter_;
+  mojo::AssociatedRemote<media::mojom::LocalMuter> muter_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioMutingSession);
 };

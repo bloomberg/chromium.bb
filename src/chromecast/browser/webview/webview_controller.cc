@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,6 +18,8 @@
 #include "chromecast/browser/webview/webview_navigation_throttle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -58,6 +61,14 @@ void UpdateWebkitPreferences(content::WebContents* web_contents,
 
 }  // namespace
 
+WebviewController::WebviewController(
+    std::unique_ptr<content::BrowserContext> browser_context,
+    Client* client,
+    bool enabled_for_dev)
+    : WebviewController(browser_context.get(), client, enabled_for_dev) {
+  owned_context_ = std::move(browser_context);
+}
+
 WebviewController::WebviewController(content::BrowserContext* browser_context,
                                      Client* client,
                                      bool enabled_for_dev)
@@ -69,10 +80,15 @@ WebviewController::WebviewController(content::BrowserContext* browser_context,
   contents_->SetUserData(CastWebPreferences::kCastWebPreferencesDataKey,
                          std::make_unique<CastWebPreferences>());
 
+  CastWebPreferences* cast_prefs = GetCastPreferencesFor(contents_.get());
+
   // Allow Webviews to show scrollbars. These are globally disabled since Cast
   // Apps are not expected to be scrollable.
-  GetCastPreferencesFor(contents_.get())->preferences()->hide_scrollbars =
-      false;
+  cast_prefs->preferences()->hide_scrollbars = false;
+
+  // Disallow Webviews to use multiple windows to show the new page in the
+  // existing view.
+  cast_prefs->preferences()->supports_multiple_windows = false;
 
   CastWebContents::InitParams cast_contents_init;
   cast_contents_init.is_root_window = true;
@@ -121,9 +137,7 @@ void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
   switch (request.type_case()) {
     case webview::WebviewRequest::kNavigate:
       if (request.has_navigate()) {
-        LOG(INFO) << "Navigate webview to " << request.navigate().url();
-        stopped_ = false;
-        cast_web_contents_->LoadUrl(GURL(request.navigate().url()));
+        HandleLoadUrl(request.navigate());
       } else {
         client_->OnError("navigate() not supplied");
       }
@@ -168,6 +182,16 @@ void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
   }
 }
 
+void WebviewController::HandleLoadUrl(const webview::NavigateRequest& request) {
+  LOG(INFO) << "Navigate webview to " << request.url();
+  stopped_ = false;
+
+  content::NavigationController::LoadURLParams params(GURL(request.url()));
+  params.transition_type = ui::PAGE_TRANSITION_TYPED;
+  params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
+  GetWebContents()->GetController().LoadURLWithParams(params);
+}
+
 void WebviewController::HandleUpdateSettings(
     const webview::UpdateSettingsRequest& request) {
   content::WebContents* contents = GetWebContents();
@@ -181,11 +205,20 @@ void WebviewController::HandleUpdateSettings(
   CastWebContents::FromWebContents(contents)->SetEnabledForRemoteDebugging(
       request.debugging_enabled() || enabled_for_dev_);
 
-  if (request.has_user_agent() &&
-      request.user_agent().type_case() == webview::UserAgent::kValue) {
+  const bool user_agent_overridden =
+      request.has_user_agent() &&
+      request.user_agent().type_case() == webview::UserAgent::kValue;
+
+  if (user_agent_overridden) {
     contents->SetUserAgentOverride(
         blink::UserAgentOverride::UserAgentOnly(request.user_agent().value()),
         true);
+  }
+
+  content::NavigationController& controller = contents->GetController();
+  for (int i = 0; i < controller.GetEntryCount(); ++i) {
+    controller.GetEntryAtIndex(i)->SetIsOverridingUserAgent(
+        user_agent_overridden);
   }
 }
 
@@ -216,8 +249,19 @@ void WebviewController::DidFirstVisuallyNonEmptyPaint() {
 void WebviewController::SendNavigationEvent(
     WebviewNavigationThrottle* throttle,
     content::NavigationHandle* navigation_handle) {
-  DCHECK(!current_navigation_throttle_);
+  if (current_navigation_throttle_) {
+    current_navigation_throttle_->ProcessNavigationDecision(
+        webview::NavigationDecision::PREVENT);
+    current_navigation_throttle_ = nullptr;
+  }
+
   DCHECK(navigation_handle);
+  if (!client_) {
+    DLOG(INFO)
+        << "Attempt to dispatch navigation event after RPC client invalidation";
+    return;
+  }
+
   std::unique_ptr<webview::WebviewResponse> response =
       std::make_unique<webview::WebviewResponse>();
   auto* navigation_event = response->mutable_navigation_event();

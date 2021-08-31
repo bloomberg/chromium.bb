@@ -18,7 +18,7 @@ class GPUTextureUsage : public ScriptWrappable {
   static constexpr uint32_t kCopyDst = 2;
   static constexpr uint32_t kSampled = 4;
   static constexpr uint32_t kStorage = 8;
-  static constexpr uint32_t kOutputAttachment = 16;
+  static constexpr uint32_t kRenderAttachment = 16;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GPUTextureUsage);

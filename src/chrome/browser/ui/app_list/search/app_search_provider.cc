@@ -18,23 +18,20 @@
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "base/bind.h"
 #include "base/callback_list.h"
-#include "base/containers/flat_set.h"
+#include "base/containers/contains.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_features.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
-#include "chrome/browser/chromeos/release_notes/release_notes_storage.h"
-#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
@@ -44,10 +41,12 @@
 #include "chrome/browser/ui/app_list/search/app_service_app_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
+#include "chrome/browser/ui/app_list/search/search_tags_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/components/string_matching/fuzzy_tokenized_string_match.h"
 #include "chromeos/components/string_matching/tokenized_string.h"
 #include "chromeos/components/string_matching/tokenized_string_match.h"
+#include "components/services/app_service/public/cpp/types_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -117,16 +116,15 @@ float ReRange(const float score, const float min, const float max) {
 }
 
 // Checks if current locale is non Latin locales.
-bool IsNonLatinLocale(const std::string& locale) {
+bool IsNonLatinLocale(base::StringPiece locale) {
   // A set of of non Latin locales. This set is used to select appropriate
   // algorithm for app search.
-  static const base::NoDestructor<base::flat_set<std::string>>
-      non_latin_locales({"am", "ar", "be", "bg",    "bn",    "el",   "fa",
-                         "gu", "hi", "hy", "iw",    "ja",    "ka",   "kk",
-                         "km", "kn", "ko", "ky",    "lo",    "mk",   "ml",
-                         "mn", "mr", "my", "pa",    "ru",    "sr",   "ta",
-                         "te", "th", "uk", "zh-CN", "zh-HK", "zh-TW"});
-  return base::Contains(*non_latin_locales, locale);
+  static constexpr char kNonLatinLocales[][6] = {
+      "am", "ar", "be", "bg", "bn",    "el",    "fa",   "gu", "hi",
+      "hy", "iw", "ja", "ka", "kk",    "km",    "kn",   "ko", "ky",
+      "lo", "mk", "ml", "mn", "mr",    "my",    "pa",   "ru", "sr",
+      "ta", "te", "th", "uk", "zh-CN", "zh-HK", "zh-TW"};
+  return base::Contains(kNonLatinLocales, locale);
 }
 
 }  // namespace
@@ -182,7 +180,7 @@ class AppSearchProvider::App {
     if (searchable_text_.empty())
       return false;
     if (tokenized_indexed_searchable_text_.empty()) {
-      for (const base::string16& curr_text : searchable_text_) {
+      for (const std::u16string& curr_text : searchable_text_) {
         tokenized_indexed_searchable_text_.push_back(
             std::make_unique<TokenizedString>(curr_text));
       }
@@ -210,7 +208,7 @@ class AppSearchProvider::App {
 
   AppSearchProvider::DataSource* data_source() { return data_source_; }
   const std::string& id() const { return id_; }
-  const base::string16& name() const { return name_; }
+  const std::u16string& name() const { return name_; }
   const base::Time& last_launch_time() const { return last_launch_time_; }
   const base::Time& install_time() const { return install_time_; }
 
@@ -220,10 +218,10 @@ class AppSearchProvider::App {
   bool searchable() const { return searchable_; }
   void set_searchable(bool searchable) { searchable_ = searchable; }
 
-  const std::vector<base::string16>& searchable_text() const {
+  const std::vector<std::u16string>& searchable_text() const {
     return searchable_text_;
   }
-  void AddSearchableText(const base::string16& searchable_text) {
+  void AddSearchableText(const std::u16string& searchable_text) {
     DCHECK(tokenized_indexed_searchable_text_.empty());
     searchable_text_.push_back(searchable_text);
   }
@@ -243,12 +241,12 @@ class AppSearchProvider::App {
   std::vector<std::unique_ptr<TokenizedString>>
       tokenized_indexed_searchable_text_;
   const std::string id_;
-  const base::string16 name_;
+  const std::u16string name_;
   const base::Time last_launch_time_;
   const base::Time install_time_;
   bool recommendable_ = true;
   bool searchable_ = true;
-  std::vector<base::string16> searchable_text_;
+  std::vector<std::u16string> searchable_text_;
   float relevance_threshold_ = 0.f;
   // Set to true in case app was installed internally, by sync, policy or as a
   // default app.
@@ -293,9 +291,8 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
       : AppSearchProvider::DataSource(profile, owner),
         icon_cache_(apps::AppServiceProxyFactory::GetForProfile(profile),
                     apps::IconCache::GarbageCollectionPolicy::kExplicit) {
-    apps::AppServiceProxy* proxy =
-        apps::AppServiceProxyFactory::GetForProfile(profile);
-    Observe(&proxy->AppRegistryCache());
+    Observe(&apps::AppServiceProxyFactory::GetForProfile(profile)
+                 ->AppRegistryCache());
 
     sync_sessions::SessionSyncService* service =
         SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
@@ -313,11 +310,11 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
 
   // AppSearchProvider::DataSource overrides:
   void AddApps(AppSearchProvider::Apps* apps_vector) override {
-    apps::AppServiceProxy* proxy =
+    apps::AppServiceProxyChromeOs* proxy =
         apps::AppServiceProxyFactory::GetForProfile(profile());
     proxy->AppRegistryCache().ForEachApp([this, apps_vector](
                                              const apps::AppUpdate& update) {
-      if ((update.Readiness() == apps::mojom::Readiness::kUninstalledByUser) ||
+      if (!apps_util::IsInstalled(update.Readiness()) ||
           (update.ShowInSearch() != apps::mojom::OptionalBool::kTrue &&
            !(update.Recommendable() == apps::mojom::OptionalBool::kTrue &&
              update.AppType() == apps::mojom::AppType::kBuiltIn))) {
@@ -380,7 +377,7 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
  private:
   // apps::AppRegistryCache::Observer overrides:
   void OnAppUpdate(const apps::AppUpdate& update) override {
-    if (update.Readiness() == apps::mojom::Readiness::kUninstalledByUser ||
+    if (!apps_util::IsInstalled(update.Readiness()) ||
         update.IconKeyChanged()) {
       icon_cache_.RemoveIcon(update.AppType(), update.AppId());
     }
@@ -409,8 +406,7 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
   // comments for the apps::IconCache::GarbageCollectionPolicy enum.
   apps::IconCache icon_cache_;
 
-  std::unique_ptr<base::CallbackList<void()>::Subscription>
-      foreign_session_updated_subscription_;
+  base::CallbackListSubscription foreign_session_updated_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceDataSource);
 };
@@ -431,7 +427,7 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
 
 AppSearchProvider::~AppSearchProvider() {}
 
-void AppSearchProvider::Start(const base::string16& query) {
+void AppSearchProvider::Start(const std::u16string& query) {
   // When the AppSearchProvider initializes, UpdateRecommendedResults is called
   // three times. We only want to start updating user prefs for release notes
   // after these first three calls are done.
@@ -492,9 +488,9 @@ void AppSearchProvider::UpdateRecommendedResults(
     if (!app->recommendable())
       continue;
 
-    base::string16 title = app->name();
+    std::u16string title = app->name();
     if (app->id() == ash::kInternalAppIdContinueReading) {
-      base::string16 navigation_title;
+      std::u16string navigation_title;
       if (!HasRecommendableForeignTab(profile_, &navigation_title,
                                       /*url=*/nullptr,
                                       open_tabs_ui_delegate_for_testing())) {
@@ -503,11 +499,6 @@ void AppSearchProvider::UpdateRecommendedResults(
         title = navigation_title;
         app->AddSearchableText(title);
       }
-    } else if (app->id() == ash::kReleaseNotesAppId) {
-      auto release_notes_storage =
-          std::make_unique<chromeos::ReleaseNotesStorage>(profile_);
-      if (!release_notes_storage->ShouldShowSuggestionChip())
-        continue;
     }
 
     std::unique_ptr<AppResult> result =
@@ -581,7 +572,12 @@ void AppSearchProvider::UpdateQueriedResults() {
       }
       std::unique_ptr<AppResult> result =
           app->data_source()->CreateResult(app->id(), list_controller_, false);
-      result->UpdateFromMatch(*indexed_name, match);
+
+      // Update result from match.
+      result->SetTitle(indexed_name->text());
+      result->SetTitleTags(CalculateTags(query_, indexed_name->text()));
+      result->set_relevance(match.relevance());
+
       MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
     } else {
       FuzzyTokenizedStringMatch match;
@@ -594,13 +590,8 @@ void AppSearchProvider::UpdateQueriedResults() {
 
         // Update result from match.
         result->SetTitle(indexed_name->text());
+        result->SetTitleTags(CalculateTags(query_, indexed_name->text()));
         result->set_relevance(match.relevance());
-        ash::SearchResultTags tags;
-        for (const auto& hit : match.hits()) {
-          tags.push_back(ash::SearchResultTag(ash::SearchResultTag::MATCH,
-                                              hit.start(), hit.end()));
-        }
-        result->SetTitleTags(tags);
 
         MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
       }

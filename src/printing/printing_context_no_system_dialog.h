@@ -7,11 +7,13 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "printing/printing_context.h"
 
 namespace printing {
 
-class PRINTING_EXPORT PrintingContextNoSystemDialog : public PrintingContext {
+class COMPONENT_EXPORT(PRINTING) PrintingContextNoSystemDialog
+    : public PrintingContext {
  public:
   explicit PrintingContextNoSystemDialog(Delegate* delegate);
   PrintingContextNoSystemDialog(const PrintingContextNoSystemDialog&) = delete;
@@ -29,7 +31,7 @@ class PRINTING_EXPORT PrintingContextNoSystemDialog : public PrintingContext {
   Result UpdatePrinterSettings(bool external_preview,
                                bool show_system_dialog,
                                int page_count) override;
-  Result NewDocument(const base::string16& document_name) override;
+  Result NewDocument(const std::u16string& document_name) override;
   Result NewPage() override;
   Result PageDone() override;
   Result DocumentDone() override;

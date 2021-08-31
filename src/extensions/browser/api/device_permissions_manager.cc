@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
@@ -97,7 +98,9 @@ void SaveDevicePermissionEntry(BrowserContext* context,
   }
 
   std::unique_ptr<base::Value> device_entry(entry->ToValue());
-  DCHECK(devices->Find(*device_entry) == devices->end());
+  // TODO(crbug.com/1187106): Use base::Contains once |devices| not a ListValue.
+  DCHECK(std::find(devices->GetList().begin(), devices->GetList().end(),
+                   *device_entry) == devices->GetList().end());
   devices->Append(std::move(device_entry));
 }
 
@@ -118,7 +121,7 @@ bool MatchesDevicePermissionEntry(const base::DictionaryValue* value,
       product_id != entry->product_id()) {
     return false;
   }
-  base::string16 serial_number;
+  std::u16string serial_number;
   if (!value->GetStringWithoutPathExpansion(kDeviceSerialNumber,
                                             &serial_number) ||
       serial_number != entry->serial_number()) {
@@ -196,18 +199,18 @@ scoped_refptr<DevicePermissionEntry> ReadDevicePermissionEntry(
     return nullptr;
   }
 
-  base::string16 serial_number;
+  std::u16string serial_number;
   if (!entry->GetStringWithoutPathExpansion(kDeviceSerialNumber,
                                             &serial_number)) {
     return nullptr;
   }
 
-  base::string16 manufacturer_string;
+  std::u16string manufacturer_string;
   // Ignore failure as this string is optional.
   entry->GetStringWithoutPathExpansion(kDeviceManufacturerString,
                                        &manufacturer_string);
 
-  base::string16 product_string;
+  std::u16string product_string;
   // Ignore failure as this string is optional.
   entry->GetStringWithoutPathExpansion(kDeviceProductString, &product_string);
 
@@ -233,7 +236,7 @@ scoped_refptr<DevicePermissionEntry> ReadDevicePermissionEntry(
   } else if (type == kDeviceTypeHid) {
     return base::MakeRefCounted<DevicePermissionEntry>(
         DevicePermissionEntry::Type::HID, vendor_id, product_id, serial_number,
-        base::string16(), product_string, last_used);
+        std::u16string(), product_string, last_used);
   }
   return nullptr;
 }
@@ -248,7 +251,7 @@ std::set<scoped_refptr<DevicePermissionEntry>> GetDevicePermissionEntries(
     return result;
   }
 
-  for (const auto& entry : *devices) {
+  for (const auto& entry : devices->GetList()) {
     const base::DictionaryValue* entry_dict;
     if (entry.GetAsDictionary(&entry_dict)) {
       scoped_refptr<DevicePermissionEntry> device_entry =
@@ -292,9 +295,9 @@ DevicePermissionEntry::DevicePermissionEntry(
     Type type,
     uint16_t vendor_id,
     uint16_t product_id,
-    const base::string16& serial_number,
-    const base::string16& manufacturer_string,
-    const base::string16& product_string,
+    const std::u16string& serial_number,
+    const std::u16string& manufacturer_string,
+    const std::u16string& product_string,
     const base::Time& last_used)
     : type_(type),
       vendor_id_(vendor_id),
@@ -302,8 +305,7 @@ DevicePermissionEntry::DevicePermissionEntry(
       serial_number_(serial_number),
       manufacturer_string_(manufacturer_string),
       product_string_(product_string),
-      last_used_(last_used) {
-}
+      last_used_(last_used) {}
 
 DevicePermissionEntry::~DevicePermissionEntry() {
 }
@@ -342,7 +344,7 @@ std::unique_ptr<base::Value> DevicePermissionEntry::ToValue() const {
   return std::move(entry_dict);
 }
 
-base::string16 DevicePermissionEntry::GetPermissionMessageString() const {
+std::u16string DevicePermissionEntry::GetPermissionMessageString() const {
   return DevicePermissionsManager::GetPermissionMessage(
       vendor_id_, product_id_, manufacturer_string_, product_string_,
       serial_number_, type_ == Type::USB);
@@ -383,7 +385,7 @@ scoped_refptr<DevicePermissionEntry> DevicePermissions::FindHidDeviceEntry(
     return nullptr;
   }
 
-  base::string16 serial_number = base::UTF8ToUTF16(device.serial_number);
+  std::u16string serial_number = base::UTF8ToUTF16(device.serial_number);
   for (const auto& entry : entries_) {
     if (entry->IsPersistent() && entry->vendor_id() == device.vendor_id &&
         entry->product_id() == device.product_id &&
@@ -407,14 +409,14 @@ DevicePermissionsManager* DevicePermissionsManager::Get(
 }
 
 // static
-base::string16 DevicePermissionsManager::GetPermissionMessage(
+std::u16string DevicePermissionsManager::GetPermissionMessage(
     uint16_t vendor_id,
     uint16_t product_id,
-    const base::string16& manufacturer_string,
-    const base::string16& product_string,
-    const base::string16& serial_number,
+    const std::u16string& manufacturer_string,
+    const std::u16string& product_string,
+    const std::u16string& serial_number,
     bool always_include_manufacturer) {
-  base::string16 product = product_string;
+  std::u16string product = product_string;
   if (product.empty()) {
     const char* product_name =
         device::UsbIds::GetProductName(vendor_id, product_id);
@@ -423,7 +425,7 @@ base::string16 DevicePermissionsManager::GetPermissionMessage(
     }
   }
 
-  base::string16 manufacturer = manufacturer_string;
+  std::u16string manufacturer = manufacturer_string;
   if (manufacturer_string.empty()) {
     const char* vendor_name = device::UsbIds::GetVendorName(vendor_id);
     if (vendor_name) {
@@ -507,11 +509,11 @@ DevicePermissions* DevicePermissionsManager::GetForExtension(
   return device_permissions;
 }
 
-std::vector<base::string16>
+std::vector<std::u16string>
 DevicePermissionsManager::GetPermissionMessageStrings(
     const std::string& extension_id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  std::vector<base::string16> messages;
+  std::vector<std::u16string> messages;
   const DevicePermissions* device_permissions = GetInternal(extension_id);
   if (device_permissions) {
     for (const scoped_refptr<DevicePermissionEntry>& entry :

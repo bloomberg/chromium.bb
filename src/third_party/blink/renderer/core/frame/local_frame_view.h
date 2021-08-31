@@ -29,11 +29,13 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/document_transition/document_transition.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
 #include "third_party/blink/renderer/core/frame/layout_subtree_root_list.h"
@@ -74,7 +76,6 @@ class AXObjectCache;
 class ChromeClient;
 class CompositorAnimationTimeline;
 class DocumentLifecycle;
-class FloatRect;
 class FloatSize;
 class FragmentAnchor;
 class Frame;
@@ -144,9 +145,6 @@ class CORE_EXPORT LocalFrameView final
   LocalFrameView(LocalFrame&, const IntSize& initial_size);
   ~LocalFrameView() override;
 
-  void Invalidate() { InvalidateRect(IntRect(0, 0, Width(), Height())); }
-  void InvalidateRect(const IntRect&);
-
   LocalFrame& GetFrame() const {
     DCHECK(frame_);
     return *frame_;
@@ -164,7 +162,6 @@ class CORE_EXPORT LocalFrameView final
 
   void SetLayoutOverflowSize(const IntSize&);
 
-  void UpdateLayout();
   bool DidFirstLayout() const;
   bool LifecycleUpdatesActive() const;
   void SetLifecycleUpdatesThrottledForTesting(bool throttled = true);
@@ -200,6 +197,8 @@ class CORE_EXPORT LocalFrameView final
 
   void SetNeedsUpdateGeometries() { needs_update_geometries_ = true; }
   void UpdateGeometry() override;
+
+  void UpdateStyleAndLayout();
 
   // Marks this frame, and ancestor frames, as needing one intersection
   // observervation. This overrides throttling for one frame, up to
@@ -246,7 +245,9 @@ class CORE_EXPORT LocalFrameView final
   // If this is set to false, the layout size will need to be explicitly set by
   // the owner.  E.g. WebViewImpl sets its mainFrame's layout size manually
   void SetLayoutSizeFixedToFrameSize(bool);
-  bool LayoutSizeFixedToFrameSize() { return layout_size_fixed_to_frame_size_; }
+  bool LayoutSizeFixedToFrameSize() const {
+    return layout_size_fixed_to_frame_size_;
+  }
 
   void SetInitialViewportSize(const IntSize&);
   int InitialViewportWidth() const;
@@ -254,8 +255,6 @@ class CORE_EXPORT LocalFrameView final
 
   bool GetIntrinsicSizingInfo(IntrinsicSizingInfo&) const override;
   bool HasIntrinsicSizingInfo() const override;
-
-  void UpdateCountersAfterStyleChange();
 
   void Dispose() override;
   void PropagateFrameRects() override;
@@ -281,7 +280,6 @@ class CORE_EXPORT LocalFrameView final
   bool ShouldPaintBaseBackgroundColor() const;
 
   void AdjustViewSize();
-  void AdjustViewSizeAndLayout();
 
   // Scale used to convert incoming input events.
   float InputEventsScaleFactor() const;
@@ -348,10 +346,7 @@ class CORE_EXPORT LocalFrameView final
   // LocalFrame.
   void WillBeRemovedFromFrame();
 
-  bool IsUpdatingLifecycle() {
-    return current_update_lifecycle_phases_target_state_ !=
-           DocumentLifecycle::kUninitialized;
-  }
+  bool IsUpdatingLifecycle() const;
 
   // Run all needed lifecycle stages. After calling this method, all frames will
   // be in the lifecycle state PaintClean.  If lifecycle throttling is allowed
@@ -380,14 +375,6 @@ class CORE_EXPORT LocalFrameView final
 
   bool UpdateLifecycleToPrePaintClean(DocumentUpdateReason reason);
 
-  // After calling this method, all frames will be in a lifecycle
-  // state >= CompositingClean, and scrolling has been updated (unless
-  // throttling is allowed), unless the frame was throttled or inactive.
-  // Returns whether the lifecycle was successfully updated to the
-  // desired state.
-  bool UpdateLifecycleToCompositingCleanPlusScrolling(
-      DocumentUpdateReason reason);
-
   // Computes the style, layout, and compositing inputs lifecycle stages if
   // needed. After calling this method, all frames will be in a lifecycle state
   // >= CompositingInputsClean, unless the frame was throttled or inactive.
@@ -402,7 +389,9 @@ class CORE_EXPORT LocalFrameView final
   // desired state.
   bool UpdateLifecycleToLayoutClean(DocumentUpdateReason reason);
 
-  void SetInLifecycleUpdateForTest(bool val) { in_lifecycle_update_ = val; }
+  void SetTargetStateForTest(DocumentLifecycle::LifecycleState state) {
+    target_state_ = state;
+  }
 
   // This for doing work that needs to run synchronously at the end of lifecyle
   // updates, but needs to happen outside of the lifecycle code. It's OK to
@@ -499,11 +488,6 @@ class CORE_EXPORT LocalFrameView final
   // StyleChanged whenever window focus is changed.
   void RemoveScrollbar(Scrollbar*);
   void AddScrollbar(Scrollbar*);
-
-  // Clips the provided rect to the visible content area. For this purpose, we
-  // also query the chrome client for any active overrides to the visible area
-  // (e.g. DevTool's viewport override).
-  void ClipPaintRect(FloatRect*) const;
 
   // Indicates the root layer's scroll offset changed since the last frame
   void SetRootLayerDidScroll() { root_layer_did_scroll_ = true; }
@@ -616,6 +600,7 @@ class CORE_EXPORT LocalFrameView final
   bool CanThrottleRendering() const override;
   void UpdateRenderThrottlingStatus(bool hidden_for_throttling,
                                     bool subtree_throttled,
+                                    bool display_locked,
                                     bool recurse = false) override;
 
   void BeginLifecycleUpdates();
@@ -663,8 +648,6 @@ class CORE_EXPORT LocalFrameView final
   // see: mainThreadScrollingReasons().
   MainThreadScrollingReasons MainThreadScrollingReasonsPerFrame() const;
 
-  bool HasVisibleSlowRepaintViewportConstrainedObjects() const;
-
   bool MapToVisualRectInRemoteRootFrame(PhysicalRect& rect,
                                         bool apply_overflow_clip = true);
 
@@ -673,15 +656,8 @@ class CORE_EXPORT LocalFrameView final
   void CrossOriginToMainFrameChanged();
   void CrossOriginToParentFrameChanged();
 
-  // The visual viewport can supply scrollbars.
-  void VisualViewportScrollbarsChanged();
-
-  void SetVisualViewportNeedsRepaint() {
-    visual_viewport_needs_repaint_ = true;
-  }
-  bool VisualViewportNeedsRepaint() const {
-    return visual_viewport_needs_repaint_;
-  }
+  void SetVisualViewportOrOverlayNeedsRepaint();
+  bool VisualViewportOrOverlayNeedsRepaintForTesting() const;
 
   LayoutUnit CaretWidth() const;
 
@@ -710,8 +686,8 @@ class CORE_EXPORT LocalFrameView final
     return *paint_timing_detector_;
   }
 
-  MobileFriendlinessChecker& GetMobileFriendlinessChecker() const {
-    return *mobile_friendliness_checker_;
+  MobileFriendlinessChecker* GetMobileFriendlinessChecker() const {
+    return mobile_friendliness_checker_;
   }
   void DidChangeMobileFriendliness(const MobileFriendliness& mf);
 
@@ -767,7 +743,7 @@ class CORE_EXPORT LocalFrameView final
   void ParentVisibleChanged() override;
   void NotifyFrameRectsChangedIfNeeded();
   void SetViewportIntersection(const mojom::blink::ViewportIntersectionState&
-                                   intersection_state) override;
+                                   intersection_state) override {}
   void VisibilityForThrottlingChanged() override;
   bool LifecycleUpdatesThrottled() const override {
     return lifecycle_updates_throttled_;
@@ -852,6 +828,8 @@ class CORE_EXPORT LocalFrameView final
 
   LayoutSVGRoot* EmbeddedReplacedContent() const;
 
+  void PrepareForLifecycleUpdateRecursive();
+
   // Returns whether the lifecycle was successfully updated to the
   // target state.
   bool UpdateLifecyclePhases(DocumentLifecycle::LifecycleState target_state,
@@ -877,15 +855,15 @@ class CORE_EXPORT LocalFrameView final
   void RunPaintLifecyclePhase(PaintBenchmarkMode = PaintBenchmarkMode::kNormal);
 
   void UpdateStyleAndLayoutIfNeededRecursive();
+  bool UpdateStyleAndLayoutInternal();
+  void UpdateLayout();
+  void PerformLayout();
+  void PerformPostLayoutTasks(bool view_size_changed);
 
   bool PaintTree(PaintBenchmarkMode);
   void PushPaintArtifactToCompositor(bool repainted);
 
   void ClearLayoutSubtreeRootsAndMarkContainingBlocks();
-
-  void PerformPreLayoutTasks();
-  void PerformLayout(bool in_subtree_layout);
-  void PerformPostLayoutTasks();
 
   DocumentLifecycle& Lifecycle() const;
 
@@ -907,11 +885,7 @@ class CORE_EXPORT LocalFrameView final
   DoublePoint ConvertFromContainingEmbeddedContentView(
       const DoublePoint&) const;
 
-  void InvalidateForThrottlingChange();
-
   void UpdateGeometriesIfNeeded();
-  bool WasViewportResized();
-  void SendResizeEventIfNeeded();
 
   void ScheduleUpdatePluginsIfNecessary();
   void UpdatePluginsTimerFired(TimerBase*);
@@ -955,6 +929,8 @@ class CORE_EXPORT LocalFrameView final
   bool UpdateViewportIntersectionsForSubtree(unsigned parent_flags) override;
   void DeliverSynchronousIntersectionObservations();
 
+  bool RunScrollTimelineSteps();
+
   bool NotifyResizeObservers(DocumentLifecycle::LifecycleState target_state);
   bool RunResizeObserverSteps(DocumentLifecycle::LifecycleState target_state);
   void ClearResizeObserverLimit();
@@ -989,6 +965,14 @@ class CORE_EXPORT LocalFrameView final
   // StyleEngine instead of the base background color.
   bool ShouldUseColorAdjustBackground() const;
 
+  // Verifies the shared elements for the document transition on this view.
+  void VerifySharedElementsForDocumentTransition();
+  // Append document transition requests from this view into the given vector.
+  void AppendDocumentTransitionRequests(
+      WTF::Vector<std::unique_ptr<DocumentTransition::Request>>&);
+
+  bool AnyFrameIsPrintingOrPaintingPreview();
+
   LayoutSize size_;
 
   typedef HashSet<scoped_refptr<LayoutEmbeddedObject>> EmbeddedObjectSet;
@@ -1005,15 +989,16 @@ class CORE_EXPORT LocalFrameView final
   bool layout_scheduling_enabled_;
   unsigned layout_count_for_testing_;
   unsigned lifecycle_update_count_for_testing_;
-  unsigned nested_layout_count_;
-  TaskRunnerTimer<LocalFrameView> update_plugins_timer_;
+  HeapTaskRunnerTimer<LocalFrameView> update_plugins_timer_;
 
   bool first_layout_;
   UseColorAdjustBackground use_color_adjust_background_{
       UseColorAdjustBackground::kNo};
   Color base_background_color_;
-  IntSize last_viewport_size_;
-  float last_zoom_factor_;
+
+  // Used for tracking the frame's size and replicating it to the browser
+  // process when it changes.
+  absl::optional<IntSize> frame_size_;
 
   AtomicString media_type_;
   AtomicString media_type_when_not_printing_;
@@ -1072,9 +1057,7 @@ class CORE_EXPORT LocalFrameView final
   bool allow_throttling_ = false;
 
   // This is set on the local root frame view only.
-  DocumentLifecycle::LifecycleState
-      current_update_lifecycle_phases_target_state_;
-  bool past_layout_lifecycle_update_;
+  DocumentLifecycle::LifecycleState target_state_;
 
   using AnchoringAdjustmentQueue =
       HeapLinkedHashSet<WeakMember<ScrollableArea>>;
@@ -1092,13 +1075,12 @@ class CORE_EXPORT LocalFrameView final
   bool needs_forced_compositing_update_;
 
   bool needs_focus_on_fragment_;
-  bool in_lifecycle_update_;
 
   // True if the frame has deferred commits at least once per document load.
   // We won't defer again for the same document.
   bool have_deferred_commits_ = false;
 
-  bool visual_viewport_needs_repaint_ = false;
+  bool visual_viewport_or_overlay_needs_repaint_ = false;
 
   // Whether to collect layer debug information for debugging, tracing,
   // inspection, etc. Applies to local root only.
@@ -1134,6 +1116,8 @@ class CORE_EXPORT LocalFrameView final
   UniqueObjectId unique_id_;
   Member<LayoutShiftTracker> layout_shift_tracker_;
   Member<PaintTimingDetector> paint_timing_detector_;
+
+  // This will be nullptr iff !frame_->IsMainFrame().
   Member<MobileFriendlinessChecker> mobile_friendliness_checker_;
 
   HeapHashSet<WeakMember<LifecycleNotificationObserver>> lifecycle_observers_;
@@ -1150,6 +1134,7 @@ class CORE_EXPORT LocalFrameView final
 
 #if DCHECK_IS_ON()
   bool is_updating_descendant_dependent_flags_;
+  bool is_updating_layout_;
 #endif
 
   FRIEND_TEST_ALL_PREFIXES(FrameThrottlingTest, ForAllThrottledLocalFrameViews);

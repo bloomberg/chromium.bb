@@ -21,6 +21,14 @@
 @property(nonatomic, strong, readonly) UIBarButtonItem* trailingButton;
 @property(nonatomic, strong, readonly) TabGridPageControl* pageControl;
 
+// Sets target/action for tapping event on new tab button.
+- (void)setNewTabButtonTarget:(id)target action:(SEL)action;
+// Set |enabled| on the new tab button.
+- (void)setNewTabButtonEnabled:(BOOL)enabled;
+// Sets target/action for tapping event on select tabs button.
+- (void)setSelectTabButtonTarget:(id)target action:(SEL)action;
+// Set |enabled| on the select tabs button.
+- (void)setSelectTabsButtonEnabled:(BOOL)enabled;
 // Hides components and uses a black background color for tab grid transition
 // animation.
 - (void)hide;

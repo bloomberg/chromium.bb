@@ -13,7 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_owner.h"
@@ -199,6 +199,14 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // Deletes and clears the restore bounds property on the window.
   void ClearRestoreBounds();
 
+  // Shrink window from work_area/vertical maximized state.
+  // If window is not vertically shrinkable, return false.
+  bool VerticallyShrinkWindow(const gfx::Rect& work_area);
+
+  // Shrink window from work_area/horizontal maximized state.
+  // If window is not horizontally shrinkable, return false.
+  bool HorizontallyShrinkWindow(const gfx::Rect& work_area);
+
   // Replace the State object of a window with a state handler which can
   // implement a new window manager type. The passed object will be owned
   // by this object and the returned object will be owned by the caller.
@@ -206,7 +214,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // Updates |snapped_width_ratio_| based on |event|.
   void UpdateSnappedWidthRatio(const WMEvent* event);
-  base::Optional<float> snapped_width_ratio() const {
+  absl::optional<float> snapped_width_ratio() const {
     return snapped_width_ratio_;
   }
 
@@ -239,20 +247,20 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // Gets/Sets the bounds of the window before it was moved by the auto window
   // management. As long as it was not auto-managed, it will return NULL.
-  const base::Optional<gfx::Rect> pre_auto_manage_window_bounds() {
+  const absl::optional<gfx::Rect> pre_auto_manage_window_bounds() {
     return pre_auto_manage_window_bounds_;
   }
   void SetPreAutoManageWindowBounds(const gfx::Rect& bounds);
 
   // Gets/Sets the property that is used on window added to workspace event.
-  const base::Optional<gfx::Rect> pre_added_to_workspace_window_bounds() {
+  const absl::optional<gfx::Rect> pre_added_to_workspace_window_bounds() {
     return pre_added_to_workspace_window_bounds_;
   }
   void SetPreAddedToWorkspaceWindowBounds(const gfx::Rect& bounds);
 
   // Gets/Sets the persistent window info that is used on restoring persistent
   // window bounds in multi-displays scenario.
-  const base::Optional<PersistentWindowInfo> persistent_window_info() {
+  const absl::optional<PersistentWindowInfo> persistent_window_info() {
     return persistent_window_info_;
   }
   void SetPersistentWindowInfo(
@@ -478,21 +486,21 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // A property to save the ratio between snapped window width and display
   // workarea width. It is used to update snapped window width on
   // AdjustSnappedBounds() when handling workspace events.
-  base::Optional<float> snapped_width_ratio_;
+  absl::optional<float> snapped_width_ratio_;
 
   // A property to remember the window position which was set before the
   // auto window position manager changed the window bounds, so that it can
   // get restored when only this one window gets shown.
-  base::Optional<gfx::Rect> pre_auto_manage_window_bounds_;
+  absl::optional<gfx::Rect> pre_auto_manage_window_bounds_;
 
   // A property which resets when bounds is changed by user and sets when it
   // is nullptr, and window is removing from a workspace.
-  base::Optional<gfx::Rect> pre_added_to_workspace_window_bounds_;
+  absl::optional<gfx::Rect> pre_added_to_workspace_window_bounds_;
 
   // A property to remember the persistent window info used in multi-displays
   // scenario to attempt to restore windows to their original bounds when
   // displays are restored to their previous states.
-  base::Optional<PersistentWindowInfo> persistent_window_info_;
+  absl::optional<PersistentWindowInfo> persistent_window_info_;
 
   base::ObserverList<WindowStateObserver>::Unchecked observer_list_;
 

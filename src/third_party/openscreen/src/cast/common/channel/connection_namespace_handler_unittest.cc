@@ -4,11 +4,14 @@
 
 #include "cast/common/channel/connection_namespace_handler.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "cast/common/channel/message_util.h"
 #include "cast/common/channel/testing/fake_cast_socket.h"
 #include "cast/common/channel/testing/mock_socket_error_handler.h"
 #include "cast/common/channel/virtual_connection.h"
-#include "cast/common/channel/virtual_connection_manager.h"
 #include "cast/common/channel/virtual_connection_router.h"
 #include "cast/common/public/cast_socket.h"
 #include "gmock/gmock.h"
@@ -139,9 +142,8 @@ class ConnectionNamespaceHandlerTest : public ::testing::Test {
   CastSocket* socket_;
 
   NiceMock<MockVirtualConnectionPolicy> vc_policy_;
-  VirtualConnectionManager vc_manager_;
-  VirtualConnectionRouter router_{&vc_manager_};
-  ConnectionNamespaceHandler connection_namespace_handler_{&vc_manager_,
+  VirtualConnectionRouter router_;
+  ConnectionNamespaceHandler connection_namespace_handler_{&router_,
                                                            &vc_policy_};
 
   const std::string sender_id_{"sender-5678"};
@@ -151,7 +153,7 @@ class ConnectionNamespaceHandlerTest : public ::testing::Test {
 TEST_F(ConnectionNamespaceHandlerTest, Connect) {
   connection_namespace_handler_.OnMessage(
       &router_, socket_, MakeConnectMessage(sender_id_, receiver_id_));
-  EXPECT_TRUE(vc_manager_.GetConnectionData(
+  EXPECT_TRUE(router_.GetConnectionData(
       VirtualConnection{receiver_id_, sender_id_, socket_->socket_id()}));
 
   EXPECT_CALL(fake_cast_socket_pair_.mock_peer_client, OnMessage(_, _))
@@ -166,7 +168,7 @@ TEST_F(ConnectionNamespaceHandlerTest, PolicyDeniesConnection) {
                      sender_id_);
   connection_namespace_handler_.OnMessage(
       &router_, socket_, MakeConnectMessage(sender_id_, receiver_id_));
-  EXPECT_FALSE(vc_manager_.GetConnectionData(
+  EXPECT_FALSE(router_.GetConnectionData(
       VirtualConnection{receiver_id_, sender_id_, socket_->socket_id()}));
 }
 
@@ -179,7 +181,7 @@ TEST_F(ConnectionNamespaceHandlerTest, ConnectWithVersion) {
       MakeVersionedConnectMessage(
           sender_id_, receiver_id_,
           ::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_2, {}));
-  EXPECT_TRUE(vc_manager_.GetConnectionData(
+  EXPECT_TRUE(router_.GetConnectionData(
       VirtualConnection{receiver_id_, sender_id_, socket_->socket_id()}));
 }
 
@@ -194,31 +196,31 @@ TEST_F(ConnectionNamespaceHandlerTest, ConnectWithVersionList) {
           ::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_2,
           {::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_3,
            ::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_0}));
-  EXPECT_TRUE(vc_manager_.GetConnectionData(
+  EXPECT_TRUE(router_.GetConnectionData(
       VirtualConnection{receiver_id_, sender_id_, socket_->socket_id()}));
 }
 
 TEST_F(ConnectionNamespaceHandlerTest, Close) {
   connection_namespace_handler_.OnMessage(
       &router_, socket_, MakeConnectMessage(sender_id_, receiver_id_));
-  EXPECT_TRUE(vc_manager_.GetConnectionData(
+  EXPECT_TRUE(router_.GetConnectionData(
       VirtualConnection{receiver_id_, sender_id_, socket_->socket_id()}));
 
   connection_namespace_handler_.OnMessage(
       &router_, socket_, MakeCloseMessage(sender_id_, receiver_id_));
-  EXPECT_FALSE(vc_manager_.GetConnectionData(
+  EXPECT_FALSE(router_.GetConnectionData(
       VirtualConnection{receiver_id_, sender_id_, socket_->socket_id()}));
 }
 
 TEST_F(ConnectionNamespaceHandlerTest, CloseUnknown) {
   connection_namespace_handler_.OnMessage(
       &router_, socket_, MakeConnectMessage(sender_id_, receiver_id_));
-  EXPECT_TRUE(vc_manager_.GetConnectionData(
+  EXPECT_TRUE(router_.GetConnectionData(
       VirtualConnection{receiver_id_, sender_id_, socket_->socket_id()}));
 
   connection_namespace_handler_.OnMessage(
       &router_, socket_, MakeCloseMessage(sender_id_ + "098", receiver_id_));
-  EXPECT_TRUE(vc_manager_.GetConnectionData(
+  EXPECT_TRUE(router_.GetConnectionData(
       VirtualConnection{receiver_id_, sender_id_, socket_->socket_id()}));
 }
 

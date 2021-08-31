@@ -18,8 +18,10 @@
 #include <vector>
 
 #include "core/internal/mediums/webrtc/session_description_wrapper.h"
+#include "core/internal/mediums/webrtc/webrtc_socket_wrapper.h"
 #include "platform/base/byte_array.h"
 #include "platform/base/medium_environment.h"
+#include "platform/public/count_down_latch.h"
 #include "platform/public/webrtc.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -57,6 +59,8 @@ TEST_F(ConnectionFlowTest, SuccessfulOfferAnswerFlow) {
 
   Future<ByteArray> message_received_future;
 
+  Future<WebRtcSocketWrapper> offerer_socket_future, answerer_socket_future;
+
   std::unique_ptr<ConnectionFlow> offerer, answerer;
 
   // Send Ice Candidates immediately when you retrieve them
@@ -70,7 +74,11 @@ TEST_F(ConnectionFlowTest, SuccessfulOfferAnswerFlow) {
              if (answerer)
                answerer->OnRemoteIceCandidatesReceived(std::move(vec));
            }},
-      DataChannelListener(), webrtc_medium_offerer);
+      {.data_channel_open_cb =
+           [&offerer_socket_future](WebRtcSocketWrapper socket) {
+             offerer_socket_future.Set(std::move(socket));
+           }},
+      webrtc_medium_offerer);
   ASSERT_NE(offerer, nullptr);
   answerer = ConnectionFlow::Create(
       {.local_ice_candidate_found_cb =
@@ -82,38 +90,41 @@ TEST_F(ConnectionFlowTest, SuccessfulOfferAnswerFlow) {
              if (offerer)
                offerer->OnRemoteIceCandidatesReceived(std::move(vec));
            }},
-      {.data_channel_message_received_cb =
-           [&message_received_future](ByteArray bytes) {
-             message_received_future.Set(std::move(bytes));
+      {.data_channel_open_cb =
+           [&answerer_socket_future](WebRtcSocketWrapper socket) {
+             answerer_socket_future.Set(std::move(socket));
            }},
       webrtc_medium_answerer);
   ASSERT_NE(answerer, nullptr);
 
   // Create and send offer
   SessionDescriptionWrapper offer = offerer->CreateOffer();
+  ASSERT_TRUE(offer.IsValid());
   EXPECT_EQ(offer.GetType(), webrtc::SdpType::kOffer);
   EXPECT_TRUE(answerer->OnOfferReceived(offer));
   EXPECT_TRUE(offerer->SetLocalSessionDescription(std::move(offer)));
 
   // Create and send answer
   SessionDescriptionWrapper answer = answerer->CreateAnswer();
+  ASSERT_TRUE(answer.IsValid());
   EXPECT_EQ(answer.GetType(), webrtc::SdpType::kAnswer);
   EXPECT_TRUE(offerer->OnAnswerReceived(answer));
   EXPECT_TRUE(answerer->SetLocalSessionDescription(std::move(answer)));
 
   // Retrieve Data Channels
-  ExceptionOr<rtc::scoped_refptr<webrtc::DataChannelInterface>>
-      offerer_channel = offerer->GetDataChannel().Get(absl::Seconds(1));
-  EXPECT_TRUE(offerer_channel.ok());
-  ExceptionOr<rtc::scoped_refptr<webrtc::DataChannelInterface>>
-      answerer_channel = answerer->GetDataChannel().Get(absl::Seconds(1));
-  EXPECT_TRUE(answerer_channel.ok());
+  ExceptionOr<WebRtcSocketWrapper> offerer_socket =
+      offerer_socket_future.Get(absl::Seconds(1));
+  EXPECT_TRUE(offerer_socket.ok());
+  ExceptionOr<WebRtcSocketWrapper> answerer_socket =
+      answerer_socket_future.Get(absl::Seconds(1));
+  EXPECT_TRUE(answerer_socket.ok());
 
   // Send message on data channel
   const char message[] = "Test";
-  offerer_channel.result()->Send(webrtc::DataBuffer(message));
+  offerer_socket.result().GetImpl().GetOutputStream().Write(
+      ByteArray(message, 4));
   ExceptionOr<ByteArray> received_message =
-      message_received_future.Get(absl::Seconds(1));
+      answerer_socket.result().GetImpl().GetInputStream().Read(4);
   EXPECT_TRUE(received_message.ok());
   EXPECT_EQ(received_message.result(), ByteArray{message});
 }
@@ -142,11 +153,13 @@ TEST_F(ConnectionFlowTest, SetAnswerBeforeOffer) {
   ASSERT_NE(answerer, nullptr);
 
   SessionDescriptionWrapper offer = offerer->CreateOffer();
+  ASSERT_TRUE(offer.IsValid());
   EXPECT_EQ(offer.GetType(), webrtc::SdpType::kOffer);
   // Did not set offer as local session description
   EXPECT_TRUE(answerer->OnOfferReceived(offer));
 
   SessionDescriptionWrapper answer = answerer->CreateAnswer();
+  ASSERT_TRUE(answer.IsValid());
   EXPECT_EQ(answer.GetType(), webrtc::SdpType::kAnswer);
   EXPECT_FALSE(offerer->OnAnswerReceived(answer));
 }
@@ -158,7 +171,7 @@ TEST_F(ConnectionFlowTest, CannotCreateOfferAfterClose) {
       LocalIceCandidateListener(), DataChannelListener(), webrtc_medium);
   ASSERT_NE(offerer, nullptr);
 
-  EXPECT_TRUE(offerer->Close());
+  EXPECT_TRUE(offerer->CloseIfNotConnected());
 
   EXPECT_FALSE(offerer->CreateOffer().IsValid());
 }
@@ -171,9 +184,10 @@ TEST_F(ConnectionFlowTest, CannotSetSessionDescriptionAfterClose) {
   ASSERT_NE(offerer, nullptr);
 
   SessionDescriptionWrapper offer = offerer->CreateOffer();
+  ASSERT_TRUE(offer.IsValid());
   EXPECT_EQ(offer.GetType(), webrtc::SdpType::kOffer);
 
-  EXPECT_TRUE(offerer->Close());
+  EXPECT_TRUE(offerer->CloseIfNotConnected());
 
   EXPECT_FALSE(offerer->SetLocalSessionDescription(offer));
 }
@@ -190,9 +204,10 @@ TEST_F(ConnectionFlowTest, CannotReceiveOfferAfterClose) {
                              webrtc_medium_answerer);
   ASSERT_NE(answerer, nullptr);
 
-  EXPECT_TRUE(answerer->Close());
+  EXPECT_TRUE(answerer->CloseIfNotConnected());
 
   SessionDescriptionWrapper offer = offerer->CreateOffer();
+  ASSERT_TRUE(offer.IsValid());
   EXPECT_EQ(offer.GetType(), webrtc::SdpType::kOffer);
 
   EXPECT_FALSE(answerer->OnOfferReceived(offer));
@@ -208,6 +223,183 @@ TEST_F(ConnectionFlowTest, NullPeerConnection) {
   EXPECT_EQ(answerer, nullptr);
 }
 
+TEST_F(ConnectionFlowTest, PeerConnectionTimeout) {
+  MediumEnvironment::Instance().SetUseValidPeerConnection(
+      /*use_valid_peer_connection=*/true);
+  WebRtcMedium medium1;
+  std::unique_ptr<ConnectionFlow> flow1 = ConnectionFlow::Create(
+      LocalIceCandidateListener(), DataChannelListener(), medium1);
+  EXPECT_NE(flow1, nullptr);
+
+  // Attempt to trigger the 2.5s peer connection timeout.
+  MediumEnvironment::Instance().SetPeerConnectionLatency(absl::Seconds(5));
+  WebRtcMedium medium2;
+  std::unique_ptr<ConnectionFlow> flow2 = ConnectionFlow::Create(
+      LocalIceCandidateListener(), DataChannelListener(), medium2);
+  EXPECT_EQ(flow2, nullptr);
+}
+
+TEST_F(ConnectionFlowTest, TerminateAnswerer) {
+  WebRtcMedium webrtc_medium_offerer, webrtc_medium_answerer;
+
+  Future<ByteArray> message_received_future;
+
+  Future<WebRtcSocketWrapper> offerer_socket_future, answerer_socket_future;
+
+  std::unique_ptr<ConnectionFlow> offerer, answerer;
+
+  // Send Ice Candidates immediately when you retrieve them
+  offerer = ConnectionFlow::Create(
+      {.local_ice_candidate_found_cb =
+           [&answerer](const webrtc::IceCandidateInterface* candidate) {
+             std::vector<std::unique_ptr<webrtc::IceCandidateInterface>> vec;
+             vec.push_back(CopyCandidate(candidate));
+             // The callback might be alive while the objects in test are
+             // destroyed.
+             if (answerer)
+               answerer->OnRemoteIceCandidatesReceived(std::move(vec));
+           }},
+      {.data_channel_open_cb =
+           [&offerer_socket_future](WebRtcSocketWrapper socket) {
+             offerer_socket_future.Set(std::move(socket));
+           }},
+      webrtc_medium_offerer);
+  ASSERT_NE(offerer, nullptr);
+  answerer = ConnectionFlow::Create(
+      {.local_ice_candidate_found_cb =
+           [&offerer](const webrtc::IceCandidateInterface* candidate) {
+             std::vector<std::unique_ptr<webrtc::IceCandidateInterface>> vec;
+             vec.push_back(CopyCandidate(candidate));
+             // The callback might be alive while the objects in test are
+             // destroyed.
+             if (offerer)
+               offerer->OnRemoteIceCandidatesReceived(std::move(vec));
+           }},
+      {.data_channel_open_cb =
+           [&answerer_socket_future](WebRtcSocketWrapper wrapper) {
+             answerer_socket_future.Set(std::move(wrapper));
+           }},
+      webrtc_medium_answerer);
+  ASSERT_NE(answerer, nullptr);
+
+  // Create and send offer
+  SessionDescriptionWrapper offer = offerer->CreateOffer();
+  ASSERT_TRUE(offer.IsValid());
+  EXPECT_EQ(offer.GetType(), webrtc::SdpType::kOffer);
+  EXPECT_TRUE(answerer->OnOfferReceived(offer));
+  EXPECT_TRUE(offerer->SetLocalSessionDescription(std::move(offer)));
+
+  // Create and send answer
+  SessionDescriptionWrapper answer = answerer->CreateAnswer();
+  ASSERT_TRUE(answer.IsValid());
+  EXPECT_EQ(answer.GetType(), webrtc::SdpType::kAnswer);
+  EXPECT_TRUE(offerer->OnAnswerReceived(answer));
+  EXPECT_TRUE(answerer->SetLocalSessionDescription(std::move(answer)));
+
+  // Retrieve Data Channels
+  ExceptionOr<WebRtcSocketWrapper> offerer_socket =
+      offerer_socket_future.Get(absl::Seconds(1));
+  EXPECT_TRUE(offerer_socket.ok());
+  ExceptionOr<WebRtcSocketWrapper> answerer_socket =
+      answerer_socket_future.Get(absl::Seconds(1));
+  EXPECT_TRUE(offerer_socket.ok());
+
+  CountDownLatch latch(1);
+  auto pc = answerer->GetPeerConnection();
+  pc->signaling_thread()->PostTask(RTC_FROM_HERE, [pc, latch]() mutable {
+    pc->Close();
+    latch.CountDown();
+  });
+  latch.Await();
+
+  // Send message on data channel
+  std::string message = "Test";
+  offerer_socket.result().GetOutputStream().Write(ByteArray{message});
+  ExceptionOr<ByteArray> received_message =
+      answerer_socket.result().GetInputStream().Read(4);
+  EXPECT_FALSE(received_message.ok());
+}
+
+TEST_F(ConnectionFlowTest, TerminateOfferer) {
+  WebRtcMedium webrtc_medium_offerer, webrtc_medium_answerer;
+
+  Future<ByteArray> message_received_future;
+
+  Future<WebRtcSocketWrapper> offerer_socket_future, answerer_socket_future;
+
+  std::unique_ptr<ConnectionFlow> offerer, answerer;
+
+  // Send Ice Candidates immediately when you retrieve them
+  offerer = ConnectionFlow::Create(
+      {.local_ice_candidate_found_cb =
+           [&answerer](const webrtc::IceCandidateInterface* candidate) {
+             std::vector<std::unique_ptr<webrtc::IceCandidateInterface>> vec;
+             vec.push_back(CopyCandidate(candidate));
+             // The callback might be alive while the objects in test are
+             // destroyed.
+             if (answerer)
+               answerer->OnRemoteIceCandidatesReceived(std::move(vec));
+           }},
+      {.data_channel_open_cb =
+           [&offerer_socket_future](WebRtcSocketWrapper socket) {
+             offerer_socket_future.Set(std::move(socket));
+           }},
+      webrtc_medium_offerer);
+  ASSERT_NE(offerer, nullptr);
+  answerer = ConnectionFlow::Create(
+      {.local_ice_candidate_found_cb =
+           [&offerer](const webrtc::IceCandidateInterface* candidate) {
+             std::vector<std::unique_ptr<webrtc::IceCandidateInterface>> vec;
+             vec.push_back(CopyCandidate(candidate));
+             // The callback might be alive while the objects in test are
+             // destroyed.
+             if (offerer)
+               offerer->OnRemoteIceCandidatesReceived(std::move(vec));
+           }},
+      {.data_channel_open_cb =
+           [&answerer_socket_future](WebRtcSocketWrapper wrapper) {
+             answerer_socket_future.Set(std::move(wrapper));
+           }},
+      webrtc_medium_answerer);
+  ASSERT_NE(answerer, nullptr);
+
+  // Create and send offer
+  SessionDescriptionWrapper offer = offerer->CreateOffer();
+  ASSERT_TRUE(offer.IsValid());
+  EXPECT_EQ(offer.GetType(), webrtc::SdpType::kOffer);
+  EXPECT_TRUE(answerer->OnOfferReceived(offer));
+  EXPECT_TRUE(offerer->SetLocalSessionDescription(std::move(offer)));
+
+  // Create and send answer
+  SessionDescriptionWrapper answer = answerer->CreateAnswer();
+  ASSERT_TRUE(answer.IsValid());
+  EXPECT_EQ(answer.GetType(), webrtc::SdpType::kAnswer);
+  EXPECT_TRUE(offerer->OnAnswerReceived(answer));
+  EXPECT_TRUE(answerer->SetLocalSessionDescription(std::move(answer)));
+
+  // Retrieve Data Channels
+  ExceptionOr<WebRtcSocketWrapper> offerer_socket =
+      offerer_socket_future.Get(absl::Seconds(1));
+  EXPECT_TRUE(offerer_socket.ok());
+  ExceptionOr<WebRtcSocketWrapper> answerer_socket =
+      answerer_socket_future.Get(absl::Seconds(1));
+  EXPECT_TRUE(offerer_socket.ok());
+
+  CountDownLatch latch(1);
+  auto pc = offerer->GetPeerConnection();
+  pc->signaling_thread()->PostTask(RTC_FROM_HERE, [pc, latch]() mutable {
+    pc->Close();
+    latch.CountDown();
+  });
+  latch.Await();
+
+  // Send message on data channel
+  std::string message = "Test";
+  offerer_socket.result().GetOutputStream().Write(ByteArray{message});
+  ExceptionOr<ByteArray> received_message =
+      answerer_socket.result().GetInputStream().Read(4);
+  EXPECT_FALSE(received_message.ok());
+}
 }  // namespace
 }  // namespace mediums
 }  // namespace connections

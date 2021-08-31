@@ -599,12 +599,8 @@ void SystraceSerializer::SerializePrefix(uint32_t raw_row,
   FtraceTime ftrace_time(ts);
   if (tid == 0) {
     name = "<idle>";
-  } else if (name == "") {
+  } else if (name.empty()) {
     name = "<unknown>";
-  } else if (name == "CrRendererMain") {
-    // TODO(taylori): Remove this when crbug.com/978093 is fixed or
-    // when a better solution is found.
-    name = "CrRendererMainThread";
   }
 
   int64_t padding = 16 - static_cast<int64_t>(name.size());

@@ -8,8 +8,8 @@
 #ifndef SKSL_MODIFIERDECLARATION
 #define SKSL_MODIFIERDECLARATION
 
-#include "src/sksl/ir/SkSLModifiers.h"
-#include "src/sksl/ir/SkSLProgramElement.h"
+#include "include/private/SkSLModifiers.h"
+#include "include/private/SkSLProgramElement.h"
 
 namespace SkSL {
 
@@ -22,20 +22,16 @@ class ModifiersDeclaration final : public ProgramElement {
 public:
     static constexpr Kind kProgramElementKind = Kind::kModifiers;
 
-    ModifiersDeclaration(ModifiersPool::Handle modifiers)
+    ModifiersDeclaration(const Modifiers* modifiers)
         : INHERITED(-1, kProgramElementKind)
-        , fModifiersHandle(modifiers) {}
+        , fModifiers(modifiers) {}
 
     const Modifiers& modifiers() const {
-        return *fModifiersHandle;
-    }
-
-    const ModifiersPool::Handle& modifiersHandle() const {
-        return fModifiersHandle;
+        return *fModifiers;
     }
 
     std::unique_ptr<ProgramElement> clone() const override {
-        return std::unique_ptr<ProgramElement>(new ModifiersDeclaration(this->modifiersHandle()));
+        return std::make_unique<ModifiersDeclaration>(&this->modifiers());
     }
 
     String description() const override {
@@ -43,7 +39,7 @@ public:
     }
 
 private:
-    ModifiersPool::Handle fModifiersHandle;
+    const Modifiers* fModifiers;
 
     using INHERITED = ProgramElement;
 };

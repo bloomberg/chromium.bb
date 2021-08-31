@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
 
+#include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/events/application_cache_error_event.h"
@@ -47,9 +48,7 @@ ApplicationCacheHostForFrame::ApplicationCacheHostForFrame(
     const BrowserInterfaceBrokerProxy& interface_broker_proxy,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const base::UnguessableToken& appcache_host_id)
-    : ApplicationCacheHost(interface_broker_proxy,
-                           std::move(task_runner),
-                           document_loader->GetFrame()->DomWindow()),
+    : ApplicationCacheHost(interface_broker_proxy, std::move(task_runner)),
       local_frame_(document_loader->GetFrame()),
       document_loader_(document_loader) {
   // PlzNavigate: The browser passes the ID to be used.
@@ -136,11 +135,8 @@ void ApplicationCacheHostForFrame::SetSubresourceFactory(
     mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
         url_loader_factory) {
   auto pending_factories = std::make_unique<PendingURLLoaderFactoryBundle>();
-  // |PassPipe()| invalidates all state, so capture |version()| first.
-  uint32_t version = url_loader_factory.version();
   pending_factories->pending_appcache_factory() =
-      mojo::PendingRemote<network::mojom::URLLoaderFactory>(
-          url_loader_factory.PassPipe(), version);
+      ToCrossVariantMojoType(std::move(url_loader_factory));
   local_frame_->Client()->UpdateSubresourceFactory(
       std::move(pending_factories));
 }

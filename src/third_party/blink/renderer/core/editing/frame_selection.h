@@ -29,8 +29,9 @@
 
 #include <memory>
 
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
@@ -44,6 +45,7 @@ namespace blink {
 
 class CaretDisplayItemClient;
 class Element;
+class InlineTextBox;
 class LayoutBlock;
 class LayoutText;
 class LocalFrame;
@@ -51,6 +53,8 @@ class FrameCaret;
 class GranularityStrategy;
 class GraphicsContext;
 class NGInlineCursor;
+class NGInlineCursorPosition;
+class NGPhysicalBoxFragment;
 class Range;
 class SelectionEditor;
 class LayoutSelection;
@@ -194,6 +198,7 @@ class CORE_EXPORT FrameSelection final
   // Returns true if specified layout block should paint caret. This function is
   // called during painting only.
   bool ShouldPaintCaret(const LayoutBlock&) const;
+  bool ShouldPaintCaret(const NGPhysicalBoxFragment&) const;
 
   // Bounds of (possibly transformed) caret in absolute coords
   IntRect AbsoluteCaretBounds() const;
@@ -239,6 +244,7 @@ class CORE_EXPORT FrameSelection final
   void PageActivationChanged();
 
   bool IsHandleVisible() const { return is_handle_visible_; }
+  void SetHandleVisibleForTesting() { is_handle_visible_ = true; }
   bool ShouldShrinkNextTap() const { return should_shrink_next_tap_; }
 
   // Returns true if a word is selected.
@@ -268,8 +274,6 @@ class CORE_EXPORT FrameSelection final
   void SetSelectionFromNone();
 
   void UpdateAppearance();
-  bool ShouldShowBlockCursor() const;
-  void SetShouldShowBlockCursor(bool);
 
   void CacheRangeOfDocument(Range*);
   Range* DocumentCachedRange() const;
@@ -285,6 +289,10 @@ class CORE_EXPORT FrameSelection final
       const LayoutText& text) const;
   LayoutSelectionStatus ComputeLayoutSelectionStatus(
       const NGInlineCursor& cursor) const;
+  SelectionState ComputeLayoutSelectionStateForCursor(
+      const NGInlineCursorPosition& position) const;
+  SelectionState ComputeLayoutSelectionStateForInlineTextBox(
+      const InlineTextBox& text_box) const;
 
   void Trace(Visitor*) const override;
 

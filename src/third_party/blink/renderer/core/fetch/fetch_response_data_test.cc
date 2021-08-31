@@ -274,7 +274,8 @@ TEST_F(FetchResponseDataTest, ContentSecurityPolicy) {
                                           "frame-ancestors 'none'");
 
   mojom::blink::FetchAPIResponsePtr fetch_api_response =
-      internal_response->PopulateFetchAPIResponse(KURL());
+      internal_response->PopulateFetchAPIResponse(
+          KURL("https://www.example.org"));
   auto& csp = fetch_api_response->parsed_headers->content_security_policy;
 
   EXPECT_EQ(csp.size(), 2U);
@@ -282,6 +283,20 @@ TEST_F(FetchResponseDataTest, ContentSecurityPolicy) {
             network::mojom::ContentSecurityPolicyType::kEnforce);
   EXPECT_EQ(csp[1]->header->type,
             network::mojom::ContentSecurityPolicyType::kReport);
+}
+
+TEST_F(FetchResponseDataTest, AuthChallengeInfo) {
+  FetchResponseData* internal_response = CreateInternalResponse();
+  net::AuthChallengeInfo auth_challenge_info;
+  auth_challenge_info.is_proxy = true;
+  auth_challenge_info.challenge = "foobar";
+  internal_response->SetAuthChallengeInfo(auth_challenge_info);
+
+  mojom::blink::FetchAPIResponsePtr fetch_api_response =
+      internal_response->PopulateFetchAPIResponse(KURL());
+  ASSERT_TRUE(fetch_api_response->auth_challenge_info.has_value());
+  EXPECT_TRUE(fetch_api_response->auth_challenge_info->is_proxy);
+  EXPECT_EQ("foobar", fetch_api_response->auth_challenge_info->challenge);
 }
 
 }  // namespace blink

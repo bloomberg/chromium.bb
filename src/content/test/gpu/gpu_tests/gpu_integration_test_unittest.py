@@ -5,13 +5,23 @@
 # It's reasonable for unittests to be messing with protected members.
 # pylint: disable=protected-access
 
+from __future__ import print_function
+
 import json
 import os
+import sys
 import unittest
-import mock
+import tempfile
+
+if sys.version_info[0] == 2:
+  import mock
+else:
+  import unittest.mock as mock
+
+import six
+
 import gpu_project_config
 import run_gpu_integration_test
-import tempfile
 
 from gpu_tests import context_lost_integration_test
 from gpu_tests import gpu_helper
@@ -197,6 +207,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self.assertTrue(set(['no-asan', 'webgl-version-2']).issubset(tag_set))
     self.assertFalse(set(['asan', 'webgl-version-1']) & tag_set)
 
+  @mock.patch('sys.platform', 'win32')
   def testGenerateNvidiaExampleTags(self):
     platform = fakes.FakePlatform('win', 'win10')
     browser = fakes.FakeBrowser(platform, 'release')
@@ -209,6 +220,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
             'no-passthrough', 'no-swiftshader-gl', 'skia-renderer-disabled'
         ]))
 
+  @mock.patch('sys.platform', 'darwin')
   def testGenerateVendorTagUsingVendorString(self):
     platform = fakes.FakePlatform('mac', 'mojave')
     browser = fakes.FakeBrowser(platform, 'release')
@@ -225,6 +237,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
             'no-swiftshader-gl', 'skia-renderer-disabled'
         ]))
 
+  @mock.patch('sys.platform', 'darwin')
   def testGenerateVendorTagUsingDeviceString(self):
     platform = fakes.FakePlatform('mac', 'mojave')
     browser = fakes.FakeBrowser(platform, 'release')
@@ -238,6 +251,24 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
             'imagination-Triangle-Monster-3000', 'angle-disabled',
             'no-passthrough', 'no-swiftshader-gl', 'skia-renderer-disabled'
         ]))
+
+  @mock.patch.dict(os.environ, clear=True)
+  def testGenerateDisplayServer(self):
+    platform = fakes.FakePlatform('mac', 'mojave')
+    browser = fakes.FakeBrowser(platform, 'release')
+
+    with mock.patch('sys.platform', 'darwin'):
+      tags = gpu_integration_test.GpuIntegrationTest.GetPlatformTags(browser)
+      for t in tags:
+        self.assertFalse(t.startswith('display-server'))
+
+    with mock.patch('sys.platform', 'linux2'):
+      tags = gpu_integration_test.GpuIntegrationTest.GetPlatformTags(browser)
+      self.assertIn('display-server-x', tags)
+
+      os.environ['WAYLAND_DISPLAY'] = 'wayland-0'
+      tags = gpu_integration_test.GpuIntegrationTest.GetPlatformTags(browser)
+      self.assertIn('display-server-wayland', tags)
 
   def testSimpleIntegrationTest(self):
     test_args = _IntegrationTestArgs('simple_integration_unittest')
@@ -459,7 +490,7 @@ def _ExtractTestResults(test_result):
   def _IsLeafNode(node):
     test_dict = node[1]
     return ('expected' in test_dict
-            and isinstance(test_dict['expected'], basestring))
+            and isinstance(test_dict['expected'], six.string_types))
 
   node_queues = []
   for t in test_result['tests']:
@@ -480,3 +511,7 @@ def _ExtractTestResults(test_result):
         node_queues.append(
             ('%s%s%s' % (full_test_name, delimiter, k), test_dict[k]))
   return successes, failures, skips
+
+
+if __name__ == '__main__':
+  unittest.main(verbosity=2)

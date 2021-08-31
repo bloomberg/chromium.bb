@@ -33,12 +33,19 @@ uint32_t BufferUsageToGbmFlags(gfx::BufferUsage usage) {
     case gfx::BufferUsage::SCANOUT_VEA_CPU_READ:
       return GBM_BO_USE_LINEAR | GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING |
              GBM_BO_USE_HW_VIDEO_ENCODER;
-    case gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE:
-      return GBM_BO_USE_LINEAR | GBM_BO_USE_CAMERA_WRITE | GBM_BO_USE_SCANOUT |
-             GBM_BO_USE_TEXTURING | GBM_BO_USE_HW_VIDEO_ENCODER;
-    default:
+    case gfx::BufferUsage::VEA_READ_CAMERA_AND_CPU_READ_WRITE:
+      return GBM_BO_USE_LINEAR | GBM_BO_USE_CAMERA_WRITE |
+             GBM_BO_USE_TEXTURING | GBM_BO_USE_HW_VIDEO_ENCODER |
+             GBM_BO_USE_SW_READ_OFTEN;
+    case gfx::BufferUsage::SCANOUT_FRONT_RENDERING:
+// TODO(sashamcintosh): remove after crrev.com/c/2450927 is upreved
+#ifdef GBM_BO_USE_FRONT_RENDERING
+      return GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING |
+             GBM_BO_USE_FRONT_RENDERING;
+#else
       NOTREACHED();
       return 0;
+#endif
   }
 }
 

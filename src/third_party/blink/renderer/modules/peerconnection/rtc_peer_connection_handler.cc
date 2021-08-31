@@ -27,6 +27,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_session_description_init.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/web_rtc_cross_thread_copier.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
@@ -205,12 +206,6 @@ void CopyConstraintsIntoRtcConfiguration(
     configuration->set_suspend_below_min_bitrate(the_value);
   }
 
-  if (!GetConstraintValueAsBoolean(
-          constraints,
-          &MediaTrackConstraintSetPlatform::enable_rtp_data_channels,
-          &configuration->enable_rtp_data_channel)) {
-    configuration->enable_rtp_data_channel = false;
-  }
   int rate;
   if (GetConstraintValueAsInteger(
           constraints,
@@ -234,7 +229,7 @@ class CreateSessionDescriptionRequest
       const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
       blink::RTCSessionDescriptionRequest* request,
       const base::WeakPtr<RTCPeerConnectionHandler>& handler,
-      const base::WeakPtr<PeerConnectionTracker>& tracker,
+      PeerConnectionTracker* tracker,
       PeerConnectionTracker::Action action)
       : main_thread_(main_thread),
         webkit_request_(request),
@@ -253,16 +248,17 @@ class CreateSessionDescriptionRequest
       return;
     }
 
-    if (tracker_ && handler_) {
+    auto tracker = tracker_.Lock();
+    if (tracker && handler_) {
       std::string value;
       if (desc) {
         desc->ToString(&value);
         value = "type: " + desc->type() + ", sdp: " + value;
       }
-      tracker_->TrackSessionDescriptionCallback(
+      tracker->TrackSessionDescriptionCallback(
           handler_.get(), action_, "OnSuccess", String::FromUTF8(value));
-      tracker_->TrackSessionId(handler_.get(),
-                               String::FromUTF8(desc->session_id()));
+      tracker->TrackSessionId(handler_.get(),
+                              String::FromUTF8(desc->session_id()));
     }
     webkit_request_->RequestSucceeded(CreateWebKitSessionDescription(desc));
     webkit_request_ = nullptr;
@@ -279,8 +275,9 @@ class CreateSessionDescriptionRequest
       return;
     }
 
-    if (handler_ && tracker_) {
-      tracker_->TrackSessionDescriptionCallback(
+    auto tracker = tracker_.Lock();
+    if (handler_ && tracker) {
+      tracker->TrackSessionDescriptionCallback(
           handler_.get(), action_, "OnFailure",
           String::FromUTF8(error.message()));
     }
@@ -303,7 +300,7 @@ class CreateSessionDescriptionRequest
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   Persistent<RTCSessionDescriptionRequest> webkit_request_;
   const base::WeakPtr<RTCPeerConnectionHandler> handler_;
-  const base::WeakPtr<PeerConnectionTracker> tracker_;
+  const CrossThreadWeakPersistent<PeerConnectionTracker> tracker_;
   PeerConnectionTracker::Action action_;
 };
 
@@ -344,8 +341,11 @@ class StatsResponse : public webrtc::StatsObserver {
    public:
     class MemberIterator : public RTCLegacyStatsMemberIterator {
      public:
-      MemberIterator(const StatsReport::Values::const_iterator& it,
-                     const StatsReport::Values::const_iterator& end)
+      MemberIterator(
+          const std::vector<StatsReport::Values::value_type>::const_iterator&
+              it,
+          const std::vector<StatsReport::Values::value_type>::const_iterator&
+              end)
           : it_(it), end_(end) {}
 
       // RTCLegacyStatsMemberIterator
@@ -378,8 +378,8 @@ class StatsResponse : public webrtc::StatsObserver {
       }
 
      private:
-      StatsReport::Values::const_iterator it_;
-      StatsReport::Values::const_iterator end_;
+      std::vector<StatsReport::Values::value_type>::const_iterator it_;
+      std::vector<StatsReport::Values::value_type>::const_iterator end_;
     };
 
     explicit Report(const StatsReport* report)
@@ -387,7 +387,7 @@ class StatsResponse : public webrtc::StatsObserver {
           type_(report->type()),
           type_name_(report->TypeToString()),
           timestamp_(report->timestamp()),
-          values_(report->values()) {}
+          values_(report->values().begin(), report->values().end()) {}
 
     ~Report() override {
       // Since the values vector holds pointers to const objects that are bound
@@ -411,7 +411,7 @@ class StatsResponse : public webrtc::StatsObserver {
     const StatsReport::StatsType type_;
     const std::string type_name_;
     const double timestamp_;
-    const StatsReport::Values values_;
+    const std::vector<StatsReport::Values::value_type> values_;
   };
 
   static void DeleteReports(std::vector<Report*>* reports) {
@@ -602,6 +602,42 @@ bool IsHostnameCandidate(const RTCIceCandidatePlatform& candidate) {
 
 }  // namespace
 
+// Implementation of ParsedSessionDescription
+ParsedSessionDescription::ParsedSessionDescription(const String& sdp_type,
+                                                   const String& sdp)
+    : type_(sdp_type), sdp_(sdp) {}
+
+// static
+ParsedSessionDescription ParsedSessionDescription::Parse(
+    const RTCSessionDescriptionInit* session_description_init) {
+  ParsedSessionDescription temp(session_description_init->type(),
+                                session_description_init->sdp());
+  temp.DoParse();
+  return temp;
+}
+
+// static
+ParsedSessionDescription ParsedSessionDescription::Parse(
+    const RTCSessionDescriptionPlatform* session_description_platform) {
+  ParsedSessionDescription temp(session_description_platform->GetType(),
+                                session_description_platform->Sdp());
+  temp.DoParse();
+  return temp;
+}
+
+// static
+ParsedSessionDescription ParsedSessionDescription::Parse(const String& sdp_type,
+                                                         const String& sdp) {
+  ParsedSessionDescription temp(sdp_type, sdp);
+  temp.DoParse();
+  return temp;
+}
+
+void ParsedSessionDescription::DoParse() {
+  description_.reset(webrtc::CreateSessionDescription(
+      type_.Utf8().c_str(), sdp_.Utf8().c_str(), &error_));
+}
+
 // Implementation of LocalRTCStatsRequest.
 LocalRTCStatsRequest::LocalRTCStatsRequest(RTCStatsRequest* impl)
     : impl_(impl) {}
@@ -645,7 +681,7 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
   WebRtcSetDescriptionObserverImpl(
       base::WeakPtr<RTCPeerConnectionHandler> handler,
       blink::RTCVoidRequest* web_request,
-      base::WeakPtr<PeerConnectionTracker> tracker,
+      PeerConnectionTracker* tracker,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       PeerConnectionTracker::Action action,
       webrtc::SdpSemantics sdp_semantics)
@@ -659,9 +695,10 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
   void OnSetDescriptionComplete(
       webrtc::RTCError error,
       WebRtcSetDescriptionObserver::States states) override {
+    auto tracker = tracker_.Lock();
     if (!error.ok()) {
-      if (tracker_ && handler_) {
-        tracker_->TrackSessionDescriptionCallback(
+      if (tracker && handler_) {
+        tracker->TrackSessionDescriptionCallback(
             handler_.get(), action_, "OnFailure",
             String::FromUTF8(error.message()));
       }
@@ -684,7 +721,7 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
         std::move(states.current_remote_description);
 
     // Track result in chrome://webrtc-internals/.
-    if (tracker_ && handler_) {
+    if (tracker && handler_) {
       StringBuilder value;
       if (action_ ==
           PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION_IMPLICIT) {
@@ -709,8 +746,8 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
         value.Append(", sdp: ");
         value.Append(sdp.c_str());
       }
-      tracker_->TrackSessionDescriptionCallback(handler_.get(), action_,
-                                                "OnSuccess", value.ToString());
+      tracker->TrackSessionDescriptionCallback(handler_.get(), action_,
+                                               "OnSuccess", value.ToString());
       handler_->TrackSignalingChange(signaling_state);
     }
 
@@ -812,7 +849,7 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
   base::WeakPtr<RTCPeerConnectionHandler> handler_;
   scoped_refptr<base::SequencedTaskRunner> main_thread_;
   Persistent<blink::RTCVoidRequest> web_request_;
-  base::WeakPtr<PeerConnectionTracker> tracker_;
+  CrossThreadWeakPersistent<PeerConnectionTracker> tracker_;
   PeerConnectionTracker::Action action_;
   webrtc::SdpSemantics sdp_semantics_;
 };
@@ -1022,8 +1059,8 @@ class RTCPeerConnectionHandler::Observer
     if (handler_) {
       handler_->OnIceCandidateError(
           address,
-          port ? base::Optional<uint16_t>(static_cast<uint16_t>(port))
-               : base::nullopt,
+          port ? absl::optional<uint16_t>(static_cast<uint16_t>(port))
+               : absl::nullopt,
           host_candidate, url, error_code, error_text);
     }
   }
@@ -1100,23 +1137,27 @@ void RTCPeerConnectionHandler::StopAndUnregister() {
   // garbage collection.
   client_ = nullptr;
   is_unregistered_ = true;
+
+  // Reset the `PeerConnectionDependencyFactory` so we don't prevent it from
+  // being garbage-collected.
+  dependency_factory_ = nullptr;
 }
 
 bool RTCPeerConnectionHandler::Initialize(
     const webrtc::PeerConnectionInterface::RTCConfiguration&
         server_configuration,
     const MediaConstraints& options,
-    WebLocalFrame* frame) {
+    WebLocalFrame* frame,
+    ExceptionState& exception_state) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(frame);
+  DCHECK(dependency_factory_);
   frame_ = frame;
 
   CHECK(!initialize_called_);
   initialize_called_ = true;
 
-  // TODO(crbug.com/787254): Evaluate the need for passing weak ptr since
-  // PeerConnectionTracker is now leaky with base::LazyInstance.
-  peer_connection_tracker_ = PeerConnectionTracker::GetInstance()->AsWeakPtr();
+  peer_connection_tracker_ = PeerConnectionTracker::From(*frame);
 
   configuration_ = server_configuration;
 
@@ -1140,7 +1181,7 @@ bool RTCPeerConnectionHandler::Initialize(
   peer_connection_observer_ =
       MakeGarbageCollected<Observer>(weak_factory_.GetWeakPtr(), task_runner_);
   native_peer_connection_ = dependency_factory_->CreatePeerConnection(
-      configuration_, frame_, peer_connection_observer_);
+      configuration_, frame_, peer_connection_observer_, exception_state);
   if (!native_peer_connection_.get()) {
     LOG(ERROR) << "Failed to initialize native PeerConnection.";
     return false;
@@ -1159,8 +1200,10 @@ bool RTCPeerConnectionHandler::InitializeForTest(
     const webrtc::PeerConnectionInterface::RTCConfiguration&
         server_configuration,
     const MediaConstraints& options,
-    const base::WeakPtr<PeerConnectionTracker>& peer_connection_tracker) {
+    PeerConnectionTracker* peer_connection_tracker,
+    ExceptionState& exception_state) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(dependency_factory_);
 
   CHECK(!initialize_called_);
   initialize_called_ = true;
@@ -1172,7 +1215,7 @@ bool RTCPeerConnectionHandler::InitializeForTest(
   CopyConstraintsIntoRtcConfiguration(options, &configuration_);
 
   native_peer_connection_ = dependency_factory_->CreatePeerConnection(
-      configuration_, nullptr, peer_connection_observer_);
+      configuration_, nullptr, peer_connection_observer_, exception_state);
   if (!native_peer_connection_.get()) {
     LOG(ERROR) << "Failed to initialize native PeerConnection.";
     return false;
@@ -1341,24 +1384,22 @@ void RTCPeerConnectionHandler::SetLocalDescription(
 
 void RTCPeerConnectionHandler::SetLocalDescription(
     blink::RTCVoidRequest* request,
-    RTCSessionDescriptionPlatform* description) {
+    ParsedSessionDescription parsed_sdp) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::setLocalDescription");
 
-  String sdp = description->Sdp();
-  String type = description->GetType();
+  String sdp = parsed_sdp.sdp();
+  String type = parsed_sdp.type();
 
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackSetSessionDescription(
         this, sdp, type, PeerConnectionTracker::SOURCE_LOCAL);
   }
 
-  webrtc::SdpParseError error;
-  // Since CreateNativeSessionDescription uses the dependency factory, we need
-  // to make this call on the current thread to be safe.
-  std::unique_ptr<webrtc::SessionDescriptionInterface> native_desc(
-      CreateNativeSessionDescription(sdp, type, &error));
+  const webrtc::SessionDescriptionInterface* native_desc =
+      parsed_sdp.description();
   if (!native_desc) {
+    webrtc::SdpParseError error(parsed_sdp.error());
     StringBuilder reason_str;
     reason_str.Append("Failed to parse SessionDescription. ");
     reason_str.Append(error.line.c_str());
@@ -1381,9 +1422,9 @@ void RTCPeerConnectionHandler::SetLocalDescription(
     return;
   }
 
-  if (!first_local_description_ && IsOfferOrAnswer(native_desc.get())) {
+  if (!first_local_description_ && IsOfferOrAnswer(native_desc)) {
     first_local_description_ =
-        std::make_unique<FirstSessionDescription>(native_desc.get());
+        std::make_unique<FirstSessionDescription>(native_desc);
     if (first_remote_description_) {
       ReportFirstSessionDescriptions(*first_local_description_,
                                      *first_remote_description_);
@@ -1415,30 +1456,27 @@ void RTCPeerConnectionHandler::SetLocalDescription(
                   rtc::scoped_refptr<
                       webrtc::SetLocalDescriptionObserverInterface>)>(
                   &webrtc::PeerConnectionInterface::SetLocalDescription),
-              native_peer_connection_, WTF::Passed(std::move(native_desc)),
-              webrtc_observer),
+              native_peer_connection_, parsed_sdp.release(), webrtc_observer),
           CrossThreadUnretained("SetLocalDescription")));
 }
 
 void RTCPeerConnectionHandler::SetRemoteDescription(
     blink::RTCVoidRequest* request,
-    RTCSessionDescriptionPlatform* description) {
+    ParsedSessionDescription parsed_sdp) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::setRemoteDescription");
 
-  String sdp = description->Sdp();
-  String type = description->GetType();
+  String sdp = parsed_sdp.sdp();
+  String type = parsed_sdp.type();
 
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackSetSessionDescription(
         this, sdp, type, PeerConnectionTracker::SOURCE_REMOTE);
   }
 
-  webrtc::SdpParseError error;
-  // Since CreateNativeSessionDescription uses the dependency factory, we need
-  // to make this call on the current thread to be safe.
-  std::unique_ptr<webrtc::SessionDescriptionInterface> native_desc(
-      CreateNativeSessionDescription(sdp, type, &error));
+  webrtc::SdpParseError error(parsed_sdp.error());
+  const webrtc::SessionDescriptionInterface* native_desc =
+      parsed_sdp.description();
   if (!native_desc) {
     StringBuilder reason_str;
     reason_str.Append("Failed to parse SessionDescription. ");
@@ -1463,9 +1501,9 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
     return;
   }
 
-  if (!first_remote_description_ && IsOfferOrAnswer(native_desc.get())) {
-    first_remote_description_.reset(
-        new FirstSessionDescription(native_desc.get()));
+  if (!first_remote_description_ && IsOfferOrAnswer(native_desc)) {
+    first_remote_description_ =
+        std::make_unique<FirstSessionDescription>(native_desc);
     if (first_local_description_) {
       ReportFirstSessionDescriptions(*first_local_description_,
                                      *first_remote_description_);
@@ -1497,8 +1535,7 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
                   rtc::scoped_refptr<
                       webrtc::SetRemoteDescriptionObserverInterface>)>(
                   &webrtc::PeerConnectionInterface::SetRemoteDescription),
-              native_peer_connection_, WTF::Passed(std::move(native_desc)),
-              webrtc_observer),
+              native_peer_connection_, parsed_sdp.release(), webrtc_observer),
           CrossThreadUnretained("SetRemoteDescription")));
 }
 
@@ -1536,11 +1573,12 @@ webrtc::RTCErrorType RTCPeerConnectionHandler::SetConfiguration(
   return webrtc_error.type();
 }
 
-void RTCPeerConnectionHandler::AddICECandidate(
+void RTCPeerConnectionHandler::AddIceCandidate(
     RTCVoidRequest* request,
     RTCIceCandidatePlatform* candidate) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::addICECandidate");
+  DCHECK(dependency_factory_);
+  TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::addIceCandidate");
   std::unique_ptr<webrtc::IceCandidateInterface> native_candidate(
       dependency_factory_->CreateIceCandidate(
           candidate->SdpMid(),
@@ -1551,7 +1589,7 @@ void RTCPeerConnectionHandler::AddICECandidate(
 
   auto callback_on_task_runner =
       [](base::WeakPtr<RTCPeerConnectionHandler> handler_weak_ptr,
-         base::WeakPtr<PeerConnectionTracker> tracker_weak_ptr,
+         CrossThreadPersistent<PeerConnectionTracker> tracker_ptr,
          std::unique_ptr<webrtc::SessionDescriptionInterface>
              pending_local_description,
          std::unique_ptr<webrtc::SessionDescriptionInterface>
@@ -1560,11 +1598,14 @@ void RTCPeerConnectionHandler::AddICECandidate(
              pending_remote_description,
          std::unique_ptr<webrtc::SessionDescriptionInterface>
              current_remote_description,
-         RTCIceCandidatePlatform* candidate, webrtc::RTCError result,
-         RTCVoidRequest* request) {
+         CrossThreadPersistent<RTCIceCandidatePlatform> candidate,
+         webrtc::RTCError result, RTCVoidRequest* request) {
         // Inform tracker (chrome://webrtc-internals).
-        if (handler_weak_ptr && tracker_weak_ptr) {
-          tracker_weak_ptr->TrackAddIceCandidate(
+        // Note that because the WTF::CrossThreadBindOnce() below uses a
+        // CrossThreadWeakPersistent when binding |tracker_ptr| this lambda may
+        // be invoked with a null |tracker_ptr| so we have to guard against it.
+        if (handler_weak_ptr && tracker_ptr) {
+          tracker_ptr->TrackAddIceCandidate(
               handler_weak_ptr.get(), candidate,
               PeerConnectionTracker::SOURCE_REMOTE, result.ok());
         }
@@ -1587,7 +1628,9 @@ void RTCPeerConnectionHandler::AddICECandidate(
       std::move(native_candidate),
       [pc = native_peer_connection_, task_runner = task_runner_,
        handler_weak_ptr = weak_factory_.GetWeakPtr(),
-       tracker_weak_ptr = peer_connection_tracker_, candidate,
+       tracker_weak_ptr =
+           WrapCrossThreadWeakPersistent(peer_connection_tracker_.Get()),
+       persistent_candidate = WrapCrossThreadPersistent(candidate),
        persistent_request = WrapCrossThreadPersistent(request),
        callback_on_task_runner =
            std::move(callback_on_task_runner)](webrtc::RTCError result) {
@@ -1616,7 +1659,7 @@ void RTCPeerConnectionHandler::AddICECandidate(
                 std::move(current_local_description),
                 std::move(pending_remote_description),
                 std::move(current_remote_description),
-                WrapCrossThreadPersistent(candidate), std::move(result),
+                std::move(persistent_candidate), std::move(result),
                 std::move(persistent_request)));
       });
 }
@@ -1721,6 +1764,12 @@ RTCPeerConnectionHandler::AddTransceiverWithTrack(
                                 blink::TransceiverStateUpdateMode::kAll);
   std::unique_ptr<RTCRtpTransceiverPlatform> platform_transceiver =
       std::move(transceiver);
+  if (peer_connection_tracker_) {
+    size_t transceiver_index = GetTransceiverIndex(*platform_transceiver.get());
+    peer_connection_tracker_->TrackAddTransceiver(
+        this, PeerConnectionTracker::TransceiverUpdatedReason::kAddTransceiver,
+        *platform_transceiver.get(), transceiver_index);
+  }
   return platform_transceiver;
 }
 
@@ -1776,6 +1825,12 @@ RTCPeerConnectionHandler::AddTransceiverWithKind(
                                 blink::TransceiverStateUpdateMode::kAll);
   std::unique_ptr<RTCRtpTransceiverPlatform> platform_transceiver =
       std::move(transceiver);
+  if (peer_connection_tracker_) {
+    size_t transceiver_index = GetTransceiverIndex(*platform_transceiver.get());
+    peer_connection_tracker_->TrackAddTransceiver(
+        this, PeerConnectionTracker::TransceiverUpdatedReason::kAddTransceiver,
+        *platform_transceiver.get(), transceiver_index);
+  }
   return std::move(platform_transceiver);
 }
 
@@ -1914,7 +1969,7 @@ RTCPeerConnectionHandler::RemoveTrack(blink::RTCRtpSenderPlatform* web_sender) {
   if (configuration_.sdp_semantics == webrtc::SdpSemantics::kPlanB) {
     if (RemoveTrackPlanB(web_sender)) {
       // In Plan B, null indicates success.
-      std::unique_ptr<RTCRtpTransceiverPlatform> platform_transceiver = nullptr;
+      std::unique_ptr<RTCRtpTransceiverPlatform> platform_transceiver;
       return std::move(platform_transceiver);
     }
     // TODO(hbos): Surface RTCError from third_party/webrtc when
@@ -1927,6 +1982,7 @@ RTCPeerConnectionHandler::RemoveTrack(blink::RTCRtpSenderPlatform* web_sender) {
 
 bool RTCPeerConnectionHandler::RemoveTrackPlanB(
     blink::RTCRtpSenderPlatform* web_sender) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kPlanB);
   auto* track = web_sender->Track();
   auto it = FindSender(web_sender->Id());
@@ -2066,7 +2122,7 @@ ThermalUmaListener* RTCPeerConnectionHandler::thermal_uma_listener() const {
 }
 
 void RTCPeerConnectionHandler::OnThermalStateChange(
-    base::PowerObserver::DeviceThermalState thermal_state) {
+    mojom::blink::DeviceThermalState thermal_state) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (is_closed_)
     return;
@@ -2271,6 +2327,7 @@ void RTCPeerConnectionHandler::OnIceConnectionChange(
 void RTCPeerConnectionHandler::TrackIceConnectionStateChange(
     RTCPeerConnectionHandler::IceConnectionStateVersion version,
     webrtc::PeerConnectionInterface::IceConnectionState state) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!peer_connection_tracker_)
     return;
   switch (version) {
@@ -2430,6 +2487,7 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
     webrtc::PeerConnectionInterface::SignalingState signaling_state,
     std::vector<blink::RtpTransceiverState> transceiver_states,
     bool is_remote_description) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
   Vector<std::unique_ptr<RTCRtpTransceiverPlatform>> platform_transceivers(
       SafeCast<WTF::wtf_size_t>(transceiver_states.size()));
@@ -2456,7 +2514,9 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
           previous_state.stopped() != transceiver_states[i].stopped() ||
           previous_state.direction() != transceiver_states[i].direction() ||
           previous_state.current_direction() !=
-              transceiver_states[i].current_direction();
+              transceiver_states[i].current_direction() ||
+          previous_state.header_extensions_negotiated() !=
+              transceiver_states[i].header_extensions_negotiated();
     }
 
     // Update the transceiver.
@@ -2541,7 +2601,7 @@ void RTCPeerConnectionHandler::OnIceCandidate(const String& sdp,
 
 void RTCPeerConnectionHandler::OnIceCandidateError(
     const String& address,
-    base::Optional<uint16_t> port,
+    absl::optional<uint16_t> port,
     const String& host_candidate,
     const String& url,
     int error_code,
@@ -2562,20 +2622,6 @@ void RTCPeerConnectionHandler::OnIceCandidateError(
 void RTCPeerConnectionHandler::OnInterestingUsage(int usage_pattern) {
   if (client_)
     client_->DidNoteInterestingUsage(usage_pattern);
-}
-
-webrtc::SessionDescriptionInterface*
-RTCPeerConnectionHandler::CreateNativeSessionDescription(
-    const String& sdp,
-    const String& type,
-    webrtc::SdpParseError* error) {
-  webrtc::SessionDescriptionInterface* native_desc =
-      dependency_factory_->CreateSessionDescription(type, sdp, error);
-
-  LOG_IF(ERROR, !native_desc) << "Failed to create native session description."
-                              << " Type: " << type << " SDP: " << sdp;
-
-  return native_desc;
 }
 
 RTCPeerConnectionHandler::FirstSessionDescription::FirstSessionDescription(
@@ -2711,6 +2757,7 @@ RTCPeerConnectionHandler::CreateOrUpdateTransceiver(
 scoped_refptr<base::SingleThreadTaskRunner>
 RTCPeerConnectionHandler::signaling_thread() const {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(dependency_factory_);
   return dependency_factory_->GetWebRtcSignalingTaskRunner();
 }
 

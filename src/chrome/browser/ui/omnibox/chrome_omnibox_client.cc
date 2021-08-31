@@ -31,8 +31,8 @@
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ssl/typed_navigation_upgrade_throttle.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/browser.h"
@@ -51,6 +51,7 @@
 #include "components/omnibox/browser/omnibox_controller_emitter.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/profile_metrics/browser_profile_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/translate/core/browser/translate_manager.h"
@@ -94,7 +95,7 @@ ChromeOmniboxClient::CreateAutocompleteProviderClient() {
 
 std::unique_ptr<OmniboxNavigationObserver>
 ChromeOmniboxClient::CreateOmniboxNavigationObserver(
-    const base::string16& text,
+    const std::u16string& text,
     const AutocompleteMatch& match,
     const AutocompleteMatch& alternate_nav_match) {
   return std::make_unique<ChromeOmniboxNavigationObserver>(
@@ -110,7 +111,7 @@ const GURL& ChromeOmniboxClient::GetURL() const {
                              : GURL::EmptyGURL();
 }
 
-const base::string16& ChromeOmniboxClient::GetTitle() const {
+const std::u16string& ChromeOmniboxClient::GetTitle() const {
   return CurrentPageExists() ? controller_->GetWebContents()->GetTitle()
                              : base::EmptyString16();
 }
@@ -163,6 +164,14 @@ const AutocompleteSchemeClassifier& ChromeOmniboxClient::GetSchemeClassifier()
 
 AutocompleteClassifier* ChromeOmniboxClient::GetAutocompleteClassifier() {
   return AutocompleteClassifierFactory::GetForProfile(profile_);
+}
+
+bool ChromeOmniboxClient::ShouldDefaultTypedNavigationsToHttps() const {
+  return base::FeatureList::IsEnabled(omnibox::kDefaultTypedNavigationsToHttps);
+}
+
+int ChromeOmniboxClient::GetHttpsPortForTesting() const {
+  return TypedNavigationUpgradeThrottle::GetHttpsPortForTesting();
 }
 
 gfx::Image ChromeOmniboxClient::GetIconIfExtensionMatch(
@@ -312,7 +321,7 @@ gfx::Image ChromeOmniboxClient::GetFaviconForKeywordSearchProvider(
 
 void ChromeOmniboxClient::OnTextChanged(const AutocompleteMatch& current_match,
                                         bool user_input_in_progress,
-                                        const base::string16& user_text,
+                                        const std::u16string& user_text,
                                         const AutocompleteResult& result,
                                         bool has_focus) {
   AutocompleteActionPredictor::Action recommended_action =
@@ -370,7 +379,7 @@ void ChromeOmniboxClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
 
 void ChromeOmniboxClient::OnBookmarkLaunched() {
   RecordBookmarkLaunch(BOOKMARK_LAUNCH_LOCATION_OMNIBOX,
-                       ProfileMetrics::GetBrowserProfileType(profile_));
+                       profile_metrics::GetBrowserProfileType(profile_));
 }
 
 void ChromeOmniboxClient::DiscardNonCommittedNavigations() {

@@ -11,16 +11,37 @@ fuzzable_proto_library("remoting_proto") {
   sources = [ "remoting.proto" ]
 }
 
+source_set("streaming_configs") {
+  sources = [
+    "capture_configs.h",
+    "constants.h",
+    "message_fields.cc",
+    "message_fields.h",
+    "resolution.cc",
+    "resolution.h",
+  ]
+
+  public_configs = [ "../../build:openscreen_include_dirs" ]
+
+  public_deps = [
+    "../../third_party/abseil",
+    "../../third_party/jsoncpp",
+  ]
+
+  deps = [
+    "../../platform:base",
+    "../../util:base",
+  ]
+}
+
 source_set("common") {
   sources = [
     "answer_messages.cc",
     "answer_messages.h",
-    "capture_configs.h",
     "capture_recommendations.cc",
     "capture_recommendations.h",
     "clock_drift_smoother.cc",
     "clock_drift_smoother.h",
-    "constants.h",
     "encoded_frame.cc",
     "encoded_frame.h",
     "environment.cc",
@@ -30,14 +51,16 @@ source_set("common") {
     "frame_crypto.h",
     "frame_id.cc",
     "frame_id.h",
-    "message_fields.cc",
-    "message_fields.h",
     "ntp_time.cc",
     "ntp_time.h",
     "offer_messages.cc",
     "offer_messages.h",
     "packet_util.cc",
     "packet_util.h",
+    "receiver_message.cc",
+    "receiver_message.h",
+    "rpc_broker.cc",
+    "rpc_broker.h",
     "rtcp_common.cc",
     "rtcp_common.h",
     "rtcp_session.cc",
@@ -46,6 +69,8 @@ source_set("common") {
     "rtp_defines.h",
     "rtp_time.cc",
     "rtp_time.h",
+    "sender_message.cc",
+    "sender_message.h",
     "session_config.cc",
     "session_config.h",
     "session_messager.cc",
@@ -58,9 +83,11 @@ source_set("common") {
 
   public_deps = [
     ":remoting_proto",
+    ":streaming_configs",
     "../../third_party/abseil",
     "../../third_party/boringssl",
     "../common:channel",
+    "../common:public",
     "../common/certificate/proto:certificate_proto",
   ]
 
@@ -68,6 +95,10 @@ source_set("common") {
     "../../platform",
     "../../util",
   ]
+
+  if (!build_with_chromium) {
+    deps += [ "../protocol:castv2" ]
+  }
 }
 
 source_set("receiver") {
@@ -80,6 +111,8 @@ source_set("receiver") {
     "packet_receive_stats_tracker.h",
     "receiver.cc",
     "receiver.h",
+    "receiver_base.cc",
+    "receiver_base.h",
     "receiver_packet_router.cc",
     "receiver_packet_router.h",
     "receiver_session.cc",
@@ -101,6 +134,7 @@ source_set("sender") {
     "bandwidth_estimator.h",
     "compound_rtcp_parser.cc",
     "compound_rtcp_parser.h",
+    "remoting_capabilities.h",
     "rtp_packetizer.cc",
     "rtp_packetizer.h",
     "sender.cc",
@@ -116,6 +150,25 @@ source_set("sender") {
   public_deps = [ ":common" ]
 
   deps = [ "../../util" ]
+}
+
+source_set("test_helpers") {
+  testonly = true
+
+  sources = [
+    "testing/message_pipe.h",
+    "testing/simple_message_port.h",
+    "testing/simple_socket_subscriber.h",
+  ]
+
+  public_deps = [ ":common" ]
+
+  deps = [
+    "../../third_party/googletest:gmock",
+    "../../third_party/googletest:gtest",
+    "../../util",
+    "../common:public",
+  ]
 }
 
 source_set("unittests") {
@@ -140,6 +193,7 @@ source_set("unittests") {
     "packet_util_unittest.cc",
     "receiver_session_unittest.cc",
     "receiver_unittest.cc",
+    "rpc_broker_unittest.cc",
     "rtcp_common_unittest.cc",
     "rtp_packet_parser_unittest.cc",
     "rtp_packetizer_unittest.cc",
@@ -148,13 +202,15 @@ source_set("unittests") {
     "sender_report_unittest.cc",
     "sender_session_unittest.cc",
     "sender_unittest.cc",
+    "session_messager_unittest.cc",
     "ssrc_unittest.cc",
-    "testing/simple_message_port.h",
   ]
 
   deps = [
     ":receiver",
     ":sender",
+    ":test_helpers",
+    "../../platform:test",
     "../../third_party/googletest:gmock",
     "../../third_party/googletest:gtest",
     "../../util",

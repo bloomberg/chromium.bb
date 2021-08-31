@@ -51,19 +51,8 @@ bool BleMedium::StartScanning(
                 auto pair = peripherals_.emplace(
                     &peripheral, absl::make_unique<ScanningInfo>());
                 auto& context = *pair.first->second;
-                if (!pair.second) {
-                  NEARBY_LOG(INFO,
-                             "Discovering (again) peripheral=%p, impl=%p, "
-                             "peripheral name=%s",
-                             &context.peripheral, &peripheral,
-                             peripheral.GetName().c_str());
-                } else {
+                if (pair.second) {
                   context.peripheral = BlePeripheral(&peripheral);
-                  NEARBY_LOG(INFO,
-                             "Discovering peripheral=%p, impl=%p, "
-                             "peripheral name=%s",
-                             &context.peripheral, &peripheral,
-                             peripheral.GetName().c_str());
                   discovered_peripheral_callback_.peripheral_discovered_cb(
                       context.peripheral, service_id,
                       context.peripheral.GetAdvertisementBytes(service_id),
@@ -135,13 +124,15 @@ bool BleMedium::StopAcceptingConnections(const std::string& service_id) {
 }
 
 BleSocket BleMedium::Connect(BlePeripheral& peripheral,
-                             const std::string& service_id) {
+                             const std::string& service_id,
+                             CancellationFlag* cancellation_flag) {
   {
     MutexLock lock(&mutex_);
     NEARBY_LOG(INFO, "BleMedium::Connect: peripheral=%p [impl=%p]", &peripheral,
                &peripheral.GetImpl());
   }
-  return BleSocket(impl_->Connect(peripheral.GetImpl(), service_id));
+  return BleSocket(
+      impl_->Connect(peripheral.GetImpl(), service_id, cancellation_flag));
 }
 
 }  // namespace nearby

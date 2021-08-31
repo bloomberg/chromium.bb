@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/incident_report_uploader_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -75,7 +76,7 @@ IncidentReportUploaderImpl::UploadReport(
     const ClientIncidentReport& report) {
   std::string post_data;
   if (!report.SerializeToString(&post_data))
-    return std::unique_ptr<IncidentReportUploader>();
+    return nullptr;
   return std::unique_ptr<IncidentReportUploader>(new IncidentReportUploaderImpl(
       std::move(callback), url_loader_factory, post_data));
 }
@@ -134,7 +135,7 @@ void IncidentReportUploaderImpl::OnURLLoaderCompleteInternal(
   Result result = UPLOAD_REQUEST_FAILED;
   std::unique_ptr<ClientIncidentResponse> response;
   if (net_error == net::OK && response_code == net::HTTP_OK) {
-    response.reset(new ClientIncidentResponse());
+    response = std::make_unique<ClientIncidentResponse>();
     if (!response->ParseFromString(response_body)) {
       response.reset();
       result = UPLOAD_INVALID_RESPONSE;

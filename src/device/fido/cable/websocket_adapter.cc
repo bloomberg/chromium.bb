@@ -4,10 +4,13 @@
 
 #include "device/fido/cable/websocket_adapter.h"
 
+#include "base/callback_helpers.h"
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/fido_constants.h"
+#include "net/http/http_status_code.h"
 
 namespace device {
 namespace cablev2 {
@@ -59,7 +62,21 @@ void WebSocketAdapter::OnOpeningHandshakeStarted(
 
 void WebSocketAdapter::OnFailure(const std::string& message,
                                  int net_error,
-                                 int response_code) {}
+                                 int response_code) {
+  LOG(ERROR) << "Tunnel server connection failed: " << message << " "
+             << net_error << " " << response_code;
+
+  if (response_code != net::HTTP_GONE) {
+    // The callback will be cleaned up when the pipe disconnects.
+    return;
+  }
+
+  // This contact ID has been marked as inactive. The pairing information for
+  // this device should be dropped.
+  if (on_tunnel_ready_) {
+    std::move(on_tunnel_ready_).Run(Result::GONE, absl::nullopt);
+  }
+}
 
 void WebSocketAdapter::OnConnectionEstablished(
     mojo::PendingRemote<network::mojom::WebSocket> socket,
@@ -74,7 +91,7 @@ void WebSocketAdapter::OnConnectionEstablished(
     return;
   }
 
-  base::Optional<std::array<uint8_t, kRoutingIdSize>> routing_id;
+  absl::optional<std::array<uint8_t, kRoutingIdSize>> routing_id;
   for (const auto& header : response->headers) {
     if (base::EqualsCaseInsensitiveASCII(header->name.c_str(),
                                          kCableRoutingIdHeader)) {
@@ -105,7 +122,7 @@ void WebSocketAdapter::OnConnectionEstablished(
 
   socket_remote_->StartReceiving();
 
-  std::move(on_tunnel_ready_).Run(true, routing_id);
+  std::move(on_tunnel_ready_).Run(Result::OK, routing_id);
 }
 
 void WebSocketAdapter::OnDataFrame(bool finish,
@@ -202,7 +219,7 @@ void WebSocketAdapter::OnMojoPipeDisconnect() {
   // If disconnection happens before |OnConnectionEstablished| then report a
   // failure to establish the tunnel.
   if (on_tunnel_ready_) {
-    std::move(on_tunnel_ready_).Run(false, base::nullopt);
+    std::move(on_tunnel_ready_).Run(Result::FAILED, absl::nullopt);
     return;
   }
 
@@ -216,7 +233,7 @@ void WebSocketAdapter::Close() {
   DCHECK(!closed_);
   closed_ = true;
   client_receiver_.reset();
-  on_tunnel_data_.Run(base::nullopt);
+  on_tunnel_data_.Run(absl::nullopt);
 }
 
 void WebSocketAdapter::FlushPendingMessage() {

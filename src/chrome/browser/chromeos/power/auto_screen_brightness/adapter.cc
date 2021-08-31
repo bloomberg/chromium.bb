@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "components/prefs/pref_service.h"
@@ -101,7 +101,7 @@ Adapter::~Adapter() = default;
 
 void Adapter::Init() {
   // Deferred to Init() because it can result in a virtual method being called.
-  power_manager_client_observer_.Add(PowerManagerClient::Get());
+  power_manager_client_observation_.Observe(PowerManagerClient::Get());
 }
 
 void Adapter::OnAmbientLightUpdated(int lux) {
@@ -130,7 +130,6 @@ void Adapter::OnAmbientLightUpdated(int lux) {
   }
 
   if (now - lid_reopen_time_ < lid_open_delay_time_) {
-    VLOG(1) << "ABAdapter ALS ignored soon after lid-reopened";
     return;
   }
 
@@ -170,8 +169,8 @@ void Adapter::OnUserBrightnessChanged(double old_brightness_percent,
   const auto decision_at_first_recent_user_brightness_request =
       decision_at_first_recent_user_brightness_request_;
 
-  first_recent_user_brightness_request_time_ = base::nullopt;
-  decision_at_first_recent_user_brightness_request_ = base::nullopt;
+  first_recent_user_brightness_request_time_ = absl::nullopt;
+  decision_at_first_recent_user_brightness_request_ = absl::nullopt;
 
   // We skip this notification if adapter hasn't been initialised because its
   // |params_| may change. We need to log even if adapter is initialized to
@@ -195,20 +194,16 @@ void Adapter::OnUserBrightnessChanged(double old_brightness_percent,
                        *decision_at_first_recent_user_brightness_request,
                        old_brightness_percent, new_brightness_percent);
 
-    const base::Optional<AlsAvgStdDev> log_als_avg_stddev =
+    const absl::optional<AlsAvgStdDev> log_als_avg_stddev =
         decision_at_first_recent_user_brightness_request->log_als_avg_stddev;
 
     const std::string log_als =
         log_als_avg_stddev ? base::StringPrintf("%.4f", log_als_avg_stddev->avg)
                            : "";
-    VLOG(1) << "ABAdapter user brightness change: "
-            << "brightness=" << FormatToPrint(old_brightness_percent) << "->"
-            << FormatToPrint(new_brightness_percent) << " log_als=" << log_als;
-
     OnBrightnessChanged(
         *first_recent_user_brightness_request_time, new_brightness_percent,
-        log_als_avg_stddev ? base::Optional<double>(log_als_avg_stddev->avg)
-                           : base::nullopt);
+        log_als_avg_stddev ? absl::optional<double>(log_als_avg_stddev->avg)
+                           : absl::nullopt);
   }
 
   if (!metrics_reporter_)
@@ -262,7 +257,6 @@ void Adapter::OnModelTrained(const MonotoneCubicSpline& brightness_curve) {
   model_.personal_curve = brightness_curve;
   ++model_.iteration_count;
   new_model_arrived_ = true;
-  VLOG(1) << "ABAdapter new model arrived";
 }
 
 void Adapter::OnModelInitialized(const Model& model) {
@@ -275,7 +269,7 @@ void Adapter::OnModelInitialized(const Model& model) {
   UpdateStatus();
 }
 
-void Adapter::OnModelConfigLoaded(base::Optional<ModelConfig> model_config) {
+void Adapter::OnModelConfigLoaded(absl::optional<ModelConfig> model_config) {
   DCHECK(!enabled_by_model_configs_.has_value());
 
   enabled_by_model_configs_ = model_config.has_value();
@@ -292,7 +286,7 @@ void Adapter::PowerManagerBecameAvailable(bool service_is_ready) {
   UpdateStatus();
 }
 
-void Adapter::SuspendDone(const base::TimeDelta& /* sleep_duration */) {
+void Adapter::SuspendDone(base::TimeDelta /* sleep_duration */) {
   // We skip this notification if adapter hasn't been initialised (because its
   // |params_| may change), or, if adapter is disabled (because adapter won't
   // change brightness anyway).
@@ -301,18 +295,14 @@ void Adapter::SuspendDone(const base::TimeDelta& /* sleep_duration */) {
 
   if (params_.user_adjustment_effect == UserAdjustmentEffect::kPauseAuto)
     adapter_disabled_by_user_adjustment_ = false;
-
-  VLOG(1) << "ABAdapter suspend done with "
-          << (new_model_arrived_ ? "new" : "no new") << " model";
 }
 
 void Adapter::LidEventReceived(chromeos::PowerManagerClient::LidState state,
-                               const base::TimeTicks& /* timestamp */) {
+                               base::TimeTicks /* timestamp */) {
   is_lid_closed_ = state == chromeos::PowerManagerClient::LidState::CLOSED;
   if (!*is_lid_closed_) {
     lid_reopen_time_ = tick_clock_->NowTicks();
     lid_closed_message_reported_ = false;
-    VLOG(1) << "ABAdapter Adapter received lid-reopened event";
     return;
   }
 
@@ -330,16 +320,16 @@ bool Adapter::IsAppliedForTesting() const {
           !adapter_disabled_by_user_adjustment_);
 }
 
-base::Optional<MonotoneCubicSpline> Adapter::GetGlobalCurveForTesting() const {
+absl::optional<MonotoneCubicSpline> Adapter::GetGlobalCurveForTesting() const {
   return model_.global_curve;
 }
 
-base::Optional<MonotoneCubicSpline> Adapter::GetPersonalCurveForTesting()
+absl::optional<MonotoneCubicSpline> Adapter::GetPersonalCurveForTesting()
     const {
   return model_.personal_curve;
 }
 
-base::Optional<AlsAvgStdDev> Adapter::GetAverageAmbientWithStdDevForTesting(
+absl::optional<AlsAvgStdDev> Adapter::GetAverageAmbientWithStdDevForTesting(
     base::TimeTicks now) {
   DCHECK(log_als_values_);
   return log_als_values_->AverageAmbientWithStdDev(now);
@@ -353,7 +343,7 @@ double Adapter::GetDarkeningThresholdForTesting() const {
   return *darkening_threshold_;
 }
 
-base::Optional<double> Adapter::GetCurrentAvgLogAlsForTesting() const {
+absl::optional<double> Adapter::GetCurrentAvgLogAlsForTesting() const {
   return average_log_ambient_lux_;
 }
 
@@ -386,10 +376,10 @@ Adapter::Adapter(Profile* profile,
   DCHECK(modeller);
   DCHECK(model_config_loader);
 
-  als_reader_observer_.Add(als_reader);
-  brightness_monitor_observer_.Add(brightness_monitor);
-  modeller_observer_.Add(modeller);
-  model_config_loader_observer_.Add(model_config_loader);
+  als_reader_observation_.Observe(als_reader);
+  brightness_monitor_observation_.Observe(brightness_monitor);
+  modeller_observation_.Observe(modeller);
+  model_config_loader_observation_.Observe(model_config_loader);
 
   const int lid_open_delay_time_seconds = GetFieldTrialParamByFeatureAsInt(
       features::kAutoScreenBrightness, "lid_open_delay_time_seconds",
@@ -440,8 +430,6 @@ void Adapter::InitParams(const ModelConfig& model_config) {
 
   UMA_HISTOGRAM_ENUMERATION("AutoScreenBrightness.UserAdjustmentEffect",
                             params_.user_adjustment_effect);
-  VLOG(1) << "ABAdapter user adjustment effect: "
-          << static_cast<int>(params_.user_adjustment_effect);
 }
 
 void Adapter::UpdateStatus() {
@@ -548,7 +536,7 @@ Adapter::AdapterDecision Adapter::CanAdjustBrightness(base::TimeTicks now) {
   DCHECK(!als_init_time_.is_null());
 
   AdapterDecision decision;
-  const base::Optional<AlsAvgStdDev> log_als_avg_stddev =
+  const absl::optional<AlsAvgStdDev> log_als_avg_stddev =
       log_als_values_->AverageAmbientWithStdDev(now);
   decision.log_als_avg_stddev = log_als_avg_stddev;
 
@@ -667,9 +655,6 @@ void Adapter::AdjustBrightness(BrightnessChangeCause cause,
   const double brightness = GetBrightnessBasedOnAmbientLogLux(log_als_avg);
   if (current_brightness_ &&
       std::abs(brightness - *current_brightness_) < kTol) {
-    VLOG(1) << "ABAdapter model brightness change canceled: "
-            << "brightness=" << FormatToPrint(*current_brightness_) + "->"
-            << FormatToPrint(brightness);
     return;
   }
 
@@ -709,18 +694,14 @@ double Adapter::GetBrightnessBasedOnAmbientLogLux(
   DCHECK_EQ(adapter_status_, Status::kSuccess);
   // We use the latest curve available.
   if (model_.personal_curve) {
-    VLOG(1) << "ABAdapter using personal curve for brightness change: \n"
-            << model_.personal_curve->ToString();
     return model_.personal_curve->Interpolate(ambient_log_lux);
   }
-  VLOG(1) << "ABAdapter using global curve for brightness change: \n"
-          << model_.global_curve->ToString();
   return model_.global_curve->Interpolate(ambient_log_lux);
 }
 
 void Adapter::OnBrightnessChanged(base::TimeTicks now,
                                   double new_brightness_percent,
-                                  base::Optional<double> new_log_als) {
+                                  absl::optional<double> new_log_als) {
   DCHECK_NE(adapter_status_, Status::kInitializing);
 
   current_brightness_ = new_brightness_percent;

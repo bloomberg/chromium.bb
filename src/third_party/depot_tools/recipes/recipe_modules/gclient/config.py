@@ -141,16 +141,6 @@ def webports(c):
   m['src'] = 'got_revision'
 
 @config_ctx()
-def wasm_llvm(c):
-  s = c.solutions.add()
-  s.name = 'src'
-  s.url = ChromiumGitURL(
-      c, 'external', 'github.com', 'WebAssembly', 'waterfall.git')
-  m = c.got_revision_mapping
-  m['src'] = 'got_waterfall_revision'
-  c.revisions['src'] = 'origin/master'
-
-@config_ctx()
 def emscripten_releases(c):
   s = c.solutions.add()
   s.name = 'emscripten-releases'
@@ -204,6 +194,13 @@ def chrome_golo(c):  # pragma: no cover
   s.name = 'chrome_golo'
   s.url = 'https://chrome-internal.googlesource.com/chrome-golo/chrome-golo.git'
   c.got_revision_mapping['chrome_golo'] = 'got_revision'
+
+@config_ctx()
+def infra_puppet(c):  # pragma: no cover
+  s = c.solutions.add()
+  s.name = 'infra_puppet'
+  s.url = 'https://chrome-internal.googlesource.com/infra/puppet.git'
+  c.got_revision_mapping['infra_puppet'] = 'got_revision'
 
 @config_ctx()
 def build_internal(c):
@@ -317,11 +314,11 @@ def infra_internal(c):  # pragma: no cover
 @config_ctx(includes=['infra'])
 def luci_gae(c):
   # luci/gae is checked out as a part of infra.git solution at HEAD.
-  c.revisions['infra'] = 'origin/master'
+  c.revisions['infra'] = 'refs/heads/master'
   # luci/gae is developed together with luci-go, which should be at HEAD.
-  c.revisions['infra/go/src/go.chromium.org/luci'] = 'origin/master'
+  c.revisions['infra/go/src/go.chromium.org/luci'] = 'refs/heads/master'
   c.revisions['infra/go/src/go.chromium.org/gae'] = (
-      gclient_api.RevisionFallbackChain('origin/master'))
+      gclient_api.RevisionFallbackChain('refs/heads/master'))
   m = c.got_revision_mapping
   del m['infra']
   m['infra/go/src/go.chromium.org/gae'] = 'got_revision'
@@ -329,9 +326,9 @@ def luci_gae(c):
 @config_ctx(includes=['infra'])
 def luci_go(c):
   # luci-go is checked out as a part of infra.git solution at HEAD.
-  c.revisions['infra'] = 'origin/master'
+  c.revisions['infra'] = 'refs/heads/master'
   c.revisions['infra/go/src/go.chromium.org/luci'] = (
-      gclient_api.RevisionFallbackChain('origin/master'))
+      gclient_api.RevisionFallbackChain('refs/heads/master'))
   m = c.got_revision_mapping
   del m['infra']
   m['infra/go/src/go.chromium.org/luci'] = 'got_revision'
@@ -340,18 +337,18 @@ def luci_go(c):
 def luci_py(c):
   # luci-py is checked out as part of infra just to have appengine
   # pre-installed, as that's what luci-py PRESUBMIT relies on.
-  c.revisions['infra'] = 'origin/master'
+  c.revisions['infra'] = 'refs/heads/master'
   c.revisions['infra/luci'] = (
-      gclient_api.RevisionFallbackChain('origin/master'))
+      gclient_api.RevisionFallbackChain('refs/heads/master'))
   m = c.got_revision_mapping
   del m['infra']
   m['infra/luci'] = 'got_revision'
 
 @config_ctx(includes=['infra'])
 def recipes_py(c):
-  c.revisions['infra'] = 'origin/master'
+  c.revisions['infra'] = 'refs/heads/master'
   c.revisions['infra/recipes-py'] = (
-      gclient_api.RevisionFallbackChain('origin/master'))
+      gclient_api.RevisionFallbackChain('refs/heads/master'))
   m = c.got_revision_mapping
   del m['infra']
   m['infra/recipes-py'] = 'got_revision'
@@ -409,19 +406,6 @@ def gerrit_test_cq_normal(c):
   soln.url = 'https://chromium.googlesource.com/playground/gerrit-cq/normal.git'
 
 @config_ctx()
-def angle(c):
-  soln = c.solutions.add()
-  soln.name = 'angle'
-  soln.url = 'https://chromium.googlesource.com/angle/angle.git'
-  # Standalone developer angle builds want the angle checkout in the same
-  # directory the .gclient file is in.  Bots want it in a directory called
-  # 'angle'.  To make both cases work, the angle DEPS file pulls deps and runs
-  # hooks relative to the variable "root" which is set to . by default and
-  # then to 'angle' in the recipes here:
-  soln.custom_vars = {'angle_root': 'angle'}
-  c.got_revision_mapping['angle'] = 'got_revision'
-
-@config_ctx()
 def dawn(c):
   soln = c.solutions.add()
   soln.name = 'dawn'
@@ -460,3 +444,10 @@ def tint(c):
   soln.name = 'tint'
   soln.url = 'https://dawn.googlesource.com/tint.git'
   c.got_revision_mapping['tint'] = 'got_revision'
+
+@config_ctx()
+def gerrit_plugins(c):
+  s = c.solutions.add()
+  s.name = 'gerrit_plugins'
+  s.url = ChromiumGitURL(c, 'infra', 'gerrit-plugins', 'tricium.git')
+  c.got_revision_mapping['gerrit_plugins'] = 'got_revision'

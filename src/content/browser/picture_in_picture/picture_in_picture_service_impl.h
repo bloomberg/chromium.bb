@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_SERVICE_IMPL_H_
 
-#include <memory>
-
 #include "content/common/content_export.h"
 #include "content/public/browser/frame_service_base.h"
+#include "media/mojo/mojom/media_player.mojom.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom.h"
@@ -39,7 +39,8 @@ class CONTENT_EXPORT PictureInPictureServiceImpl final
   // PictureInPictureService implementation.
   void StartSession(
       uint32_t player_id,
-      const base::Optional<viz::SurfaceId>& surface_id,
+      mojo::PendingAssociatedRemote<media::mojom::MediaPlayer> player_remote,
+      const absl::optional<viz::SurfaceId>& surface_id,
       const gfx::Size& natural_size,
       bool show_play_pause_button,
       mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver>,

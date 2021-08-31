@@ -21,6 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/content/renderer/phishing_classifier/features.h"
 #include "components/safe_browsing/content/renderer/phishing_classifier/murmurhash3_util.h"
 #include "crypto/sha2.h"
@@ -67,7 +68,7 @@ struct PhishingTermFeatureExtractor::ExtractionState {
   // The number of iterations we've done for the current extraction.
   int num_iterations;
 
-  ExtractionState(const base::string16& text, base::TimeTicks start_time_ticks)
+  ExtractionState(const std::u16string& text, base::TimeTicks start_time_ticks)
       : start_time(start_time_ticks), num_iterations(0) {
     std::unique_ptr<base::i18n::BreakIterator> i(new base::i18n::BreakIterator(
         text, base::i18n::BreakIterator::BREAK_WORD));
@@ -78,14 +79,14 @@ struct PhishingTermFeatureExtractor::ExtractionState {
 };
 
 PhishingTermFeatureExtractor::PhishingTermFeatureExtractor(
-    const std::unordered_set<std::string>* page_term_hashes,
-    const std::unordered_set<uint32_t>* page_word_hashes,
+    base::RepeatingCallback<bool(const std::string&)> find_page_term_callback,
+    base::RepeatingCallback<bool(uint32_t)> find_page_word_callback,
     size_t max_words_per_term,
     uint32_t murmurhash3_seed,
     size_t max_shingles_per_page,
     size_t shingle_size)
-    : page_term_hashes_(page_term_hashes),
-      page_word_hashes_(page_word_hashes),
+    : find_page_term_callback_(find_page_term_callback),
+      find_page_word_callback_(find_page_word_callback),
       max_words_per_term_(max_words_per_term),
       murmurhash3_seed_(murmurhash3_seed),
       max_shingles_per_page_(max_shingles_per_page),
@@ -102,7 +103,7 @@ PhishingTermFeatureExtractor::~PhishingTermFeatureExtractor() {
 }
 
 void PhishingTermFeatureExtractor::ExtractFeatures(
-    const base::string16* page_text,
+    const std::u16string* page_text,
     FeatureMap* features,
     std::set<uint32_t>* shingle_hashes,
     DoneCallback done_callback) {
@@ -113,6 +114,9 @@ void PhishingTermFeatureExtractor::ExtractFeatures(
   // However, in an opt build, we will go ahead and clean up the pending
   // extraction so that we can start in a known state.
   CancelPendingExtraction();
+
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("safe_browsing", "ExtractTermFeatures",
+                                    this);
 
   page_text_ = page_text;
   features_ = features;
@@ -138,7 +142,6 @@ void PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout() {
 
   if (!state_->iterator.get()) {
     // We failed to initialize the break iterator, so stop now.
-    UMA_HISTOGRAM_COUNTS_1M("SBClientPhishing.TermFeatureBreakIterError", 1);
     RunCallback(false);
     return;
   }
@@ -208,7 +211,7 @@ void PhishingTermFeatureExtractor::HandleWord(const base::StringPiece16& word) {
   uint32_t word_hash = MurmurHash3String(word_lower, murmurhash3_seed_);
 
   // Quick out if the word is not part of any term, which is the common case.
-  if (page_word_hashes_->find(word_hash) == page_word_hashes_->end()) {
+  if (!find_page_word_callback_.Run(word_hash)) {
     // Word doesn't exist in our terms so we can clear the n-gram state.
     state_->previous_words.clear();
     state_->previous_word_sizes.clear();
@@ -226,16 +229,15 @@ void PhishingTermFeatureExtractor::HandleWord(const base::StringPiece16& word) {
   //
   state_->previous_words.append(word_lower);
   std::string current_term = state_->previous_words;
-  for (auto it = state_->previous_word_sizes.begin();
-       it != state_->previous_word_sizes.end(); ++it) {
+  for (const auto& previous_word_size : state_->previous_word_sizes) {
     hashes_to_check[crypto::SHA256HashString(current_term)] = current_term;
-    current_term.erase(0, *it);
+    current_term.erase(0, previous_word_size);
   }
 
   // Add features for any hashes that match page_term_hashes_.
-  for (auto it = hashes_to_check.begin(); it != hashes_to_check.end(); ++it) {
-    if (page_term_hashes_->find(it->first) != page_term_hashes_->end()) {
-      features_->AddBooleanFeature(features::kPageTerm + it->second);
+  for (const auto& hash_to_check : hashes_to_check) {
+    if (find_page_term_callback_.Run(hash_to_check.first)) {
+      features_->AddBooleanFeature(features::kPageTerm + hash_to_check.second);
     }
   }
 
@@ -264,6 +266,7 @@ void PhishingTermFeatureExtractor::RunCallback(bool success) {
                       clock_->NowTicks() - state_->start_time);
 
   DCHECK(!done_callback_.is_null());
+  TRACE_EVENT_NESTABLE_ASYNC_END0("safe_browsing", "ExtractTermFeatures", this);
   std::move(done_callback_).Run(success);
   Clear();
 }

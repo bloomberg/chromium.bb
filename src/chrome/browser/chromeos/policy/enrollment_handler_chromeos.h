@@ -12,19 +12,21 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_validator.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/policy/device_account_initializer.h"
 #include "chromeos/dbus/authpolicy/authpolicy_client.h"
 #include "chromeos/dbus/constants/attestation_constants.h"
+#include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -42,7 +44,6 @@ class AttestationFlow;
 namespace policy {
 
 class DeviceCloudPolicyStoreChromeOS;
-class DMAuth;
 class DMTokenStorage;
 class ServerBackedStateKeysBroker;
 
@@ -74,11 +75,11 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       chromeos::ActiveDirectoryJoinDelegate* ad_join_delegate,
       const EnrollmentConfig& enrollment_config,
-      std::unique_ptr<DMAuth> dm_auth,
+      DMAuth dm_auth,
       const std::string& client_id,
       const std::string& requisition,
       const std::string& sub_organization,
-      const EnrollmentCallback& completion_callback);
+      EnrollmentCallback completion_callback);
   ~EnrollmentHandlerChromeOS() override;
 
   // Starts the enrollment process and reports the result to
@@ -165,7 +166,8 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
 
   // Invoked after the firmware management partition in TPM is updated.
   void OnFirmwareManagementParametersDataSet(
-      base::Optional<cryptohome::BaseReply> reply);
+      absl::optional<user_data_auth::SetFirmwareManagementParametersReply>
+          reply);
 
   // Calls InstallAttributes::LockDevice() for enterprise enrollment and
   // DeviceSettingsService::SetManagementSettings() for consumer
@@ -189,7 +191,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   void HandleActiveDirectoryPolicyRefreshed(authpolicy::ErrorType error);
 
   // Handles the blob for the device policy for the offline demo mode.
-  void OnOfflinePolicyBlobLoaded(base::Optional<std::string> blob);
+  void OnOfflinePolicyBlobLoaded(absl::optional<std::string> blob);
 
   // Handles the policy validation result for the offline demo mode.
   void OnOfflinePolicyValidated(DeviceCloudPolicyValidator* validator);
@@ -222,7 +224,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   std::unique_ptr<policy::DMTokenStorage> dm_token_storage_;
 
   EnrollmentConfig enrollment_config_;
-  std::unique_ptr<policy::DMAuth> dm_auth_;
+  policy::DMAuth dm_auth_;
   std::string client_id_;
   std::string sub_organization_;
   std::unique_ptr<CloudPolicyClient::RegistrationParameters> register_params_;

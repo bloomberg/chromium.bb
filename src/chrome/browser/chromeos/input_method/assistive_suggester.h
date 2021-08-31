@@ -6,23 +6,30 @@
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_ASSISTIVE_SUGGESTER_H_
 
 #include <string>
+#include <vector>
 
 #include "chrome/browser/chromeos/input_method/emoji_suggester.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine_base.h"
+#include "chrome/browser/chromeos/input_method/multi_word_suggester.h"
 #include "chrome/browser/chromeos/input_method/personal_info_suggester.h"
 #include "chrome/browser/chromeos/input_method/suggester.h"
 #include "chrome/browser/chromeos/input_method/suggestion_enums.h"
+#include "chrome/browser/chromeos/input_method/suggestions_source.h"
+#include "chromeos/services/ime/public/cpp/suggestions.h"
 
 namespace chromeos {
 
 // An agent to suggest assistive information when the user types, and adopt or
 // dismiss the suggestion according to the user action.
-class AssistiveSuggester {
+class AssistiveSuggester : public SuggestionsSource {
  public:
   AssistiveSuggester(InputMethodEngine* engine, Profile* profile);
 
   bool IsAssistiveFeatureEnabled();
+
+  // SuggestionsSource overrides
+  std::vector<ime::TextSuggestion> GetSuggestions() override;
 
   // Called when a text field gains focus, and suggester starts working.
   void OnFocus(int context_id);
@@ -32,23 +39,30 @@ class AssistiveSuggester {
 
   // Checks the text before cursor, emits metric if any assistive prefix is
   // matched.
-  void RecordAssistiveMatchMetrics(const base::string16& text,
+  void RecordAssistiveMatchMetrics(const std::u16string& text,
                                    int cursor_pos,
                                    int anchor_pos);
 
   // Called when a surrounding text is changed.
   // Returns true if it changes the surrounding text, e.g. a suggestion is
   // generated or dismissed.
-  bool OnSurroundingTextChanged(const base::string16& text,
+  bool OnSurroundingTextChanged(const std::u16string& text,
                                 int cursor_pos,
                                 int anchor_pos);
 
   // Called when the user pressed a key.
   // Returns true if suggester handles the event and it should stop propagate.
-  bool OnKeyEvent(const InputMethodEngineBase::KeyboardEvent& event);
+  bool OnKeyEvent(const ui::KeyEvent& event);
+
+  // Called when suggestions are generated outside of the assistive framework.
+  void OnExternalSuggestionsUpdated(
+      const std::vector<ime::TextSuggestion>& suggestions);
 
   // Accepts the suggestion at a given index if a suggester is currently active.
   void AcceptSuggestion(size_t index);
+
+  // Check if suggestion is being shown.
+  bool IsSuggestionShown();
 
   EmojiSuggester* get_emoji_suggester_for_testing() {
     return &emoji_suggester_;
@@ -57,16 +71,15 @@ class AssistiveSuggester {
  private:
   // Returns if any suggestion text should be displayed according to the
   // surrounding text information.
-  bool Suggest(const base::string16& text, int cursor_pos, int anchor_pos);
+  bool Suggest(const std::u16string& text, int cursor_pos, int anchor_pos);
 
   void DismissSuggestion();
-
-  // Check if suggestion is being shown.
-  bool IsSuggestionShown();
 
   bool IsAssistPersonalInfoEnabled();
 
   bool IsEmojiSuggestAdditionEnabled();
+
+  bool IsMultiWordSuggestEnabled();
 
   void RecordAssistiveMatchMetricsForAction(AssistiveType action);
 
@@ -81,6 +94,7 @@ class AssistiveSuggester {
   Profile* profile_;
   PersonalInfoSuggester personal_info_suggester_;
   EmojiSuggester emoji_suggester_;
+  MultiWordSuggester multi_word_suggester_;
 
   // ID of the focused text field, 0 if none is focused.
   int context_id_ = -1;

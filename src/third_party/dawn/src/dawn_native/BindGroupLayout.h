@@ -54,12 +54,12 @@ namespace dawn_native {
             return mBindingInfo[bindingIndex];
         }
         const BindingMap& GetBindingMap() const;
+        bool HasBinding(BindingNumber bindingNumber) const;
         BindingIndex GetBindingIndex(BindingNumber bindingNumber) const;
 
-        // Functors necessary for the unordered_set<BGLBase*>-based cache.
-        struct HashFunc {
-            size_t operator()(const BindGroupLayoutBase* bgl) const;
-        };
+        // Functions necessary for the unordered_set<BGLBase*>-based cache.
+        size_t ComputeContentHash() override;
+
         struct EqualityFunc {
             bool operator()(const BindGroupLayoutBase* a, const BindGroupLayoutBase* b) const;
         };

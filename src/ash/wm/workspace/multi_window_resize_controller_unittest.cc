@@ -18,8 +18,8 @@
 #include "ash/wm/workspace/workspace_event_handler_test_helper.h"
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace_controller_test_api.h"
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "chromeos/ui/base/chromeos_ui_constants.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -76,8 +76,6 @@ class MultiWindowResizeControllerTest : public AshTestBase {
   bool IsShowing() { return resize_controller_->IsShowing(); }
 
   bool HasPendingShow() { return resize_controller_->show_timer_.IsRunning(); }
-
-  void Hide() { resize_controller_->Hide(); }
 
   bool HasTarget(aura::Window* window) {
     if (!resize_controller_->windows_.is_valid())

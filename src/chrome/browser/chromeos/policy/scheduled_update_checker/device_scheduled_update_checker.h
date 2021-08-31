@@ -6,20 +6,19 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_SCHEDULED_UPDATE_CHECKER_DEVICE_SCHEDULED_UPDATE_CHECKER_H_
 
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/chromeos/policy/scheduled_update_checker/os_and_policies_update_checker.h"
 #include "chrome/browser/chromeos/policy/scheduled_update_checker/scoped_wake_lock.h"
 #include "chrome/browser/chromeos/policy/scheduled_update_checker/task_executor_with_retries.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/dbus/power/native_timer.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "services/device/public/mojom/wake_lock.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/icu/source/i18n/unicode/calendar.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
@@ -31,7 +30,7 @@ class DeviceScheduledUpdateChecker
     : public chromeos::system::TimezoneSettings::Observer {
  public:
   DeviceScheduledUpdateChecker(
-      chromeos::CrosSettings* cros_settings,
+      ash::CrosSettings* cros_settings,
       chromeos::NetworkStateHandler* network_state_handler);
   ~DeviceScheduledUpdateChecker() override;
 
@@ -58,11 +57,11 @@ class DeviceScheduledUpdateChecker
 
     // Only set when frequency is |kWeekly|. Corresponds to UCAL_DAY_OF_WEEK in
     // icu::Calendar. Values between 1 (SUNDAY) to 7 (SATURDAY).
-    base::Optional<UCalendarDaysOfWeek> day_of_week;
+    absl::optional<UCalendarDaysOfWeek> day_of_week;
 
     // Only set when frequency is |kMonthly|. Corresponds to UCAL_DAY_OF_MONTH
     // in icu::Calendar i.e. values between 1 to 31.
-    base::Optional<int> day_of_month;
+    absl::optional<int> day_of_month;
 
     // Absolute time ticks when the next update check (i.e. |UpdateCheck|) will
     // happen.
@@ -127,14 +126,13 @@ class DeviceScheduledUpdateChecker
   virtual const icu::TimeZone& GetTimeZone();
 
   // Used to retrieve Chrome OS settings. Not owned.
-  chromeos::CrosSettings* const cros_settings_;
+  ash::CrosSettings* const cros_settings_;
 
-  // Used to observe when settings change.
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      cros_settings_observer_;
+  // Subscription for callback when settings change.
+  base::CallbackListSubscription cros_settings_subscription_;
 
   // Currently active scheduled update check policy.
-  base::Optional<ScheduledUpdateCheckData> scheduled_update_check_data_;
+  absl::optional<ScheduledUpdateCheckData> scheduled_update_check_data_;
 
   // Used to run and retry |StartUpdateCheckTimer| if it fails.
   TaskExecutorWithRetries start_update_check_timer_task_executor_;
@@ -169,7 +167,7 @@ constexpr base::TimeDelta kInvalidDelay = base::TimeDelta();
 
 // Parses |value| into a |ScheduledUpdateCheckData|. Returns nullopt if there
 // is any error while parsing |value|.
-base::Optional<DeviceScheduledUpdateChecker::ScheduledUpdateCheckData>
+absl::optional<DeviceScheduledUpdateChecker::ScheduledUpdateCheckData>
 ParseScheduledUpdate(const base::Value& value);
 
 // Converts an icu::Calendar to base::Time. Assumes |time| is valid.

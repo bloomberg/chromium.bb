@@ -34,7 +34,8 @@ void LeaveSiteFromSafetyTip(content::WebContents* web_contents,
     navigated_to = GURL(kSafetyTipLeaveSiteUrl);
 
 #if defined(OS_ANDROID)
-    if (TabAndroid::FromWebContents(web_contents)->IsCustomTab()) {
+    TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+    if (tab && tab->IsCustomTab()) {
       auto& controller = web_contents->GetController();
       // For CCTs, just go back if we can...
       if (controller.CanGoBack()) {
@@ -67,7 +68,7 @@ void OpenHelpCenterFromSafetyTip(content::WebContents* web_contents) {
       false /*is_renderer_initiated*/));
 }
 
-base::string16 GetSafetyTipTitle(
+std::u16string GetSafetyTipTitle(
     security_state::SafetyTipStatus safety_tip_status,
     const GURL& suggested_url) {
   switch (safety_tip_status) {
@@ -79,6 +80,7 @@ base::string16 GetSafetyTipTitle(
           IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_TITLE,
           security_interstitials::common_string_util::GetFormattedHostName(
               suggested_url));
+    case security_state::SafetyTipStatus::kDigitalAssetLinkMatch:
     case security_state::SafetyTipStatus::kBadReputationIgnored:
     case security_state::SafetyTipStatus::kLookalikeIgnored:
     case security_state::SafetyTipStatus::kBadKeyword:
@@ -88,16 +90,17 @@ base::string16 GetSafetyTipTitle(
   }
 
   NOTREACHED();
-  return base::string16();
+  return std::u16string();
 }
 
-base::string16 GetSafetyTipDescription(
+std::u16string GetSafetyTipDescription(
     security_state::SafetyTipStatus warning_type,
     const GURL& suggested_url) {
   switch (warning_type) {
     case security_state::SafetyTipStatus::kBadReputation:
     case security_state::SafetyTipStatus::kLookalike:
       return l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_DESCRIPTION);
+    case security_state::SafetyTipStatus::kDigitalAssetLinkMatch:
     case security_state::SafetyTipStatus::kBadReputationIgnored:
     case security_state::SafetyTipStatus::kLookalikeIgnored:
     case security_state::SafetyTipStatus::kBadKeyword:
@@ -106,7 +109,7 @@ base::string16 GetSafetyTipDescription(
       NOTREACHED();
   }
   NOTREACHED();
-  return base::string16();
+  return std::u16string();
 }
 
 int GetSafetyTipLeaveButtonId(security_state::SafetyTipStatus warning_type) {
@@ -115,6 +118,7 @@ int GetSafetyTipLeaveButtonId(security_state::SafetyTipStatus warning_type) {
       return IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_LEAVE_BUTTON;
     case security_state::SafetyTipStatus::kLookalike:
       return IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_LEAVE_BUTTON;
+    case security_state::SafetyTipStatus::kDigitalAssetLinkMatch:
     case security_state::SafetyTipStatus::kBadReputationIgnored:
     case security_state::SafetyTipStatus::kLookalikeIgnored:
     case security_state::SafetyTipStatus::kBadKeyword:

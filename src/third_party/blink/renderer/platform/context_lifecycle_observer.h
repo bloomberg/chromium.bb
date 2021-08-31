@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_CONTEXT_LIFECYCLE_OBSERVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_CONTEXT_LIFECYCLE_OBSERVER_H_
 
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -15,10 +16,8 @@ class ContextLifecycleNotifier;
 // ExecutionContext from platform/.
 class PLATFORM_EXPORT ContextLifecycleObserver : public GarbageCollectedMixin {
  public:
-  virtual void ContextDestroyed() = 0;
-
-  // Call before clearing an observer list.
-  void ObserverSetWillBeCleared();
+  virtual ~ContextLifecycleObserver();
+  void NotifyContextDestroyed();
 
   ContextLifecycleNotifier* GetContextLifecycleNotifier() const {
     return notifier_;
@@ -32,8 +31,13 @@ class PLATFORM_EXPORT ContextLifecycleObserver : public GarbageCollectedMixin {
  protected:
   ContextLifecycleObserver() = default;
 
+  virtual void ContextDestroyed() = 0;
+
  private:
   WeakMember<ContextLifecycleNotifier> notifier_;
+#if DCHECK_IS_ON()
+  bool waiting_for_context_destroyed_ = false;
+#endif
 };
 
 }  // namespace blink

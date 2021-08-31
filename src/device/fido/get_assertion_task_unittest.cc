@@ -34,7 +34,7 @@ namespace {
 using TestGetAssertionTaskCallbackReceiver =
     ::device::test::StatusAndValueCallbackReceiver<
         CtapDeviceResponseCode,
-        base::Optional<AuthenticatorGetAssertionResponse>>;
+        absl::optional<AuthenticatorGetAssertionResponse>>;
 
 class FidoGetAssertionTaskTest : public testing::Test {
  public:
@@ -122,25 +122,22 @@ TEST_F(FidoGetAssertionTaskTest, TestSignSuccessWithFake) {
   ASSERT_GE(32u + 1u + 4u + 8u,  // Minimal ECDSA signature is 8 bytes
             get_assertion_callback_receiver()
                 .value()
-                ->auth_data()
-                .SerializeToByteArray()
+                ->authenticator_data.SerializeToByteArray()
                 .size());
   EXPECT_EQ(0x01,
             get_assertion_callback_receiver()
                 .value()
-                ->auth_data()
-                .SerializeToByteArray()[32]);  // UP flag
+                ->authenticator_data.SerializeToByteArray()[32]);  // UP flag
   // Counter starts at zero and is incremented for every sign request.
   EXPECT_EQ(1, get_assertion_callback_receiver()
                    .value()
-                   ->auth_data()
-                   .SerializeToByteArray()[36]);  // counter
+                   ->authenticator_data.SerializeToByteArray()[36]);  // counter
 }
 
 TEST_F(FidoGetAssertionTaskTest, TestIncorrectGetAssertionResponse) {
   auto device = MockFidoDevice::MakeCtap();
   device->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetAssertion, base::nullopt);
+      CtapRequestCommand::kAuthenticatorGetAssertion, absl::nullopt);
 
   auto task = std::make_unique<GetAssertionTask>(
       device.get(),

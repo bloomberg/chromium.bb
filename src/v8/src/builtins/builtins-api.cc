@@ -23,6 +23,7 @@ namespace {
 // TODO(dcarney): CallOptimization duplicates this logic, merge.
 JSReceiver GetCompatibleReceiver(Isolate* isolate, FunctionTemplateInfo info,
                                  JSReceiver receiver) {
+  RCS_SCOPE(isolate, RuntimeCallCounterId::kGetCompatibleReceiver);
   Object recv_type = info.signature();
   // No signature, return holder.
   if (!recv_type.IsFunctionTemplateInfo()) return receiver;
@@ -151,14 +152,14 @@ class RelocatableArguments : public BuiltinArguments, public Relocatable {
   RelocatableArguments(Isolate* isolate, int length, Address* arguments)
       : BuiltinArguments(length, arguments), Relocatable(isolate) {}
 
+  RelocatableArguments(const RelocatableArguments&) = delete;
+  RelocatableArguments& operator=(const RelocatableArguments&) = delete;
+
   inline void IterateInstance(RootVisitor* v) override {
     if (length() == 0) return;
     v->VisitRootPointers(Root::kRelocatable, nullptr, first_slot(),
                          last_slot() + 1);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RelocatableArguments);
 };
 
 }  // namespace
@@ -169,8 +170,7 @@ MaybeHandle<Object> Builtins::InvokeApiFunction(Isolate* isolate,
                                                 Handle<Object> receiver,
                                                 int argc, Handle<Object> args[],
                                                 Handle<HeapObject> new_target) {
-  RuntimeCallTimerScope timer(isolate,
-                              RuntimeCallCounterId::kInvokeApiFunction);
+  RCS_SCOPE(isolate, RuntimeCallCounterId::kInvokeApiFunction);
   DCHECK(function->IsFunctionTemplateInfo() ||
          (function->IsJSFunction() &&
           JSFunction::cast(*function).shared().IsApiFunction()));

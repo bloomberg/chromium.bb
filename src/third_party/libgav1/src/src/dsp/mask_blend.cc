@@ -25,8 +25,8 @@ namespace libgav1 {
 namespace dsp {
 namespace {
 
-template <int subsampling_x, int subsampling_y>
-uint8_t GetMaskValue(const uint8_t* mask, const uint8_t* mask_next_row, int x) {
+uint8_t GetMaskValue(const uint8_t* mask, const uint8_t* mask_next_row, int x,
+                     int subsampling_x, int subsampling_y) {
   if ((subsampling_x | subsampling_y) == 0) {
     return mask[x];
   }
@@ -63,7 +63,7 @@ void MaskBlend_C(const void* prediction_0, const void* prediction_1,
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
       const uint8_t mask_value =
-          GetMaskValue<subsampling_x, subsampling_y>(mask, mask_next_row, x);
+          GetMaskValue(mask, mask_next_row, x, subsampling_x, subsampling_y);
       if (is_inter_intra) {
         dst[x] = static_cast<Pixel>(RightShiftWithRounding(
             mask_value * pred_1[x] + (64 - mask_value) * pred_0[x], 6));
@@ -96,7 +96,7 @@ void InterIntraMaskBlend8bpp_C(const uint8_t* prediction_0,
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
       const uint8_t mask_value =
-          GetMaskValue<subsampling_x, subsampling_y>(mask, mask_next_row, x);
+          GetMaskValue(mask, mask_next_row, x, subsampling_x, subsampling_y);
       prediction_1[x] = static_cast<uint8_t>(RightShiftWithRounding(
           mask_value * prediction_1[x] + (64 - mask_value) * prediction_0[x],
           6));
@@ -148,6 +148,7 @@ void Init8bpp() {
 #ifndef LIBGAV1_Dsp8bpp_InterIntraMaskBlend8bpp420
   dsp->inter_intra_mask_blend_8bpp[2] = InterIntraMaskBlend8bpp_C<1, 1>;
 #endif
+  static_cast<void>(GetMaskValue);
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }
 

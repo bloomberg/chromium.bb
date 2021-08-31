@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import contextlib
 import json
 import logging
@@ -10,6 +11,7 @@ import posixpath
 import shutil
 import time
 import traceback
+import six
 
 from telemetry.internal.results import artifact_logger
 from telemetry.internal.results import gtest_progress_reporter
@@ -283,7 +285,7 @@ class PageTestResults(object):
     """
     # TODO(#4258): Relax this assertion.
     assert self._current_story_run, 'Not currently running test.'
-    if isinstance(failure, basestring):
+    if isinstance(failure, six.string_types):
       failure_str = 'Failure recorded for story %s: %s' % (
           self._current_story_run.story.name, failure)
     else:

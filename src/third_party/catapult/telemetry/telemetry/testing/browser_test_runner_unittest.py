@@ -2,12 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import os
 import string
 import sys
 import tempfile
 import unittest
 import json
+import six
 
 from telemetry import decorators
 from telemetry import project_config
@@ -48,7 +50,7 @@ class BrowserTestRunnerTest(unittest.TestCase):
     def _IsLeafNode(node):
       test_dict = node[1]
       return ('expected' in test_dict and
-              isinstance(test_dict['expected'], basestring))
+              isinstance(test_dict['expected'], six.string_types))
     node_queues = []
     for t in test_result['tests']:
       node_queues.append((t, test_result['tests'][t]))
@@ -94,7 +96,11 @@ class BrowserTestRunnerTest(unittest.TestCase):
                         ['-x=%s' % tag for tag in tags])
     args = ([test_name,
              '--write-full-results-to=%s' % temp_file_name,
-             '--test-filter=%s' % test_filter] + extra_args)
+             '--test-filter=%s' % test_filter,
+             # We don't want the underlying tests to report their results to
+             # ResultDB.
+             '--disable-resultsink',
+            ] + extra_args)
     try:
       args = browser_test_runner.ProcessConfig(config, args)
       with binary_manager.TemporarilyReplaceBinaryManager(None):
@@ -382,7 +388,7 @@ class BrowserTestRunnerTest(unittest.TestCase):
   def testExecutingTestsInSortedOrder(self):
     alphabetical_tests = []
     prefix = 'browser_tests.simple_numeric_test.SimpleTest.Alphabetical_'
-    for i in xrange(20):
+    for i in range(20):
       alphabetical_tests.append(prefix + str(i))
     for c in string.uppercase[:26]:
       alphabetical_tests.append(prefix + c)
@@ -394,12 +400,12 @@ class BrowserTestRunnerTest(unittest.TestCase):
 
   def shardingRangeTestHelper(self, total_shards, num_tests):
     shard_indices = []
-    for shard_index in xrange(0, total_shards):
+    for shard_index in range(0, total_shards):
       shard_indices.append(run_browser_tests._TestIndicesForShard(
           total_shards, shard_index, num_tests))
     # Make assertions about ranges
     num_tests_run = 0
-    for i in xrange(0, len(shard_indices)):
+    for i in range(0, len(shard_indices)):
       cur_indices = shard_indices[i]
       num_tests_in_shard = len(cur_indices)
       if i < num_tests:
@@ -411,19 +417,19 @@ class BrowserTestRunnerTest(unittest.TestCase):
 
     # Assert that we run all of the tests exactly once.
     all_indices = set()
-    for i in xrange(0, len(shard_indices)):
+    for i in range(0, len(shard_indices)):
       cur_indices = shard_indices[i]
       all_indices.update(cur_indices)
     self.assertEquals(num_tests_run, num_tests)
     self.assertEquals(num_tests_run, len(all_indices))
 
   def testShardsWithPrimeNumTests(self):
-    for total_shards in xrange(1, 20):
+    for total_shards in range(1, 20):
       # Nice non-prime number
       self.shardingRangeTestHelper(total_shards, 101)
 
   def testShardsWithDivisibleNumTests(self):
-    for total_shards in xrange(1, 6):
+    for total_shards in range(1, 6):
       self.shardingRangeTestHelper(total_shards, 8)
 
   def testShardBoundaryConditions(self):

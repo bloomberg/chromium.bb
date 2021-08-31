@@ -758,7 +758,8 @@ git-new-branch(1) Manual Page
 <pre class="content"><em>git new-branch</em> &lt;branch_name&gt;
 <em>git new-branch</em> --upstream_current &lt;branch_name&gt;
 <em>git new-branch</em> --upstream &lt;REF&gt; &lt;branch_name&gt;
-<em>git new-branch</em> --lkgr &lt;branch_name&gt;</pre>
+<em>git new-branch</em> --lkgr &lt;branch_name&gt;
+<em>git new-branch</em> --inject_current&lt;branch_name&gt;</pre>
 <div class="attribution">
 </div></div>
 </div>
@@ -804,6 +805,22 @@ new-branch --upstream_current &lt;branch_name&gt;</code>.</p></div>
 <dd>
 <p>
   Alias for <code>--upstream lkgr</code>.
+</p>
+</dd>
+<dt class="hdlist1">
+--inject_current
+</dt>
+<dd>
+<p>
+  Set the tracking (upstream) branch of the newly-created branch to the
+  tracking (upstream) branch of the currently-checked-out branch and set the
+  tracking (upstream) branch of the currently-checked-out branch to the
+  newly-created branch.
+  <br>
+  <br>
+  Before: current &gt; upstream
+  <br>
+  After: current &gt; new &gt; upstream
 </p>
 </dd>
 <dt class="hdlist1">
@@ -875,12 +892,28 @@ Your branch is ahead of 'origin/master' by 4 commits.
 </span><span style="color: #19c518"></span><span style="color: #19c518">      nested_cl                     </span><span style="color: #ffffff">  </span><span style="color: #d338d3">        </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">
 </span><span style="color: #19c518"></span><span style="color: #19c518">  fixit                             </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 2 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]
 </span><span style="color: #19c518"></span><span style="color: #19c518">    frozen_branch                   </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 3 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]
+</span><span style="color: #19c518"></span><span style="color: #19c518">  independent_cl                    </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 1 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]
+</span><span style="font-weight: bold; color: #ffffff">$ git checkout subfeature</span>
+Switched to branch 'subfeature'
+Your branch and 'cool_feature' have diverged,
+and have 2 and 1 different commits each, respectively.
+  (use "git pull" to merge the remote branch into yours)
+<span style="font-weight: bold; color: #ffffff">$ git new-branch --inject_current injected_cl</span>
+<span style="font-weight: bold; color: #ffffff">$ git map-branches -v</span>
+<span style="color: #e42e16"></span><span style="color: #e42e16">origin/master                       </span><span style="color: #ffffff">  </span><span style="color: #d338d3">        </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">
+</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">  cool_feature                      </span><span style="font-weight: bold; color: #ffffff">[ </span><span style="font-weight: bold; color: #d338d3">ahead 4 </span><span style="font-weight: bold; color: #ffffff">  </span><span style="font-weight: bold; color: #d338d3">         </span><span style="font-weight: bold; color: #ffffff">]</span> <b>&lt;1&gt;</b><span>
+</span><span style="font-weight: bold; color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">    cl_depends_on_cool_feature      </span><span style="font-weight: bold; color: #ffffff">  </span><span style="font-weight: bold; color: #d338d3">        </span><span style="font-weight: bold; color: #ffffff">  </span><span style="font-weight: bold; color: #d338d3">         </span><span style="font-weight: bold; color: #ffffff">
+</span><span style="font-weight: bold; color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">    injected_cl *                   </span><span style="font-weight: bold; color: #ffffff">  </span><span style="font-weight: bold; color: #d338d3">        </span><span style="font-weight: bold; color: #ffffff">  </span><span style="font-weight: bold; color: #d338d3">         </span><span style="font-weight: bold; color: #ffffff">
+</span><span style="font-weight: bold; color: #19c518"></span><span style="color: #19c518">      subfeature                    </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 2 </span><span style="color: #ffffff">| </span><span style="color: #d338d3">behind 1 </span><span style="color: #ffffff">]
+</span><span style="color: #19c518"></span><span style="color: #19c518">        nested_cl                   </span><span style="color: #ffffff">  </span><span style="color: #d338d3">        </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">
+</span><span style="color: #19c518"></span><span style="color: #19c518">  fixit                             </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 2 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]
+</span><span style="color: #19c518"></span><span style="color: #19c518">    frozen_branch                   </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 3 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]
 </span><span style="color: #19c518"></span><span style="color: #19c518">  independent_cl                    </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 1 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]</span>
 </code></pre></div></div><p><div class="paragraph"></p></div>
 <div class="olist arabic"><ol class="arabic">
 <li>
 <p>
-Note that both branches are cyan because they are currently the same
+Note that these branches are cyan because they are currently the same
 <em>commit</em> object. See <a href="git-map-branches.html">git-map-branches(1)</a> for more detail.
 </p>
 </li>
@@ -926,7 +959,7 @@ by checking out the <a href="https://chromium.googlesource.com/chromium/tools/de
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-08-10 17:51:13 CEST
+Last updated 2021-01-25 15:02:46 PST
 </div>
 </div>
 </body>

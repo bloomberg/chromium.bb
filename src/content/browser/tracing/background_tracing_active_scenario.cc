@@ -97,7 +97,8 @@ class BackgroundTracingActiveScenario::TracingSession {
         /*privacy_filtering_enabled=*/true,
         /*convert_to_legacy_json=*/convert_to_legacy_json,
         perfetto::protos::gen::ChromeConfig::BACKGROUND);
-    tracing_session_ = perfetto::Tracing::NewTrace();
+    tracing_session_ =
+        perfetto::Tracing::NewTrace(perfetto::BackendType::kCustomBackend);
     tracing_session_->Setup(perfetto_config);
 
     auto category_preset = parent_scenario->GetConfig()->category_preset();
@@ -121,11 +122,13 @@ class BackgroundTracingActiveScenario::TracingSession {
   }
 
   void BeginFinalizing(base::OnceClosure on_success,
-                       base::OnceClosure on_failure) {
+                       base::OnceClosure on_failure,
+                       bool is_crash_scenario) {
     // If the finalization was already in progress, ignore this call.
     if (!tracing_session_)
       return;
-    if (!BackgroundTracingManagerImpl::GetInstance()->IsAllowedFinalization()) {
+    if (!BackgroundTracingManagerImpl::GetInstance()->IsAllowedFinalization(
+            is_crash_scenario)) {
       auto on_failure_cb =
           base::MakeRefCounted<base::RefCountedData<base::OnceClosure>>(
               std::move(on_failure));
@@ -241,8 +244,7 @@ class BackgroundTracingActiveScenario::TracingSession {
                       FROM_HERE,
                       base::BindOnce(
                           &BackgroundTracingActiveScenario::OnProtoDataComplete,
-                          parent_scenario,
-                          base::Passed(std::move(raw_data->data))));
+                          parent_scenario, std::move(raw_data->data)));
                 }
               });
         });
@@ -361,9 +363,7 @@ void BackgroundTracingActiveScenario::BeginFinalizing(
   tracing_timer_.reset();
 
   // |callback| is only run once, but we need 2 callbacks pointing to it.
-  auto run_callback = callback
-                          ? base::AdaptCallbackForRepeating(std::move(callback))
-                          : base::NullCallback();
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
 
   base::OnceClosure on_begin_finalization_success = base::BindOnce(
       [](base::WeakPtr<BackgroundTracingActiveScenario> weak_this,
@@ -381,7 +381,7 @@ void BackgroundTracingActiveScenario::BeginFinalizing(
               std::move(callback), /*is_allowed_finalization=*/true);
         }
       },
-      weak_ptr_factory_.GetWeakPtr(), run_callback);
+      weak_ptr_factory_.GetWeakPtr(), std::move(split_callback.first));
 
   base::OnceClosure on_begin_finalization_failure = base::BindOnce(
       [](base::WeakPtr<BackgroundTracingActiveScenario> weak_this,
@@ -398,10 +398,11 @@ void BackgroundTracingActiveScenario::BeginFinalizing(
           std::move(callback).Run(false);
         }
       },
-      weak_ptr_factory_.GetWeakPtr(), run_callback);
+      weak_ptr_factory_.GetWeakPtr(), std::move(split_callback.second));
 
   tracing_session_->BeginFinalizing(std::move(on_begin_finalization_success),
-                                    std::move(on_begin_finalization_failure));
+                                    std::move(on_begin_finalization_failure),
+                                    last_triggered_rule_->is_crash());
 }
 
 void BackgroundTracingActiveScenario::OnJSONDataComplete(

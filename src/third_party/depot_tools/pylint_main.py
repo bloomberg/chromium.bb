@@ -13,9 +13,6 @@ from __future__ import print_function
 import os
 import sys
 
-from pylint import lint
-
-
 HERE = os.path.dirname(os.path.abspath(__file__))
 PYLINT = os.path.join(HERE, 'pylint_main.py')
 RC_FILE = os.path.join(HERE, 'pylintrc')
@@ -31,13 +28,27 @@ def main(argv):
     argv = [x for x in argv if x != ARGS_ON_STDIN]
     argv.extend(x.strip() for x in sys.stdin)
 
-  # We prepend the command-line with the depot_tools rcfile. If another rcfile
-  # is to be used, passing --rcfile a second time on the command-line will work
-  # fine.
-  if os.path.isfile(RC_FILE):
-    # The file can be removed to test 'normal' pylint behavior.
-    argv.insert(0, '--rcfile=%s' % RC_FILE)
+  # Set default config options with the PYLINTRC environment variable. This will
+  # allow overriding with "more local" config file options, such as a local
+  # "pylintrc" file, the "--rcfile" command-line flag, or an existing PYLINTRC.
+  #
+  # Note that this is not quite the same thing as replacing pylint's built-in
+  # defaults, since, based on config file precedence, it will not be overridden
+  # by "more global" config file options, such as ~/.pylintrc,
+  # ~/.config/pylintrc, or /etc/pylintrc. This is generally the desired
+  # behavior, since we want to enforce these defaults in most cases, but allow
+  # them to be overridden for specific code or repos.
+  #
+  # If someone really doesn't ever want the depot_tools pylintrc, they can set
+  # their own PYLINTRC, or set an empty PYLINTRC to use pylint's normal config
+  # file resolution, which would include the "more global" options that are
+  # normally overridden by the depot_tools config.
+  if os.path.isfile(RC_FILE) and 'PYLINTRC' not in os.environ:
+    os.environ['PYLINTRC'] = RC_FILE
 
+  # This import has to happen after PYLINTRC is set because the module tries to
+  # resolve the config file location on load.
+  from pylint import lint  # pylint: disable=bad-option-value,import-outside-toplevel
   lint.Run(argv)
 
 

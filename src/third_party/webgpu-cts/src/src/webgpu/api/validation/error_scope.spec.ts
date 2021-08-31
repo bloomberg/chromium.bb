@@ -1,5 +1,18 @@
 export const description = `
-error scope validation tests.
+Error scope validation tests.
+
+Note these must create their own device, not use GPUTest (that one already has error scopes on it).
+
+TODO: shorten test names; detail should move to the description.)
+
+TODO: consider slightly revising these tests to make sure they're complete. {
+    - push 0, pop 1
+    - push validation, push oom, pop, pop, pop
+    - push oom, push validation, pop, pop, pop
+    - push validation, pop, pop
+    - push oom, pop, pop
+    - push various x100000 (or some other large number), pop x100000, pop
+    - }
 `;
 
 import { Fixture } from '../../../common/framework/fixture.js';
@@ -31,7 +44,7 @@ class F extends Fixture {
       usage: 0xffff, // Invalid GPUBufferUsage
     });
     // TODO: Remove when chrome does it automatically.
-    this.device.defaultQueue.submit([]);
+    this.device.queue.submit([]);
   }
 
   // Expect an uncapturederror event to occur. Note: this MUST be awaited, because

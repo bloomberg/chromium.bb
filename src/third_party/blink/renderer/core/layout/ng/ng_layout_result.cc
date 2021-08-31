@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
@@ -42,7 +43,7 @@ ASSERT_SIZE(NGLayoutResult, SameSizeAsNGLayoutResult);
 scoped_refptr<const NGLayoutResult>
 NGLayoutResult::CloneWithPostLayoutFragments(
     const NGLayoutResult& other,
-    const base::Optional<PhysicalRect> updated_layout_overflow) {
+    const absl::optional<PhysicalRect> updated_layout_overflow) {
   return base::AdoptRef(new NGLayoutResult(
       other, NGPhysicalBoxFragment::CloneWithPostLayoutFragments(
                  To<NGPhysicalBoxFragment>(other.PhysicalFragment()),
@@ -51,7 +52,7 @@ NGLayoutResult::CloneWithPostLayoutFragments(
 
 NGLayoutResult::NGLayoutResult(
     NGBoxFragmentBuilderPassKey passkey,
-    scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
+    scoped_refptr<const NGPhysicalFragment> physical_fragment,
     NGBoxFragmentBuilder* builder)
     : NGLayoutResult(std::move(physical_fragment),
                      static_cast<NGContainerFragmentBuilder*>(builder)) {
@@ -60,10 +61,6 @@ NGLayoutResult::NGLayoutResult(
   bitfields_.subtree_modified_margin_strut =
       builder->subtree_modified_margin_strut_;
   intrinsic_block_size_ = builder->intrinsic_block_size_;
-  if (builder->overflow_block_size_ != kIndefiniteSize &&
-      builder->overflow_block_size_ != intrinsic_block_size_) {
-    EnsureRareData()->overflow_block_size = builder->overflow_block_size_;
-  }
   if (builder->custom_layout_data_) {
     EnsureRareData()->custom_layout_data =
         std::move(builder->custom_layout_data_);
@@ -80,10 +77,6 @@ NGLayoutResult::NGLayoutResult(
   if (builder->has_block_fragmentation_) {
     RareData* rare_data = EnsureRareData();
 
-    // We don't support fragment caching when block-fragmenting, so mark the
-    // result as non-reusable.
-    rare_data->is_single_use = true;
-
     if (builder->tallest_unbreakable_block_size_ >= LayoutUnit()) {
       rare_data->tallest_unbreakable_block_size =
           builder->tallest_unbreakable_block_size_;
@@ -95,11 +88,13 @@ NGLayoutResult::NGLayoutResult(
       rare_data->minimal_space_shortage = builder->minimal_space_shortage_;
     }
 
+    rare_data->has_violating_break = builder->has_violating_break_;
+
     if (builder->column_spanner_)
       rare_data->column_spanner = builder->column_spanner_;
 
-    bitfields_.initial_break_before =
-        static_cast<unsigned>(builder->initial_break_before_);
+    bitfields_.initial_break_before = static_cast<unsigned>(
+        builder->initial_break_before_.value_or(EBreakBetween::kAuto));
     bitfields_.final_break_after =
         static_cast<unsigned>(builder->previous_break_after_);
     bitfields_.has_forced_break = builder->has_forced_break_;
@@ -108,11 +103,13 @@ NGLayoutResult::NGLayoutResult(
     EnsureRareData()->table_column_count_ = *builder->table_column_count_;
   if (builder->math_data_.has_value())
     EnsureRareData()->math_layout_data_ = builder->math_data_;
+  if (builder->grid_data_)
+    EnsureRareData()->grid_layout_data_ = std::move(builder->grid_data_);
 }
 
 NGLayoutResult::NGLayoutResult(
     NGLineBoxFragmentBuilderPassKey passkey,
-    scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
+    scoped_refptr<const NGPhysicalFragment> physical_fragment,
     NGLineBoxFragmentBuilder* builder)
     : NGLayoutResult(std::move(physical_fragment),
                      static_cast<NGContainerFragmentBuilder*>(builder)) {}
@@ -133,7 +130,7 @@ NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
                                const NGConstraintSpace& new_space,
                                const NGMarginStrut& new_end_margin_strut,
                                LayoutUnit bfc_line_offset,
-                               base::Optional<LayoutUnit> bfc_block_offset,
+                               absl::optional<LayoutUnit> bfc_block_offset,
                                LayoutUnit block_offset_delta)
     : space_(new_space),
       physical_fragment_(other.physical_fragment_),
@@ -174,7 +171,7 @@ NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
 
 NGLayoutResult::NGLayoutResult(
     const NGLayoutResult& other,
-    scoped_refptr<const NGPhysicalContainerFragment> physical_fragment)
+    scoped_refptr<const NGPhysicalFragment> physical_fragment)
     : space_(other.space_),
       physical_fragment_(std::move(physical_fragment)),
       intrinsic_block_size_(other.intrinsic_block_size_),
@@ -196,7 +193,7 @@ NGLayoutResult::NGLayoutResult(
 }
 
 NGLayoutResult::NGLayoutResult(
-    scoped_refptr<const NGPhysicalContainerFragment> physical_fragment,
+    scoped_refptr<const NGPhysicalFragment> physical_fragment,
     NGContainerFragmentBuilder* builder)
     : space_(builder->space_ ? NGConstraintSpace(*builder->space_)
                              : NGConstraintSpace()),
@@ -226,10 +223,6 @@ NGLayoutResult::NGLayoutResult(
   if (builder->block_end_annotation_space_) {
     EnsureRareData()->block_end_annotation_space =
         builder->block_end_annotation_space_;
-  }
-  if (builder->unpositioned_list_marker_) {
-    EnsureRareData()->unpositioned_list_marker =
-        builder->unpositioned_list_marker_;
   }
   if (builder->exclusion_space_ != space_.ExclusionSpace()) {
     bitfields_.has_rare_data_exclusion_space = true;
@@ -288,7 +281,7 @@ NGExclusionSpace NGLayoutResult::MergeExclusionSpaces(
 
 NGLayoutResult::RareData* NGLayoutResult::EnsureRareData() {
   if (!HasRareData()) {
-    base::Optional<LayoutUnit> bfc_block_offset;
+    absl::optional<LayoutUnit> bfc_block_offset;
     if (!bitfields_.is_bfc_block_offset_nullopt)
       bfc_block_offset = bfc_offset_.block_offset;
     rare_data_ = new RareData(bfc_offset_.line_offset, bfc_block_offset);
@@ -308,7 +301,6 @@ void NGLayoutResult::CheckSameForSimplifiedLayout(
           check_same_block_size);
 
   DCHECK(LinesUntilClamp() == other.LinesUntilClamp());
-  DCHECK(UnpositionedListMarker() == other.UnpositionedListMarker());
   ExclusionSpace().CheckSameForSimplifiedLayout(other.ExclusionSpace());
 
   // We ignore |BfcBlockOffset|, and |BfcLineOffset| as "simplified" layout
@@ -319,6 +311,7 @@ void NGLayoutResult::CheckSameForSimplifiedLayout(
 
   DCHECK(EndMarginStrut() == other.EndMarginStrut());
   DCHECK_EQ(MinimalSpaceShortage(), other.MinimalSpaceShortage());
+  DCHECK_EQ(TableColumnCount(), other.TableColumnCount());
 
   DCHECK_EQ(bitfields_.has_forced_break, other.bitfields_.has_forced_break);
   DCHECK_EQ(bitfields_.is_self_collapsing, other.bitfields_.is_self_collapsing);

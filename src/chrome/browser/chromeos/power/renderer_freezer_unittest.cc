@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
+#include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -100,10 +100,10 @@ class TestDelegate : public RendererFreezer::Delegate, public ActionRecorder {
   void ThawRenderers(ResultCallback callback) override {
     AppendAction(kThawRenderers);
 
-    callback.Run(thaw_renderers_result_);
+    std::move(callback).Run(thaw_renderers_result_);
   }
   void CheckCanFreezeRenderers(ResultCallback callback) override {
-    callback.Run(can_freeze_renderers_);
+    std::move(callback).Run(can_freeze_renderers_);
   }
 
   void set_thaw_renderers_result(bool result) {
@@ -144,8 +144,8 @@ class RendererFreezerTest : public testing::Test {
 
  protected:
   void Init() {
-    renderer_freezer_.reset(new RendererFreezer(
-        std::unique_ptr<RendererFreezer::Delegate>(test_delegate_)));
+    renderer_freezer_ = std::make_unique<RendererFreezer>(
+        std::unique_ptr<RendererFreezer::Delegate>(test_delegate_));
   }
 
   // Owned by |renderer_freezer_|.
@@ -217,8 +217,8 @@ class RendererFreezerTestWithExtensions : public RendererFreezerTest {
   void SetUp() override {
     RendererFreezerTest::SetUp();
 
-    profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    profile_manager_ = std::make_unique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
 
     // Must be called from testing::Test::SetUp.
     EXPECT_TRUE(profile_manager_->SetUp());

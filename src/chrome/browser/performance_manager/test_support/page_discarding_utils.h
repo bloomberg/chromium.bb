@@ -7,8 +7,7 @@
 
 #include "chrome/browser/performance_manager/mechanisms/page_discarder.h"
 #include "chrome/browser/performance_manager/policies/page_discarding_helper.h"
-#include "components/performance_manager/graph/node_attached_data_impl.h"
-#include "components/performance_manager/public/decorators/page_live_state_decorator.h"
+#include "components/performance_manager/graph/graph_impl.h"
 #include "components/performance_manager/test_support/graph_test_harness.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,44 +19,6 @@ class PageNodeImpl;
 class ProcessNodeImpl;
 
 namespace testing {
-
-// Class allowing setting some fake PageLiveStateDecorator::Data for a PageNode.
-class FakePageLiveStateData
-    : public PageLiveStateDecorator::Data,
-      public NodeAttachedDataImpl<FakePageLiveStateData> {
- public:
-  struct Traits : public NodeAttachedDataInMap<PageNodeImpl> {};
-  ~FakePageLiveStateData() override;
-  FakePageLiveStateData(const FakePageLiveStateData& other) = delete;
-  FakePageLiveStateData& operator=(const FakePageLiveStateData&) = delete;
-
-  // PageLiveStateDecorator::Data:
-  bool IsConnectedToUSBDevice() const override;
-  bool IsConnectedToBluetoothDevice() const override;
-  bool IsCapturingVideo() const override;
-  bool IsCapturingAudio() const override;
-  bool IsBeingMirrored() const override;
-  bool IsCapturingWindow() const override;
-  bool IsCapturingDisplay() const override;
-  bool IsAutoDiscardable() const override;
-  bool WasDiscarded() const override;
-
-  bool is_connected_to_usb_device_ = false;
-  bool is_connected_to_bluetooth_device_ = false;
-  bool is_capturing_video_ = false;
-  bool is_capturing_audio_ = false;
-  bool is_being_mirrored_ = false;
-  bool is_capturing_window_ = false;
-  bool is_capturing_display_ = false;
-  bool is_auto_discardable_ = true;
-  bool was_discarded_ = false;
-
- private:
-  friend class ::performance_manager::NodeAttachedDataImpl<
-      FakePageLiveStateData>;
-
-  explicit FakePageLiveStateData(const PageNodeImpl* page_node);
-};
 
 // Mock version of a performance_manager::mechanism::PageDiscarder.
 class LenientMockPageDiscarder
@@ -94,6 +55,7 @@ class GraphTestHarnessWithMockDiscarder : public GraphTestHarness {
   PageNodeImpl* page_node() { return page_node_.get(); }
   ProcessNodeImpl* process_node() { return process_node_.get(); }
   FrameNodeImpl* frame_node() { return main_frame_node_.get(); }
+  SystemNodeImpl* system_node() { return system_node_.get(); }
   void ResetFrameNode() { main_frame_node_.reset(); }
   testing::MockPageDiscarder* discarder() { return mock_discarder_; }
 
@@ -105,6 +67,8 @@ class GraphTestHarnessWithMockDiscarder : public GraphTestHarness {
       process_node_;
   performance_manager::TestNodeWrapper<performance_manager::FrameNodeImpl>
       main_frame_node_;
+  performance_manager::TestNodeWrapper<performance_manager::SystemNodeImpl>
+      system_node_;
 };
 
 // Make sure that |page_node| is discardable.

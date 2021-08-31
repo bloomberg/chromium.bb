@@ -27,23 +27,14 @@ const unsigned int kHeight = 90;
 const unsigned int kFramerate = 50;
 const unsigned int kFrames = 10;
 const int kBitrate = 500;
-// List of psnr thresholds for speed settings 0-7 and 5 encoding modes
-const double kPsnrThreshold[][5] = {
-// Note:
-// AV1 HBD average PSNR is slightly lower than AV1.
-// We make two cases here to enable the testing and
-// guard picture quality.
-#if CONFIG_AV1_ENCODER
-  { 36.0, 37.0, 37.0, 37.0, 37.0 }, { 31.0, 36.0, 36.0, 36.0, 36.0 },
-  { 31.0, 35.0, 35.0, 35.0, 35.0 }, { 31.0, 34.0, 34.0, 34.0, 34.0 },
-  { 31.0, 33.0, 33.0, 33.0, 33.0 }, { 31.0, 32.0, 32.0, 32.0, 32.0 },
-  { 30.0, 31.0, 31.0, 31.0, 31.0 }, { 29.0, 30.0, 30.0, 30.0, 30.0 },
-#else
-  { 36.0, 37.0, 37.0, 37.0, 37.0 }, { 35.0, 36.0, 36.0, 36.0, 36.0 },
-  { 34.0, 35.0, 35.0, 35.0, 35.0 }, { 33.0, 34.0, 34.0, 34.0, 34.0 },
-  { 32.0, 33.0, 33.0, 33.0, 33.0 }, { 31.0, 32.0, 32.0, 32.0, 32.0 },
-  { 30.0, 31.0, 31.0, 31.0, 31.0 }, { 29.0, 30.0, 30.0, 30.0, 30.0 },
-#endif  // CONFIG_AV1_ENCODER
+const unsigned int kCqLevel = 18;
+// List of psnr thresholds for speed settings 0-8 and 4 encoding modes
+const double kPsnrThreshold[][4] = {
+  { 35.7, 44.4, 39.5, 41.9 }, { 35.7, 44.4, 39.5, 41.9 },
+  { 35.7, 44.4, 39.4, 41.9 }, { 35.7, 44.4, 39.1, 41.8 },
+  { 35.6, 44.4, 39.1, 41.8 }, { 35.0, 44.3, 38.7, 41.8 },
+  { 35.0, 44.3, 38.7, 41.3 }, { 35.0, 44.3, 38.7, 40.8 },
+  { 35.0, 44.3, 38.7, 40.8 }
 };
 
 typedef struct {
@@ -106,14 +97,11 @@ class EndToEndTest
   virtual ~EndToEndTest() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
-    if (encoding_mode_ != ::libaom_test::kRealTime) {
+    InitializeConfig(encoding_mode_);
+    if (encoding_mode_ == ::libaom_test::kOnePassGood ||
+        encoding_mode_ == ::libaom_test::kTwoPassGood) {
       cfg_.g_lag_in_frames = 5;
-      cfg_.rc_end_usage = AOM_VBR;
-    } else {
-      cfg_.g_lag_in_frames = 0;
-      cfg_.rc_end_usage = AOM_CBR;
+    } else if (encoding_mode_ == ::libaom_test::kRealTime) {
       cfg_.rc_buf_sz = 1000;
       cfg_.rc_buf_initial_sz = 500;
       cfg_.rc_buf_optimal_sz = 600;
@@ -141,10 +129,13 @@ class EndToEndTest
         encoder->Control(AV1E_SET_TUNE_CONTENT, AOM_CONTENT_SCREEN);
       else
         encoder->Control(AV1E_SET_TUNE_CONTENT, AOM_CONTENT_DEFAULT);
-      if (encoding_mode_ != ::libaom_test::kRealTime) {
+      if (encoding_mode_ == ::libaom_test::kOnePassGood ||
+          encoding_mode_ == ::libaom_test::kTwoPassGood) {
         encoder->Control(AOME_SET_ENABLEAUTOALTREF, 1);
         encoder->Control(AOME_SET_ARNR_MAXFRAMES, 7);
         encoder->Control(AOME_SET_ARNR_STRENGTH, 5);
+      } else if (encoding_mode_ == ::libaom_test::kAllIntra) {
+        encoder->Control(AOME_SET_CQ_LEVEL, kCqLevel);
       }
     }
   }
@@ -195,9 +186,17 @@ class EndToEndTest
 
 class EndToEndTestLarge : public EndToEndTest {};
 
+class EndToEndAllIntraTestLarge : public EndToEndTest {};
+
+class EndToEndAllIntraTest : public EndToEndTest {};
+
 TEST_P(EndToEndTestLarge, EndtoEndPSNRTest) { DoTest(); }
 
 TEST_P(EndToEndTest, EndtoEndPSNRTest) { DoTest(); }
+
+TEST_P(EndToEndAllIntraTestLarge, EndtoEndPSNRTest) { DoTest(); }
+
+TEST_P(EndToEndAllIntraTest, EndtoEndPSNRTest) { DoTest(); }
 
 AV1_INSTANTIATE_TEST_SUITE(EndToEndTestLarge,
                            ::testing::ValuesIn(kEncodingModeVectors),
@@ -205,7 +204,17 @@ AV1_INSTANTIATE_TEST_SUITE(EndToEndTestLarge,
                            ::testing::ValuesIn(kCpuUsedVectors));
 
 AV1_INSTANTIATE_TEST_SUITE(EndToEndTest,
-                           ::testing::Values(kEncodingModeVectors[0]),
+                           ::testing::Values(::libaom_test::kTwoPassGood),
                            ::testing::Values(kTestVectors[2]),  // 444
-                           ::testing::Values(kCpuUsedVectors[2]));
+                           ::testing::Values(3));               // cpu_used
+
+AV1_INSTANTIATE_TEST_SUITE(EndToEndAllIntraTestLarge,
+                           ::testing::Values(::libaom_test::kAllIntra),
+                           ::testing::ValuesIn(kTestVectors),
+                           ::testing::Values(2, 4, 6, 8));  // cpu_used
+
+AV1_INSTANTIATE_TEST_SUITE(EndToEndAllIntraTest,
+                           ::testing::Values(::libaom_test::kAllIntra),
+                           ::testing::Values(kTestVectors[0]),  // 420
+                           ::testing::Values(6));               // cpu_used
 }  // namespace

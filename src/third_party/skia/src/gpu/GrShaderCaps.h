@@ -31,9 +31,8 @@ public:
         kNotSupported_AdvBlendEqInteraction,     //<! No _blend_equation_advanced extension
         kAutomatic_AdvBlendEqInteraction,        //<! No interaction required
         kGeneralEnable_AdvBlendEqInteraction,    //<! layout(blend_support_all_equations) out
-        kSpecificEnables_AdvBlendEqInteraction,  //<! Specific layout qualifiers per equation
 
-        kLast_AdvBlendEqInteraction = kSpecificEnables_AdvBlendEqInteraction
+        kLast_AdvBlendEqInteraction = kGeneralEnable_AdvBlendEqInteraction
     };
 
     GrShaderCaps(const GrContextOptions&);
@@ -45,10 +44,10 @@ public:
     bool shaderDerivativeSupport() const { return fShaderDerivativeSupport; }
     bool geometryShaderSupport() const { return fGeometryShaderSupport; }
     bool gsInvocationsSupport() const { return fGSInvocationsSupport; }
-    bool pathRenderingSupport() const { return fPathRenderingSupport; }
     bool dstReadInShaderSupport() const { return fDstReadInShaderSupport; }
     bool dualSourceBlendingSupport() const { return fDualSourceBlendingSupport; }
     bool integerSupport() const { return fIntegerSupport; }
+    bool nonsquareMatrixSupport() const { return fNonsquareMatrixSupport; }
 
     /**
      * Some helper functions for encapsulating various extensions to read FB Buffer on openglES
@@ -77,14 +76,18 @@ public:
 
     bool vertexIDSupport() const { return fVertexIDSupport; }
 
-    // frexp, ldexp, etc.
-    bool fpManipulationSupport() const { return fFPManipulationSupport; }
+    // frexp, ldexp, findMSB, findLSB.
+    bool bitManipulationSupport() const { return fBitManipulationSupport; }
 
     bool floatIs32Bits() const { return fFloatIs32Bits; }
 
     bool halfIs32Bits() const { return fHalfIs32Bits; }
 
     bool hasLowFragmentPrecision() const { return fHasLowFragmentPrecision; }
+
+    // Use a reduced set of rendering algorithms or less optimal effects in order to
+    // reduce the number of unique shaders generated.
+    bool reducedShaderMode() const { return fReducedShaderMode; }
 
     // SkSL only.
     bool builtinFMASupport() const { return fBuiltinFMASupport; }
@@ -95,10 +98,6 @@ public:
 
     bool mustEnableAdvBlendEqs() const {
         return fAdvBlendEqInteraction >= kGeneralEnable_AdvBlendEqInteraction;
-    }
-
-    bool mustEnableSpecificAdvBlendEqs() const {
-        return fAdvBlendEqInteraction == kSpecificEnables_AdvBlendEqInteraction;
     }
 
     bool mustDeclareFragmentShaderOutput() const { return fGLSLGeneration > k110_GrGLSLGeneration; }
@@ -171,14 +170,27 @@ public:
         return fNoDefaultPrecisionForExternalSamplers;
     }
 
-    // The sample mask round rect op draws nothing on several Adreno and Radeon bots. Other ops that
-    // use sample mask while rendering to stencil seem to work fine.
-    // http://skbug.com/8921
-    bool canOnlyUseSampleMaskWithStencil() const { return fCanOnlyUseSampleMaskWithStencil; }
+    // ARM GPUs calculate `matrix * vector` in SPIR-V at full precision, even when the inputs are
+    // RelaxedPrecision. Rewriting the multiply as a sum of vector*scalar fixes this. (skia:11769)
+    bool rewriteMatrixVectorMultiply() const {
+        return fRewriteMatrixVectorMultiply;
+    }
 
     // ANGLE disallows do loops altogether, and we're seeing crashes on Tegra3 with do loops in at
     // least some cases.
     bool canUseDoLoops() const { return fCanUseDoLoops; }
+
+    // Some GPUs produce poor results when enabling Metal's fastmath option
+    bool canUseFastMath() const { return fCanUseFastMath; }
+
+    // By default, SkSL pools IR nodes per-program. To debug memory corruption, it is sometimes
+    // helpful to disable that feature.
+    bool useNodePools() const { return fUseNodePools; }
+
+    // When we have the option of using either dFdx or dfDy in a shader, this returns whether we
+    // should avoid using dFdx. We have found some drivers have bugs or lower precision when using
+    // dFdx.
+    bool avoidDfDxForGradientsWhenPossible() const { return fAvoidDfDxForGradientsWhenPossible; }
 
     // Returns the string of an extension that must be enabled in the shader to support
     // derivatives. If nullptr is returned then no extension needs to be enabled. Before calling
@@ -264,10 +276,10 @@ private:
     bool fShaderDerivativeSupport           : 1;
     bool fGeometryShaderSupport             : 1;
     bool fGSInvocationsSupport              : 1;
-    bool fPathRenderingSupport              : 1;
     bool fDstReadInShaderSupport            : 1;
     bool fDualSourceBlendingSupport         : 1;
     bool fIntegerSupport                    : 1;
+    bool fNonsquareMatrixSupport            : 1;
     bool fFBFetchSupport                    : 1;
     bool fFBFetchNeedsCustomOutput          : 1;
     bool fUsesPrecisionModifiers            : 1;
@@ -277,10 +289,11 @@ private:
     bool fSampleMaskSupport                 : 1;
     bool fExternalTextureSupport            : 1;
     bool fVertexIDSupport                   : 1;
-    bool fFPManipulationSupport             : 1;
+    bool fBitManipulationSupport            : 1;
     bool fFloatIs32Bits                     : 1;
     bool fHalfIs32Bits                      : 1;
     bool fHasLowFragmentPrecision           : 1;
+    bool fReducedShaderMode                 : 1;
 
     // Used by SkSL to know when to generate polyfills.
     bool fBuiltinFMASupport : 1;
@@ -306,9 +319,14 @@ private:
     bool fRemovePowWithConstantExponent               : 1;
     bool fMustWriteToFragColor                        : 1;
     bool fNoDefaultPrecisionForExternalSamplers       : 1;
-    bool fCanOnlyUseSampleMaskWithStencil             : 1;
+    bool fRewriteMatrixVectorMultiply                 : 1;
     bool fColorSpaceMathNeedsFloat                    : 1;
     bool fCanUseDoLoops                               : 1;
+    bool fCanUseFastMath                              : 1;
+    bool fAvoidDfDxForGradientsWhenPossible           : 1;
+
+    // This controls behavior of the SkSL compiler, not the code we generate
+    bool fUseNodePools : 1;
 
     const char* fVersionDeclString;
 

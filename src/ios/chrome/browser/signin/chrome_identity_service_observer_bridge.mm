@@ -15,13 +15,14 @@ ChromeIdentityServiceObserverBridge::ChromeIdentityServiceObserverBridge(
     id<ChromeIdentityServiceObserver> observer)
     : observer_(observer) {
   DCHECK(observer_);
-  scoped_observer_.Add(
+  scoped_observation_.Observe(
       ios::GetChromeBrowserProvider()->GetChromeIdentityService());
 }
 
 ChromeIdentityServiceObserverBridge::~ChromeIdentityServiceObserverBridge() {}
 
-void ChromeIdentityServiceObserverBridge::OnIdentityListChanged() {
+void ChromeIdentityServiceObserverBridge::OnIdentityListChanged(
+    bool keychainReload) {
   if ([observer_ respondsToSelector:@selector(identityListChanged)])
     [observer_ identityListChanged];
 }

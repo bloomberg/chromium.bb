@@ -2,32 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
+#include "quic/core/quic_time.h"
 
 #include <cinttypes>
 #include <cstdlib>
 #include <limits>
 #include <string>
 
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "absl/strings/str_cat.h"
 
 namespace quic {
 
 std::string QuicTime::Delta::ToDebuggingValue() const {
-  const int64_t one_ms = 1000;
-  const int64_t one_s = 1000 * one_ms;
+  constexpr int64_t kMillisecondInMicroseconds = 1000;
+  constexpr int64_t kSecondInMicroseconds = 1000 * kMillisecondInMicroseconds;
 
   int64_t absolute_value = std::abs(time_offset_);
 
   // For debugging purposes, always display the value with the highest precision
   // available.
-  if (absolute_value > one_s && absolute_value % one_s == 0) {
-    return quiche::QuicheStringPrintf("%" PRId64 "s", time_offset_ / one_s);
+  if (absolute_value > kSecondInMicroseconds &&
+      absolute_value % kSecondInMicroseconds == 0) {
+    return absl::StrCat(time_offset_ / kSecondInMicroseconds, "s");
   }
-  if (absolute_value > one_ms && absolute_value % one_ms == 0) {
-    return quiche::QuicheStringPrintf("%" PRId64 "ms", time_offset_ / one_ms);
+  if (absolute_value > kMillisecondInMicroseconds &&
+      absolute_value % kMillisecondInMicroseconds == 0) {
+    return absl::StrCat(time_offset_ / kMillisecondInMicroseconds, "ms");
   }
-  return quiche::QuicheStringPrintf("%" PRId64 "us", time_offset_);
+  return absl::StrCat(time_offset_, "us");
 }
 
 uint64_t QuicWallTime::ToUNIXSeconds() const {

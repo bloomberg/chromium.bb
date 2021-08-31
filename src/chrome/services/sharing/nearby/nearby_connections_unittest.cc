@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -58,12 +59,13 @@ mojom::AdvertisingOptionsPtr CreateAdvertisingOptions() {
       /*auto_upgrade_bandwidth=*/true,
       /*enforce_topology_constraints=*/true,
       /*enable_bluetooth_listening=*/use_ble,
+      /*enable_webrtc_listening=*/false,
       /*fast_advertisement_service_uuid=*/
       device::BluetoothUUID(kFastAdvertisementServiceUuid));
 }
 
 mojom::ConnectionOptionsPtr CreateConnectionOptions(
-    base::Optional<std::vector<uint8_t>> bluetooth_mac_address) {
+    absl::optional<std::vector<uint8_t>> bluetooth_mac_address) {
   auto allowed_mediums = mojom::MediumSelection::New(/*bluetooth=*/true,
                                                      /*ble=*/false,
                                                      /*web_rtc=*/false,
@@ -188,12 +190,12 @@ class NearbyConnectionsTest : public testing::Test {
   NearbyConnectionsTest() {
     auto webrtc_dependencies = mojom::WebRtcDependencies::New(
         webrtc_dependencies_.socket_manager_.BindNewPipeAndPassRemote(),
-        webrtc_dependencies_.mdns_responder_.BindNewPipeAndPassRemote(),
+        webrtc_dependencies_.mdns_responder_factory_.BindNewPipeAndPassRemote(),
         webrtc_dependencies_.ice_config_fetcher_.BindNewPipeAndPassRemote(),
         webrtc_dependencies_.messenger_.BindNewPipeAndPassRemote());
     auto dependencies = mojom::NearbyConnectionsDependencies::New(
         bluetooth_adapter_.adapter_.BindNewPipeAndPassRemote(),
-        std::move(webrtc_dependencies));
+        std::move(webrtc_dependencies), api::LogMessage::Severity::kInfo);
     auto service_controller =
         std::make_unique<testing::NiceMock<MockServiceController>>();
     service_controller_ptr_ = service_controller.get();
@@ -201,7 +203,8 @@ class NearbyConnectionsTest : public testing::Test {
         remote_.BindNewPipeAndPassReceiver(), std::move(dependencies),
         /*io_task_runner=*/nullptr,
         base::BindOnce(&NearbyConnectionsTest::OnDisconnect,
-                       base::Unretained(this)),
+                       base::Unretained(this)));
+    nearby_connections_->SetServiceControllerForTesting(
         std::move(service_controller));
   }
 
@@ -305,7 +308,7 @@ class NearbyConnectionsTest : public testing::Test {
   ClientProxy* RequestConnection(
       FakeConnectionLifecycleListener& fake_connection_life_cycle_listener,
       const EndpointData& endpoint_data,
-      base::Optional<std::vector<uint8_t>> bluetooth_mac_address =
+      absl::optional<std::vector<uint8_t>> bluetooth_mac_address =
           std::vector<uint8_t>(std::begin(kBluetoothMacAddress),
                                std::end(kBluetoothMacAddress))) {
     ClientProxy* client_proxy;
@@ -405,8 +408,8 @@ TEST_F(NearbyConnectionsTest, P2PSocketManagerDisconnect) {
   disconnect_run_loop_.Run();
 }
 
-TEST_F(NearbyConnectionsTest, MdnsResponderDisconnect) {
-  webrtc_dependencies_.mdns_responder_.reset();
+TEST_F(NearbyConnectionsTest, MdnsResponderFactoryDisconnect) {
+  webrtc_dependencies_.mdns_responder_factory_.reset();
   disconnect_run_loop_.Run();
 }
 
@@ -558,7 +561,7 @@ TEST_F(NearbyConnectionsTest,
   FakeConnectionLifecycleListener fake_connection_life_cycle_listener;
 
   RequestConnection(fake_connection_life_cycle_listener, endpoint_data,
-                    /*bluetooth_mac_address=*/base::nullopt);
+                    /*bluetooth_mac_address=*/absl::nullopt);
 }
 
 TEST_F(NearbyConnectionsTest, RequestConnectionAccept) {

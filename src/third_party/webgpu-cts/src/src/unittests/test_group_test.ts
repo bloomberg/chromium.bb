@@ -12,7 +12,7 @@ export class TestGroupTest extends UnitTest {
       for (const rc of t.iterate()) {
         const query = new TestQuerySingleCase('xx', ['yy'], rc.id.test, rc.id.params);
         const [rec] = logger.record(query.toString());
-        await rc.run(rec);
+        await rc.run(rec, query, []);
       }
     }
     return logger.results;

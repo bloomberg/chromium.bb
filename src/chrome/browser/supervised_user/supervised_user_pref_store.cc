@@ -4,6 +4,7 @@
 
 #include "chrome/browser/supervised_user/supervised_user_pref_store.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -69,12 +70,12 @@ SupervisedUserPrefStore::SupervisedUserPrefStore(
     SupervisedUserSettingsService* supervised_user_settings_service) {
   user_settings_subscription_ =
       supervised_user_settings_service->SubscribeForSettingsChange(
-          base::Bind(&SupervisedUserPrefStore::OnNewSettingsAvailable,
-                     base::Unretained(this)));
+          base::BindRepeating(&SupervisedUserPrefStore::OnNewSettingsAvailable,
+                              base::Unretained(this)));
 
   // The SupervisedUserSettingsService must be created before the PrefStore, and
-  // it will notify the PrefStore to unsubscribe both subscriptions when it is
-  // shut down.
+  // it will notify the PrefStore to destroy both subscriptions when it is shut
+  // down.
   shutdown_subscription_ =
       supervised_user_settings_service->SubscribeForShutdown(
           base::BindRepeating(
@@ -101,7 +102,7 @@ void SupervisedUserPrefStore::RemoveObserver(PrefStore::Observer* observer) {
 }
 
 bool SupervisedUserPrefStore::HasObservers() const {
-  return observers_.might_have_observers();
+  return !observers_.empty();
 }
 
 bool SupervisedUserPrefStore::IsInitializationComplete() const {
@@ -114,7 +115,7 @@ SupervisedUserPrefStore::~SupervisedUserPrefStore() {
 void SupervisedUserPrefStore::OnNewSettingsAvailable(
     const base::DictionaryValue* settings) {
   std::unique_ptr<PrefValueMap> old_prefs = std::move(prefs_);
-  prefs_.reset(new PrefValueMap);
+  prefs_ = std::make_unique<PrefValueMap>();
   if (settings) {
     // Set hardcoded prefs and defaults.
     prefs_->SetInteger(prefs::kDefaultSupervisedUserFilteringBehavior,
@@ -191,6 +192,6 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
 }
 
 void SupervisedUserPrefStore::OnSettingsServiceShutdown() {
-  user_settings_subscription_.reset();
-  shutdown_subscription_.reset();
+  user_settings_subscription_ = {};
+  shutdown_subscription_ = {};
 }

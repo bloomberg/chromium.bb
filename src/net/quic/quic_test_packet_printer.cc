@@ -6,7 +6,7 @@
 
 #include <ostream>
 
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "base/strings/string_number_conversions.h"
 #include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/quic_framer.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
@@ -53,7 +53,7 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
     *output_ << "OnUnauthenticatedHeader: " << header;
     return true;
   }
-  void OnDecryptedPacket(EncryptionLevel level) override {
+  void OnDecryptedPacket(size_t length, EncryptionLevel level) override {
     *output_ << "OnDecryptedPacket\n";
   }
   bool OnPacketHeader(const QuicPacketHeader& header) override {
@@ -72,17 +72,13 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
   bool OnStreamFrame(const QuicStreamFrame& frame) override {
     *output_ << "OnStreamFrame: " << frame;
     *output_ << "         data: { "
-             << absl::BytesToHexString(
-                    absl::string_view(frame.data_buffer, frame.data_length))
-             << " }\n";
+             << base::HexEncode(frame.data_buffer, frame.data_length) << " }\n";
     return true;
   }
   bool OnCryptoFrame(const QuicCryptoFrame& frame) override {
     *output_ << "OnCryptoFrame: " << frame;
     *output_ << "         data: { "
-             << absl::BytesToHexString(
-                    absl::string_view(frame.data_buffer, frame.data_length))
-             << " }\n";
+             << base::HexEncode(frame.data_buffer, frame.data_length) << " }\n";
     return true;
   }
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
@@ -200,7 +196,8 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
     return true;
   }
   void OnPacketComplete() override { *output_ << "OnPacketComplete\n"; }
-  bool IsValidStatelessResetToken(QuicUint128 token) const override {
+  bool IsValidStatelessResetToken(
+      const StatelessResetToken& token) const override {
     *output_ << "IsValidStatelessResetToken\n";
     return false;
   }

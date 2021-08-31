@@ -14,6 +14,7 @@
 #include "ash/system/virtual_keyboard/virtual_keyboard_observer.h"
 #include "base/macros.h"
 #include "ui/base/ime/chromeos/ime_keyset.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 
 namespace views {
 class ImageView;
@@ -33,7 +34,11 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
                                public KeyboardControllerObserver,
                                public VirtualKeyboardObserver {
  public:
+  METADATA_HEADER(ImeMenuTray);
+
   explicit ImeMenuTray(Shelf* shelf);
+  ImeMenuTray(const ImeMenuTray&) = delete;
+  ImeMenuTray& operator=(const ImeMenuTray&) = delete;
   ~ImeMenuTray() override;
 
   // Shows the virtual keyboard with the given keyset: emoji, handwriting or
@@ -51,22 +56,22 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
 
   // TrayBackgroundView:
   void OnThemeChanged() override;
-  base::string16 GetAccessibleNameForTray() override;
+  std::u16string GetAccessibleNameForTray() override;
   void HandleLocaleChange() override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
   void ClickedOutsideBubble() override;
   bool PerformAction(const ui::Event& event) override;
   void CloseBubble() override;
-  void ShowBubble(bool show_by_click) override;
+  void ShowBubble() override;
   TrayBubbleView* GetBubbleView() override;
-  const char* GetClassName() const override;
+  views::Widget* GetBubbleWidget() const override;
 
   // IMEObserver:
   void OnIMERefresh() override;
   void OnIMEMenuActivationChanged(bool is_activated) override;
 
   // TrayBubbleView::Delegate:
-  base::string16 GetAccessibleNameForBubble() override;
+  std::u16string GetAccessibleNameForBubble() override;
   bool ShouldEnableExtraKeyboardAccessibility() override;
   void HideBubble(const TrayBubbleView* bubble_view) override;
 
@@ -79,9 +84,8 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
  private:
   friend class ImeMenuTrayTest;
 
-  // Show the IME menu bubble immediately. Set |show_by_click| to true if bubble
-  // is shown by mouse or gesture click.
-  void ShowImeMenuBubbleInternal(bool show_by_click);
+  // Show the IME menu bubble immediately.
+  void ShowImeMenuBubbleInternal();
 
   // Updates the text of the label on the tray.
   void UpdateTrayLabel();
@@ -105,8 +109,6 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   bool is_voice_enabled_;
 
   base::WeakPtrFactory<ImeMenuTray> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ImeMenuTray);
 };
 
 }  // namespace ash

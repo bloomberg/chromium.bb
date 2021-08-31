@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/chrome_ash_message_center_client.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -13,7 +14,7 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -54,7 +55,7 @@ class ChromeAshMessageCenterClientTest : public testing::Test,
 
     // Initialize the UserManager singleton to a fresh FakeUserManager instance.
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
-        std::make_unique<chromeos::FakeChromeUserManager>());
+        std::make_unique<ash::FakeChromeUserManager>());
 
     message_center::MessageCenter::Initialize();
   }
@@ -90,7 +91,7 @@ class ChromeAshMessageCenterClientTest : public testing::Test,
   }
 
   void CreateClient() {
-    client_.reset(new ChromeAshMessageCenterClient(nullptr));
+    client_ = std::make_unique<ChromeAshMessageCenterClient>(nullptr);
     client_->AddNotifierSettingsObserver(this);
   }
 
@@ -104,8 +105,8 @@ class ChromeAshMessageCenterClientTest : public testing::Test,
   std::vector<ash::NotifierMetadata> notifiers_;
 
  private:
-  chromeos::FakeChromeUserManager* GetFakeUserManager() {
-    return static_cast<chromeos::FakeChromeUserManager*>(
+  ash::FakeChromeUserManager* GetFakeUserManager() {
+    return static_cast<ash::FakeChromeUserManager*>(
         user_manager::UserManager::Get());
   }
 

@@ -11,12 +11,9 @@ NavigationRequestInfo::NavigationRequestInfo(
     mojom::BeginNavigationParamsPtr begin_params,
     const net::IsolationInfo& isolation_info,
     bool is_main_frame,
-    bool parent_is_main_frame,
     bool are_ancestors_secure,
     int frame_tree_node_id,
-    bool is_for_guests_only,
     bool report_raw_headers,
-    bool is_prerendering,
     bool upgrade_if_insecure,
     std::unique_ptr<network::PendingSharedURLLoaderFactory>
         blob_url_loader_factory,
@@ -24,24 +21,24 @@ NavigationRequestInfo::NavigationRequestInfo(
     const base::UnguessableToken& devtools_frame_token,
     bool obey_origin_policy,
     net::HttpRequestHeaders cors_exempt_headers,
-    network::mojom::ClientSecurityStatePtr client_security_state)
+    network::mojom::ClientSecurityStatePtr client_security_state,
+    const absl::optional<std::vector<net::SourceStream::SourceType>>&
+        devtools_accepted_stream_types)
     : common_params(std::move(common_params)),
       begin_params(std::move(begin_params)),
       isolation_info(isolation_info),
       is_main_frame(is_main_frame),
-      parent_is_main_frame(parent_is_main_frame),
       are_ancestors_secure(are_ancestors_secure),
       frame_tree_node_id(frame_tree_node_id),
-      is_for_guests_only(is_for_guests_only),
       report_raw_headers(report_raw_headers),
-      is_prerendering(is_prerendering),
       upgrade_if_insecure(upgrade_if_insecure),
       blob_url_loader_factory(std::move(blob_url_loader_factory)),
       devtools_navigation_token(devtools_navigation_token),
       devtools_frame_token(devtools_frame_token),
       obey_origin_policy(obey_origin_policy),
       cors_exempt_headers(std::move(cors_exempt_headers)),
-      client_security_state(std::move(client_security_state)) {}
+      client_security_state(std::move(client_security_state)),
+      devtools_accepted_stream_types(devtools_accepted_stream_types) {}
 
 NavigationRequestInfo::~NavigationRequestInfo() {}
 

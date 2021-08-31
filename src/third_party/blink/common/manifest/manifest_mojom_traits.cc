@@ -8,17 +8,44 @@
 #include <utility>
 
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
+#include "url/url_util.h"
 
 namespace mojo {
 namespace {
 
-// A wrapper around base::Optional<base::string16> so a custom StructTraits
+// A wrapper around absl::optional<std::u16string> so a custom StructTraits
 // specialization can enforce maximum string length.
 struct TruncatedString16 {
-  base::Optional<base::string16> string;
+  absl::optional<std::u16string> string;
 };
+
+// This function should be kept in sync with IsHostValidForUrlHandler in
+// manifest_parser.cc.
+bool IsHostValidForUrlHandler(const std::string& host) {
+  if (url::HostIsIPAddress(host))
+    return true;
+
+  const size_t registry_length =
+      net::registry_controlled_domains::PermissiveGetHostRegistryLength(
+          host,
+          // Reject unknown registries (registries that don't have any matches
+          // in effective TLD names).
+          net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+          // Skip matching private registries that allow external users to
+          // specify sub-domains, e.g. glitch.me, as this is allowed.
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+
+  // Host cannot be a TLD or invalid.
+  if (registry_length == 0 || registry_length == std::string::npos ||
+      registry_length >= host.length()) {
+    return false;
+  }
+
+  return true;
+}
 
 }  // namespace
 
@@ -39,7 +66,7 @@ struct StructTraits<mojo_base::mojom::String16DataView, TruncatedString16> {
 
     output->string.emplace();
     return StructTraits<mojo_base::mojom::String16DataView,
-                        base::string16>::Read(input, &output->string.value());
+                        std::u16string>::Read(input, &output->string.value());
   }
 };
 
@@ -58,9 +85,6 @@ bool StructTraits<blink::mojom::ManifestDataView, ::blink::Manifest>::Read(
   if (!data.ReadDescription(&string))
     return false;
   out->description = std::move(string.string);
-
-  if (!data.ReadCategories(&out->categories))
-    return false;
 
   if (!data.ReadGcmSenderId(&string))
     return false;
@@ -90,6 +114,9 @@ bool StructTraits<blink::mojom::ManifestDataView, ::blink::Manifest>::Read(
   if (!data.ReadUrlHandlers(&out->url_handlers))
     return false;
 
+  if (!data.ReadNoteTaking(&out->note_taking))
+    return false;
+
   if (!data.ReadRelatedApplications(&out->related_applications))
     return false;
 
@@ -111,6 +138,9 @@ bool StructTraits<blink::mojom::ManifestDataView, ::blink::Manifest>::Read(
     return false;
 
   if (!data.ReadScope(&out->scope))
+    return false;
+
+  if (!data.ReadCaptureLinks(&out->capture_links))
     return false;
 
   return true;
@@ -175,7 +205,7 @@ bool StructTraits<blink::mojom::ManifestRelatedApplicationDataView,
     return false;
   out->platform = std::move(string.string);
 
-  base::Optional<GURL> url;
+  absl::optional<GURL> url;
   if (!data.ReadUrl(&url))
     return false;
   out->url = std::move(url).value_or(GURL());
@@ -212,6 +242,12 @@ bool StructTraits<blink::mojom::ManifestUrlHandlerDataView,
          ::blink::Manifest::UrlHandler* out) {
   if (!data.ReadOrigin(&out->origin))
     return false;
+
+  // Make sure the origin is valid.
+  if (!IsHostValidForUrlHandler(out->origin.host()))
+    return false;
+
+  out->has_origin_wildcard = data.has_origin_wildcard();
 
   return true;
 }
@@ -279,6 +315,16 @@ bool StructTraits<blink::mojom::ManifestProtocolHandlerDataView,
     return false;
 
   if (!data.ReadUrl(&out->url))
+    return false;
+
+  return true;
+}
+
+bool StructTraits<blink::mojom::ManifestNoteTakingDataView,
+                  ::blink::Manifest::NoteTaking>::
+    Read(blink::mojom::ManifestNoteTakingDataView data,
+         ::blink::Manifest::NoteTaking* out) {
+  if (!data.ReadNewNoteUrl(&out->new_note_url))
     return false;
 
   return true;

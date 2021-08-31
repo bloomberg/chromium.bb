@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/browsing_data/core/history_notice_utils.h"
 #include "components/browsing_data/core/pref_names.h"
@@ -33,6 +33,8 @@
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
@@ -51,6 +53,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/common/channel_info.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -104,12 +107,13 @@ static NSDictionary* _imageNamesByItemTypes = @{
   // Registrar for pref changes notifications.
   PrefChangeRegistrar _prefChangeRegistrar;
 
-  // Observer for browsing data removal events and associated ScopedObserver
-  // used to track registration with BrowsingDataRemover.
+  // Observer for browsing data removal events and associated
+  // base::ScopedObservation used to track registration with
+  // BrowsingDataRemover.
   std::unique_ptr<BrowsingDataRemoverObserver> _observer;
   std::unique_ptr<
-      ScopedObserver<BrowsingDataRemover, BrowsingDataRemoverObserver>>
-      _scoped_observer;
+      base::ScopedObservation<BrowsingDataRemover, BrowsingDataRemoverObserver>>
+      _scoped_observation;
 
   // Corresponds browsing data counters to their masks/flags. Items are inserted
   // as clear data items are constructed.
@@ -169,10 +173,9 @@ static NSDictionary* _imageNamesByItemTypes = @{
                         _browserState->GetPrefs());
 
     _observer = std::make_unique<BrowsingDataRemoverObserverBridge>(self);
-    _scoped_observer = std::make_unique<
-        ScopedObserver<BrowsingDataRemover, BrowsingDataRemoverObserver>>(
-        _observer.get());
-    _scoped_observer->Add(remover);
+    _scoped_observation = std::make_unique<base::ScopedObservation<
+        BrowsingDataRemover, BrowsingDataRemoverObserver>>(_observer.get());
+    _scoped_observation->Observe(remover);
 
     _prefChangeRegistrar.Init(_browserState->GetPrefs());
     _prefObserverBridge.reset(new PrefObserverBridge(self));
@@ -197,7 +200,8 @@ static NSDictionary* _imageNamesByItemTypes = @{
 
 - (void)loadModel:(ListModel*)model {
   self.tableViewTimeRangeItem = [self timeRangeItem];
-  self.tableViewTimeRangeItem.useCustomSeparator = YES;
+  self.tableViewTimeRangeItem.useCustomSeparator =
+      base::FeatureList::IsEnabled(kSettingsRefresh) ? NO : YES;
 
   [model addSectionWithIdentifier:SectionIdentifierTimeRange];
   [model addItem:self.tableViewTimeRangeItem
@@ -322,6 +326,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
       addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON)
                 action:^{
                   [weakSelf clearDataForDataTypes:dataTypeMaskToRemove];
+                  [weakSelf signOutIfNotSyncing];
                 }
                  style:UIAlertActionStyleDestructive];
   return actionCoordinator;
@@ -332,32 +337,25 @@ static NSDictionary* _imageNamesByItemTypes = @{
   // Google Account footer.
   signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(self.browserState);
-  if (identityManager->HasPrimaryAccount()) {
-    // TODO(crbug.com/650424): Footer items must currently go into a separate
-    // section, to work around a drawing bug in MDC.
+  if (identityManager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
     [model addSectionWithIdentifier:SectionIdentifierGoogleAccount];
-    [model addItem:[self footerForGoogleAccountSectionItem]
-        toSectionWithIdentifier:SectionIdentifierGoogleAccount];
+    [model setFooter:[self footerForGoogleAccountSectionItem]
+        forSectionWithIdentifier:SectionIdentifierGoogleAccount];
   }
 
+  [model addSectionWithIdentifier:SectionIdentifierSavedSiteData];
   syncer::SyncService* syncService =
       ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
   if (syncService && syncService->IsSyncFeatureActive()) {
-    // TODO(crbug.com/650424): Footer items must currently go into a separate
-    // section, to work around a drawing bug in MDC.
-    [model addSectionWithIdentifier:SectionIdentifierClearSyncAndSavedSiteData];
-    [model addItem:[self footerClearSyncAndSavedSiteDataItem]
-        toSectionWithIdentifier:SectionIdentifierClearSyncAndSavedSiteData];
+    [model setFooter:[self footerClearSyncAndSavedSiteDataItem]
+        forSectionWithIdentifier:SectionIdentifierSavedSiteData];
   } else {
-    // TODO(crbug.com/650424): Footer items must currently go into a separate
-    // section, to work around a drawing bug in MDC.
-    [model addSectionWithIdentifier:SectionIdentifierSavedSiteData];
-    [model addItem:[self footerSavedSiteDataItem]
-        toSectionWithIdentifier:SectionIdentifierSavedSiteData];
+    [model setFooter:[self footerSavedSiteDataItem]
+        forSectionWithIdentifier:SectionIdentifierSavedSiteData];
   }
 
   // If not signed in, no need to continue with profile syncing.
-  if (!identityManager->HasPrimaryAccount()) {
+  if (!identityManager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
     return;
   }
 
@@ -411,7 +409,8 @@ static NSDictionary* _imageNamesByItemTypes = @{
       [self accessibilityIdentifierFromItemType:itemType];
   clearDataItem.dataTypeMask = mask;
   clearDataItem.prefName = prefName;
-  clearDataItem.useCustomSeparator = YES;
+  clearDataItem.useCustomSeparator =
+      base::FeatureList::IsEnabled(kSettingsRefresh) ? NO : YES;
   clearDataItem.checkedBackgroundColor = [[UIColor colorNamed:kBlueColor]
       colorWithAlphaComponent:kSelectedBackgroundColorAlpha];
   clearDataItem.imageName = [_imageNamesByItemTypes
@@ -445,21 +444,22 @@ static NSDictionary* _imageNamesByItemTypes = @{
   return clearDataItem;
 }
 
-- (TableViewItem*)footerForGoogleAccountSectionItem {
+- (TableViewLinkHeaderFooterItem*)footerForGoogleAccountSectionItem {
   return _shouldShowNoticeAboutOtherFormsOfBrowsingHistory
              ? [self footerGoogleAccountAndMyActivityItem]
              : [self footerGoogleAccountItem];
 }
 
-- (TableViewItem*)footerGoogleAccountItem {
-  TableViewTextLinkItem* footerItem =
-      [[TableViewTextLinkItem alloc] initWithType:ItemTypeFooterGoogleAccount];
+- (TableViewLinkHeaderFooterItem*)footerGoogleAccountItem {
+  TableViewLinkHeaderFooterItem* footerItem =
+      [[TableViewLinkHeaderFooterItem alloc]
+          initWithType:ItemTypeFooterGoogleAccount];
   footerItem.text =
       l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_ACCOUNT);
   return footerItem;
 }
 
-- (TableViewItem*)footerGoogleAccountAndMyActivityItem {
+- (TableViewLinkHeaderFooterItem*)footerGoogleAccountAndMyActivityItem {
   UIImage* image = ios::GetChromeBrowserProvider()
                        ->GetBrandedImageProvider()
                        ->GetClearBrowsingDataAccountActivityImage();
@@ -470,7 +470,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
                    image:image];
 }
 
-- (TableViewItem*)footerSavedSiteDataItem {
+- (TableViewLinkHeaderFooterItem*)footerSavedSiteDataItem {
   UIImage* image = ios::GetChromeBrowserProvider()
                        ->GetBrandedImageProvider()
                        ->GetClearBrowsingDataSiteDataImage();
@@ -481,7 +481,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
                    image:image];
 }
 
-- (TableViewItem*)footerClearSyncAndSavedSiteDataItem {
+- (TableViewLinkHeaderFooterItem*)footerClearSyncAndSavedSiteDataItem {
   UIImage* infoIcon = [ChromeIcon infoIcon];
   UIImage* image = TintImage(infoIcon, [[MDCPalette greyPalette] tint500]);
   return [self
@@ -492,15 +492,16 @@ static NSDictionary* _imageNamesByItemTypes = @{
                    image:image];
 }
 
-- (TableViewItem*)footerItemWithType:(ClearBrowsingDataItemType)itemType
-                             titleID:(int)titleMessageID
-                                 URL:(const char[])URL
-                               image:(UIImage*)image {
-  TableViewTextLinkItem* footerItem =
-      [[TableViewTextLinkItem alloc] initWithType:itemType];
+- (TableViewLinkHeaderFooterItem*)footerItemWithType:
+                                      (ClearBrowsingDataItemType)itemType
+                                             titleID:(int)titleMessageID
+                                                 URL:(const char[])URL
+                                               image:(UIImage*)image {
+  TableViewLinkHeaderFooterItem* footerItem =
+      [[TableViewLinkHeaderFooterItem alloc] initWithType:itemType];
   footerItem.text = l10n_util::GetNSString(titleMessageID);
-  footerItem.linkURL = google_util::AppendGoogleLocaleParam(
-      GURL(URL), GetApplicationContext()->GetApplicationLocale());
+  footerItem.urls = std::vector<GURL>{google_util::AppendGoogleLocaleParam(
+      GURL(URL), GetApplicationContext()->GetApplicationLocale())};
   return footerItem;
 }
 
@@ -538,6 +539,22 @@ static NSDictionary* _imageNamesByItemTypes = @{
 }
 
 #pragma mark - Private Methods
+
+// Signs the user out of Chrome if the sign-in state is |ConsentLevel::kSignin|.
+- (void)signOutIfNotSyncing {
+  DCHECK(self.browserState);
+  signin::IdentityManager* identityManager =
+      IdentityManagerFactory::GetForBrowserState(self.browserState);
+  DCHECK(identityManager);
+  if (!identityManager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
+    AuthenticationService* authenticationService =
+        AuthenticationServiceFactory::GetForBrowserState(_browserState);
+    DCHECK(authenticationService);
+    authenticationService->SignOut(
+        signin_metrics::ProfileSignout::USER_DELETED_ACCOUNT_COOKIES,
+        /*force_clear_browsing_data=*/false, nil);
+  }
+}
 
 - (void)clearDataForDataTypes:(BrowsingDataRemoveMask)mask {
   DCHECK(mask != BrowsingDataRemoveMask::REMOVE_NOTHING);
@@ -597,28 +614,12 @@ static NSDictionary* _imageNamesByItemTypes = @{
 
   signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(_browserState);
-  if (!identityManager->HasPrimaryAccount()) {
+  if (!identityManager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
     return;
   }
 
-  TableViewItem* footerItem = [self footerForGoogleAccountSectionItem];
-  // TODO(crbug.com/650424): Simplify with setFooter:inSection: when the bug in
-  // MDC is fixed.
-  // Remove the footer if there is one in that section.
-  if ([model hasSectionForSectionIdentifier:SectionIdentifierGoogleAccount]) {
-    if ([model hasItemForItemType:ItemTypeFooterGoogleAccount
-                sectionIdentifier:SectionIdentifierGoogleAccount]) {
-      [model removeItemWithType:ItemTypeFooterGoogleAccount
-          fromSectionWithIdentifier:SectionIdentifierGoogleAccount];
-    } else {
-      [model removeItemWithType:ItemTypeFooterGoogleAccountAndMyActivity
-          fromSectionWithIdentifier:SectionIdentifierGoogleAccount];
-    }
-  }
-  // Add the new footer.
-  [model addItem:footerItem
-      toSectionWithIdentifier:SectionIdentifierGoogleAccount];
-  [self.consumer updateCellsForItem:footerItem reload:YES];
+  [model setFooter:[self footerForGoogleAccountSectionItem]
+      forSectionWithIdentifier:SectionIdentifierGoogleAccount];
 }
 
 #pragma mark - PrefObserverDelegate

@@ -79,6 +79,11 @@ struct NativeWidgetNSWindowInitParams {
   array<uint8> state_restoration_data;
 };
 
+enum WindowControlsOverlayNSViewType {
+  kCaptionButtonContainer,
+  kWebAppFrameToolbar,
+};
+
 // The interface through which a NativeWidgetMac may interact with an NSWindow
 // (possibly in a process separate from the browser process).
 interface NativeWidgetNSWindow {
@@ -109,8 +114,9 @@ interface NativeWidgetNSWindow {
 
   // Initialize the view to display compositor output. This will send the
   // current visibility and dimensions (and any future updates) to the
-  // NativeWidgetNSWindowHost.
-  InitCompositorView();
+  // NativeWidgetNSWindowHost. Returns the CGWindowID to associate with
+  // the compositor's FrameSinkId.
+  InitCompositorView() => (uint32 cg_window_id);
 
   // Create the NSView to be the content view for the window. Use |ns_view_id|
   // to look up this NSView in other functions (e.g, to specify a parent view).
@@ -186,8 +192,8 @@ interface NativeWidgetNSWindow {
   // Set the window level of the NSWindow.
   SetWindowLevel(int32 level);
 
-  // Set the content aspect ratio of the NSWindow.
-  SetContentAspectRatio(gfx.mojom.SizeF aspect_ratio);
+  // Set the aspect ratio of the NSWindow. |aspect_ratio| must not be empty.
+  SetAspectRatio(gfx.mojom.SizeF aspect_ratio);
 
   // Specify the content to draw in the NSView.
   SetCALayerParams(gfx.mojom.CALayerParams ca_layer_params);
@@ -219,4 +225,14 @@ interface NativeWidgetNSWindow {
 
   // Redispatch a keyboard event using the widget's window's CommandDispatcher.
   RedispatchKeyEvent(array<uint8> native_event_data);
+
+  // Add the overlay NSView for a PWA with window controls overlay
+  // display override given a |overlay_type|.
+  CreateWindowControlsOverlayNSView(
+      WindowControlsOverlayNSViewType overlay_type);
+
+  // Update the overlay NSView with |bounds| for a PWA with window controls
+  // overlay display override for a |overlay_type|.
+  UpdateWindowControlsOverlayNSView(
+    gfx.mojom.Rect bounds, WindowControlsOverlayNSViewType overlay_type);
 };

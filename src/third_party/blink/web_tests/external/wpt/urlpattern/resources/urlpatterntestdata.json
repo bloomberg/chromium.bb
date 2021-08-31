@@ -1,0 +1,1358 @@
+[
+  {
+    "pattern": { "pathname": "/foo/bar" },
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": {} }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/bar" },
+    "inputs": [{ "pathname": "/foo/ba" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/bar" },
+    "inputs": [{ "pathname": "/foo/bar/" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/bar" },
+    "inputs": [{ "pathname": "/foo/bar/baz" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/bar" },
+    "inputs": [ "https://example.com/foo/bar" ],
+    "expected_match": {
+      "hostname": { "input": "example.com", "groups": { "0": "example.com" } },
+      "pathname": { "input": "/foo/bar", "groups": {} },
+      "protocol": { "input": "https", "groups": { "0": "https" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/bar" },
+    "inputs": [ "https://example.com/foo/bar/baz" ],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/bar" },
+    "inputs": [{ "hostname": "example.com", "pathname": "/foo/bar" }],
+    "expected_match": {
+      "hostname": { "input": "example.com", "groups": { "0": "example.com" } },
+      "pathname": { "input": "/foo/bar", "groups": {} }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/bar" },
+    "inputs": [{ "hostname": "example.com", "pathname": "/foo/bar/baz" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/bar" },
+    "inputs": [{ "pathname": "/foo/bar", "baseURL": "https://example.com" }],
+    "expected_match": {
+      "hostname": { "input": "example.com", "groups": { "0": "example.com" } },
+      "pathname": { "input": "/foo/bar", "groups": {} },
+      "protocol": { "input": "https", "groups": { "0": "https" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/bar" },
+    "inputs": [{ "pathname": "/foo/bar/baz",
+                 "baseURL": "https://example.com" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/bar",
+                 "baseURL": "https://example.com?query#hash" },
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/bar",
+                 "baseURL": "https://example.com?query#hash" },
+    "inputs": [{ "hostname": "example.com", "pathname": "/foo/bar" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/bar",
+                 "baseURL": "https://example.com?query#hash" },
+    "inputs": [{ "protocol": "https", "hostname": "example.com",
+                 "pathname": "/foo/bar" }],
+    "expected_match": {
+      "exactly_empty_components": [ "username", "password", "port" ],
+      "hostname": { "input": "example.com", "groups": {} },
+      "pathname": { "input": "/foo/bar", "groups": {} },
+      "protocol": { "input": "https", "groups": {} }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/bar",
+                 "baseURL": "https://example.com?query#hash" },
+    "inputs": [{ "protocol": "https", "hostname": "example.com",
+                 "pathname": "/foo/bar/baz" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/bar",
+                 "baseURL": "https://example.com?query#hash" },
+    "inputs": [{ "protocol": "https", "hostname": "example.com",
+                 "pathname": "/foo/bar", "search": "otherquery",
+                 "hash": "otherhash" }],
+    "expected_match": {
+      "exactly_empty_components": [ "username", "password", "port" ],
+      "hash": { "input": "otherhash", "groups": { "0": "otherhash" } },
+      "hostname": { "input": "example.com", "groups": {} },
+      "pathname": { "input": "/foo/bar", "groups": {} },
+      "protocol": { "input": "https", "groups": {} },
+      "search": { "input": "otherquery", "groups": { "0": "otherquery" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/bar",
+                 "baseURL": "https://example.com?query#hash" },
+    "inputs": [ "https://example.com/foo/bar" ],
+    "expected_match": {
+      "exactly_empty_components": [ "username", "password", "port" ],
+      "hostname": { "input": "example.com", "groups": {} },
+      "pathname": { "input": "/foo/bar", "groups": {} },
+      "protocol": { "input": "https", "groups": {} }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/bar",
+                 "baseURL": "https://example.com?query#hash" },
+    "inputs": [ "https://example.com/foo/bar?otherquery#otherhash" ],
+    "expected_match": {
+      "exactly_empty_components": [ "username", "password", "port" ],
+      "hash": { "input": "otherhash", "groups": { "0": "otherhash" } },
+      "hostname": { "input": "example.com", "groups": {} },
+      "pathname": { "input": "/foo/bar", "groups": {} },
+      "protocol": { "input": "https", "groups": {} },
+      "search": { "input": "otherquery", "groups": { "0": "otherquery" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/bar",
+                 "baseURL": "https://example.com?query#hash" },
+    "inputs": [ "https://example.com/foo/bar/baz" ],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/bar",
+                 "baseURL": "https://example.com?query#hash" },
+    "inputs": [ "https://other.com/foo/bar" ],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/bar",
+                 "baseURL": "https://example.com?query#hash" },
+    "inputs": [ "http://other.com/foo/bar" ],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/bar",
+                 "baseURL": "https://example.com?query#hash" },
+    "inputs": [{ "pathname": "/foo/bar", "baseURL": "https://example.com" }],
+    "expected_match": {
+      "exactly_empty_components": [ "username", "password", "port" ],
+      "hostname": { "input": "example.com", "groups": {} },
+      "pathname": { "input": "/foo/bar", "groups": {} },
+      "protocol": { "input": "https", "groups": {} }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/bar",
+                 "baseURL": "https://example.com?query#hash" },
+    "inputs": [{ "pathname": "/foo/bar/baz",
+                 "baseURL": "https://example.com" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/bar",
+                 "baseURL": "https://example.com?query#hash" },
+    "inputs": [{ "pathname": "/foo/bar", "baseURL": "https://other.com" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/bar",
+                 "baseURL": "https://example.com?query#hash" },
+    "inputs": [{ "pathname": "/foo/bar", "baseURL": "http://example.com" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar" },
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": { "bar": "bar" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar" },
+    "inputs": [{ "pathname": "/foo/index.html" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/index.html", "groups": { "bar": "index.html" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar" },
+    "inputs": [{ "pathname": "/foo/bar/" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar" },
+    "inputs": [{ "pathname": "/foo/" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)" },
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_obj": {
+      "pathname": "/foo/*"
+    },
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": { "0": "bar" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/*" },
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": { "0": "bar" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)" },
+    "inputs": [{ "pathname": "/foo/bar/baz" }],
+    "expected_obj": {
+      "pathname": "/foo/*"
+    },
+    "expected_match": {
+      "pathname": { "input": "/foo/bar/baz", "groups": { "0": "bar/baz" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/*" },
+    "inputs": [{ "pathname": "/foo/bar/baz" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar/baz", "groups": { "0": "bar/baz" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)" },
+    "inputs": [{ "pathname": "/foo/" }],
+    "expected_obj": {
+      "pathname": "/foo/*"
+    },
+    "expected_match": {
+      "pathname": { "input": "/foo/", "groups": { "0": "" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/*" },
+    "inputs": [{ "pathname": "/foo/" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/", "groups": { "0": "" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)" },
+    "inputs": [{ "pathname": "/foo" }],
+    "expected_obj": {
+      "pathname": "/foo/*"
+    },
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/*" },
+    "inputs": [{ "pathname": "/foo" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar(.*)" },
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": { "bar": "bar" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar(.*)" },
+    "inputs": [{ "pathname": "/foo/bar/baz" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar/baz", "groups": { "bar": "bar/baz" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar(.*)" },
+    "inputs": [{ "pathname": "/foo/" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/", "groups": { "bar": "" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar(.*)" },
+    "inputs": [{ "pathname": "/foo" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar?" },
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": { "bar": "bar" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar?" },
+    "inputs": [{ "pathname": "/foo" }],
+    "expected_match": {
+      "pathname": { "input": "/foo", "groups": { "bar": "" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar?" },
+    "inputs": [{ "pathname": "/foo/" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar?" },
+    "inputs": [{ "pathname": "/foobar" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar?" },
+    "inputs": [{ "pathname": "/foo/bar/baz" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar+" },
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": { "bar": "bar" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar+" },
+    "inputs": [{ "pathname": "/foo/bar/baz" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar/baz", "groups": { "bar": "bar/baz" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar+" },
+    "inputs": [{ "pathname": "/foo" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar+" },
+    "inputs": [{ "pathname": "/foo/" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar+" },
+    "inputs": [{ "pathname": "/foobar" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar*" },
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": { "bar": "bar" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar*" },
+    "inputs": [{ "pathname": "/foo/bar/baz" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar/baz", "groups": { "bar": "bar/baz" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar*" },
+    "inputs": [{ "pathname": "/foo" }],
+    "expected_match": {
+      "pathname": { "input": "/foo", "groups": { "bar": "" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar*" },
+    "inputs": [{ "pathname": "/foo/" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/:bar*" },
+    "inputs": [{ "pathname": "/foobar" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)?" },
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_obj": {
+      "pathname": "/foo/*?"
+    },
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": { "0": "bar" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/*?" },
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": { "0": "bar" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)?" },
+    "inputs": [{ "pathname": "/foo/bar/baz" }],
+    "expected_obj": {
+      "pathname": "/foo/*?"
+    },
+    "expected_match": {
+      "pathname": { "input": "/foo/bar/baz", "groups": { "0": "bar/baz" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/*?" },
+    "inputs": [{ "pathname": "/foo/bar/baz" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar/baz", "groups": { "0": "bar/baz" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)?" },
+    "inputs": [{ "pathname": "/foo" }],
+    "expected_obj": {
+      "pathname": "/foo/*?"
+    },
+    "expected_match": {
+      "pathname": { "input": "/foo", "groups": { "0": "" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/*?" },
+    "inputs": [{ "pathname": "/foo" }],
+    "expected_match": {
+      "pathname": { "input": "/foo", "groups": { "0": "" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)?" },
+    "inputs": [{ "pathname": "/foo/" }],
+    "expected_obj": {
+      "pathname": "/foo/*?"
+    },
+    "expected_match": {
+      "pathname": { "input": "/foo/", "groups": { "0": "" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/*?" },
+    "inputs": [{ "pathname": "/foo/" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/", "groups": { "0": "" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)?" },
+    "inputs": [{ "pathname": "/foobar" }],
+    "expected_obj": {
+      "pathname": "/foo/*?"
+    },
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/*?" },
+    "inputs": [{ "pathname": "/foobar" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)?" },
+    "inputs": [{ "pathname": "/fo" }],
+    "expected_obj": {
+      "pathname": "/foo/*?"
+    },
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/*?" },
+    "inputs": [{ "pathname": "/fo" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)+" },
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_obj": {
+      "pathname": "/foo/*+"
+    },
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": { "0": "bar" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/*+" },
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": { "0": "bar" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)+" },
+    "inputs": [{ "pathname": "/foo/bar/baz" }],
+    "expected_obj": {
+      "pathname": "/foo/*+"
+    },
+    "expected_match": {
+      "pathname": { "input": "/foo/bar/baz", "groups": { "0": "bar/baz" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/*+" },
+    "inputs": [{ "pathname": "/foo/bar/baz" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar/baz", "groups": { "0": "bar/baz" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)+" },
+    "inputs": [{ "pathname": "/foo" }],
+    "expected_obj": {
+      "pathname": "/foo/*+"
+    },
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/*+" },
+    "inputs": [{ "pathname": "/foo" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)+" },
+    "inputs": [{ "pathname": "/foo/" }],
+    "expected_obj": {
+      "pathname": "/foo/*+"
+    },
+    "expected_match": {
+      "pathname": { "input": "/foo/", "groups": { "0": "" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/*+" },
+    "inputs": [{ "pathname": "/foo/" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/", "groups": { "0": "" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)+" },
+    "inputs": [{ "pathname": "/foobar" }],
+    "expected_obj": {
+      "pathname": "/foo/*+"
+    },
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/*+" },
+    "inputs": [{ "pathname": "/foobar" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)+" },
+    "inputs": [{ "pathname": "/fo" }],
+    "expected_obj": {
+      "pathname": "/foo/*+"
+    },
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/*+" },
+    "inputs": [{ "pathname": "/fo" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)*" },
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_obj": {
+      "pathname": "/foo/**"
+    },
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": { "0": "bar" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/**" },
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": { "0": "bar" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)*" },
+    "inputs": [{ "pathname": "/foo/bar/baz" }],
+    "expected_obj": {
+      "pathname": "/foo/**"
+    },
+    "expected_match": {
+      "pathname": { "input": "/foo/bar/baz", "groups": { "0": "bar/baz" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/**" },
+    "inputs": [{ "pathname": "/foo/bar/baz" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar/baz", "groups": { "0": "bar/baz" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)*" },
+    "inputs": [{ "pathname": "/foo" }],
+    "expected_obj": {
+      "pathname": "/foo/**"
+    },
+    "expected_match": {
+      "pathname": { "input": "/foo", "groups": { "0": "" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/**" },
+    "inputs": [{ "pathname": "/foo" }],
+    "expected_match": {
+      "pathname": { "input": "/foo", "groups": { "0": "" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)*" },
+    "inputs": [{ "pathname": "/foo/" }],
+    "expected_obj": {
+      "pathname": "/foo/**"
+    },
+    "expected_match": {
+      "pathname": { "input": "/foo/", "groups": { "0": "" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/**" },
+    "inputs": [{ "pathname": "/foo/" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/", "groups": { "0": "" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)*" },
+    "inputs": [{ "pathname": "/foobar" }],
+    "expected_obj": {
+      "pathname": "/foo/**"
+    },
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/**" },
+    "inputs": [{ "pathname": "/foobar" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/(.*)*" },
+    "inputs": [{ "pathname": "/fo" }],
+    "expected_obj": {
+      "pathname": "/foo/**"
+    },
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/**" },
+    "inputs": [{ "pathname": "/fo" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo{/bar}" },
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_obj": {
+      "pathname": "/foo/bar"
+    },
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": {} }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo{/bar}" },
+    "inputs": [{ "pathname": "/foo/bar/baz" }],
+    "expected_obj": {
+      "pathname": "/foo/bar"
+    },
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo{/bar}" },
+    "inputs": [{ "pathname": "/foo" }],
+    "expected_obj": {
+      "pathname": "/foo/bar"
+    },
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo{/bar}" },
+    "inputs": [{ "pathname": "/foo/" }],
+    "expected_obj": {
+      "pathname": "/foo/bar"
+    },
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo{/bar}?" },
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": {} }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo{/bar}?" },
+    "inputs": [{ "pathname": "/foo/bar/baz" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo{/bar}?" },
+    "inputs": [{ "pathname": "/foo" }],
+    "expected_match": {
+      "pathname": { "input": "/foo", "groups": {} }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo{/bar}?" },
+    "inputs": [{ "pathname": "/foo/" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo{/bar}+" },
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": {} }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo{/bar}+" },
+    "inputs": [{ "pathname": "/foo/bar/bar" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar/bar", "groups": {} }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo{/bar}+" },
+    "inputs": [{ "pathname": "/foo/bar/baz" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo{/bar}+" },
+    "inputs": [{ "pathname": "/foo" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo{/bar}+" },
+    "inputs": [{ "pathname": "/foo/" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo{/bar}*" },
+    "inputs": [{ "pathname": "/foo/bar" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": {} }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo{/bar}*" },
+    "inputs": [{ "pathname": "/foo/bar/bar" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar/bar", "groups": {} }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo{/bar}*" },
+    "inputs": [{ "pathname": "/foo/bar/baz" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo{/bar}*" },
+    "inputs": [{ "pathname": "/foo" }],
+    "expected_match": {
+      "pathname": { "input": "/foo", "groups": {} }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo{/bar}*" },
+    "inputs": [{ "pathname": "/foo/" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "protocol": "(café)" },
+    "expected_obj": "error"
+  },
+  {
+    "pattern": { "username": "(café)" },
+    "expected_obj": "error"
+  },
+  {
+    "pattern": { "password": "(café)" },
+    "expected_obj": "error"
+  },
+  {
+    "pattern": { "hostname": "(café)" },
+    "expected_obj": "error"
+  },
+  {
+    "pattern": { "pathname": "(café)" },
+    "expected_obj": "error"
+  },
+  {
+    "pattern": { "search": "(café)" },
+    "expected_obj": "error"
+  },
+  {
+    "pattern": { "hash": "(café)" },
+    "expected_obj": "error"
+  },
+  {
+    "pattern": { "protocol": ":café" },
+    "inputs": [{ "protocol": "foo" }],
+    "expected_match": {
+      "protocol": { "input": "foo", "groups": { "café": "foo" } }
+    }
+  },
+  {
+    "pattern": { "username": ":café" },
+    "inputs": [{ "username": "foo" }],
+    "expected_match": {
+      "username": { "input": "foo", "groups": { "café": "foo" } }
+    }
+  },
+  {
+    "pattern": { "password": ":café" },
+    "inputs": [{ "password": "foo" }],
+    "expected_match": {
+      "password": { "input": "foo", "groups": { "café": "foo" } }
+    }
+  },
+  {
+    "pattern": { "hostname": ":café" },
+    "inputs": [{ "hostname": "foo" }],
+    "expected_match": {
+      "hostname": { "input": "foo", "groups": { "café": "foo" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/:café" },
+    "inputs": [{ "pathname": "/foo" }],
+    "expected_match": {
+      "pathname": { "input": "/foo", "groups": { "café": "foo" } }
+    }
+  },
+  {
+    "pattern": { "search": ":café" },
+    "inputs": [{ "search": "foo" }],
+    "expected_match": {
+      "search": { "input": "foo", "groups": { "café": "foo" } }
+    }
+  },
+  {
+    "pattern": { "hash": ":café" },
+    "inputs": [{ "hash": "foo" }],
+    "expected_match": {
+      "hash": { "input": "foo", "groups": { "café": "foo" } }
+    }
+  },
+  {
+    "pattern": { "protocol": ":\u2118" },
+    "inputs": [{ "protocol": "foo" }],
+    "expected_match": {
+      "protocol": { "input": "foo", "groups": { "\u2118": "foo" } }
+    }
+  },
+  {
+    "pattern": { "username": ":\u2118" },
+    "inputs": [{ "username": "foo" }],
+    "expected_match": {
+      "username": { "input": "foo", "groups": { "\u2118": "foo" } }
+    }
+  },
+  {
+    "pattern": { "password": ":\u2118" },
+    "inputs": [{ "password": "foo" }],
+    "expected_match": {
+      "password": { "input": "foo", "groups": { "\u2118": "foo" } }
+    }
+  },
+  {
+    "pattern": { "hostname": ":\u2118" },
+    "inputs": [{ "hostname": "foo" }],
+    "expected_match": {
+      "hostname": { "input": "foo", "groups": { "\u2118": "foo" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/:\u2118" },
+    "inputs": [{ "pathname": "/foo" }],
+    "expected_match": {
+      "pathname": { "input": "/foo", "groups": { "\u2118": "foo" } }
+    }
+  },
+  {
+    "pattern": { "search": ":\u2118" },
+    "inputs": [{ "search": "foo" }],
+    "expected_match": {
+      "search": { "input": "foo", "groups": { "\u2118": "foo" } }
+    }
+  },
+  {
+    "pattern": { "hash": ":\u2118" },
+    "inputs": [{ "hash": "foo" }],
+    "expected_match": {
+      "hash": { "input": "foo", "groups": { "\u2118": "foo" } }
+    }
+  },
+  {
+    "pattern": { "protocol": ":\u3400" },
+    "inputs": [{ "protocol": "foo" }],
+    "expected_match": {
+      "protocol": { "input": "foo", "groups": { "\u3400": "foo" } }
+    }
+  },
+  {
+    "pattern": { "username": ":\u3400" },
+    "inputs": [{ "username": "foo" }],
+    "expected_match": {
+      "username": { "input": "foo", "groups": { "\u3400": "foo" } }
+    }
+  },
+  {
+    "pattern": { "password": ":\u3400" },
+    "inputs": [{ "password": "foo" }],
+    "expected_match": {
+      "password": { "input": "foo", "groups": { "\u3400": "foo" } }
+    }
+  },
+  {
+    "pattern": { "hostname": ":\u3400" },
+    "inputs": [{ "hostname": "foo" }],
+    "expected_match": {
+      "hostname": { "input": "foo", "groups": { "\u3400": "foo" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/:\u3400" },
+    "inputs": [{ "pathname": "/foo" }],
+    "expected_match": {
+      "pathname": { "input": "/foo", "groups": { "\u3400": "foo" } }
+    }
+  },
+  {
+    "pattern": { "search": ":\u3400" },
+    "inputs": [{ "search": "foo" }],
+    "expected_match": {
+      "search": { "input": "foo", "groups": { "\u3400": "foo" } }
+    }
+  },
+  {
+    "pattern": { "hash": ":\u3400" },
+    "inputs": [{ "hash": "foo" }],
+    "expected_match": {
+      "hash": { "input": "foo", "groups": { "\u3400": "foo" } }
+    }
+  },
+  {
+    "pattern": { "protocol": "(.*)" },
+    "inputs": [{ "protocol" : "café" }],
+    "expected_obj": {
+      "protocol": "*"
+    },
+    "expected_match": null
+  },
+  {
+    "pattern": { "protocol": "(.*)" },
+    "inputs": [{ "protocol": "cafe" }],
+    "expected_obj": {
+      "protocol": "*"
+    },
+    "expected_match": {
+      "protocol": { "input": "cafe", "groups": { "0": "cafe" }}
+    }
+  },
+  {
+    "pattern": { "protocol": "foo-bar" },
+    "inputs": [{ "protocol": "foo-bar" }],
+    "expected_match": {
+      "protocol": { "input": "foo-bar", "groups": {} }
+    }
+  },
+  {
+    "pattern": { "username": "caf%C3%A9" },
+    "inputs": [{ "username" : "café" }],
+    "expected_match": {
+      "username": { "input": "caf%C3%A9", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "username": "café" },
+    "inputs": [{ "username" : "café" }],
+    "expected_obj": {
+      "username": "caf%C3%A9"
+    },
+    "expected_match": {
+      "username": { "input": "caf%C3%A9", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "username": "caf%c3%a9" },
+    "inputs": [{ "username" : "café" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "password": "caf%C3%A9" },
+    "inputs": [{ "password" : "café" }],
+    "expected_match": {
+      "password": { "input": "caf%C3%A9", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "password": "café" },
+    "inputs": [{ "password" : "café" }],
+    "expected_obj": {
+      "password": "caf%C3%A9"
+    },
+    "expected_match": {
+      "password": { "input": "caf%C3%A9", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "password": "caf%c3%a9" },
+    "inputs": [{ "password" : "café" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "hostname": "xn--caf-dma.com" },
+    "inputs": [{ "hostname" : "café.com" }],
+    "expected_match": {
+      "hostname": { "input": "xn--caf-dma.com", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "hostname": "café.com" },
+    "inputs": [{ "hostname" : "café.com" }],
+    "expected_obj": {
+      "hostname": "xn--caf-dma.com"
+    },
+    "expected_match": {
+      "hostname": { "input": "xn--caf-dma.com", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "port": "" },
+    "inputs": [{ "protocol": "http", "port": "80" }],
+    "expected_match": {
+      "protocol": { "input": "http", "groups": { "0": "http" }},
+      "port": { "input": "", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "protocol": "http", "port": "80" },
+    "inputs": [{ "protocol": "http", "port": "80" }],
+    "expected_match": {
+      "protocol": { "input": "http", "groups": {}},
+      "port": { "input": "", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "protocol": "http", "port": "80{20}?" },
+    "inputs": [{ "protocol": "http", "port": "80" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "protocol": "http", "port": "80 " },
+    "inputs": [{ "protocol": "http", "port": "80" }],
+    "expected_obj": "error"
+  },
+  {
+    "pattern": { "port": "80" },
+    "inputs": [{ "protocol": "http", "port": "80" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "protocol": "http{s}?", "port": "80" },
+    "inputs": [{ "protocol": "http", "port": "80" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "port": "80" },
+    "inputs": [{ "port": "80" }],
+    "expected_match": {
+      "port": { "input": "80", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "port": "(.*)" },
+    "inputs": [{ "port": "invalid80" }],
+    "expected_obj": {
+      "port": "*"
+    },
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/bar" },
+    "inputs": [{ "pathname": "/foo/./bar" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/bar", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/baz" },
+    "inputs": [{ "pathname": "/foo/bar/../baz" }],
+    "expected_match": {
+      "pathname": { "input": "/foo/baz", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "pathname": "/caf%C3%A9" },
+    "inputs": [{ "pathname": "/café" }],
+    "expected_match": {
+      "pathname": { "input": "/caf%C3%A9", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "pathname": "/café" },
+    "inputs": [{ "pathname": "/café" }],
+    "expected_obj": {
+      "pathname": "/caf%C3%A9"
+    },
+    "expected_match": {
+      "pathname": { "input": "/caf%C3%A9", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "pathname": "/caf%c3%a9" },
+    "inputs": [{ "pathname": "/café" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/bar" },
+    "inputs": [{ "pathname": "foo/bar" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "/foo/bar" },
+    "inputs": [{ "pathname": "foo/bar", "baseURL": "https://example.com" }],
+    "expected_match": {
+      "protocol": { "input": "https", "groups": { "0": "https" }},
+      "hostname": { "input": "example.com", "groups": { "0": "example.com" }},
+      "pathname": { "input": "/foo/bar", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/../bar" },
+    "inputs": [{ "pathname": "/bar" }],
+    "expected_obj": {
+      "pathname": "/bar"
+    },
+    "expected_match": {
+      "pathname": { "input": "/bar", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "pathname": "./foo/bar", "baseURL": "https://example.com" },
+    "inputs": [{ "pathname": "foo/bar", "baseURL": "https://example.com" }],
+    "expected_obj": {
+      "pathname": "/foo/bar"
+    },
+    "expected_match": {
+      "exactly_empty_components": [ "username", "password", "port" ],
+      "protocol": { "input": "https", "groups": {}},
+      "hostname": { "input": "example.com", "groups": {}},
+      "pathname": { "input": "/foo/bar", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "pathname": "foo/bar" },
+    "inputs": [ "https://example.com/foo/bar" ],
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "foo/bar", "baseURL": "https://example.com" },
+    "inputs": [ "https://example.com/foo/bar" ],
+    "expected_obj": {
+      "pathname": "/foo/bar"
+    },
+    "expected_match": {
+      "exactly_empty_components": [ "username", "password", "port" ],
+      "protocol": { "input": "https", "groups": {}},
+      "hostname": { "input": "example.com", "groups": {}},
+      "pathname": { "input": "/foo/bar", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "pathname": ":name.html", "baseURL": "https://example.com" },
+    "inputs": [ "https://example.com/foo.html"] ,
+    "expected_obj": {
+      "pathname": "/:name.html"
+    },
+    "expected_match": {
+      "exactly_empty_components": [ "username", "password", "port" ],
+      "protocol": { "input": "https", "groups": {}},
+      "hostname": { "input": "example.com", "groups": {}},
+      "pathname": { "input": "/foo.html", "groups": { "name": "foo" }}
+    }
+  },
+  {
+    "pattern": { "search": "q=caf%C3%A9" },
+    "inputs": [{ "search": "q=café" }],
+    "expected_match": {
+      "search": { "input": "q=caf%C3%A9", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "search": "q=café" },
+    "inputs": [{ "search": "q=café" }],
+    "expected_obj": {
+      "search": "q=caf%C3%A9"
+    },
+    "expected_match": {
+      "search": { "input": "q=caf%C3%A9", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "search": "q=caf%c3%a9" },
+    "inputs": [{ "search": "q=café" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "hash": "caf%C3%A9" },
+    "inputs": [{ "hash": "café" }],
+    "expected_match": {
+      "hash": { "input": "caf%C3%A9", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "hash": "café" },
+    "inputs": [{ "hash": "café" }],
+    "expected_obj": {
+      "hash": "caf%C3%A9"
+    },
+    "expected_match": {
+      "hash": { "input": "caf%C3%A9", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "hash": "caf%c3%a9" },
+    "inputs": [{ "hash": "café" }],
+    "expected_match": null
+  },
+  {
+    "pattern": { "protocol": "about", "pathname": "(blank|sourcedoc)" },
+    "inputs": [ "about:blank" ],
+    "expected_match": {
+      "protocol": { "input": "about", "groups": {}},
+      "pathname": { "input": "blank", "groups": { "0": "blank" }}
+    }
+  },
+  {
+    "pattern": { "protocol": "data", "pathname": ":number([0-9]+)" },
+    "inputs": [ "data:8675309" ],
+    "expected_match": {
+      "protocol": { "input": "data", "groups": {}},
+      "pathname": { "input": "8675309", "groups": { "number": "8675309" }}
+    }
+  },
+  {
+    "pattern": { "pathname": "/(\\m)" },
+    "expected_obj": "error"
+  },
+  {
+    "pattern": { "pathname": "/foo!" },
+    "inputs": [{ "pathname": "/foo!" }],
+    "expected_match": {
+      "pathname": { "input": "/foo!", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo\\:" },
+    "inputs": [{ "pathname": "/foo:" }],
+    "expected_match": {
+      "pathname": { "input": "/foo:", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo\\{" },
+    "inputs": [{ "pathname": "/foo{" }],
+    "expected_obj": {
+      "pathname": "/foo%7B"
+    },
+    "expected_match": {
+      "pathname": { "input": "/foo%7B", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo\\(" },
+    "inputs": [{ "pathname": "/foo(" }],
+    "expected_match": {
+      "pathname": { "input": "/foo(", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "protocol": "javascript", "pathname": "var x = 1;" },
+    "inputs": [{ "protocol": "javascript", "pathname": "var x = 1;" }],
+    "expected_match": {
+      "protocol": { "input": "javascript", "groups": {}},
+      "pathname": { "input": "var x = 1;", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "pathname": "var x = 1;" },
+    "inputs": [{ "protocol": "javascript", "pathname": "var x = 1;" }],
+    "expected_obj": {
+      "pathname": "var%20x%20=%201;"
+    },
+    "expected_match": null
+  },
+  {
+    "pattern": { "protocol": "javascript", "pathname": "var x = 1;" },
+    "inputs": [{ "baseURL": "javascript:var x = 1;" }],
+    "expected_match": {
+      "protocol": { "input": "javascript", "groups": {}},
+      "pathname": { "input": "var x = 1;", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "protocol": "(data|javascript)", "pathname": "var x = 1;" },
+    "inputs": [{ "protocol": "javascript", "pathname": "var x = 1;" }],
+    "expected_match": {
+      "protocol": { "input": "javascript", "groups": {"0": "javascript"}},
+      "pathname": { "input": "var x = 1;", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "protocol": "(https|javascript)", "pathname": "var x = 1;" },
+    "inputs": [{ "protocol": "javascript", "pathname": "var x = 1;" }],
+    "expected_obj": {
+      "pathname": "var%20x%20=%201;"
+    },
+    "expected_match": null
+  },
+  {
+    "pattern": { "pathname": "var x = 1;" },
+    "inputs": [{ "pathname": "var x = 1;" }],
+    "expected_obj": {
+      "pathname": "var%20x%20=%201;"
+    },
+    "expected_match": {
+      "pathname": { "input": "var%20x%20=%201;", "groups": {}}
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/bar" },
+    "inputs": [ "./foo/bar", "https://example.com" ],
+    "expected_match": {
+      "hostname": { "input": "example.com", "groups": { "0": "example.com" } },
+      "pathname": { "input": "/foo/bar", "groups": {} },
+      "protocol": { "input": "https", "groups": { "0": "https" } }
+    }
+  },
+  {
+    "pattern": { "pathname": "/foo/bar" },
+    "inputs": [ { "pathname": "/foo/bar" }, "https://example.com" ],
+    "expected_match": "error"
+  }
+]

@@ -129,7 +129,6 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(PromiseImageTest, reporter, ctxInfo) {
     const int kHeight = 10;
 
     auto ctx = ctxInfo.directContext();
-    GrGpu* gpu = ctx->priv().getGpu();
 
     GrBackendTexture backendTex = ctx->createBackendTexture(
             kWidth, kHeight, kRGBA_8888_SkColorType,
@@ -141,7 +140,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(PromiseImageTest, reporter, ctxInfo) {
 
     PromiseTextureChecker promiseChecker(backendTex, reporter, false);
     GrSurfaceOrigin texOrigin = kTopLeft_GrSurfaceOrigin;
-    sk_sp<SkImage> refImg(SkImage_Gpu::MakePromiseTexture(ctx,
+    sk_sp<SkImage> refImg(SkImage_Gpu::MakePromiseTexture(ctx->threadSafeProxy(),
                                                           backendFormat,
                                                           {kWidth, kHeight},
                                                           GrMipmapped::kNo,
@@ -164,15 +163,14 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(PromiseImageTest, reporter, ctxInfo) {
     // We still own the image so we should not have called Release or Done.
     check_only_fulfilled(reporter, promiseChecker);
 
-    gpu->testingOnly_flushGpuAndSync();
+    ctx->submit(true);
     check_only_fulfilled(reporter, promiseChecker);
 
     canvas->drawImage(refImg, 0, 0);
     canvas->drawImage(refImg, 0, 0);
 
-    surface->flushAndSubmit();
+    surface->flushAndSubmit(true);
 
-    gpu->testingOnly_flushGpuAndSync();
     // Image should still be fulfilled from the first time we drew/flushed it.
     check_only_fulfilled(reporter, promiseChecker);
 
@@ -189,7 +187,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(PromiseImageTest, reporter, ctxInfo) {
     // Flushing should have called Release. Depending on the backend and timing it may have called
     // done.
     check_all_flushed_but_not_synced(reporter, promiseChecker, ctx->backend());
-    gpu->testingOnly_flushGpuAndSync();
+    ctx->submit(true);
     // Now Done should definitely have been called.
     check_all_done(reporter, promiseChecker);
 
@@ -249,7 +247,7 @@ DEF_GPUTEST(PromiseImageTextureShutdown, reporter, ctxInfo) {
             SkCanvas* canvas = surface->getCanvas();
 
             PromiseTextureChecker promiseChecker(mbet->texture(), reporter, false);
-            sk_sp<SkImage> image(SkImage_Gpu::MakePromiseTexture(ctx,
+            sk_sp<SkImage> image(SkImage_Gpu::MakePromiseTexture(ctx->threadSafeProxy(),
                                                                  mbet->texture().getBackendFormat(),
                                                                  {kWidth, kHeight},
                                                                  GrMipmapped::kNo,
@@ -293,7 +291,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(PromiseImageTextureFullCache, reporter, ctxIn
     SkCanvas* canvas = surface->getCanvas();
 
     PromiseTextureChecker promiseChecker(backendTex, reporter, false);
-    sk_sp<SkImage> image(SkImage_Gpu::MakePromiseTexture(dContext,
+    sk_sp<SkImage> image(SkImage_Gpu::MakePromiseTexture(dContext->threadSafeProxy(),
                                                          backendTex.getBackendFormat(),
                                                          {kWidth, kHeight},
                                                          GrMipmapped::kNo,
@@ -341,8 +339,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(PromiseImageTextureFullCache, reporter, ctxIn
     surface->flushAndSubmit();
     // Must call these to ensure that all callbacks are performed before the checker is destroyed.
     image.reset();
-    dContext->flushAndSubmit();
-    dContext->priv().getGpu()->testingOnly_flushGpuAndSync();
+    dContext->flushAndSubmit(true);
 
     dContext->deleteBackendTexture(backendTex);
 }
@@ -373,7 +370,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(PromiseImageNullFulfill, reporter, ctxInfo) {
         ++static_cast<Counts*>(ctx)->fReleaseCount;
     };
     GrSurfaceOrigin texOrigin = kTopLeft_GrSurfaceOrigin;
-    sk_sp<SkImage> refImg(SkImage_Gpu::MakePromiseTexture(dContext,
+    sk_sp<SkImage> refImg(SkImage_Gpu::MakePromiseTexture(dContext->threadSafeProxy(),
                                                           backendFormat,
                                                           {kWidth, kHeight},
                                                           GrMipmapped::kNo,
@@ -392,8 +389,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(PromiseImageNullFulfill, reporter, ctxInfo) {
     canvas->drawImage(refImg, 0, 0);
     SkPaint paint;
     paint.setColorFilter(SkColorFilters::LinearToSRGBGamma());
-    canvas->drawImage(refImg, 0, 0, &paint);
-    auto shader = refImg->makeShader(SkTileMode::kClamp, SkTileMode::kClamp);
+    canvas->drawImage(refImg, 0, 0, SkSamplingOptions(), &paint);
+    auto shader = refImg->makeShader(SkSamplingOptions());
     REPORTER_ASSERT(reporter, shader);
     paint.setShader(std::move(shader));
     canvas->drawRect(SkRect::MakeWH(1,1), paint);

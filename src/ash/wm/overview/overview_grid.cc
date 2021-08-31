@@ -22,6 +22,8 @@
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
+#include "ash/system/toast/toast_manager_impl.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_name_view.h"
@@ -56,6 +58,8 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -89,6 +93,12 @@ constexpr base::TimeDelta kOcclusionUnpauseDurationForScroll =
 
 constexpr base::TimeDelta kOcclusionUnpauseDurationForRotation =
     base::TimeDelta::FromMilliseconds(300);
+
+// Toast id for the toast that is displayed when a user tries to move a window
+// that is visible on all desks to another desk.
+constexpr char kMoveVisibleOnAllDesksWindowToastId[] =
+    "ash.wm.overview.move_visible_on_all_desks_window_toast";
+constexpr int kToastDurationMs = 2500;
 
 // Histogram names for overview enter/exit smoothness in clamshell,
 // tablet mode and splitview.
@@ -215,7 +225,7 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
+  params.activatable = views::Widget::InitParams::Activatable::kNo;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.name = "OverviewDropTarget";
   params.accept_events = false;
@@ -250,10 +260,10 @@ float GetWantedDropTargetOpacity(
   }
 }
 
-gfx::Insets GetGridInsets(const gfx::Rect& grid_bounds) {
+gfx::Insets GetGridInsetsImpl(const gfx::Rect& grid_bounds) {
   const int horizontal_inset =
-      base::ClampFloor(std::min(kOverviewInsetRatio * grid_bounds.width(),
-                                kOverviewInsetRatio * grid_bounds.height()));
+      base::ClampFloor(kOverviewInsetRatio *
+                       std::min(grid_bounds.width(), grid_bounds.height()));
   const int vertical_inset =
       horizontal_inset +
       kOverviewVerticalInset * (grid_bounds.height() - 2 * horizontal_inset);
@@ -636,9 +646,9 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item,
     const gfx::Rect grid_bounds = GetGridBoundsInScreen(
         root_window_,
         split_view_drag_indicators_
-            ? base::make_optional(
+            ? absl::make_optional(
                   split_view_drag_indicators_->current_window_dragging_state())
-            : base::nullopt,
+            : absl::nullopt,
         /*divider_changed=*/false,
         /*account_for_hotseat=*/true);
     SetBoundsAndUpdatePositions(grid_bounds, ignored_items, /*animate=*/true);
@@ -704,7 +714,7 @@ void OverviewGrid::RearrangeDuringDrag(
 
   // Update the grid's bounds.
   const gfx::Rect wanted_grid_bounds = GetGridBoundsInScreen(
-      root_window_, base::make_optional(window_dragging_state),
+      root_window_, absl::make_optional(window_dragging_state),
       /*divider_changed=*/false, /*account_for_hotseat=*/true);
   if (bounds_ != wanted_grid_bounds) {
     base::flat_set<OverviewItem*> ignored_items;
@@ -936,13 +946,6 @@ void OverviewGrid::OnSplitViewStateChanged(
       split_view_controller->end_reason() ==
           SplitViewController::EndReason::kUnsnappableWindowActivated;
 
-  // Restore focus unless either a window was just snapped (and activated) or
-  // split view mode was ended by activating an unsnappable window.
-  if (state != SplitViewController::State::kNoSnap ||
-      unsnappable_window_activated) {
-    overview_session_->ResetFocusRestoreWindow(false);
-  }
-
   // If two windows were snapped to both sides of the screen or an unsnappable
   // window was just activated, or we're in single split mode in clamshell mode
   // and there is no window in overview, end overview mode and bail out.
@@ -950,6 +953,7 @@ void OverviewGrid::OnSplitViewStateChanged(
       unsnappable_window_activated ||
       (split_view_controller->InClamshellSplitViewMode() &&
        overview_session_->IsEmpty())) {
+    overview_session_->RestoreWindowActivation(false);
     overview_controller->EndOverview();
     return;
   }
@@ -968,7 +972,7 @@ void OverviewGrid::OnSplitViewStateChanged(
 void OverviewGrid::OnSplitViewDividerPositionChanged() {
   SetBoundsAndUpdatePositions(
       GetGridBoundsInScreen(root_window_,
-                            /*window_dragging_state=*/base::nullopt,
+                            /*window_dragging_state=*/absl::nullopt,
                             /*divider_changed=*/true,
                             /*account_for_hotseat=*/true),
       /*ignored_items=*/{}, /*animate=*/false);
@@ -1011,7 +1015,6 @@ void OverviewGrid::OnStartingAnimationComplete(bool canceled) {
 
   for (auto& window : window_list())
     window->OnStartingAnimationComplete();
-
 }
 
 void OverviewGrid::CalculateWindowListAnimationStates(
@@ -1321,10 +1324,10 @@ bool OverviewGrid::IsDesksBarViewActive() const {
   DCHECK(desks_util::ShouldDesksBarBeCreated());
 
   // The desk bar view is not active if there is only a single desk when
-  // overview is started. Once there are more than one desk, it should stay
-  // active even if the 2nd to last desk is deleted.
+  // overview is started. Or when the desks bar view has been created and in
+  // zero state.
   return DesksController::Get()->desks().size() > 1 ||
-         (desks_bar_view_ && !desks_bar_view_->mini_views().empty());
+         (desks_bar_view_ && !desks_bar_view_->IsZeroState());
 }
 
 gfx::Rect OverviewGrid::GetGridEffectiveBounds() const {
@@ -1332,11 +1335,13 @@ gfx::Rect OverviewGrid::GetGridEffectiveBounds() const {
     return bounds_;
 
   gfx::Rect effective_bounds = bounds_;
-  effective_bounds.Inset(0,
-                         DesksBarView::GetBarHeightForWidth(
-                             root_window_, desks_bar_view_, bounds_.width()),
-                         0, 0);
+  effective_bounds.Inset(0, DesksBarView::GetBarHeightForWidth(root_window_), 0,
+                         0);
   return effective_bounds;
+}
+
+gfx::Insets OverviewGrid::GetGridInsets() const {
+  return GetGridInsetsImpl(GetGridEffectiveBounds());
 }
 
 bool OverviewGrid::IntersectsWithDesksBar(const gfx::Point& screen_location,
@@ -1358,10 +1363,25 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniView(
     OverviewItem* drag_item) {
   DCHECK(desks_util::ShouldDesksBarBeCreated());
 
+  aura::Window* const dragged_window = drag_item->GetWindow();
+  const bool dragged_window_is_visible_on_all_desks =
+      dragged_window &&
+      dragged_window->GetProperty(aura::client::kVisibleOnAllWorkspacesKey);
   // End the drag for the DesksBarView.
   if (!IntersectsWithDesksBar(screen_location,
-                              /*update_desks_bar_drag_details=*/true,
+                              /*update_desks_bar_drag_details=*/
+                              !dragged_window_is_visible_on_all_desks,
                               /*for_drop=*/true)) {
+    return false;
+  }
+
+  if (dragged_window_is_visible_on_all_desks) {
+    // Show toast since items that are visible on all desks should not be able
+    // to be unassigned during overview.
+    Shell::Get()->toast_manager()->Show(ToastData(
+        kMoveVisibleOnAllDesksWindowToastId,
+        l10n_util::GetStringUTF16(IDS_ASH_OVERVIEW_VISIBLE_ON_ALL_DESKS_TOAST),
+        kToastDurationMs, absl::nullopt));
     return false;
   }
 
@@ -1370,7 +1390,6 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniView(
     if (!mini_view->IsPointOnMiniView(screen_location))
       continue;
 
-    aura::Window* const dragged_window = drag_item->GetWindow();
     Desk* const target_desk = mini_view->desk();
     if (target_desk == desks_controller->active_desk())
       return false;
@@ -1391,7 +1410,7 @@ void OverviewGrid::StartScroll() {
   // to fit the rightmost window into |total_bounds|. The max is zero which is
   // default because windows are aligned to the left from the beginning.
   gfx::Rect total_bounds = GetGridEffectiveBounds();
-  total_bounds.Inset(GetGridInsets(total_bounds));
+  total_bounds.Inset(GetGridInsetsImpl(total_bounds));
 
   float rightmost_window_right = 0;
   items_scrolling_bounds_.resize(window_list_.size());
@@ -1519,10 +1538,10 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
 
   // Get the bounds of the window if there is a snapped window or a window
   // about to be snapped.
-  base::Optional<gfx::RectF> split_view_bounds =
+  absl::optional<gfx::RectF> split_view_bounds =
       GetSplitviewBoundsMaintainingAspectRatio();
   if (!split_view_bounds) {
-    item->set_unclipped_size(base::nullopt);
+    item->set_unclipped_size(absl::nullopt);
     return width;
   }
 
@@ -1561,15 +1580,8 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
   }
 
   DCHECK(!unclipped_size.IsEmpty());
-  item->set_unclipped_size(base::make_optional(unclipped_size));
+  item->set_unclipped_size(absl::make_optional(unclipped_size));
   return width;
-}
-
-void OverviewGrid::OnDesksChanged() {
-  if (MaybeUpdateDesksWidgetBounds())
-    PositionWindows(/*animate=*/false, /*ignored_items=*/{});
-  else
-    desks_bar_view_->Layout();
 }
 
 bool OverviewGrid::IsDeskNameBeingModified() const {
@@ -1611,7 +1623,7 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
   gfx::Rect total_bounds = GetGridEffectiveBounds();
 
   // Windows occupy vertically centered area with additional vertical insets.
-  total_bounds.Inset(GetGridInsets(total_bounds));
+  total_bounds.Inset(GetGridInsetsImpl(total_bounds));
   std::vector<gfx::RectF> rects;
 
   // Keep track of the lowest coordinate.
@@ -1715,7 +1727,7 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRectsForTabletModeLayout(
     const base::flat_set<OverviewItem*>& ignored_items) {
   gfx::Rect total_bounds = GetGridEffectiveBounds();
   // Windows occupy vertically centered area with additional vertical insets.
-  total_bounds.Inset(GetGridInsets(total_bounds));
+  total_bounds.Inset(GetGridInsetsImpl(total_bounds));
 
   // |scroll_offset_min_| may be changed on positioning (either by closing
   // windows or display changes). Recalculate it and clamp |scroll_offset_|, so
@@ -1909,8 +1921,8 @@ void OverviewGrid::AddDraggedWindowIntoOverviewOnDragEnd(
 
 gfx::Rect OverviewGrid::GetDesksWidgetBounds() const {
   gfx::Rect desks_widget_screen_bounds = bounds_;
-  desks_widget_screen_bounds.set_height(DesksBarView::GetBarHeightForWidth(
-      root_window_, desks_bar_view_, desks_widget_screen_bounds.width()));
+  desks_widget_screen_bounds.set_height(
+      DesksBarView::GetBarHeightForWidth(root_window_));
   // Shift the widget down to make room for the splitview indicator guidance
   // when it's shown at the top of the screen and no other windows are snapped.
   if (split_view_drag_indicators_ &&
@@ -1940,4 +1952,5 @@ void OverviewGrid::UpdateFrameThrottling() {
   Shell::Get()->frame_throttling_controller()->StartThrottling(
       windows_to_throttle);
 }
+
 }  // namespace ash

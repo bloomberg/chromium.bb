@@ -10,7 +10,6 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/autofill/autofill_app_interface.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_constants.h"
-#import "ios/chrome/browser/ui/settings/autofill/features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -116,7 +115,7 @@ id<GREYMatcher> BottomToolbar() {
 
 // Close the settings.
 - (void)exitSettingsMenu {
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(0)]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -141,7 +140,7 @@ id<GREYMatcher> BottomToolbar() {
   }
 
   // Go back to the list view page.
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(0)]
       performAction:grey_tap()];
 
   [self exitSettingsMenu];
@@ -155,7 +154,7 @@ id<GREYMatcher> BottomToolbar() {
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 
   // Go back to the list view page.
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(0)]
       performAction:grey_tap()];
 
   [self exitSettingsMenu];
@@ -172,7 +171,7 @@ id<GREYMatcher> BottomToolbar() {
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 
   // Go back to the list view page.
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(0)]
       performAction:grey_tap()];
 
   [self exitSettingsMenu];
@@ -225,6 +224,59 @@ id<GREYMatcher> BottomToolbar() {
       assertWithMatcher:grey_notNil()];
 
   [self exitSettingsMenu];
+}
+
+// Checks that the Autofill credit card switch can be turned off and the add
+// payment method button in the toolbar is disabled.
+- (void)testToggleCreditCardSwitchPaymentMethodDisabled {
+  [self openCreditCardsSettings];
+
+  // Toggle the Autofill credit cards switch off.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+                                   kAutofillCreditCardSwitchViewId, YES, YES)]
+      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+
+  // Expect Add Payment Method button to be disabled.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::AddPaymentMethodButton()]
+      assertWithMatcher:grey_not(grey_enabled())];
+
+  // Toggle the Autofill credit cards switch back on.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+                                   kAutofillCreditCardSwitchViewId, NO, YES)]
+      performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
+
+  // Expect Add Payment Method button to be visible.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::AddPaymentMethodButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [self exitSettingsMenu];
+}
+
+// Checks that when the Autofill credit card switch can be turned off and the
+// edit button is pressed, Add Payment Method button is removed from the
+// toolbar.
+- (void)testToggleCreditCardSwitchInEditModePaymentMethodRemoved {
+  [AutofillAppInterface saveLocalCreditCard];
+  [self openCreditCardsSettings];
+
+  // Toggle the Autofill credit cards switch off.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+                                   kAutofillCreditCardSwitchViewId, YES, YES)]
+      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+
+  // Open Edit Mode.
+  [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
+      performAction:grey_tap()];
+
+  // Expect Add Payment Method to be removed.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::AddPaymentMethodButton()]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 }
 
 // Checks that the toolbar always appears in edit mode.

@@ -11,10 +11,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/files/platform_file.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_fence_handle.h"
@@ -30,7 +30,7 @@ namespace ui {
 
 namespace {
 
-std::unique_ptr<gfx::GpuFence> CreateMergedGpuFenceFromFDs(
+gfx::GpuFenceHandle CreateMergedGpuFenceFromFDs(
     std::vector<base::ScopedFD> fence_fds) {
   base::ScopedFD merged_fd;
 
@@ -43,13 +43,11 @@ std::unique_ptr<gfx::GpuFence> CreateMergedGpuFenceFromFDs(
     }
   }
 
-  if (merged_fd.is_valid()) {
-    gfx::GpuFenceHandle handle;
+  gfx::GpuFenceHandle handle;
+  if (merged_fd.is_valid())
     handle.owned_fd = std::move(merged_fd);
-    return std::make_unique<gfx::GpuFence>(std::move(handle));
-  }
 
-  return nullptr;
+  return handle;
 }
 
 std::vector<uint32_t> GetCrtcIdsOfPlanes(
@@ -142,8 +140,11 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(CommitRequest commit_request,
 
     if (crtc_request.should_enable()) {
       DCHECK(crtc_request.plane_list());
-      status &= AssignOverlayPlanes(crtc_request.plane_list(),
-                                    crtc_request.overlays(), crtc_id);
+      if (!AssignOverlayPlanes(crtc_request.plane_list(),
+                               crtc_request.overlays(), crtc_id)) {
+        LOG_IF(ERROR, !is_testing) << "Failed to Assign Overlay Planes";
+        status = false;
+      }
       enable_planes_lists.insert(crtc_request.plane_list());
     }
   }
@@ -204,9 +205,9 @@ void HardwareDisplayPlaneManagerAtomic::SetAtomicPropsForCommit(
       plane->set_in_use(false);
       HardwareDisplayPlaneAtomic* atomic_plane =
           static_cast<HardwareDisplayPlaneAtomic*>(plane);
-      atomic_plane->AssignPlaneProps(0, 0, gfx::Rect(), gfx::Rect(),
-                                     gfx::OVERLAY_TRANSFORM_NONE,
-                                     base::kInvalidPlatformFile);
+      atomic_plane->AssignPlaneProps(
+          0, 0, gfx::Rect(), gfx::Rect(), gfx::OVERLAY_TRANSFORM_NONE,
+          base::kInvalidPlatformFile, DRM_FORMAT_INVALID);
       atomic_plane->SetPlaneProps(atomic_request);
     }
   }
@@ -245,7 +246,7 @@ void HardwareDisplayPlaneManagerAtomic::SetAtomicPropsForCommit(
 bool HardwareDisplayPlaneManagerAtomic::Commit(
     HardwareDisplayPlaneList* plane_list,
     scoped_refptr<PageFlipRequest> page_flip_request,
-    std::unique_ptr<gfx::GpuFence>* out_fence) {
+    gfx::GpuFenceHandle* release_fence) {
   bool test_only = !page_flip_request;
 
   std::vector<uint32_t> crtcs = GetCrtcIdsOfPlanes(*plane_list);
@@ -263,7 +264,7 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
   std::vector<base::ScopedFD> out_fence_fds;
   {
     std::vector<base::ScopedFD::Receiver> out_fence_fd_receivers;
-    if (out_fence) {
+    if (release_fence) {
       if (!AddOutFencePtrProperties(plane_list->atomic_property_set.get(),
                                     crtcs, &out_fence_fds,
                                     &out_fence_fd_receivers)) {
@@ -288,8 +289,8 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
     }
   }
 
-  if (out_fence)
-    *out_fence = CreateMergedGpuFenceFromFDs(std::move(out_fence_fds));
+  if (release_fence)
+    *release_fence = CreateMergedGpuFenceFromFDs(std::move(out_fence_fds));
 
   plane_list->plane_list.clear();
   plane_list->atomic_property_set.reset(drmModeAtomicAlloc());
@@ -307,9 +308,9 @@ bool HardwareDisplayPlaneManagerAtomic::DisableOverlayPlanes(
 
       HardwareDisplayPlaneAtomic* atomic_plane =
           static_cast<HardwareDisplayPlaneAtomic*>(plane);
-      atomic_plane->AssignPlaneProps(0, 0, gfx::Rect(), gfx::Rect(),
-                                     gfx::OVERLAY_TRANSFORM_NONE,
-                                     base::kInvalidPlatformFile);
+      atomic_plane->AssignPlaneProps(
+          0, 0, gfx::Rect(), gfx::Rect(), gfx::OVERLAY_TRANSFORM_NONE,
+          base::kInvalidPlatformFile, DRM_FORMAT_INVALID);
       atomic_plane->SetPlaneProps(plane_list->atomic_property_set.get());
     }
     ret = drm_->CommitProperties(plane_list->atomic_property_set.get(),
@@ -365,7 +366,7 @@ void HardwareDisplayPlaneManagerAtomic::RequestPlanesReadyCallback(
 }
 
 bool HardwareDisplayPlaneManagerAtomic::SetPlaneData(
-    HardwareDisplayPlaneList* plane_list,
+    HardwareDisplayPlaneList*,
     HardwareDisplayPlane* hw_plane,
     const DrmOverlayPlane& overlay,
     uint32_t crtc_id,
@@ -382,9 +383,10 @@ bool HardwareDisplayPlaneManagerAtomic::SetPlaneData(
     fence_fd = gpu_fence_handle.owned_fd.get();
   }
 
-  if (!atomic_plane->AssignPlaneProps(crtc_id, framebuffer_id,
-                                      overlay.display_bounds, src_rect,
-                                      overlay.plane_transform, fence_fd)) {
+  if (!atomic_plane->AssignPlaneProps(
+          crtc_id, framebuffer_id, overlay.display_bounds, src_rect,
+          overlay.plane_transform, fence_fd,
+          overlay.buffer->framebuffer_pixel_format())) {
     return false;
   }
   return true;

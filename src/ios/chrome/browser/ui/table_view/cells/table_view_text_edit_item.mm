@@ -63,7 +63,11 @@ const CGFloat kEditIconLength = 18;
     cell.textField.accessibilityIdentifier =
         [NSString stringWithFormat:@"%@_textField", self.textFieldName];
   }
-  if (styler.cellBackgroundColor) {
+
+  if (self.textFieldBackgroundColor) {
+    cell.textLabel.backgroundColor = self.textFieldBackgroundColor;
+    cell.textField.backgroundColor = self.textFieldBackgroundColor;
+  } else if (styler.cellBackgroundColor) {
     cell.textLabel.backgroundColor = styler.cellBackgroundColor;
     cell.textField.backgroundColor = styler.cellBackgroundColor;
   } else {
@@ -368,6 +372,9 @@ const CGFloat kEditIconLength = 18;
               forControlEvents:UIControlEventAllEvents];
   [self setIdentifyingIcon:nil];
   self.identifyingIconButton.enabled = NO;
+  [self.identifyingIconButton removeTarget:nil
+                                    action:nil
+                          forControlEvents:UIControlEventAllEvents];
 }
 
 #pragma mark Accessibility

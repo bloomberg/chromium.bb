@@ -7,8 +7,7 @@
 
 #include <string>
 
-#include "base/optional.h"
-#include "base/strings/string16.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 // The interface that a NotificationPlatformBridge uses to pass back information
 // and interactions from the native notification system.
@@ -29,7 +28,7 @@ class NotificationPlatformBridgeDelegate {
   virtual void HandleNotificationButtonClicked(
       const std::string& id,
       int button_index,
-      const base::Optional<base::string16>& reply) = 0;
+      const absl::optional<std::u16string>& reply) = 0;
 
   // To be called when the settings button in a notification is clicked.
   virtual void HandleNotificationSettingsButtonClicked(

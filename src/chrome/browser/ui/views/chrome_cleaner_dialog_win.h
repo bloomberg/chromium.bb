@@ -5,11 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_CHROME_CLEANER_DIALOG_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_CHROME_CLEANER_DIALOG_WIN_H_
 
-#include <memory>
-#include <set>
-
 #include "base/macros.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class Browser;
@@ -36,24 +34,21 @@ class ChromeCleanerDialog
     : public views::DialogDelegateView,
       public safe_browsing::ChromeCleanerController::Observer {
  public:
+  METADATA_HEADER(ChromeCleanerDialog);
   // The |controller| object manages its own lifetime and is not owned by
   // |ChromeCleanerDialog|. See the description of the
   // |ChromeCleanerDialogController| class for details.
   ChromeCleanerDialog(
       safe_browsing::ChromeCleanerDialogController* dialog_controller,
       safe_browsing::ChromeCleanerController* cleaner_controller);
+  ChromeCleanerDialog(const ChromeCleanerDialog&) = delete;
+  ChromeCleanerDialog& operator=(const ChromeCleanerDialog&) = delete;
   ~ChromeCleanerDialog() override;
 
   void Show(Browser* browser);
 
-  // views::WidgetDelegate overrides.
-  ui::ModalType GetModalType() const override;
-  base::string16 GetWindowTitle() const override;
+  // views::DialogDelegateView:
   views::View* GetInitiallyFocusedView() override;
-  bool ShouldShowCloseButton() const override;
-
-  // views::View overrides.
-  gfx::Size CalculatePreferredSize() const override;
 
   // safe_browsing::ChromeCleanerController::Observer overrides.
   void OnIdle(
@@ -80,8 +75,6 @@ class ChromeCleanerDialog
   safe_browsing::ChromeCleanerController* cleaner_controller_ = nullptr;
   views::LabelButton* details_button_ = nullptr;
   views::Checkbox* logs_permission_checkbox_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeCleanerDialog);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_CHROME_CLEANER_DIALOG_WIN_H_

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/webui/help/version_updater.h"
 
 // A very simple VersionUpdater implementation that immediately invokes the
@@ -18,8 +19,7 @@ class TestVersionUpdater : public VersionUpdater {
   TestVersionUpdater();
   ~TestVersionUpdater() override;
 
-  void CheckForUpdate(const StatusCallback& callback,
-                      const PromoteCallback&) override;
+  void CheckForUpdate(StatusCallback callback, PromoteCallback) override;
 
   void SetReturnedStatus(Status status) { status_ = status; }
 
@@ -27,13 +27,13 @@ class TestVersionUpdater : public VersionUpdater {
 #if defined(OS_MAC)
   void PromoteUpdater() const override {}
 #endif
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void SetChannel(const std::string& channel,
                   bool is_powerwash_allowed) override {}
-  void GetChannel(bool get_current_channel,
-                  const ChannelCallback& callback) override {}
+  void GetChannel(bool get_current_channel, ChannelCallback callback) override {
+  }
   void GetEolInfo(EolInfoCallback callback) override {}
-  void SetUpdateOverCellularOneTimePermission(const StatusCallback& callback,
+  void SetUpdateOverCellularOneTimePermission(StatusCallback callback,
                                               const std::string& update_version,
                                               int64_t update_size) override {}
 #endif
@@ -45,7 +45,7 @@ class TestVersionUpdater : public VersionUpdater {
   bool powerwash_ = false;
   std::string version_;
   int64_t update_size_ = 0;
-  base::string16 message_;
+  std::u16string message_;
 
   DISALLOW_COPY_AND_ASSIGN(TestVersionUpdater);
 };

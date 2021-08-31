@@ -12,6 +12,7 @@
 #include "base/util/memory_pressure/multi_source_memory_pressure_monitor.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "chromecast/browser/display_configurator_observer.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_main_parts.h"
@@ -37,6 +38,7 @@ class ViewsDelegate;
 namespace chromecast {
 class CastSystemMemoryPressureEvaluatorAdjuster;
 class ServiceConnector;
+class ServiceManagerContext;
 class WaylandServerController;
 
 #if defined(USE_AURA)
@@ -78,12 +80,13 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   content::BrowserContext* browser_context();
 
   // content::BrowserMainParts implementation:
-  void PreMainMessageLoopStart() override;
-  void PostMainMessageLoopStart() override;
+  void PreCreateMainMessageLoop() override;
+  void PostCreateMainMessageLoop() override;
   void ToolkitInitialized() override;
   int PreCreateThreads() override;
-  void PreMainMessageLoopRun() override;
-  bool MainMessageLoopRun(int* result_code) override;
+  int PreMainMessageLoopRun() override;
+  void WillRunMainMessageLoop(
+      std::unique_ptr<base::RunLoop>& run_loop) override;
   void PostMainMessageLoopRun() override;
   void PostCreateThreads() override;
   void PostDestroyThreads() override;
@@ -93,6 +96,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   const content::MainFunctionParams parameters_;  // For running browser tests.
   // Caches a pointer of the CastContentBrowserClient.
   CastContentBrowserClient* const cast_content_browser_client_ = nullptr;
+  std::unique_ptr<ServiceManagerContext> service_manager_context_;
   std::unique_ptr<media::VideoPlaneController> video_plane_controller_;
   std::unique_ptr<media::MediaCapsImpl> media_caps_;
   std::unique_ptr<ServiceConnector> service_connector_;
@@ -102,6 +106,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<CastScreen> cast_screen_;
   std::unique_ptr<CastWindowManagerAura> window_manager_;
   std::unique_ptr<RoundedWindowCornersManager> rounded_window_corners_manager_;
+  std::unique_ptr<DisplayConfiguratorObserver> display_change_observer_;
 #else
   std::unique_ptr<CastWindowManager> window_manager_;
 #endif  //  defined(USE_AURA)

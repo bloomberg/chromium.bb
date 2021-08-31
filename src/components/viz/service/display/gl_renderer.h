@@ -25,6 +25,7 @@
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/service/display/direct_renderer.h"
+#include "components/viz/service/display/display_resource_provider_gl.h"
 #include "components/viz/service/display/gl_renderer_copier.h"
 #include "components/viz/service/display/gl_renderer_draw_cache.h"
 #include "components/viz/service/display/program_binding.h"
@@ -33,6 +34,7 @@
 #include "components/viz/service/display/texture_deleter.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/geometry/quad_f.h"
+#include "ui/gfx/gpu_fence_handle.h"
 #include "ui/latency/latency_info.h"
 
 #if defined(OS_APPLE)
@@ -75,7 +77,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   GLRenderer(const RendererSettings* settings,
              const DebugRendererSettings* debug_settings,
              OutputSurface* output_surface,
-             DisplayResourceProvider* resource_provider,
+             DisplayResourceProviderGL* resource_provider,
              OverlayProcessorInterface* overlay_processor,
              scoped_refptr<base::SingleThreadTaskRunner> current_task_runner);
   ~GLRenderer() override;
@@ -84,7 +86,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
 
   void SwapBuffers(SwapFrameData swap_frame_data) override;
   void SwapBuffersSkipped() override;
-  void SwapBuffersComplete() override;
+  void SwapBuffersComplete(gfx::GpuFenceHandle release_fence) override;
 
   void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) override;
@@ -158,7 +160,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   friend class GLRendererTest;
 
   using OverlayResourceLock =
-      std::unique_ptr<DisplayResourceProvider::ScopedOverlayLockGL>;
+      std::unique_ptr<DisplayResourceProviderGL::ScopedOverlayLockGL>;
   using OverlayResourceLockList = std::vector<OverlayResourceLock>;
 
   // If a RenderPass is used as an overlay, we render the RenderPass with any
@@ -223,7 +225,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
       DrawRenderPassDrawQuadParams* params,
       gfx::Transform* backdrop_filter_bounds_transform,
-      base::Optional<gfx::RRectF>* backdrop_filter_bounds,
+      absl::optional<gfx::RRectF>* backdrop_filter_bounds,
       gfx::Rect* unclipped_rect) const;
 
   // Allocates and returns a texture id that contains a copy of the contents
@@ -246,7 +248,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   sk_sp<SkImage> ApplyBackdropFilters(
       DrawRenderPassDrawQuadParams* params,
       const gfx::Rect& unclipped_rect,
-      const base::Optional<gfx::RRectF>& backdrop_filter_bounds,
+      const absl::optional<gfx::RRectF>& backdrop_filter_bounds,
       const gfx::Transform& backdrop_filter_bounds_transform);
 
   // gl_renderer can bypass TileDrawQuads that fill the RenderPass
@@ -305,11 +307,14 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   // that video color conversion can be enabled separately from general color
   // conversion. If |adjust_src_white_level| is true, then the |src_color_space|
   // white levels are adjusted to the display SDR white level so that no white
-  // level scaling happens.
-  void SetUseProgram(const ProgramKey& program_key,
-                     const gfx::ColorSpace& src_color_space,
-                     const gfx::ColorSpace& dst_color_space,
-                     bool adjust_src_white_level = false);
+  // level scaling happens. |src_hdr_metadata|, if available, is the mastering
+  // metadata associated to the source quad.
+  void SetUseProgram(
+      const ProgramKey& program_key,
+      const gfx::ColorSpace& src_color_space,
+      const gfx::ColorSpace& dst_color_space,
+      bool adjust_src_white_level = false,
+      absl::optional<gfx::HDRMetadata> src_hdr_metadata = absl::nullopt);
 
   bool MakeContextCurrent();
 
@@ -375,6 +380,10 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   // Returns true if the given solid color draw quad can be safely drawn using
   // the glClear function call.
   bool CanUseFastSolidColorDraw(const SolidColorDrawQuad* quad) const;
+
+  DisplayResourceProviderGL* resource_provider() {
+    return static_cast<DisplayResourceProviderGL*>(resource_provider_);
+  }
 
   // A map from RenderPass id to the texture used to draw the RenderPass from.
   base::flat_map<AggregatedRenderPassId, ScopedRenderPassTexture>

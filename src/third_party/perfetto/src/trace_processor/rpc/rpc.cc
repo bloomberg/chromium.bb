@@ -35,7 +35,8 @@ using ColumnDesc = protos::pbzero::RawQueryResult::ColumnDesc;
 constexpr size_t kProgressUpdateBytes = 50 * 1000 * 1000;
 
 Rpc::Rpc(std::unique_ptr<TraceProcessor> preloaded_instance)
-    : trace_processor_(std::move(preloaded_instance)) {}
+    : trace_processor_(std::move(preloaded_instance)),
+      session_id_(base::Uuidv4()) {}
 
 Rpc::Rpc() : Rpc(nullptr) {}
 
@@ -85,7 +86,9 @@ void Rpc::MaybePrintProgress() {
   }
 }
 
-std::vector<uint8_t> Rpc::Query(const uint8_t* args, size_t len) {
+void Rpc::Query(const uint8_t* args,
+                size_t len,
+                QueryResultBatchCallback result_callback) {
   protos::pbzero::RawQueryArgs::Decoder query(args, len);
   std::string sql = query.sql_query().ToStdString();
   PERFETTO_DLOG("[RPC] Query < %s", sql.c_str());
@@ -97,18 +100,20 @@ std::vector<uint8_t> Rpc::Query(const uint8_t* args, size_t len) {
     PERFETTO_ELOG("[RPC] %s", kErr);
     protozero::HeapBuffered<protos::pbzero::QueryResult> result;
     result->set_error(kErr);
-    return result.SerializeAsArray();
+    auto vec = result.SerializeAsArray();
+    result_callback(vec.data(), vec.size(), /*has_more=*/false);
+    return;
   }
 
   auto it = trace_processor_->ExecuteQuery(sql.c_str());
   QueryResultSerializer serializer(std::move(it));
 
-  // TODO(primiano): propagate chunks instead of piling up batches in the same
-  // result.
   std::vector<uint8_t> res;
-  while (serializer.Serialize(&res)) {
+  for (bool has_more = true; has_more;) {
+    has_more = serializer.Serialize(&res);
+    result_callback(res.data(), res.size(), has_more);
+    res.clear();
   }
-  return res;
 }
 
 std::vector<uint8_t> Rpc::RawQuery(const uint8_t* args, size_t len) {
@@ -253,6 +258,7 @@ std::string Rpc::GetCurrentTraceName() {
 void Rpc::RestoreInitialTables() {
   if (trace_processor_)
     trace_processor_->RestoreInitialTables();
+  session_id_ = base::Uuidv4();
 }
 
 std::vector<uint8_t> Rpc::ComputeMetric(const uint8_t* data, size_t len) {
@@ -341,6 +347,10 @@ std::vector<uint8_t> Rpc::DisableAndReadMetatrace() {
     result->set_error(status.message());
   }
   return result.SerializeAsArray();
+}
+
+std::string Rpc::GetSessionId() {
+  return session_id_.ToPrettyString();
 }
 
 }  // namespace trace_processor

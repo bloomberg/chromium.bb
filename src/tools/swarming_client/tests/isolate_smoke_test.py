@@ -983,6 +983,7 @@ class IsolateNoOutdir(IsolateTempdirBase):
 
 class IsolateOther(IsolateTempdirBase):
 
+  @unittest.skipIf(sys.platform == 'win32', 'crbug.com/1148174')
   def test_run_mixed(self):
     # Test when a user mapped from a directory and then replay from another
     # directory. This is a very rare corner case.

@@ -19,17 +19,22 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread_checker.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/policy_export.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class SequencedTaskRunner;
+}
+
+namespace content {
+class BrowserContext;
 }
 
 namespace network {
@@ -37,8 +42,6 @@ class SharedURLLoaderFactory;
 }
 
 namespace policy {
-
-class DMAuth;
 
 // Used in the Enterprise.DMServerRequestSuccess histogram, shows how many
 // retries we had to do to execute the DeviceManagementRequestJob.
@@ -117,7 +120,8 @@ class POLICY_EXPORT DeviceManagementService {
 
     // Server at which to contact the real time reporting service for
     // enterprise connectors.
-    virtual std::string GetReportingConnectorServerUrl() = 0;
+    virtual std::string GetReportingConnectorServerUrl(
+        content::BrowserContext* context) = 0;
   };
 
   // A DeviceManagementService job manages network requests to the device
@@ -199,6 +203,8 @@ class POLICY_EXPORT DeviceManagementService {
     virtual ~JobConfiguration() {}
 
     virtual JobType GetType() = 0;
+
+    virtual const DMAuth& GetAuth() const = 0;
 
     virtual const ParameterMap& GetQueryParams() = 0;
 
@@ -370,8 +376,8 @@ class POLICY_EXPORT JobConfigurationBase
     : public DeviceManagementService::JobConfiguration {
  protected:
   JobConfigurationBase(JobType type,
-                       std::unique_ptr<DMAuth> auth_data,
-                       base::Optional<std::string> oauth_token,
+                       DMAuth auth_data,
+                       absl::optional<std::string> oauth_token,
                        scoped_refptr<network::SharedURLLoaderFactory> factory);
   ~JobConfigurationBase() override;
 
@@ -379,7 +385,7 @@ class POLICY_EXPORT JobConfigurationBase
   // already exists its value is replaced.
   void AddParameter(const std::string& name, const std::string& value);
 
-  const DMAuth& GetAuth() { return *auth_data_.get(); }
+  const DMAuth& GetAuth() const override;
 
   // DeviceManagementService::JobConfiguration.
   JobType GetType() override;
@@ -402,11 +408,11 @@ class POLICY_EXPORT JobConfigurationBase
 
   // Auth data that will be passed as 'Authorization' header. Both |auth_data_|
   // and |oauth_token_| can be specified for one request.
-  std::unique_ptr<DMAuth> auth_data_;
+  DMAuth auth_data_;
 
   // OAuth token that will be passed as a query parameter. Both |auth_data_|
   // and |oauth_token_| can be specified for one request.
-  base::Optional<std::string> oauth_token_;
+  absl::optional<std::string> oauth_token_;
 
   // Query parameters for the network request.
   ParameterMap query_params_;

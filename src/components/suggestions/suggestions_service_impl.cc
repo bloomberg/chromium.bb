@@ -121,7 +121,7 @@ SuggestionsServiceImpl::SuggestionsServiceImpl(
       blocklist_upload_timer_(tick_clock_) {
   // |sync_service_| is null if switches::kDisableSync is set (tests use that).
   if (sync_service_)
-    sync_service_observer_.Add(sync_service_);
+    sync_service_observation_.Observe(sync_service_);
   // Immediately get the current sync state, so we'll flush the cache if
   // necessary.
   OnStateChanged(sync_service_);
@@ -140,18 +140,18 @@ bool SuggestionsServiceImpl::FetchSuggestionsData() {
   return true;
 }
 
-base::Optional<SuggestionsProfile>
+absl::optional<SuggestionsProfile>
 SuggestionsServiceImpl::GetSuggestionsDataFromCache() const {
   SuggestionsProfile suggestions;
   // In case of empty cache or error, return empty.
   if (!suggestions_store_->LoadSuggestions(&suggestions))
-    return base::nullopt;
+    return absl::nullopt;
   blocklist_store_->FilterSuggestions(&suggestions);
   return suggestions;
 }
 
-std::unique_ptr<SuggestionsServiceImpl::ResponseCallbackList::Subscription>
-SuggestionsServiceImpl::AddCallback(const ResponseCallback& callback) {
+base::CallbackListSubscription SuggestionsServiceImpl::AddCallback(
+    const ResponseCallback& callback) {
   return callback_list_.Add(callback);
 }
 
@@ -522,7 +522,7 @@ void SuggestionsServiceImpl::Shutdown() {
   // Cancel pending request.
   pending_request_.reset(nullptr);
 
-  sync_service_observer_.RemoveAll();
+  sync_service_observation_.Reset();
 }
 
 void SuggestionsServiceImpl::ScheduleBlocklistUpload() {

@@ -8,7 +8,6 @@
 #include "base/strings/escape.h"
 
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -250,7 +249,7 @@ TEST(EscapeTest, UnescapeAndDecodeUTF8URLComponentWithAdjustments) {
     // The adjustments argument is covered by the next test.
     //
     // TODO: Need to test unescape_spaces and unescape_percent.
-    string16 decoded = UnescapeAndDecodeUTF8URLComponentWithAdjustments(
+    std::u16string decoded = UnescapeAndDecodeUTF8URLComponentWithAdjustments(
         unescape_case.input, UnescapeRule::NORMAL, nullptr);
     EXPECT_EQ(WideToUTF16(unescape_case.decoded), decoded);
   }

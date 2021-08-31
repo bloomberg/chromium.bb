@@ -15,16 +15,14 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
-#include "components/data_reduction_proxy/proto/client_config.pb.h"
-#include "components/variations/variations_associated_data.h"
 #include "net/base/proxy_server.h"
 #include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(OS_ANDROID)
 #include "base/system/sys_info.h"
@@ -179,34 +177,5 @@ TEST_F(DataReductionProxyParamsTest, LowMemoryPromoFeature) {
 #endif
   }
 }
-
-TEST_F(DataReductionProxyParamsTest, GetConfigServiceURL) {
-  const struct {
-    std::string test_case;
-    std::string flag_value;
-    GURL expected;
-  } tests[] = {
-      {
-          "Nothing set", "",
-          GURL("https://datasaver.googleapis.com/v1/clientConfigs"),
-      },
-      {
-          "Only command line set", "http://commandline.config-service/",
-          GURL("http://commandline.config-service/"),
-      },
-  };
-
-  for (const auto& test : tests) {
-    // Reset all flags.
-    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
-    if (!test.flag_value.empty()) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-          switches::kDataReductionProxyConfigURL, test.flag_value);
-    }
-    EXPECT_EQ(test.expected, params::GetConfigServiceURL()) << test.test_case;
-  }
-}
-
-
 
 }  // namespace data_reduction_proxy

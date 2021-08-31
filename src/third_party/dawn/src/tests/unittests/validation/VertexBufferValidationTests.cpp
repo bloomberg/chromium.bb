@@ -25,12 +25,10 @@ class VertexBufferValidationTest : public ValidationTest {
     void SetUp() override {
         ValidationTest::SetUp();
 
-        fsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-                #version 450
-                layout(location = 0) out vec4 fragColor;
-                void main() {
-                    fragColor = vec4(0.0, 1.0, 0.0, 1.0);
-                })");
+        fsModule = utils::CreateShaderModule(device, R"(
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+                return vec4<f32>(0.0, 1.0, 0.0, 1.0);
+            })");
     }
 
     wgpu::Buffer MakeVertexBuffer() {
@@ -43,13 +41,18 @@ class VertexBufferValidationTest : public ValidationTest {
 
     wgpu::ShaderModule MakeVertexShader(unsigned int bufferCount) {
         std::ostringstream vs;
-        vs << "#version 450\n";
+        vs << "[[stage(vertex)]] fn main(\n";
         for (unsigned int i = 0; i < bufferCount; ++i) {
-            vs << "layout(location = " << i << ") in vec3 a_position" << i << ";\n";
+            // TODO(cwallez@chromium.org): remove this special handling of 0 once Tint supports
+            // trailing commas in argument lists.
+            if (i != 0) {
+                vs << ", ";
+            }
+            vs << "[[location(" << i << ")]] a_position" << i << " : vec3<f32>\n";
         }
-        vs << "void main() {\n";
+        vs << ") -> [[builtin(position)]] vec4<f32> {";
 
-        vs << "gl_Position = vec4(";
+        vs << "return vec4<f32>(";
         for (unsigned int i = 0; i < bufferCount; ++i) {
             vs << "a_position" << i;
             if (i != bufferCount - 1) {
@@ -60,31 +63,30 @@ class VertexBufferValidationTest : public ValidationTest {
 
         vs << "}\n";
 
-        return utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex,
-                                         vs.str().c_str());
+        return utils::CreateShaderModule(device, vs.str().c_str());
     }
 
     wgpu::RenderPipeline MakeRenderPipeline(const wgpu::ShaderModule& vsModule,
                                             unsigned int bufferCount) {
-        utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.vertexStage.module = vsModule;
-        descriptor.cFragmentStage.module = fsModule;
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
 
         for (unsigned int i = 0; i < bufferCount; ++i) {
-            descriptor.cVertexState.cVertexBuffers[i].attributeCount = 1;
-            descriptor.cVertexState.cVertexBuffers[i].attributes =
-                &descriptor.cVertexState.cAttributes[i];
-            descriptor.cVertexState.cAttributes[i].shaderLocation = i;
-            descriptor.cVertexState.cAttributes[i].format = wgpu::VertexFormat::Float3;
+            descriptor.cBuffers[i].attributeCount = 1;
+            descriptor.cBuffers[i].attributes = &descriptor.cAttributes[i];
+            descriptor.cAttributes[i].shaderLocation = i;
+            descriptor.cAttributes[i].format = wgpu::VertexFormat::Float32x3;
         }
-        descriptor.cVertexState.vertexBufferCount = bufferCount;
+        descriptor.vertex.bufferCount = bufferCount;
 
-        return device.CreateRenderPipeline(&descriptor);
+        return device.CreateRenderPipeline2(&descriptor);
     }
 
     wgpu::ShaderModule fsModule;
 };
 
+// Check that vertex buffers still count as bound if we switch the pipeline.
 TEST_F(VertexBufferValidationTest, VertexBuffersInheritedBetweenPipelines) {
     DummyRenderPass renderPass(device);
     wgpu::ShaderModule vsModule2 = MakeVertexShader(2);
@@ -121,7 +123,8 @@ TEST_F(VertexBufferValidationTest, VertexBuffersInheritedBetweenPipelines) {
     encoder.Finish();
 }
 
-TEST_F(VertexBufferValidationTest, VertexBuffersNotInheritedBetweenRendePasses) {
+// Check that vertex buffers that are set are reset between render passes.
+TEST_F(VertexBufferValidationTest, VertexBuffersNotInheritedBetweenRenderPasses) {
     DummyRenderPass renderPass(device);
     wgpu::ShaderModule vsModule2 = MakeVertexShader(2);
     wgpu::ShaderModule vsModule1 = MakeVertexShader(1);
@@ -170,6 +173,7 @@ TEST_F(VertexBufferValidationTest, VertexBuffersNotInheritedBetweenRendePasses) 
     ASSERT_DEVICE_ERROR(encoder.Finish());
 }
 
+// Check validation of the vertex buffer slot for OOB.
 TEST_F(VertexBufferValidationTest, VertexBufferSlotValidation) {
     wgpu::Buffer buffer = MakeVertexBuffer();
 
@@ -280,6 +284,47 @@ TEST_F(VertexBufferValidationTest, VertexBufferOffsetOOBValidation) {
     {
         wgpu::RenderBundleEncoder encoder = device.CreateRenderBundleEncoder(&renderBundleDesc);
         encoder.SetVertexBuffer(0, buffer, 256 + 4, 0);
+        ASSERT_DEVICE_ERROR(encoder.Finish());
+    }
+}
+
+// Check that the vertex buffer must have the Vertex usage.
+TEST_F(VertexBufferValidationTest, InvalidUsage) {
+    wgpu::Buffer vertexBuffer = MakeVertexBuffer();
+    wgpu::Buffer indexBuffer =
+        utils::CreateBufferFromData<uint32_t>(device, wgpu::BufferUsage::Index, {0, 0, 0});
+
+    DummyRenderPass renderPass(device);
+    // Control case: using the vertex buffer is valid.
+    {
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
+        pass.SetVertexBuffer(0, vertexBuffer);
+        pass.EndPass();
+        encoder.Finish();
+    }
+    // Error case: using the index buffer is an error.
+    {
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
+        pass.SetVertexBuffer(0, indexBuffer);
+        pass.EndPass();
+        ASSERT_DEVICE_ERROR(encoder.Finish());
+    }
+
+    utils::ComboRenderBundleEncoderDescriptor renderBundleDesc = {};
+    renderBundleDesc.colorFormatsCount = 1;
+    renderBundleDesc.cColorFormats[0] = wgpu::TextureFormat::RGBA8Unorm;
+    // Control case: using the vertex buffer is valid.
+    {
+        wgpu::RenderBundleEncoder encoder = device.CreateRenderBundleEncoder(&renderBundleDesc);
+        encoder.SetVertexBuffer(0, vertexBuffer);
+        encoder.Finish();
+    }
+    // Error case: using the index buffer is an error.
+    {
+        wgpu::RenderBundleEncoder encoder = device.CreateRenderBundleEncoder(&renderBundleDesc);
+        encoder.SetVertexBuffer(0, indexBuffer);
         ASSERT_DEVICE_ERROR(encoder.Finish());
     }
 }

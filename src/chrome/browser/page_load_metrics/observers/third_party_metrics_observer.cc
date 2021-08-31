@@ -52,7 +52,7 @@ ThirdPartyMetricsObserver::FlushMetricsOnAppEnterBackground(
   return STOP_OBSERVING;
 }
 
-void ThirdPartyMetricsObserver::FrameReceivedFirstUserActivation(
+void ThirdPartyMetricsObserver::FrameReceivedUserActivation(
     content::RenderFrameHost* render_frame_host) {
   bool is_third_party = false;
   auto* third_party_info = GetThirdPartyInfo(
@@ -63,7 +63,8 @@ void ThirdPartyMetricsObserver::FrameReceivedFirstUserActivation(
       is_third_party);
 
   // Update the activation status and record use counters as necessary.
-  if (is_third_party && third_party_info != nullptr) {
+  if (is_third_party && third_party_info != nullptr &&
+      !third_party_info->activation) {
     third_party_info->activation = true;
     RecordUseCounters(AccessType::kMaxValue, third_party_info);
   }
@@ -113,23 +114,23 @@ void ThirdPartyMetricsObserver::OnCookieChange(
 void ThirdPartyMetricsObserver::RecordUseCounters(
     AccessType access_type,
     const ThirdPartyInfo* third_party_info) {
-  page_load_metrics::mojom::PageLoadFeatures third_party_storage_features;
+  std::vector<blink::mojom::WebFeature> third_party_storage_features;
 
   // We only record access/activation if the third_party_info didn't overflow.
   if (third_party_info != nullptr) {
     // Record any sort of access.
     if (third_party_info->access_types.any()) {
-      third_party_storage_features.features.push_back(
+      third_party_storage_features.push_back(
           blink::mojom::WebFeature::kThirdPartyAccess);
     }
     // Record any sort of activation.
     if (third_party_info->activation) {
-      third_party_storage_features.features.push_back(
+      third_party_storage_features.push_back(
           blink::mojom::WebFeature::kThirdPartyActivation);
     }
     // Record the combination of the above two
     if (third_party_info->access_types.any() && third_party_info->activation) {
-      third_party_storage_features.features.push_back(
+      third_party_storage_features.push_back(
           blink::mojom::WebFeature::kThirdPartyAccessAndActivation);
     }
   }
@@ -137,31 +138,31 @@ void ThirdPartyMetricsObserver::RecordUseCounters(
   // Record the specific type of access, if appropriate.
   switch (access_type) {
     case AccessType::kCookieRead:
-      third_party_storage_features.features.push_back(
+      third_party_storage_features.push_back(
           blink::mojom::WebFeature::kThirdPartyCookieRead);
       break;
     case AccessType::kCookieWrite:
-      third_party_storage_features.features.push_back(
+      third_party_storage_features.push_back(
           blink::mojom::WebFeature::kThirdPartyCookieWrite);
       break;
     case AccessType::kLocalStorage:
-      third_party_storage_features.features.push_back(
+      third_party_storage_features.push_back(
           blink::mojom::WebFeature::kThirdPartyLocalStorage);
       break;
     case AccessType::kSessionStorage:
-      third_party_storage_features.features.push_back(
+      third_party_storage_features.push_back(
           blink::mojom::WebFeature::kThirdPartySessionStorage);
       break;
     case AccessType::kFileSystem:
-      third_party_storage_features.features.push_back(
+      third_party_storage_features.push_back(
           blink::mojom::WebFeature::kThirdPartyFileSystem);
       break;
     case AccessType::kIndexedDb:
-      third_party_storage_features.features.push_back(
+      third_party_storage_features.push_back(
           blink::mojom::WebFeature::kThirdPartyIndexedDb);
       break;
     case AccessType::kCacheStorage:
-      third_party_storage_features.features.push_back(
+      third_party_storage_features.push_back(
           blink::mojom::WebFeature::kThirdPartyCacheStorage);
       break;
     default:
@@ -171,10 +172,10 @@ void ThirdPartyMetricsObserver::RecordUseCounters(
   }
 
   // Report the feature usage if there's anything to report.
-  if (third_party_storage_features.features.size() > 0) {
+  if (third_party_storage_features.size() > 0) {
     page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
         GetDelegate().GetWebContents()->GetMainFrame(),
-        third_party_storage_features);
+        std::move(third_party_storage_features));
   }
 }
 
@@ -199,7 +200,7 @@ void ThirdPartyMetricsObserver::OnDidFinishSubFrameNavigation(
   recorded_frames_.erase(navigation_handle->GetRenderFrameHost());
 }
 
-void ThirdPartyMetricsObserver::OnFrameDeleted(
+void ThirdPartyMetricsObserver::OnRenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   recorded_frames_.erase(render_frame_host);
 }

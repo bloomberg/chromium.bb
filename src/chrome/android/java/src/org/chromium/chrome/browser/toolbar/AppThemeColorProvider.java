@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider.IncognitoStateObserver;
+import org.chromium.chrome.browser.theme.ThemeColorProvider;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 
 /** A ThemeColorProvider for the app theme (incognito or standard theming). */
@@ -84,7 +85,8 @@ public class AppThemeColorProvider extends ThemeColorProvider implements Incogni
     private void updateTheme() {
         final boolean shouldUseIncognitoBackground = mIsIncognito
                 && (!mIsOverviewVisible
-                        || ToolbarColors.canUseIncognitoToolbarThemeColorInOverview());
+                        || ToolbarColors.canUseIncognitoToolbarThemeColorInOverview(
+                                mActivityContext));
 
         updatePrimaryColor(
                 shouldUseIncognitoBackground ? mIncognitoPrimaryColor : mStandardPrimaryColor,

@@ -26,19 +26,19 @@ class DrawQuad {
     DrawQuad() {
     }
     DrawQuad(wgpu::Device device, const char* vsSource, const char* fsSource) : device(device) {
-        vsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, vsSource);
-        fsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, fsSource);
+        vsModule = utils::CreateShaderModule(device, vsSource);
+        fsModule = utils::CreateShaderModule(device, fsSource);
 
         pipelineLayout = utils::MakeBasicPipelineLayout(device, nullptr);
     }
 
     void Draw(wgpu::RenderPassEncoder* pass) {
-        utils::ComboRenderPipelineDescriptor descriptor(device);
+        utils::ComboRenderPipelineDescriptor2 descriptor;
         descriptor.layout = pipelineLayout;
-        descriptor.vertexStage.module = vsModule;
-        descriptor.cFragmentStage.module = fsModule;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
 
-        auto renderPipeline = device.CreateRenderPipeline(&descriptor);
+        auto renderPipeline = device.CreateRenderPipeline2(&descriptor);
 
         pass->SetPipeline(renderPipeline);
         pass->Draw(6, 1, 0, 0);
@@ -60,7 +60,7 @@ class RenderPassLoadOpTests : public DawnTest {
         descriptor.dimension = wgpu::TextureDimension::e2D;
         descriptor.size.width = kRTSize;
         descriptor.size.height = kRTSize;
-        descriptor.size.depth = 1;
+        descriptor.size.depthOrArrayLayers = 1;
         descriptor.sampleCount = 1;
         descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
         descriptor.mipLevelCount = 1;
@@ -77,21 +77,23 @@ class RenderPassLoadOpTests : public DawnTest {
 
         // draws a blue quad on the right half of the screen
         const char* vsSource = R"(
-                #version 450
-                void main() {
-                    const vec2 pos[6] = vec2[6](
-                        vec2(0, -1), vec2(1, -1), vec2(0, 1),
-                        vec2(0,  1), vec2(1, -1), vec2(1, 1));
-                    gl_Position = vec4(pos[gl_VertexIndex], 0.f, 1.f);
-                }
-                )";
+            [[stage(vertex)]]
+            fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
+                let pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+                    vec2<f32>( 0.0, -1.0),
+                    vec2<f32>( 1.0, -1.0),
+                    vec2<f32>( 0.0,  1.0),
+                    vec2<f32>( 0.0,  1.0),
+                    vec2<f32>( 1.0, -1.0),
+                    vec2<f32>( 1.0,  1.0));
+
+                return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
+            })";
+
         const char* fsSource = R"(
-                #version 450
-                layout(location = 0) out vec4 color;
-                void main() {
-                    color = vec4(0.f, 0.f, 1.f, 1.f);
-                }
-                )";
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+                return vec4<f32>(0.0, 0.0, 1.0, 1.0);
+            })";
         blueQuad = DrawQuad(device, vsSource, fsSource);
     }
 
@@ -121,10 +123,11 @@ class RenderPassLoadOpTests : public DawnTest {
         bufferDescriptor.usage = wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
         wgpu::Buffer buffer = device.CreateBuffer(&bufferDescriptor);
 
-        wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, {0, 0, 0});
-        wgpu::BufferCopyView bufferCopyView =
-            utils::CreateBufferCopyView(buffer, 0, kTextureBytesPerRowAlignment);
-        encoder.CopyTextureToBuffer(&textureCopyView, &bufferCopyView, &kTextureSize);
+        wgpu::ImageCopyTexture imageCopyTexture =
+            utils::CreateImageCopyTexture(texture, 0, {0, 0, 0});
+        wgpu::ImageCopyBuffer imageCopyBuffer =
+            utils::CreateImageCopyBuffer(buffer, 0, kTextureBytesPerRowAlignment);
+        encoder.CopyTextureToBuffer(&imageCopyTexture, &imageCopyBuffer, &kTextureSize);
 
         wgpu::CommandBuffer commandBuffer = encoder.Finish();
         queue.Submit(1, &commandBuffer);
@@ -160,10 +163,10 @@ TEST_P(RenderPassLoadOpTests, ColorClearThenLoadAndDraw) {
     auto commandsClearGreen = commandsClearGreenEncoder.Finish();
 
     queue.Submit(1, &commandsClearZero);
-    EXPECT_TEXTURE_RGBA8_EQ(expectZero.data(), renderTarget, 0, 0, kRTSize, kRTSize, 0, 0);
+    EXPECT_TEXTURE_EQ(expectZero.data(), renderTarget, {0, 0}, {kRTSize, kRTSize});
 
     queue.Submit(1, &commandsClearGreen);
-    EXPECT_TEXTURE_RGBA8_EQ(expectGreen.data(), renderTarget, 0, 0, kRTSize, kRTSize, 0, 0);
+    EXPECT_TEXTURE_EQ(expectGreen.data(), renderTarget, {0, 0}, {kRTSize, kRTSize});
 
     // Part 2: draw a blue quad into the right half of the render target, and check result
     utils::ComboRenderPassDescriptor renderPassLoad({renderTargetView});
@@ -179,10 +182,9 @@ TEST_P(RenderPassLoadOpTests, ColorClearThenLoadAndDraw) {
 
     queue.Submit(1, &commandsLoad);
     // Left half should still be green
-    EXPECT_TEXTURE_RGBA8_EQ(expectGreen.data(), renderTarget, 0, 0, kRTSize / 2, kRTSize, 0, 0);
+    EXPECT_TEXTURE_EQ(expectGreen.data(), renderTarget, {0, 0}, {kRTSize / 2, kRTSize});
     // Right half should now be blue
-    EXPECT_TEXTURE_RGBA8_EQ(expectBlue.data(), renderTarget, kRTSize / 2, 0, kRTSize / 2, kRTSize,
-                            0, 0);
+    EXPECT_TEXTURE_EQ(expectBlue.data(), renderTarget, {kRTSize / 2, 0}, {kRTSize / 2, kRTSize});
 }
 
 // Test clearing a color attachment with signed and unsigned integer formats.
@@ -285,4 +287,5 @@ DAWN_INSTANTIATE_TEST(RenderPassLoadOpTests,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

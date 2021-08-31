@@ -81,14 +81,9 @@ UrlBarControllerImpl::GetPublisherUrl(JNIEnv* env) {
 jint UrlBarControllerImpl::GetConnectionSecurityLevel(JNIEnv* env) {
   return GetConnectionSecurityLevel();
 }
-
-jboolean UrlBarControllerImpl::ShouldShowDangerTriangleForWarningLevel(
-    JNIEnv* env) {
-  return ShouldShowDangerTriangleForWarningLevel();
-}
 #endif
 
-base::string16 UrlBarControllerImpl::GetUrlForDisplay() {
+std::u16string UrlBarControllerImpl::GetUrlForDisplay() {
   return location_bar_model_->GetURLForDisplay();
 }
 
@@ -102,10 +97,6 @@ UrlBarControllerImpl::GetConnectionSecurityLevel() {
   DCHECK(state);
   return security_state::GetSecurityLevel(
       *state, /* used_policy_installed_certificate= */ false);
-}
-
-bool UrlBarControllerImpl::ShouldShowDangerTriangleForWarningLevel() {
-  return security_state::ShouldShowDangerTriangleForWarningLevel();
 }
 
 bool UrlBarControllerImpl::GetURL(GURL* url) const {
@@ -122,9 +113,9 @@ bool UrlBarControllerImpl::ShouldTrimDisplayUrlAfterHostName() const {
   return true;
 }
 
-base::string16 UrlBarControllerImpl::FormattedStringWithEquivalentMeaning(
+std::u16string UrlBarControllerImpl::FormattedStringWithEquivalentMeaning(
     const GURL& url,
-    const base::string16& formatted_url) const {
+    const std::u16string& formatted_url) const {
   return AutocompleteInput::FormattedStringWithEquivalentMeaning(
       url, formatted_url, AutocompleteSchemeClassifierImpl(), nullptr);
 }

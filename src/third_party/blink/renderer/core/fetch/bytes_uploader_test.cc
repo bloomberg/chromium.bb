@@ -52,7 +52,7 @@ class BytesUploaderTest : public ::testing::Test {
         sizeof(MojoCreateDataPipeOptions), MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1,
         capacity};
     ASSERT_EQ(MOJO_RESULT_OK,
-              mojo::CreateDataPipe(&data_pipe_options, &writable_, &readable_));
+              mojo::CreateDataPipe(&data_pipe_options, writable_, readable_));
   }
 
   MockBytesConsumer& Mock() const { return *mock_bytes_consumer_; }
@@ -105,6 +105,7 @@ TEST_F(BytesUploaderTest, ReadEmpty) {
         .WillRepeatedly(Return(BytesConsumer::PublicState::kReadableOrWaiting));
     EXPECT_CALL(Mock(), BeginRead(_, _))
         .WillOnce(Return(BytesConsumer::Result::kDone));
+    EXPECT_CALL(Mock(), Cancel());
     EXPECT_CALL(get_size_callback, Run(net::OK, 0u));
 
     EXPECT_CALL(checkpoint, Call(3));
@@ -145,6 +146,7 @@ TEST_F(BytesUploaderTest, ReadSmall) {
         }));
     EXPECT_CALL(Mock(), EndRead(6u))
         .WillOnce(Return(BytesConsumer::Result::kDone));
+    EXPECT_CALL(Mock(), Cancel());
     EXPECT_CALL(get_size_callback, Run(net::OK, 6u));
 
     EXPECT_CALL(checkpoint, Call(3));
@@ -207,6 +209,7 @@ TEST_F(BytesUploaderTest, ReadOverPipeCapacity) {
         }));
     EXPECT_CALL(Mock(), EndRead(2u))
         .WillOnce(Return(BytesConsumer::Result::kDone));
+    EXPECT_CALL(Mock(), Cancel());
     EXPECT_CALL(get_size_callback, Run(net::OK, 12u));
   }
 

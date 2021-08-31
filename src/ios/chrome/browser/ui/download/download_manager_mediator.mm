@@ -86,7 +86,7 @@ void DownloadManagerMediator::DownloadWithDestinationDir(
 
   auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
-  base::string16 file_name = task_->GetSuggestedFilename();
+  std::u16string file_name = task_->GetSuggestedFilename();
   base::FilePath path = destination_dir.Append(base::UTF16ToUTF8(file_name));
   auto writer = std::make_unique<net::URLFetcherFileWriter>(task_runner, path);
   writer->Initialize(base::BindRepeating(
@@ -127,9 +127,10 @@ void DownloadManagerMediator::UpdateConsumer() {
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-        base::Bind(base::PathExists, download_path_),
-        base::Bind(&DownloadManagerMediator::MoveToUserDocumentsIfFileExists,
-                   weak_ptr_factory_.GetWeakPtr(), download_path_));
+        base::BindOnce(base::PathExists, download_path_),
+        base::BindOnce(
+            &DownloadManagerMediator::MoveToUserDocumentsIfFileExists,
+            weak_ptr_factory_.GetWeakPtr(), download_path_));
   }
 
   if (state == kDownloadManagerStateSucceeded && !IsGoogleDriveAppInstalled()) {

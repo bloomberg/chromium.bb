@@ -21,36 +21,27 @@ class EntryPointTests : public DawnTest {};
 
 // Test creating a render pipeline from two entryPoints in the same module.
 TEST_P(EntryPointTests, FragAndVertexSameModule) {
-    // TODO: Reenable once Tint is able to produce Vulkan 1.0 / 1.1 SPIR-V.
-    DAWN_SKIP_TEST_IF(IsVulkan());
-
-    wgpu::ShaderModule module = utils::CreateShaderModuleFromWGSL(device, R"(
-        [[builtin(position)]] var<out> Position : vec4<f32>;
-
-        [[stage(vertex)]]
-        fn vertex_main() -> void {
-            Position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
-            return;
+    // TODO(crbug.com/dawn/658): Crashes on bots
+    DAWN_SKIP_TEST_IF(IsOpenGL() || IsOpenGLES());
+    wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
+        [[stage(vertex)]] fn vertex_main() -> [[builtin(position)]] vec4<f32> {
+            return vec4<f32>(0.0, 0.0, 0.0, 1.0);
         }
 
-        [[location(0)]] var<out> outColor : vec4<f32>;
-
-        [[stage(fragment)]]
-        fn fragment_main() -> void {
-          outColor = vec4<f32>(1.0, 0.0, 0.0, 1.0);
-          return;
+        [[stage(fragment)]] fn fragment_main() -> [[location(0)]] vec4<f32> {
+          return vec4<f32>(1.0, 0.0, 0.0, 1.0);
         }
     )");
 
     // Create a point pipeline from the module.
-    utils::ComboRenderPipelineDescriptor desc(device);
-    desc.vertexStage.module = module;
-    desc.vertexStage.entryPoint = "vertex_main";
-    desc.cFragmentStage.module = module;
-    desc.cFragmentStage.entryPoint = "fragment_main";
-    desc.cColorStates[0].format = wgpu::TextureFormat::RGBA8Unorm;
-    desc.primitiveTopology = wgpu::PrimitiveTopology::PointList;
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&desc);
+    utils::ComboRenderPipelineDescriptor2 desc;
+    desc.vertex.module = module;
+    desc.vertex.entryPoint = "vertex_main";
+    desc.cFragment.module = module;
+    desc.cFragment.entryPoint = "fragment_main";
+    desc.cTargets[0].format = wgpu::TextureFormat::RGBA8Unorm;
+    desc.primitive.topology = wgpu::PrimitiveTopology::PointList;
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&desc);
 
     // Render the point and check that it was rendered.
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 1, 1);
@@ -69,27 +60,18 @@ TEST_P(EntryPointTests, FragAndVertexSameModule) {
 
 // Test creating two compute pipelines from the same module.
 TEST_P(EntryPointTests, TwoComputeInModule) {
-    // TODO: Reenable once Tint is able to produce Vulkan 1.0 / 1.1 SPIR-V.
-    DAWN_SKIP_TEST_IF(IsVulkan());
-
-    // TODO: Reenable once Tint's HLSL writer supports multiple entryPoints on a single stage.
-    // https://crbug.com/tint/297
-    DAWN_SKIP_TEST_IF(IsD3D12() && HasToggleEnabled("use_tint_generator"));
-
-    wgpu::ShaderModule module = utils::CreateShaderModuleFromWGSL(device, R"(
+    wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
         [[block]] struct Data {
-            [[offset(0)]] data : u32;
+            data : u32;
         };
-        [[binding(0), set(0)]] var<storage_buffer> data : Data;
+        [[binding(0), group(0)]] var<storage> data : [[access(read_write)]] Data;
 
-        [[stage(compute)]]
-        fn write1() -> void {
+        [[stage(compute)]] fn write1() {
             data.data = 1u;
             return;
         }
 
-        [[stage(compute)]]
-        fn write42() -> void {
+        [[stage(compute)]] fn write42() {
             data.data = 42u;
             return;
         }
@@ -145,7 +127,7 @@ TEST_P(EntryPointTests, TwoComputeInModule) {
 
 DAWN_INSTANTIATE_TEST(EntryPointTests,
                       D3D12Backend(),
-                      D3D12Backend({"use_tint_generator"}),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

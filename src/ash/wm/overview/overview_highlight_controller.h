@@ -10,7 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
 
@@ -37,6 +37,17 @@ class ASH_EXPORT OverviewHighlightController {
     // Attempts to activate or close this view. Overriders may do nothing.
     virtual void MaybeActivateHighlightedView() = 0;
     virtual void MaybeCloseHighlightedView() = 0;
+
+    // Attempts to swap the view with its neighbor views. (Mainly used for
+    // |DeskMiniView|).
+    virtual void MaybeSwapHighlightedView(bool right) = 0;
+
+    // Activates highlighted view when exiting overview. Currently, it is only
+    // used for the case of exiting overview by using 3-finger vertical swipes.
+    // Note that not all the highlighted views support this behavior. Return
+    // true means the highlighted view is activated and the overview is exited.
+    virtual bool MaybeActivateHighlightedViewOnOverviewExit(
+        OverviewSession* overview_session);
 
     void SetHighlightVisibility(bool visible);
 
@@ -76,6 +87,13 @@ class ASH_EXPORT OverviewHighlightController {
   // Moves the focus ring to the next traversable view.
   void MoveHighlight(bool reverse);
 
+  // Moves the focus ring directly to |target_view|. |target_view| must be a
+  // traversable view, i.e. one of the views returned by GetTraversableViews().
+  // This should be used when a view requests focus directly so the overview
+  // highlight can be in-sync with focus. Due to this expected use, this does
+  // not trigger an accessibility event.
+  void MoveHighlightToView(OverviewHighlightableView* target_view);
+
   // Called when a |view| that might be in the focus traversal rotation is about
   // to be deleted.
   // Note: When removing multiple highlightable views in one call, by calling
@@ -93,6 +111,12 @@ class ASH_EXPORT OverviewHighlightController {
   bool MaybeActivateHighlightedView();
   bool MaybeCloseHighlightedView();
 
+  // Swaps the currently highlighted view with its neighbor views.
+  bool MaybeSwapHighlightedView(bool right);
+
+  // Activates highlighted view when exiting overview mode.
+  bool MaybeActivateHighlightedViewOnOverviewExit();
+
   // Tries to get the item that is currently highlighted. Returns null if there
   // is no highlight, or if the highlight is on a desk view.
   OverviewItem* GetHighlightedItem() const;
@@ -107,8 +131,12 @@ class ASH_EXPORT OverviewHighlightController {
   // Includes desk mini views, the new desk button and overview items.
   std::vector<OverviewHighlightableView*> GetTraversableViews() const;
 
+  // Sets |highlighted_view_| to |view_to_be_highlighted| and updates the
+  // highlight visibility for the previous |highlighted_view_|.
+  // |suppress_accessibility_event| should be true if |view_to_be_highlighted|
+  // will also request focus to avoid double emitting event.
   void UpdateHighlight(OverviewHighlightableView* view_to_be_highlighted,
-                       bool reverse);
+                       bool suppress_accessibility_event = false);
 
   // The overview session which owns this object. Guaranteed to be non-null for
   // the lifetime of |this|.
@@ -116,7 +144,7 @@ class ASH_EXPORT OverviewHighlightController {
 
   // If an item that is selected is deleted, store its index, so the next
   // traversal can pick up where it left off.
-  base::Optional<int> deleted_index_ = base::nullopt;
+  absl::optional<int> deleted_index_ = absl::nullopt;
 
   // The current view that is being highlighted, if any.
   OverviewHighlightableView* highlighted_view_ = nullptr;

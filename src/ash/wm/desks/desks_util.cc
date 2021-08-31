@@ -4,12 +4,19 @@
 
 #include "ash/wm/desks/desks_util.h"
 
+#include <array>
+
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_session.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer.h"
 
 namespace ash {
 
@@ -22,14 +29,17 @@ constexpr std::array<int, kMaxNumberOfDesks> kDesksContainersIds = {
     kShellWindowId_DeskContainerB,
     kShellWindowId_DeskContainerC,
     kShellWindowId_DeskContainerD,
+    kShellWindowId_DeskContainerE,
+    kShellWindowId_DeskContainerF,
+    kShellWindowId_DeskContainerG,
+    kShellWindowId_DeskContainerH,
 };
 
 }  // namespace
 
-// Note: this function avoids having a copy of |kDesksContainersIds| in each
-// translation unit that references it.
-const std::array<int, kMaxNumberOfDesks>& GetDesksContainersIds() {
-  return kDesksContainersIds;
+std::vector<int> GetDesksContainersIds() {
+  return std::vector<int>(kDesksContainersIds.begin(),
+                          kDesksContainersIds.end());
 }
 
 std::vector<aura::Window*> GetDesksContainers(aura::Window* root) {
@@ -37,8 +47,7 @@ std::vector<aura::Window*> GetDesksContainers(aura::Window* root) {
   DCHECK(root->IsRootWindow());
 
   std::vector<aura::Window*> containers;
-  containers.reserve(kMaxNumberOfDesks);
-  for (const auto& id : kDesksContainersIds) {
+  for (const auto& id : GetDesksContainersIds()) {
     auto* container = root->GetChildById(id);
     DCHECK(container);
     containers.push_back(container);
@@ -63,6 +72,18 @@ const char* GetDeskContainerName(int container_id) {
     case kShellWindowId_DeskContainerD:
       return "Desk_Container_D";
 
+    case kShellWindowId_DeskContainerE:
+      return "Desk_Container_E";
+
+    case kShellWindowId_DeskContainerF:
+      return "Desk_Container_F";
+
+    case kShellWindowId_DeskContainerG:
+      return "Desk_Container_G";
+
+    case kShellWindowId_DeskContainerH:
+      return "Desk_Container_H";
+
     default:
       NOTREACHED();
       return "";
@@ -71,14 +92,18 @@ const char* GetDeskContainerName(int container_id) {
 
 bool IsDeskContainer(const aura::Window* container) {
   DCHECK(container);
-  return IsDeskContainerId(container->id());
+  return IsDeskContainerId(container->GetId());
 }
 
 bool IsDeskContainerId(int id) {
   return id == kShellWindowId_DefaultContainerDeprecated ||
          id == kShellWindowId_DeskContainerB ||
          id == kShellWindowId_DeskContainerC ||
-         id == kShellWindowId_DeskContainerD;
+         id == kShellWindowId_DeskContainerD ||
+         id == kShellWindowId_DeskContainerE ||
+         id == kShellWindowId_DeskContainerF ||
+         id == kShellWindowId_DeskContainerG ||
+         id == kShellWindowId_DeskContainerH;
 }
 
 int GetActiveDeskContainerId() {
@@ -90,7 +115,7 @@ int GetActiveDeskContainerId() {
 
 ASH_EXPORT bool IsActiveDeskContainer(const aura::Window* container) {
   DCHECK(container);
-  return container->id() == GetActiveDeskContainerId();
+  return container->GetId() == GetActiveDeskContainerId();
 }
 
 aura::Window* GetActiveDeskContainerForRoot(aura::Window* root) {
@@ -103,14 +128,14 @@ ASH_EXPORT bool BelongsToActiveDesk(aura::Window* window) {
 
   const int active_desk_id = GetActiveDeskContainerId();
   aura::Window* desk_container = GetDeskContainerForContext(window);
-  return desk_container && desk_container->id() == active_desk_id;
+  return desk_container && desk_container->GetId() == active_desk_id;
 }
 
 aura::Window* GetDeskContainerForContext(aura::Window* context) {
   DCHECK(context);
 
   while (context) {
-    if (IsDeskContainerId(context->id()))
+    if (IsDeskContainerId(context->GetId()))
       return context;
 
     context = context->parent();
@@ -133,6 +158,21 @@ ui::Compositor* GetSelectedCompositorForPerformanceMetrics() {
                             : Shell::GetPrimaryRootWindow();
   DCHECK(selected_root);
   return selected_root->layer()->GetCompositor();
+}
+
+bool IsDraggingAnyDesk() {
+  OverviewSession* overview_session =
+      Shell::Get()->overview_controller()->overview_session();
+  if (!overview_session)
+    return false;
+
+  for (auto& grid : overview_session->grid_list()) {
+    const DesksBarView* desks_bar_view = grid->desks_bar_view();
+    if (desks_bar_view && desks_bar_view->IsDraggingDesk())
+      return true;
+  }
+
+  return false;
 }
 
 }  // namespace desks_util

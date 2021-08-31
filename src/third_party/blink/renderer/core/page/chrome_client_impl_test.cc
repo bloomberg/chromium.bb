@@ -33,8 +33,8 @@
 #include "cc/trees/layer_tree_host.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/choosers/color_chooser.mojom-blink.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
@@ -44,12 +44,14 @@
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/html/forms/color_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/color_chooser_client.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser_client.h"
 #include "third_party/blink/renderer/core/html/forms/file_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/forms/mock_file_chooser.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
@@ -65,9 +67,9 @@ class ViewCreatingClient : public frame_test_helpers::TestWebViewClient {
                       const WebString& name,
                       WebNavigationPolicy,
                       network::mojom::blink::WebSandboxFlags,
-                      const FeaturePolicyFeatureState&,
                       const SessionStorageNamespaceId&,
-                      bool& consumed_user_gesture) override {
+                      bool& consumed_user_gesture,
+                      const absl::optional<WebImpression>&) override {
     return web_view_helper_.InitializeWithOpener(opener);
   }
 
@@ -98,11 +100,10 @@ TEST_F(CreateWindowTest, CreateWindowFromPausedPage) {
   request.SetNavigationPolicy(kNavigationPolicyNewForegroundTab);
   WebWindowFeatures features;
   bool consumed_user_gesture = false;
-  EXPECT_EQ(nullptr,
-            chrome_client_impl_->CreateWindow(
-                frame, request, "", features,
-                network::mojom::blink::WebSandboxFlags::kNone,
-                FeaturePolicyFeatureState(), "", consumed_user_gesture));
+  EXPECT_EQ(nullptr, chrome_client_impl_->CreateWindow(
+                         frame, request, "", features,
+                         network::mojom::blink::WebSandboxFlags::kNone, "",
+                         consumed_user_gesture));
 }
 
 class FakeColorChooserClient : public GarbageCollected<FakeColorChooserClient>,
@@ -165,14 +166,18 @@ class PagePopupSuppressionTest : public testing::Test {
   bool CanOpenColorChooser() {
     LocalFrame* frame = main_frame_->GetFrame();
     Color color;
-    return !!chrome_client_impl_->OpenColorChooser(frame, color_chooser_client_,
-                                                   color);
+    ColorChooser* chooser = chrome_client_impl_->OpenColorChooser(
+        frame, color_chooser_client_, color);
+    if (chooser)
+      chooser->EndChooser();
+    return !!chooser;
   }
 
   bool CanOpenDateTimeChooser() {
     LocalFrame* frame = main_frame_->GetFrame();
     DateTimeChooserParameters params;
     params.locale = DefaultLanguage();
+    params.type = input_type_names::kTime;
     return !!chrome_client_impl_->OpenDateTimeChooser(
         frame, date_time_chooser_client_, params);
   }
@@ -196,6 +201,8 @@ class PagePopupSuppressionTest : public testing::Test {
     select_ = MakeGarbageCollected<HTMLSelectElement>(*(frame->GetDocument()));
   }
 
+  void TearDown() override {}
+
  protected:
   frame_test_helpers::WebViewHelper helper_;
   WebViewImpl* web_view_;
@@ -207,6 +214,9 @@ class PagePopupSuppressionTest : public testing::Test {
 };
 
 TEST_F(PagePopupSuppressionTest, SuppressColorChooser) {
+  // Some platforms don't support PagePopups so just return.
+  if (!RuntimeEnabledFeatures::PagePopupEnabled())
+    return;
   // By default, the popup should be shown.
   EXPECT_TRUE(CanOpenColorChooser());
 
@@ -220,6 +230,9 @@ TEST_F(PagePopupSuppressionTest, SuppressColorChooser) {
 }
 
 TEST_F(PagePopupSuppressionTest, SuppressDateTimeChooser) {
+  // Some platforms don't support PagePopups so just return.
+  if (!RuntimeEnabledFeatures::PagePopupEnabled())
+    return;
   // By default, the popup should be shown.
   EXPECT_TRUE(CanOpenDateTimeChooser());
 

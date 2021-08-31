@@ -17,6 +17,7 @@
 #include "ui/platform_window/platform_window_init_properties.h"
 
 class SkBitmap;
+class SkPath;
 
 namespace ui {
 class WaylandConnection;
@@ -74,9 +75,6 @@ gfx::Rect ApplyWaylandTransform(const gfx::Rect& rect,
 gfx::Size ApplyWaylandTransform(const gfx::Size& size,
                                 wl_output_transform transform);
 
-// Says if the type is kPopup or kMenu.
-bool IsMenuType(ui::PlatformWindowType type);
-
 // Returns the root WaylandWindow for the given wl_surface.
 ui::WaylandWindow* RootWindowFromWlSurface(wl_surface* surface);
 
@@ -86,6 +84,12 @@ ui::WaylandWindow* RootWindowFromWlSurface(wl_surface* surface);
 // and in DIP.
 gfx::Rect TranslateWindowBoundsToParentDIP(ui::WaylandWindow* window,
                                            ui::WaylandWindow* parent_window);
+
+// Returns rectangles dictated by SkPath.
+std::vector<gfx::Rect> CreateRectsFromSkPath(const SkPath& path);
+
+// Returns converted SkPath in DIPs from the one in pixels.
+SkPath ConvertPathToDIP(const SkPath& path_in_pixels, const int32_t scale);
 
 }  // namespace wl
 

@@ -7,8 +7,8 @@
 
 #include "include/core/SkString.h"
 #include "include/gpu/GrContextOptions.h"
+#include "include/private/SkSLString.h"
 #include "src/gpu/GrShaderUtils.h"
-#include "src/sksl/SkSLString.h"
 
 namespace GrShaderUtils {
 
@@ -198,20 +198,41 @@ void VisitLineByLine(const SkSL::String& text,
     }
 }
 
+SkSL::String BuildShaderErrorMessage(const char* shader, const char* errors) {
+    SkSL::String abortText{"Shader compilation error\n"
+                           "------------------------\n"};
+    VisitLineByLine(shader, [&](int lineNumber, const char* lineText) {
+        abortText.appendf("%4i\t%s\n", lineNumber, lineText);
+    });
+    abortText.appendf("Errors:\n%s", errors);
+    return abortText;
+}
+
 GrContextOptions::ShaderErrorHandler* DefaultShaderErrorHandler() {
     class GrDefaultShaderErrorHandler : public GrContextOptions::ShaderErrorHandler {
     public:
         void compileError(const char* shader, const char* errors) override {
-            SkDebugf("Shader compilation error\n"
-                     "------------------------\n");
-            PrintLineByLine(shader);
-            SkDebugf("Errors:\n%s\n", errors);
+            SkSL::String message = BuildShaderErrorMessage(shader, errors);
+            VisitLineByLine(message, [](int, const char* lineText) {
+                SkDebugf("%s\n", lineText);
+            });
             SkDEBUGFAIL("Shader compilation failed!");
         }
     };
 
     static GrDefaultShaderErrorHandler gHandler;
     return &gHandler;
+}
+
+void PrintShaderBanner(SkSL::ProgramKind programKind) {
+    const char* typeName = "Unknown";
+    switch (programKind) {
+        case SkSL::ProgramKind::kVertex:   typeName = "Vertex";   break;
+        case SkSL::ProgramKind::kGeometry: typeName = "Geometry"; break;
+        case SkSL::ProgramKind::kFragment: typeName = "Fragment"; break;
+        default: break;
+    }
+    SkDebugf("---- %s shader ----------------------------------------------------\n", typeName);
 }
 
 }  // namespace GrShaderUtils

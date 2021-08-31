@@ -5,10 +5,12 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
+#include "components/viz/common/surfaces/subtree_capture_id.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -37,10 +39,35 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
 
+namespace {
+using RenderWidgetHostViewBaseAllocMap = std::unordered_map<const void*, int>;
+base::LazyInstance<RenderWidgetHostViewBaseAllocMap>::DestructorAtExit
+    g_alloc_dealloc_tracker_map = LAZY_INSTANCE_INITIALIZER;
+}  // namespace
+
 namespace content {
 
+// static
+int RenderWidgetHostViewBase::IsValidRWHVBPointer(
+    const RenderWidgetHostViewBase* view) {
+  if (!base::Contains(g_alloc_dealloc_tracker_map.Get(),
+                      static_cast<const void*>(view))) {
+    return -1;
+  }
+  return g_alloc_dealloc_tracker_map.Get()[view];
+}
+
 RenderWidgetHostViewBase::RenderWidgetHostViewBase(RenderWidgetHost* host)
-    : host_(RenderWidgetHostImpl::From(host)) {
+    : host_(RenderWidgetHostImpl::From(host)),
+      display_list_({display::Display(display::kDefaultDisplayId)},
+                    /*primary_id=*/display::kDefaultDisplayId,
+                    /*current_id=*/display::kDefaultDisplayId) {
+  // `display_list_` must be initialized, to permit unconditional access to its
+  // current Display object. A placeholder Display is used here, so the first
+  // call to UpdateScreenInfo will trigger the expected updates.
+  CHECK(display_list_.IsValidAndHasPrimaryAndCurrentDisplays());
+
+  g_alloc_dealloc_tracker_map.Get()[this]++;
 }
 
 RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
@@ -58,6 +85,7 @@ RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
   // so that the |text_input_manager_| will free its state.
   if (text_input_manager_)
     text_input_manager_->Unregister(this);
+  g_alloc_dealloc_tracker_map.Get()[this]--;
 }
 
 RenderWidgetHostImpl* RenderWidgetHostViewBase::GetFocusedWidget() const {
@@ -84,7 +112,7 @@ void RenderWidgetHostViewBase::NotifyObserversAboutShutdown() {
   for (auto& observer : observers_)
     observer.OnRenderWidgetHostViewBaseDestroyed(this);
   // All observers are required to disconnect after they are notified.
-  DCHECK(!observers_.might_have_observers());
+  DCHECK(observers_.empty());
 }
 
 MouseWheelPhaseHandler* RenderWidgetHostViewBase::GetMouseWheelPhaseHandler() {
@@ -123,11 +151,13 @@ void RenderWidgetHostViewBase::SelectionBoundsChanged(
     base::i18n::TextDirection anchor_dir,
     const gfx::Rect& focus_rect,
     base::i18n::TextDirection focus_dir,
+    const gfx::Rect& bounding_box,
     bool is_anchor_first) {
 #if !defined(OS_ANDROID)
   if (GetTextInputManager())
     GetTextInputManager()->SelectionBoundsChanged(
-        this, anchor_rect, anchor_dir, focus_rect, focus_dir, is_anchor_first);
+        this, anchor_rect, anchor_dir, focus_rect, focus_dir, bounding_box,
+        is_anchor_first);
 #else
   NOTREACHED() << "Selection bounds should be routed through the compositor.";
 #endif
@@ -144,7 +174,7 @@ RenderWidgetHostViewBase* RenderWidgetHostViewBase::GetRootView() {
   return this;
 }
 
-void RenderWidgetHostViewBase::SelectionChanged(const base::string16& text,
+void RenderWidgetHostViewBase::SelectionChanged(const std::u16string& text,
                                                 size_t offset,
                                                 const gfx::Range& range) {
   if (GetTextInputManager())
@@ -244,7 +274,7 @@ void RenderWidgetHostViewBase::CopyMainAndPopupFromSurface(
                const SkBitmap& popup_image) {
               // Draw popup_image into main_image.
               SkCanvas canvas(main_image, SkSurfaceProps{});
-              canvas.drawBitmap(popup_image, offset.x(), offset.y());
+              canvas.drawImage(popup_image.asImage(), offset.x(), offset.y());
               std::move(final_callback).Run(main_image);
             },
             std::move(final_callback), offset, std::move(main_image));
@@ -275,13 +305,13 @@ std::unique_ptr<viz::ClientFrameSinkVideoCapturer>
 RenderWidgetHostViewBase::CreateVideoCapturer() {
   std::unique_ptr<viz::ClientFrameSinkVideoCapturer> video_capturer =
       GetHostFrameSinkManager()->CreateVideoCapturer();
-  video_capturer->ChangeTarget(GetFrameSinkId());
+  video_capturer->ChangeTarget(GetFrameSinkId(), viz::SubtreeCaptureId());
   return video_capturer;
 }
 
-base::string16 RenderWidgetHostViewBase::GetSelectedText() {
+std::u16string RenderWidgetHostViewBase::GetSelectedText() {
   if (!GetTextInputManager())
-    return base::string16();
+    return std::u16string();
   return GetTextInputManager()->GetTextSelection(this)->selected_text();
 }
 
@@ -307,10 +337,37 @@ void RenderWidgetHostViewBase::SetBackgroundColor(SkColor color) {
   }
 }
 
-base::Optional<SkColor> RenderWidgetHostViewBase::GetBackgroundColor() {
+absl::optional<SkColor> RenderWidgetHostViewBase::GetBackgroundColor() {
   if (content_background_color_)
     return content_background_color_;
   return default_background_color_;
+}
+
+bool RenderWidgetHostViewBase::IsBackgroundColorOpaque() {
+  absl::optional<SkColor> bg_color = GetBackgroundColor();
+  return bg_color ? SkColorGetA(*bg_color) == SK_AlphaOPAQUE : true;
+}
+
+void RenderWidgetHostViewBase::CopyBackgroundColorIfPresentFrom(
+    const RenderWidgetHostView& other) {
+  const RenderWidgetHostViewBase& other_base =
+      static_cast<const RenderWidgetHostViewBase&>(other);
+  if (!other_base.content_background_color_ &&
+      !other_base.default_background_color_) {
+    return;
+  }
+  if (content_background_color_ == other_base.content_background_color_ &&
+      default_background_color_ == other_base.default_background_color_) {
+    return;
+  }
+  bool was_opaque = IsBackgroundColorOpaque();
+  content_background_color_ = other_base.content_background_color_;
+  default_background_color_ = other_base.default_background_color_;
+  UpdateBackgroundColor();
+  bool opaque = IsBackgroundColorOpaque();
+  if (was_opaque != opaque && host()->owner_delegate()) {
+    host()->owner_delegate()->SetBackgroundOpaque(opaque);
+  }
 }
 
 bool RenderWidgetHostViewBase::IsMouseLocked() {
@@ -322,7 +379,7 @@ bool RenderWidgetHostViewBase::GetIsMouseLockedUnadjustedMovementForTesting() {
 }
 
 bool RenderWidgetHostViewBase::LockKeyboard(
-    base::Optional<base::flat_set<ui::DomCode>> codes) {
+    absl::optional<base::flat_set<ui::DomCode>> codes) {
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
@@ -427,14 +484,6 @@ WidgetType RenderWidgetHostViewBase::GetWidgetType() {
   return widget_type_;
 }
 
-BrowserAccessibilityManager*
-RenderWidgetHostViewBase::CreateBrowserAccessibilityManager(
-    BrowserAccessibilityDelegate* delegate,
-    bool for_root_frame) {
-  NOTREACHED();
-  return nullptr;
-}
-
 gfx::AcceleratedWidget
     RenderWidgetHostViewBase::AccessibilityGetAcceleratedWidget() {
   return gfx::kNullAcceleratedWidget;
@@ -460,31 +509,65 @@ void RenderWidgetHostViewBase::ProcessAckedTouchEvent(
   NOTREACHED();
 }
 
+const std::vector<display::Display>& RenderWidgetHostViewBase::GetDisplays()
+    const {
+  // Get the latest info directly from display::Screen, like GetScreenInfo().
+  // TODO(crbug.com/1169312): Unify display info caching and change detection.
+  if (auto* screen = display::Screen::GetScreen())
+    return screen->GetAllDisplays();
+  static const base::NoDestructor<std::vector<display::Display>> kEmptyDisplays;
+  return *kEmptyDisplays;
+}
+
 void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
   if (host() && host()->delegate())
     host()->delegate()->SendScreenRects();
 
-  if (HasDisplayPropertyChanged(view) && host()) {
-    OnSynchronizedDisplayPropertiesChanged();
-    host()->NotifyScreenInfoChanged();
+  const display::DisplayList new_display_list =
+      display::Screen::GetScreen()->GetDisplayListNearestViewWithFallbacks(
+          view);
+
+  // TODO(crbug.com/1169312): Unify display info caching and change detection.
+  const display::Display& current_display = display_list_.GetCurrentDisplay();
+  const display::Display& new_display = new_display_list.GetCurrentDisplay();
+  // Proposed multi-screen APIs expose the current display's status as the
+  // primary display, and whether it is one of several extended displays, so
+  // those changes should also be surfaced via RenderWidgetHostImpl.
+  const bool current_display_is_primary =
+      display_list_.primary_id() == current_display.id();
+  const bool current_display_is_extended = display_list_.displays().size() > 1;
+  const bool new_display_is_primary =
+      new_display_list.primary_id() == new_display.id();
+  const bool new_display_is_extended = new_display_list.displays().size() > 1;
+  const bool has_rotation_changed =
+      current_display.rotation() != new_display.rotation();
+  const bool has_display_property_changed =
+      current_display.id() != new_display.id() ||
+      current_display.bounds() != new_display.bounds() ||
+      current_display.work_area() != new_display.work_area() ||
+      current_display.device_scale_factor() !=
+          new_display.device_scale_factor() ||
+      has_rotation_changed ||
+      current_display.color_spaces() != new_display.color_spaces() ||
+      current_display.IsInternal() != new_display.IsInternal() ||
+      current_display_is_primary != new_display_is_primary ||
+      current_display_is_extended != new_display_is_extended;
+
+  if (has_display_property_changed) {
+    display_list_ = new_display_list;
+
+    // Notify the associated RenderWidgetHostImpl when screen info has changed.
+    // That will synchronize visual properties needed for frame tree rendering
+    // and for web platform APIs that expose screen and window info and events.
+    if (host()) {
+      OnSynchronizedDisplayPropertiesChanged(has_rotation_changed);
+      host()->NotifyScreenInfoChanged();
+    }
   }
 }
 
-bool RenderWidgetHostViewBase::HasDisplayPropertyChanged(gfx::NativeView view) {
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestView(view);
-  if (current_display_area_ == display.work_area() &&
-      current_device_scale_factor_ == display.device_scale_factor() &&
-      current_display_rotation_ == display.rotation() &&
-      current_display_color_spaces_ == display.color_spaces()) {
-    return false;
-  }
-
-  current_display_area_ = display.work_area();
-  current_device_scale_factor_ = display.device_scale_factor();
-  current_display_rotation_ = display.rotation();
-  current_display_color_spaces_ = display.color_spaces();
-  return true;
+float RenderWidgetHostViewBase::GetCurrentDeviceScaleFactor() const {
+  return display_list_.GetCurrentDisplay().device_scale_factor();
 }
 
 void RenderWidgetHostViewBase::DidUnregisterFromTextInputManager(
@@ -501,9 +584,15 @@ void RenderWidgetHostViewBase::EnableAutoResize(const gfx::Size& min_size,
 }
 
 void RenderWidgetHostViewBase::DisableAutoResize(const gfx::Size& new_size) {
+  // Note that for some subclasses, such as RenderWidgetHostViewAura, setting
+  // the view size may trigger the synchronization on the visual properties. As
+  // a result, it may crete the intermediate status that the view size has
+  // changed while the auto resize status is obsolete, and then brings
+  // unnecessary updates in view layout. Hence we should disable the auto
+  // resize before setting the view size.
+  host()->SetAutoResize(false, gfx::Size(), gfx::Size());
   if (!new_size.IsEmpty())
     SetSize(new_size);
-  host()->SetAutoResize(false, gfx::Size(), gfx::Size());
   host()->SynchronizeVisualProperties();
 }
 
@@ -564,9 +653,10 @@ void RenderWidgetHostViewBase::OnDidNavigateMainFrameToNewPage() {
 }
 
 void RenderWidgetHostViewBase::OnFrameTokenChangedForView(
-    uint32_t frame_token) {
+    uint32_t frame_token,
+    base::TimeTicks activation_time) {
   if (host())
-    host()->DidProcessFrame(frame_token);
+    host()->DidProcessFrame(frame_token, activation_time);
 }
 
 bool RenderWidgetHostViewBase::ScreenRectIsUnstableFor(
@@ -636,6 +726,12 @@ bool RenderWidgetHostViewBase::IsRenderWidgetHostViewChildFrame() {
 
 bool RenderWidgetHostViewBase::HasSize() const {
   return true;
+}
+
+// RenderWidgetHostViewAura overrides this.
+void RenderWidgetHostViewBase::ShowWithVisibility(
+    content::Visibility web_contents_visibility) {
+  Show();
 }
 
 void RenderWidgetHostViewBase::Destroy() {
@@ -748,6 +844,16 @@ void RenderWidgetHostViewBase::SynchronizeVisualProperties() {
 void RenderWidgetHostViewBase::DidNavigate() {
   if (host())
     host()->SynchronizeVisualProperties();
+}
+
+WebContentsAccessibility*
+RenderWidgetHostViewBase::GetWebContentsAccessibility() {
+  return nullptr;
+}
+
+void RenderWidgetHostViewBase::SetTooltipObserverForTesting(
+    TooltipObserver* observer) {
+  tooltip_observer_for_testing_ = observer;
 }
 
 // TODO(wjmaclean): Would it simplify this function if we re-implemented it

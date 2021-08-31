@@ -7,8 +7,9 @@
 #include <memory>
 
 #include "base/run_loop.h"
-#include "base/test/power_monitor_test_base.h"
+#include "base/test/power_monitor_test.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "components/download/internal/background_service/scheduler/battery_status_listener_impl.h"
 #include "components/download/network/network_status_listener_impl.h"
 #include "services/network/test/test_network_connection_tracker.h"
@@ -84,10 +85,6 @@ class DeviceStatusListenerTest : public testing::Test {
   DeviceStatusListenerTest() {}
 
   void SetUp() override {
-    auto power_source = std::make_unique<base::PowerMonitorTestSource>();
-    power_source_ = power_source.get();
-    base::PowerMonitor::Initialize(std::move(power_source));
-
     auto battery_listener = std::make_unique<TestBatteryStatusListener>();
     test_battery_listener_ = battery_listener.get();
 
@@ -101,7 +98,6 @@ class DeviceStatusListenerTest : public testing::Test {
 
   void TearDown() override {
     listener_.reset();
-    base::PowerMonitor::ShutdownForTesting();
   }
 
  protected:
@@ -134,7 +130,7 @@ class DeviceStatusListenerTest : public testing::Test {
 
   // Simulates a battery change call.
   void SimulateBatteryChange(bool on_battery_power) {
-    power_source_->GeneratePowerStateEvent(on_battery_power);
+    power_source_.GeneratePowerStateEvent(on_battery_power);
   }
 
   void ChangeBatteryPercentage(int percentage) {
@@ -147,7 +143,7 @@ class DeviceStatusListenerTest : public testing::Test {
 
   // Needed for network change notifier and power monitor.
   base::test::SingleThreadTaskEnvironment task_environment_;
-  base::PowerMonitorTestSource* power_source_;
+  base::test::ScopedPowerMonitorTestSource power_source_;
   TestBatteryStatusListener* test_battery_listener_;
 };
 
@@ -259,6 +255,21 @@ TEST_F(DeviceStatusListenerTest, NotifyObserverNetworkChange) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(NetworkStatus::UNMETERED,
             listener_->CurrentDeviceStatus().network_status);
+}
+
+// Ensures the CONNECTION_UNKNOWN is treated correctly on non-Android.
+TEST_F(DeviceStatusListenerTest, ConnectionUnknownTreatedCorrectly) {
+  listener_->Start(base::TimeDelta());
+  base::RunLoop().RunUntilIdle();
+
+  // Initial states check.
+#if defined(OS_ANDROID)
+  EXPECT_EQ(NetworkStatus::DISCONNECTED,
+            listener_->CurrentDeviceStatus().network_status);
+#else
+  EXPECT_EQ(NetworkStatus::UNMETERED,
+            listener_->CurrentDeviceStatus().network_status);
+#endif
 }
 
 // Ensures the observer is notified when battery condition changes.

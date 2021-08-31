@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_KERBEROS_SECTION_H_
 
 #include "base/values.h"
-#include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
+#include "chrome/browser/ash/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
 
 class Profile;
@@ -42,7 +42,10 @@ class KerberosSection : public OsSettingsSection,
   void RegisterHierarchy(HierarchyGenerator* generator) const override;
 
   // KerberosCredentialsManager::Observer:
+  void OnAccountsChanged() override;
   void OnKerberosEnabledStateChanged() override;
+
+  void UpdateKerberosSearchConcepts();
 
   KerberosCredentialsManager* kerberos_credentials_manager_;
 };

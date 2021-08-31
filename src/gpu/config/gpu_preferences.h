@@ -46,6 +46,12 @@ enum class GrContextType : uint32_t {
   kLast = kDawn,
 };
 
+enum class DawnBackendValidationLevel : uint32_t {
+  kDisabled = 0,
+  kPartial = 1,
+  kFull = 2,
+};
+
 // NOTE: if you modify this structure then you must also modify the
 // following two files to keep them in sync:
 //   src/gpu/ipc/common/gpu_preferences.mojom
@@ -218,9 +224,6 @@ struct GPU_EXPORT GpuPreferences {
   // Enable using vulkan protected memory.
   bool enable_vulkan_protected_memory = false;
 
-  // Enforce using vulkan protected memory.
-  bool enforce_vulkan_protected_memory = false;
-
   // Use vulkan VK_KHR_surface for presenting.
   bool disable_vulkan_surface = false;
 
@@ -250,12 +253,14 @@ struct GPU_EXPORT GpuPreferences {
   bool enable_webgpu = false;
 
   // Enable validation layers in Dawn backends.
-  bool enable_dawn_backend_validation = false;
+  DawnBackendValidationLevel enable_dawn_backend_validation =
+      DawnBackendValidationLevel::kDisabled;
 
-  // Enable the toggle Toggle::DisableRobustness when creating Dawn device for
-  // the investigation of the performance issues related to the implementation
-  // of robustness in Dawn.
-  bool disable_dawn_robustness = false;
+  // The Dawn features(toggles) enabled on the creation of Dawn devices.
+  std::vector<std::string> enabled_dawn_features_list;
+
+  // The Dawn features(toggles) disabled on the creation of Dawn devices.
+  std::vector<std::string> disabled_dawn_features_list;
 
   // Enable measuring blocked time on GPU Main thread
   bool enable_gpu_blocked_time_metric = false;
@@ -278,10 +283,9 @@ struct GPU_EXPORT GpuPreferences {
   // ===================================
   // Settings from //media/base/media_switches.h
 
-#if BUILDFLAG(IS_ASH)
-  // The direct VideoDecoder is disallowed in this particular SoC/platform. This
-  // flag is a reflection of whatever ChromeOS command line builder says.
-  bool platform_disallows_chromeos_direct_video_decoder = false;
+#if defined(OS_CHROMEOS)
+  // Enable the hardware-accelerated direct video decoder on ChromeOS.
+  bool enable_chromeos_direct_video_decoder = false;
 #endif
 
   // Disables oppr debug crash dumps.

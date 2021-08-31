@@ -17,9 +17,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
-#include "base/util/type_safety/strong_alias.h"
+#include "base/types/strong_alias.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -28,6 +27,7 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "services/network/websocket_throttler.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 class GURL;
@@ -52,7 +52,7 @@ class WebSocketFactory;
 class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
  public:
   using HasRawHeadersAccess =
-      util::StrongAlias<class HasRawHeadersAccessTag, bool>;
+      base::StrongAlias<class HasRawHeadersAccessTag, bool>;
 
   WebSocket(
       WebSocketFactory* factory,
@@ -61,18 +61,17 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
       const net::SiteForCookies& site_for_cookies,
       const net::IsolationInfo& isolation_info,
       std::vector<mojom::HttpHeaderPtr> additional_headers,
-      int32_t process_id,
-      int32_t render_frame_id,
       const url::Origin& origin,
       uint32_t options,
       net::NetworkTrafficAnnotationTag traffic_annotation,
       HasRawHeadersAccess has_raw_cookie_access,
       mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
-      mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
+      mojo::PendingRemote<mojom::URLLoaderNetworkServiceObserver>
+          url_loader_network_observer,
+      mojo::PendingRemote<mojom::WebSocketAuthenticationHandler> auth_handler,
       mojo::PendingRemote<mojom::TrustedHeaderClient> header_client,
-      base::Optional<WebSocketThrottler::PendingConnection>
+      absl::optional<WebSocketThrottler::PendingConnection>
           pending_connection_tracker,
-      DataPipeUseTracker,
       base::TimeDelta delay);
   ~WebSocket() override;
 
@@ -95,7 +94,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
       net::CompletionOnceCallback callback,
       const net::HttpResponseHeaders* original_response_headers,
       scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
-      base::Optional<GURL>* preserve_fragment_on_redirect_url);
+      absl::optional<GURL>* preserve_fragment_on_redirect_url);
 
   // Gets the WebSocket associated with this request.
   static WebSocket* ForRequest(const net::URLRequest& request);
@@ -147,19 +146,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
       int net_error);
   void OnAuthRequiredComplete(
       base::OnceCallback<void(const net::AuthCredentials*)> callback,
-      const base::Optional<net::AuthCredentials>& credential);
+      const absl::optional<net::AuthCredentials>& credential);
   void OnBeforeSendHeadersComplete(
       net::CompletionOnceCallback callback,
       net::HttpRequestHeaders* out_headers,
       int result,
-      const base::Optional<net::HttpRequestHeaders>& headers);
+      const absl::optional<net::HttpRequestHeaders>& headers);
   void OnHeadersReceivedComplete(
       net::CompletionOnceCallback callback,
       scoped_refptr<net::HttpResponseHeaders>* out_headers,
-      base::Optional<GURL>* out_preserve_fragment_on_redirect_url,
+      absl::optional<GURL>* out_preserve_fragment_on_redirect_url,
       int result,
-      const base::Optional<std::string>& headers,
-      const base::Optional<GURL>& preserve_fragment_on_redirect_url);
+      const absl::optional<std::string>& headers,
+      const absl::optional<GURL>& preserve_fragment_on_redirect_url);
 
   void Reset();
 
@@ -179,12 +178,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   WebSocketFactory* const factory_;
   mojo::Receiver<mojom::WebSocket> receiver_{this};
 
+  mojo::Remote<mojom::URLLoaderNetworkServiceObserver>
+      url_loader_network_observer_;
   mojo::Remote<mojom::WebSocketHandshakeClient> handshake_client_;
   mojo::Remote<mojom::WebSocketClient> client_;
-  mojo::Remote<mojom::AuthenticationHandler> auth_handler_;
+  mojo::Remote<mojom::WebSocketAuthenticationHandler> auth_handler_;
   mojo::Remote<mojom::TrustedHeaderClient> header_client_;
 
-  base::Optional<WebSocketThrottler::PendingConnection>
+  absl::optional<WebSocketThrottler::PendingConnection>
       pending_connection_tracker_;
 
   // The channel we use to send events to the network.
@@ -196,9 +197,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   const uint32_t options_;
 
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
-
-  const int32_t child_id_;
-  const int32_t frame_id_;
 
   // The web origin to use for the WebSocket.
   const url::Origin origin_;
@@ -221,8 +219,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   base::queue<DataFrame> pending_send_data_frames_;
   bool wait_for_readable_ = false;
   bool blocked_on_websocket_channel_ = false;
-
-  DataPipeUseTracker data_pipe_use_tracker_;
 
   // True if we should preserve the old behaviour where <=64KB messages were
   // never fragmented.

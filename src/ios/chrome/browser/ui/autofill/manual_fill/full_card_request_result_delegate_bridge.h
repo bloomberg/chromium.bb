@@ -42,8 +42,9 @@ class FullCardRequestResultDelegateBridge
   void OnFullCardRequestSucceeded(
       const autofill::payments::FullCardRequest& full_card_request,
       const autofill::CreditCard& card,
-      const base::string16& cvc) override;
-  void OnFullCardRequestFailed() override;
+      const std::u16string& cvc) override;
+  void OnFullCardRequestFailed(
+      autofill::payments::FullCardRequest::FailureType failure_type) override;
 
   __weak id<FullCardRequestResultDelegateObserving> delegate_ = nil;
   base::WeakPtrFactory<FullCardRequestResultDelegateBridge> weak_ptr_factory_;

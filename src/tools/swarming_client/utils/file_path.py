@@ -1068,7 +1068,7 @@ def make_tree_deleteable(root):
   modified. This means that for hard-linked files, every directory entry for the
   file node has its file permission modified.
   """
-  logging.debug('make_tree_deleteable(%s)', root)
+  logging.debug('file_path.make_tree_deleteable(%s)', root)
   err = None
   sudo_failed = False
 
@@ -1120,19 +1120,22 @@ def rmtree(root):
   On Windows, forcibly kills processes that are found to interfere with the
   deletion.
 
-  Returns:
-    True on normal execution, False if berserk techniques (like killing
-    processes) had to be used.
+  Raises an exception if it failed.
   """
-  logging.info('rmtree(%s)', root)
+  logging.info('file_path.rmtree(%s)', root)
   assert isinstance(root,
                     six.text_type) or sys.getdefaultencoding() == 'utf-8', (
                         repr(root), sys.getdefaultencoding())
   root = six.text_type(root)
+
+  # Change permissions of the tree.
+  start = time.time()
   try:
     make_tree_deleteable(root)
   except OSError as e:
     logging.warning('Swallowing make_tree_deleteable() error: %s', e)
+  logging.debug('file_path.make_tree_deleteable(%s) took %d seconds', root,
+                time.time() - start)
 
   # First try the soft way: tries 3 times to delete and sleep a bit in between.
   # Retries help if test subprocesses outlive main process and try to actively
@@ -1142,11 +1145,15 @@ def rmtree(root):
     # pylint: disable=cell-var-from-loop
     # errors is a list of tuple(function, path, excinfo).
     errors = []
+    logging.debug('file_path.rmtree(%s) try=%d', root, i)
+    start = time.time()
     fs.rmtree(root, onerror=lambda *args: errors.append(args))
+    logging.debug('file_path.rmtree(%s) try=%d took %d seconds', root, i,
+                  time.time() - start)
     if not errors or not fs.exists(root):
       if i:
         sys.stderr.write('Succeeded.\n')
-      return True
+      return
     if not i and sys.platform == 'win32':
       for path in sorted(set(path for _, path, _ in errors)):
         try:
@@ -1174,6 +1181,8 @@ def rmtree(root):
     six.reraise(errors[0][2][0], errors[0][2][1], errors[0][2][2])
 
   # The soft way was not good enough. Try the hard way.
+  start = time.time()
+  logging.debug('file_path.rmtree(%s) killing children processes', root)
   for i in range(max_tries):
     if not kill_children_processes(root):
       break
@@ -1184,20 +1193,28 @@ def rmtree(root):
     if processes:
       sys.stderr.write('Failed to terminate processes.\n')
       six.reraise(errors[0][2][0], errors[0][2][1], errors[0][2][2])
+  logging.debug(
+      'file_path.rmtree(%s) killing children processes took %d seconds', root,
+      time.time() - start)
 
   # Now that annoying processes in root are evicted, try again.
+  start = time.time()
   errors = []
+  logging.debug('file_path.rmtree(%s) final try', root)
   fs.rmtree(root, onerror=lambda *args: errors.append(args))
-  if errors and fs.exists(root):
-    # There's no hope: the directory was tried to be removed 4 times. Give up
-    # and raise an exception.
-    sys.stderr.write(
-        'Failed to delete %s. The following files remain:\n' % root)
-    # The same path may be listed multiple times.
-    for path in sorted(set(path for _, path, _ in errors)):
-      sys.stderr.write('- %s\n' % path)
-    six.reraise(errors[0][2][0], errors[0][2][1], errors[0][2][2])
-  return False
+  logging.debug('file_path.rmtree(%s) final try took %d seconds', root,
+                time.time() - start)
+  if not errors or not fs.exists(root):
+    sys.stderr.write('Succeeded at final try.\n')
+    return
+
+  # There's no hope: the directory was tried to be removed 4 times. Give up
+  # and raise an exception.
+  sys.stderr.write('Failed to delete %s. The following files remain:\n' % root)
+  # The same path may be listed multiple times.
+  for path in sorted(set(path for _, path, _ in errors)):
+    sys.stderr.write('- %s\n' % path)
+  six.reraise(errors[0][2][0], errors[0][2][1], errors[0][2][2])
 
 
 ## Private code.

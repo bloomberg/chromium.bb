@@ -21,7 +21,6 @@ namespace blink {
 class Document;
 class ExecutionContext;
 class LocalFrame;
-class ResourceRequest;
 enum class ResourceType : uint8_t;
 
 namespace probe {
@@ -31,7 +30,6 @@ class ExecuteScript;
 
 namespace features {
 CORE_EXPORT extern const base::Feature kAsyncStackAdTagging;
-CORE_EXPORT extern const base::Feature kTopOfStackAdTagging;
 }
 
 // Tracker for tagging resources as ads based on the call stack scripts.
@@ -63,7 +61,7 @@ class CORE_EXPORT AdTracker : public GarbageCollected<AdTracker> {
   // Virtual for testing.
   virtual bool CalculateIfAdSubresource(
       ExecutionContext* execution_context,
-      const ResourceRequest& request,
+      const KURL& request_url,
       ResourceType resource_type,
       const FetchInitiatorInfo& initiator_info,
       bool known_ad);
@@ -110,7 +108,8 @@ class CORE_EXPORT AdTracker : public GarbageCollected<AdTracker> {
                          const String& script_name,
                          int script_id);
   void DidExecuteScript();
-  bool IsKnownAdScript(ExecutionContext* execution_context, const String& url);
+  bool IsKnownAdScript(ExecutionContext*, const String& url);
+  bool IsKnownAdScriptForCheckedContext(ExecutionContext&, const String& url);
   void AppendToKnownAdScripts(ExecutionContext&, const String& url);
 
   Member<LocalFrame> local_root_;
@@ -121,8 +120,9 @@ class CORE_EXPORT AdTracker : public GarbageCollected<AdTracker> {
 
   uint32_t num_ads_in_stack_ = 0;
 
-  // The set of ad scripts detected outside of ad-frame contexts. Scripts with
-  // no name (i.e. URL) use a String created by GenerateFakeUrlFromScriptId().
+  // The set of ad scripts detected outside of ad-frame contexts. Scripts are
+  // identified by name (i.e. resource URL). Scripts with no name (i.e. inline
+  // scripts) use a String created by GenerateFakeUrlFromScriptId() instead.
   HeapHashMap<WeakMember<ExecutionContext>, HashSet<String>> known_ad_scripts_;
 
   // The number of ad-related async tasks currently running in the stack.
@@ -132,10 +132,6 @@ class CORE_EXPORT AdTracker : public GarbageCollected<AdTracker> {
   // but also at the previous asynchronous stacks that caused this current
   // callstack to run (e.g., registered callbacks).
   const bool async_stack_enabled_;
-
-  // True if the TopOfStack experiment is running, which forces the AdTracker to
-  // ignore the bottom of stack frames when looking for ad script.
-  const bool top_of_stack_only_;
 
   DISALLOW_COPY_AND_ASSIGN(AdTracker);
 };

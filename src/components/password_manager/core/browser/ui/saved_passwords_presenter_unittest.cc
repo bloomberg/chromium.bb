@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 
+#include <string>
+
 #include "base/memory/scoped_refptr.h"
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
@@ -130,7 +132,7 @@ TEST_F(SavedPasswordsPresenterTest, EditPassword) {
   // set it here too.
   form.in_store = PasswordForm::Store::kProfileStore;
 
-  const base::string16 new_password = base::ASCIIToUTF16("new_password");
+  const std::u16string new_password = u"new_password";
   PasswordForm updated = form;
   updated.password_value = new_password;
 
@@ -144,7 +146,7 @@ TEST_F(SavedPasswordsPresenterTest, EditPassword) {
 
   // Verify that editing a password that does not exist does not triggers
   // notifications.
-  form.username_value = base::ASCIIToUTF16("another_username");
+  form.username_value = u"another_username";
   EXPECT_CALL(observer, OnEdited).Times(0);
   EXPECT_CALL(observer, OnSavedPasswordsChanged).Times(0);
   EXPECT_FALSE(presenter().EditPassword(form, new_password));
@@ -156,8 +158,8 @@ TEST_F(SavedPasswordsPresenterTest, EditPassword) {
 TEST_F(SavedPasswordsPresenterTest, EditOnlyUsername) {
   PasswordForm form;
   form.signon_realm = "https://example.com";
-  form.username_value = base::ASCIIToUTF16("test@gmail.com");
-  form.password_value = base::ASCIIToUTF16("password");
+  form.username_value = u"test@gmail.com";
+  form.password_value = u"password";
   form.in_store = PasswordForm::Store::kProfileStore;
 
   StrictMockSavedPasswordsPresenterObserver observer;
@@ -170,7 +172,7 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyUsername) {
 
   std::vector<PasswordForm> forms = {form};
 
-  const base::string16 new_username = base::ASCIIToUTF16("new_username");
+  const std::u16string new_username = u"new_username";
   PasswordForm updated_username = form;
   updated_username.username_value = new_username;
 
@@ -196,8 +198,8 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyUsername) {
 TEST_F(SavedPasswordsPresenterTest, EditOnlyPassword) {
   PasswordForm form;
   form.signon_realm = "https://example.com";
-  form.username_value = base::ASCIIToUTF16("test@gmail.com");
-  form.password_value = base::ASCIIToUTF16("password");
+  form.username_value = u"test@gmail.com";
+  form.password_value = u"password";
   form.in_store = PasswordForm::Store::kProfileStore;
 
   StrictMockSavedPasswordsPresenterObserver observer;
@@ -210,7 +212,7 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyPassword) {
 
   std::vector<PasswordForm> forms = {form};
 
-  const base::string16 new_password = base::ASCIIToUTF16("new_password");
+  const std::u16string new_password = u"new_password";
   PasswordForm updated_password = form;
   updated_password.password_value = new_password;
 
@@ -234,8 +236,8 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyPassword) {
 TEST_F(SavedPasswordsPresenterTest, EditUsernameAndPassword) {
   PasswordForm form;
   form.signon_realm = "https://example.com";
-  form.username_value = base::ASCIIToUTF16("test@gmail.com");
-  form.password_value = base::ASCIIToUTF16("password");
+  form.username_value = u"test@gmail.com";
+  form.password_value = u"password";
   form.in_store = PasswordForm::Store::kProfileStore;
 
   StrictMockSavedPasswordsPresenterObserver observer;
@@ -248,8 +250,8 @@ TEST_F(SavedPasswordsPresenterTest, EditUsernameAndPassword) {
 
   std::vector<PasswordForm> forms = {form};
 
-  const base::string16 new_username = base::ASCIIToUTF16("new_username");
-  const base::string16 new_password = base::ASCIIToUTF16("new_password");
+  const std::u16string new_username = u"new_username";
+  const std::u16string new_password = u"new_password";
 
   PasswordForm updated_both = form;
   updated_both.username_value = new_username;
@@ -274,14 +276,14 @@ TEST_F(SavedPasswordsPresenterTest, EditUsernameAndPassword) {
 TEST_F(SavedPasswordsPresenterTest, EditPasswordFails) {
   PasswordForm form1;
   form1.signon_realm = "https://example.com";
-  form1.username_value = base::ASCIIToUTF16("test1@gmail.com");
-  form1.password_value = base::ASCIIToUTF16("password");
+  form1.username_value = u"test1@gmail.com";
+  form1.password_value = u"password";
   form1.in_store = PasswordForm::Store::kProfileStore;
 
   PasswordForm form2;
   form2.signon_realm = "https://example.com";
-  form2.username_value = base::ASCIIToUTF16("test2@gmail.com");
-  form2.password_value = base::ASCIIToUTF16("password");
+  form2.username_value = u"test2@gmail.com";
+  form2.password_value = u"password";
   form2.in_store = PasswordForm::Store::kProfileStore;
 
   store().AddLogin(form1);
@@ -293,7 +295,7 @@ TEST_F(SavedPasswordsPresenterTest, EditPasswordFails) {
 
   // Updating the form with the username which is already used for same website
   // fails.
-  const base::string16 new_username = base::ASCIIToUTF16("test2@gmail.com");
+  const std::u16string new_username = u"test2@gmail.com";
   EXPECT_FALSE(presenter().EditSavedPasswords(forms, new_username,
                                               form1.password_value));
   RunUntilIdle();
@@ -302,7 +304,7 @@ TEST_F(SavedPasswordsPresenterTest, EditPasswordFails) {
 
   // Updating the form with the empty password fails.
   EXPECT_FALSE(presenter().EditSavedPasswords(forms, form1.username_value,
-                                              base::string16()));
+                                              std::u16string()));
   RunUntilIdle();
   EXPECT_THAT(store().stored_passwords(),
               ElementsAre(Pair(form1.signon_realm, ElementsAre(form1, form2))));
@@ -311,8 +313,8 @@ TEST_F(SavedPasswordsPresenterTest, EditPasswordFails) {
 TEST_F(SavedPasswordsPresenterTest, EditPasswordWithoutChanges) {
   PasswordForm form;
   form.signon_realm = "https://example.com";
-  form.username_value = base::ASCIIToUTF16("test1@gmail.com");
-  form.password_value = base::ASCIIToUTF16("password");
+  form.username_value = u"test1@gmail.com";
+  form.password_value = u"password";
   form.in_store = PasswordForm::Store::kProfileStore;
 
   store().AddLogin(form);
@@ -336,6 +338,87 @@ TEST_F(SavedPasswordsPresenterTest, EditPasswordWithoutChanges) {
       metrics_util::PasswordEditUpdatedValues::kNone, 1);
 
   presenter().RemoveObserver(&observer);
+}
+
+TEST_F(SavedPasswordsPresenterTest, EditUpdatesDuplicates) {
+  PasswordForm form;
+  form.signon_realm = "https://example.com";
+  form.username_value = u"test1@gmail.com";
+  form.password_value = u"password";
+  form.in_store = PasswordForm::Store::kProfileStore;
+
+  PasswordForm duplicate_form(form);
+  duplicate_form.signon_realm = "https://m.example.com";
+
+  store().AddLogin(form);
+  store().AddLogin(duplicate_form);
+
+  RunUntilIdle();
+  ASSERT_FALSE(store().IsEmpty());
+
+  StrictMockSavedPasswordsPresenterObserver observer;
+  presenter().AddObserver(&observer);
+
+  const std::u16string new_password = u"new_password";
+
+  PasswordForm updated_form = form;
+  updated_form.password_value = new_password;
+
+  PasswordForm updated_duplicate_form = duplicate_form;
+  updated_duplicate_form.password_value = new_password;
+
+  EXPECT_CALL(observer, OnEdited(updated_form));
+  EXPECT_CALL(observer, OnEdited(updated_duplicate_form));
+  // The notification that the logins have changed arrives after both updates
+  // are sent to the store and db. This means that there will be 2 requests
+  // from the presenter to get the updated credentials, BUT they are both sent
+  // after the writes.
+  EXPECT_CALL(observer, OnSavedPasswordsChanged(
+                            ElementsAre(updated_form, updated_duplicate_form)))
+      .Times(2);
+  EXPECT_TRUE(
+      presenter().EditSavedPasswords(form, form.username_value, new_password));
+  RunUntilIdle();
+  EXPECT_THAT(store().stored_passwords(),
+              ElementsAre(Pair(form.signon_realm, ElementsAre(updated_form)),
+                          Pair(duplicate_form.signon_realm,
+                               ElementsAre(updated_duplicate_form))));
+  presenter().RemoveObserver(&observer);
+}
+
+TEST_F(SavedPasswordsPresenterTest,
+       GetUniquePasswordFormsShouldReturnBlockedAndFederatedForms) {
+  PasswordForm form;
+  form.signon_realm = "https://example.com";
+  form.username_value = u"example@gmail.com";
+  form.password_value = u"password";
+  form.in_store = PasswordForm::Store::kProfileStore;
+
+  PasswordForm blocked_form;
+  blocked_form.signon_realm = "https://example.com";
+  blocked_form.blocked_by_user = true;
+  blocked_form.in_store = PasswordForm::Store::kProfileStore;
+
+  PasswordForm federated_form;
+  federated_form.signon_realm = "https://federated.com";
+  federated_form.username_value = u"example@gmail.com";
+  federated_form.federation_origin =
+      url::Origin::Create(GURL(u"federatedOrigin.com"));
+  federated_form.in_store = PasswordForm::Store::kProfileStore;
+
+  store().AddLogin(form);
+  store().AddLogin(blocked_form);
+  store().AddLogin(federated_form);
+  RunUntilIdle();
+
+  ASSERT_THAT(
+      store().stored_passwords(),
+      UnorderedElementsAre(
+          Pair(form.signon_realm, UnorderedElementsAre(form, blocked_form)),
+          Pair(federated_form.signon_realm, ElementsAre(federated_form))));
+
+  EXPECT_THAT(presenter().GetUniquePasswordForms(),
+              UnorderedElementsAre(form, blocked_form, federated_form));
 }
 
 namespace {
@@ -374,17 +457,17 @@ class SavedPasswordsPresenterWithTwoStoresTest : public ::testing::Test {
 // observers with credentials in both stores.
 TEST_F(SavedPasswordsPresenterWithTwoStoresTest, AddCredentialsToBothStores) {
   PasswordForm profile_store_form;
-  profile_store_form.username_value = base::ASCIIToUTF16("profile@gmail.com");
-  profile_store_form.password_value = base::ASCIIToUTF16("profile_pass");
+  profile_store_form.username_value = u"profile@gmail.com";
+  profile_store_form.password_value = u"profile_pass";
   profile_store_form.in_store = PasswordForm::Store::kProfileStore;
 
   PasswordForm account_store_form1;
-  account_store_form1.username_value = base::ASCIIToUTF16("account@gmail.com");
-  account_store_form1.password_value = base::ASCIIToUTF16("account_pass");
+  account_store_form1.username_value = u"account@gmail.com";
+  account_store_form1.password_value = u"account_pass";
   account_store_form1.in_store = PasswordForm::Store::kAccountStore;
 
   PasswordForm account_store_form2 = account_store_form1;
-  account_store_form2.username_value = base::ASCIIToUTF16("account2@gmail.com");
+  account_store_form2.username_value = u"account2@gmail.com";
 
   StrictMockSavedPasswordsPresenterObserver observer;
   presenter().AddObserver(&observer);
@@ -424,13 +507,13 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest, AddCredentialsToBothStores) {
 // same domain.
 TEST_F(SavedPasswordsPresenterWithTwoStoresTest, EditUsername) {
   PasswordForm profile_store_form;
-  profile_store_form.username_value = base::ASCIIToUTF16("profile@gmail.com");
-  profile_store_form.password_value = base::ASCIIToUTF16("profile_pass");
+  profile_store_form.username_value = u"profile@gmail.com";
+  profile_store_form.password_value = u"profile_pass";
   profile_store_form.in_store = PasswordForm::Store::kProfileStore;
 
   PasswordForm account_store_form;
-  account_store_form.username_value = base::ASCIIToUTF16("account@gmail.com");
-  account_store_form.password_value = base::ASCIIToUTF16("account_pass");
+  account_store_form.username_value = u"account@gmail.com";
+  account_store_form.password_value = u"account_pass";
   account_store_form.in_store = PasswordForm::Store::kAccountStore;
 
   profile_store().AddLogin(profile_store_form);
@@ -450,6 +533,273 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest, EditUsername) {
   EXPECT_THAT(profile_store().stored_passwords(),
               ElementsAre(Pair(profile_store_form.signon_realm,
                                ElementsAre(profile_store_form))));
+}
+
+// Tests that duplicates of credentials are removed only from the store that
+// the initial credential belonged to.
+TEST_F(SavedPasswordsPresenterWithTwoStoresTest, DeleteCredentialProfileStore) {
+  PasswordForm profile_store_form;
+  profile_store_form.signon_realm = "https://example.com";
+  profile_store_form.username_value = u"example@gmail.com";
+  profile_store_form.password_value = u"password";
+  profile_store_form.in_store = PasswordForm::Store::kProfileStore;
+
+  PasswordForm duplicate_profile_store_form = profile_store_form;
+  duplicate_profile_store_form.signon_realm = "https://m.example.com";
+
+  PasswordForm account_store_form;
+  account_store_form.signon_realm = "https://example.com";
+  account_store_form.username_value = u"example@gmail.com";
+  account_store_form.password_value = u"password";
+  account_store_form.in_store = PasswordForm::Store::kAccountStore;
+
+  profile_store().AddLogin(profile_store_form);
+  profile_store().AddLogin(duplicate_profile_store_form);
+  account_store().AddLogin(account_store_form);
+  RunUntilIdle();
+
+  ASSERT_THAT(profile_store().stored_passwords(),
+              ElementsAre(Pair(profile_store_form.signon_realm,
+                               ElementsAre(profile_store_form)),
+                          Pair(duplicate_profile_store_form.signon_realm,
+                               ElementsAre(duplicate_profile_store_form))));
+  ASSERT_THAT(account_store().stored_passwords(),
+              ElementsAre(Pair(account_store_form.signon_realm,
+                               ElementsAre(account_store_form))));
+
+  presenter().RemovePassword(profile_store_form);
+  RunUntilIdle();
+
+  EXPECT_TRUE(profile_store().IsEmpty());
+  EXPECT_THAT(account_store().stored_passwords(),
+              ElementsAre(Pair(account_store_form.signon_realm,
+                               ElementsAre(account_store_form))));
+}
+
+TEST_F(SavedPasswordsPresenterWithTwoStoresTest, DeleteCredentialAccountStore) {
+  PasswordForm profile_store_form;
+  profile_store_form.signon_realm = "https://example.com";
+  profile_store_form.username_value = u"example@gmail.com";
+  profile_store_form.password_value = u"password";
+  profile_store_form.in_store = PasswordForm::Store::kProfileStore;
+
+  PasswordForm account_store_form;
+  account_store_form.signon_realm = "https://example.com";
+  account_store_form.username_value = u"example@gmail.com";
+  account_store_form.password_value = u"password";
+  account_store_form.in_store = PasswordForm::Store::kAccountStore;
+
+  PasswordForm duplicate_account_store_form = account_store_form;
+  duplicate_account_store_form.signon_realm = "https://m.example.com";
+
+  profile_store().AddLogin(profile_store_form);
+  account_store().AddLogin(account_store_form);
+  account_store().AddLogin(duplicate_account_store_form);
+  RunUntilIdle();
+
+  ASSERT_THAT(profile_store().stored_passwords(),
+              ElementsAre(Pair(profile_store_form.signon_realm,
+                               ElementsAre(profile_store_form))));
+  ASSERT_THAT(account_store().stored_passwords(),
+              ElementsAre(Pair(account_store_form.signon_realm,
+                               ElementsAre(account_store_form)),
+                          Pair(duplicate_account_store_form.signon_realm,
+                               ElementsAre(duplicate_account_store_form))));
+
+  presenter().RemovePassword(account_store_form);
+  RunUntilIdle();
+
+  EXPECT_THAT(profile_store().stored_passwords(),
+              ElementsAre(Pair(profile_store_form.signon_realm,
+                               ElementsAre(profile_store_form))));
+  EXPECT_TRUE(account_store().IsEmpty());
+}
+
+TEST_F(SavedPasswordsPresenterWithTwoStoresTest, DeleteCredentialBothStores) {
+  PasswordForm profile_store_form;
+  profile_store_form.signon_realm = "https://example.com";
+  profile_store_form.username_value = u"example@gmail.com";
+  profile_store_form.password_value = u"password";
+  profile_store_form.in_store = PasswordForm::Store::kProfileStore;
+
+  PasswordForm account_store_form = profile_store_form;
+  account_store_form.in_store = PasswordForm::Store::kAccountStore;
+
+  PasswordForm mobile_account_store_form = account_store_form;
+  mobile_account_store_form.signon_realm = "https://mobile.example.com";
+
+  profile_store().AddLogin(profile_store_form);
+  account_store().AddLogin(account_store_form);
+  account_store().AddLogin(mobile_account_store_form);
+  RunUntilIdle();
+
+  ASSERT_THAT(profile_store().stored_passwords(),
+              ElementsAre(Pair(profile_store_form.signon_realm,
+                               ElementsAre(profile_store_form))));
+  ASSERT_THAT(account_store().stored_passwords(),
+              ElementsAre(Pair(account_store_form.signon_realm,
+                               ElementsAre(account_store_form)),
+                          Pair(mobile_account_store_form.signon_realm,
+                               ElementsAre(mobile_account_store_form))));
+
+  PasswordForm form_to_delete = profile_store_form;
+  form_to_delete.in_store =
+      PasswordForm::Store::kProfileStore | PasswordForm::Store::kAccountStore;
+
+  presenter().RemovePassword(form_to_delete);
+  RunUntilIdle();
+
+  // All credentials which are considered duplicates of a 'form_to_delete'
+  // should have been deleted from both stores.
+  EXPECT_TRUE(profile_store().IsEmpty());
+  EXPECT_TRUE(account_store().IsEmpty());
+}
+
+TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
+       ReturnsUsernamesForRealmFromSameStore) {
+  PasswordForm form;
+  form.signon_realm = "https://example.com";
+  form.username_value = u"test1@gmail.com";
+  form.password_value = u"password";
+  form.in_store = PasswordForm::Store::kProfileStore;
+
+  PasswordForm other_form;
+  other_form = form;
+  other_form.username_value = u"test2@gmail.com";
+
+  PasswordForm account_store_form = other_form;
+  account_store_form.username_value = u"test3@gmail.com";
+  account_store_form.in_store = PasswordForm::Store::kAccountStore;
+
+  profile_store().AddLogin(form);
+  profile_store().AddLogin(other_form);
+
+  account_store().AddLogin(account_store_form);
+
+  RunUntilIdle();
+
+  ASSERT_THAT(profile_store().stored_passwords(),
+              ElementsAre(Pair(form.signon_realm,
+                               UnorderedElementsAre(form, other_form))));
+
+  ASSERT_THAT(account_store().stored_passwords(),
+              ElementsAre(Pair(account_store_form.signon_realm,
+                               ElementsAre(account_store_form))));
+
+  EXPECT_THAT(
+      presenter().GetUsernamesForRealm(form.signon_realm,
+                                       /*is_using_account_store=*/false),
+      UnorderedElementsAre(form.username_value, other_form.username_value));
+
+  EXPECT_THAT(presenter().GetUsernamesForRealm(account_store_form.signon_realm,
+                                               /*is_using_account_store=*/true),
+              ElementsAre(account_store_form.username_value));
+}
+
+TEST_F(SavedPasswordsPresenterWithTwoStoresTest, GetUniquePasswords) {
+  PasswordForm profile_store_form;
+  profile_store_form.signon_realm = "https://example.com";
+  profile_store_form.username_value = u"example@gmail.com";
+  profile_store_form.password_value = u"password";
+  profile_store_form.in_store = PasswordForm::Store::kProfileStore;
+
+  PasswordForm account_store_form = profile_store_form;
+  account_store_form.in_store = PasswordForm::Store::kAccountStore;
+
+  profile_store().AddLogin(profile_store_form);
+  account_store().AddLogin(account_store_form);
+  RunUntilIdle();
+
+  ASSERT_THAT(profile_store().stored_passwords(),
+              ElementsAre(Pair(profile_store_form.signon_realm,
+                               ElementsAre(profile_store_form))));
+  ASSERT_THAT(account_store().stored_passwords(),
+              ElementsAre(Pair(account_store_form.signon_realm,
+                               ElementsAre(account_store_form))));
+
+  PasswordForm expected_form = profile_store_form;
+  expected_form.in_store =
+      PasswordForm::Store::kProfileStore | PasswordForm::Store::kAccountStore;
+
+  EXPECT_THAT(presenter().GetUniquePasswordForms(), ElementsAre(expected_form));
+}
+
+// Prefixes like [m, mobile, www] are considered as "same-site".
+TEST_F(SavedPasswordsPresenterWithTwoStoresTest, GetUniquePasswords2) {
+  PasswordForm profile_store_form;
+  profile_store_form.signon_realm = "https://example.com";
+  profile_store_form.username_value = u"example@gmail.com";
+  profile_store_form.password_value = u"password";
+  profile_store_form.in_store = PasswordForm::Store::kProfileStore;
+
+  PasswordForm mobile_profile_store_form = profile_store_form;
+  mobile_profile_store_form.signon_realm = "https://m.example.com";
+
+  PasswordForm account_form_with_www = profile_store_form;
+  account_form_with_www.signon_realm = "https://www.example.com";
+  account_form_with_www.in_store = PasswordForm::Store::kAccountStore;
+
+  profile_store().AddLogin(mobile_profile_store_form);
+  profile_store().AddLogin(profile_store_form);
+  account_store().AddLogin(account_form_with_www);
+
+  RunUntilIdle();
+
+  ASSERT_THAT(
+      profile_store().stored_passwords(),
+      UnorderedElementsAre(Pair(profile_store_form.signon_realm,
+                                ElementsAre(profile_store_form)),
+                           Pair(mobile_profile_store_form.signon_realm,
+                                ElementsAre(mobile_profile_store_form))));
+  ASSERT_THAT(account_store().stored_passwords(),
+              ElementsAre(Pair(account_form_with_www.signon_realm,
+                               ElementsAre(account_form_with_www))));
+
+  PasswordForm expected_form = profile_store_form;
+  expected_form.in_store =
+      PasswordForm::Store::kProfileStore | PasswordForm::Store::kAccountStore;
+
+  EXPECT_THAT(presenter().GetUniquePasswordForms(), ElementsAre(expected_form));
+}
+
+TEST_F(SavedPasswordsPresenterWithTwoStoresTest, EditPasswordBothStores) {
+  PasswordForm profile_store_form;
+  profile_store_form.username_value = u"test@gmail.com";
+  profile_store_form.password_value = u"pass";
+  profile_store_form.in_store = PasswordForm::Store::kProfileStore;
+
+  PasswordForm account_store_form = profile_store_form;
+  account_store_form.in_store = PasswordForm::Store::kAccountStore;
+
+  profile_store().AddLogin(profile_store_form);
+  account_store().AddLogin(account_store_form);
+  RunUntilIdle();
+
+  EXPECT_THAT(profile_store().stored_passwords(),
+              ElementsAre(Pair(profile_store_form.signon_realm,
+                               ElementsAre(profile_store_form))));
+
+  std::u16string new_username = u"new_test@gmail.com";
+  std::u16string new_password = u"new_password";
+
+  EXPECT_TRUE(presenter().EditSavedPasswords(profile_store_form, new_username,
+                                             new_password));
+
+  RunUntilIdle();
+
+  PasswordForm expected_profile_store_form = profile_store_form;
+  expected_profile_store_form.username_value = new_username;
+  expected_profile_store_form.password_value = new_password;
+  expected_profile_store_form.in_store = PasswordForm::Store::kProfileStore;
+  PasswordForm expected_account_store_form = expected_profile_store_form;
+  expected_account_store_form.in_store = PasswordForm::Store::kAccountStore;
+
+  EXPECT_THAT(profile_store().stored_passwords(),
+              ElementsAre(Pair(profile_store_form.signon_realm,
+                               ElementsAre(expected_profile_store_form))));
+  EXPECT_THAT(account_store().stored_passwords(),
+              ElementsAre(Pair(account_store_form.signon_realm,
+                               ElementsAre(expected_account_store_form))));
 }
 
 }  // namespace password_manager

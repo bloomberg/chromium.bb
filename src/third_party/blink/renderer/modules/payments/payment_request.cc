@@ -15,7 +15,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -60,6 +61,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -701,6 +703,15 @@ void ValidateAndConvertPaymentMethodData(
       }
     }
 
+    KURL url(payment_method_data->supportedMethod());
+    if (url.IsValid() &&
+        !execution_context.GetContentSecurityPolicy()->AllowConnectToSource(
+            url, url, RedirectStatus::kNoRedirect,
+            ReportingDisposition::kSuppressReporting)) {
+      UseCounter::Count(&execution_context,
+                        WebFeature::kPaymentRequestCSPViolation);
+    }
+
     method_names.insert(payment_method_data->supportedMethod());
 
     output.push_back(payments::mojom::blink::PaymentMethodData::New());
@@ -736,9 +747,10 @@ bool AllowedToUsePaymentRequest(const ExecutionContext* execution_context) {
   if (execution_context->IsContextDestroyed())
     return false;
 
-  // 2. If Feature Policy is enabled, return the policy for "payment" feature.
+  // 2. If Permissions Policy is enabled, return the policy for "payment"
+  // feature.
   return execution_context->IsFeatureEnabled(
-      mojom::blink::FeaturePolicyFeature::kPayment,
+      mojom::blink::PermissionsPolicyFeature::kPayment,
       ReportOptions::kReportOnFailure);
 }
 
@@ -808,27 +820,48 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  // TODO(crbug.com/825270): Reject with SecurityError DOMException if triggered
-  // without user activation.
-  bool is_user_gesture =
-      LocalFrame::HasTransientUserActivation(DomWindow()->GetFrame());
-  if (!is_user_gesture) {
+  LocalFrame* local_frame = DomWindow()->GetFrame();
+
+  bool payment_request_allowed =
+      LocalFrame::HasTransientUserActivation(local_frame);
+  if (!payment_request_allowed) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kPaymentRequestShowWithoutGesture);
   }
 
-  // TODO(crbug.com/825270): Pretend that a user gesture is provided to allow
-  // origins that are part of the Secure Payment Confirmation Origin Trial to
-  // use skip-the-sheet flow as a hack for secure modal window
-  // (crbug.com/1122028). Remove this after user gesture delegation ships.
-  if (RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(
+  if (RuntimeEnabledFeatures::CapabilityDelegationPaymentRequestEnabled(
           GetExecutionContext())) {
-    is_user_gesture = true;
+    payment_request_allowed |= local_frame->IsPaymentRequestTokenActive();
+    if (!payment_request_allowed) {
+      UseCounter::Count(GetExecutionContext(),
+                        WebFeature::kPaymentRequestShowWithoutGestureOrToken);
+
+      String message =
+          "PaymentRequest.show() requires either transient user activation or "
+          "delegated payment request capability";
+      GetExecutionContext()->AddConsoleMessage(
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::blink::ConsoleMessageSource::kJavaScript,
+              mojom::blink::ConsoleMessageLevel::kWarning, message));
+      exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                        message);
+      return ScriptPromise();
+    }
+    LocalFrame::ConsumeTransientUserActivation(local_frame);
+    local_frame->ConsumePaymentRequestToken();
+
+  } else if (RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(
+                 GetExecutionContext())) {
+    // TODO(crbug.com/825270): Pretend that a user gesture is provided to allow
+    // origins that are part of the Secure Payment Confirmation Origin Trial to
+    // use skip-the-sheet flow as a hack for secure modal window
+    // (crbug.com/1122028). Remove this after user gesture delegation ships.
+    payment_request_allowed = true;
   }
 
   // TODO(crbug.com/779126): add support for handling payment requests in
   // immersive mode.
-  if (DomWindow()->GetFrame()->GetSettings()->GetImmersiveModeEnabled()) {
+  if (local_frame->GetSettings()->GetImmersiveModeEnabled()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Page popups are suppressed");
     return ScriptPromise();
@@ -839,7 +872,7 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state,
   UseCounter::Count(GetExecutionContext(), WebFeature::kPaymentRequestShow);
 
   is_waiting_for_show_promise_to_resolve_ = !details_promise.IsEmpty();
-  payment_provider_->Show(is_user_gesture,
+  payment_provider_->Show(payment_request_allowed,
                           is_waiting_for_show_promise_to_resolve_);
   if (is_waiting_for_show_promise_to_resolve_) {
     // If the website does not calculate the final shopping cart contents within
@@ -1119,7 +1152,7 @@ void PaymentRequest::OnUpdatePaymentDetails(
   }
 
   if (!options_->requestShipping())
-    validated_details->shipping_options = base::nullopt;
+    validated_details->shipping_options = absl::nullopt;
 
   if (is_waiting_for_show_promise_to_resolve_) {
     is_waiting_for_show_promise_to_resolve_ = false;
@@ -1170,6 +1203,8 @@ void PaymentRequest::Trace(Visitor* visitor) const {
   visitor->Trace(has_enrolled_instrument_resolver_);
   visitor->Trace(payment_provider_);
   visitor->Trace(client_receiver_);
+  visitor->Trace(complete_timer_);
+  visitor->Trace(update_payment_details_timer_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }
@@ -1288,7 +1323,7 @@ PaymentRequest::PaymentRequest(
       skip_to_gpay_ready = false;
     }
   } else {
-    validated_details->shipping_options = base::nullopt;
+    validated_details->shipping_options = absl::nullopt;
   }
 
   DCHECK(shipping_type_.IsNull() || shipping_type_ == "shipping" ||
@@ -1503,20 +1538,20 @@ void PaymentRequest::OnError(PaymentErrorReason error,
 
   switch (error) {
     case PaymentErrorReason::USER_CANCEL:
+    // Intentional fall through.
+    case PaymentErrorReason::INVALID_DATA_FROM_RENDERER:
+    // Intentional fall through.
+    case PaymentErrorReason::ALREADY_SHOWING:
       exception_code = DOMExceptionCode::kAbortError;
       break;
 
     case PaymentErrorReason::NOT_SUPPORTED:
-      exception_code = exception_code = DOMExceptionCode::kNotSupportedError;
+      exception_code = DOMExceptionCode::kNotSupportedError;
       break;
 
     case PaymentErrorReason::NOT_SUPPORTED_FOR_INVALID_ORIGIN_OR_SSL:
       exception_code = DOMExceptionCode::kNotSupportedError;
       not_supported_for_invalid_origin_or_ssl_error_ = error_message;
-      break;
-
-    case PaymentErrorReason::ALREADY_SHOWING:
-      exception_code = DOMExceptionCode::kAbortError;
       break;
 
     case PaymentErrorReason::UNKNOWN:
@@ -1693,7 +1728,9 @@ void PaymentRequest::DispatchPaymentRequestUpdateEvent(
                                              FROM_HERE);
 
   event_target->DispatchEvent(*event);
-  if (!event->is_waiting_for_update()) {
+  // Check whether the execution context still exists, because DispatchEvent()
+  // could have destroyed it.
+  if (GetExecutionContext() && !event->is_waiting_for_update()) {
     // DispatchEvent runs synchronously. The method is_waiting_for_update()
     // returns false if the merchant did not call event.updateWith() within the
     // event handler, which is optional, so the renderer sends a message to the

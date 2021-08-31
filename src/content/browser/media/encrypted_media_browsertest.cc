@@ -63,8 +63,9 @@ const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
 #endif
 
 // EME-specific test results and errors.
-const char kEmeKeyError[] = "KEYERROR";
+const char16_t kEmeKeyError[] = u"KEYERROR";
 const char kEmeNotSupportedError[] = "NOTSUPPORTEDERROR";
+const char16_t kEmeNotSupportedError16[] = u"NOTSUPPORTEDERROR";
 
 const char kDefaultEmePlayer[] = "eme_player.html";
 const char kDefaultMseOnlyEmePlayer[] = "mse_different_containers.html";
@@ -110,10 +111,8 @@ class EncryptedMediaTest
     // TODO(xhwang): Even when config change is not supported we still start
     // content shell only to return directly here. We probably should not run
     // these test cases at all.
-    if (CurrentSourceType() != SrcType::MSE) {
-      DVLOG(0) << "Config change only happens when using MSE.";
-      return;
-    }
+    if (CurrentSourceType() != SrcType::MSE)
+      GTEST_SKIP() << "Config change only happens when using MSE.";
 
     base::StringPairs query_params;
     query_params.emplace_back("keySystem", CurrentKeySystem());
@@ -148,10 +147,8 @@ class EncryptedMediaTest
   void RunMultipleFileTest(const std::string& video_file,
                            const std::string& audio_file,
                            const std::string& expected_title) {
-    if (CurrentSourceType() != SrcType::MSE) {
-      DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
-      return;
-    }
+    if (CurrentSourceType() != SrcType::MSE)
+      GTEST_SKIP() << "Can only play MP4 encrypted streams by MSE.";
 
     base::StringPairs query_params;
     query_params.emplace_back("keySystem", CurrentKeySystem());
@@ -175,8 +172,8 @@ class EncryptedMediaTest
   // We want to fail quickly when a test fails because an error is encountered.
   void AddTitlesToAwait(content::TitleWatcher* title_watcher) override {
     MediaBrowserTest::AddTitlesToAwait(title_watcher);
-    title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeNotSupportedError));
-    title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeKeyError));
+    title_watcher->AlsoWaitForTitle(kEmeNotSupportedError16);
+    title_watcher->AlsoWaitForTitle(kEmeKeyError);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -248,7 +245,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM) {
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM_Opus) {
 #if defined(OS_ANDROID)
   if (!media::MediaCodecUtil::IsOpusDecoderAvailable())
-    return;
+    GTEST_SKIP() << "Opus decoder not available";
 #endif
   TestSimplePlayback("bear-320x240-opus-a_enc-a.webm");
 }
@@ -256,7 +253,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM_Opus) {
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoAudio_WebM_Opus) {
 #if defined(OS_ANDROID)
   if (!media::MediaCodecUtil::IsOpusDecoderAvailable())
-    return;
+    GTEST_SKIP() << "Opus decoder not available";
 #endif
   TestSimplePlayback("bear-320x240-opus-av_enc-av.webm");
 }
@@ -264,7 +261,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoAudio_WebM_Opus) {
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM_Opus) {
 #if defined(OS_ANDROID)
   if (!media::MediaCodecUtil::IsOpusDecoderAvailable())
-    return;
+    GTEST_SKIP() << "Opus decoder not available";
 #endif
   TestSimplePlayback("bear-320x240-opus-av_enc-v.webm");
 }
@@ -276,17 +273,16 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4_FLAC) {
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4_OPUS) {
 #if defined(OS_ANDROID)
   if (!media::MediaCodecUtil::IsOpusDecoderAvailable())
-    return;
+    GTEST_SKIP() << "Opus decoder not available";
 #endif
   RunMultipleFileTest(std::string(), "bear-opus-cenc.mp4", media::kEnded);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
-  if (CurrentSourceType() != SrcType::MSE) {
-    DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
-    return;
-  }
+  if (CurrentSourceType() != SrcType::MSE)
+    GTEST_SKIP() << "Can only play MP4 encrypted streams by MSE.";
+
   TestSimplePlayback("bear-320x240-v_frag-vp9-cenc.mp4");
 }
 
@@ -299,10 +295,9 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9Profile2) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
-  if (CurrentSourceType() != SrcType::MSE) {
-    DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
-    return;
-  }
+  if (CurrentSourceType() != SrcType::MSE)
+    GTEST_SKIP() << "Can only play MP4 encrypted streams by MSE.";
+
   TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.mp4");
 }
 #endif  // !defined(OS_ANDROID)
@@ -318,19 +313,17 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_WebM_AV1_10bit) {
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_AV1) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
-  if (CurrentSourceType() != SrcType::MSE) {
-    DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
-    return;
-  }
+  if (CurrentSourceType() != SrcType::MSE)
+    GTEST_SKIP() << "Can only play MP4 encrypted streams by MSE.";
+
   TestSimplePlayback("bear-av1-cenc.mp4");
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_AV1_10bit) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
-  if (CurrentSourceType() != SrcType::MSE) {
-    DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
-    return;
-  }
+  if (CurrentSourceType() != SrcType::MSE)
+    GTEST_SKIP() << "Can only play MP4 encrypted streams by MSE.";
+
   TestSimplePlayback("bear-av1-320x180-10bit-cenc.mp4");
 }
 #endif  // BUILDFLAG(ENABLE_AV1_DECODER)

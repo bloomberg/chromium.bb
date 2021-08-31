@@ -159,5 +159,7 @@ class Authenticator(object):
       return AccessToken(
           token_info['token'],
           datetime.datetime.utcfromtimestamp(token_info['expiry']))
-    except subprocess2.CalledProcessError:
+    except subprocess2.CalledProcessError as e:
+      # subprocess2.CalledProcessError.__str__ nicely formats stdout/stderr.
+      logging.error('luci-auth token failed: %s', e)
       return None

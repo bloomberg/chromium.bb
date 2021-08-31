@@ -13,6 +13,7 @@
 #include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -131,7 +132,7 @@ class TableViewTestHelper {
 
 namespace {
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 constexpr int kCtrlOrCmdMask = ui::EF_COMMAND_DOWN;
 #else
 constexpr int kCtrlOrCmdMask = ui::EF_CONTROL_DOWN;
@@ -172,15 +173,20 @@ class TestTableModel2 : public ui::TableModel {
   // Reorders rows in the model.
   void MoveRows(int row_from, int length, int row_to);
 
+  // Allows overriding the tooltip for testing.
+  void SetTooltip(const std::u16string& tooltip);
+
   // ui::TableModel:
   int RowCount() override;
-  base::string16 GetText(int row, int column_id) override;
-  base::string16 GetTooltip(int row) override;
+  std::u16string GetText(int row, int column_id) override;
+  std::u16string GetTooltip(int row) override;
   void SetObserver(ui::TableModelObserver* observer) override;
   int CompareValues(int row1, int row2, int column_id) override;
 
  private:
   ui::TableModelObserver* observer_ = nullptr;
+
+  absl::optional<std::u16string> tooltip_;
 
   // The data.
   std::vector<std::vector<int>> rows_;
@@ -264,16 +270,20 @@ void TestTableModel2::MoveRows(int row_from, int length, int row_to) {
     observer_->OnItemsMoved(row_from, length, row_to);
 }
 
+void TestTableModel2::SetTooltip(const std::u16string& tooltip) {
+  tooltip_ = tooltip;
+}
+
 int TestTableModel2::RowCount() {
   return static_cast<int>(rows_.size());
 }
 
-base::string16 TestTableModel2::GetText(int row, int column_id) {
+std::u16string TestTableModel2::GetText(int row, int column_id) {
   return base::NumberToString16(rows_[row][column_id]);
 }
 
-base::string16 TestTableModel2::GetTooltip(int row) {
-  return base::ASCIIToUTF16("Tooltip") + base::NumberToString16(row);
+std::u16string TestTableModel2::GetTooltip(int row) {
+  return tooltip_ ? *tooltip_ : u"Tooltip" + base::NumberToString16(row);
 }
 
 void TestTableModel2::SetObserver(ui::TableModelObserver* observer) {
@@ -412,9 +422,9 @@ class TableViewTest : public ViewsTestBase,
 
     model_ = std::make_unique<TestTableModel2>();
     std::vector<ui::TableColumn> columns(2);
-    columns[0].title = base::ASCIIToUTF16("Title Column 0");
+    columns[0].title = u"Title Column 0";
     columns[0].sortable = true;
-    columns[1].title = base::ASCIIToUTF16("Title Column 1");
+    columns[1].title = u"Title Column 1";
     columns[1].id = 1;
     columns[1].sortable = true;
 
@@ -435,12 +445,13 @@ class TableViewTest : public ViewsTestBase,
     helper_ = std::make_unique<TableViewTestHelper>(table_);
 
     widget_ = std::make_unique<Widget>();
-    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+    Widget::InitParams params =
+        CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 0, 650, 650);
     params.delegate = GetWidgetDelegate(widget_.get());
     widget_->Init(std::move(params));
-    widget_->GetContentsView()->AddChildView(std::move(scroll_view));
+    widget_->GetRootView()->AddChildView(std::move(scroll_view));
     widget_->Show();
   }
 
@@ -451,7 +462,6 @@ class TableViewTest : public ViewsTestBase,
 
   void ClickOnRow(int row, int flags) {
     ui::test::EventGenerator generator(GetRootWindow(widget_.get()));
-    generator.set_assume_window_at_origin(false);
     generator.set_flags(flags);
     generator.set_current_screen_location(GetPointForRow(row));
     generator.PressLeftButton();
@@ -471,10 +481,14 @@ class TableViewTest : public ViewsTestBase,
                          " selection=";
     const ui::ListSelectionModel::SelectedIndices& selection(
         model.selected_indices());
-    for (size_t i = 0; i < selection.size(); ++i) {
-      if (i != 0)
+    bool first = true;
+    for (int index : selection) {
+      if (first) {
+        first = false;
+      } else {
         result += " ";
-      result += base::NumberToString(selection[i]);
+      }
+      result += base::NumberToString(index);
     }
     return result;
   }
@@ -487,12 +501,7 @@ class TableViewTest : public ViewsTestBase,
   }
 
   void VerifyTableViewAndAXOrder(std::string expected_view_order) {
-    auto& virtual_children = table_->GetViewAccessibility().virtual_children();
-
-    // Makes sure the virtual children count takes into account of the header
-    // row.
-    int virtual_row_count = table_->GetRowCount() + (helper_->header() ? 1 : 0);
-    EXPECT_EQ(virtual_row_count, int{virtual_children.size()});
+    VerifyAXRowIndexes();
 
     // The table views should match the expected view order.
     EXPECT_EQ(expected_view_order, GetRowsInViewOrderAsString(table_));
@@ -504,6 +513,33 @@ class TableViewTest : public ViewsTestBase,
     }
 
     EXPECT_EQ(expected_view_order, GetRowsInVirtualViewAsString(table_));
+  }
+
+  // Verifies that there is an unique, properly-indexed virtual row for every
+  // row.
+  void VerifyAXRowIndexes() {
+    auto& virtual_children = table_->GetViewAccessibility().virtual_children();
+
+    // Makes sure the virtual row count factors in the presence of the header.
+    const int first_row_index = helper_->header() ? 1 : 0;
+    const int virtual_row_count = table_->GetRowCount() + first_row_index;
+    EXPECT_EQ(virtual_row_count, int{virtual_children.size()});
+
+    // Make sure every virtual row is valid.
+    for (int index = first_row_index; index < virtual_row_count; index++) {
+      const auto& row = virtual_children[index];
+      ASSERT_TRUE(row);
+
+      // Normalize the row index to account for the presence of a header if
+      // necessary.
+      const int normalized_index = index - first_row_index;
+
+      // Make sure the stored row index matches the row index in the table.
+      const ui::AXNodeData& row_data = row->GetCustomData();
+      const int stored_index =
+          row_data.GetIntAttribute(ax::mojom::IntAttribute::kTableRowIndex);
+      EXPECT_EQ(stored_index, normalized_index);
+    }
   }
 
   // Helper function for comparing the bounds of |table_|'s virtual
@@ -699,6 +735,29 @@ TEST_P(TableViewTest, GetVirtualAccessibilityCell) {
                        ax::mojom::IntAttribute::kTableCellColumnIndex)));
     }
   }
+}
+
+TEST_P(TableViewTest, ChangingCellFiresAccessibilityEvent) {
+  int text_changed_count = 0;
+  table_->GetViewAccessibility().set_accessibility_events_callback(
+      base::BindLambdaForTesting(
+          [&](const ui::AXPlatformNodeDelegate*, const ax::mojom::Event event) {
+            if (event == ax::mojom::Event::kTextChanged)
+              ++text_changed_count;
+          }));
+
+  // A kTextChanged event is fired when a cell's data is accessed and
+  // its computed accessible text isn't the same as the previously cached
+  // value. Ensure that the cached value is correctly updated so that
+  // retrieving the data multiple times doesn't result in firing additional
+  // kTextChanged events.
+  const AXVirtualView* cell = helper_->GetVirtualAccessibilityCell(0, 0);
+  ASSERT_TRUE(cell);
+  ui::AXNodeData cell_data;
+  for (int i = 0; i < 100; ++i)
+    cell_data = cell->GetData();
+
+  EXPECT_EQ(1, text_changed_count);
 }
 
 // Verifies SetColumnVisibility().
@@ -1058,7 +1117,7 @@ TEST_P(TableViewTest, Tooltip) {
     return gfx::Point(5, (row + 0.5) * table_->GetRowHeight());
   };
   auto expected = [](int row) {
-    return base::ASCIIToUTF16("Tooltip") + base::NumberToString16(row);
+    return u"Tooltip" + base::NumberToString16(row);
   };
   EXPECT_EQ(expected(0), table_->GetTooltipText(local_point_for_row(0)));
   EXPECT_EQ(expected(1), table_->GetTooltipText(local_point_for_row(1)));
@@ -1295,6 +1354,29 @@ TEST_P(TableViewTest, Selection) {
   table_->set_observer(nullptr);
 }
 
+TEST_P(TableViewTest, SelectAll) {
+  TableViewObserverImpl observer;
+  table_->set_observer(&observer);
+
+  // Initially no selection.
+  EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
+
+  table_->SetSelectionAll(/*select=*/true);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=-1 anchor=-1 selection=0 1 2 3", SelectionStateAsString());
+
+  table_->Select(2);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=2 anchor=2 selection=2", SelectionStateAsString());
+
+  table_->SetSelectionAll(/*select=*/true);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=2 anchor=2 selection=0 1 2 3", SelectionStateAsString());
+
+  table_->SetSelectionAll(/*select=*/false);
+  EXPECT_EQ("active=2 anchor=2 selection=", SelectionStateAsString());
+}
+
 TEST_P(TableViewTest, RemoveUnselectedRows) {
   TableViewObserverImpl observer;
   table_->set_observer(&observer);
@@ -1382,7 +1464,7 @@ TEST_P(TableViewTest, SelectionNoSelectOnRemove) {
 }
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
 // Verifies selection works by way of a gesture.
 TEST_P(TableViewTest, SelectOnTap) {
   // Initially no selection.
@@ -1895,6 +1977,34 @@ TEST_P(TableViewTest, FocusAfterRemovingAnchor) {
   helper_->SetSelectionModel(new_selection);
   model_->RemoveRow(0);
   table_->RequestFocus();
+}
+
+// OnItemsRemoved() should ensure view-model mappings are updated in response to
+// the table model change before these view-model mappings are used.
+// Test for (https://crbug.com/1173373).
+TEST_P(TableViewTest, RemovingSortedRowsDoesNotCauseOverflow) {
+  // Ensure the table has a sort descriptor set so that `view_to_model_` and
+  // `model_to_view_` mappings are established and are in descending order. Do
+  // this so the first view row maps to the last model row.
+  table_->ToggleSortOrder(0);
+  table_->ToggleSortOrder(0);
+  ASSERT_TRUE(table_->GetIsSorted());
+  ASSERT_EQ(1u, table_->sort_descriptors().size());
+  EXPECT_EQ(0, table_->sort_descriptors()[0].column_id);
+  EXPECT_FALSE(table_->sort_descriptors()[0].ascending);
+  EXPECT_EQ("3 2 1 0", GetViewToModelAsString(table_));
+  EXPECT_EQ("3 2 1 0", GetModelToViewAsString(table_));
+
+  // Removing rows can result in callbacks to GetTooltipText(). Above mappings
+  // will cause TableView to try to access the text for the first view row and
+  // consequently attempt to access the last element in the model via the
+  // `view_to_model_` mapping. This will result in a crash if the view-model
+  // mappings have not been appropriately updated.
+  model_->SetTooltip(u"");
+  model_->RemoveRow(0);
+  model_->RemoveRow(0);
+  model_->RemoveRow(0);
+  model_->RemoveRow(0);
 }
 
 namespace {

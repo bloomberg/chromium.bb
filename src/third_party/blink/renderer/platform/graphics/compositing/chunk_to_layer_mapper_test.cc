@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/platform/graphics/compositing/chunk_to_layer_mapper.h"
 
 #include <utility>
-#include "base/optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
 #include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
@@ -19,7 +19,7 @@ class ChunkToLayerMapperTest : public testing::Test {
   static PaintChunk Chunk(const PropertyTreeState& state) {
     DEFINE_STATIC_LOCAL(FakeDisplayItemClient, fake_client, ());
     DEFINE_STATIC_LOCAL(
-        base::Optional<PaintChunk::Id>, id,
+        absl::optional<PaintChunk::Id>, id,
         (PaintChunk::Id(fake_client, DisplayItem::kDrawingFirst)));
     PaintChunk chunk(0, 1, *id, state);
     return chunk;
@@ -36,10 +36,8 @@ class ChunkToLayerMapperTest : public testing::Test {
           CreateClip(c0(), *layer_transform_, FloatRoundedRect(12, 34, 56, 78));
       layer_effect_ = EffectPaintPropertyNode::Create(
           e0(), EffectPaintPropertyNode::State{
-                    layer_transform_, layer_clip_, kColorFilterLuminanceToAlpha,
-                    CompositorFilterOperations(), 0.789f,
-                    CompositorFilterOperations(), base::Optional<gfx::RRectF>(),
-                    SkBlendMode::kSrcIn});
+                    layer_transform_, layer_clip_, CompositorFilterOperations(),
+                    nullptr, 0.789f, SkBlendMode::kSrcIn});
     }
     return PropertyTreeState(*layer_transform_, *layer_clip_, *layer_effect_);
   }

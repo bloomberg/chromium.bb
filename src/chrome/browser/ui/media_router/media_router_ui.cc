@@ -12,6 +12,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
@@ -47,11 +48,11 @@
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/common/fullscreen_video_element.mojom.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/mojom/media/fullscreen_video_element.mojom.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
@@ -75,7 +76,7 @@ bool IssueMatches(const Issue& issue, const UIMediaSink& ui_sink) {
           issue.info().route_id == ui_sink.route->media_route_id());
 }
 
-base::string16 GetSinkFriendlyName(const MediaSink& sink) {
+std::u16string GetSinkFriendlyName(const MediaSink& sink) {
   // Use U+2010 (HYPHEN) instead of ASCII hyphen to avoid problems with RTL
   // languages.
   const char* separator = u8" \u2010 ";
@@ -227,7 +228,7 @@ class MediaRouterUI::WebContentsFullscreenOnLoadedObserver final
 
   void FullscreenIfContentCaptured(content::WebContents* web_contents) {
     if (web_contents->IsBeingCaptured()) {
-      mojo::AssociatedRemote<content::mojom::FullscreenVideoElementHandler>
+      mojo::AssociatedRemote<blink::mojom::FullscreenVideoElementHandler>
           client;
       web_contents->GetMainFrame()
           ->GetRemoteAssociatedInterfaces()
@@ -399,7 +400,7 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
   // necessary.
   content::WebContents* tab_contents = initiator_;
 
-  base::Optional<RouteParameters> params;
+  absl::optional<RouteParameters> params;
   if (cast_mode == MediaCastMode::LOCAL_FILE) {
     GURL url = media_router_file_dialog_->GetLastSelectedFileUrl();
     tab_contents = OpenTabWithUrl(url);
@@ -443,7 +444,9 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
 
 void MediaRouterUI::TerminateRoute(const MediaRoute::Id& route_id) {
   logger_->LogInfo(mojom::LogCategory::kUi, kLoggerComponent,
-                   "TerminateRoute requested by MediaRouterUI.", "", "",
+                   "TerminateRoute requested by MediaRouterUI.",
+                   MediaRoute::GetSinkIdFromMediaRouteId(route_id),
+                   MediaRoute::GetMediaSourceIdFromMediaRouteId(route_id),
                    MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
   GetMediaRouter()->TerminateRoute(route_id);
 }
@@ -466,29 +469,10 @@ std::vector<MediaSinkWithCastModes> MediaRouterUI::GetEnabledSinks() const {
                   return sink.sink.id() == display_sink_id;
                 });
 
-  // Remove the pseudo-sink, since it's only used in the WebUI dialog.
-  // TODO(takumif): Remove this once we've removed pseudo-sink from Cloud MRP.
-  base::EraseIf(enabled_sinks, [](const MediaSinkWithCastModes& sink) {
-    return base::StartsWith(sink.sink.id(),
-                            "pseudo:", base::CompareCase::SENSITIVE);
-  });
-
-  // Filter out cloud sinks if the window is off-the-record. Casting to cloud
-  // sinks from off-the-record is not currently supported by the Cloud MRP. This
-  // is not the best place to do this, but the Media Router browser service and
-  // extension process are shared between normal and off-the-record, so
-  // off-the-record behaviors around sink availability have to be handled at the
-  // UI layer.
-  if (initiator_->GetBrowserContext()->IsOffTheRecord()) {
-    base::EraseIf(enabled_sinks, [](const MediaSinkWithCastModes& sink) {
-      return sink.sink.IsMaybeCloudSink();
-    });
-  }
-
   return enabled_sinks;
 }
 
-base::string16 MediaRouterUI::GetPresentationRequestSourceName() const {
+std::u16string MediaRouterUI::GetPresentationRequestSourceName() const {
   GURL gurl = GetFrameURL();
   // Presentation URLs are only possible on https: and other secure contexts,
   // so we can omit http/https schemes here.
@@ -505,14 +489,19 @@ void MediaRouterUI::AddIssue(const IssueInfo& issue) {
   switch (issue.severity) {
     case IssueInfo::Severity::NOTIFICATION:
       logger_->LogInfo(
-          mojom::LogCategory::kUi, kLoggerComponent, issue.message,
+          mojom::LogCategory::kUi, kLoggerComponent,
+          base::StrCat({"Sink button shows an issue in NOTIFICATION level: ",
+                        issue.title}),
           issue.sink_id,
-          MediaRoute::GetPresentationIdFromMediaRouteId(issue.route_id),
-          MediaRoute::GetMediaSourceIdFromMediaRouteId(issue.route_id));
+          MediaRoute::GetMediaSourceIdFromMediaRouteId(issue.route_id),
+          MediaRoute::GetPresentationIdFromMediaRouteId(issue.route_id));
       break;
     default:
       logger_->LogError(
-          mojom::LogCategory::kUi, kLoggerComponent, issue.message,
+          mojom::LogCategory::kUi, kLoggerComponent,
+          base::StrCat(
+              {"Sink button shows an issue in WARNING or FATAL level: ",
+               issue.title}),
           issue.sink_id,
           MediaRoute::GetMediaSourceIdFromMediaRouteId(issue.route_id),
           MediaRoute::GetPresentationIdFromMediaRouteId(issue.route_id));
@@ -545,7 +534,7 @@ void MediaRouterUI::LogMediaSinkStatus() {
   logger_->LogInfo(
       mojom::LogCategory::kUi, kLoggerComponent,
       base::StrCat(
-          {base::StringPrintf("%zu sinks available on CastDialogView closed: ",
+          {base::StringPrintf("%zu sinks shown on CastDialogView closed: ",
                               sink_ids.size()),
            base::JoinString(sink_ids, ",")}),
       "", "", "");
@@ -710,7 +699,7 @@ void MediaRouterUI::UpdateSinks() {
     observer.OnModelUpdated(model_);
 }
 
-base::Optional<RouteParameters> MediaRouterUI::GetRouteParameters(
+absl::optional<RouteParameters> MediaRouterUI::GetRouteParameters(
     const MediaSink::Id& sink_id,
     MediaCastMode cast_mode) {
   DCHECK(query_result_manager_);
@@ -731,7 +720,7 @@ base::Optional<RouteParameters> MediaRouterUI::GetRouteParameters(
         base::StringPrintf("No corresponding MediaSource for cast mode %d.",
                            static_cast<int>(cast_mode)),
         sink_id, "", "");
-    return base::nullopt;
+    return absl::nullopt;
   }
   params.source_id = source->id();
 
@@ -741,10 +730,10 @@ base::Optional<RouteParameters> MediaRouterUI::GetRouteParameters(
                       "Requested to create a route for presentation, but "
                       "presentation request is missing.",
                       sink_id, source->id(), "");
-    return base::nullopt;
+    return absl::nullopt;
   }
 
-  current_route_request_ = base::make_optional<RouteRequest>(sink_id);
+  current_route_request_ = absl::make_optional<RouteRequest>(sink_id);
   params.origin = for_presentation_source ? presentation_request_->frame_origin
                                           : url::Origin::Create(GURL());
 
@@ -789,7 +778,7 @@ base::Optional<RouteParameters> MediaRouterUI::GetRouteParameters(
   params.timeout = GetRouteRequestTimeout(cast_mode);
   params.off_the_record = initiator_->GetBrowserContext()->IsOffTheRecord();
 
-  return base::make_optional(std::move(params));
+  return absl::make_optional(std::move(params));
 }
 
 GURL MediaRouterUI::GetFrameURL() const {
@@ -800,7 +789,7 @@ GURL MediaRouterUI::GetFrameURL() const {
 void MediaRouterUI::SendIssueForRouteTimeout(
     MediaCastMode cast_mode,
     const MediaSink::Id& sink_id,
-    const base::string16& presentation_request_source_name) {
+    const std::u16string& presentation_request_source_name) {
   std::string issue_title;
   switch (cast_mode) {
     case PRESENTATION:
@@ -882,7 +871,7 @@ void MediaRouterUI::OnIssue(const Issue& issue) {
 }
 
 void MediaRouterUI::OnIssueCleared() {
-  issue_ = base::nullopt;
+  issue_ = absl::nullopt;
   UpdateSinks();
 }
 
@@ -934,7 +923,7 @@ void MediaRouterUI::OnRouteResponseReceived(
     int route_request_id,
     const MediaSink::Id& sink_id,
     MediaCastMode cast_mode,
-    const base::string16& presentation_request_source_name,
+    const std::u16string& presentation_request_source_name,
     const RouteRequestResult& result) {
   // If we receive a new route that we aren't expecting, do nothing.
   if (!current_route_request_ || route_request_id != current_route_request_->id)
@@ -961,8 +950,8 @@ void MediaRouterUI::OnRouteResponseReceived(
 }
 
 void MediaRouterUI::UpdateModelHeader() {
-  const base::string16 source_name = GetPresentationRequestSourceName();
-  const base::string16 header_text =
+  const std::u16string source_name = GetPresentationRequestSourceName();
+  const std::u16string header_text =
       source_name.empty()
           ? l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_TAB_MIRROR_CAST_MODE)
           : l10n_util::GetStringFUTF16(IDS_MEDIA_ROUTER_PRESENTATION_CAST_MODE,
@@ -974,7 +963,7 @@ void MediaRouterUI::UpdateModelHeader() {
 
 UIMediaSink MediaRouterUI::ConvertToUISink(const MediaSinkWithCastModes& sink,
                                            const MediaRoute* route,
-                                           const base::Optional<Issue>& issue) {
+                                           const absl::optional<Issue>& issue) {
   UIMediaSink ui_sink;
   ui_sink.id = sink.sink.id();
   ui_sink.friendly_name = GetSinkFriendlyName(sink.sink);
@@ -985,19 +974,19 @@ UIMediaSink MediaRouterUI::ConvertToUISink(const MediaSinkWithCastModes& sink,
   if (route) {
     ui_sink.status_text = base::UTF8ToUTF16(route->description());
     ui_sink.route = *route;
-    ui_sink.state = terminating_route_id_ && route->media_route_id() ==
-                                                 terminating_route_id_.value()
-                        ? UIMediaSinkState::DISCONNECTING
-                        : UIMediaSinkState::CONNECTED;
+    if (terminating_route_id_ &&
+        route->media_route_id() == terminating_route_id_.value()) {
+      ui_sink.state = UIMediaSinkState::DISCONNECTING;
+    } else if (route->is_connecting()) {
+      ui_sink.state = UIMediaSinkState::CONNECTING;
+    } else {
+      ui_sink.state = UIMediaSinkState::CONNECTED;
+    }
   } else {
     ui_sink.state = current_route_request() &&
                             sink.sink.id() == current_route_request()->sink_id
                         ? UIMediaSinkState::CONNECTING
                         : UIMediaSinkState::AVAILABLE;
-  }
-  if (ui_sink.icon_type == SinkIconType::HANGOUT &&
-      ui_sink.state == UIMediaSinkState::AVAILABLE && sink.sink.domain()) {
-    ui_sink.status_text = base::UTF8ToUTF16(*sink.sink.domain());
   }
   if (issue && IssueMatches(*issue, ui_sink))
     ui_sink.issue = issue;
@@ -1018,7 +1007,7 @@ void MediaRouterUI::FileDialogSelectionCanceled() {
   std::move(file_selection_callback_).Run(nullptr);
 }
 
-base::Optional<RouteParameters> MediaRouterUI::GetLocalFileRouteParameters(
+absl::optional<RouteParameters> MediaRouterUI::GetLocalFileRouteParameters(
     const MediaSink::Id& sink_id,
     const GURL& file_url,
     content::WebContents* tab_contents) {
@@ -1048,7 +1037,7 @@ base::Optional<RouteParameters> MediaRouterUI::GetLocalFileRouteParameters(
   CHECK(initiator_);
   params.off_the_record = initiator_->GetBrowserContext()->IsOffTheRecord();
 
-  return base::make_optional(std::move(params));
+  return absl::make_optional(std::move(params));
 }
 
 // TODO(crbug.com/792547): Refactor FullScreenFirstVideoElement() and
@@ -1072,8 +1061,7 @@ content::WebContents* MediaRouterUI::OpenTabWithUrl(const GURL& url) {
   // Check if the current page is a new tab. If so open file in current page.
   // If not then open a new page.
   auto initiatorOrigin = initiator_->GetVisibleURL().GetOrigin();
-  if (initiatorOrigin == GURL(chrome::kChromeSearchLocalNtpUrl).GetOrigin() ||
-      initiatorOrigin == GURL(chrome::kChromeUINewTabPageURL).GetOrigin() ||
+  if (initiatorOrigin == GURL(chrome::kChromeUINewTabPageURL).GetOrigin() ||
       initiatorOrigin == GURL(chrome::kChromeUINewTabURL).GetOrigin()) {
     content::NavigationController::LoadURLParams load_params(url);
     load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;

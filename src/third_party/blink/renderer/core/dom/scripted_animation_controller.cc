@@ -69,6 +69,7 @@ void ScriptedAnimationController::Trace(Visitor* visitor) const {
   visitor->Trace(callback_collection_);
   visitor->Trace(event_queue_);
   visitor->Trace(media_query_list_listeners_);
+  visitor->Trace(media_query_list_listeners_set_);
   visitor->Trace(per_frame_events_);
 }
 
@@ -169,7 +170,8 @@ void ScriptedAnimationController::ExecuteFrameCallbacks() {
 
 void ScriptedAnimationController::CallMediaQueryListListeners() {
   MediaQueryListListeners listeners;
-  listeners.Swap(media_query_list_listeners_);
+  listeners.swap(media_query_list_listeners_);
+  media_query_list_listeners_set_.clear();
 
   for (const auto& listener : listeners) {
     listener->NotifyMediaQueryChanged();
@@ -181,6 +183,12 @@ bool ScriptedAnimationController::HasScheduledFrameTasks() const {
          !event_queue_.IsEmpty() || !media_query_list_listeners_.IsEmpty() ||
          GetWindow()->document()->HasAutofocusCandidates() ||
          !vfc_execution_queue_.IsEmpty();
+}
+
+PageAnimator* ScriptedAnimationController::GetPageAnimator() {
+  if (GetWindow()->document() && GetWindow()->document()->GetPage())
+    return &(GetWindow()->document()->GetPage()->Animator());
+  return nullptr;
 }
 
 void ScriptedAnimationController::ServiceScriptedAnimations(
@@ -199,7 +207,9 @@ void ScriptedAnimationController::ServiceScriptedAnimations(
       loader->GetTiming()
           .MonotonicTimeToPseudoWallTime(monotonic_time_now)
           .InMillisecondsF();
-  current_frame_had_raf_ = HasFrameCallback();
+  auto* animator = GetPageAnimator();
+  if (animator && HasFrameCallback())
+    animator->SetCurrentFrameHadRaf();
 
   if (!HasScheduledFrameTasks())
     return;
@@ -239,7 +249,8 @@ void ScriptedAnimationController::ServiceScriptedAnimations(
   // 10.11. For each fully active Document in docs, run the animation
   // frame callbacks for that Document, passing in now as the timestamp.
   ExecuteFrameCallbacks();
-  next_frame_has_pending_raf_ = HasFrameCallback();
+  if (animator && HasFrameCallback())
+    animator->SetNextFrameHasPendingRaf();
 
   // See LocalFrameView::RunPostLifecycleSteps() for 10.12.
 
@@ -267,8 +278,13 @@ void ScriptedAnimationController::EnqueuePerFrameEvent(Event* event) {
 void ScriptedAnimationController::EnqueueMediaQueryChangeListeners(
     HeapVector<Member<MediaQueryListListener>>& listeners) {
   for (const auto& listener : listeners) {
-    media_query_list_listeners_.insert(listener);
+    if (!media_query_list_listeners_set_.Contains(listener)) {
+      media_query_list_listeners_.push_back(listener);
+      media_query_list_listeners_set_.insert(listener);
+    }
   }
+  DCHECK_EQ(media_query_list_listeners_.size(),
+            media_query_list_listeners_set_.size());
   ScheduleAnimationIfNeeded();
 }
 

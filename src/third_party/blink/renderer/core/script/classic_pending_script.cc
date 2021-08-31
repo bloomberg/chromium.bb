@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/script/classic_pending_script.h"
 
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
@@ -50,7 +51,7 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
 
   ClassicPendingScript* pending_script =
       MakeGarbageCollected<ClassicPendingScript>(
-          element, TextPosition(), KURL(), String(),
+          element, TextPosition::MinimumPosition(), KURL(), String(),
           ScriptSourceLocationType::kExternalFile, options,
           true /* is_external */);
 
@@ -126,71 +127,6 @@ NOINLINE void ClassicPendingScript::CheckState() const {
   DCHECK_EQ(is_external_, !!GetResource());
 }
 
-namespace {
-
-enum class StreamedBoolean {
-  // Must match BooleanStreamed in enums.xml.
-  kNotStreamed = 0,
-  kStreamed = 1,
-  kMaxValue = kStreamed
-};
-
-void RecordStartedStreamingHistogram(ScriptSchedulingType type,
-                                     bool did_use_streamer) {
-  StreamedBoolean streamed = did_use_streamer ? StreamedBoolean::kStreamed
-                                              : StreamedBoolean::kNotStreamed;
-  switch (type) {
-    case ScriptSchedulingType::kParserBlocking: {
-      UMA_HISTOGRAM_ENUMERATION(
-          "WebCore.Scripts.ParsingBlocking.StartedStreaming", streamed);
-      break;
-    }
-    case ScriptSchedulingType::kDefer: {
-      UMA_HISTOGRAM_ENUMERATION("WebCore.Scripts.Deferred.StartedStreaming",
-                                streamed);
-      break;
-    }
-    case ScriptSchedulingType::kAsync: {
-      UMA_HISTOGRAM_ENUMERATION("WebCore.Scripts.Async.StartedStreaming",
-                                streamed);
-      break;
-    }
-    default: {
-      UMA_HISTOGRAM_ENUMERATION("WebCore.Scripts.Other.StartedStreaming",
-                                streamed);
-      break;
-    }
-  }
-}
-
-void RecordNotStreamingReasonHistogram(
-    ScriptSchedulingType type,
-    ScriptStreamer::NotStreamingReason reason) {
-  switch (type) {
-    case ScriptSchedulingType::kParserBlocking: {
-      UMA_HISTOGRAM_ENUMERATION(
-          "WebCore.Scripts.ParsingBlocking.NotStreamingReason", reason);
-      break;
-    }
-    case ScriptSchedulingType::kDefer: {
-      UMA_HISTOGRAM_ENUMERATION("WebCore.Scripts.Deferred.NotStreamingReason",
-                                reason);
-      break;
-    }
-    case ScriptSchedulingType::kAsync: {
-      UMA_HISTOGRAM_ENUMERATION("WebCore.Scripts.Async.NotStreamingReason",
-                                reason);
-      break;
-    }
-    default: {
-      UMA_HISTOGRAM_ENUMERATION("WebCore.Scripts.Other.NotStreamingReason",
-                                reason);
-      break;
-    }
-  }
-}
-
-}  // namespace
 
 void ClassicPendingScript::RecordThirdPartyRequestWithCookieIfNeeded(
     const ResourceResponse& response) const {
@@ -236,16 +172,6 @@ void ClassicPendingScript::RecordThirdPartyRequestWithCookieIfNeeded(
           kUndeferrableThirdPartySubresourceRequestWithCookie);
 }
 
-void ClassicPendingScript::RecordStreamingHistogram(
-    ScriptSchedulingType type,
-    bool can_use_streamer,
-    ScriptStreamer::NotStreamingReason reason) {
-  RecordStartedStreamingHistogram(type, can_use_streamer);
-  if (!can_use_streamer) {
-    DCHECK_NE(ScriptStreamer::NotStreamingReason::kInvalid, reason);
-    RecordNotStreamingReasonHistogram(type, reason);
-  }
-}
 
 void ClassicPendingScript::DisposeInternal() {
   MemoryPressureListenerRegistry::Instance().UnregisterClient(this);
@@ -313,12 +239,14 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
                                        options_, cross_origin);
   }
 
-  TRACE_EVENT_WITH_FLOW1(
-      TRACE_DISABLED_BY_DEFAULT("v8.compile"),
-      "ClassicPendingScript::NotifyFinished", this, TRACE_EVENT_FLAG_FLOW_OUT,
-      "data",
-      inspector_parse_script_event::Data(GetResource()->InspectorId(),
-                                         GetResource()->Url().GetString()));
+  TRACE_EVENT_WITH_FLOW1(TRACE_DISABLED_BY_DEFAULT("v8.compile"),
+                         "ClassicPendingScript::NotifyFinished", this,
+                         TRACE_EVENT_FLAG_FLOW_OUT, "data",
+                         [&](perfetto::TracedValue context) {
+                           inspector_parse_script_event::Data(
+                               std::move(context), GetResource()->InspectorId(),
+                               GetResource()->Url().GetString());
+                         });
 
   bool error_occurred = GetResource()->ErrorOccurred() || integrity_failure_;
   AdvanceReadyState(error_occurred ? kErrorOccurred : kReady);
@@ -373,8 +301,9 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
     }
 
     DCHECK(!GetResource());
-    RecordStreamingHistogram(GetSchedulingType(), false,
-                             ScriptStreamer::NotStreamingReason::kInlineScript);
+    ScriptStreamer::RecordStreamingHistogram(
+        GetSchedulingType(), false,
+        ScriptStreamer::NotStreamingReason::kInlineScript);
 
     ScriptSourceCode source_code(source_text_for_inline_script_,
                                  source_location_type_, cache_handler,
@@ -385,7 +314,7 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
   }
 
   DCHECK(GetResource()->IsLoaded());
-  ScriptResource* resource = ToScriptResource(GetResource());
+  auto* resource = To<ScriptResource>(GetResource());
   RecordThirdPartyRequestWithCookieIfNeeded(resource->GetResponse());
 
   auto* fetcher = GetElement()->GetExecutionContext()->Fetcher();
@@ -398,34 +327,26 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
   }
 
   // Check if we can use the script streamer.
-  bool did_stream = false;
-  ScriptStreamer::NotStreamingReason not_streamed_reason =
-      resource->NoStreamerReason();
-  ScriptStreamer* streamer = resource->TakeStreamer();
-  if (streamer) {
-    DCHECK_EQ(not_streamed_reason,
-              ScriptStreamer::NotStreamingReason::kInvalid);
-    if (streamer->IsStreamingSuppressed()) {
-      not_streamed_reason = streamer->StreamingSuppressedReason();
-    } else if (ready_state_ == kErrorOccurred) {
-      not_streamed_reason = ScriptStreamer::NotStreamingReason::kErrorOccurred;
-    } else if (not_streamed_reason ==
-               ScriptStreamer::NotStreamingReason::kInvalid) {
-      // streamer can be used to compile script.
-      CHECK_EQ(ready_state_, kReady);
-      did_stream = true;
-    }
+  ScriptStreamer* streamer;
+  ScriptStreamer::NotStreamingReason not_streamed_reason;
+  std::tie(streamer, not_streamed_reason) =
+      ScriptStreamer::TakeFrom(resource, mojom::blink::ScriptType::kClassic);
+
+  if (ready_state_ == kErrorOccurred) {
+    not_streamed_reason = ScriptStreamer::NotStreamingReason::kErrorOccurred;
+    streamer = nullptr;
   }
-  RecordStreamingHistogram(GetSchedulingType(), did_stream,
-                           not_streamed_reason);
+  if (streamer)
+    CHECK_EQ(ready_state_, kReady);
+  ScriptStreamer::RecordStreamingHistogram(GetSchedulingType(), streamer,
+                                           not_streamed_reason);
 
   TRACE_EVENT_WITH_FLOW1(TRACE_DISABLED_BY_DEFAULT("v8.compile"),
                          "ClassicPendingScript::GetSource", this,
                          TRACE_EVENT_FLAG_FLOW_IN, "not_streamed_reason",
                          not_streamed_reason);
 
-  ScriptSourceCode source_code(did_stream ? streamer : nullptr, resource,
-                               not_streamed_reason);
+  ScriptSourceCode source_code(streamer, resource, not_streamed_reason);
   // The base URL for external classic script is
   //
   // <spec href="https://html.spec.whatwg.org/C/#concept-script-base-url">

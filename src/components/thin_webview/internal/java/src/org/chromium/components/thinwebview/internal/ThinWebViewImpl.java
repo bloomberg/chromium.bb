@@ -12,6 +12,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.annotations.DoNotInline;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
@@ -32,6 +33,10 @@ public class ThinWebViewImpl extends FrameLayout implements ThinWebView {
     private long mNativeThinWebViewImpl;
     private WebContents mWebContents;
     private View mContentView;
+    // Passed to native and stored as a weak reference, so ensure this strong
+    // reference is not optimized away by R8.
+    @DoNotInline
+    private WebContentsDelegateAndroid mWebContentsDelegate;
 
     /**
      * Creates a {@link ThinWebViewImpl} backed by a {@link Surface}.
@@ -67,11 +72,12 @@ public class ThinWebViewImpl extends FrameLayout implements ThinWebView {
             @Nullable WebContentsDelegateAndroid delegate) {
         if (mNativeThinWebViewImpl == 0) return;
         mWebContents = webContents;
-
+        // Native code holds only a weak reference to this object.
+        mWebContentsDelegate = delegate;
         setContentView(contentView);
         ThinWebViewImplJni.get().setWebContents(
-                mNativeThinWebViewImpl, ThinWebViewImpl.this, mWebContents, delegate);
-        mWebContents.onShow();
+                mNativeThinWebViewImpl, ThinWebViewImpl.this, webContents, delegate);
+        webContents.onShow();
     }
 
     @Override

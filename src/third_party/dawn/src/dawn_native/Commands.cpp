@@ -36,6 +36,11 @@ namespace dawn_native {
                     begin->~BeginComputePassCmd();
                     break;
                 }
+                case Command::BeginOcclusionQuery: {
+                    BeginOcclusionQueryCmd* begin = commands->NextCommand<BeginOcclusionQueryCmd>();
+                    begin->~BeginOcclusionQueryCmd();
+                    break;
+                }
                 case Command::BeginRenderPass: {
                     BeginRenderPassCmd* begin = commands->NextCommand<BeginRenderPassCmd>();
                     begin->~BeginRenderPassCmd();
@@ -95,6 +100,11 @@ namespace dawn_native {
                 case Command::EndComputePass: {
                     EndComputePassCmd* cmd = commands->NextCommand<EndComputePassCmd>();
                     cmd->~EndComputePassCmd();
+                    break;
+                }
+                case Command::EndOcclusionQuery: {
+                    EndOcclusionQueryCmd* cmd = commands->NextCommand<EndOcclusionQueryCmd>();
+                    cmd->~EndOcclusionQueryCmd();
                     break;
                 }
                 case Command::EndRenderPass: {
@@ -158,9 +168,9 @@ namespace dawn_native {
                     cmd->~SetScissorRectCmd();
                     break;
                 }
-                case Command::SetBlendColor: {
-                    SetBlendColorCmd* cmd = commands->NextCommand<SetBlendColorCmd>();
-                    cmd->~SetBlendColorCmd();
+                case Command::SetBlendConstant: {
+                    SetBlendConstantCmd* cmd = commands->NextCommand<SetBlendConstantCmd>();
+                    cmd->~SetBlendConstantCmd();
                     break;
                 }
                 case Command::SetBindGroup: {
@@ -196,6 +206,10 @@ namespace dawn_native {
         switch (type) {
             case Command::BeginComputePass:
                 commands->NextCommand<BeginComputePassCmd>();
+                break;
+
+            case Command::BeginOcclusionQuery:
+                commands->NextCommand<BeginOcclusionQueryCmd>();
                 break;
 
             case Command::BeginRenderPass:
@@ -244,6 +258,10 @@ namespace dawn_native {
 
             case Command::EndComputePass:
                 commands->NextCommand<EndComputePassCmd>();
+                break;
+
+            case Command::EndOcclusionQuery:
+                commands->NextCommand<EndOcclusionQueryCmd>();
                 break;
 
             case Command::EndRenderPass:
@@ -297,8 +315,8 @@ namespace dawn_native {
                 commands->NextCommand<SetScissorRectCmd>();
                 break;
 
-            case Command::SetBlendColor:
-                commands->NextCommand<SetBlendColorCmd>();
+            case Command::SetBlendConstant:
+                commands->NextCommand<SetBlendConstantCmd>();
                 break;
 
             case Command::SetBindGroup: {

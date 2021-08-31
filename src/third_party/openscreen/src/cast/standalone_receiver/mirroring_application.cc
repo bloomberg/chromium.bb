@@ -5,6 +5,7 @@
 #include "cast/standalone_receiver/mirroring_application.h"
 
 #include "cast/common/public/message_port.h"
+#include "cast/streaming/constants.h"
 #include "cast/streaming/environment.h"
 #include "cast/streaming/message_fields.h"
 #include "cast/streaming/receiver_session.h"
@@ -13,9 +14,6 @@
 
 namespace openscreen {
 namespace cast {
-
-const char kMirroringAppId[] = "0F5096E8";
-const char kMirroringAudioOnlyAppId[] = "85CDB22F";
 
 const char kMirroringDisplayName[] = "Chrome Mirroring";
 const char kRemotingRpcNamespace[] = "urn:x-cast:com.google.cast.remoting";

@@ -32,70 +32,84 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_PLATFORM_H_
 
 #include <memory>
+#include <tuple>
+#include <vector>
 
-#include "base/containers/span.h"
+#include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/metrics/user_metrics_action.h"
-#include "base/strings/string_piece.h"
-#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "media/base/audio_capturer_source.h"
+#include "media/base/audio_latency.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/media_log.h"
-#include "mojo/public/cpp/base/big_buffer.h"
-#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
-#include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/mojom/url_loader_factory.mojom-shared.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
-#include "third_party/blink/public/mojom/loader/code_cache.mojom-shared.h"
+#include "third_party/blink/public/mojom/loader/code_cache.mojom-forward.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom-shared.h"
+#include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-forward.h"
 #include "third_party/blink/public/platform/audio/web_audio_device_source_type.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
-#include "third_party/blink/public/platform/user_metrics_action.h"
+#include "third_party/blink/public/platform/url_loader_throttle_provider.h"
 #include "third_party/blink/public/platform/web_audio_device.h"
 #include "third_party/blink/public/platform/web_code_cache_loader.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_url_error.h"
-#include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
+#include "third_party/blink/public/platform/web_v8_value_converter.h"
+#include "third_party/blink/public/platform/websocket_handshake_throttle_provider.h"
 #include "third_party/webrtc/api/video/video_codec_type.h"
 #include "ui/base/resource/scale_factor.h"
 
 class SkCanvas;
+class SkBitmap;
 
 namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace cc {
+class TaskGraphRunner;
+}  // namespace cc
+
 namespace gfx {
 class ColorSpace;
+class RenderingPipeline;
 }
 
 namespace gpu {
+class GpuChannelHost;
 class GpuMemoryBufferManager;
 }
 
 namespace media {
 struct AudioSinkParameters;
 struct AudioSourceParameters;
+class DecoderFactory;
 class MediaPermission;
 class GpuVideoAcceleratorFactories;
 }  // namespace media
 
+namespace mojo_base {
+class BigBuffer;
+}
+
 namespace network {
 namespace mojom {
-class URLResponseHead;
-}  // namespace mojom
-}  // namespace network
+class URLLoaderFactoryInterfaceBase;
+}
+class SharedURLLoaderFactory;
+}
+
+namespace url {
+class Origin;
+}
 
 namespace v8 {
 class Context;
@@ -114,6 +128,8 @@ class MediaInspectorContext;
 class ThreadSafeBrowserInterfaceBrokerProxy;
 class Thread;
 struct ThreadCreationParams;
+class URLLoaderThrottle;
+class UserMetricsAction;
 class WebAudioBus;
 class WebAudioLatencyHint;
 class WebCrypto;
@@ -122,11 +138,10 @@ class WebGraphicsContext3DProvider;
 class WebLocalFrame;
 class WebMediaCapabilitiesClient;
 class WebPublicSuffixList;
+class WebResourceRequestSenderDelegate;
 class WebSandboxSupport;
 class WebSecurityOrigin;
 class WebThemeEngine;
-class WebURLResponse;
-class WebURLResponse;
 class WebVideoCaptureImplManager;
 
 namespace scheduler {
@@ -184,8 +199,8 @@ class BLINK_PLATFORM_EXPORT Platform {
   // May return null if sandbox support is not necessary
   virtual WebSandboxSupport* GetSandboxSupport() { return nullptr; }
 
-  // May return null on some platforms.
-  virtual WebThemeEngine* ThemeEngine() { return nullptr; }
+  // Returns a theme engine. Should be non-null.
+  virtual WebThemeEngine* ThemeEngine();
 
   // AppCache  ----------------------------------------------------------
 
@@ -291,9 +306,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   // network::SharedURLLoaderFactory.
   virtual std::unique_ptr<blink::WebURLLoaderFactory>
   WrapSharedURLLoaderFactory(
-      scoped_refptr<network::SharedURLLoaderFactory> factory) {
-    return nullptr;
-  }
+      scoped_refptr<network::SharedURLLoaderFactory> factory);
 
   // Returns the User-Agent string.
   virtual WebString UserAgent() { return WebString(); }
@@ -304,19 +317,28 @@ class BLINK_PLATFORM_EXPORT Platform {
     return blink::UserAgentMetadata();
   }
 
-  // A suggestion to cache this metadata in association with this URL.
+  // A request to cache code generated by the Renderer for the resource fetched
+  // from the given URL at the given response time. The cached code can be
+  // fetched on subsequent loads of the resource to speed up processing. The
+  // Browser may silently ignore this request if |size| is too large or storage
+  // isn't available.
   virtual void CacheMetadata(blink::mojom::CodeCacheType cache_type,
                              const WebURL&,
                              base::Time response_time,
                              const uint8_t* data,
                              size_t data_size) {}
 
-  // A request to fetch contents associated with this URL from metadata cache.
   using FetchCachedCodeCallback =
       base::OnceCallback<void(base::Time, mojo_base::BigBuffer)>;
+  // A request to fetch previously cached code for the resource fetched from the
+  // given URL. The code fetch should be made at the same time as the resource
+  // fetch so the Renderer can bypass code generation for the resource.
   virtual void FetchCachedCode(blink::mojom::CodeCacheType cache_type,
                                const WebURL&,
                                FetchCachedCodeCallback) {}
+  // A request to clear cached code from storage. This can be called by the
+  // Renderer after fetching cached code that has become stale due to changes
+  // in the Renderer or runtime environment.
   virtual void ClearCodeCacheEntry(blink::mojom::CodeCacheType cache_type,
                                    const GURL&) {}
 
@@ -330,17 +352,41 @@ class BLINK_PLATFORM_EXPORT Platform {
       const blink::WebSecurityOrigin& cache_storage_origin,
       const WebString& cache_storage_cache_name) {}
 
-  // Converts network::mojom::URLResponseHead to WebURLResponse.
-  // TODO(crbug.com/860403): Remove this once it's moved into Blink.
-  virtual void PopulateURLResponse(const WebURL& url,
-                                   const network::mojom::URLResponseHead& head,
-                                   WebURLResponse* response,
-                                   bool report_security_info,
-                                   int request_id) {}
+  // Determines whether it is safe to redirect from |from_url| to |to_url|.
+  virtual bool IsRedirectSafe(const GURL& from_url, const GURL& to_url) {
+    return false;
+  }
+
+  // Returns the WebResourceRequestSenderDelegate of this renderer.
+  virtual WebResourceRequestSenderDelegate* GetResourceRequestSenderDelegate() {
+    return nullptr;
+  }
+
+  // Appends throttles if the browser has sent a variations header to the
+  // renderer.
+  virtual void AppendVariationsThrottles(
+      const url::Origin& top_origin,
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>>* throttles) {}
+
   // Public Suffix List --------------------------------------------------
 
   // May return null on some platforms.
   virtual WebPublicSuffixList* PublicSuffixList() { return nullptr; }
+
+  // Allows the embedder to return a (possibly null)
+  // blink::URLLoaderThrottleProvider for a worker.
+  virtual std::unique_ptr<URLLoaderThrottleProvider>
+  CreateURLLoaderThrottleProviderForWorker(
+      URLLoaderThrottleProviderType provider_type) {
+    return nullptr;
+  }
+
+  // Allows the embedder to provide a WebSocketHandshakeThrottleProvider. If it
+  // returns nullptr then none will be used.
+  virtual std::unique_ptr<WebSocketHandshakeThrottleProvider>
+  CreateWebSocketHandshakeThrottleProvider() {
+    return nullptr;
+  }
 
   // Resources -----------------------------------------------------------
 
@@ -378,12 +424,20 @@ class BLINK_PLATFORM_EXPORT Platform {
   // once CreateAndSetCompositorThread() is called.
   scoped_refptr<base::SingleThreadTaskRunner> CompositorThreadTaskRunner();
 
+  // Returns the task runner of the media thread.
+  // This method should only be called on the main thread, or it crashes.
+  virtual scoped_refptr<base::SingleThreadTaskRunner> MediaThreadTaskRunner() {
+    return nullptr;
+  }
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // This is called after the compositor thread is created, so the embedder
   // can initiate an IPC to change its thread priority (on Linux we can't
   // increase the nice value, so we need to ask the browser process). This
   // function is only called from the main thread (where InitializeCompositor-
   // Thread() is called).
   virtual void SetDisplayThreadPriority(base::PlatformThreadId) {}
+#endif
 
   // Returns a blame context for attributing top-level work which does not
   // belong to a particular frame scope.
@@ -487,6 +541,8 @@ class BLINK_PLATFORM_EXPORT Platform {
     bool sandboxed = false;
     bool amd_switchable = false;
     bool optimus = false;
+    bool using_gpu_compositing = false;
+    bool using_passthrough_command_decoder = false;
     WebString vendor_info;
     WebString renderer_info;
     WebString driver_version;
@@ -527,7 +583,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   // or software based resources.
   // NOTE: This function should not be called from core/ and modules/, but
   // called by platform/graphics/ is fine.
-  virtual bool IsGpuCompositingDisabled() { return true; }
+  virtual bool IsGpuCompositingDisabled() const { return true; }
 
 #if defined(OS_ANDROID)
   // Returns if synchronous compositing is enabled. Only used for Android
@@ -581,6 +637,17 @@ class BLINK_PLATFORM_EXPORT Platform {
   // time this routine returns.
   virtual scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync();
 
+  // The TaskGraphRunner. This must be non-null if compositing any widgets.
+  virtual cc::TaskGraphRunner* GetTaskGraphRunner() { return nullptr; }
+
+  // The RenderingPipeline for the main thread. May be null.
+  virtual gfx::RenderingPipeline* GetMainThreadPipeline() { return nullptr; }
+
+  // The RenderingPipeline for the compositor thread. May be null.
+  virtual gfx::RenderingPipeline* GetCompositorThreadPipeline() {
+    return nullptr;
+  }
+
   // Media stream ----------------------------------------------------
   virtual scoped_refptr<media::AudioCapturerSource> NewAudioCapturerSource(
       blink::WebLocalFrame* web_frame,
@@ -592,8 +659,8 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // WebRTC ----------------------------------------------------------
 
-  virtual base::Optional<double> GetWebRtcMaxCaptureFrameRate() {
-    return base::nullopt;
+  virtual absl::optional<double> GetWebRtcMaxCaptureFrameRate() {
+    return absl::nullopt;
   }
 
   virtual scoped_refptr<media::AudioRendererSink> NewAudioRendererSink(
@@ -607,8 +674,8 @@ class BLINK_PLATFORM_EXPORT Platform {
     return media::AudioLatency::LATENCY_PLAYBACK;
   }
 
-  virtual base::Optional<std::string> GetWebRTCAudioProcessingConfiguration() {
-    return base::nullopt;
+  virtual absl::optional<std::string> GetWebRTCAudioProcessingConfiguration() {
+    return absl::nullopt;
   }
 
   virtual bool ShouldEnforceWebRTCRoutingPreferences() { return true; }
@@ -628,10 +695,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual bool IsWebRtcSrtpEncryptedHeadersEnabled() { return false; }
 
-  virtual base::Optional<WebString> WebRtcStunProbeTrialParameter() {
-    return base::nullopt;
-  }
-
   // TODO(qingsi): Consolidate the legacy |ip_handling_policy| with
   // |allow_mdns_obfuscation| following the latest spec on IP handling modes
   // with mDNS introduced
@@ -642,8 +705,8 @@ class BLINK_PLATFORM_EXPORT Platform {
                                             uint16_t* udp_max_port,
                                             bool* allow_mdns_obfuscation) {}
 
-  virtual base::Optional<int> GetAgcStartupMinimumVolume() {
-    return base::nullopt;
+  virtual absl::optional<int> GetAgcStartupMinimumVolume() {
+    return absl::nullopt;
   }
 
   virtual bool IsWebRtcHWH264DecodingEnabled(
@@ -684,6 +747,45 @@ class BLINK_PLATFORM_EXPORT Platform {
       const WebString& header_name) {
     return false;
   }
+
+  // Returns true if the origin can register a service worker. Scheme must be
+  // http (localhost only), https, or a custom-set secure scheme.
+  virtual bool OriginCanAccessServiceWorkers(const WebURL& url) {
+    return false;
+  }
+
+  // Clones the current `service_worker_container_host` and returns the original
+  // host and the cloned one together.
+  //
+  // TODO(https://crbug.com/1110176): Remove this method once the mojom
+  // interface ServiceWorkerContainerHost is moved out of mojom_core, which is
+  // not available from renderer/platform.
+  virtual std::tuple<
+      CrossVariantMojoRemote<mojom::ServiceWorkerContainerHostInterfaceBase>,
+      CrossVariantMojoRemote<mojom::ServiceWorkerContainerHostInterfaceBase>>
+  CloneServiceWorkerContainerHost(
+      CrossVariantMojoRemote<mojom::ServiceWorkerContainerHostInterfaceBase>
+          service_worker_container_host) {
+    return std::make_tuple(
+        /*original_service_worker_container_host=*/CrossVariantMojoRemote<
+            mojom::ServiceWorkerContainerHostInterfaceBase>(),
+        /*cloned_service_worker_container_host=*/CrossVariantMojoRemote<
+            mojom::ServiceWorkerContainerHostInterfaceBase>());
+  }
+
+  // Creates a ServiceWorkerSubresourceLoaderFactory.
+  virtual void CreateServiceWorkerSubresourceLoaderFactory(
+      CrossVariantMojoRemote<mojom::ServiceWorkerContainerHostInterfaceBase>
+          service_worker_container_host,
+      const WebString& client_id,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory> fallback_factory,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner>
+          worker_timing_callback_task_runner,
+      base::RepeatingCallback<
+          void(int, mojo::PendingReceiver<blink::mojom::WorkerTimingContainer>)>
+          worker_timing_callback) {}
 
   // WebCrypto ----------------------------------------------------------
 
@@ -734,7 +836,11 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
+  virtual media::DecoderFactory* GetMediaDecoderFactory() { return nullptr; }
+
   virtual void SetRenderingColorSpace(const gfx::ColorSpace& color_space) {}
+
+  virtual gfx::ColorSpace GetRenderingColorSpace() const;
 
   // Renderer Memory Metrics ----------------------------------------------
 
@@ -753,6 +859,19 @@ class BLINK_PLATFORM_EXPORT Platform {
   // keys and is usually set for the duration of processing an IPC message. To
   // unset pass an empty WebURL and WebString.
   virtual void SetActiveURL(const WebURL& url, const WebString& top_url) {}
+
+  // Sad Page -----------------------------------------------------
+
+  // Returns a sad page bitmap used when the child frame has crashed.
+  virtual SkBitmap* GetSadPageBitmap() { return nullptr; }
+
+  // V8 Converter -------------------------------------------------
+
+  // Returns WebV8ValueConverter that converts between v8::Value and
+  // base::Value.
+  virtual std::unique_ptr<WebV8ValueConverter> CreateWebV8ValueConverter() {
+    return nullptr;
+  }
 
  private:
   static void InitializeMainThreadCommon(Platform* platform,

@@ -9,10 +9,11 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class ChromeBrowserState;
 class GURL;
@@ -28,7 +29,17 @@ namespace bookmark_utils_ios {
 typedef std::vector<const bookmarks::BookmarkNode*> NodeVector;
 typedef std::set<const bookmarks::BookmarkNode*> NodeSet;
 
+// Finds bookmark nodes from passed in |ids|. The optional is only set if all
+// the |ids| have been found.
+absl::optional<NodeSet> FindNodesByIds(bookmarks::BookmarkModel* model,
+                                       const std::set<int64_t>& ids);
+
 // Finds bookmark node passed in |id|, in the |model|.
+const bookmarks::BookmarkNode* FindNodeById(bookmarks::BookmarkModel* model,
+                                            int64_t id);
+
+// Finds bookmark node passed in |id|, in the |model|. Returns null if the
+// node is found but not a folder.
 const bookmarks::BookmarkNode* FindFolderById(bookmarks::BookmarkModel* model,
                                               int64_t id);
 
@@ -38,9 +49,6 @@ NSString* TitleForBookmarkNode(const bookmarks::BookmarkNode* node);
 
 // Returns the subtitle relevant to the bookmark navigation ui.
 NSString* subtitleForBookmarkNode(const bookmarks::BookmarkNode* node);
-
-// Returns the current status bar height.
-CGFloat StatusBarHeight();
 
 #pragma mark - Updating Bookmarks
 

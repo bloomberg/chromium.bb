@@ -17,13 +17,9 @@
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/device_info_specifics.pb.h"
 #include "components/sync/protocol/encryption.pb.h"
-#include "components/sync/protocol/experiments_specifics.pb.h"
 #include "components/sync/protocol/extension_setting_specifics.pb.h"
 #include "components/sync/protocol/extension_specifics.pb.h"
-#include "components/sync/protocol/favicon_image_specifics.pb.h"
-#include "components/sync/protocol/favicon_tracking_specifics.pb.h"
 #include "components/sync/protocol/managed_user_setting_specifics.pb.h"
-#include "components/sync/protocol/managed_user_whitelist_specifics.pb.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/protocol/os_preference_specifics.pb.h"
 #include "components/sync/protocol/os_priority_preference_specifics.pb.h"
@@ -49,7 +45,7 @@ namespace {
     specifics.mutable_##Key();                                      \
     std::unique_ptr<base::DictionaryValue> value(                   \
         EntitySpecificsToValue(specifics));                         \
-    EXPECT_EQ(1, static_cast<int>(value->size()));                  \
+    EXPECT_EQ(1, static_cast<int>(value->DictSize()));              \
   }
 
 // We'd also like to check if we changed any field in our messages. However,
@@ -59,7 +55,7 @@ namespace {
 
 DEFINE_SPECIFICS_TO_VALUE_TEST(encrypted)
 
-static_assert(41 == syncer::ModelType::NUM_ENTRIES,
+static_assert(37 == syncer::GetNumModelTypes(),
               "When adding a new field, add a DEFINE_SPECIFICS_TO_VALUE_TEST "
               "for your field below, and optionally a test for the specific "
               "conversions.");
@@ -75,14 +71,10 @@ DEFINE_SPECIFICS_TO_VALUE_TEST(autofill_wallet)
 DEFINE_SPECIFICS_TO_VALUE_TEST(bookmark)
 DEFINE_SPECIFICS_TO_VALUE_TEST(device_info)
 DEFINE_SPECIFICS_TO_VALUE_TEST(dictionary)
-DEFINE_SPECIFICS_TO_VALUE_TEST(experiments)
 DEFINE_SPECIFICS_TO_VALUE_TEST(extension)
 DEFINE_SPECIFICS_TO_VALUE_TEST(extension_setting)
-DEFINE_SPECIFICS_TO_VALUE_TEST(favicon_image)
-DEFINE_SPECIFICS_TO_VALUE_TEST(favicon_tracking)
 DEFINE_SPECIFICS_TO_VALUE_TEST(history_delete_directive)
 DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user_setting)
-DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user_whitelist)
 DEFINE_SPECIFICS_TO_VALUE_TEST(nigori)
 DEFINE_SPECIFICS_TO_VALUE_TEST(os_preference)
 DEFINE_SPECIFICS_TO_VALUE_TEST(os_priority_preference)
@@ -103,39 +95,6 @@ DEFINE_SPECIFICS_TO_VALUE_TEST(user_event)
 DEFINE_SPECIFICS_TO_VALUE_TEST(wallet_metadata)
 DEFINE_SPECIFICS_TO_VALUE_TEST(web_app)
 DEFINE_SPECIFICS_TO_VALUE_TEST(wifi_configuration)
-
-TEST(ProtoValueConversionsTest, PasswordSpecifics) {
-  sync_pb::PasswordSpecifics specifics;
-  specifics.mutable_client_only_encrypted_data();
-  auto value = PasswordSpecificsToValue(specifics);
-  EXPECT_FALSE(value->Get("client_only_encrypted_data", nullptr));
-}
-
-TEST(ProtoValueConversionsTest, PasswordSpecificsData) {
-  sync_pb::PasswordSpecificsData specifics;
-  specifics.set_password_value("secret");
-  std::unique_ptr<base::DictionaryValue> value(
-      PasswordSpecificsDataToValue(specifics));
-  EXPECT_FALSE(value->empty());
-  std::string password_value;
-  EXPECT_TRUE(value->GetString("password_value", &password_value));
-  EXPECT_EQ("<redacted>", password_value);
-}
-
-TEST(ProtoValueConversionsTest, AppSettingSpecificsToValue) {
-  sync_pb::AppNotificationSettings specifics;
-  specifics.set_disabled(true);
-  specifics.set_oauth_client_id("some_id_value");
-  std::unique_ptr<base::DictionaryValue>
-      value(AppNotificationSettingsToValue(specifics));
-  EXPECT_FALSE(value->empty());
-  bool disabled_value = false;
-  std::string oauth_client_id_value;
-  EXPECT_TRUE(value->GetBoolean("disabled", &disabled_value));
-  EXPECT_EQ(true, disabled_value);
-  EXPECT_TRUE(value->GetString("oauth_client_id", &oauth_client_id_value));
-  EXPECT_EQ("some_id_value", oauth_client_id_value);
-}
 
 TEST(ProtoValueConversionsTest, AutofillWalletSpecificsToValue) {
   sync_pb::AutofillWalletSpecifics specifics;
@@ -196,7 +155,7 @@ TEST(ProtoValueConversionsTest, BookmarkSpecificsData) {
 
   std::unique_ptr<base::DictionaryValue> value(
       BookmarkSpecificsToValue(specifics));
-  EXPECT_FALSE(value->empty());
+  EXPECT_FALSE(value->DictEmpty());
   std::string encoded_time;
   EXPECT_TRUE(value->GetString("creation_time_us", &encoded_time));
   EXPECT_EQ(base::NumberToString(creation_time.ToInternalValue()),
@@ -220,34 +179,6 @@ TEST(ProtoValueConversionsTest, BookmarkSpecificsData) {
   EXPECT_TRUE(meta_info->GetString("value", &meta_value));
   EXPECT_EQ("key2", meta_key);
   EXPECT_EQ("value2", meta_value);
-}
-
-TEST(ProtoValueConversionsTest, ExperimentsSpecificsToValue) {
-#define TEST_EXPERIMENT_ENABLED_FIELD(field) \
-  { \
-    sync_pb::ExperimentsSpecifics specifics; \
-    specifics.mutable_##field(); \
-    auto value = ExperimentsSpecificsToValue(specifics); \
-    EXPECT_TRUE(value->empty()); \
-  } \
-  { \
-    sync_pb::ExperimentsSpecifics specifics; \
-    specifics.mutable_##field()->set_enabled(false); \
-    auto value = ExperimentsSpecificsToValue(specifics); \
-    bool field_enabled = true; \
-    EXPECT_EQ(1u, value->size()); \
-    EXPECT_TRUE(value->GetBoolean(#field, &field_enabled)); \
-    EXPECT_FALSE(field_enabled); \
-  }
-
-  TEST_EXPERIMENT_ENABLED_FIELD(keystore_encryption);
-  TEST_EXPERIMENT_ENABLED_FIELD(history_delete_directives);
-  TEST_EXPERIMENT_ENABLED_FIELD(autofill_culling);
-  TEST_EXPERIMENT_ENABLED_FIELD(pre_commit_update_avoidance);
-  TEST_EXPERIMENT_ENABLED_FIELD(gcm_channel);
-  TEST_EXPERIMENT_ENABLED_FIELD(gcm_invalidations);
-
-#undef TEST_EXPERIMENT_ENABLED_FIELD
 }
 
 TEST(ProtoValueConversionsTest, UniquePositionToValue) {
@@ -303,13 +234,13 @@ TEST(ProtoValueConversionsTest, ClientToServerMessageToValue) {
 
   std::unique_ptr<base::DictionaryValue> value_with_specifics(
       ClientToServerMessageToValue(message, true /* include_specifics */));
-  EXPECT_FALSE(value_with_specifics->empty());
+  EXPECT_FALSE(value_with_specifics->DictEmpty());
   EXPECT_TRUE(
       ValueHasSpecifics(*(value_with_specifics.get()), "commit.entries"));
 
   std::unique_ptr<base::DictionaryValue> value_without_specifics(
       ClientToServerMessageToValue(message, false /* include_specifics */));
-  EXPECT_FALSE(value_without_specifics->empty());
+  EXPECT_FALSE(value_without_specifics->DictEmpty());
   EXPECT_FALSE(
       ValueHasSpecifics(*(value_without_specifics.get()), "commit.entries"));
 }
@@ -324,13 +255,13 @@ TEST(ProtoValueConversionsTest, ClientToServerResponseToValue) {
 
   std::unique_ptr<base::DictionaryValue> value_with_specifics(
       ClientToServerResponseToValue(message, true /* include_specifics */));
-  EXPECT_FALSE(value_with_specifics->empty());
+  EXPECT_FALSE(value_with_specifics->DictEmpty());
   EXPECT_TRUE(
       ValueHasSpecifics(*(value_with_specifics.get()), "get_updates.entries"));
 
   std::unique_ptr<base::DictionaryValue> value_without_specifics(
       ClientToServerResponseToValue(message, false /* include_specifics */));
-  EXPECT_FALSE(value_without_specifics->empty());
+  EXPECT_FALSE(value_without_specifics->DictEmpty());
   EXPECT_FALSE(ValueHasSpecifics(*(value_without_specifics.get()),
                                  "get_updates.entries"));
 }

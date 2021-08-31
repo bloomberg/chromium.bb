@@ -6,7 +6,7 @@
   TestRunner.addResult('Tests that lighthouse panel passes flags.\n');
   await TestRunner.navigatePromise('resources/lighthouse-basic.html');
 
-  await TestRunner.loadModule('lighthouse_test_runner');
+  await TestRunner.loadTestModule('lighthouse_test_runner');
   await TestRunner.showPanel('lighthouse');
 
   const dialogElement = LighthouseTestRunner.getContainerElement();
@@ -19,14 +19,13 @@
   LighthouseTestRunner.dumpStartAuditState();
   LighthouseTestRunner.getRunButton().click();
 
-  const {artifacts, lhr} = await LighthouseTestRunner.waitForResults();
+  const {lhr} = await LighthouseTestRunner.waitForResults();
   TestRunner.addResult('\n=============== Lighthouse Results ===============');
-  TestRunner.addResult(`emulatedFormFactor: ${lhr.configSettings.emulatedFormFactor}`);
+  TestRunner.addResult(`formFactor: ${lhr.configSettings.formFactor}`);
   TestRunner.addResult(`disableStorageReset: ${lhr.configSettings.disableStorageReset}`);
   TestRunner.addResult(`throttlingMethod: ${lhr.configSettings.throttlingMethod}`);
-  TestRunner.addResult(`TestedAsMobileDevice: ${artifacts.TestedAsMobileDevice}`);
 
-  const viewTraceButton = LighthouseTestRunner.getResultsElement().querySelector('.view-trace');
+  const viewTraceButton = LighthouseTestRunner.getResultsElement().querySelector('.lh-button--trace');
   TestRunner.addResult(`\nView Trace Button Text: "${viewTraceButton.textContent}"`);
   TestRunner.addResult(`View Trace Button Title: "${viewTraceButton.title}"`);
 

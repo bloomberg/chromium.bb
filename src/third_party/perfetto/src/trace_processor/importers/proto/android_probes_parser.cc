@@ -83,49 +83,36 @@ void AndroidProbesParser::ParseBatteryCounters(int64_t ts, ConstBytes blob) {
 
 void AndroidProbesParser::ParsePowerRails(int64_t ts, ConstBytes blob) {
   protos::pbzero::PowerRails::Decoder evt(blob.data, blob.size);
-  if (evt.has_rail_descriptor()) {
-    for (auto it = evt.rail_descriptor(); it; ++it) {
-      protos::pbzero::PowerRails::RailDescriptor::Decoder desc(*it);
-      uint32_t idx = desc.index();
-      if (PERFETTO_UNLIKELY(idx > 256)) {
-        PERFETTO_DLOG("Skipping excessively large power_rail index %" PRIu32,
-                      idx);
-        continue;
-      }
-      if (power_rails_strs_id_.size() <= idx)
-        power_rails_strs_id_.resize(idx + 1);
-      char counter_name[255];
-      snprintf(counter_name, sizeof(counter_name), "power.%.*s_uws",
-               int(desc.rail_name().size), desc.rail_name().data);
-      power_rails_strs_id_[idx] = context_->storage->InternString(counter_name);
-    }
+
+  // Descriptors should have been processed at tokenization time.
+  PERFETTO_DCHECK(evt.has_energy_data());
+
+  // Because we have some special code in the tokenization phase, we
+  // will only every get one EnergyData message per packet. Therefore,
+  // we can just read the data directly.
+  auto it = evt.energy_data();
+  protos::pbzero::PowerRails::EnergyData::Decoder desc(*it);
+
+  auto opt_rail_name =
+      AndroidProbesTracker::GetOrCreate(context_)->GetPowerRailName(
+          desc.index());
+  if (opt_rail_name) {
+    // The tokenization makes sure that this field is always present and
+    // is equal to the packet's timestamp (as the packet was forged in
+    // the tokenizer).
+    PERFETTO_DCHECK(desc.has_timestamp_ms());
+    PERFETTO_DCHECK(ts / 1000000 == static_cast<int64_t>(desc.timestamp_ms()));
+
+    TrackId track =
+        context_->track_tracker->InternGlobalCounterTrack(*opt_rail_name);
+    context_->event_tracker->PushCounter(ts, static_cast<double>(desc.energy()),
+                                         track);
+  } else {
+    context_->storage->IncrementStats(stats::power_rail_unknown_index);
   }
 
-  if (evt.has_energy_data()) {
-    // Because we have some special code in the tokenization phase, we
-    // will only every get one EnergyData message per packet. Therefore,
-    // we can just read the data directly.
-    auto it = evt.energy_data();
-    protos::pbzero::PowerRails::EnergyData::Decoder desc(*it);
-    if (desc.index() < power_rails_strs_id_.size()) {
-      // The tokenization makes sure that this field is always present and
-      // is equal to the packet's timestamp (as the packet was forged in
-      // the tokenizer).
-      PERFETTO_DCHECK(desc.has_timestamp_ms());
-      PERFETTO_DCHECK(ts / 1000000 ==
-                      static_cast<int64_t>(desc.timestamp_ms()));
-
-      TrackId track = context_->track_tracker->InternGlobalCounterTrack(
-          power_rails_strs_id_[desc.index()]);
-      context_->event_tracker->PushCounter(
-          ts, static_cast<double>(desc.energy()), track);
-    } else {
-      context_->storage->IncrementStats(stats::power_rail_unknown_index);
-    }
-
-    // DCHECK that we only got one message.
-    PERFETTO_DCHECK(!++it);
-  }
+  // DCHECK that we only got one message.
+  PERFETTO_DCHECK(!++it);
 }
 
 void AndroidProbesParser::ParseAndroidLogPacket(ConstBytes blob) {

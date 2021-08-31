@@ -4,10 +4,10 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/infobars/mock_infobar_service.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/permissions/test/mock_permission_request.h"
 #include "components/prefs/pref_service.h"
@@ -30,7 +30,7 @@ class PermissionPromptAndroidTest : public ChromeRenderViewHostTestHarness {
 
     NavigateAndCommit(GURL("http://example.com"));
 
-    MockInfoBarService::CreateForWebContents(web_contents());
+    infobars::ContentInfoBarManager::CreateForWebContents(web_contents());
 
     permissions::PermissionRequestManager::CreateForWebContents(web_contents());
     permission_request_manager_ =
@@ -45,14 +45,15 @@ class PermissionPromptAndroidTest : public ChromeRenderViewHostTestHarness {
 TEST_F(PermissionPromptAndroidTest, TabCloseMiniInfoBarClosesCleanly) {
   // Create a notification request. This causes an infobar to appear.
   permissions::MockPermissionRequest request(
-      "test", ContentSettingsType::NOTIFICATIONS);
+      u"test", ContentSettingsType::NOTIFICATIONS);
   permission_request_manager()->AddRequest(web_contents()->GetMainFrame(),
                                            &request);
 
   base::RunLoop().RunUntilIdle();
 
-  // Now remove the infobar from the infobar service.
-  InfoBarService::FromWebContents(web_contents())->RemoveAllInfoBars(false);
+  // Now remove the infobar from the infobar manager.
+  infobars::ContentInfoBarManager::FromWebContents(web_contents())
+      ->RemoveAllInfoBars(false);
 
   // At this point close the permission prompt (after the infobar has been
   // removed already).
@@ -67,7 +68,7 @@ TEST_F(PermissionPromptAndroidTest, TabCloseMiniInfoBarClosesCleanly) {
 TEST_F(PermissionPromptAndroidTest, RemoveAllInfoBarsWithOtherObservers) {
   // Create a notification request. This causes an infobar to appear.
   permissions::MockPermissionRequest request(
-      "test", ContentSettingsType::NOTIFICATIONS);
+      u"test", ContentSettingsType::NOTIFICATIONS);
   permission_request_manager()->AddRequest(web_contents()->GetMainFrame(),
                                            &request);
 

@@ -7,7 +7,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -16,13 +15,12 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
-#include "base/time/time.h"
 #include "headless/public/headless_browser_context.h"
 #include "headless/public/headless_devtools_channel.h"
 #include "headless/public/headless_export.h"
 #include "headless/public/headless_web_contents.h"
 #include "net/base/host_port_pair.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -152,6 +150,10 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   // string can be used to disable GL rendering (e.g., WebGL support).
   std::string gl_implementation;
 
+  // Choose the ANGLE implementation to use for rendering.
+  // Only relevant if the gl_implementation above is set to "angle".
+  std::string angle_implementation;
+
   // Default per-context options, can be specialized on per-context basis.
 
   std::string product_name_and_version;
@@ -159,7 +161,7 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   std::string user_agent;
 
   // The ProxyConfig to use. The system proxy settings are used by default.
-  std::unique_ptr<net::ProxyConfig> proxy_config = nullptr;
+  std::unique_ptr<net::ProxyConfig> proxy_config;
 
   // Default window size. This is also used to create the window tree host and
   // as initial screen size. Defaults to 800x600.
@@ -238,6 +240,7 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
   Builder& SetDisableSandbox(bool disable_sandbox);
   Builder& SetEnableResourceScheduler(bool enable_resource_scheduler);
   Builder& SetGLImplementation(const std::string& gl_implementation);
+  Builder& SetANGLEImplementation(const std::string& angle_implementation);
   Builder& SetAppendCommandLineFlagsCallback(
       const Options::AppendCommandLineFlagsCallback& callback);
 #if defined(OS_WIN)
@@ -292,7 +295,7 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
 // }
 //
 // [1]
-// https://chromium.googlesource.com/chromium/src/+/master/docs/linux/zygote.md
+// https://chromium.googlesource.com/chromium/src/+/main/docs/linux/zygote.md
 void RunChildProcessIfNeeded(int argc, const char** argv);
 #else
 // In Windows, the headless browser may need to create child processes. This is

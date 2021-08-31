@@ -4,18 +4,15 @@
 
 #include "chrome/browser/chromeos/external_protocol_dialog.h"
 
-#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/arc/intent_helper/arc_external_protocol_dialog.h"
-#include "chrome/browser/chromeos/guest_os/guest_os_external_protocol_handler.h"
+#include "chrome/browser/ash/arc/intent_helper/arc_external_protocol_dialog.h"
+#include "chrome/browser/ash/guest_os/guest_os_external_protocol_handler.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
-#include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/external_protocol_dialog.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -33,7 +30,7 @@ namespace {
 const int kMessageWidth = 400;
 
 void OnArcHandled(const GURL& url,
-                  const base::Optional<url::Origin>& initiating_origin,
+                  const absl::optional<url::Origin>& initiating_origin,
                   int render_process_host_id,
                   int routing_id,
                   bool handled) {
@@ -44,9 +41,8 @@ void OnArcHandled(const GURL& url,
       tab_util::GetWebContentsByID(render_process_host_id, routing_id);
 
   // Display the standard ExternalProtocolDialog if Guest OS has a handler.
-  if (web_contents && base::FeatureList::IsEnabled(
-                          chromeos::features::kGuestOsExternalProtocol)) {
-    base::Optional<guest_os::GuestOsRegistryService::Registration>
+  if (web_contents) {
+    absl::optional<guest_os::GuestOsRegistryService::Registration>
         registration = guest_os::GetHandler(
             Profile::FromBrowserContext(web_contents->GetBrowserContext()),
             url);
@@ -71,7 +67,7 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
     WebContents* web_contents,
     ui::PageTransition page_transition,
     bool has_user_gesture,
-    const base::Optional<url::Origin>& initiating_origin) {
+    const absl::optional<url::Origin>& initiating_origin) {
   // First, check if ARC version of the dialog is available and run ARC version
   // when possible.
   // TODO(ellyjones): Refactor arc::RunArcExternalProtocolDialog() to take a
@@ -119,13 +115,10 @@ ExternalProtocolNoHandlersDialog::ExternalProtocolNoHandlersDialog(
 
 ExternalProtocolNoHandlersDialog::~ExternalProtocolNoHandlersDialog() = default;
 
-base::string16 ExternalProtocolNoHandlersDialog::GetWindowTitle() const {
-  // If click to call feature is available, we display a message to the user on
-  // how to use the feature.
-  // TODO(crbug.com/1007995) - This is a hotfix for M78 and we plan to use our
-  // own dialog with more information in the future.
-  if (scheme_ == url::kTelScheme &&
-      base::FeatureList::IsEnabled(kClickToCallUI)) {
+std::u16string ExternalProtocolNoHandlersDialog::GetWindowTitle() const {
+  // If this dialog is shown for a tel link, we display a message to the user on
+  // how to use the Click to Call feature.
+  if (scheme_ == url::kTelScheme) {
     return l10n_util::GetStringUTF16(
         IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES);
   }

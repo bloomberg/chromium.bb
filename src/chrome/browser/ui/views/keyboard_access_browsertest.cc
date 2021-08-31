@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -89,7 +90,7 @@ class SendKeysMenuListener : public AppMenuButtonObserver {
       : browser_(browser),
         menu_open_count_(0),
         test_dismiss_menu_(test_dismiss_menu) {
-    observer_.Add(app_menu_button);
+    observation_.Observe(app_menu_button);
   }
 
   ~SendKeysMenuListener() override = default;
@@ -103,7 +104,8 @@ class SendKeysMenuListener : public AppMenuButtonObserver {
           FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
           base::TimeDelta::FromMilliseconds(200));
     } else {
-      observer_.RemoveAll();
+      DCHECK(observation_.IsObserving());
+      observation_.Reset();
       // Press DOWN to select the first item, then RETURN to select it.
       SendKeyPress(browser_, ui::VKEY_DOWN);
       SendKeyPress(browser_, ui::VKEY_RETURN);
@@ -120,7 +122,8 @@ class SendKeysMenuListener : public AppMenuButtonObserver {
   // we dismiss it by sending the ESC key.
   bool test_dismiss_menu_;
 
-  ScopedObserver<AppMenuButton, AppMenuButtonObserver> observer_{this};
+  base::ScopedObservation<AppMenuButton, AppMenuButtonObserver> observation_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(SendKeysMenuListener);
 };
@@ -202,7 +205,7 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,
   if (focus_omnibox)
     browser()->window()->GetLocationBar()->FocusLocation(false);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Chrome OS doesn't have a way to just focus the app menu, so we use Alt+F to
   // bring up the menu.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
@@ -227,7 +230,7 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,
 
   // See above comment. Since we already brought up the menu, no need to do this
   // on ChromeOS.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   if (alternate_key_sequence)
     SendKeyPress(browser(), ui::VKEY_DOWN);
   else
@@ -384,7 +387,7 @@ void KeyboardAccessTest::TestMenuKeyboardAccessAndDismiss() {
 }
 
 // http://crbug.com/62310.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_TestMenuKeyboardAccess DISABLED_TestMenuKeyboardAccess
 #elif defined(OS_MAC)
 // No keyboard shortcut for the Chrome menu on Mac: http://crbug.com/823952
@@ -398,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, MAYBE_TestMenuKeyboardAccess) {
 }
 
 // http://crbug.com/62310.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_TestAltMenuKeyboardAccess DISABLED_TestAltMenuKeyboardAccess
 #elif defined(OS_MAC)
 // No keyboard shortcut for the Chrome menu on Mac: http://crbug.com/823952
@@ -485,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, BackForwardKeys) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://version/"));
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://about/"));
 
-  base::string16 before_back;
+  std::u16string before_back;
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &before_back));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -497,7 +500,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, BackForwardKeys) {
         browser(), ui::VKEY_BROWSER_BACK, false, false, false, false));
     navigation_observer.Wait();
 
-    base::string16 after_back;
+    std::u16string after_back;
     ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &after_back));
 
     EXPECT_NE(before_back, after_back);
@@ -510,7 +513,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, BackForwardKeys) {
         browser(), ui::VKEY_BROWSER_FORWARD, false, false, false, false));
     navigation_observer.Wait();
 
-    base::string16 after_forward;
+    std::u16string after_forward;
     ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &after_forward));
 
     EXPECT_EQ(before_back, after_forward);

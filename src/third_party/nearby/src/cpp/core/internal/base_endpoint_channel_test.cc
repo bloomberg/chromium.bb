@@ -17,7 +17,9 @@
 #include <utility>
 
 #include "core/internal/encryption_runner.h"
+#include "core/internal/offline_frames.h"
 #include "platform/base/byte_array.h"
+#include "platform/base/exception.h"
 #include "platform/base/input_stream.h"
 #include "platform/base/output_stream.h"
 #include "platform/public/count_down_latch.h"
@@ -25,7 +27,6 @@
 #include "platform/public/multi_thread_executor.h"
 #include "platform/public/pipe.h"
 #include "platform/public/single_thread_executor.h"
-#include "proto/connections_enums.pb.h"
 #include "proto/connections_enums.pb.h"
 #include "securegcm/d2d_connection_context_v1.h"
 #include "securegcm/ukey2_handshake.h"
@@ -107,9 +108,10 @@ DoDhKeyExchange(BaseEndpointChannel* channel_a,
       {
           .on_success_cb =
               [&latch, &context_a](
-                  const string& endpoint_id,
+                  const std::string& endpoint_id,
                   std::unique_ptr<securegcm::UKey2Handshake> ukey2,
-                  const string& auth_token, const ByteArray& raw_auth_token) {
+                  const std::string& auth_token,
+                  const ByteArray& raw_auth_token) {
                 NEARBY_LOG(INFO, "client-A side key negotiation done");
                 EXPECT_TRUE(ukey2->VerifyHandshake());
                 auto context = ukey2->ToConnectionContext();
@@ -118,7 +120,8 @@ DoDhKeyExchange(BaseEndpointChannel* channel_a,
                 latch.CountDown();
               },
           .on_failure_cb =
-              [&latch](const string& endpoint_id, EndpointChannel* channel) {
+              [&latch](const std::string& endpoint_id,
+                       EndpointChannel* channel) {
                 NEARBY_LOG(INFO, "client-A side key negotiation failed");
                 latch.CountDown();
               },
@@ -128,9 +131,10 @@ DoDhKeyExchange(BaseEndpointChannel* channel_a,
       {
           .on_success_cb =
               [&latch, &context_b](
-                  const string& endpoint_id,
+                  const std::string& endpoint_id,
                   std::unique_ptr<securegcm::UKey2Handshake> ukey2,
-                  const string& auth_token, const ByteArray& raw_auth_token) {
+                  const std::string& auth_token,
+                  const ByteArray& raw_auth_token) {
                 NEARBY_LOG(INFO, "client-B side key negotiation done");
                 EXPECT_TRUE(ukey2->VerifyHandshake());
                 auto context = ukey2->ToConnectionContext();
@@ -139,7 +143,8 @@ DoDhKeyExchange(BaseEndpointChannel* channel_a,
                 latch.CountDown();
               },
           .on_failure_cb =
-              [&latch](const string& endpoint_id, EndpointChannel* channel) {
+              [&latch](const std::string& endpoint_id,
+                       EndpointChannel* channel) {
                 NEARBY_LOG(INFO, "client-B side key negotiation failed");
                 latch.CountDown();
               },
@@ -348,6 +353,51 @@ TEST(BaseEndpointChannelTest, ReadAfterInputStreamClosed) {
 
   ASSERT_FALSE(read_data.ok());
   ASSERT_TRUE(read_data.GetException().Raised(Exception::kIo));
+}
+
+TEST(BaseEndpointChannelTest, ReadUnencryptedFrameOnEncryptedChannel) {
+  // Setup test communication environment.
+  Pipe pipe_a;  // channel_a writes to pipe_a, reads from pipe_b.
+  Pipe pipe_b;  // channel_b writes to pipe_b, reads from pipe_a.
+  TestEndpointChannel channel_a(&pipe_b.GetInputStream(),
+                                &pipe_a.GetOutputStream());
+  TestEndpointChannel channel_b(&pipe_a.GetInputStream(),
+                                &pipe_b.GetOutputStream());
+
+  ON_CALL(channel_a, GetMedium).WillByDefault([]() {
+    return Medium::BLUETOOTH;
+  });
+  ON_CALL(channel_b, GetMedium).WillByDefault([]() {
+    return Medium::BLUETOOTH;
+  });
+
+  // Run DH key exchange; setup encryption contexts for channels. But only
+  // encrypt |channel_b|.
+  auto [context_a, context_b] = DoDhKeyExchange(&channel_a, &channel_b);
+  ASSERT_NE(context_a, nullptr);
+  ASSERT_NE(context_b, nullptr);
+  channel_b.EnableEncryption(context_b);
+
+  EXPECT_EQ(channel_a.GetType(), "BLUETOOTH");
+  EXPECT_EQ(channel_b.GetType(), "ENCRYPTED_BLUETOOTH");
+
+  // An unencrypted KeepAlive should succeed.
+  ByteArray keep_alive_message = parser::ForKeepAlive();
+  channel_a.Write(keep_alive_message);
+  ExceptionOr<ByteArray> result = channel_b.Read();
+  EXPECT_TRUE(result.ok());
+  EXPECT_EQ(result.result(), keep_alive_message);
+
+  // An unencrypted data frame should fail.
+  ByteArray tx_message{"data message"};
+  channel_a.Write(tx_message);
+  result = channel_b.Read();
+  EXPECT_FALSE(result.ok());
+  EXPECT_EQ(result.exception(), Exception::kInvalidProtocolBuffer);
+
+  // Shutdown test environment.
+  channel_a.Close(DisconnectionReason::LOCAL_DISCONNECTION);
+  channel_b.Close(DisconnectionReason::REMOTE_DISCONNECTION);
 }
 
 }  // namespace

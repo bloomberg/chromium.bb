@@ -71,12 +71,14 @@ config("dawn_internal") {
   if (dawn_enable_opengl) {
     defines += [ "DAWN_ENABLE_BACKEND_OPENGL" ]
   }
+  if (dawn_enable_desktop_gl) {
+    defines += [ "DAWN_ENABLE_BACKEND_DESKTOP_GL" ]
+  }
+  if (dawn_enable_opengles) {
+    defines += [ "DAWN_ENABLE_BACKEND_OPENGLES" ]
+  }
   if (dawn_enable_vulkan) {
     defines += [ "DAWN_ENABLE_BACKEND_VULKAN" ]
-  }
-
-  if (dawn_enable_wgsl) {
-    defines += [ "DAWN_ENABLE_WGSL" ]
   }
 
   if (dawn_use_x11) {
@@ -93,8 +95,11 @@ config("dawn_internal") {
 
   cflags = []
 
-  # Enable more warnings that were found when using Dawn in other projects
-  if (is_clang) {
+  # Enable more warnings that were found when using Dawn in other projects.
+  # Add them only when building in standalone because we control which clang
+  # version we use. Otherwise we risk breaking projects depending on Dawn when
+  # the use a different clang version.
+  if (dawn_standalone && is_clang) {
     cflags += [
       "-Wconditional-uninitialized",
       "-Wcstring-format-directive",
@@ -110,17 +115,11 @@ config("dawn_internal") {
       "-Wnon-c-typedef-for-linkage",
       "-Wpessimizing-move",
       "-Wrange-loop-analysis",
-      "-Wreturn-std-move-in-c++11",
+      "-Wredundant-move",
       "-Wshadow-field",
       "-Wstrict-prototypes",
       "-Wtautological-unsigned-zero-compare",
     ]
-
-    # Allow comparison against type limits that might be tautological on 32bit
-    # or 64bit systems. Without this the following produces an error on 64bit:
-    #
-    #   if (myUint64 > std::numeric_limits<size_t>::max()) {...}
-    cflags += [ "-Wno-tautological-type-limit-compare" ]
 
     if (is_win) {
       cflags += [
@@ -139,6 +138,16 @@ config("dawn_internal") {
     # Dawn extends wgpu enums with internal enums.
     # MSVC considers these invalid switch values. crbug.com/dawn/397.
     cflags += [ "/wd4063" ]
+    if (dawn_is_winuwp) {
+      # /ZW makes sure we don't add calls that are forbidden in UWP.
+      # and /EHsc is required to be used in combination with it,
+      # even if it is already added by the windows GN defaults,
+      # we still add it to make every /ZW paired with a /EHsc
+      cflags_cc = [
+        "/ZW:nostdlib",
+        "/EHsc",
+      ]
+    }
   }
 }
 
@@ -152,23 +161,29 @@ config("dawn_internal") {
 if (is_win || is_linux || is_chromeos || is_mac || is_fuchsia || is_android) {
   static_library("common") {
     sources = [
+      "Alloc.h",
       "Assert.cpp",
       "Assert.h",
       "BitSetIterator.h",
       "Compiler.h",
       "Constants.h",
+      "CoreFoundationRef.h",
       "DynamicLib.cpp",
       "DynamicLib.h",
       "GPUInfo.cpp",
       "GPUInfo.h",
       "HashUtils.h",
+      "IOKitRef.h",
       "LinkedList.h",
       "Log.cpp",
       "Log.h",
       "Math.cpp",
       "Math.h",
+      "NSRef.h",
+      "NonCopyable.h",
       "PlacementAllocated.h",
       "Platform.h",
+      "Preprocessor.h",
       "RefBase.h",
       "RefCounted.cpp",
       "RefCounted.h",
@@ -183,20 +198,33 @@ if (is_win || is_linux || is_chromeos || is_mac || is_fuchsia || is_android) {
       "SwapChainUtils.h",
       "SystemUtils.cpp",
       "SystemUtils.h",
+      "TypeTraits.h",
       "TypedInteger.h",
       "UnderlyingType.h",
+      "VertexFormatUtils.cpp",
+      "VertexFormatUtils.h",
       "ityp_array.h",
       "ityp_bitset.h",
       "ityp_span.h",
       "ityp_stack_vec.h",
       "ityp_vector.h",
       "vulkan_platform.h",
-      "windows_with_undefs.h",
       "xlib_with_undefs.h",
     ]
 
     public_configs = [ ":dawn_internal" ]
-    deps = [ "${dawn_root}/src/dawn:dawn_headers" ]
+    deps = [
+      "${dawn_root}/src/dawn:dawn_headers",
+      "${dawn_root}/src/dawn:dawncpp_headers",
+    ]
+
+    if (is_win) {
+      sources += [
+        "WindowsUtils.cpp",
+        "WindowsUtils.h",
+        "windows_with_undefs.h",
+      ]
+    }
     if (dawn_enable_vulkan) {
       public_deps = [ "${dawn_root}/third_party/khronos:vulkan_headers" ]
     }

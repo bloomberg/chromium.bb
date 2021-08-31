@@ -11,6 +11,7 @@
 #include "content/public/browser/client_hints_controller_delegate.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/mojom/parsed_headers.mojom-forward.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 
 namespace content {
 
@@ -28,14 +29,14 @@ CONTENT_EXPORT bool ShouldAddClientHints(
 // per the NetInfo spec to improve privacy.
 CONTENT_EXPORT unsigned long RoundRttForTesting(
     const std::string& host,
-    const base::Optional<base::TimeDelta>& rtt);
+    const absl::optional<base::TimeDelta>& rtt);
 
 // Returns downlink (in Mbps) after adding host-specific random noise to
 // |downlink_kbps| (which is in Kbps), and rounding it as per the NetInfo spec
 // to improve privacy.
 CONTENT_EXPORT double RoundKbpsToMbpsForTesting(
     const std::string& host,
-    const base::Optional<int32_t>& downlink_kbps);
+    const absl::optional<int32_t>& downlink_kbps);
 
 // Returns true if there is a hint in |critical_hints| that would be sent (i.e.
 // not blocked by browser or origin level preferences like disabled JavaScript
@@ -62,14 +63,26 @@ CONTENT_EXPORT void AddNavigationRequestClientHintsHeaders(
     BrowserContext* context,
     ClientHintsControllerDelegate* delegate,
     bool is_ua_override_on,
-    FrameTreeNode*);
+    FrameTreeNode*,
+    const blink::ParsedPermissionsPolicy&);
+
+// Adds client hints headers for a prefetch navigation that is not associated
+// with a frame. It must be a main frame navigation. |is_javascript_enabled| is
+// whether JavaScript is enabled in blink or not.
+CONTENT_EXPORT void AddPrefetchNavigationRequestClientHintsHeaders(
+    const GURL& url,
+    net::HttpRequestHeaders* headers,
+    BrowserContext* context,
+    ClientHintsControllerDelegate* delegate,
+    bool is_ua_override_on,
+    bool is_javascript_enabled);
 
 // Parses incoming client hints and persists them as appropriate. Returns
 // hints that were accepted as enabled even if they are not going to be
-// persisted. The distinction is relevant in legacy case where feature policy
-// is off and there is no valid Accept-CH-Lifetime, where the header still
-// applies locally within frame.
-CONTENT_EXPORT base::Optional<std::vector<network::mojom::WebClientHintsType>>
+// persisted. The distinction is relevant in legacy case where permissions
+// policy is off and there is no valid Accept-CH-Lifetime, where the header
+// still applies locally within frame.
+CONTENT_EXPORT absl::optional<std::vector<network::mojom::WebClientHintsType>>
 ParseAndPersistAcceptCHForNagivation(
     const GURL& url,
     const ::network::mojom::ParsedHeadersPtr& headers,
@@ -78,7 +91,7 @@ ParseAndPersistAcceptCHForNagivation(
     FrameTreeNode*);
 
 // Looks up which client hints the renderer should be told to enable
-// (after subjecting them to feature policy).
+// (after subjecting them to permissions policy).
 //
 // Note that this is based on the top-level frame, and not necessarily the
 // frame being committed.

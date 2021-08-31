@@ -37,17 +37,21 @@
 #include <chrono>  // NOLINT (unapproved c++11 header)
 #endif
 
+// Define the GetTid() function, a wrapper for the gettid() system call in
+// Linux.
+#if defined(__ANDROID__)
+static pid_t GetTid() { return gettid(); }
+#elif defined(__GLIBC__)
 // The glibc wrapper for the gettid() system call was added in glibc 2.30.
 // Emulate it for older versions of glibc.
-#if defined(__GLIBC_PREREQ)
-#if !__GLIBC_PREREQ(2, 30)
-
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 30)
+static pid_t GetTid() { return gettid(); }
+#else  // Older than glibc 2.30
 #include <sys/syscall.h>
 
-static pid_t gettid() { return static_cast<pid_t>(syscall(SYS_gettid)); }
-
-#endif
-#endif  // defined(__GLIBC_PREREQ)
+static pid_t GetTid() { return static_cast<pid_t>(syscall(SYS_gettid)); }
+#endif  // glibc 2.30 or later.
+#endif  // defined(__GLIBC__)
 
 namespace libgav1 {
 
@@ -216,7 +220,7 @@ void ThreadPool::WorkerThread::SetupName() {
     // If the |name| buffer is longer than 16 bytes, pthread_setname_np fails
     // with error 34 (ERANGE) on Android.
     char name[16];
-    pid_t id = gettid();
+    pid_t id = GetTid();
     int rv = snprintf(name, sizeof(name), "%s/%" PRId64, pool_->name_prefix_,
                       static_cast<int64_t>(id));
     assert(rv >= 0);

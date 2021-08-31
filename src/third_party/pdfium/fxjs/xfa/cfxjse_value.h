@@ -13,6 +13,7 @@
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/unowned_ptr.h"
+#include "third_party/base/check.h"
 #include "v8/include/v8.h"
 
 class CFXJSE_Class;
@@ -75,9 +76,12 @@ class CFXJSE_Value {
   bool SetObjectOwnProperty(v8::Isolate* pIsolate,
                             ByteStringView szPropName,
                             CFXJSE_Value* lpPropValue);
-  bool SetBoundFunction(v8::Isolate* pIsolate,
-                        v8::Local<v8::Function> hOldFunction,
-                        v8::Local<v8::Object> lpNewThis);
+
+  // Return empty local on error.
+  static v8::Local<v8::Function> NewBoundFunction(
+      v8::Isolate* pIsolate,
+      v8::Local<v8::Function> hOldFunction,
+      v8::Local<v8::Object> lpNewThis);
 
   v8::Local<v8::Value> GetValue(v8::Isolate* pIsolate) const;
   const v8::Global<v8::Value>& DirectGetValue() const { return m_hValue; }
@@ -85,7 +89,7 @@ class CFXJSE_Value {
     m_hValue.Reset(pIsolate, hValue);
   }
   void Assign(v8::Isolate* pIsolate, const CFXJSE_Value* lpValue) {
-    ASSERT(lpValue);
+    DCHECK(lpValue);
     if (lpValue) {
       m_hValue.Reset(pIsolate, lpValue->m_hValue);
     } else {

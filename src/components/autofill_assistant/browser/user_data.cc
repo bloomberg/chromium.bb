@@ -13,15 +13,17 @@ LoginChoice::LoginChoice(
     const std::string& _identifier,
     const std::string& _label,
     const std::string& _sublabel,
-    const base::Optional<std::string>& _sublabel_accessibility_hint,
+    const absl::optional<std::string>& _sublabel_accessibility_hint,
     int _preselect_priority,
-    const base::Optional<InfoPopupProto>& _info_popup)
+    const absl::optional<InfoPopupProto>& _info_popup,
+    const absl::optional<std::string>& _edit_button_content_description)
     : identifier(_identifier),
       label(_label),
       sublabel(_sublabel),
       sublabel_accessibility_hint(_sublabel_accessibility_hint),
       preselect_priority(_preselect_priority),
-      info_popup(_info_popup) {}
+      info_popup(_info_popup),
+      edit_button_content_description(_edit_button_content_description) {}
 LoginChoice::LoginChoice(const LoginChoice& another) = default;
 LoginChoice::~LoginChoice() = default;
 
@@ -54,6 +56,10 @@ const autofill::AutofillProfile* UserData::selected_address(
   }
 
   return it->second.get();
+}
+
+const autofill::CreditCard* UserData::selected_card() const {
+  return selected_card_.get();
 }
 
 const ValueProto* UserData::additional_value(const std::string& key) const {

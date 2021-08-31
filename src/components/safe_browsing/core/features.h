@@ -6,13 +6,12 @@
 #define COMPONENTS_SAFE_BROWSING_CORE_FEATURES_H_
 
 #include <stddef.h>
-#include <algorithm>
-#include <utility>
-#include <vector>
 
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/values.h"
+
 namespace base {
 class ListValue;
 }  // namespace base
@@ -30,6 +29,10 @@ extern const base::Feature kAdRedirectTriggerFeature;
 
 extern const base::Feature kAdSamplerTriggerFeature;
 
+// Enables including some information in protection requests sent to Safe
+// Browsing.
+extern const base::Feature kBetterTelemetryAcrossReports;
+
 // Controls whether we sample inline JavaScript for ads in RIND
 // reports.
 extern const base::Feature kCaptureInlineJavascriptForGoogleAds;
@@ -37,41 +40,67 @@ extern const base::Feature kCaptureInlineJavascriptForGoogleAds;
 // Enables client side detection on Android.
 extern const base::Feature kClientSideDetectionForAndroid;
 
+// The client side detection model is a flatbuffer.
+extern const base::Feature kClientSideDetectionModelIsFlatBuffer;
+
+// Determines the experimental version of client side detection model, for
+// Desktop.
+extern const base::Feature kClientSideDetectionModelVersion;
+
+// Determines the tag to pass to Omaha to get a client side detection model.
+extern const base::Feature kClientSideDetectionModelTag;
+
+// Determines the tag to pass to Omaha to get a client side detection model.
+// This is used for high-memory devices, when `kClientSideDetectionModelTag` is
+// disabled.
+extern const base::Feature kClientSideDetectionModelHighMemoryTag;
+
+// The parameter name used for getting the tag values from client side detection
+// features, `kClientSideDetectionModelTag` and
+// `kClientSideDetectionModelHighMemoryTag`.
+const char kClientSideDetectionTagParamName[] = "reporter_omaha_tag";
+
+// Enables client side detection referrer chain.
+extern const base::Feature kClientSideDetectionReferrerChain;
+
+// Enables GAIA-keying of client side detection requests for Enhanced Safe
+// Browsing users.
+extern const base::Feature kClientSideDetectionWithToken;
+
 // Enable the addition of access tokens to download pings for enhanced
 // protection users.
 extern const base::Feature kDownloadRequestWithToken;
-
-// Enable Chrome Safe Browsing enhanced protection.
-extern const base::Feature kEnhancedProtection;
-
-// Include enhanced protection message in interstitials.
-extern const base::Feature kEnhancedProtectionMessageInInterstitials;
 
 // Controls whether the limited list size experiment is enabled. This experiment
 // limits the number of entries stored in each Safe Browsing list.
 extern const base::Feature kLimitedListSizeForIOS;
 
-// Enable password protection for non-Google accounts.
-extern const base::Feature kPasswordProtectionForSavedPasswords;
-
-// Enable whether or not to show a list of domains the saved password was used
-// on the modal warning dialog during password protection. This is only checked
-// if the |kPasswordProtectionForSavedPasswords| experiment is on.
-extern const base::Feature kPasswordProtectionShowDomainsForSavedPasswords;
-
 // Enable GAIA password protection for signed-in users.
 extern const base::Feature kPasswordProtectionForSignedInUsers;
 
-// Controls whether Chrome prompts Advanced Protection users for deep scanning.
-extern const base::Feature kPromptAppForDeepScanning;
+// Enables GAIA-keying of password protection requests for Enhanced Safe
+// Browsing users.
+extern const base::Feature kPasswordProtectionWithToken;
+
+// Controls whether Chrome prompts Enhanced Safe Browsing users for deep
+// scanning.
+extern const base::Feature kPromptEsbForDeepScanning;
+
+// Contros whether users will see an account compromise specific warning
+// when Safe Browsing determines a file is associated with stealing cookies.
+extern const base::Feature kSafeBrowsingCTDownloadWarning;
+
+// Controls whether we are performing enterprise download checks for users
+// with the appropriate policies enabled.
+extern const base::Feature kSafeBrowsingEnterpriseCsd;
+
+// Controls whether we are disabling consumer download checks for users using
+// the enterprise download checks.
+extern const base::Feature kSafeBrowsingDisableConsumerCsdForEnterprise;
 
 // Controls whether Safe Browsing uses separate NetworkContexts for each
 // profile.
 extern const base::Feature kSafeBrowsingSeparateNetworkContexts;
-
-// Controls whether the Safe Browsing section is shown on the settings UI on
-// Android.
-extern const base::Feature kSafeBrowsingSectionUIAndroid;
 
 // Controls whether cookies are removed from certain communications with Safe
 // Browsing.
@@ -83,30 +112,11 @@ extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 // Controls whether the real time URL lookup is enabled.
 extern const base::Feature kRealTimeUrlLookupEnabled;
 
-// Controls whether the real time URL lookup is enabled for all Android devices.
-// This flag is in effect only if |kRealTimeUrlLookupEnabled| is true.
-extern const base::Feature kRealTimeUrlLookupEnabledForAllAndroidDevices;
-
-// Controls whether to do real time URL lookup for enterprise users. If both
-// this feature and the enterprise policies are enabled, the enterprise real
-// time URL lookup will be enabled and the consumer real time URL lookup will be
-// disabled.
-extern const base::Feature kRealTimeUrlLookupEnabledForEnterprise;
-
-// Controls whether the real time URL lookup is enabled for Enhanced Protection
-// users.
-extern const base::Feature kRealTimeUrlLookupEnabledForEP;
-
-// Controls whether the GAIA-keyed real time URL lookup is enabled for Enhanced
-// Protection users.
-extern const base::Feature kRealTimeUrlLookupEnabledForEPWithToken;
-
 // Controls whether the GAIA-keyed real time URL lookup is enabled.
 extern const base::Feature kRealTimeUrlLookupEnabledWithToken;
 
-// Controls whether the real time URL lookup is enabled for non mainframe URLs
-// for Enhanced Protection users.
-extern const base::Feature kRealTimeUrlLookupNonMainframeEnabledForEP;
+// Controls whether the referrer chain is attached to real time requests.
+extern const base::Feature kRealTimeUrlLookupReferrerChain;
 
 // Specifies which non-resource HTML Elements to collect based on their tag and
 // attributes. It's a single param containing a comma-separated list of pairs.
@@ -129,6 +139,15 @@ extern const base::Feature kTriggerThrottlerDailyQuotaFeature;
 // Controls whether Chrome uses new download warning UX.
 extern const base::Feature kUseNewDownloadWarnings;
 
+// Controls whether we include visual features in password protection pings on
+// Android.
+extern const base::Feature kVisualFeaturesInPasswordProtectionAndroid;
+
+// Controls the behavior of visual features in CSD pings. This feature is
+// checked for the final size of the visual features and the minimum size of
+// the screen.
+extern const base::Feature kVisualFeaturesSizes;
+
 // Controls whether the delayed warning experiment is enabled.
 extern const base::Feature kDelayedWarnings;
 // True if mouse clicks should undelay the warnings immediately when delayed
@@ -147,6 +166,10 @@ base::ListValue GetFeatureStatusList();
 // ReusedPasswordType enums. This is used in the
 // |kPasswordProtectionForSignedInUsers| experiment.
 bool GetShouldFillOldPhishGuardProto();
+
+// Returns the tag used for Client Side Phishing Detection models, as
+// computed from the current feature flags.
+std::string GetClientSideDetectionTag();
 
 }  // namespace safe_browsing
 #endif  // COMPONENTS_SAFE_BROWSING_CORE_FEATURES_H_

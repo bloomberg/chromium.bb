@@ -79,6 +79,52 @@ class BadExtensionsTest(unittest.TestCase):
     self.assertEqual(0, len(results))
 
 
+class CheckForSuperfluousStlIncludesInHeadersTest(unittest.TestCase):
+  def testGoodFiles(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      # The check is not smart enough to figure out which definitions correspond
+      # to which header.
+      MockFile('other/path/foo.h',
+               ['#include <string>',
+                'std::vector']),
+      # The check is not smart enough to do IWYU.
+      MockFile('other/path/bar.h',
+               ['#include "base/check.h"',
+                'std::vector']),
+      MockFile('other/path/qux.h',
+               ['#include "base/stl_util.h"',
+                'foobar']),
+      MockFile('other/path/baz.h',
+               ['#include "set/vector.h"',
+                'bazzab']),
+      # The check is only for header files.
+      MockFile('other/path/not_checked.cc',
+               ['#include <vector>',
+                'bazbaz']),
+    ]
+    results = PRESUBMIT.CheckForSuperfluousStlIncludesInHeaders(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(results))
+
+  def testBadFiles(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('other/path/foo.h',
+               ['#include <vector>',
+                'vector']),
+      MockFile('other/path/bar.h',
+               ['#include <limits>',
+                '#include <set>',
+                'no_std_namespace']),
+    ]
+    results = PRESUBMIT.CheckForSuperfluousStlIncludesInHeaders(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(results))
+    self.assertTrue('foo.h: Includes STL' in results[0].message)
+    self.assertTrue('bar.h: Includes STL' in results[0].message)
+
+
 class CheckSingletonInHeadersTest(unittest.TestCase):
   def testSingletonInArbitraryHeader(self):
     diff_singleton_h = ['base::subtle::AtomicWord '
@@ -244,17 +290,17 @@ class JSONParsingTest(unittest.TestCase):
     test_data = [
       ('invalid_json_1.json',
        ['{ x }'],
-       'Expecting property name:'),
+       'Expecting property name'),
       ('invalid_json_2.json',
        ['// Hello world!',
         '{ "hello": "world }'],
        'Unterminated string starting at:'),
       ('invalid_json_3.json',
        ['{ "a": "b", "c": "d", }'],
-       'Expecting property name:'),
+       'Expecting property name'),
       ('invalid_json_4.json',
        ['{ "a": "b" "c": "d" }'],
-       'Expecting , delimiter:'),
+       "Expecting ',' delimiter:"),
     ]
 
     input_api.files = [MockFile(filename, contents)
@@ -284,10 +330,10 @@ class JSONParsingTest(unittest.TestCase):
                        MockFile(file_without_comments,
                                 contents_without_comments)]
 
-    self.assertEqual('No JSON object could be decoded',
-                     str(PRESUBMIT._GetJSONParseError(input_api,
-                                                      file_with_comments,
-                                                      eat_comments=False)))
+    self.assertNotEqual(None,
+                        str(PRESUBMIT._GetJSONParseError(input_api,
+                                                         file_with_comments,
+                                                         eat_comments=False)))
     self.assertEqual(None,
                      PRESUBMIT._GetJSONParseError(input_api,
                                                   file_without_comments,
@@ -422,98 +468,6 @@ class IDLParsingTest(unittest.TestCase):
                       "'%s' not found in '%s'" % (expected_error, actual_error))
 
 
-class TryServerMasterTest(unittest.TestCase):
-  def testTryServerMasters(self):
-    bots = {
-        'master.tryserver.chromium.android': [
-            'android_archive_rel_ng',
-            'android_arm64_dbg_recipe',
-            'android_blink_rel',
-            'android_clang_dbg_recipe',
-            'android_compile_dbg',
-            'android_compile_x64_dbg',
-            'android_compile_x86_dbg',
-            'android_coverage',
-            'android_cronet_tester'
-            'android_swarming_rel',
-            'cast_shell_android',
-            'linux_android_dbg_ng',
-            'linux_android_rel_ng',
-        ],
-        'master.tryserver.chromium.mac': [
-            'ios_dbg_simulator',
-            'ios_rel_device',
-            'ios_rel_device_ninja',
-            'mac_asan',
-            'mac_asan_64',
-            'mac_chromium_compile_dbg',
-            'mac_chromium_compile_rel',
-            'mac_chromium_dbg',
-            'mac_chromium_rel',
-            'mac_nacl_sdk',
-            'mac_nacl_sdk_build',
-            'mac_rel_naclmore',
-            'mac_x64_rel',
-            'mac_xcodebuild',
-        ],
-        'master.tryserver.chromium.linux': [
-            'chromium_presubmit',
-            'linux_arm_cross_compile',
-            'linux_arm_tester',
-            'linux_chromeos_asan',
-            'linux_chromeos_browser_asan',
-            'linux_chromeos_valgrind',
-            'linux_chromium_chromeos_dbg',
-            'linux_chromium_chromeos_rel',
-            'linux_chromium_compile_dbg',
-            'linux_chromium_compile_rel',
-            'linux_chromium_dbg',
-            'linux_chromium_gn_dbg',
-            'linux_chromium_gn_rel',
-            'linux_chromium_rel',
-            'linux_chromium_trusty32_dbg',
-            'linux_chromium_trusty32_rel',
-            'linux_chromium_trusty_dbg',
-            'linux_chromium_trusty_rel',
-            'linux_clang_tsan',
-            'linux_ecs_ozone',
-            'linux_layout',
-            'linux_layout_asan',
-            'linux_layout_rel',
-            'linux_layout_rel_32',
-            'linux_nacl_sdk',
-            'linux_nacl_sdk_bionic',
-            'linux_nacl_sdk_bionic_build',
-            'linux_nacl_sdk_build',
-            'linux_redux',
-            'linux_rel_naclmore',
-            'linux_rel_precise32',
-            'linux_valgrind',
-            'tools_build_presubmit',
-        ],
-        'master.tryserver.chromium.win': [
-            'win8_aura',
-            'win8_chromium_dbg',
-            'win8_chromium_rel',
-            'win_chromium_compile_dbg',
-            'win_chromium_compile_rel',
-            'win_chromium_dbg',
-            'win_chromium_rel',
-            'win_chromium_rel',
-            'win_chromium_x64_dbg',
-            'win_chromium_x64_rel',
-            'win_nacl_sdk',
-            'win_nacl_sdk_build',
-            'win_rel_naclmore',
-         ],
-    }
-    for master, bots in bots.iteritems():
-      for bot in bots:
-        self.assertEqual(master, PRESUBMIT.GetTryServerMasterForBot(bot),
-                         'bot=%s: expected %s, computed %s' % (
-            bot, master, PRESUBMIT.GetTryServerMasterForBot(bot)))
-
-
 class UserMetricsActionTest(unittest.TestCase):
   def testUserMetricsActionInActions(self):
     input_api = MockInputApi()
@@ -545,6 +499,19 @@ class UserMetricsActionTest(unittest.TestCase):
        'tools/metrics/actions/extract_actions.py to update.'
        % (file_with_user_action, 1, 'NotInActionsXml')),
       output[0].message)
+
+  def testUserMetricsActionInTestFile(self):
+    input_api = MockInputApi()
+    file_with_user_action = 'file_with_user_action_unittest.cc'
+    contents_with_user_action = [
+      'base::UserMetricsAction("NotInActionsXml")'
+    ]
+
+    input_api.files = [MockFile(file_with_user_action,
+                                contents_with_user_action)]
+
+    self.assertEqual(
+      [], PRESUBMIT.CheckUserActionUpdate(input_api, MockOutputApi()))
 
 
 class PydepsNeedsUpdatingTest(unittest.TestCase):
@@ -977,7 +944,7 @@ class AccessibilityRelnotesFieldTest(unittest.TestCase):
   def testExpectedPaths(self):
     filesToTest = [
       "chrome/browser/accessibility/foo.py",
-      "chrome/browser/chromeos/arc/accessibility/foo.cc",
+      "chrome/browser/ash/arc/accessibility/foo.cc",
       "chrome/browser/ui/views/accessibility/foo.h",
       "chrome/browser/extensions/api/automation/foo.h",
       "chrome/browser/extensions/api/automation_internal/foo.cc",
@@ -1824,6 +1791,37 @@ class CCIncludeTest(unittest.TestCase):
     self.assertEqual(1, len(errors))
 
 
+class GnGlobForwardTest(unittest.TestCase):
+  def testAddBareGlobs(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('base/stuff.gni', [
+          'forward_variables_from(invoker, "*")']),
+      MockAffectedFile('base/BUILD.gn', [
+          'forward_variables_from(invoker, "*")']),
+    ]
+    warnings = PRESUBMIT.CheckGnGlobForward(mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+    msg = '\n'.join(warnings[0].items)
+    self.assertIn('base/stuff.gni', msg)
+    # Should not check .gn files. Local templates don't need to care about
+    # visibility / testonly.
+    self.assertNotIn('base/BUILD.gn', msg)
+
+  def testValidUses(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('base/stuff.gni', [
+          'forward_variables_from(invoker, "*", [])']),
+      MockAffectedFile('base/stuff2.gni', [
+          'forward_variables_from(invoker, "*", TESTONLY_AND_VISIBILITY)']),
+      MockAffectedFile('base/stuff3.gni', [
+          'forward_variables_from(invoker, [ "testonly" ])']),
+    ]
+    warnings = PRESUBMIT.CheckGnGlobForward(mock_input_api, MockOutputApi())
+    self.assertEqual([], warnings)
+
+
 class NewHeaderWithoutGnChangeTest(unittest.TestCase):
   def testAddHeaderWithoutGn(self):
     mock_input_api = MockInputApi()
@@ -2126,6 +2124,18 @@ class FuchsiaSecurityOwnerTest(unittest.TestCase):
         'Found OWNERS files that need to be updated for IPC security review ' +
         'coverage.\nPlease update the OWNERS files below:', errors[0].message)
 
+  def testThirdPartyTestsDoNotRequireSecurityOwner(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('third_party/crashpad/test/tests.cmx',
+                       [
+                         'const char kNoEnforcement[] = "Security?!? Pah!";',
+                       ])]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT.CheckSecurityOwners(
+        mock_input_api, mock_output_api)
+    self.assertEqual([], errors)
+
   def testOtherFuchsiaChangesDoNotRequireSecurityOwner(self):
     mock_input_api = MockInputApi()
     mock_input_api.files = [
@@ -2140,11 +2150,8 @@ class FuchsiaSecurityOwnerTest(unittest.TestCase):
 
 
 class SecurityChangeTest(unittest.TestCase):
-  class _MockOwnersDB(object):
-    def __init__(self):
-      self.email_regexp = '.*'
-
-    def owners_rooted_at_file(self, f):
+  class _MockOwnersClient(object):
+    def ListOwners(self, f):
       return ['apple@chromium.org', 'orange@chromium.org']
 
   def _mockChangeOwnerAndReviewers(self, input_api, owner, reviewers):
@@ -2202,7 +2209,7 @@ class SecurityChangeTest(unittest.TestCase):
 
   def testChangeOwnersMissing(self):
     mock_input_api = MockInputApi()
-    mock_input_api.owners_db = self._MockOwnersDB()
+    mock_input_api.owners_client = self._MockOwnersClient()
     mock_input_api.is_committing = False
     mock_input_api.files = [
         MockAffectedFile('file.cc', ['GetServiceSandboxType<Goat>(Sandbox)'])
@@ -2211,9 +2218,9 @@ class SecurityChangeTest(unittest.TestCase):
     self._mockChangeOwnerAndReviewers(
         mock_input_api, 'owner@chromium.org', ['banana@chromium.org'])
     result = PRESUBMIT.CheckSecurityChanges(mock_input_api, mock_output_api)
-    self.assertEquals(1, len(result))
-    self.assertEquals(result[0].type, 'notify')
-    self.assertEquals(result[0].message,
+    self.assertEqual(1, len(result))
+    self.assertEqual(result[0].type, 'notify')
+    self.assertEqual(result[0].message,
         'The following files change calls to security-sensive functions\n' \
         'that need to be reviewed by ipc/SECURITY_OWNERS.\n'
         '  file.cc\n'
@@ -2221,7 +2228,7 @@ class SecurityChangeTest(unittest.TestCase):
 
   def testChangeOwnersMissingAtCommit(self):
     mock_input_api = MockInputApi()
-    mock_input_api.owners_db = self._MockOwnersDB()
+    mock_input_api.owners_client = self._MockOwnersClient()
     mock_input_api.is_committing = True
     mock_input_api.files = [
         MockAffectedFile('file.cc', ['GetServiceSandboxType<mojom::Goat>()'])
@@ -2230,9 +2237,9 @@ class SecurityChangeTest(unittest.TestCase):
     self._mockChangeOwnerAndReviewers(
         mock_input_api, 'owner@chromium.org', ['banana@chromium.org'])
     result = PRESUBMIT.CheckSecurityChanges(mock_input_api, mock_output_api)
-    self.assertEquals(1, len(result))
-    self.assertEquals(result[0].type, 'error')
-    self.assertEquals(result[0].message,
+    self.assertEqual(1, len(result))
+    self.assertEqual(result[0].type, 'error')
+    self.assertEqual(result[0].message,
         'The following files change calls to security-sensive functions\n' \
         'that need to be reviewed by ipc/SECURITY_OWNERS.\n'
         '  file.cc\n'
@@ -2240,7 +2247,7 @@ class SecurityChangeTest(unittest.TestCase):
 
   def testChangeOwnersPresent(self):
     mock_input_api = MockInputApi()
-    mock_input_api.owners_db = self._MockOwnersDB()
+    mock_input_api.owners_client = self._MockOwnersClient()
     mock_input_api.files = [
         MockAffectedFile('file.cc', ['WithSandboxType(Sandbox)'])
     ]
@@ -2249,11 +2256,11 @@ class SecurityChangeTest(unittest.TestCase):
         mock_input_api, 'owner@chromium.org',
         ['apple@chromium.org', 'banana@chromium.org'])
     result = PRESUBMIT.CheckSecurityChanges(mock_input_api, mock_output_api)
-    self.assertEquals(0, len(result))
+    self.assertEqual(0, len(result))
 
   def testChangeOwnerIsSecurityOwner(self):
     mock_input_api = MockInputApi()
-    mock_input_api.owners_db = self._MockOwnersDB()
+    mock_input_api.owners_client = self._MockOwnersClient()
     mock_input_api.files = [
         MockAffectedFile('file.cc', ['GetServiceSandboxType<T>(Sandbox)'])
     ]
@@ -2261,7 +2268,7 @@ class SecurityChangeTest(unittest.TestCase):
     self._mockChangeOwnerAndReviewers(
         mock_input_api, 'orange@chromium.org', ['pear@chromium.org'])
     result = PRESUBMIT.CheckSecurityChanges(mock_input_api, mock_output_api)
-    self.assertEquals(1, len(result))
+    self.assertEqual(1, len(result))
 
 
 class BannedTypeCheckTest(unittest.TestCase):
@@ -2277,6 +2284,12 @@ class BannedTypeCheckTest(unittest.TestCase):
                ['using std::string;']),
       MockFile('some/cpp/problematic/file2.cc',
                ['set_owned_by_client()']),
+      MockFile('some/cpp/nocheck/file.cc',
+               ['using namespace std;  // nocheck']),
+      MockFile('some/cpp/comment/file.cc',
+               ['  // A comment about `using namespace std;`']),
+      MockFile('some/cpp/macro/file.h',
+               ['DISALLOW_COPY_AND_ASSIGN(foo)']),
     ]
 
     results = PRESUBMIT.CheckNoBannedFunctions(input_api, MockOutputApi())
@@ -2288,38 +2301,12 @@ class BannedTypeCheckTest(unittest.TestCase):
         'third_party/blink/problematic/file.cc' in results[0].message)
     self.assertTrue('some/cpp/ok/file.cc' not in results[1].message)
     self.assertTrue('some/cpp/problematic/file2.cc' in results[0].message)
-
-  def testBannedBlinkDowncastHelpers(self):
-    input_api = MockInputApi()
-    input_api.files = [
-      MockFile('some/cpp/problematic/file1.cc',
-               ['DEFINE_TYPE_CASTS(ToType, FromType, from_argument,'
-                'PointerPredicate(), ReferencePredicate());']),
-      MockFile('some/cpp/problematic/file2.cc',
-               ['bool is_test_ele = IsHTMLTestElement(n);']),
-      MockFile('some/cpp/problematic/file3.cc',
-               ['auto* html_test_ele = ToHTMLTestElement(n);']),
-      MockFile('some/cpp/problematic/file4.cc',
-               ['auto* html_test_ele_or_null = ToHTMLTestElementOrNull(n);']),
-      MockFile('some/cpp/ok/file1.cc',
-               ['bool is_test_ele = IsA<HTMLTestElement>(n);']),
-      MockFile('some/cpp/ok/file2.cc',
-               ['auto* html_test_ele = To<HTMLTestElement>(n);']),
-      MockFile('some/cpp/ok/file3.cc',
-               ['auto* html_test_ele_or_null = ',
-                'DynamicTo<HTMLTestElement>(n);']),
-    ]
-
-    # warnings are errors[0], errors are errors[1]
-    errors = PRESUBMIT.CheckNoBannedFunctions(input_api, MockOutputApi())
-    self.assertEqual(2, len(errors))
-    self.assertTrue('some/cpp/problematic/file1.cc' in errors[1].message)
-    self.assertTrue('some/cpp/problematic/file2.cc' in errors[0].message)
-    self.assertTrue('some/cpp/problematic/file3.cc' in errors[0].message)
-    self.assertTrue('some/cpp/problematic/file4.cc' in errors[0].message)
-    self.assertTrue('some/cpp/ok/file1.cc' not in errors[0].message)
-    self.assertTrue('some/cpp/ok/file2.cc' not in errors[0].message)
-    self.assertTrue('some/cpp/ok/file3.cc' not in errors[0].message)
+    self.assertFalse('some/cpp/nocheck/file.cc' in results[0].message)
+    self.assertFalse('some/cpp/nocheck/file.cc' in results[1].message)
+    self.assertFalse('some/cpp/comment/file.cc' in results[0].message)
+    self.assertFalse('some/cpp/comment/file.cc' in results[1].message)
+    self.assertTrue('some/cpp/macro/file.h' in results[0].message)
+    self.assertFalse('some/cpp/macro/file.h' in results[1].message)
 
   def testBannedIosObjcFunctions(self):
     input_api = MockInputApi()
@@ -2349,14 +2336,8 @@ class BannedTypeCheckTest(unittest.TestCase):
   def testBannedMojoFunctions(self):
     input_api = MockInputApi()
     input_api.files = [
-      MockFile('some/cpp/problematic/file.cc',
-               ['mojo::DataPipe();']),
       MockFile('some/cpp/problematic/file2.cc',
                ['mojo::ConvertTo<>']),
-      MockFile('some/cpp/ok/file.cc',
-               ['CreateDataPipe();']),
-      MockFile('some/cpp/ok/file2.cc',
-               ['mojo::DataPipeDrainer();']),
       MockFile('third_party/blink/ok/file3.cc',
                ['mojo::ConvertTo<>']),
       MockFile('content/renderer/ok/file3.cc',
@@ -2366,11 +2347,8 @@ class BannedTypeCheckTest(unittest.TestCase):
     results = PRESUBMIT.CheckNoBannedFunctions(input_api, MockOutputApi())
 
     # warnings are results[0], errors are results[1]
-    self.assertEqual(2, len(results))
-    self.assertTrue('some/cpp/problematic/file.cc' in results[1].message)
+    self.assertEqual(1, len(results))
     self.assertTrue('some/cpp/problematic/file2.cc' in results[0].message)
-    self.assertTrue('some/cpp/ok/file.cc' not in results[1].message)
-    self.assertTrue('some/cpp/ok/file2.cc' not in results[1].message)
     self.assertTrue('third_party/blink/ok/file3.cc' not in results[0].message)
     self.assertTrue('content/renderer/ok/file3.cc' not in results[0].message)
 
@@ -2380,32 +2358,12 @@ class BannedTypeCheckTest(unittest.TestCase):
     error_paths = ['third_party/blink', 'content']
     test_cases = [
       {
-        'type': 'mojo::AssociatedBinding<>;',
-        'file': 'file1.c'
-      },
-      {
-        'type': 'mojo::AssociatedBindingSet<>;',
-        'file': 'file2.c'
-      },
-      {
-        'type': 'mojo::AssociatedInterfacePtr<>',
-        'file': 'file3.cc'
-      },
-      {
         'type': 'mojo::AssociatedInterfacePtrInfo<>',
         'file': 'file4.cc'
       },
       {
         'type': 'mojo::AssociatedInterfaceRequest<>',
         'file': 'file5.cc'
-      },
-      {
-        'type': 'mojo::Binding<>',
-        'file': 'file6.cc'
-      },
-      {
-        'type': 'mojo::BindingSet<>',
-        'file': 'file7.cc'
       },
       {
         'type': 'mojo::InterfacePtr<>',
@@ -2422,34 +2380,6 @@ class BannedTypeCheckTest(unittest.TestCase):
       {
         'type': 'mojo::MakeRequest()',
         'file': 'file11.cc'
-      },
-      {
-        'type': 'mojo::MakeRequestAssociatedWithDedicatedPipe()',
-        'file': 'file12.cc'
-      },
-      {
-        'type': 'mojo::MakeStrongBinding()<>',
-        'file': 'file13.cc'
-      },
-      {
-        'type': 'mojo::MakeStrongAssociatedBinding()<>',
-        'file': 'file14.cc'
-      },
-      {
-        'type': 'mojo::StrongAssociatedBinding<>',
-        'file': 'file15.cc'
-      },
-      {
-        'type': 'mojo::StrongBinding<>',
-        'file': 'file16.cc'
-      },
-      {
-        'type': 'mojo::StrongAssociatedBindingSet<>',
-        'file': 'file17.cc'
-      },
-      {
-        'type': 'mojo::StrongBindingSet<>',
-        'file': 'file18.cc'
       },
     ]
 
@@ -2516,6 +2446,18 @@ class NoProductionCodeUsingTestOnlyFunctionsTest(unittest.TestCase):
       MockFile('some/path/foo.mm', ['FooForTesting() {']),
       MockFile('some/path/foo.cc', ['::FooForTests();']),
       MockFile('some/path/foo.cpp', ['// foo_for_test();']),
+    ]
+
+    results = PRESUBMIT.CheckNoProductionCodeUsingTestOnlyFunctions(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(results))
+
+  def testAllowedFiles(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('path/foo_unittest.cc', ['foo_for_testing();']),
+      MockFile('path/bar_unittest_mac.cc', ['foo_for_testing();']),
+      MockFile('path/baz_unittests.cc', ['foo_for_testing();']),
     ]
 
     results = PRESUBMIT.CheckNoProductionCodeUsingTestOnlyFunctions(
@@ -2688,8 +2630,8 @@ class CheckNoDirectIncludesHeadersWhichRedefineStrCat(unittest.TestCase):
       MockFile('dir/jumbo.h', ['#include "sphelper.h"']),
     ]
     results = PRESUBMIT._CheckNoStrCatRedefines(mock_input_api, MockOutputApi())
-    self.assertEquals(1, len(results))
-    self.assertEquals(4, len(results[0].items))
+    self.assertEqual(1, len(results))
+    self.assertEqual(4, len(results[0].items))
     self.assertTrue('StrCat' in results[0].message)
     self.assertTrue('foo_win.cc' in results[0].items[0])
     self.assertTrue('bar.h' in results[0].items[1])
@@ -2703,7 +2645,7 @@ class CheckNoDirectIncludesHeadersWhichRedefineStrCat(unittest.TestCase):
       MockFile('dir/baz-win.h', ['#include "base/win/atl.h"']),
     ]
     results = PRESUBMIT._CheckNoStrCatRedefines(mock_input_api, MockOutputApi())
-    self.assertEquals(0, len(results))
+    self.assertEqual(0, len(results))
 
   def testAllowsToCreateWrapper(self):
     mock_input_api = MockInputApi()
@@ -2713,7 +2655,7 @@ class CheckNoDirectIncludesHeadersWhichRedefineStrCat(unittest.TestCase):
         '#include "base/win/windows_defines.inc"']),
     ]
     results = PRESUBMIT._CheckNoStrCatRedefines(mock_input_api, MockOutputApi())
-    self.assertEquals(0, len(results))
+    self.assertEqual(0, len(results))
 
 
 class StringTest(unittest.TestCase):
@@ -3474,49 +3416,6 @@ class DISABLETypoInTest(unittest.TestCase):
     self.assertEqual(0, len(results))
 
 
-class BuildtoolsRevisionsAreInSyncTest(unittest.TestCase):
-  # TODO(crbug.com/941824): We need to make sure the entries in
-  # //buildtools/DEPS are kept in sync with the entries in //DEPS
-  # so that users of //buildtools in other projects get the same tooling
-  # Chromium gets. If we ever fix the referenced bug and add 'includedeps'
-  # support to gclient, we can eliminate the duplication and delete
-  # these tests for the corresponding presubmit check.
-
-  def _check(self, files):
-    mock_input_api = MockInputApi()
-    mock_input_api.files = []
-    for fname, contents in files.items():
-      mock_input_api.files.append(MockFile(fname, contents.splitlines()))
-    return PRESUBMIT.CheckBuildtoolsRevisionsAreInSync(mock_input_api,
-                                                        MockOutputApi())
-
-  def testOneFileChangedButNotTheOther(self):
-    results = self._check({
-        "DEPS": "'libunwind_revision': 'onerev'",
-    })
-    self.assertNotEqual(results, [])
-
-  def testNeitherFileChanged(self):
-    results = self._check({
-        "OWNERS": "foobar@example.com",
-    })
-    self.assertEqual(results, [])
-
-  def testBothFilesChangedAndMatch(self):
-    results = self._check({
-        "DEPS": "'libunwind_revision': 'onerev'",
-        "buildtools/DEPS": "'libunwind_revision': 'onerev'",
-    })
-    self.assertEqual(results, [])
-
-  def testBothFilesWereChangedAndDontMatch(self):
-    results = self._check({
-        "DEPS": "'libunwind_revision': 'onerev'",
-        "buildtools/DEPS": "'libunwind_revision': 'anotherrev'",
-    })
-    self.assertNotEqual(results, [])
-
-
 class CheckFuzzTargetsTest(unittest.TestCase):
 
   def _check(self, files):
@@ -3556,10 +3455,23 @@ class CheckFuzzTargetsTest(unittest.TestCase):
 
 
 class SetNoParentTest(unittest.TestCase):
-  def testSetNoParentMissing(self):
+  def testSetNoParentTopLevelAllowed(self):
     mock_input_api = MockInputApi()
     mock_input_api.files = [
       MockAffectedFile('goat/OWNERS',
+                       [
+                         'set noparent',
+                         'jochen@chromium.org',
+                       ])
+    ]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT.CheckSetNoParent(mock_input_api, mock_output_api)
+    self.assertEqual([], errors)
+
+  def testSetNoParentMissing(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('services/goat/OWNERS',
                        [
                          'set noparent',
                          'jochen@chromium.org',
@@ -3573,11 +3485,10 @@ class SetNoParentTest(unittest.TestCase):
     self.assertTrue('goat/OWNERS:1' in errors[0].long_text)
     self.assertTrue('goat/OWNERS:3' in errors[0].long_text)
 
-
   def testSetNoParentWithCorrectRule(self):
     mock_input_api = MockInputApi()
     mock_input_api.files = [
-      MockAffectedFile('goat/OWNERS',
+      MockAffectedFile('services/goat/OWNERS',
                        [
                          'set noparent',
                          'file://ipc/SECURITY_OWNERS',
@@ -3625,6 +3536,273 @@ class MojomStabilityCheckTest(unittest.TestCase):
                        old_contents=['import "a.mojom"; struct T { S s; };'])
     ])
     self.assertEqual([], errors)
+
+class CheckForUseOfChromeAppsDeprecationsTest(unittest.TestCase):
+
+  ERROR_MSG_PIECE = 'technologies which will soon be deprecated'
+
+  # Each positive test is also a naive negative test for the other cases.
+
+  def testWarningNMF(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockAffectedFile(
+            'foo.NMF',
+            ['"program"', '"Z":"content"', 'B'],
+            ['"program"', 'B'],
+            scm_diff='\n'.join([
+                '--- foo.NMF.old  2020-12-02 20:40:54.430676385 +0100',
+                '+++ foo.NMF.new  2020-12-02 20:41:02.086700197 +0100',
+                '@@ -1,2 +1,3 @@',
+                ' "program"',
+                '+"Z":"content"',
+                ' B']),
+            action='M')
+    ]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT.CheckForUseOfChromeAppsDeprecations(mock_input_api,
+                                                     mock_output_api)
+    self.assertEqual(1, len(errors))
+    self.assertTrue( self.ERROR_MSG_PIECE in errors[0].message)
+    self.assertTrue( 'foo.NMF' in errors[0].message)
+
+  def testWarningManifest(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockAffectedFile(
+            'manifest.json',
+            ['"app":', '"Z":"content"', 'B'],
+            ['"app":"', 'B'],
+            scm_diff='\n'.join([
+                '--- manifest.json.old  2020-12-02 20:40:54.430676385 +0100',
+                '+++ manifest.json.new  2020-12-02 20:41:02.086700197 +0100',
+                '@@ -1,2 +1,3 @@',
+                ' "app"',
+                '+"Z":"content"',
+                ' B']),
+            action='M')
+    ]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT.CheckForUseOfChromeAppsDeprecations(mock_input_api,
+                                                     mock_output_api)
+    self.assertEqual(1, len(errors))
+    self.assertTrue( self.ERROR_MSG_PIECE in errors[0].message)
+    self.assertTrue( 'manifest.json' in errors[0].message)
+
+  def testOKWarningManifestWithoutApp(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockAffectedFile(
+            'manifest.json',
+            ['"name":', '"Z":"content"', 'B'],
+            ['"name":"', 'B'],
+            scm_diff='\n'.join([
+                '--- manifest.json.old  2020-12-02 20:40:54.430676385 +0100',
+                '+++ manifest.json.new  2020-12-02 20:41:02.086700197 +0100',
+                '@@ -1,2 +1,3 @@',
+                ' "app"',
+                '+"Z":"content"',
+                ' B']),
+            action='M')
+    ]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT.CheckForUseOfChromeAppsDeprecations(mock_input_api,
+                                                     mock_output_api)
+    self.assertEqual(0, len(errors))
+
+  def testWarningPPAPI(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockAffectedFile(
+            'foo.hpp',
+            ['A', '#include <ppapi.h>', 'B'],
+            ['A', 'B'],
+            scm_diff='\n'.join([
+                '--- foo.hpp.old  2020-12-02 20:40:54.430676385 +0100',
+                '+++ foo.hpp.new  2020-12-02 20:41:02.086700197 +0100',
+                '@@ -1,2 +1,3 @@',
+                ' A',
+                '+#include <ppapi.h>',
+                ' B']),
+            action='M')
+    ]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT.CheckForUseOfChromeAppsDeprecations(mock_input_api,
+                                                     mock_output_api)
+    self.assertEqual(1, len(errors))
+    self.assertTrue( self.ERROR_MSG_PIECE in errors[0].message)
+    self.assertTrue( 'foo.hpp' in errors[0].message)
+
+  def testNoWarningPPAPI(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockAffectedFile(
+            'foo.txt',
+            ['A', 'Peppapig', 'B'],
+            ['A', 'B'],
+            scm_diff='\n'.join([
+                '--- foo.txt.old  2020-12-02 20:40:54.430676385 +0100',
+                '+++ foo.txt.new  2020-12-02 20:41:02.086700197 +0100',
+                '@@ -1,2 +1,3 @@',
+                ' A',
+                '+Peppapig',
+                ' B']),
+            action='M')
+    ]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT.CheckForUseOfChromeAppsDeprecations(mock_input_api,
+                                                     mock_output_api)
+    self.assertEqual(0, len(errors))
+
+class CheckDeprecationOfPreferencesTest(unittest.TestCase):
+  # Test that a warning is generated if a preference registration is removed
+  # from a random file.
+  def testWarning(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockAffectedFile(
+            'foo.cc',
+            ['A', 'B'],
+            ['A', 'prefs->RegisterStringPref("foo", "default");', 'B'],
+            scm_diff='\n'.join([
+                '--- foo.cc.old  2020-12-02 20:40:54.430676385 +0100',
+                '+++ foo.cc.new  2020-12-02 20:41:02.086700197 +0100',
+                '@@ -1,3 +1,2 @@',
+                ' A',
+                '-prefs->RegisterStringPref("foo", "default");',
+                ' B']),
+            action='M')
+    ]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT.CheckDeprecationOfPreferences(mock_input_api,
+                                                     mock_output_api)
+    self.assertEqual(1, len(errors))
+    self.assertTrue(
+        'Discovered possible removal of preference registrations' in
+        errors[0].message)
+
+  # Test that a warning is inhibited if the preference registration was moved
+  # to the deprecation functions in browser prefs.
+  def testNoWarningForMigration(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        # RegisterStringPref was removed from foo.cc.
+        MockAffectedFile(
+            'foo.cc',
+            ['A', 'B'],
+            ['A', 'prefs->RegisterStringPref("foo", "default");', 'B'],
+            scm_diff='\n'.join([
+                '--- foo.cc.old  2020-12-02 20:40:54.430676385 +0100',
+                '+++ foo.cc.new  2020-12-02 20:41:02.086700197 +0100',
+                '@@ -1,3 +1,2 @@',
+                ' A',
+                '-prefs->RegisterStringPref("foo", "default");',
+                ' B']),
+            action='M'),
+        # But the preference was properly migrated.
+        MockAffectedFile(
+            'chrome/browser/prefs/browser_prefs.cc',
+            [
+                 '// BEGIN_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS',
+                 '// END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS',
+                 '// BEGIN_MIGRATE_OBSOLETE_PROFILE_PREFS',
+                 'prefs->RegisterStringPref("foo", "default");',
+                 '// END_MIGRATE_OBSOLETE_PROFILE_PREFS',
+            ],
+            [
+                 '// BEGIN_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS',
+                 '// END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS',
+                 '// BEGIN_MIGRATE_OBSOLETE_PROFILE_PREFS',
+                 '// END_MIGRATE_OBSOLETE_PROFILE_PREFS',
+            ],
+            scm_diff='\n'.join([
+                 '--- browser_prefs.cc.old 2020-12-02 20:51:40.812686731 +0100',
+                 '+++ browser_prefs.cc.new 2020-12-02 20:52:02.936755539 +0100',
+                 '@@ -2,3 +2,4 @@',
+                 ' // END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS',
+                 ' // BEGIN_MIGRATE_OBSOLETE_PROFILE_PREFS',
+                 '+prefs->RegisterStringPref("foo", "default");',
+                 ' // END_MIGRATE_OBSOLETE_PROFILE_PREFS']),
+            action='M'),
+    ]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT.CheckDeprecationOfPreferences(mock_input_api,
+                                                     mock_output_api)
+    self.assertEqual(0, len(errors))
+
+  # Test that a warning is NOT inhibited if the preference registration was
+  # moved to a place outside of the migration functions in browser_prefs.cc
+  def testWarningForImproperMigration(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        # RegisterStringPref was removed from foo.cc.
+        MockAffectedFile(
+            'foo.cc',
+            ['A', 'B'],
+            ['A', 'prefs->RegisterStringPref("foo", "default");', 'B'],
+            scm_diff='\n'.join([
+                '--- foo.cc.old  2020-12-02 20:40:54.430676385 +0100',
+                '+++ foo.cc.new  2020-12-02 20:41:02.086700197 +0100',
+                '@@ -1,3 +1,2 @@',
+                ' A',
+                '-prefs->RegisterStringPref("foo", "default");',
+                ' B']),
+            action='M'),
+        # The registration call was moved to a place in browser_prefs.cc that
+        # is outside the migration functions.
+        MockAffectedFile(
+            'chrome/browser/prefs/browser_prefs.cc',
+            [
+                 'prefs->RegisterStringPref("foo", "default");',
+                 '// BEGIN_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS',
+                 '// END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS',
+                 '// BEGIN_MIGRATE_OBSOLETE_PROFILE_PREFS',
+                 '// END_MIGRATE_OBSOLETE_PROFILE_PREFS',
+            ],
+            [
+                 '// BEGIN_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS',
+                 '// END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS',
+                 '// BEGIN_MIGRATE_OBSOLETE_PROFILE_PREFS',
+                 '// END_MIGRATE_OBSOLETE_PROFILE_PREFS',
+            ],
+            scm_diff='\n'.join([
+                 '--- browser_prefs.cc.old 2020-12-02 20:51:40.812686731 +0100',
+                 '+++ browser_prefs.cc.new 2020-12-02 20:52:02.936755539 +0100',
+                 '@@ -1,2 +1,3 @@',
+                 '+prefs->RegisterStringPref("foo", "default");',
+                 ' // BEGIN_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS',
+                 ' // END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS']),
+            action='M'),
+    ]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT.CheckDeprecationOfPreferences(mock_input_api,
+                                                     mock_output_api)
+    self.assertEqual(1, len(errors))
+    self.assertTrue(
+        'Discovered possible removal of preference registrations' in
+        errors[0].message)
+
+  # Check that the presubmit fails if a marker line in brower_prefs.cc is
+  # deleted.
+  def testDeletedMarkerRaisesError(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockAffectedFile('chrome/browser/prefs/browser_prefs.cc',
+                         [
+                           '// BEGIN_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS',
+                           '// END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS',
+                           '// BEGIN_MIGRATE_OBSOLETE_PROFILE_PREFS',
+                           # The following line is deleted for this test
+                           # '// END_MIGRATE_OBSOLETE_PROFILE_PREFS',
+                         ])
+    ]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT.CheckDeprecationOfPreferences(mock_input_api,
+                                                     mock_output_api)
+    self.assertEqual(1, len(errors))
+    self.assertEqual(
+        'Broken .*MIGRATE_OBSOLETE_.*_PREFS markers in browser_prefs.cc.',
+        errors[0].message)
 
 
 if __name__ == '__main__':

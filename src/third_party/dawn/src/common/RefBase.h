@@ -15,6 +15,7 @@
 #ifndef COMMON_REFBASE_H_
 #define COMMON_REFBASE_H_
 
+#include "common/Assert.h"
 #include "common/Compiler.h"
 
 #include <type_traits>
@@ -133,18 +134,6 @@ class RefBase {
         return mValue != other;
     }
 
-    operator bool() {
-        return mValue != kNullValue;
-    }
-
-    // Operator * and -> to act like a pointer.
-    const typename Traits::PointedType& operator*() const {
-        return *mValue;
-    }
-    typename Traits::PointedType& operator*() {
-        return *mValue;
-    }
-
     const T operator->() const {
         return mValue;
     }
@@ -164,6 +153,16 @@ class RefBase {
         T value = mValue;
         mValue = kNullValue;
         return value;
+    }
+
+    void Acquire(T value) {
+        Release();
+        mValue = value;
+    }
+
+    T* InitializeInto() DAWN_NO_DISCARD {
+        ASSERT(mValue == kNullValue);
+        return &mValue;
     }
 
   private:

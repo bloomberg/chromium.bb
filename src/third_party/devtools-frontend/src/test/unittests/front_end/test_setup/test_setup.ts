@@ -6,20 +6,21 @@
  * This file is automatically loaded and run by Karma because it automatically
  * loads and injects all *.js files it finds.
  */
-import * as Common from '../../../../front_end/common/common.js';
-import * as ComponentHelpers from '../../../../front_end/component_helpers/component_helpers.js';
-import * as Root from '../../../../front_end/root/root.js';
-import * as ThemeSupport from '../../../../front_end/theme_support/theme_support.js';
+import type * as Common from '../../../../front_end/core/common/common.js';
+import * as Root from '../../../../front_end/core/root/root.js';
+import * as ComponentHelpers from '../../../../front_end/ui/components/helpers/helpers.js';
+import * as ThemeSupport from '../../../../front_end/ui/legacy/theme_support/theme_support.js';
 import {resetTestDOM} from '../helpers/DOMHelpers.js';
 
 beforeEach(resetTestDOM);
 
 interface KarmaConfig {
-  config: {targetDir: string}
+  config: {targetDir: string};
 }
 
 before(async function() {
   /* This value comes from the `client.targetDir` setting in `karma.conf.js` */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const {targetDir} = ((globalThis as unknown as {__karma__: KarmaConfig}).__karma__).config;
 
   /* Larger than normal timeout because we've seen some slowness on the bots */

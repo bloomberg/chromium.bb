@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_bounds_observer.h"
@@ -27,6 +28,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/mojom/view_type.mojom.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "ui/accessibility/aura/aura_window_properties.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -147,7 +149,8 @@ ChromeKeyboardWebContents::ChromeKeyboardWebContents(
   web_contents_ = content::WebContents::Create(web_contents_params);
   web_contents_->SetDelegate(new ChromeKeyboardContentsDelegate());
 
-  extensions::SetViewType(web_contents_.get(), extensions::VIEW_TYPE_COMPONENT);
+  extensions::SetViewType(web_contents_.get(),
+                          extensions::mojom::ViewType::kComponent);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents_.get());
   Observe(web_contents_.get());
@@ -209,14 +212,16 @@ void ChromeKeyboardWebContents::SetInitialContentsSize(const gfx::Size& size) {
   web_contents_->GetNativeView()->SetBounds(bounds);
 }
 
-void ChromeKeyboardWebContents::RenderViewCreated(
-    content::RenderViewHost* render_view_host) {
-  content::RenderProcessHost* render_process_host =
-      render_view_host->GetProcess();
-  content::HostZoomMap::GetDefaultForBrowserContext(
-      render_process_host->GetBrowserContext())
-      ->SetTemporaryZoomLevel(render_process_host->GetID(),
-                              render_view_host->GetRoutingID(), 0 /* level */);
+void ChromeKeyboardWebContents::RenderFrameCreated(
+    content::RenderFrameHost* frame_host) {
+  if (frame_host->GetParent())
+    return;
+  content::HostZoomMap* zoom_map =
+      content::HostZoomMap::GetDefaultForBrowserContext(
+          frame_host->GetBrowserContext());
+  zoom_map->SetTemporaryZoomLevel(
+      frame_host->GetProcess()->GetID(),
+      frame_host->GetRenderViewHost()->GetRoutingID(), 0 /* level */);
 }
 
 void ChromeKeyboardWebContents::DidStopLoading() {

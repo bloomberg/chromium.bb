@@ -39,6 +39,7 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/test/background_page_watcher.h"
 #include "extensions/test/test_extension_dir.h"
 #endif
@@ -77,21 +78,22 @@ int GetNumRenderers(Browser* browser) {
   return static_cast<int>(render_process_hosts.size());
 }
 
-void RequestGlobalDumpCallback(base::Closure quit_closure,
+void RequestGlobalDumpCallback(base::OnceClosure quit_closure,
                                bool success,
                                uint64_t) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                std::move(quit_closure));
   ASSERT_TRUE(success);
 }
 
 void OnStartTracingDoneCallback(
-    base::trace_event::MemoryDumpLevelOfDetail explicit_dump_type,
-    base::Closure quit_closure) {
+    base::trace_event::MemoryDumpLevelOfDetail dump_type,
+    base::OnceClosure quit_closure) {
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->RequestGlobalDumpAndAppendToTrace(
-          MemoryDumpType::EXPLICITLY_TRIGGERED, explicit_dump_type,
+          MemoryDumpType::PERIODIC_INTERVAL, dump_type,
           MemoryDumpDeterminism::NONE,
-          BindOnce(&RequestGlobalDumpCallback, quit_closure));
+          BindOnce(&RequestGlobalDumpCallback, std::move(quit_closure)));
 }
 
 class ProcessMemoryMetricsEmitterFake : public ProcessMemoryMetricsEmitter {
@@ -652,12 +654,23 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   CheckPageInfoUkmMetrics(url, true);
 }
 
+// TODO(crbug.com/1201588): Fix flakiness on Windows.
+#if defined(OS_WIN) || defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
+#define MAYBE_FetchAndEmitMetricsWithExtensionsAndHostReuse \
+  DISABLED_FetchAndEmitMetricsWithExtensionsAndHostReuse
+#else
+#define MAYBE_FetchAndEmitMetricsWithExtensionsAndHostReuse \
+  FetchAndEmitMetricsWithExtensionsAndHostReuse
+#endif
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
-                       FetchAndEmitMetricsWithExtensionsAndHostReuse) {
-  // This test does not work with --site-per-process flag since this test
-  // combines multiple extensions in the same process.
-  if (content::AreAllSitesIsolatedForTesting())
+                       MAYBE_FetchAndEmitMetricsWithExtensionsAndHostReuse) {
+  // When strict extension isolation is enabled, there is no process reuse for
+  // extensions, and this becomes the same as FetchAndEmitMetricsWithExtensions.
+  if (base::FeatureList::IsEnabled(
+          extensions_features::kStrictExtensionIsolation)) {
     return;
+  }
+
   // Limit the number of renderer processes to force reuse.
   content::RenderProcessHost::SetMaxRendererProcessCount(1);
   const Extension* extension1 = CreateExtension("Extension 1");
@@ -690,7 +703,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 
   run_loop.Run();
 
-  constexpr int kNumRenderers = 2;
+  constexpr int kNumRenderers = 1;
   EXPECT_EQ(kNumRenderers, GetNumRenderers(browser()));
   constexpr int kNumExtensionProcesses = 1;
 
@@ -761,8 +774,8 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 
   ASSERT_GT(events.size(), 1u);
   ASSERT_TRUE(trace_analyzer::CountMatches(
-      events, trace_analyzer::Query::EventNameIs(MemoryDumpTypeToString(
-                  MemoryDumpType::EXPLICITLY_TRIGGERED))));
+      events, trace_analyzer::Query::EventNameIs(
+                  MemoryDumpTypeToString(MemoryDumpType::PERIODIC_INTERVAL))));
 
   constexpr int kNumRenderers = 2;
   EXPECT_EQ(kNumRenderers, GetNumRenderers(browser()));
@@ -804,7 +817,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 
 // Test is flaky on chromeos and linux. https://crbug.com/938054.
 // Test is flaky on mac and win: https://crbug.com/948674.
-#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) ||        \
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) ||      \
     defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MAC) || \
     defined(OS_WIN)
 #define MAYBE_ForegroundAndBackgroundPages DISABLED_ForegroundAndBackgroundPages

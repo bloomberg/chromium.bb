@@ -10,13 +10,13 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "media/base/callback_registry.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_promise_adapter.h"
 #include "media/base/content_decryption_module.h"
 #include "media/fuchsia/cdm/fuchsia_cdm_context.h"
 #include "media/fuchsia/cdm/fuchsia_decryptor.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 
@@ -71,9 +71,8 @@ class FuchsiaCdm : public ContentDecryptionModule,
   FuchsiaCdmContext* GetFuchsiaCdmContext() override;
 
   // FuchsiaCdmContext implementation:
-  std::unique_ptr<FuchsiaSecureStreamDecryptor> CreateVideoDecryptor(
-      FuchsiaSecureStreamDecryptor::Client* client) override;
-  std::unique_ptr<FuchsiaClearStreamDecryptor> CreateAudioDecryptor() override;
+  std::unique_ptr<SysmemBufferStream> CreateStreamDecryptor(
+      bool secure_mode) override;
 
  private:
   class CdmSession;
@@ -87,10 +86,19 @@ class FuchsiaCdm : public ContentDecryptionModule,
   void OnGenerateLicenseRequestStatus(
       CdmSession* session,
       uint32_t promise_id,
-      base::Optional<CdmPromise::Exception> exception);
+      absl::optional<CdmPromise::Exception> exception);
   void OnProcessLicenseServerMessageStatus(
+      const std::string& session_id,
       uint32_t promise_id,
-      base::Optional<CdmPromise::Exception> exception);
+      absl::optional<CdmPromise::Exception> exception);
+  void OnSessionLoaded(std::unique_ptr<CdmSession> session,
+                       uint32_t promise_id,
+                       bool loaded);
+
+  void OnGenerateLicenseReleaseStatus(
+      const std::string& session_id,
+      uint32_t promise_id,
+      absl::optional<CdmPromise::Exception> exception);
 
   void OnNewKey();
 
@@ -103,9 +111,9 @@ class FuchsiaCdm : public ContentDecryptionModule,
 
   FuchsiaDecryptor decryptor_;
 
-  base::Lock new_key_cb_for_video_lock_;
-  base::RepeatingClosure new_key_cb_for_video_
-      GUARDED_BY(new_key_cb_for_video_lock_);
+  base::Lock new_key_callbacks_lock_;
+  std::vector<base::RepeatingClosure> new_key_callbacks_
+      GUARDED_BY(new_key_callbacks_lock_);
 
   CallbackRegistry<EventCB::RunType> event_callbacks_;
 

@@ -26,58 +26,18 @@ following command:
   chmod a+x .git/hooks/commit-msg
 ```
 
-### Uploading a new patch for review 
+### Uploading a new patch for review
 
-You should run `PRESUBMIT.sh` in the root of the repository before pushing for
+You should run `git cl presubmit --upload` in the root of the repository before pushing for
 review (which primarily checks formatting).
 
-There is official [Gerrit
-documentation](https://gerrit-documentation.storage.googleapis.com/Documentation/2.14.7/user-upload.html#push_create)
-for this which essentially amounts to:
+After verifying that presubmission works correctly, you can then execute:
+`git cl upload`, which will prompt you to verify the commit message and check
+for owners.
 
-``` bash
-  git push origin HEAD:refs/for/master
-```
-
-Gerrit keeps track of changes using a [Change-Id
-line](https://gerrit-documentation.storage.googleapis.com/Documentation/2.14.7/user-changeid.html)
-in each commit.
-
-When there is no `Change-Id` line, Gerrit creates a new `Change-Id` for the
-commit, and therefore a new change.  Gerrit's documentation for
-[replacing a change](https://gerrit-documentation.storage.googleapis.com/Documentation/2.14.7/user-upload.html#push_replace)
-describes this.  So if you want to upload a new patchset to an existing review,
-it should contain the matching `Change-Id` line in the commit message.
-
-### Adding a new patchset to an existing change
-
-By default, each commit to your local branch will get its own Gerrit change when
-pushed, unless it has a `Change-Id` corresponding to an existing review.
-
-If you need to modify commits on your local branch to ensure they have the
-correct `Change-Id`, you can do one of two things:
-
-After committing to the local branch, run:
-
-```bash
-  git commit --amend
-  git show
-```
-
-to attach the current `Change-Id` to the most recent commit. Check that the
-correct one was inserted by comparing it with the one shown on
-`chromium-review.googlesource.com` for the existing review.
-
-If you have made multiple local commits, you can squash them all into a single
-commit with the correct Change-Id:
-
-```bash
-  git rebase -i HEAD~4
-  git show
-```
-
-where '4' means that you want to squash three additional commits onto an
-existing commit that has been uploaded for review.
+The first time you upload an issue, the issue number is associated with the
+current branch. If you upload again, it uploads on the same issue (which is tied
+to the branch, not the commit). See the [git-cl](https://chromium.googlesource.com/chromium/tools/depot_tools.git/+/HEAD/README.git-cl.md) documentation for more information.
 
 ## Uploading a new dependent change
 

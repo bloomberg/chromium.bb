@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_SRC_HANDLE_CLOSER_H_
-#define SANDBOX_SRC_HANDLE_CLOSER_H_
+#ifndef SANDBOX_WIN_SRC_HANDLE_CLOSER_H_
+#define SANDBOX_WIN_SRC_HANDLE_CLOSER_H_
 
 #include <stddef.h>
 
@@ -56,6 +56,9 @@ class HandleCloser {
   bool InitializeTargetHandles(TargetProcess& target);
 
  private:
+  // Allow PolicyInfo to snapshot HandleCloser for diagnostics.
+  friend class PolicyDiagnostic;
+
   // Calculates the memory needed to copy the serialized handles list (rounded
   // to the nearest machine-word size).
   size_t GetBufferSize();
@@ -73,4 +76,4 @@ bool GetHandleName(HANDLE handle, std::wstring* handle_name);
 
 }  // namespace sandbox
 
-#endif  // SANDBOX_SRC_HANDLE_CLOSER_H_
+#endif  // SANDBOX_WIN_SRC_HANDLE_CLOSER_H_

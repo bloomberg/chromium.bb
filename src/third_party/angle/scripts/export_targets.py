@@ -204,6 +204,7 @@ IGNORED_INCLUDES = {
     b'libANGLE/renderer/gl/wgl/DisplayWGL.h',
     b'libANGLE/renderer/metal/DisplayMtl_api.h',
     b'libANGLE/renderer/null/DisplayNULL.h',
+    b'libANGLE/renderer/vulkan/android/AHBFunctions.h',
     b'libANGLE/renderer/vulkan/android/DisplayVkAndroid.h',
     b'libANGLE/renderer/vulkan/fuchsia/DisplayVkFuchsia.h',
     b'libANGLE/renderer/vulkan/ggp/DisplayVkGGP.h',
@@ -211,6 +212,7 @@ IGNORED_INCLUDES = {
     b'libANGLE/renderer/vulkan/win32/DisplayVkWin32.h',
     b'libANGLE/renderer/vulkan/xcb/DisplayVkXcb.h',
     b'loader_cmake_config.h',
+    b'optick.h',
     b'spirv-tools/libspirv.h',
     b'third_party/volk/volk.h',
     b'vk_loader_extensions.c',
@@ -229,6 +231,13 @@ IGNORED_INCLUDES = {
     b'vulkan_xcb.h',
     b'vulkan_xlib.h',
     b'vulkan_xlib_xrandr.h',
+# rapidjson adds these include stubs into their documentation
+# comments. Since the script doesn't skip comments they are
+# erroneously marked as valid includes
+    b'rapidjson/...',
+    # Validation layers support building with robin hood hashing, but we are not enabling that
+    # See http://anglebug.com/5791
+    b'robin_hood.h',
 }
 
 IGNORED_INCLUDE_PREFIXES = {

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_buffered_packet_store.h"
+#include "quic/core/quic_buffered_packet_store.h"
 
 #include <string>
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_map_util.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_map_util.h"
 
 namespace quic {
 
@@ -87,14 +87,16 @@ EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
     QuicSocketAddress peer_address,
     bool is_chlo,
     const std::vector<std::string>& alpns,
+    const absl::string_view sni,
     const ParsedQuicVersion& version) {
-  QUIC_BUG_IF(!GetQuicFlag(FLAGS_quic_allow_chlo_buffering))
+  QUIC_BUG_IF(quic_bug_12410_1, !GetQuicFlag(FLAGS_quic_allow_chlo_buffering))
       << "Shouldn't buffer packets if disabled via flag.";
-  QUIC_BUG_IF(is_chlo && QuicContainsKey(connections_with_chlo_, connection_id))
+  QUIC_BUG_IF(quic_bug_12410_2,
+              is_chlo && QuicContainsKey(connections_with_chlo_, connection_id))
       << "Shouldn't buffer duplicated CHLO on connection " << connection_id;
-  QUIC_BUG_IF(!is_chlo && !alpns.empty())
+  QUIC_BUG_IF(quic_bug_12410_3, !is_chlo && !alpns.empty())
       << "Shouldn't have an ALPN defined for a non-CHLO packet.";
-  QUIC_BUG_IF(is_chlo && !version.IsKnown())
+  QUIC_BUG_IF(quic_bug_12410_4, is_chlo && !version.IsKnown())
       << "Should have version for CHLO packet.";
 
   const bool is_first_packet =
@@ -110,7 +112,7 @@ EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
     undecryptable_packets_.back().second.ietf_quic = ietf_quic;
     undecryptable_packets_.back().second.version = version;
   }
-  CHECK(QuicContainsKey(undecryptable_packets_, connection_id));
+  QUICHE_CHECK(QuicContainsKey(undecryptable_packets_, connection_id));
   BufferedPacketList& queue =
       undecryptable_packets_.find(connection_id)->second;
 
@@ -141,6 +143,7 @@ EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
     // first later.
     queue.buffered_packets.push_front(std::move(new_entry));
     queue.alpns = alpns;
+    queue.sni = std::string(sni);
     connections_with_chlo_[connection_id] = false;  // Dummy value.
     // Set the version of buffered packets of this connection on CHLO.
     queue.version = version;
@@ -153,7 +156,8 @@ EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
       queue.tls_chlo_extractor.IngestPacket(version, packet);
       // Since this is the first packet and it's not a CHLO, the
       // TlsChloExtractor should not have the entire CHLO.
-      QUIC_BUG_IF(queue.tls_chlo_extractor.HasParsedFullChlo())
+      QUIC_BUG_IF(quic_bug_12410_5,
+                  queue.tls_chlo_extractor.HasParsedFullChlo())
           << "First packet in list should not contain full CHLO";
     }
     // TODO(b/154857081) Reorder CHLO packets ahead of other ones.
@@ -243,7 +247,7 @@ BufferedPacketList QuicBufferedPacketStore::DeliverPacketsForNextConnection(
   connections_with_chlo_.pop_front();
 
   BufferedPacketList packets = DeliverPackets(*connection_id);
-  DCHECK(!packets.buffered_packets.empty())
+  QUICHE_DCHECK(!packets.buffered_packets.empty())
       << "Try to deliver connectons without CHLO";
   return packets;
 }
@@ -257,13 +261,15 @@ bool QuicBufferedPacketStore::IngestPacketForTlsChloExtraction(
     const QuicConnectionId& connection_id,
     const ParsedQuicVersion& version,
     const QuicReceivedPacket& packet,
-    std::vector<std::string>* out_alpns) {
-  DCHECK_NE(out_alpns, nullptr);
-  DCHECK_EQ(version.handshake_protocol, PROTOCOL_TLS1_3);
+    std::vector<std::string>* out_alpns,
+    std::string* out_sni) {
+  QUICHE_DCHECK_NE(out_alpns, nullptr);
+  QUICHE_DCHECK_NE(out_sni, nullptr);
+  QUICHE_DCHECK_EQ(version.handshake_protocol, PROTOCOL_TLS1_3);
   auto it = undecryptable_packets_.find(connection_id);
   if (it == undecryptable_packets_.end()) {
-    QUIC_BUG << "Cannot ingest packet for unknown connection ID "
-             << connection_id;
+    QUIC_BUG(quic_bug_10838_1)
+        << "Cannot ingest packet for unknown connection ID " << connection_id;
     return false;
   }
   it->second.tls_chlo_extractor.IngestPacket(version, packet);
@@ -271,6 +277,7 @@ bool QuicBufferedPacketStore::IngestPacketForTlsChloExtraction(
     return false;
   }
   *out_alpns = it->second.tls_chlo_extractor.alpns();
+  *out_sni = it->second.tls_chlo_extractor.server_name();
   return true;
 }
 

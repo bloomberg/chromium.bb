@@ -5,7 +5,7 @@
 [
   {
     "namespace": "action",
-    "description": "Use actions to put icons in the main Google Chrome toolbar, to the right of the address bar. Actions can be set to take action on all pages (default_state: enabled) or only the current page (default_state: disabled). If an action is default disabled, the action appears grayed out when inactive. In addition to its <a href='action#icon'>icon</a>, an action can also have a <a href='action#tooltip'>tooltip</a>, a <a href='action#badge'>badge</a>, and a <a href='action#popups'>popup</a>.",
+    "description": "Use the <code>chrome.action</code> API to control the extension's icon in the Google Chrome toolbar.",
     "compiler_options": {
       "implemented_in": "chrome/browser/extensions/api/extension_action/extension_action_api.h"
     },
@@ -16,6 +16,17 @@
         "properties": {
           "tabId": { "type": "integer", "optional": true, "minimum": 0, "description": "The ID of the tab to query state for. If no tab is specified, the non-tab-specific state is returned." }
         }
+      },
+      {
+        "id": "UserSettings",
+        "type": "object",
+        "properties": {
+          "isOnToolbar": {
+            "type": "boolean",
+            "description": "Whether the extension's action icon is visible on browser windows' top-level toolbar (i.e., whether the extension has been 'pinned' by the user)."
+          }
+        },
+        "description": "The collection of user-specified settings relating to an extension's action."
       }
     ],
     "functions": [{
@@ -171,7 +182,7 @@
     }, {
       "name": "getBadgeText",
       "type": "function",
-      "description": "Gets the badge text of the action. If no tab is specified, the non-tab-specific badge text is returned.",
+      "description": "Gets the badge text of the action. If no tab is specified, the non-tab-specific badge text is returned. If <a href='declarativeNetRequest#setExtensionActionOptions'>displayActionCountAsBadgeText</a> is enabled, a placeholder text will be returned unless the <a href='declare_permissions#declarativeNetRequestFeedback'>declarativeNetRequestFeedback</a> permission is present or tab-specific badge text was provided.",
       "parameters": [{
         "name": "details",
         "$ref": "TabDetails"
@@ -257,6 +268,18 @@
         "name": "callback",
         "parameters": [],
         "optional": true
+      }
+    }, {
+      "name": "getUserSettings",
+      "type": "function",
+      "description": "Returns the user-specified settings relating to an extension's action.",
+      "parameters": [],
+      "returns_async": {
+        "name": "callback",
+        "parameters": [{
+          "name": "userSettings",
+          "$ref": "UserSettings"
+        }]
       }
     }],
     "events": [{

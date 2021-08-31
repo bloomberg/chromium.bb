@@ -14,6 +14,7 @@
 #include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/guid.h"
 #include "base/location.h"
@@ -21,13 +22,13 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
+#include "base/trace_event/trace_event.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
@@ -93,16 +94,6 @@ void RunSoon(base::OnceClosure callback) {
   }
 }
 
-template <typename CallbackArray, typename Arg>
-void RunCallbacks(ServiceWorkerVersion* version,
-                  CallbackArray* callbacks_ptr,
-                  const Arg& arg) {
-  CallbackArray callbacks;
-  callbacks.swap(*callbacks_ptr);
-  for (auto& callback : callbacks)
-    std::move(callback).Run(arg);
-}
-
 // An adapter to run a |callback| after StartWorker.
 void RunCallbackAfterStartWorker(base::WeakPtr<ServiceWorkerVersion> version,
                                  ServiceWorkerVersion::StatusCallback callback,
@@ -160,7 +151,7 @@ void OnOpenWindowFinished(
     blink::mojom::ServiceWorkerClientInfoPtr client_info) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   const bool success = (status == blink::ServiceWorkerStatusCode::kOk);
-  base::Optional<std::string> error_msg;
+  absl::optional<std::string> error_msg;
   if (!success) {
     DCHECK(!client_info);
     error_msg.emplace("Something went wrong while trying to open the window.");
@@ -194,7 +185,7 @@ void DidNavigateClient(
     blink::mojom::ServiceWorkerClientInfoPtr client) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   const bool success = (status == blink::ServiceWorkerStatusCode::kOk);
-  base::Optional<std::string> error_msg;
+  absl::optional<std::string> error_msg;
   if (!success) {
     DCHECK(!client);
     error_msg.emplace("Cannot navigate to URL: " + url.spec());
@@ -392,7 +383,7 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   ServiceWorkerVersionInfo info(
       running_status(), status(), fetch_handler_existence(), script_url(),
-      origin(), registration_id(), version_id(),
+      scope(), origin(), registration_id(), version_id(),
       embedded_worker()->process_id(), embedded_worker()->thread_id(),
       embedded_worker()->worker_devtools_agent_route_id(), ukm_source_id());
   for (const auto& controllee : controllee_map_) {
@@ -463,11 +454,19 @@ void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
     return;
   }
 
+  if (is_running_start_callbacks_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&ServiceWorkerVersion::StartWorker,
+                                  weak_factory_.GetWeakPtr(), purpose,
+                                  std::move(callback)));
+    return;
+  }
+
   // Ensure the live registration during starting worker so that the worker can
   // get associated with it in
   // ServiceWorkerHost::CompleteStartWorkerPreparation.
   context_->registry()->FindRegistrationForId(
-      registration_id_, origin_,
+      registration_id_, storage::StorageKey(origin_),
       base::BindOnce(
           &ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker,
           weak_factory_.GetWeakPtr(), purpose, status_,
@@ -585,7 +584,7 @@ void ServiceWorkerVersion::StartUpdate() {
   if (!context_)
     return;
   context_->registry()->FindRegistrationForId(
-      registration_id_, origin_,
+      registration_id_, storage::StorageKey(origin_),
       base::BindOnce(&ServiceWorkerVersion::FoundRegistrationForUpdate,
                      weak_factory_.GetWeakPtr()));
 }
@@ -896,8 +895,7 @@ void ServiceWorkerVersion::RemoveControlleeFromBackForwardCacheMap(
   bfcached_controllee_map_.erase(client_uuid);
 }
 
-void ServiceWorkerVersion::OnControlleeDestroyed(
-    const std::string& client_uuid) {
+void ServiceWorkerVersion::Uncontrol(const std::string& client_uuid) {
   if (!IsBackForwardCacheEnabled()) {
     RemoveControllee(client_uuid);
   } else {
@@ -1016,9 +1014,10 @@ void ServiceWorkerVersion::OnMainScriptLoaded() {
   // TODO(https://crbug.com/1039613): Update the loader factories passed to the
   // script loader factory too.
   DCHECK_EQ(NEW, status());
-  embedded_worker_->CreateFactoryBundles(
-      base::BindOnce(&ServiceWorkerVersion::InitializeGlobalScope,
-                     weak_factory_.GetWeakPtr()));
+  EmbeddedWorkerInstance::CreateFactoryBundlesResult result =
+      embedded_worker_->CreateFactoryBundles();
+  InitializeGlobalScope(std::move(result.script_bundle),
+                        std::move(result.subresource_bundle));
 }
 
 void ServiceWorkerVersion::InitializeGlobalScope(
@@ -1268,7 +1267,7 @@ void ServiceWorkerVersion::OnRegisteredToDevToolsManager() {
 }
 
 void ServiceWorkerVersion::OnReportException(
-    const base::string16& error_message,
+    const std::u16string& error_message,
     int line_number,
     int column_number,
     const GURL& source_url) {
@@ -1281,7 +1280,7 @@ void ServiceWorkerVersion::OnReportException(
 void ServiceWorkerVersion::OnReportConsoleMessage(
     blink::mojom::ConsoleMessageSource source,
     blink::mojom::ConsoleMessageLevel message_level,
-    const base::string16& message,
+    const std::u16string& message,
     int line_number,
     const GURL& source_url) {
   for (auto& observer : observers_) {
@@ -1347,7 +1346,7 @@ void ServiceWorkerVersion::ClaimClients(ClaimClientsCallback callback) {
 
   registration->ClaimClients();
   std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
-                          base::nullopt);
+                          absl::nullopt);
 }
 
 void ServiceWorkerVersion::GetClients(
@@ -1879,6 +1878,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   params->ua_metadata = GetContentClient()->browser()->GetUserAgentMetadata();
   params->is_installed = IsInstalled(status_);
   params->script_url_to_skip_throttling = updated_script_url_;
+  params->main_script_load_params = std::move(main_script_load_params_);
 
   if (IsInstalled(status())) {
     DCHECK(!installed_scripts_sender_);
@@ -2284,7 +2284,12 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
 
 void ServiceWorkerVersion::FinishStartWorker(
     blink::ServiceWorkerStatusCode status) {
-  RunCallbacks(this, &start_callbacks_, status);
+  std::vector<StatusCallback> callbacks;
+  callbacks.swap(start_callbacks_);
+  is_running_start_callbacks_ = true;
+  for (auto& callback : callbacks)
+    std::move(callback).Run(status);
+  is_running_start_callbacks_ = false;
 }
 
 void ServiceWorkerVersion::CleanUpExternalRequest(

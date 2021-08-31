@@ -300,7 +300,7 @@ NSString* const kTranslateNotificationSnackbarCategory =
 
 #pragma mark - InfobarTranslateModalDelegate
 
-- (void)showOriginalLanguage {
+- (void)showSourceLanguage {
   DCHECK(self.currentStep ==
          translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE);
   [self performInfobarAction];
@@ -320,7 +320,7 @@ NSString* const kTranslateNotificationSnackbarCategory =
   [self recordInfobarEvent:translate::InfobarEvent::INFOBAR_PAGE_NOT_IN];
   [self recordLanguageDataHistogram:kLanguageHistogramPageNotInLanguage
                        languageCode:self.translateInfobarDelegate
-                                        ->original_language_code()];
+                                        ->source_language_code()];
   [TranslateInfobarMetricsRecorder
       recordModalEvent:MobileMessagesTranslateModalEvent::ChangeSourceLanguage];
   InfobarTranslateLanguageSelectionTableViewController* languageSelectionTVC =
@@ -362,7 +362,7 @@ NSString* const kTranslateNotificationSnackbarCategory =
   [self recordInfobarEvent:translate::InfobarEvent::INFOBAR_ALWAYS_TRANSLATE];
   [self recordLanguageDataHistogram:kLanguageHistogramAlwaysTranslate
                        languageCode:self.translateInfobarDelegate
-                                        ->original_language_code()];
+                                        ->source_language_code()];
   [TranslateInfobarMetricsRecorder
       recordModalEvent:MobileMessagesTranslateModalEvent::
                            TappedAlwaysTranslate];
@@ -394,12 +394,13 @@ NSString* const kTranslateNotificationSnackbarCategory =
                            TappedNeverForSourceLanguage];
   [self recordLanguageDataHistogram:kLanguageHistogramNeverTranslate
                        languageCode:self.translateInfobarDelegate
-                                        ->original_language_code()];
+                                        ->source_language_code()];
   self.translateInfobarDelegate->ToggleTranslatableLanguageByPrefs();
   [self dismissInfobarModalAnimated:YES
                          completion:^{
                            // Completely remove the Infobar along with its badge
-                           // after blacklisting the Website.
+                           // after adding site to never prompt list for the
+                           // Website.
                            [self detachView];
                          }];
 }
@@ -412,9 +413,9 @@ NSString* const kTranslateNotificationSnackbarCategory =
 }
 
 - (void)neverTranslateSite {
-  DCHECK(!self.translateInfobarDelegate->IsSiteBlacklisted());
+  DCHECK(!self.translateInfobarDelegate->IsSiteOnNeverPromptList());
   self.userAction |= UserActionNeverTranslateSite;
-  self.translateInfobarDelegate->ToggleSiteBlacklist();
+  self.translateInfobarDelegate->ToggleNeverPrompt();
   [self
       recordInfobarEvent:translate::InfobarEvent::INFOBAR_NEVER_TRANSLATE_SITE];
   [TranslateInfobarMetricsRecorder
@@ -423,14 +424,15 @@ NSString* const kTranslateNotificationSnackbarCategory =
   [self dismissInfobarModalAnimated:YES
                          completion:^{
                            // Completely remove the Infobar along with its badge
-                           // after blacklisting the Website.
+                           // after adding site to never prompt list for the
+                           // Website.
                            [self detachView];
                          }];
 }
 
 - (void)undoNeverTranslateSite {
-  DCHECK(self.translateInfobarDelegate->IsSiteBlacklisted());
-  self.translateInfobarDelegate->ToggleSiteBlacklist();
+  DCHECK(self.translateInfobarDelegate->IsSiteOnNeverPromptList());
+  self.translateInfobarDelegate->ToggleNeverPrompt();
   [self dismissInfobarModalAnimated:YES completion:nil];
   // TODO(crbug.com/1014959): implement else logic. Should aything be done?
 }
@@ -561,7 +563,7 @@ NSString* const kTranslateNotificationSnackbarCategory =
   // Formatted as "[source] to [target]".
   return l10n_util::GetNSStringF(
       IDS_IOS_TRANSLATE_INFOBAR_TRANSLATE_BANNER_SUBTITLE,
-      self.translateInfobarDelegate->original_language_name(),
+      self.translateInfobarDelegate->source_language_name(),
       self.translateInfobarDelegate->target_language_name());
 }
 

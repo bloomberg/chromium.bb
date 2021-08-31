@@ -18,19 +18,28 @@ IN_PROC_BROWSER_TEST_F(SearchApiTest, Normal) {
 }
 
 // Test incognito browser in extension default spanning mode.
-IN_PROC_BROWSER_TEST_F(SearchApiTest, Incognito) {
+// Disabled due to flakes on Ozone testers; see https://crbug.com/1188651.
+#if defined(USE_OZONE)
+#define MAYBE_Incognito DISABLED_Incognito
+#else
+#define MAYBE_Incognito Incognito
+#endif
+IN_PROC_BROWSER_TEST_F(SearchApiTest, MAYBE_Incognito) {
   ResultCatcher catcher;
   CreateIncognitoBrowser(browser()->profile());
-  ASSERT_TRUE(RunExtensionTestIncognito("search/query/incognito")) << message_;
+  ASSERT_TRUE(RunExtensionTest({.name = "search/query/incognito"},
+                               {.allow_in_incognito = true}))
+      << message_;
 }
 
 // Test incognito browser in extension split mode.
 IN_PROC_BROWSER_TEST_F(SearchApiTest, IncognitoSplit) {
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(
-      browser()->profile()->GetPrimaryOTRProfile());
+      browser()->profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true));
   CreateIncognitoBrowser(browser()->profile());
-  ASSERT_TRUE(RunExtensionTestIncognito("search/query/incognito_split"))
+  ASSERT_TRUE(RunExtensionTest({.name = "search/query/incognito_split"},
+                               {.allow_in_incognito = true}))
       << message_;
 }
 

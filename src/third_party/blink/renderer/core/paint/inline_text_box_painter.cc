@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/inline_text_box_painter.h"
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/markers/composition_marker.h"
@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/paint/highlight_painting_utils.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
+#include "third_party/blink/renderer/core/paint/selection_bounds_recorder.h"
 #include "third_party/blink/renderer/core/paint/text_decoration_info.h"
 #include "third_party/blink/renderer/core/paint/text_painter.h"
 #include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
@@ -42,6 +43,8 @@
 
 
 namespace blink {
+
+class HTMLAnchorElement;
 
 namespace {
 
@@ -140,7 +143,8 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   DCHECK(!ShouldPaintSelfOutline(paint_info.phase) &&
          !ShouldPaintDescendantOutlines(paint_info.phase));
 
-  bool is_printing = paint_info.IsPrinting();
+  bool is_printing =
+      inline_text_box_.GetLineLayoutItem().GetDocument().Printing();
 
   // Determine whether or not we're selected.
   bool have_selection = !is_printing &&
@@ -159,18 +163,6 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   physical_overflow.Move(paint_offset);
   IntRect visual_rect = EnclosingIntRect(physical_overflow);
 
-  // The text clip phase already has a DrawingRecorder. Text clips are initiated
-  // only in BoxPainter::PaintFillLayer, which is already within a
-  // DrawingRecorder.
-  base::Optional<DrawingRecorder> recorder;
-  if (paint_info.phase != PaintPhase::kTextClip) {
-    if (DrawingRecorder::UseCachedDrawingIfPossible(
-            paint_info.context, inline_text_box_, paint_info.phase))
-      return;
-    recorder.emplace(paint_info.context, inline_text_box_, paint_info.phase,
-                     visual_rect);
-  }
-
   GraphicsContext& context = paint_info.context;
   PhysicalOffset box_origin =
       inline_text_box_.PhysicalLocation() + paint_offset;
@@ -187,6 +179,49 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   PhysicalRect box_rect(box_origin,
                         PhysicalSize(inline_text_box_.LogicalWidth(),
                                      inline_text_box_.LogicalHeight()));
+
+  absl::optional<SelectionBoundsRecorder> selection_recorder;
+  if (have_selection && paint_info.phase == PaintPhase::kForeground &&
+      !is_printing) {
+    const FrameSelection& frame_selection =
+        InlineLayoutObject().GetFrame()->Selection();
+    SelectionState selection_state =
+        frame_selection.ComputeLayoutSelectionStateForInlineTextBox(
+            inline_text_box_);
+    if (SelectionBoundsRecorder::ShouldRecordSelection(frame_selection,
+                                                       selection_state)) {
+      PhysicalRect selection_rect =
+          GetSelectionRect<InlineTextBoxPainter::PaintOptions::kNormal>(
+              context, box_rect, style_to_use, style_to_use.GetFont());
+
+      TextDirection direction = inline_text_box_.IsLeftToRightDirection()
+                                    ? TextDirection::kLtr
+                                    : TextDirection::kRtl;
+      // We need to account for vertical writing mode rotation - for the
+      // actual painting of the selection_rect, this is done below by
+      // concatenating a rotation matrix on the context.
+      if (!style_to_use.IsHorizontalWritingMode()) {
+        FloatRect rotated_selection =
+            TextPainterBase::Rotation(box_rect, TextPainterBase::kClockwise)
+                .MapRect(static_cast<FloatRect>(selection_rect));
+        selection_rect = PhysicalRect::EnclosingRect(rotated_selection);
+      }
+      selection_recorder.emplace(
+          selection_state, selection_rect, context.GetPaintController(),
+          direction, style_to_use.GetWritingMode(), InlineLayoutObject());
+    }
+  }
+
+  // The text clip phase already has a DrawingRecorder. Text clips are initiated
+  // only in BoxPainter::PaintFillLayer, which is already within a
+  // DrawingRecorder.
+  absl::optional<DrawingRecorder> recorder;
+  if (paint_info.phase != PaintPhase::kTextClip) {
+    if (DrawingRecorder::UseCachedDrawingIfPossible(context, inline_text_box_,
+                                                    paint_info.phase))
+      return;
+    recorder.emplace(context, inline_text_box_, paint_info.phase, visual_rect);
+  }
 
   unsigned length = inline_text_box_.Len();
   const String& layout_item_string =
@@ -229,8 +264,8 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   if (inline_text_box_.HasHyphen())
     length = text_run.length();
 
-  base::Optional<AffineTransform> rotation;
-  base::Optional<GraphicsContextStateSaver> state_saver;
+  absl::optional<AffineTransform> rotation;
+  absl::optional<GraphicsContextStateSaver> state_saver;
   LayoutTextCombine* combined_text = nullptr;
   if (!inline_text_box_.IsHorizontal()) {
     if (style_to_use.HasTextCombine() &&
@@ -371,7 +406,7 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
 
   if (!paint_selected_text_only) {
     // Paint text decorations except line-through.
-    base::Optional<TextDecorationInfo> decoration_info;
+    absl::optional<TextDecorationInfo> decoration_info;
     bool has_line_through_decoration = false;
     if (style_to_use.TextDecorationsInEffect() != TextDecoration::kNone &&
         inline_text_box_.Truncation() != kCFullTruncation) {
@@ -382,11 +417,11 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
           EnclosingUnderlineObject(&inline_text_box_);
       const ComputedStyle* decorating_box_style =
           decorating_box ? decorating_box.Style() : nullptr;
-      base::Optional<AppliedTextDecoration> selection_text_decoration =
+      absl::optional<AppliedTextDecoration> selection_text_decoration =
           UNLIKELY(have_selection)
-              ? base::Optional<AppliedTextDecoration>(
+              ? absl::optional<AppliedTextDecoration>(
                     selection_style.selection_text_decoration)
-              : base::nullopt;
+              : absl::nullopt;
       decoration_info.emplace(box_origin, local_origin, width,
                               inline_text_box_.Root().BaselineType(),
                               style_to_use, selection_text_decoration,

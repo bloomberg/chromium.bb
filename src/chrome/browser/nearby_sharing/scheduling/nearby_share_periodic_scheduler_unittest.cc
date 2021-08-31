@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/callback_helpers.h"
 #include "base/test/task_environment.h"
 #include "base/time/clock.h"
 #include "chrome/browser/nearby_sharing/scheduling/nearby_share_periodic_scheduler.h"
@@ -58,7 +59,7 @@ TEST_F(NearbySharePeriodicSchedulerTest, PeriodicRequest) {
 
   // Immediately runs a first-time periodic request.
   scheduler()->Start();
-  base::Optional<base::TimeDelta> time_until_next_request =
+  absl::optional<base::TimeDelta> time_until_next_request =
       scheduler()->GetTimeUntilNextRequest();
   EXPECT_EQ(base::TimeDelta::FromSeconds(0),
             scheduler()->GetTimeUntilNextRequest());

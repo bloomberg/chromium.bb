@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_TEXT_FRAGMENT_SELECTOR_GENERATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_TEXT_FRAGMENT_SELECTOR_GENERATOR_H_
 
-#include "base/optional.h"
 #include "components/shared_highlighting/core/common/shared_highlighting_metrics.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/link_to_text/link_to_text.mojom-blink.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_finder.h"
@@ -14,6 +14,8 @@
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 
 namespace blink {
+
+using RequestSelectorCallback = base::OnceCallback<void(const WTF::String&)>;
 
 class LocalFrame;
 
@@ -30,18 +32,12 @@ class LocalFrame;
 // match is uniquely identified or no new context/range can be added.
 class CORE_EXPORT TextFragmentSelectorGenerator final
     : public GarbageCollected<TextFragmentSelectorGenerator>,
-      public TextFragmentFinder::Client,
-      public blink::mojom::blink::TextFragmentSelectorProducer {
+      public TextFragmentFinder::Client {
  public:
-  explicit TextFragmentSelectorGenerator() = default;
-
-  void BindTextFragmentSelectorProducer(
-      mojo::PendingReceiver<mojom::blink::TextFragmentSelectorProducer>
-          producer);
+  explicit TextFragmentSelectorGenerator(LocalFrame* main_frame);
 
   // Sets the frame and range of the current selection.
-  void UpdateSelection(LocalFrame* selection_frame,
-                       const EphemeralRangeInFlatTree& selection_range);
+  void UpdateSelection(const EphemeralRangeInFlatTree& selection_range);
 
   // Adjust the selection start/end to a valid position. That includes skipping
   // non text start/end nodes and extending selection from start and end to
@@ -49,8 +45,10 @@ class CORE_EXPORT TextFragmentSelectorGenerator final
   void AdjustSelection();
 
   // blink::mojom::blink::TextFragmentSelectorProducer interface
-  // Generates selector for current selection.
-  void GenerateSelector(GenerateSelectorCallback callback) override;
+  void Cancel();
+
+  // Requests selector for current selection.
+  void RequestSelector(RequestSelectorCallback callback);
 
   // TextFragmentFinder::Client interface
   void DidFindMatch(const EphemeralRangeInFlatTree& match,
@@ -59,9 +57,6 @@ class CORE_EXPORT TextFragmentSelectorGenerator final
 
   void NoMatchFound() override;
 
-  // Notifies the results of |GenerateSelector|.
-  void NotifySelectorReady(const TextFragmentSelector& selector);
-
   // Wrappers for tests.
   String GetPreviousTextBlockForTesting(const Position& position) {
     return GetPreviousTextBlock(position);
@@ -69,15 +64,18 @@ class CORE_EXPORT TextFragmentSelectorGenerator final
   String GetNextTextBlockForTesting(const Position& position) {
     return GetNextTextBlock(position);
   }
-  bool IsInSameUninterruptedBlockForTesting(const Position& start,
-                                            const Position& end) {
-    return IsInSameUninterruptedBlock(start, end);
+  void SetCallbackForTesting(RequestSelectorCallback callback) {
+    pending_generate_selector_callback_ = std::move(callback);
   }
 
   // Releases members if necessary.
   void ClearSelection();
 
+  void Detach();
+
   void Trace(Visitor*) const;
+
+  LocalFrame* GetFrame() { return selection_frame_; }
 
  private:
   // Used for determining the next step of selector generation.
@@ -85,6 +83,9 @@ class CORE_EXPORT TextFragmentSelectorGenerator final
 
   // Used for determining the current state of |selector_|.
   enum SelectorState {
+    // Sreach for candidate selector didn't start.
+    kNotStarted,
+
     // Candidate selector should be generated or extended.
     kNeedsNewCandidate,
 
@@ -100,6 +101,9 @@ class CORE_EXPORT TextFragmentSelectorGenerator final
     kSuccess
   };
 
+  // Generates selector for current selection.
+  void GenerateSelector();
+
   void GenerateSelectorCandidate();
 
   void ResolveSelectorState();
@@ -113,29 +117,35 @@ class CORE_EXPORT TextFragmentSelectorGenerator final
   // boundaries.
   String GetNextTextBlock(const Position& position);
 
-  // Returns true if start and end positions are in the same block and there are
-  // no other blocks between them. Otherwise, returns false.
-  bool IsInSameUninterruptedBlock(const Position& start, const Position& end);
-
   void GenerateExactSelector();
   void ExtendRangeSelector();
   void ExtendContext();
+
+  void Reset();
+
+  void RecordAllMetrics(const TextFragmentSelector& selector);
+  void RecordPreemptiveGenerationMetrics(const TextFragmentSelector& selector);
+
+  // Called when selector generation is complete.
+  void OnSelectorReady(const TextFragmentSelector& selector);
+
+  // Called to notify clients of the result of |GenerateSelector|.
+  void NotifyClientSelectorReady(const TextFragmentSelector& selector);
 
   Member<LocalFrame> selection_frame_;
   Member<Range> selection_range_;
   std::unique_ptr<TextFragmentSelector> selector_;
 
-  // Used for communication between |TextFragmentSelectorGenerator| in renderer
-  // and |TextFragmentSelectorClientImpl| in browser.
-  HeapMojoReceiver<blink::mojom::blink::TextFragmentSelectorProducer,
-                   TextFragmentSelectorGenerator>
-      selector_producer_{this, nullptr};
-  GenerateSelectorCallback pending_generate_selector_callback_;
+  RequestSelectorCallback pending_generate_selector_callback_;
 
   GenerationStep step_ = kExact;
   SelectorState state_ = kNeedsNewCandidate;
 
-  base::Optional<shared_highlighting::LinkGenerationError> error_;
+  // Used when preemptive link generation is enabled to report
+  // whether |RequestSelector| was called before or after selector was ready.
+  absl::optional<bool> selector_requested_before_ready_;
+
+  absl::optional<shared_highlighting::LinkGenerationError> error_;
 
   // Fields used for keeping track of context.
 
@@ -148,14 +158,14 @@ class CORE_EXPORT TextFragmentSelectorGenerator final
 
   // Indicates a number of words used from |max_available_prefix_| and
   // |max_available_suffix_| for the current |selector_|.
-  int num_prefix_words_ = 0;
-  int num_suffix_words_ = 0;
+  int num_context_words_ = 0;
 
-  int num_range_start_words_ = 0;
-  int num_range_end_words_ = 0;
+  int num_range_words_ = 0;
 
   int iteration_ = 0;
   base::TimeTicks generation_start_time_;
+
+  Member<TextFragmentFinder> finder_;
 
   DISALLOW_COPY_AND_ASSIGN(TextFragmentSelectorGenerator);
 };

@@ -28,6 +28,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -208,7 +209,7 @@ class BlobURLTest : public testing::Test {
     mojo::PendingRemote<network::mojom::URLLoader> url_loader;
     network::TestURLLoaderClient url_loader_client;
     url_loader_factory->CreateLoaderAndStart(
-        url_loader.InitWithNewPipeAndPassReceiver(), 0, 0,
+        url_loader.InitWithNewPipeAndPassReceiver(), 0,
         network::mojom::kURLLoadOptionNone, request,
         url_loader_client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));

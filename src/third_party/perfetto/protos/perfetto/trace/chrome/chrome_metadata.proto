@@ -25,6 +25,11 @@ message ChromeMetadataPacket {
   // Version code of Chrome used by Android's Play Store. This field is only set
   // on Android.
   optional int32 chrome_version_code = 2;
+
+  // Comma separated list of enabled categories for tracing. The list of
+  // possible category strings are listed in code
+  // base/trace_event/builtin_categories.h.
+  optional string enabled_categories = 3;
 }
 
 // Metadata related to background tracing scenarios, states and triggers.
@@ -62,10 +67,15 @@ message BackgroundTracingMetadata {
         NAVIGATION = 2;
         STARTUP = 3;
         REACHED_CODE = 4;
+        CONTENT_TRIGGER = 5;
 
         TEST_RULE = 1000;
       }
       optional EventType event_type = 1;
+
+      // If |event_type| is CONTENT_TRIGGER, then this stores the hash of the
+      // content-trigger that actually fired.
+      optional fixed64 content_trigger_name_hash = 2;
     }
     optional NamedRule named_rule = 3;
   }

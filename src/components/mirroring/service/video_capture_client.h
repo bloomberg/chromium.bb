@@ -20,7 +20,8 @@
 
 namespace media {
 class VideoFrame;
-struct VideoFrameFeedback;
+class VideoFramePool;
+struct VideoCaptureFeedback;
 }  // namespace media
 
 namespace mirroring {
@@ -49,7 +50,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) VideoCaptureClient
   void Resume(FrameDeliverCallback deliver_callback);
 
   // Feedback callback.
-  void ProcessFeedback(const media::VideoFrameFeedback& feedback);
+  void ProcessFeedback(const media::VideoCaptureFeedback& feedback);
 
   // Requests to receive a refreshed captured video frame. Do nothing if the
   // capturing device is not started or the capturing is paused.
@@ -59,8 +60,9 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) VideoCaptureClient
   void OnStateChanged(media::mojom::VideoCaptureState state) override;
   void OnNewBuffer(int32_t buffer_id,
                    media::mojom::VideoBufferHandlePtr buffer_handle) override;
-  void OnBufferReady(int32_t buffer_id,
-                     media::mojom::VideoFrameInfoPtr info) override;
+  void OnBufferReady(
+      media::mojom::ReadyBufferPtr buffer,
+      std::vector<media::mojom::ReadyBufferPtr> scaled_buffers) override;
   void OnBufferDestroyed(int32_t buffer_id) override;
 
  private:
@@ -105,7 +107,13 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) VideoCaptureClient
   MappingMap mapped_buffers_;
 
   // Latest received feedback.
-  media::VideoFrameFeedback feedback_;
+  media::VideoCaptureFeedback feedback_;
+
+  // Cast Streaming does not support NV12 frames. When NV12 frames are received,
+  // these structures are used to convert them to I420 on the CPU.
+  // https://crbug.com/1206325
+  std::unique_ptr<media::VideoFramePool> nv12_to_i420_pool_;
+  std::vector<uint8_t> nv12_to_i420_tmp_buf_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

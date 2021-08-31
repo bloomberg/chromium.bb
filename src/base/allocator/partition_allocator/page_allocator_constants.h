@@ -79,10 +79,21 @@ PageAllocationGranularityBaseMask() {
   return ~PageAllocationGranularityOffsetMask();
 }
 
+#if !defined(OS_APPLE)
+PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
+SystemPageShift() {
+#if defined(OS_WIN)
+  return 12;  // 4096=1<<12
+#else
+  return PageAllocationGranularityShift();
+#endif
+}
+#endif
+
 PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 SystemPageSize() {
-#if defined(OS_WIN)
-  return 4096;
+#if !defined(OS_APPLE)
+  return 1 << SystemPageShift();
 #else
   return PageAllocationGranularity();
 #endif
@@ -100,15 +111,6 @@ SystemPageBaseMask() {
 
 static constexpr size_t kPageMetadataShift = 5;  // 32 bytes per partition page.
 static constexpr size_t kPageMetadataSize = 1 << kPageMetadataShift;
-
-// See DecommitSystemPages(), this is not guaranteed to be synchronous on all
-// platforms.
-static constexpr bool kDecommittedPagesAreAlwaysZeroed =
-#if defined(OS_APPLE)
-    false;
-#else
-    true;
-#endif
 
 }  // namespace base
 

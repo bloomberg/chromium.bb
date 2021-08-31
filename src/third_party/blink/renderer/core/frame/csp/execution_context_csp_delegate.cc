@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -61,7 +60,7 @@ void ExecutionContextCSPDelegate::SetSandboxFlags(
   WorkerOrWorkletGlobalScope* worklet_or_worker =
       DynamicTo<WorkerOrWorkletGlobalScope>(execution_context_.Get());
   if (worklet_or_worker) {
-    worklet_or_worker->ApplySandboxFlags(mask);
+    worklet_or_worker->SetSandboxFlags(mask);
   }
   // Just check that all the sandbox flags that are set by CSP have
   // already been set on the security context. Meta tags can't set them
@@ -73,7 +72,7 @@ void ExecutionContextCSPDelegate::SetSandboxFlags(
 }
 
 void ExecutionContextCSPDelegate::SetRequireTrustedTypes() {
-  GetSecurityContext().SetRequireTrustedTypes();
+  execution_context_->SetRequireTrustedTypes();
 }
 
 void ExecutionContextCSPDelegate::AddInsecureRequestPolicy(
@@ -123,16 +122,14 @@ ExecutionContextCSPDelegate::GetSourceLocation() {
   return SourceLocation::Capture(execution_context_);
 }
 
-base::Optional<uint16_t> ExecutionContextCSPDelegate::GetStatusCode() {
-  base::Optional<uint16_t> status_code;
+absl::optional<uint16_t> ExecutionContextCSPDelegate::GetStatusCode() {
+  absl::optional<uint16_t> status_code;
 
   // TODO(mkwst): We only have status code information for Documents. It would
   // be nice to get them for Workers as well.
   Document* document = GetDocument();
-  if (document && !SecurityOrigin::IsSecure(document->Url()) &&
-      document->Loader()) {
+  if (document && document->Loader())
     status_code = document->Loader()->GetResponse().HttpStatusCode();
-  }
 
   return status_code;
 }
@@ -166,7 +163,7 @@ void ExecutionContextCSPDelegate::PostViolationReport(
     const Vector<String>& report_endpoints,
     bool use_reporting_api) {
   DCHECK_EQ(is_frame_ancestors_violation,
-            ContentSecurityPolicy::DirectiveType::kFrameAncestors ==
+            network::mojom::blink::CSPDirectiveName::FrameAncestors ==
                 ContentSecurityPolicy::GetDirectiveType(
                     violation_data.effectiveDirective()));
 
@@ -185,8 +182,11 @@ void ExecutionContextCSPDelegate::PostViolationReport(
   // Construct and route the report to the ReportingContext, to be observed
   // by any ReportingObservers.
   auto* body = MakeGarbageCollected<CSPViolationReportBody>(violation_data);
+  String url_sending_report = is_frame_ancestors_violation
+                                  ? violation_data.documentURI()
+                                  : Url().GetString();
   Report* observed_report = MakeGarbageCollected<Report>(
-      ReportType::kCSPViolation, Url().GetString(), body);
+      ReportType::kCSPViolation, url_sending_report, body);
   ReportingContext::From(execution_context_.Get())
       ->QueueReport(observed_report,
                     use_reporting_api ? report_endpoints : Vector<String>());
@@ -195,24 +195,7 @@ void ExecutionContextCSPDelegate::PostViolationReport(
     return;
 
   for (const auto& report_endpoint : report_endpoints) {
-    // Use the frame's document to complete the endpoint URL, overriding its URL
-    // with the blocked document's URL.
-    // https://w3c.github.io/webappsec-csp/#report-violation
-    // Step 3.4.2.1. Let endpoint be the result of executing the URL parser with
-    // token as the input, and violation’s url as the base URL. [spec text]
-    KURL url = is_frame_ancestors_violation
-                   ? document->CompleteURLWithOverride(
-                         report_endpoint, KURL(violation_data.blockedURI()))
-                   // We use the FallbackBaseURL to ensure that we don't
-                   // respect base elements when determining the report
-                   // endpoint URL.
-                   // Note: According to Step 3.4.2.1 mentioned above, the base
-                   // URL is "violation’s url" which should be violation's
-                   // global object's URL. So using FallbackBaseURL() might be
-                   // inconsistent.
-                   : document->CompleteURLWithOverride(
-                         report_endpoint, document->FallbackBaseURL());
-    PingLoader::SendViolationReport(frame, url, report);
+    PingLoader::SendViolationReport(frame, KURL(report_endpoint), report);
   }
 }
 
@@ -265,9 +248,6 @@ void ExecutionContextCSPDelegate::DidAddContentSecurityPolicies(
       }
     }
   }
-
-  frame->GetLocalFrameHostRemote().DidAddContentSecurityPolicies(
-      std::move(policies));
 }
 
 SecurityContext& ExecutionContextCSPDelegate::GetSecurityContext() {
