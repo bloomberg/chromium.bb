@@ -30,29 +30,37 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
-StyleResolverState::StyleResolverState(
-    Document& document,
-    Element& element,
-    PseudoElement* pseudo_element,
-    PseudoElementStyleRequest::RequestType pseudo_request_type,
-    ElementType element_type,
-    const ComputedStyle* parent_style,
-    const ComputedStyle* layout_parent_style)
+namespace {
+
+bool CanCacheBaseStyle(const StyleRequest& style_request) {
+  return style_request.IsPseudoStyleRequest() ||
+         (!style_request.parent_override &&
+          !style_request.layout_parent_override &&
+          style_request.matching_behavior == kMatchAllRules);
+}
+
+}  // namespace
+
+StyleResolverState::StyleResolverState(Document& document,
+                                       Element& element,
+                                       const StyleRequest& style_request)
     : element_context_(element),
       document_(&document),
-      parent_style_(parent_style),
-      layout_parent_style_(layout_parent_style),
-      pseudo_request_type_(pseudo_request_type),
+      parent_style_(style_request.parent_override),
+      layout_parent_style_(style_request.layout_parent_override),
+      pseudo_request_type_(style_request.type),
       font_builder_(&document),
+      pseudo_element_(element.GetPseudoElement(style_request.pseudo_id)),
       element_style_resources_(GetElement(),
                                document.DevicePixelRatio(),
-                               pseudo_element),
-      pseudo_element_(pseudo_element),
-      element_type_(element_type) {
+                               pseudo_element_),
+      element_type_(style_request.IsPseudoStyleRequest()
+                        ? ElementType::kPseudoElement
+                        : ElementType::kElement),
+      can_cache_base_style_(blink::CanCacheBaseStyle(style_request)) {
   DCHECK(!!parent_style_ == !!layout_parent_style_);
 
   if (!parent_style_) {
@@ -68,41 +76,10 @@ StyleResolverState::StyleResolverState(
   DCHECK(document.IsActive());
 }
 
-StyleResolverState::StyleResolverState(Document& document,
-                                       Element& element,
-                                       const ComputedStyle* parent_style,
-                                       const ComputedStyle* layout_parent_style)
-    : StyleResolverState(document,
-                         element,
-                         nullptr /* pseudo_element */,
-                         PseudoElementStyleRequest::kForRenderer,
-                         ElementType::kElement,
-                         parent_style,
-                         layout_parent_style) {}
-
-StyleResolverState::StyleResolverState(
-    Document& document,
-    Element& element,
-    PseudoId pseudo_id,
-    PseudoElementStyleRequest::RequestType pseudo_request_type,
-    const ComputedStyle* parent_style,
-    const ComputedStyle* layout_parent_style)
-    : StyleResolverState(document,
-                         element,
-                         element.GetPseudoElement(pseudo_id),
-                         pseudo_request_type,
-                         ElementType::kPseudoElement,
-                         parent_style,
-                         layout_parent_style) {}
-
 StyleResolverState::~StyleResolverState() {
   // For performance reasons, explicitly clear HeapVectors and
   // HeapHashMaps to avoid giving a pressure on Oilpan's GC.
   animation_update_.Clear();
-}
-
-TreeScope& StyleResolverState::GetTreeScope() const {
-  return GetElement().GetTreeScope();
 }
 
 void StyleResolverState::SetStyle(scoped_refptr<ComputedStyle> style) {
@@ -114,6 +91,10 @@ void StyleResolverState::SetStyle(scoped_refptr<ComputedStyle> style) {
 }
 
 scoped_refptr<ComputedStyle> StyleResolverState::TakeStyle() {
+  if (had_no_matched_properties_ &&
+      pseudo_request_type_ == StyleRequest::kForRenderer) {
+    return nullptr;
+  }
   return std::move(style_);
 }
 
@@ -149,11 +130,13 @@ void StyleResolverState::SetLayoutParentStyle(
 }
 
 void StyleResolverState::LoadPendingResources() {
-  if (pseudo_request_type_ == PseudoElementStyleRequest::kForComputedStyle ||
+  if (pseudo_request_type_ == StyleRequest::kForComputedStyle ||
       (ParentStyle() && ParentStyle()->IsEnsuredInDisplayNone()) ||
-      StyleRef().Display() == EDisplay::kNone ||
-      StyleRef().IsEnsuredOutsideFlatTree())
+      (StyleRef().Display() == EDisplay::kNone &&
+       !GetElement().LayoutObjectIsNeeded(StyleRef())) ||
+      StyleRef().IsEnsuredOutsideFlatTree()) {
     return;
+  }
 
   if (StyleRef().StyleType() == kPseudoIdTargetText) {
     // Do not load any resources for ::target-text since that could leak text
@@ -224,16 +207,6 @@ const CSSValue& StyleResolverState::ResolveLightDarkPair(
     return pair->Second();
   }
   return value;
-}
-
-void StyleResolverState::MarkDependency(const CSSProperty& property) {
-  if (!RuntimeEnabledFeatures::CSSMatchedPropertiesCacheDependenciesEnabled())
-    return;
-  if (!HasValidDependencies())
-    return;
-
-  has_incomparable_dependency_ |= !property.IsComputedValueComparable();
-  dependencies_.insert(property.GetCSSPropertyName());
 }
 
 }  // namespace blink

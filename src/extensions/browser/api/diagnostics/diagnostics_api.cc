@@ -32,7 +32,7 @@ bool ParseResult(const std::string& status, std::string* ip, double* latency) {
     return false;
 
   base::DictionaryValue* result = NULL;
-  if (!parsed_value->GetAsDictionary(&result) || result->size() != 1)
+  if (!parsed_value->GetAsDictionary(&result) || result->DictSize() != 1)
     return false;
 
   // Returns the first item.
@@ -79,7 +79,7 @@ ExtensionFunction::ResponseAction DiagnosticsSendPacketFunction::Run() {
 }
 
 void DiagnosticsSendPacketFunction::OnTestICMPCompleted(
-    base::Optional<std::string> status) {
+    absl::optional<std::string> status) {
   std::string ip;
   double latency;
   if (!status.has_value() || !ParseResult(status.value(), &ip, &latency)) {
@@ -90,8 +90,7 @@ void DiagnosticsSendPacketFunction::OnTestICMPCompleted(
   api::diagnostics::SendPacketResult result;
   result.ip = ip;
   result.latency = latency;
-  Respond(OneArgument(
-      base::Value::FromUniquePtrValue(SendPacket::Results::Create(result))));
+  Respond(OneArgument(base::Value(SendPacket::Results::Create(result))));
 }
 
 }  // namespace extensions

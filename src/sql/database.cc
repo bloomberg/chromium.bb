@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <memory>
+
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -220,7 +222,7 @@ void Database::StatementRef::Close(bool forced) {
     // allowing disk access.
     // TODO(paivanof@gmail.com): This should move to the beginning
     // of the function. http://crbug.com/136655.
-    base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+    absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
     InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
     sqlite3_finalize(stmt_);
     stmt_ = nullptr;
@@ -313,7 +315,7 @@ void Database::CloseInternal(bool forced) {
     // will happen on thread not allowing disk access.
     // TODO(paivanof@gmail.com): This should move to the beginning
     // of the function. http://crbug.com/136655.
-    base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+    absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
     InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
     // Resetting acquires a lock to ensure no dump is happening on the database
@@ -357,7 +359,7 @@ void Database::Preload() {
     return;
   }
 
-  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
   // Maximum number of bytes that will be prefetched from the database.
@@ -647,7 +649,7 @@ bool Database::SetMmapAltStatus(int64_t status) {
 size_t Database::GetAppropriateMmapSize() {
   TRACE_EVENT0("sql", "Database::GetAppropriateMmapSize");
 
-  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
   // How much to map if no errors are found.  50MB encompasses the 99th
@@ -792,7 +794,7 @@ void Database::TrimMemory() {
 bool Database::Raze() {
   TRACE_EVENT0("sql", "Database::Raze");
 
-  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
   if (!db_) {
@@ -1145,7 +1147,7 @@ int Database::ExecuteAndReturnErrorCode(const char* sql) {
     return SQLITE_ERROR;
   }
 
-  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
   int rc = SQLITE_OK;
@@ -1268,7 +1270,7 @@ scoped_refptr<Database::StatementRef> Database::GetStatementImpl(
   if (!db_)
     return base::MakeRefCounted<StatementRef>(nullptr, nullptr, poisoned_);
 
-  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
   // TODO(pwnall): Cached statements (but not unique statements) should be
@@ -1317,7 +1319,7 @@ std::string Database::GetSchema() const {
 }
 
 bool Database::IsSQLValid(const char* sql) {
-  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
   if (!db_) {
     DCHECK(poisoned_) << "Illegal use of Database without a db";
@@ -1381,7 +1383,9 @@ int64_t Database::GetLastInsertRowId() const {
     DCHECK(poisoned_) << "Illegal use of Database without a db";
     return 0;
   }
-  return sqlite3_last_insert_rowid(db_);
+  int64_t last_rowid = sqlite3_last_insert_rowid(db_);
+  DCHECK(last_rowid != 0) << "No successful INSERT in a table with ROWID";
+  return last_rowid;
 }
 
 int Database::GetLastChangeCount() const {
@@ -1451,7 +1455,7 @@ bool Database::OpenInternal(const std::string& file_name,
     return false;
   }
 
-  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
   EnsureSqliteInitialized();
@@ -1631,8 +1635,8 @@ bool Database::OpenInternal(const std::string& file_name,
   }
 
   DCHECK(!memory_dump_provider_);
-  memory_dump_provider_.reset(
-      new DatabaseMemoryDumpProvider(db_, histogram_tag_));
+  memory_dump_provider_ =
+      std::make_unique<DatabaseMemoryDumpProvider>(db_, histogram_tag_);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       memory_dump_provider_.get(), "sql::Database", nullptr);
 
@@ -1820,7 +1824,7 @@ bool Database::UseWALMode() const {
 }
 
 bool Database::CheckpointDatabase() {
-  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
   static const char* kMainDb = "main";

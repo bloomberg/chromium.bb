@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.h"
+#include "chromeos/crosapi/mojom/keystore_error.mojom.h"
 #include "extensions/browser/extension_function.h"
 
 namespace net {
@@ -30,7 +31,7 @@ class EnterprisePlatformKeysInternalGenerateKeyFunction
   // Called when the key was generated. If an error occurred, |public_key_der|
   // will be empty.
   void OnGeneratedKey(const std::string& public_key_der,
-                      chromeos::platform_keys::Status status);
+                      absl::optional<crosapi::mojom::KeystoreError> error);
 
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeysInternal.generateKey",
                              ENTERPRISE_PLATFORMKEYSINTERNAL_GENERATEKEY)
@@ -102,8 +103,7 @@ class EnterprisePlatformKeysChallengeMachineKeyFunction
   ResponseAction Run() override;
 
   // Called when the challenge operation is complete.
-  void OnChallengedKey(
-      const chromeos::attestation::TpmChallengeKeyResult& result);
+  void OnChallengedKey(const ash::attestation::TpmChallengeKeyResult& result);
 
   EPKPChallengeKey impl_;
 
@@ -121,8 +121,7 @@ class EnterprisePlatformKeysChallengeUserKeyFunction
   ResponseAction Run() override;
 
   // Called when the challenge operation is complete.
-  void OnChallengedKey(
-      const chromeos::attestation::TpmChallengeKeyResult& result);
+  void OnChallengedKey(const ash::attestation::TpmChallengeKeyResult& result);
 
   EPKPChallengeKey impl_;
 

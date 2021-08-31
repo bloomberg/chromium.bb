@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -20,17 +21,17 @@
 namespace enterprise_commands {
 namespace {
 
-const char kProfileName[] = "test";
+const char kProfileName[] = "Test";
+const char kProfileNameLowerCase[] = "test";
 const policy::RemoteCommandJob::UniqueIDType kUniqueID = 123456789;
-base::FilePath::StringType kTestProfilePath =
-    FILE_PATH_LITERAL("/path/to/profile");
+const char kTestProfilePath[] = "/Path/To/Profile";
 
 const char kProfilePathField[] = "profile_path";
 const char kClearCacheField[] = "clear_cache";
 const char kClearCookiesField[] = "clear_cookies";
 
 enterprise_management::RemoteCommand CreateCommandProto(
-    const base::FilePath::StringType& profile_path,
+    const std::string& profile_path,
     bool clear_cache,
     bool clear_cookies) {
   enterprise_management::RemoteCommand command_proto;
@@ -104,6 +105,10 @@ class ClearBrowsingDataJobTest : public ::testing::Test {
 
   base::FilePath GetTestProfilePath() {
     return profile_manager_->profiles_dir().AppendASCII(kProfileName);
+  }
+
+  base::FilePath GetTestProfilePathLowerCase() {
+    return profile_manager_->profiles_dir().AppendASCII(kProfileNameLowerCase);
   }
 
  private:
@@ -189,7 +194,7 @@ TEST_F(ClearBrowsingDataJobTest, SuccessClearCookies) {
   base::RunLoop run_loop;
 
   AddTestingProfile();
-  auto job = CreateJob(CreateCommandProto(GetTestProfilePath().value(),
+  auto job = CreateJob(CreateCommandProto(GetTestProfilePath().AsUTF8Unsafe(),
                                           /* clear_cache= */ false,
                                           /* clear_cookies= */ true),
                        profile_manager());
@@ -213,7 +218,7 @@ TEST_F(ClearBrowsingDataJobTest, SuccessClearBoth) {
   base::RunLoop run_loop;
 
   AddTestingProfile();
-  auto job = CreateJob(CreateCommandProto(GetTestProfilePath().value(),
+  auto job = CreateJob(CreateCommandProto(GetTestProfilePath().AsUTF8Unsafe(),
                                           /* clear_cache= */ true,
                                           /* clear_cookies= */ false),
                        profile_manager());
@@ -237,7 +242,7 @@ TEST_F(ClearBrowsingDataJobTest, SuccessClearCache) {
   base::RunLoop run_loop;
 
   AddTestingProfile();
-  auto job = CreateJob(CreateCommandProto(GetTestProfilePath().value(),
+  auto job = CreateJob(CreateCommandProto(GetTestProfilePath().AsUTF8Unsafe(),
                                           /* clear_cache= */ true,
                                           /* clear_cookies= */ false),
                        profile_manager());
@@ -261,7 +266,7 @@ TEST_F(ClearBrowsingDataJobTest, SuccessClearNeither) {
   base::RunLoop run_loop;
 
   AddTestingProfile();
-  auto job = CreateJob(CreateCommandProto(GetTestProfilePath().value(),
+  auto job = CreateJob(CreateCommandProto(GetTestProfilePath().AsUTF8Unsafe(),
                                           /* clear_cache= */ false,
                                           /* clear_cookies= */ false),
                        profile_manager());
@@ -274,6 +279,44 @@ TEST_F(ClearBrowsingDataJobTest, SuccessClearNeither) {
                        base::BindLambdaForTesting([&] {
                          EXPECT_EQ(policy::RemoteCommandJob::SUCCEEDED,
                                    job->status());
+                         done = true;
+                         run_loop.Quit();
+                       })));
+  run_loop.Run();
+  EXPECT_TRUE(done);
+}
+
+// For Windows machines, the path that Chrome reports for the profile is
+// "Normalized" to all lower-case on the reporting server. This means that
+// when the server sends the command, the path will be all lower case and
+// the profile manager won't be able to use it as a key.
+// Because of that, the code for this job is slightly different on Windows,
+// and this test verifies that behavior.
+TEST_F(ClearBrowsingDataJobTest, HandleProfilPathCaseSensitivity) {
+  base::RunLoop run_loop;
+
+  AddTestingProfile();
+  auto job =
+      CreateJob(CreateCommandProto(GetTestProfilePathLowerCase().AsUTF8Unsafe(),
+                                   /* clear_cache= */ false,
+                                   /* clear_cookies= */ true),
+                profile_manager());
+
+  bool done = false;
+
+#if defined(OS_WIN)
+  // On windows, paths are case-insensitive so passing a lowercase path should
+  // still result in success.
+  auto expected = policy::RemoteCommandJob::SUCCEEDED;
+#else
+  // On other platforms, paths are case-sensitive, so passing a lower case path
+  // will result in the profile not being found.
+  auto expected = policy::RemoteCommandJob::FAILED;
+#endif  // OS_WIN
+
+  EXPECT_TRUE(job->Run(base::Time::Now(), base::TimeTicks::Now(),
+                       base::BindLambdaForTesting([&] {
+                         EXPECT_EQ(expected, job->status());
                          done = true;
                          run_loop.Quit();
                        })));

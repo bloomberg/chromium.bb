@@ -11,6 +11,7 @@
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "chrome/browser/profiles/profile_attributes_init_params.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
@@ -101,7 +102,8 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
         signin_metrics::AccessPoint::ACCESS_POINT_MAX;
     signin_metrics::PromoAction signin_promo_action =
         signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO;
-    signin_metrics::Reason signin_reason = signin_metrics::Reason::REASON_MAX;
+    signin_metrics::Reason signin_reason =
+        signin_metrics::Reason::kUnknownReason;
     CoreAccountId account_id;
     DiceTurnSyncOnHelper::SigninAbortedMode signin_aborted_mode =
         DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT;
@@ -289,7 +291,7 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
               create_dice_turn_sync_on_helper_params_.signin_access_point);
     EXPECT_EQ(expected_promo_action,
               create_dice_turn_sync_on_helper_params_.signin_promo_action);
-    EXPECT_EQ(signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
+    EXPECT_EQ(signin_metrics::Reason::kSigninPrimaryAccount,
               create_dice_turn_sync_on_helper_params_.signin_reason);
     EXPECT_EQ(DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT,
               create_dice_turn_sync_on_helper_params_.signin_aborted_mode);
@@ -485,11 +487,14 @@ TEST_F(DiceSigninUiUtilTest, MergeDiceSigninTab) {
 TEST_F(DiceSigninUiUtilTest,
        ShouldShowAnimatedIdentityOnOpeningWindow_ReturnsTrueForMultiProfiles) {
   const char kSecondProfile[] = "SecondProfile";
+  const char16_t kSecondProfile16[] = u"SecondProfile";
   const base::FilePath profile_path =
       profile_manager()->profiles_dir().AppendASCII(kSecondProfile);
+  ProfileAttributesInitParams params;
+  params.profile_path = profile_path;
+  params.profile_name = kSecondProfile16;
   profile_manager()->profile_attributes_storage()->AddProfile(
-      profile_path, base::ASCIIToUTF16(kSecondProfile), std::string(),
-      base::string16(), false, 0, std::string(), EmptyAccountId());
+      std::move(params));
 
   EXPECT_TRUE(ShouldShowAnimatedIdentityOnOpeningWindow(
       *profile_manager()->profile_attributes_storage(), profile()));

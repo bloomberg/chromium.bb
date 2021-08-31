@@ -22,6 +22,15 @@ bool IsInDomainOrSubDomain(const GURL& url, const GURL& domain);
 bool IsInDomainOrSubDomain(const GURL& url,
                            const std::vector<std::string>& allowed_domains);
 
+// Check whether |url1| and |url2| have the same registry controlled domains
+// and the same scheme. If one or both arguments are not valid URLs, return
+// false.
+bool IsSamePublicSuffixDomain(const GURL& url1, const GURL& url2);
+
+// Returns the organization-identifying domain for |url|. Returns the empty
+// string for invalid urls.
+std::string GetOrganizationIdentifyingDomain(const GURL& url);
+
 }  // namespace url_utils
 }  // namespace autofill_assistant
 

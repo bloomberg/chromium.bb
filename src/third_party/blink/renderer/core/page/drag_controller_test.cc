@@ -34,11 +34,11 @@ class DragMockChromeClient : public RenderingTestChromeClient {
                      DragOperationsMask,
                      const SkBitmap& drag_image,
                      const gfx::Point& drag_image_offset) override {
-    last_drag_image_size = WebSize(drag_image.width(), drag_image.height());
+    last_drag_image_size = gfx::Size(drag_image.width(), drag_image.height());
     last_drag_image_offset = drag_image_offset;
   }
 
-  WebSize last_drag_image_size;
+  gfx::Size last_drag_image_size;
   gfx::Point last_drag_image_offset;
 };
 
@@ -101,8 +101,8 @@ TEST_F(DragControllerSimTest, DropURLOnNonNavigatingClearsState) {
   object->SetURLAndTitle("https://www.example.com/index.html", "index");
   DragData data(
       object, FloatPoint(10, 10), FloatPoint(10, 10),
-      static_cast<DragOperation>(kDragOperationCopy | kDragOperationLink |
-                                 kDragOperationMove));
+      static_cast<DragOperationsMask>(kDragOperationCopy | kDragOperationLink |
+                                      kDragOperationMove));
 
   WebView().GetPage()->GetDragController().DragEnteredOrUpdated(
       &data, *GetDocument().GetFrame());
@@ -141,8 +141,8 @@ TEST_F(DragControllerSimTest, ThrottledDocumentHandled) {
   object->SetURLAndTitle("https://www.example.com/index.html", "index");
   DragData data(
       object, FloatPoint(10, 10), FloatPoint(10, 10),
-      static_cast<DragOperation>(kDragOperationCopy | kDragOperationLink |
-                                 kDragOperationMove));
+      static_cast<DragOperationsMask>(kDragOperationCopy | kDragOperationLink |
+                                      kDragOperationMove));
 
   WebView().GetPage()->GetDragController().DragEnteredOrUpdated(
       &data, *GetDocument().GetFrame());

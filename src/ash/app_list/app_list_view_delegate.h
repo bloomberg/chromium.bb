@@ -12,9 +12,9 @@
 
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback_forward.h"
-#include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
@@ -57,7 +57,7 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Invoked to start a new search. This collects a list of search results
   // matching the raw query, which is an unhandled string typed into the search
   // box by the user.
-  virtual void StartSearch(const base::string16& raw_query) = 0;
+  virtual void StartSearch(const std::u16string& raw_query) = 0;
 
   // Invoked to open the search result and log a click. If the result is
   // represented by a SuggestedChipView or is a zero state result,
@@ -69,24 +69,12 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // |launch_as_default|: True if the result is launched as the default result
   // by user pressing ENTER key.
   virtual void OpenSearchResult(const std::string& result_id,
+                                AppListSearchResultType result_type,
                                 int event_flags,
                                 AppListLaunchedFrom launched_from,
                                 AppListLaunchType launch_type,
                                 int suggestion_index,
                                 bool launch_as_default) = 0;
-
-  // Called to log UMA metrics for the launch of an item either in the app tile
-  // list or the search result list. The |launch_location| argument determines
-  // which histogram to log to. |suggestion_index| represents the index of the
-  // launched item in its list view, not the overall position in the suggestion
-  // window. For instance, the first launcher result item is index 0, regardless
-  // of if there is an answer card above it.
-  virtual void LogResultLaunchHistogram(
-      SearchResultLaunchLocation launch_location,
-      int suggestion_index) = 0;
-
-  // Logs the UMA histogram metrics for user's abandonment of launcher search.
-  virtual void LogSearchAbandonHistogram() = 0;
 
   // Called to invoke a custom action on a result with |result_id|.
   // |action_index| corresponds to the index of an icon in
@@ -170,25 +158,16 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // |position_index| is the position index of the clicked item (if no item got
   // clicked, |position_index| will be -1).
   virtual void NotifySearchResultsForLogging(
-      const base::string16& raw_query,
+      const std::u16string& raw_query,
       const SearchResultIdWithPositionIndices& results,
       int position_index) = 0;
 
-  // If the |prefs::kAssistantPrivacyInfoShownInLauncher| value is in the range
-  // of allowed values, we will increment it. Otherwise, if the
-  // |prefs::kSuggestedContentInfoShownInLauncher| value is in the range of
-  // allowed values, we will increment it.
-  virtual void MaybeIncreasePrivacyInfoShownCounts() = 0;
+  // If the |prefs::kSuggestedContentInfoShownInLauncher| value is in the range
+  // of allowed values, we will increment it.
+  virtual void MaybeIncreaseSuggestedContentInfoShownCount() = 0;
 
   // Returns true if the Assistant feature is allowed and enabled.
   virtual bool IsAssistantAllowedAndEnabled() const = 0;
-
-  // Returns true if the Assistant privacy info view should be shown.
-  virtual bool ShouldShowAssistantPrivacyInfo() const = 0;
-
-  // Called when close button in the Assistant privacy info view is pressed to
-  // indicate not to show the view any more.
-  virtual void MarkAssistantPrivacyInfoDismissed() = 0;
 
   // Returns true if the Suggested Content privacy info view should be shown.
   virtual bool ShouldShowSuggestedContentInfo() const = 0;
@@ -221,6 +200,10 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
 
   // Returns whether tablet mode is currently enabled.
   virtual bool IsInTabletMode() = 0;
+
+  // Adjust scrolls that happen in the view. This needs to be delegated because
+  // it depends on the active user's preferences.
+  virtual int AdjustAppListViewScrollOffset(int offset, ui::EventType type) = 0;
 };
 
 }  // namespace ash

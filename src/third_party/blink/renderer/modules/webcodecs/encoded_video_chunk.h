@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/modules/webcodecs/encoded_video_metadata.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
@@ -19,14 +18,16 @@ class MODULES_EXPORT EncodedVideoChunk final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  EncodedVideoChunk(EncodedVideoMetadata metadata, DOMArrayBuffer* buffer);
+  EncodedVideoChunk(base::TimeDelta timestamp,
+                    bool key_frame,
+                    DOMArrayBuffer* buffer);
 
   static EncodedVideoChunk* Create(EncodedVideoChunkInit* init);
 
   // encoded_video_chunk.idl implementation.
   String type() const;
-  uint64_t timestamp() const;
-  base::Optional<uint64_t> duration() const;
+  int64_t timestamp() const;
+  absl::optional<uint64_t> duration() const;
   DOMArrayBuffer* data() const;
 
   void Trace(Visitor* visitor) const override {
@@ -35,7 +36,9 @@ class MODULES_EXPORT EncodedVideoChunk final : public ScriptWrappable {
   }
 
  private:
-  EncodedVideoMetadata metadata_;
+  base::TimeDelta timestamp_;
+  bool key_frame_ = false;
+  absl::optional<base::TimeDelta> duration_;
   Member<DOMArrayBuffer> buffer_;
 };
 

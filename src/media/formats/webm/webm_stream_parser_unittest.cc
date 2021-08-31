@@ -30,7 +30,7 @@ class WebMStreamParserTest : public testing::Test {
   void ParseWebMFile(const std::string& filename,
                      const StreamParser::InitParameters& expected_params) {
     scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile(filename);
-    parser_.reset(new WebMStreamParser());
+    parser_ = std::make_unique<WebMStreamParser>();
     Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb =
         base::BindRepeating(&WebMStreamParserTest::OnEncryptedMediaInitData,
                             base::Unretained(this));
@@ -176,7 +176,7 @@ TEST_F(WebMStreamParserTest, ColourElement) {
                                        gfx::ColorSpace::RangeID::FULL);
   EXPECT_EQ(video_config.color_space_info(), expected_color_space);
 
-  base::Optional<gfx::HDRMetadata> hdr_metadata = video_config.hdr_metadata();
+  absl::optional<gfx::HDRMetadata> hdr_metadata = video_config.hdr_metadata();
   EXPECT_TRUE(hdr_metadata.has_value());
   EXPECT_EQ(hdr_metadata->max_content_light_level, 11u);
   EXPECT_EQ(hdr_metadata->max_frame_average_light_level, 12u);

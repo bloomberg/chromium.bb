@@ -9,8 +9,11 @@
 
 #include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
+
+class SchemefulSite;
 
 // CookieAccessDelegate for testing. You can set the return value for a given
 // cookie_domain (modulo any leading dot). Calling GetAccessSemantics() will
@@ -26,6 +29,18 @@ class TestCookieAccessDelegate : public CookieAccessDelegate {
   bool ShouldIgnoreSameSiteRestrictions(
       const GURL& url,
       const SiteForCookies& site_for_cookies) const override;
+  bool IsContextSamePartyWithSite(
+      const net::SchemefulSite& site,
+      const absl::optional<net::SchemefulSite>& top_frame_site,
+      const std::set<net::SchemefulSite>& party_context) const override;
+  FirstPartySetsContextType ComputeFirstPartySetsContextType(
+      const net::SchemefulSite& site,
+      const absl::optional<net::SchemefulSite>& top_frame_site,
+      const std::set<net::SchemefulSite>& party_context) const override;
+  bool IsInNontrivialFirstPartySet(
+      const net::SchemefulSite& site) const override;
+  base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>
+  RetrieveFirstPartySets() const override;
 
   // Sets the expected return value for any cookie whose Domain
   // matches |cookie_domain|. Pass the value of |cookie.Domain()| and any
@@ -40,12 +55,18 @@ class TestCookieAccessDelegate : public CookieAccessDelegate {
       const std::string& site_for_cookies_scheme,
       bool require_secure_origin);
 
+  void SetFirstPartySets(
+      const base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>&
+          sets);
+
  private:
   // Discard any leading dot in the domain string.
   std::string GetKeyForDomainValue(const std::string& domain) const;
 
   std::map<std::string, CookieAccessSemantics> expectations_;
   std::map<std::string, bool> ignore_samesite_restrictions_schemes_;
+  base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>
+      first_party_sets_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCookieAccessDelegate);
 };

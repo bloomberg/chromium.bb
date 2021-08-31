@@ -18,6 +18,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.gesturenav.NavigationSheetMediator.ItemProperties;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
@@ -113,16 +114,19 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     // no peek/half state.
     private boolean mFullyExpand;
 
+    private Profile mProfile;
+
     /**
      * Construct a new NavigationSheet.
      */
-    NavigationSheetCoordinator(
-            View parent, Context context, Supplier<BottomSheetController> bottomSheetController) {
+    NavigationSheetCoordinator(View parent, Context context,
+            Supplier<BottomSheetController> bottomSheetController, Profile profile) {
         mParentView = parent;
         mBottomSheetController = bottomSheetController;
         mLayoutInflater = LayoutInflater.from(context);
         mToolbarView = mLayoutInflater.inflate(R.layout.navigation_sheet_toolbar, null);
-        mMediator = new NavigationSheetMediator(context, mModelList, (position, index) -> {
+        mProfile = profile;
+        mMediator = new NavigationSheetMediator(context, mModelList, profile, (position, index) -> {
             mDelegate.navigateToIndex(index);
             close(false);
             if (mOpenedAsPopup) {
@@ -148,8 +152,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
                 parent.getWidth() / 2);
         mItemHeight = getSizePx(context, R.dimen.navigation_popup_item_height);
         mContentPadding = getSizePx(context, R.dimen.navigation_sheet_content_top_padding)
-                + getSizePx(context, R.dimen.navigation_sheet_content_bottom_padding)
-                + getSizePx(context, R.dimen.navigation_sheet_content_wrap_padding);
+                + getSizePx(context, R.dimen.navigation_sheet_content_bottom_padding);
     }
 
     private static int getSizePx(Context context, @DimenRes int id) {
@@ -162,7 +165,10 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
                 (NavigationSheetView) mLayoutInflater.inflate(R.layout.navigation_sheet, null);
         ListView listview = (ListView) mContentView.findViewById(R.id.navigation_entries);
         listview.setAdapter(mModelAdapter);
-        NavigationHistory history = mDelegate.getHistory(mForward);
+        NavigationHistory history = mDelegate.getHistory(mForward, mProfile.isOffTheRecord());
+        // If there is no entry, the sheet should not be opened. This is the case when in a fresh
+        // Incognito NTP.
+        if (history.getEntryCount() == 0) return false;
         mMediator.populateEntries(history);
         if (!mBottomSheetController.get().requestShowContent(this, true)) {
             close(false);

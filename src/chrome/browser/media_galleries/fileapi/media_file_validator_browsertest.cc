@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -16,6 +17,7 @@
 #include "base/stl_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "build/build_config.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -47,22 +49,18 @@ const char kInvalidMediaFile[] = "Not a media file";
 const int64_t kNoFileSize = -1;
 
 void HandleCheckFileResult(int64_t expected_size,
-                           const base::Callback<void(bool success)>& callback,
+                           base::OnceCallback<void(bool success)> callback,
                            base::File::Error result,
                            const base::File::Info& file_info) {
   if (result == base::File::FILE_OK) {
     if (!file_info.is_directory && expected_size != kNoFileSize &&
         file_info.size == expected_size) {
-      callback.Run(true);
-      return;
-    }
-  } else {
-    if (expected_size == kNoFileSize) {
-      callback.Run(true);
+      std::move(callback).Run(true);
       return;
     }
   }
-  callback.Run(false);
+
+  std::move(callback).Run(expected_size == kNoFileSize);
 }
 
 base::FilePath GetMediaTestDir() {
@@ -134,7 +132,7 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
         std::make_unique<storage::TestFileSystemBackend>(
             file_system_runner_.get(), src_path));
     additional_providers.push_back(
-        std::make_unique<MediaFileSystemBackend>(base));
+        std::make_unique<MediaFileSystemBackend>(base, base::NullCallback()));
     file_system_context_ =
         storage::CreateFileSystemContextWithAdditionalProvidersForTesting(
             content::GetIOThreadTaskRunner({}).get(), file_system_runner_.get(),
@@ -152,7 +150,7 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
     ASSERT_TRUE(base::CreateDirectory(dest_path));
     dest_fs_ =
         storage::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
-            storage::kFileSystemTypeNativeMedia, std::string(), dest_path,
+            storage::kFileSystemTypeLocalMedia, std::string(), dest_path,
             nullptr);
 
     size_t extension_index = filename.find_last_of(".");
@@ -165,10 +163,10 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
 
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
-        base::BindOnce(&MediaFileValidatorTest::CheckFiles,
-                       base::Unretained(this), true,
-                       base::Bind(&MediaFileValidatorTest::OnTestFilesReady,
-                                  base::Unretained(this), expected_result)));
+        base::BindOnce(
+            &MediaFileValidatorTest::CheckFiles, base::Unretained(this), true,
+            base::BindOnce(&MediaFileValidatorTest::OnTestFilesReady,
+                           base::Unretained(this), expected_result)));
   }
 
   void SetupFromFileBlocking(const std::string& filename,
@@ -183,10 +181,11 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
   // |src_expected| indicates which one should exist.  When complete,
   // |callback| is called with success/failure.
   void CheckFiles(bool src_expected,
-                  const base::Callback<void(bool success)>& callback) {
+                  base::OnceCallback<void(bool success)> callback) {
     CheckFile(move_src_, src_expected ? test_file_size_ : kNoFileSize,
-              base::Bind(&MediaFileValidatorTest::OnCheckFilesFirstResult,
-                         base::Unretained(this), !src_expected, callback));
+              base::BindOnce(&MediaFileValidatorTest::OnCheckFilesFirstResult,
+                             base::Unretained(this), !src_expected,
+                             std::move(callback)));
   }
 
   // Helper that checks a file has the |expected_size|, which may be
@@ -194,24 +193,25 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
   // with success/failure.
   void CheckFile(storage::FileSystemURL url,
                  int64_t expected_size,
-                 const base::Callback<void(bool success)>& callback) {
+                 base::OnceCallback<void(bool success)> callback) {
     operation_runner()->GetMetadata(
         url, storage::FileSystemOperation::GET_METADATA_FIELD_SIZE,
-        base::BindOnce(&HandleCheckFileResult, expected_size, callback));
+        base::BindOnce(&HandleCheckFileResult, expected_size,
+                       std::move(callback)));
   }
 
   // Helper that checks the result of |move_src_| lookup and then checks
   // |move_dest_| if all is as expected.
   void OnCheckFilesFirstResult(bool dest_expected,
-                               const base::Callback<void(bool)>& callback,
+                               base::OnceCallback<void(bool)> callback,
                                bool src_result) {
     EXPECT_TRUE(src_result);
     if (!src_result) {
-      callback.Run(false);
+      std::move(callback).Run(false);
       return;
     }
     CheckFile(move_dest_, dest_expected ? test_file_size_ : kNoFileSize,
-              callback);
+              std::move(callback));
   }
 
   // Assert |test_files_ready| and then do the actual test of moving
@@ -220,6 +220,8 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
     ASSERT_TRUE(test_files_ready);
     operation_runner()->Move(
         move_src_, move_dest_, storage::FileSystemOperation::OPTION_NONE,
+        storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
+        storage::FileSystemOperation::CopyOrMoveProgressCallback(),
         base::BindOnce(&MediaFileValidatorTest::OnMoveResult,
                        base::Unretained(this), expected_result));
   }
@@ -232,8 +234,8 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
     else
       EXPECT_EQ(base::File::FILE_ERROR_SECURITY, result);
     CheckFiles(!expected_result,
-               base::Bind(&MediaFileValidatorTest::OnTestFilesCheckResult,
-                          base::Unretained(this)));
+               base::BindOnce(&MediaFileValidatorTest::OnTestFilesCheckResult,
+                              base::Unretained(this)));
   }
 
   // Check that the correct test file exists and then allow the main-thread
@@ -267,7 +269,13 @@ IN_PROC_BROWSER_TEST_F(MediaFileValidatorTest, UnsupportedExtension) {
   MoveTest("a.txt", std::string(kValidImage, base::size(kValidImage)), false);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaFileValidatorTest, ValidImage) {
+// TODO(crbug.com/1169640): Re-enable. Flaky on Linux.
+#if defined(OS_LINUX)
+#define MAYBE_ValidImage DISABLED_ValidImage
+#else
+#define MAYBE_ValidImage ValidImage
+#endif
+IN_PROC_BROWSER_TEST_F(MediaFileValidatorTest, MAYBE_ValidImage) {
   MoveTest("a.webp", std::string(kValidImage, base::size(kValidImage)), true);
 }
 

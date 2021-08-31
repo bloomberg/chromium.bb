@@ -5,14 +5,15 @@
 #include <stdint.h>
 
 #include <cstdlib>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/receiver/video_decoder.h"
 #include "media/cast/sender/sender_encoded_frame.h"
 #include "media/cast/sender/vp8_encoder.h"
 #include "media/cast/sender/vp8_quantizer_parser.h"
+#include "media/cast/test/receiver/video_decoder.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/video_utility.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -74,7 +75,7 @@ class Vp8QuantizerParserTest : public ::testing::Test {
   // Reconstruct a vp8 encoder with new config since the Vp8Encoder
   // class has no interface to update the config.
   void RecreateVp8Encoder() {
-    vp8_encoder_.reset(new Vp8Encoder(video_config_));
+    vp8_encoder_ = std::make_unique<Vp8Encoder>(video_config_);
     vp8_encoder_->Initialize();
   }
 

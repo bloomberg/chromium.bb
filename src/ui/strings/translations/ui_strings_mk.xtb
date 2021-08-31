@@ -29,7 +29,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">сега</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 минута}one{# минута}other{# минути}}</translation>
-<translation id="1761785978543082658"><ph name="QUANTITY" /> Б</translation>
+<translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Точка</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 месец}one{# месец}other{# месеци}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">Вграден екран</translation>
 <translation id="335581015389089642">Говор</translation>
 <translation id="3389286852084373014">Премногу е долго</translation>
+<translation id="3406306243914553062">HTML-содржини</translation>
 <translation id="348799646910989694">Полицата е автоматски сокриена</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> е прикачена</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Преостана 1 ден}one{Преостана # ден}other{Преостанаа # дена}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">Број</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/с</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
 <translation id="3842239759367498783">Продолжете со читање од мобилниот уред <ph name="TITLE" /></translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3889424535448813030">Стрелка надесно</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Пред 1 месец}one{Пред # месец}other{Пред # месеци}}</translation>
 <translation id="4289300219472526559">Започни со говорење</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> е преместена во папката <ph name="FOLDER_NAME" />.</translation>
+<translation id="4306392492252714209">Отстранете од привремената меморија.</translation>
 <translation id="4316910396681052118">СИТЕ АПЛИКАЦИИ</translation>
 <translation id="4491109536499578614">Слика</translation>
 <translation id="4588090240171750605">Лизгај надесно</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">Да се избрише пребарувањево од историјата?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ТБ</translation>
 <translation id="7507604095951736240">Емотикони</translation>
+<translation id="7620655452534002301">Отстрането.</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="7814458197256864873">&amp;Копирај</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{Пред 1 час}one{Пред # час}other{Пред # часа}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Преостана 1 сек.}one{Преостана # сек.}other{Преостанаа # сек.}}</translation>
 <translation id="8134065097954893699">Вчитајте ја страницава повторно</translation>
-<translation id="8144660977431427332">Пребарувањата се овозможени од „Помошникот на Google“. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, автоматско довршување</translation>
 <translation id="815598010540052116">Лизгај надолу</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Страница подолу</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">Копчето Tab</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, апликација</translation>
 <translation id="8259556432390118667">Вредност за хексадецимална боја</translation>

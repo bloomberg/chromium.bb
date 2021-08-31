@@ -23,37 +23,32 @@ class DestroyTest : public DawnTest {
   protected:
     void SetUp() override {
         DawnTest::SetUp();
-        DAWN_SKIP_TEST_IF(IsDawnValidationSkipped());
+        DAWN_SKIP_TEST_IF(HasToggleEnabled("skip_validation"));
 
         renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-        wgpu::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-              #version 450
-              layout(location = 0) in vec4 pos;
-              void main() {
-                  gl_Position = pos;
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
+              [[stage(vertex)]]
+              fn main([[location(0)]] pos : vec4<f32>) -> [[builtin(position)]] vec4<f32> {
+                  return pos;
               })");
 
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-              #version 450
-              layout(location = 0) out vec4 fragColor;
-              void main() {
-                  fragColor = vec4(0.0, 1.0, 0.0, 1.0);
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
+              [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+                  return vec4<f32>(0.0, 1.0, 0.0, 1.0);
               })");
 
-        utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.vertexStage.module = vsModule;
-        descriptor.cFragmentStage.module = fsModule;
-        descriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleList;
-        descriptor.cVertexState.vertexBufferCount = 1;
-        descriptor.cVertexState.cVertexBuffers[0].arrayStride = 4 * sizeof(float);
-        descriptor.cVertexState.cVertexBuffers[0].attributeCount = 1;
-        descriptor.cVertexState.cAttributes[0].format = wgpu::VertexFormat::Float4;
-        descriptor.cColorStates[0].format = renderPass.colorFormat;
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
+        descriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
+        descriptor.vertex.bufferCount = 1;
+        descriptor.cBuffers[0].arrayStride = 4 * sizeof(float);
+        descriptor.cBuffers[0].attributeCount = 1;
+        descriptor.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
+        descriptor.cTargets[0].format = renderPass.colorFormat;
 
-        pipeline = device.CreateRenderPipeline(&descriptor);
+        pipeline = device.CreateRenderPipeline2(&descriptor);
 
         vertexBuffer = utils::CreateBufferFromData<float>(
             device, wgpu::BufferUsage::Vertex,
@@ -161,4 +156,5 @@ DAWN_INSTANTIATE_TEST(DestroyTest,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

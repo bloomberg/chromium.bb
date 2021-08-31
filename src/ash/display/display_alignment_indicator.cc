@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -144,7 +145,7 @@ views::Widget::InitParams CreateInitParams(int64_t display_id,
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.ownership =
       views::Widget::InitParams::Ownership::WIDGET_OWNS_NATIVE_WIDGET;
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  params.activatable = views::Widget::InitParams::Activatable::kNo;
   params.accept_events = false;
   params.name = target_name;
 
@@ -211,7 +212,7 @@ class IndicatorHighlightView : public views::View {
 // of the target display.
 class IndicatorPillView : public views::View {
  public:
-  explicit IndicatorPillView(const base::string16& text)
+  explicit IndicatorPillView(const std::u16string& text)
       :  // TODO(1070352): Replace current placeholder arrow in
          // IndicatorPillView
         icon_(AddChildView(std::make_unique<views::ImageView>())),

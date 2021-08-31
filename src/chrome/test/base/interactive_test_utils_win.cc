@@ -19,6 +19,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/test/base/interactive_test_utils_aura.h"
 #include "chrome/test/base/process_lineage_win.h"
 #include "chrome/test/base/save_desktop_snapshot_win.h"
@@ -31,18 +32,18 @@
 namespace ui_test_utils {
 
 void HideNativeWindow(gfx::NativeWindow window) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   HideNativeWindowAura(window);
 #else
   HWND hwnd = window->GetHost()->GetAcceleratedWidget();
   ::ShowWindow(hwnd, SW_HIDE);
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ShowAndFocusNativeWindowAura(window);
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   window->Show();
   // Always make sure the window hosting ash is visible and focused.
   HWND hwnd = window->GetHost()->GetAcceleratedWidget();
@@ -70,14 +71,14 @@ bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
     wchar_t window_title[256];
     GetWindowText(foreground_window, window_title, base::size(window_title));
 
-    base::string16 lineage_str;
-    base::string16 window_contents;
+    std::wstring lineage_str;
+    std::wstring window_contents;
     DWORD foreground_process_id = 0;
     if (foreground_window) {
       GetWindowThreadProcessId(foreground_window, &foreground_process_id);
       ProcessLineage lineage = ProcessLineage::Create(foreground_process_id);
       if (!lineage.IsEmpty()) {
-        lineage_str = STRING16_LITERAL(", process lineage: ");
+        lineage_str = L", process lineage: ";
         lineage_str.append(lineage.ToString());
       }
 

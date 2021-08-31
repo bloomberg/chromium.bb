@@ -85,6 +85,8 @@ public:
 
     void format(TextAlign align, SkScalar maxWidth);
     SkRect paint(SkCanvas* canvas, SkScalar x, SkScalar y);
+    void visit(SkScalar x, SkScalar y);
+    void ensureTextBlobCachePopulated();
 
     void createEllipsis(SkScalar maxWidth, const SkString& ellipsis, bool ltr);
 
@@ -105,7 +107,7 @@ public:
                                         SkScalar runOffsetInLine,
                                         SkScalar textOffsetInRunInLine,
                                         bool includeGhostSpaces,
-                                        bool limitToClusters) const;
+                                        bool limitToGraphemes) const;
 
     LineMetrics getMetrics() const;
 
@@ -118,10 +120,10 @@ public:
 
 private:
 
-    std::unique_ptr<Run> shapeEllipsis(const SkString& ellipsis, Run* run);
+    std::unique_ptr<Run> shapeEllipsis(const SkString& ellipsis, const Run& run);
     void justify(SkScalar maxWidth);
 
-    SkRect paintText(SkCanvas* canvas, SkScalar x, SkScalar y, TextRange textRange, const TextStyle& style, const ClipContext& context) const;
+    void buildTextBlob(TextRange textRange, const TextStyle& style, const ClipContext& context);
     void paintBackground(SkCanvas* canvas, SkScalar x, SkScalar y, TextRange textRange, const TextStyle& style, const ClipContext& context) const;
     SkRect paintShadow(SkCanvas* canvas, SkScalar x, SkScalar y, TextRange textRange, const TextStyle& style, const ClipContext& context) const;
     void paintDecorations(SkCanvas* canvas, SkScalar x, SkScalar y, TextRange textRange, const TextStyle& style, const ClipContext& context) const;
@@ -149,6 +151,24 @@ private:
 
     LineMetricStyle fAscentStyle;
     LineMetricStyle fDescentStyle;
+
+    struct TextBlobRecord {
+        void paint(SkCanvas* canvas, SkScalar x, SkScalar y);
+
+        sk_sp<SkTextBlob> fBlob;
+        SkPoint fOffset = SkPoint::Make(0.0f, 0.0f);
+        SkPaint fPaint;
+        SkRect fBounds = SkRect::MakeEmpty();
+        bool fClippingNeeded = false;
+        SkRect fClipRect = SkRect::MakeEmpty();
+
+        // Extra fields only used for the (experimental) visitor
+        const Run* fVisitor_Run;
+        size_t     fVisitor_Pos;
+    };
+    bool fTextBlobCachePopulated;
+public:
+    std::vector<TextBlobRecord> fTextBlobCache;
 };
 }  // namespace textlayout
 }  // namespace skia

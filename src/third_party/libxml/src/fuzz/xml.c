@@ -4,6 +4,7 @@
  * See Copyright for the status of this software.
  */
 
+#include <libxml/catalog.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/xmlerror.h>
@@ -15,6 +16,9 @@ int
 LLVMFuzzerInitialize(int *argc ATTRIBUTE_UNUSED,
                      char ***argv ATTRIBUTE_UNUSED) {
     xmlInitParser();
+#ifdef LIBXML_CATALOG_ENABLED
+    xmlInitializeCatalog();
+#endif
     xmlSetGenericErrorFunc(NULL, xmlFuzzErrorFunc);
     xmlSetExternalEntityLoader(xmlFuzzEntityLoader);
 
@@ -29,21 +33,22 @@ LLVMFuzzerTestOneInput(const char *data, size_t size) {
     xmlTextReaderPtr reader;
     xmlChar *out;
     const char *docBuffer, *docUrl;
-    size_t docSize, consumed, chunkSize;
+    size_t maxSize, docSize, consumed, chunkSize;
     int opts, outSize;
 
     xmlFuzzDataInit(data, size);
     opts = xmlFuzzReadInt();
-    /* XML_PARSE_HUGE still causes timeouts. */
-    opts &= ~XML_PARSE_HUGE;
+
+    /* Lower maximum size when processing entities for now. */
+    maxSize = opts & XML_PARSE_NOENT ? 50000 : 500000;
+    if (size > maxSize)
+        goto exit;
 
     xmlFuzzReadEntities();
     docBuffer = xmlFuzzMainEntity(&docSize);
     docUrl = xmlFuzzMainUrl();
-    if (docBuffer == NULL) {
-        xmlFuzzDataCleanup();
-        return(0);
-    }
+    if (docBuffer == NULL)
+        goto exit;
 
     /* Pull parser */
 
@@ -58,6 +63,8 @@ LLVMFuzzerTestOneInput(const char *data, size_t size) {
     /* Push parser */
 
     ctxt = xmlCreatePushParserCtxt(NULL, NULL, NULL, 0, docUrl);
+    if (ctxt == NULL)
+        goto exit;
     xmlCtxtUseOptions(ctxt, opts);
 
     for (consumed = 0; consumed < docSize; consumed += chunkSize) {
@@ -76,6 +83,8 @@ LLVMFuzzerTestOneInput(const char *data, size_t size) {
     /* Reader */
 
     reader = xmlReaderForMemory(docBuffer, docSize, NULL, NULL, opts);
+    if (reader == NULL)
+        goto exit;
     while (xmlTextReaderRead(reader) == 1) {
         if (xmlTextReaderNodeType(reader) == XML_ELEMENT_NODE) {
             int i, n = xmlTextReaderAttributeCount(reader);
@@ -87,10 +96,9 @@ LLVMFuzzerTestOneInput(const char *data, size_t size) {
     }
     xmlFreeTextReader(reader);
 
-    /* Cleanup */
-
+exit:
     xmlFuzzDataCleanup();
-
+    xmlResetLastError();
     return(0);
 }
 

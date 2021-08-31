@@ -18,11 +18,20 @@ extern "C" {
 
 /*!\cond */
 
+struct AV1_PRIMARY;
 struct AV1_COMP;
+struct AV1_SEQ_CODING_TOOLS;
 struct EncodeFrameParams;
 struct EncodeFrameInput;
 
-#include "av1/encoder/encoder.h"
+#include "config/aom_config.h"
+
+#include "aom_scale/yv12config.h"
+
+#include "av1/common/mv.h"
+#include "av1/common/scale.h"
+#include "av1/encoder/block.h"
+#include "av1/encoder/lookahead.h"
 
 static INLINE BLOCK_SIZE convert_length_to_bsize(int length) {
   switch (length) {
@@ -82,17 +91,26 @@ typedef struct AV1TplRowMultiThreadInfo {
 #define MAX_TPL_EXTEND (MAX_LAG_BUFFERS - MAX_GF_INTERVAL)
 #define TPL_DEP_COST_SCALE_LOG2 4
 
+#define TPL_EPSILON 0.0000001
+
+typedef struct TplTxfmStats {
+  double abs_coeff_sum[256];  // Assume we are using 16x16 transform block
+  int txfm_block_count;
+} TplTxfmStats;
+
 typedef struct TplDepStats {
   int64_t intra_cost;
   int64_t inter_cost;
   int64_t srcrf_dist;
   int64_t recrf_dist;
+  int64_t cmp_recrf_dist[2];
   int64_t srcrf_rate;
   int64_t recrf_rate;
+  int64_t cmp_recrf_rate[2];
   int64_t mc_dep_rate;
   int64_t mc_dep_dist;
   int_mv mv[INTER_REFS_PER_FRAME];
-  int ref_frame_index;
+  int ref_frame_index[2];
   int64_t pred_error[INTER_REFS_PER_FRAME];
 } TplDepStats;
 
@@ -109,6 +127,10 @@ typedef struct TplDepFrame {
   int mi_cols;
   int base_rdmult;
   uint32_t frame_display_index;
+  double abs_coeff_sum[256];  // Assume we are using 16x16 transform block
+  double abs_coeff_mean[256];
+  int coeff_num;  // number of coefficients in a transform block
+  int txfm_block_count;
 } TplDepFrame;
 
 /*!\endcond */
@@ -187,6 +209,18 @@ typedef struct TplParams {
   int border_in_pixels;
 } TplParams;
 
+/*!\brief Allocate buffers used by tpl model
+ *
+ * \param[in]    Top-level encode/decode structure
+ * \param[in]    lag_in_frames  number of lookahead frames
+ *
+ * \param[out]   tpl_data  tpl data structure
+ */
+
+void av1_setup_tpl_buffers(struct AV1_PRIMARY *const ppi,
+                           CommonModeInfoParams *const mi_params, int width,
+                           int height, int byte_alignment, int lag_in_frames);
+
 /*!\brief Implements temporal dependency modelling for a GOP (GF/ARF
  * group) and selects between 16 and 32 frame GOP structure.
  *
@@ -214,8 +248,126 @@ void av1_tpl_rdmult_setup(struct AV1_COMP *cpi);
 void av1_tpl_rdmult_setup_sb(struct AV1_COMP *cpi, MACROBLOCK *const x,
                              BLOCK_SIZE sb_size, int mi_row, int mi_col);
 
-void av1_mc_flow_dispenser_row(struct AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
-                               BLOCK_SIZE bsize, TX_SIZE tx_size);
+void av1_mc_flow_dispenser_row(struct AV1_COMP *cpi,
+                               TplTxfmStats *tpl_txfm_stats, MACROBLOCK *x,
+                               int mi_row, BLOCK_SIZE bsize, TX_SIZE tx_size);
+
+/*!\brief  Compute the entropy of an exponential probability distribution
+ * function (pdf) subjected to uniform quantization.
+ *
+ * pdf(x) = b*exp(-b*x)
+ *
+ *\ingroup tpl_modelling
+ *
+ * \param[in]    q_step        quantizer step size
+ * \param[in]    b             parameter of exponential distribution
+ *
+ * \return entropy cost
+ */
+double av1_exponential_entropy(double q_step, double b);
+
+/*!\brief  Compute the entropy of a Laplace probability distribution
+ * function (pdf) subjected to non-uniform quantization.
+ *
+ * pdf(x) = 0.5*b*exp(-0.5*b*|x|)
+ *
+ *\ingroup tpl_modelling
+ *
+ * \param[in]    q_step          quantizer step size for non-zero bins
+ * \param[in]    b               parameter of Laplace distribution
+ * \param[in]    zero_bin_ratio  zero bin's size is zero_bin_ratio * q_step
+ *
+ * \return entropy cost
+ */
+double av1_laplace_entropy(double q_step, double b, double zero_bin_ratio);
+
+/*!\brief  Compute the frame rate using transform block stats
+ *
+ * Assume each position i in the transform block is of Laplace distribution
+ * with mean absolute deviation abs_coeff_mean[i]
+ *
+ * Then we can use av1_laplace_entropy() to compute the expected frame
+ * rate.
+ *
+ *\ingroup tpl_modelling
+ *
+ * \param[in]    q_index         quantizer index
+ * \param[in]    block_count     number of transform blocks
+ * \param[in]    abs_coeff_mean  array of mean absolute deviation
+ * \param[in]    coeff_num       number of coefficients per transform block
+ *
+ * \return expected frame rate
+ */
+double av1_laplace_estimate_frame_rate(int q_index, int block_count,
+                                       const double *abs_coeff_mean,
+                                       int coeff_num);
+
+/*!\brief  Init data structure storing transform stats
+ *
+ *\ingroup tpl_modelling
+ *
+ * \param[in]    tpl_frame       pointer of tpl frame data structure
+ * \param[in]    tpl_bsize_1d    length of the side of a square transform block
+ *
+ */
+void av1_tpl_stats_init_txfm_stats(TplDepFrame *tpl_frame, int tpl_bsize_1d);
+
+/*!\brief  Estimate coefficient entropy using Laplace dsitribution
+ *
+ *\ingroup tpl_modelling
+ *
+ * This function is equivalent to -log2(laplace_prob()), where laplace_prob() is
+ * defined in tpl_model_test.cc
+ *
+ * \param[in]    q_step          quantizer step size without any scaling
+ * \param[in]    b               mean absolute deviation of Laplace distribution
+ * \param[in]    zero_bin_ratio  zero bin's size is zero_bin_ratio * q_step
+ * \param[in]    qcoeff          quantized coefficient
+ *
+ * \return estimated coefficient entropy
+ *
+ */
+double av1_estimate_coeff_entropy(double q_step, double b,
+                                  double zero_bin_ratio, int qcoeff);
+
+/*!\brief  Estimate entropy of a transform block using Laplace dsitribution
+ *
+ *\ingroup tpl_modelling
+ *
+ * \param[in]    q_index         quantizer index
+ * \param[in]    abs_coeff_mean  array of mean absolute deviations
+ * \param[in]    qcoeff_arr      array of quantized coefficients
+ * \param[in]    coeff_num       number of coefficients per transform block
+ *
+ * \return estimated transform block entropy
+ *
+ */
+double av1_estimate_txfm_block_entropy(int q_index,
+                                       const double *abs_coeff_mean,
+                                       int *qcoeff_arr, int coeff_num);
+
+// TODO(angiebird): Add doxygen description here.
+int64_t av1_delta_rate_cost(int64_t delta_rate, int64_t recrf_dist,
+                            int64_t srcrf_dist, int pix_num);
+
+/*!\brief  Compute the overlap area between two blocks with the same size
+ *
+ *\ingroup tpl_modelling
+ *
+ * If there is no overlap, this function should return zero.
+ *
+ * \param[in]    row_a  row position of the first block
+ * \param[in]    col_a  column position of the first block
+ * \param[in]    row_b  row position of the second block
+ * \param[in]    col_b  column position of the second block
+ * \param[in]    width  width shared by the two blocks
+ * \param[in]    height height shared by the two blocks
+ *
+ * \return overlap area of the two blocks
+ */
+int av1_get_overlap_area(int row_a, int col_a, int row_b, int col_b, int width,
+                         int height);
+
 /*!\endcond */
 #ifdef __cplusplus
 }  // extern "C"

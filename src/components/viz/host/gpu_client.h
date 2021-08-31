@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_VIZ_HOST_GPU_CLIENT_H_
 #define COMPONENTS_VIZ_HOST_GPU_CLIENT_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "build/chromeos_buildflags.h"
 #include "components/viz/host/gpu_client_delegate.h"
 #include "components/viz/host/gpu_host_impl.h"
 #include "components/viz/host/viz_host_export.h"
@@ -50,17 +53,19 @@ class VIZ_HOST_EXPORT GpuClient : public mojom::GpuMemoryBufferFactory,
       override;
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               const gpu::SyncToken& sync_token) override;
-
+  void CopyGpuMemoryBuffer(gfx::GpuMemoryBufferHandle buffer_handle,
+                           base::UnsafeSharedMemoryRegion shared_memory,
+                           CopyGpuMemoryBufferCallback callback) override;
   // mojom::Gpu overrides:
   void CreateGpuMemoryBufferFactory(
       mojo::PendingReceiver<mojom::GpuMemoryBufferFactory> receiver) override;
   void EstablishGpuChannel(EstablishGpuChannelCallback callback) override;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void CreateJpegDecodeAccelerator(
       mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
           jda_receiver) override;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   void CreateVideoEncodeAcceleratorProvider(
       mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
           vea_provider_receiver) override;
@@ -93,9 +98,9 @@ class VIZ_HOST_EXPORT GpuClient : public mojom::GpuMemoryBufferFactory,
   gpu::GPUInfo gpu_info_;
   gpu::GpuFeatureInfo gpu_feature_info_;
   ConnectionErrorHandlerClosure connection_error_handler_;
-  // |task_runner_| is associated with the thread |gpu_bindings_| is bound on.
-  // GpuClient instance is bound to this thread, and must be destroyed on this
-  // thread.
+  // |task_runner_| is associated with the thread |gpu_bindings_| is bound
+  // on. GpuClient instance is bound to this thread, and must be destroyed on
+  // this thread.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<GpuClient> weak_factory_{this};
 

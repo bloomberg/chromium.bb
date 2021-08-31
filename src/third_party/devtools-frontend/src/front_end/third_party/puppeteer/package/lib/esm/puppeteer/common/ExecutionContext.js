@@ -16,6 +16,9 @@
 import { assert } from './assert.js';
 import { helper } from './helper.js';
 import { createJSHandle, JSHandle } from './JSHandle.js';
+/**
+ * @public
+ */
 export const EVALUATION_SCRIPT_URL = '__puppeteer_evaluation_script__';
 const SOURCE_URL_REGEX = /^[\040\t]*\/\/[@#] sourceURL=\s*(\S*?)\s*$/m;
 /**
@@ -25,7 +28,7 @@ const SOURCE_URL_REGEX = /^[\040\t]*\/\/[@#] sourceURL=\s*(\S*?)\s*$/m;
  *   {@link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe |
  *   frame } has "default" execution context that is always created after frame is
  *   attached to DOM. This context is returned by the
- *   {@link frame.executionContext()} method.
+ *   {@link Frame.executionContext} method.
  * - {@link https://developer.chrome.com/extensions | Extension}'s content scripts
  *   create additional execution contexts.
  *
@@ -43,6 +46,7 @@ export class ExecutionContext {
         this._client = client;
         this._world = world;
         this._contextId = contextPayload.id;
+        this._contextName = contextPayload.name;
     }
     /**
      * @remarks
@@ -94,8 +98,8 @@ export class ExecutionContext {
      * await twoHandle.dispose();
      * console.log(result); // prints '3'.
      * ```
-     * @param pageFunction a function to be evaluated in the `executionContext`
-     * @param args argument to pass to the page function
+     * @param pageFunction - a function to be evaluated in the `executionContext`
+     * @param args - argument to pass to the page function
      *
      * @returns A promise that resolves to the return value of the given function.
      */
@@ -138,8 +142,8 @@ export class ExecutionContext {
      * await resultHandle.dispose();
      * ```
      *
-     * @param pageFunction a function to be evaluated in the `executionContext`
-     * @param args argument to pass to the page function
+     * @param pageFunction - a function to be evaluated in the `executionContext`
+     * @param args - argument to pass to the page function
      *
      * @returns A promise that resolves to the return value of the given function
      * as an in-page object (a {@link JSHandle}).
@@ -277,7 +281,7 @@ export class ExecutionContext {
      * await mapPrototype.dispose();
      * ```
      *
-     * @param prototypeHandle a handle to the object prototype
+     * @param prototypeHandle - a handle to the object prototype
      *
      * @returns A handle to an array of objects with the given prototype.
      */
@@ -311,3 +315,4 @@ export class ExecutionContext {
         return this._adoptBackendNodeId(nodeInfo.node.backendNodeId);
     }
 }
+//# sourceMappingURL=ExecutionContext.js.map

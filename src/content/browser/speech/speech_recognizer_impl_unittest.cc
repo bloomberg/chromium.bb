@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -104,8 +105,8 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
 
     const int kTestingSessionId = 1;
 
-    audio_manager_.reset(new media::MockAudioManager(
-        std::make_unique<media::TestAudioThread>(true)));
+    audio_manager_ = std::make_unique<media::MockAudioManager>(
+        std::make_unique<media::TestAudioThread>(true));
     audio_manager_->SetInputStreamParameters(
         media::AudioParameters::UnavailableDeviceParams());
     audio_system_ =
@@ -269,7 +270,8 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
     auto* capture_callback =
         static_cast<media::AudioCapturerSource::CaptureCallback*>(
             recognizer_.get());
-    capture_callback->OnCaptureError("");
+    capture_callback->OnCaptureError(
+        media::AudioCapturerSource::ErrorCode::kUnknown, "");
   }
 
   void WaitForAudioThreadToPostDeviceInfo() {
@@ -421,7 +423,10 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
   // full recording to complete.
   const size_t kNumChunks = 5;
   mojo::Remote<network::mojom::ChunkedDataPipeGetter> chunked_data_pipe_getter;
-  mojo::DataPipe data_pipe;
+  mojo::ScopedDataPipeProducerHandle producer_handle;
+  mojo::ScopedDataPipeConsumerHandle consumer_handle;
+  ASSERT_EQ(mojo::CreateDataPipe(nullptr, producer_handle, consumer_handle),
+            MOJO_RESULT_OK);
   for (size_t i = 0; i < kNumChunks; ++i) {
     Capture(audio_bus_.get());
 
@@ -433,17 +438,13 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
       ASSERT_TRUE(GetUpstreamRequest(&upstream_request));
       ASSERT_TRUE(upstream_request->request.request_body);
       ASSERT_EQ(1u, upstream_request->request.request_body->elements()->size());
-      ASSERT_EQ(
-          network::mojom::DataElementType::kChunkedDataPipe,
-          (*upstream_request->request.request_body->elements())[0].type());
-      network::TestURLLoaderFactory::PendingRequest* mutable_upstream_request =
-          const_cast<network::TestURLLoaderFactory::PendingRequest*>(
-              upstream_request);
-      chunked_data_pipe_getter.Bind((*mutable_upstream_request->request
-                                          .request_body->elements_mutable())[0]
-                                        .ReleaseChunkedDataPipeGetter());
-      chunked_data_pipe_getter->StartReading(
-          std::move(data_pipe.producer_handle));
+      auto& element =
+          (*upstream_request->request.request_body->elements_mutable())[0];
+      ASSERT_EQ(network::DataElement::Tag::kChunkedDataPipe, element.type());
+      chunked_data_pipe_getter.Bind(
+          element.As<network::DataElementChunkedDataPipe>()
+              .ReleaseChunkedDataPipeGetter());
+      chunked_data_pipe_getter->StartReading(std::move(producer_handle));
     }
 
     std::string data;
@@ -452,11 +453,11 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
 
       const void* buffer;
       uint32_t num_bytes;
-      MojoResult result = data_pipe.consumer_handle->BeginReadData(
+      MojoResult result = consumer_handle->BeginReadData(
           &buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
       if (result == MOJO_RESULT_OK) {
         data.append(static_cast<const char*>(buffer), num_bytes);
-        data_pipe.consumer_handle->EndReadData(num_bytes);
+        consumer_handle->EndReadData(num_bytes);
         continue;
       }
       if (result == MOJO_RESULT_SHOULD_WAIT) {

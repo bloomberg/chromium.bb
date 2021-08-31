@@ -23,29 +23,23 @@ class ViewportOrientationTests : public DawnTest {};
 TEST_P(ViewportOrientationTests, OriginAt0x0) {
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 2, 2);
 
-    wgpu::ShaderModule vsModule =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-        #version 450
-        void main() {
-            gl_Position = vec4(-0.5f, 0.5f, 0.0f, 1.0f);
-            gl_PointSize = 1.0;
+    wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
+        [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+            return vec4<f32>(-0.5, 0.5, 0.0, 1.0);
         })");
 
-    wgpu::ShaderModule fsModule =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-        #version 450
-        layout(location = 0) out vec4 fragColor;
-        void main() {
-            fragColor = vec4(0.0f, 1.0f, 0.0f, 1.0f);
+    wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
+        [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            return vec4<f32>(0.0, 1.0, 0.0, 1.0);
         })");
 
-    utils::ComboRenderPipelineDescriptor descriptor(device);
-    descriptor.vertexStage.module = vsModule;
-    descriptor.cFragmentStage.module = fsModule;
-    descriptor.primitiveTopology = wgpu::PrimitiveTopology::PointList;
-    descriptor.cColorStates[0].format = renderPass.colorFormat;
+    utils::ComboRenderPipelineDescriptor2 descriptor;
+    descriptor.vertex.module = vsModule;
+    descriptor.cFragment.module = fsModule;
+    descriptor.primitive.topology = wgpu::PrimitiveTopology::PointList;
+    descriptor.cTargets[0].format = renderPass.colorFormat;
 
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
     {
@@ -68,4 +62,5 @@ DAWN_INSTANTIATE_TEST(ViewportOrientationTests,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

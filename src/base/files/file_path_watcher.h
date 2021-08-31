@@ -8,17 +8,19 @@
 #define BASE_FILES_FILE_PATH_WATCHER_H_
 
 #include <memory>
+#include <utility>
 
 #include "base/base_export.h"
-#include "base/callback.h"
-#include "base/files/file_path.h"
-#include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/callback_forward.h"
+#include "base/compiler_specific.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 
 namespace base {
+
+class FilePath;
 
 // This class lets you register interest in changes on a FilePath.
 // The callback will get called whenever the file or directory referenced by the
@@ -64,6 +66,8 @@ class BASE_EXPORT FilePathWatcher {
     using Type = FilePathWatcher::Type;
 
     PlatformDelegate();
+    PlatformDelegate(const PlatformDelegate&) = delete;
+    PlatformDelegate& operator=(const PlatformDelegate&) = delete;
     virtual ~PlatformDelegate();
 
     // Start watching for the given |path| and notify |delegate| about changes.
@@ -97,16 +101,21 @@ class BASE_EXPORT FilePathWatcher {
 
    private:
     scoped_refptr<SequencedTaskRunner> task_runner_;
-    bool cancelled_;
-
-    DISALLOW_COPY_AND_ASSIGN(PlatformDelegate);
+    bool cancelled_ = false;
   };
 
   FilePathWatcher();
+  FilePathWatcher(const FilePathWatcher&) = delete;
+  FilePathWatcher& operator=(const FilePathWatcher&) = delete;
   ~FilePathWatcher();
 
   // Returns true if the platform and OS version support recursive watches.
   static bool RecursiveWatchAvailable();
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  // Whether there are outstanding inotify watches.
+  static bool HasWatchesForTest();
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   // Starts watching |path| (and its descendants if |type| is kRecursive) for
   // changes. |callback| will be run on the caller's sequence to report such
@@ -118,15 +127,10 @@ class BASE_EXPORT FilePathWatcher {
   // FileDescriptorWatcher.
   bool Watch(const FilePath& path, Type type, const Callback& callback);
 
-  // Compatibility function (deprecated) for the above.
-  bool Watch(const FilePath& path, bool recursive, const Callback& callback);
-
  private:
   std::unique_ptr<PlatformDelegate> impl_;
 
   SequenceChecker sequence_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(FilePathWatcher);
 };
 
 }  // namespace base

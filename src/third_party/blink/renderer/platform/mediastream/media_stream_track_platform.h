@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_TRACK_PLATFORM_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_TRACK_PLATFORM_H_
 
-#include <string>
-
 #include "base/callback.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -19,6 +17,11 @@ namespace blink {
 class PLATFORM_EXPORT MediaStreamTrackPlatform {
  public:
   enum class FacingMode { kNone, kUser, kEnvironment, kLeft, kRight };
+
+  struct CaptureHandle {
+    String origin;
+    String handle;
+  };
 
   struct Settings {
     bool HasFrameRate() const { return frame_rate >= 0.0; }
@@ -41,9 +44,9 @@ class PLATFORM_EXPORT MediaStreamTrackPlatform {
     String group_id;
     FacingMode facing_mode = FacingMode::kNone;
     String resize_mode;
-    base::Optional<bool> echo_cancellation;
-    base::Optional<bool> auto_gain_control;
-    base::Optional<bool> noise_supression;
+    absl::optional<bool> echo_cancellation;
+    absl::optional<bool> auto_gain_control;
+    absl::optional<bool> noise_supression;
     String echo_cancellation_type;
     int32_t sample_rate = -1;
     int32_t sample_size = -1;
@@ -54,9 +57,10 @@ class PLATFORM_EXPORT MediaStreamTrackPlatform {
     String video_kind;
 
     // Screen Capture extensions
-    base::Optional<media::mojom::DisplayCaptureSurfaceType> display_surface;
-    base::Optional<bool> logical_surface;
-    base::Optional<media::mojom::CursorCaptureType> cursor;
+    absl::optional<media::mojom::DisplayCaptureSurfaceType> display_surface;
+    absl::optional<bool> logical_surface;
+    absl::optional<media::mojom::CursorCaptureType> cursor;
+    absl::optional<CaptureHandle> capture_handle;
   };
 
   explicit MediaStreamTrackPlatform(bool is_local_track);

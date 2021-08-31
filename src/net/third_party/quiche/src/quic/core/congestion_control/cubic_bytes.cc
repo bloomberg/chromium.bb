@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/congestion_control/cubic_bytes.h"
+#include "quic/core/congestion_control/cubic_bytes.h"
 
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
 
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/core/quic_constants.h"
+#include "quic/core/quic_packets.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -153,8 +153,8 @@ QuicByteCount CubicBytes::CongestionWindowAfterAck(
                                           kCubeScale;
 
   const bool add_delta = elapsed_time > time_to_origin_point_;
-  DCHECK(add_delta ||
-         (origin_point_congestion_window_ > delta_congestion_window));
+  QUICHE_DCHECK(add_delta ||
+                (origin_point_congestion_window_ > delta_congestion_window));
   QuicByteCount target_congestion_window =
       add_delta ? origin_point_congestion_window_ + delta_congestion_window
                 : origin_point_congestion_window_ - delta_congestion_window;
@@ -163,7 +163,7 @@ QuicByteCount CubicBytes::CongestionWindowAfterAck(
       std::min(target_congestion_window,
                current_congestion_window + acked_bytes_count_ / 2);
 
-  DCHECK_LT(0u, estimated_tcp_congestion_window_);
+  QUICHE_DCHECK_LT(0u, estimated_tcp_congestion_window_);
   // Increase the window by approximately Alpha * 1 MSS of bytes every
   // time we ack an estimated tcp window of bytes.  For small
   // congestion windows (less than 25), the formula below will

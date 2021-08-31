@@ -277,11 +277,13 @@ __gCrWeb.form.getFormElementFromIdentifier = function(name) {
  * @return {HTMLFormElement} The original form element, if it can be determined.
  */
 __gCrWeb.form.getFormElementFromUniqueFormId = function(identifier) {
+  if (identifier.toString() === __gCrWeb.fill.RENDERER_ID_NOT_SET) {
+    return null;
+  }
   const forms = document.forms;
   for (let i = 0; i < forms.length; i++) {
     const form = forms[i];
-    const uniqueID = Symbol.for(__gCrWeb.fill.UNIQUE_ID_SYMBOL_NAME);
-    if (identifier === form[uniqueID]) {
+    if (identifier.toString() === __gCrWeb.fill.getUniqueID(form)) {
       return form;
     }
   }

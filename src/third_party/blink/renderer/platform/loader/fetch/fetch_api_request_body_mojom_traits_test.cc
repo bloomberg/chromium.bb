@@ -30,7 +30,7 @@ TEST_F(FetchApiRequestBodyMojomTraitsTest, RoundTripEmpty) {
 
   ResourceRequestBody dest;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
-              blink::mojom::blink::FetchAPIRequestBody>(&src, &dest));
+              blink::mojom::blink::FetchAPIRequestBody>(src, dest));
 
   EXPECT_TRUE(dest.IsEmpty());
 }
@@ -43,7 +43,7 @@ TEST_F(FetchApiRequestBodyMojomTraitsTest, RoundTripBytes) {
 
   ResourceRequestBody dest;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
-              blink::mojom::blink::FetchAPIRequestBody>(&src, &dest));
+              blink::mojom::blink::FetchAPIRequestBody>(src, dest));
 
   ASSERT_TRUE(dest.FormBody());
   EXPECT_EQ(dest.FormBody()->Identifier(), 29);
@@ -61,7 +61,7 @@ TEST_F(FetchApiRequestBodyMojomTraitsTest, RoundTripFile) {
 
   ResourceRequestBody dest;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
-              blink::mojom::blink::FetchAPIRequestBody>(&src, &dest));
+              blink::mojom::blink::FetchAPIRequestBody>(src, dest));
 
   ASSERT_TRUE(dest.FormBody());
   ASSERT_EQ(1u, dest.FormBody()->Elements().size());
@@ -75,11 +75,11 @@ TEST_F(FetchApiRequestBodyMojomTraitsTest, RoundTripFile) {
 
 TEST_F(FetchApiRequestBodyMojomTraitsTest, RoundTripFileRange) {
   ResourceRequestBody src(EncodedFormData::Create());
-  src.FormBody()->AppendFileRange("abc", 4, 8, base::nullopt);
+  src.FormBody()->AppendFileRange("abc", 4, 8, absl::nullopt);
 
   ResourceRequestBody dest;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
-              blink::mojom::blink::FetchAPIRequestBody>(&src, &dest));
+              blink::mojom::blink::FetchAPIRequestBody>(src, dest));
 
   ASSERT_TRUE(dest.FormBody());
   ASSERT_EQ(1u, dest.FormBody()->Elements().size());
@@ -88,7 +88,7 @@ TEST_F(FetchApiRequestBodyMojomTraitsTest, RoundTripFileRange) {
   EXPECT_EQ(e.filename_, "abc");
   EXPECT_EQ(e.file_start_, 4);
   EXPECT_EQ(e.file_length_, 8);
-  EXPECT_EQ(e.expected_file_modification_time_, base::nullopt);
+  EXPECT_EQ(e.expected_file_modification_time_, absl::nullopt);
 }
 
 TEST_F(FetchApiRequestBodyMojomTraitsTest, RoundTripBlobWithOpionalHandle) {
@@ -102,7 +102,7 @@ TEST_F(FetchApiRequestBodyMojomTraitsTest, RoundTripBlobWithOpionalHandle) {
 
   ResourceRequestBody dest;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
-              blink::mojom::blink::FetchAPIRequestBody>(&src, &dest));
+              blink::mojom::blink::FetchAPIRequestBody>(src, dest));
 
   ASSERT_TRUE(dest.FormBody());
   ASSERT_EQ(1u, dest.FormBody()->Elements().size());
@@ -122,7 +122,7 @@ TEST_F(FetchApiRequestBodyMojomTraitsTest, RoundTripDataPipeGetter) {
 
   ResourceRequestBody dest;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
-              blink::mojom::blink::FetchAPIRequestBody>(&src, &dest));
+              blink::mojom::blink::FetchAPIRequestBody>(src, dest));
 
   ASSERT_TRUE(dest.FormBody());
   ASSERT_EQ(1u, dest.FormBody()->Elements().size());
@@ -139,7 +139,7 @@ TEST_F(FetchApiRequestBodyMojomTraitsTest, RoundTripStreamBody) {
 
   ResourceRequestBody dest;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
-              blink::mojom::blink::FetchAPIRequestBody>(&src, &dest));
+              blink::mojom::blink::FetchAPIRequestBody>(src, dest));
 
   EXPECT_FALSE(dest.FormBody());
   ASSERT_TRUE(dest.StreamBody());

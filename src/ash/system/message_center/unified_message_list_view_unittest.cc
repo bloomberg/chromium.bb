@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view.h"
@@ -65,10 +66,10 @@ class TestUnifiedMessageListView : public UnifiedMessageListView {
     for (int i = 0; i < stacked_notification_count; i++) {
       std::string id = base::NumberToString(0);
       auto notification = std::make_unique<Notification>(
-          message_center::NOTIFICATION_TYPE_BASE_FORMAT, id,
-          base::UTF8ToUTF16("test title"), base::UTF8ToUTF16("test message"),
-          gfx::Image(), base::string16() /* display_source */, GURL(),
-          message_center::NotifierId(), message_center::RichNotificationData(),
+          message_center::NOTIFICATION_TYPE_BASE_FORMAT, id, u"test title",
+          u"test message", gfx::Image(), std::u16string() /* display_source */,
+          GURL(), message_center::NotifierId(),
+          message_center::RichNotificationData(),
           new message_center::NotificationDelegate());
 
       stacked_notifications_.push_back(notification.get());
@@ -125,10 +126,10 @@ class UnifiedMessageListViewTest : public AshTestBase,
   std::string AddNotification(bool pinned = false) {
     std::string id = base::NumberToString(id_++);
     auto notification = std::make_unique<Notification>(
-        message_center::NOTIFICATION_TYPE_BASE_FORMAT, id,
-        base::UTF8ToUTF16("test title"), base::UTF8ToUTF16("test message"),
-        gfx::Image(), base::string16() /* display_source */, GURL(),
-        message_center::NotifierId(), message_center::RichNotificationData(),
+        message_center::NOTIFICATION_TYPE_BASE_FORMAT, id, u"test title",
+        u"test message", gfx::Image(), std::u16string() /* display_source */,
+        GURL(), message_center::NotifierId(),
+        message_center::RichNotificationData(),
         new message_center::NotificationDelegate());
     notification->set_pinned(pinned);
     MessageCenter::Get()->AddNotification(std::move(notification));

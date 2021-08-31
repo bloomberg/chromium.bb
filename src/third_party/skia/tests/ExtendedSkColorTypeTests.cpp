@@ -10,6 +10,7 @@
 #include "include/core/SkSurface.h"
 #include "include/gpu/GrDirectContext.h"
 #include "src/core/SkAutoPixmapStorage.h"
+#include "src/gpu/GrPixmap.h"
 
 #include "tests/Test.h"
 #include "tests/TestUtils.h"
@@ -201,7 +202,7 @@ static void gpu_tests(GrDirectContext* dContext,
             *(bool*)context = true;
         };
         if (fullInit) {
-            backendTex = dContext->createBackendTexture(&nativeExpected, 1,
+            backendTex = dContext->createBackendTexture(nativeExpected, kTopLeft_GrSurfaceOrigin,
                                                         GrRenderable::kNo, GrProtected::kNo,
                                                         markFinished, &finishedBECreate);
         } else {

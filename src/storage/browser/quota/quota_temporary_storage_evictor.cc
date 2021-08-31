@@ -11,7 +11,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "storage/browser/quota/quota_macros.h"
-#include "storage/browser/quota/quota_manager.h"
+#include "storage/browser/quota/quota_manager_impl.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/gurl.h"
 
@@ -224,7 +224,7 @@ void QuotaTemporaryStorageEvictor::OnGotEvictionRoundInfo(
 }
 
 void QuotaTemporaryStorageEvictor::OnGotEvictionOrigin(
-    const base::Optional<url::Origin>& origin) {
+    const absl::optional<url::Origin>& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!origin.has_value()) {

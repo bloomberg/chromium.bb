@@ -56,6 +56,12 @@ const char kEnableDoNotTrack[] = "enable_do_not_track";
 // Prefs for persisting HttpServerProperties.
 const char kHttpServerProperties[] = "net.http_server_properties";
 
+// Integer that specifies whether Incognito mode is:
+// 0 - Enabled. Default behaviour. Default mode is available on demand.
+// 1 - Disabled. User cannot browse pages in Incognito mode.
+// 2 - Forced. All pages/sessions are forced into Incognito.
+const char kIncognitoModeAvailability[] = "incognito.mode_availability";
+
 // Caches the folder id of user's position in the bookmark hierarchy navigator.
 const char kIosBookmarkCachedFolderId[] = "ios.bookmark.cached_folder_id";
 
@@ -95,6 +101,11 @@ const char kIosSettingsSigninPromoDisplayedCount[] =
 const char kLastSessionExitedCleanly[] =
     "ios.user_experience_metrics.last_session_exited_cleanly";
 
+// Preference that holds a boolean indicating whether the suggestions on the NTP
+// are enabled.
+const char kNTPContentSuggestionsEnabled[] =
+    "ios.ntp.content_suggestions_enabled";
+
 // Preference that hold a boolean indicating whether metrics reporting should
 // be limited to wifi (when enabled).
 const char kMetricsReportingWifiOnly[] =
@@ -129,17 +140,6 @@ const char kSigninLastAccountsMigrated[] = "ios.signin.last_accounts_migrated";
 const char kSigninShouldPromptForSigninAgain[] =
     "ios.signin.should_prompt_for_signin_again";
 
-// Integer which indicates whether the user has authorized using geolocation
-// for Omnibox queries or the progress towards soliciting the user's
-// authorization.
-const char kOmniboxGeolocationAuthorizationState[] =
-    "ios.omnibox.geolocation_authorization_state";
-
-// String which contains the application version when we last showed the
-// authorization alert.
-const char kOmniboxGeolocationLastAuthorizationAlertVersion[] =
-    "ios.omnibox.geolocation_last_authorization_alert_version";
-
 // Dictionary which stores the zoom levels the user has changed. The zoom levels
 // are unique for a given (iOS Dynamic Type, website domain) pair. Thus, the
 // dictionary keys are the iOS Dynamic Type level, mapping to sub-dictionarys
@@ -148,5 +148,9 @@ const char kOmniboxGeolocationLastAuthorizationAlertVersion[] =
 const char kIosUserZoomMultipliers[] = "ios.user_zoom_multipliers";
 
 const char kPrintingEnabled[] = "printing.enabled";
+
+// Bool used for the incognito biometric authentication setting.
+const char kIncognitoAuthenticationSetting[] =
+    "ios.settings.incognito_authentication_enabled";
 
 }  // namespace prefs

@@ -11,8 +11,8 @@
 #include "ash/drag_drop/toplevel_window_drag_delegate.h"
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "components/exo/data_source_observer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/scoped_window_event_targeting_blocker.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/gfx/geometry/point.h"
@@ -76,7 +76,7 @@ class ExtendedDragSource : public DataSourceObserver,
   // ash::ToplevelWindowDragDelegate:
   void OnToplevelWindowDragStarted(const gfx::PointF& start_location,
                                    ui::mojom::DragEventSource source) override;
-  int OnToplevelWindowDragDropped() override;
+  ui::mojom::DragOperation OnToplevelWindowDragDropped() override;
   void OnToplevelWindowDragCancelled() override;
   void OnToplevelWindowDragEvent(ui::LocatedEvent* event) override;
 
@@ -84,7 +84,7 @@ class ExtendedDragSource : public DataSourceObserver,
   void OnDataSourceDestroying(DataSource* source) override;
 
   aura::Window* GetDraggedWindowForTesting();
-  base::Optional<gfx::Vector2d> GetDragOffsetForTesting() const;
+  absl::optional<gfx::Vector2d> GetDragOffsetForTesting() const;
 
  private:
   class DraggedWindowHolder;

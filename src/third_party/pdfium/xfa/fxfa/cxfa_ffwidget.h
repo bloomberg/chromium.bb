@@ -9,6 +9,8 @@
 
 #include "core/fpdfdoc/cpdf_formfield.h"
 #include "core/fxcodec/fx_codec_def.h"
+#include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/retain_ptr.h"
 #include "core/fxge/cfx_graphstatedata.h"
 #include "fxjs/gc/heap.h"
 #include "v8/include/cppgc/garbage-collected.h"
@@ -30,7 +32,6 @@ class CXFA_FFDocView;
 class CXFA_FFField;
 class CXFA_FFPageView;
 class CXFA_FFWidgetHandler;
-class CXFA_Image;
 class CXFA_Margin;
 enum class FWL_WidgetHit;
 
@@ -71,7 +72,7 @@ class CXFA_FFWidget : public cppgc::GarbageCollected<CXFA_FFWidget>,
   ~CXFA_FFWidget() override;
 
   virtual void PreFinalize();
-  virtual void Trace(cppgc::Visitor* visitor) const;
+  void Trace(cppgc::Visitor* visitor) const override;
 
   // CFWL_Widget::AdapterIface:
   CFX_Matrix GetRotateMatrix() override;

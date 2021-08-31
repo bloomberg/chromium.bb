@@ -3,6 +3,10 @@ Tests access of cached DOMWindow properties after the associated frame is no lon
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
+PASS window.cached_appHistory.current is null
+PASS window.cached_appHistory.onnavigate is null
+PASS window.cached_appHistory.onnavigateerror is null
+PASS window.cached_appHistory.onnavigatesuccess is null
 PASS window.cached_cookieStore.onchange is null
 FAIL window.cached_location.hash should be  (of type string). Was undefined (of type undefined).
 FAIL window.cached_location.host should be  (of type string). Was undefined (of type undefined).
@@ -32,12 +36,14 @@ PASS window.cached_navigator.productSub is window.navigator.productSub
 PASS window.cached_navigator.userAgent is ''
 PASS window.cached_navigator.vendor is window.navigator.vendor
 PASS window.cached_navigator.vendorSub is ''
+PASS window.cached_navigator.webdriver is false
 PASS window.cached_navigator_bluetooth.onadvertisementreceived is null
 PASS window.cached_navigator_connection.onchange is null
 PASS window.cached_navigator_connection.ontypechange is null
 PASS window.cached_navigator_connection.saveData is false
 PASS window.cached_navigator_hid.onconnect is null
 PASS window.cached_navigator_hid.ondisconnect is null
+PASS window.cached_navigator_managed.onmanagedconfigurationchange is null
 PASS window.cached_navigator_mediaDevices.ondevicechange is null
 PASS window.cached_navigator_mediaSession.metadata is null
 PASS window.cached_navigator_mediaSession.playbackState is 'none'
@@ -103,6 +109,8 @@ PASS window.cached_screen.availTop is 0
 PASS window.cached_screen.availWidth is 0
 PASS window.cached_screen.colorDepth is 0
 PASS window.cached_screen.height is 0
+PASS window.cached_screen.isExtended is false
+PASS window.cached_screen.onchange is null
 PASS window.cached_screen.pixelDepth is 0
 PASS window.cached_screen.width is 0
 PASS window.cached_screen_orientation.angle is 0

@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_ARC_STORAGE_MANAGER_ARC_STORAGE_MANAGER_H_
 #define COMPONENTS_ARC_STORAGE_MANAGER_ARC_STORAGE_MANAGER_H_
 
-#include <memory>
-
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/arc/mojom/storage_manager.mojom.h"
@@ -26,6 +24,8 @@ class ArcStorageManager : public KeyedService {
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcStorageManager* GetForBrowserContext(
+      content::BrowserContext* context);
+  static ArcStorageManager* GetForBrowserContextForTesting(
       content::BrowserContext* context);
 
   ArcStorageManager(content::BrowserContext* context,

@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/barrier_closure.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -17,11 +16,10 @@
 #include "chromecast/browser/cast_download_manager_delegate.h"
 #include "chromecast/browser/cast_permission_manager.h"
 #include "components/keyed_service/core/simple_key_map.h"
+#include "components/profile_metrics/browser_profile_type.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/cors_origin_pattern_setter.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 
@@ -31,8 +29,6 @@ namespace shell {
 namespace {
 const void* const kDownloadManagerDelegateKey = &kDownloadManagerDelegateKey;
 }  // namespace
-
-using content::CorsOriginPatternSetter;
 
 class CastBrowserContext::CastResourceContext
     : public content::ResourceContext {
@@ -45,9 +41,9 @@ class CastBrowserContext::CastResourceContext
 };
 
 CastBrowserContext::CastBrowserContext()
-    : resource_context_(new CastResourceContext),
-      shared_cors_origin_access_list_(
-          content::SharedCorsOriginAccessList::Create()) {
+    : resource_context_(new CastResourceContext) {
+  profile_metrics::SetBrowserProfileType(
+      this, profile_metrics::BrowserProfileType::kRegular);
   InitWhileIOAllowed();
   simple_factory_key_ =
       std::make_unique<SimpleFactoryKey>(GetPath(), IsOffTheRecord());
@@ -56,7 +52,7 @@ CastBrowserContext::CastBrowserContext()
 
 CastBrowserContext::~CastBrowserContext() {
   SimpleKeyMap::GetInstance()->Dissociate(this);
-  BrowserContext::NotifyWillBeDestroyed(this);
+  NotifyWillBeDestroyed();
   ShutdownStoragePartitions();
   content::GetIOThreadTaskRunner({})->DeleteSoon(FROM_HERE,
                                                  resource_context_.release());
@@ -154,34 +150,6 @@ CastBrowserContext::GetBackgroundSyncController() {
 content::BrowsingDataRemoverDelegate*
 CastBrowserContext::GetBrowsingDataRemoverDelegate() {
   return nullptr;
-}
-
-void CastBrowserContext::SetCorsOriginAccessListForOrigin(
-    const url::Origin& source_origin,
-    std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
-    std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
-    base::OnceClosure closure) {
-  auto barrier_closure = BarrierClosure(2, std::move(closure));
-
-  // Keep profile storage partitions' NetworkContexts synchronized.
-  auto profile_setter = base::MakeRefCounted<CorsOriginPatternSetter>(
-      source_origin, CorsOriginPatternSetter::ClonePatterns(allow_patterns),
-      CorsOriginPatternSetter::ClonePatterns(block_patterns), barrier_closure);
-  ForEachStoragePartition(
-      this, base::BindRepeating(&CorsOriginPatternSetter::SetLists,
-                                base::RetainedRef(profile_setter.get())));
-
-  // Keep the per-profile access list up to date so that we can use this to
-  // restore NetworkContext settings at anytime, e.g. on restarting the
-  // network service.
-  shared_cors_origin_access_list_->SetForOrigin(
-      source_origin, std::move(allow_patterns), std::move(block_patterns),
-      barrier_closure);
-}
-
-content::SharedCorsOriginAccessList*
-CastBrowserContext::GetSharedCorsOriginAccessList() {
-  return shared_cors_origin_access_list_.get();
 }
 
 }  // namespace shell

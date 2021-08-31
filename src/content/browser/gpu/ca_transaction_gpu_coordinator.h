@@ -9,8 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
 
-#include <memory>
-
 namespace content {
 
 class GpuProcessHost;
@@ -36,9 +34,9 @@ class CATransactionGPUCoordinator
   void AddPostCommitObserverOnUIThread();
   void RemovePostCommitObserverOnUIThread();
 
-  void OnActivateForTransactionOnIO();
-  void OnEnterPostCommitOnIO();
-  void OnCommitCompletedOnIO();
+  void OnActivateForTransactionOnProcessThread();
+  void OnEnterPostCommitOnProcessThread();
+  void OnCommitCompletedOnProcessThread();
   void OnCommitCompletedOnUI();
 
   // The GpuProcessHost to use to initiate GPU-side CATransactions. This is only

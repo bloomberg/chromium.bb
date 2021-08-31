@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 (async function() {
   TestRunner.addResult('Tests the signed exchange information are available when the navigation succeeded.\n');
-  await TestRunner.loadModule('network_test_runner');
-  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.loadTestModule('network_test_runner');
+  await TestRunner.loadModule('console'); await TestRunner.loadTestModule('console_test_runner');
   await TestRunner.showPanel('network');
-  SDK.NetworkLog.instance().reset();
+  NetworkTestRunner.networkLog().reset();
   await TestRunner.addIframe('/loading/sxg/resources/sxg-location.sxg');
   await ConsoleTestRunner.dumpConsoleMessages();
   NetworkTestRunner.dumpNetworkRequestsWithSignedExchangeInfo();

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -21,7 +22,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/origin_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-shared.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-shared.h"
 #include "url/gurl.h"
 
 using bookmarks::BookmarkModel;
@@ -30,7 +31,8 @@ DurableStoragePermissionContext::DurableStoragePermissionContext(
     content::BrowserContext* browser_context)
     : PermissionContextBase(browser_context,
                             ContentSettingsType::DURABLE_STORAGE,
-                            blink::mojom::FeaturePolicyFeature::kNotFound) {}
+                            blink::mojom::PermissionsPolicyFeature::kNotFound) {
+}
 
 void DurableStoragePermissionContext::DecidePermission(
     content::WebContents* web_contents,
@@ -81,7 +83,7 @@ void DurableStoragePermissionContext::DecidePermission(
     registerable_domain = requesting_origin.host();
 
   std::set<std::string> installed_registerable_domains =
-      ImportantSitesUtil::GetInstalledRegisterableDomains(
+      site_engagement::ImportantSitesUtil::GetInstalledRegisterableDomains(
           Profile::FromBrowserContext(browser_context()));
   if (base::Contains(installed_registerable_domains, registerable_domain)) {
     NotifyPermissionSet(id, requesting_origin, embedding_origin,
@@ -91,9 +93,11 @@ void DurableStoragePermissionContext::DecidePermission(
   }
 
   const size_t kMaxImportantResults = 10;
-  std::vector<ImportantSitesUtil::ImportantDomainInfo> important_sites =
-      ImportantSitesUtil::GetImportantRegisterableDomains(
-          Profile::FromBrowserContext(browser_context()), kMaxImportantResults);
+  std::vector<site_engagement::ImportantSitesUtil::ImportantDomainInfo>
+      important_sites =
+          site_engagement::ImportantSitesUtil::GetImportantRegisterableDomains(
+              Profile::FromBrowserContext(browser_context()),
+              kMaxImportantResults);
 
   for (const auto& important_site : important_sites) {
     if (important_site.registerable_domain == registerable_domain) {

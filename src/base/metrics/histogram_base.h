@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <atomic>
 #include <memory>
 #include <string>
 #include <vector>
@@ -161,7 +162,7 @@ class BASE_EXPORT HistogramBase {
   virtual uint64_t name_hash() const = 0;
 
   // Operations with Flags enum.
-  int32_t flags() const { return subtle::NoBarrier_Load(&flags_); }
+  int32_t flags() const { return flags_.load(std::memory_order_relaxed); }
   void SetFlags(int32_t flags);
   void ClearFlags(int32_t flags);
 
@@ -248,7 +249,7 @@ class BASE_EXPORT HistogramBase {
   virtual std::unique_ptr<HistogramSamples> SnapshotFinalDelta() const = 0;
 
   // The following method provides graphical histogram displays.
-  virtual void WriteAscii(std::string* output) const = 0;
+  virtual void WriteAscii(std::string* output) const;
 
   // Returns histograms data as a Dict (or an empty dict if not available),
   // with the following format:
@@ -281,9 +282,9 @@ class BASE_EXPORT HistogramBase {
                              int64_t* sum,
                              ListValue* buckets) const;
 
-  //// Produce actual graph (set of blank vs non blank char's) for a bucket.
-  void WriteAsciiBucketGraph(double current_size,
-                             double max_size,
+  // Produces an actual graph (set of blank vs non blank char's) for a bucket.
+  void WriteAsciiBucketGraph(double x_count,
+                             int line_length,
                              std::string* output) const;
 
   // Return a string description of what goes in a given bucket.
@@ -295,9 +296,9 @@ class BASE_EXPORT HistogramBase {
                              double scaled_sum,
                              std::string* output) const;
 
-  // Retrieves the callback for this histogram, if one exists, and runs it
-  // passing |sample| as the parameter.
-  void FindAndRunCallback(Sample sample) const;
+  // Retrieves the registered callbacks for this histogram, if any, and runs
+  // them passing |sample| as the parameter.
+  void FindAndRunCallbacks(Sample sample) const;
 
   // Gets a permanent string that can be used for histogram objects when the
   // original is not a code constant or held in persistent memory.
@@ -317,7 +318,7 @@ class BASE_EXPORT HistogramBase {
   const char* const histogram_name_;
 
   // Additional information about the histogram.
-  AtomicCount flags_;
+  std::atomic<uint32_t> flags_{0};
 
   DISALLOW_COPY_AND_ASSIGN(HistogramBase);
 };

@@ -4,16 +4,15 @@
 
 import {assert} from 'chai';
 
-import {getBrowserAndPages, getHostedModeServerPort, step} from '../../shared/helper.js';
-import {describe, it} from '../../shared/mocha-extensions.js';
-import {doubleClickSourceTreeItem, getDataGridData, navigateToApplicationTab} from '../helpers/application-helpers.js';
+import {getBrowserAndPages, getTestServerPort, step} from '../../shared/helper.js';
+import {doubleClickSourceTreeItem, getStorageItemsData, navigateToApplicationTab} from '../helpers/application-helpers.js';
 
-const SESSION_STORAGE_SELECTOR = '[aria-label="Session Storage"]';
+const SESSION_STORAGE_SELECTOR = '[aria-label="Session Storage"].parent';
 let DOMAIN_SELECTOR: string;
 
 describe('The Application Tab', async () => {
   before(async () => {
-    DOMAIN_SELECTOR = `${SESSION_STORAGE_SELECTOR} + ol > [aria-label="http://localhost:${getHostedModeServerPort()}"]`;
+    DOMAIN_SELECTOR = `${SESSION_STORAGE_SELECTOR} + ol > [aria-label="https://localhost:${getTestServerPort()}"]`;
   });
 
   it('shows Session Storage keys and values', async () => {
@@ -29,7 +28,7 @@ describe('The Application Tab', async () => {
     });
 
     await step('check that storage data values are correct', async () => {
-      const dataGridRowValues = await getDataGridData('.storage-view table', ['key', 'value']);
+      const dataGridRowValues = await getStorageItemsData(['key', 'value']);
       assert.deepEqual(dataGridRowValues, [
         {
           key: 'firstKey',
@@ -38,10 +37,6 @@ describe('The Application Tab', async () => {
         {
           key: 'secondKey',
           value: '{"field":"complexValue","primitive":2}',
-        },
-        {
-          key: '',
-          value: '',
         },
       ]);
     });

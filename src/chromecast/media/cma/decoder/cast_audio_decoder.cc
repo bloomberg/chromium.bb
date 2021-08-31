@@ -16,13 +16,12 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "chromecast/media/api/decoder_buffer_base.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "chromecast/media/cma/base/decoder_config_adapter.h"
-#include "chromecast/media/cma/base/decoder_config_logging.h"
 #include "chromecast/media/cma/decoder/external_audio_decoder_wrapper.h"
+#include "chromecast/media/common/base/decoder_config_logging.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
 #include "media/base/cdm_context.h"
@@ -32,6 +31,7 @@
 #include "media/base/sample_format.h"
 #include "media/base/status.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromecast {
 namespace media {
@@ -266,8 +266,8 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
     auto result = base::MakeRefCounted<::media::DecoderBuffer>(size);
 
     if (output_format_ == kOutputSigned16) {
-      bus->ToInterleaved(num_frames, OutputFormatSizeInBytes(output_format_),
-                         result->writable_data());
+      bus->ToInterleaved<::media::SignedInt16SampleTypeTraits>(
+          num_frames, reinterpret_cast<int16_t*>(result->writable_data()));
     } else if (output_format_ == kOutputPlanarFloat) {
       // Data in an AudioBus is already in planar float format; just copy each
       // channel into the result buffer in order.

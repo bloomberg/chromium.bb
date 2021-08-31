@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/certificate_manager_model.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "net/cert/nss_cert_database.h"
@@ -23,7 +24,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 enum class Slot { kUser, kSystem };
 enum class CertificateSource { kBuiltIn, kImported };
 
@@ -50,7 +51,7 @@ enum class CACertificateManagementPermission : int {
   // Disallow users from managing certificates
   kNone = 2
 };
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace certificate_manager {
 
@@ -75,7 +76,7 @@ class CertificatesHandler : public content::WebUIMessageHandler,
                     void* params) override;
   void FileSelectionCanceled(void* params) override;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Register profile preferences.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 #endif
@@ -192,7 +193,7 @@ class CertificatesHandler : public content::WebUIMessageHandler,
   // has been fulfilled.
   void AssignWebUICallbackId(const base::ListValue* args);
 
-  gfx::NativeWindow GetParentWindow() const;
+  gfx::NativeWindow GetParentWindow();
 
   // If |args| is a list, parses the list element at |arg_index| as an id for
   // |cert_info_id_map_| and looks up the corresponding CertInfo. If there is
@@ -201,23 +202,21 @@ class CertificatesHandler : public content::WebUIMessageHandler,
       const base::Value& args,
       size_t arg_index);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Returns true if the user may manage certificates on |slot| according
   // to ClientCertificateManagementAllowed policy.
-  bool IsClientCertificateManagementAllowedPolicy(Slot slot) const;
+  bool IsClientCertificateManagementAllowedPolicy(Slot slot);
 
   // Returns true if the user may manage certificates according
   // to CACertificateManagementAllowed policy.
-  bool IsCACertificateManagementAllowedPolicy(CertificateSource source) const;
-#endif  // defined(OS_CHROMEOS)
+  bool IsCACertificateManagementAllowedPolicy(CertificateSource source);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Returns true if the certificate represented by |cert_info| can be deleted.
-  bool CanDeleteCertificate(
-      const CertificateManagerModel::CertInfo* cert_info) const;
+  bool CanDeleteCertificate(const CertificateManagerModel::CertInfo* cert_info);
 
   // Returns true if the certificate represented by |cert_info| can be edited.
-  bool CanEditCertificate(
-      const CertificateManagerModel::CertInfo* cert_info) const;
+  bool CanEditCertificate(const CertificateManagerModel::CertInfo* cert_info);
 
   // The Certificates Manager model
   bool requested_certificate_manager_model_;
@@ -227,7 +226,7 @@ class CertificatesHandler : public content::WebUIMessageHandler,
   // password, etc the user chose while we wait for them to enter a password,
   // wait for file to be read, etc.
   base::FilePath file_path_;
-  base::string16 password_;
+  std::u16string password_;
   // The WebUI callback ID of the last in-flight async request. There is always
   // only one in-flight such request.
   std::string webui_callback_id_;

@@ -31,14 +31,9 @@ class CpuSpeedTest
   virtual ~CpuSpeedTest() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
+    InitializeConfig(encoding_mode_);
     if (encoding_mode_ != ::libaom_test::kRealTime) {
       cfg_.g_lag_in_frames = 25;
-      cfg_.rc_end_usage = AOM_VBR;
-    } else {
-      cfg_.g_lag_in_frames = 0;
-      cfg_.rc_end_usage = AOM_CBR;
     }
   }
 

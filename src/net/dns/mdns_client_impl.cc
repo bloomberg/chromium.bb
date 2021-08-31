@@ -5,6 +5,7 @@
 #include "net/dns/mdns_client_impl.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -377,7 +378,7 @@ void MDnsClientImpl::Core::RemoveListener(MDnsListenerImpl* listener) {
   observer_list_iterator->second->RemoveObserver(listener);
 
   // Remove the observer list from the map if it is empty
-  if (!observer_list_iterator->second->might_have_observers()) {
+  if (observer_list_iterator->second->empty()) {
     // Schedule the actual removal for later in case the listener removal
     // happens while iterating over the observer list.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -388,7 +389,7 @@ void MDnsClientImpl::Core::RemoveListener(MDnsListenerImpl* listener) {
 
 void MDnsClientImpl::Core::CleanupObserverList(const ListenerKey& key) {
   auto found = listeners_.find(key);
-  if (found != listeners_.end() && !found->second->might_have_observers()) {
+  if (found != listeners_.end() && found->second->empty()) {
     listeners_.erase(found);
   }
 }
@@ -451,7 +452,7 @@ MDnsClientImpl::~MDnsClientImpl() {
 
 int MDnsClientImpl::StartListening(MDnsSocketFactory* socket_factory) {
   DCHECK(!core_.get());
-  core_.reset(new Core(clock_, cleanup_timer_.get()));
+  core_ = std::make_unique<Core>(clock_, cleanup_timer_.get());
   int rv = core_->Init(socket_factory);
   if (rv != OK) {
     DCHECK_NE(ERR_IO_PENDING, rv);

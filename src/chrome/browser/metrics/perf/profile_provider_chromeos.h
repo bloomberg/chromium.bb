@@ -35,6 +35,11 @@ class ProfileProvider : public chromeos::PowerManagerClient::Observer,
   // stored profile data. Returns true if it wrote to |sampled_profiles|.
   bool GetSampledProfiles(std::vector<SampledProfile>* sampled_profiles);
 
+  // Called when the metrics recording state changes and the corresponding
+  // callback in ChromeOSMetricsProvider is invoked.
+  void OnRecordingEnabled();
+  void OnRecordingDisabled();
+
  protected:
   // Called when either the login state or the logged in user type changes.
   // Activates the registered collectors to start collecting. Inherited from
@@ -44,7 +49,7 @@ class ProfileProvider : public chromeos::PowerManagerClient::Observer,
   // Called when a suspend finishes. This is either a successful suspend
   // followed by a resume, or a suspend that was canceled. Inherited from
   // PowerManagerClient::Observer.
-  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void SuspendDone(base::TimeDelta sleep_duration) override;
 
   // Called when a session restore has finished.
   void OnSessionRestoreDone(int num_tabs_restored);
@@ -69,11 +74,10 @@ class ProfileProvider : public chromeos::PowerManagerClient::Observer,
  private:
   // Points to the on-session-restored callback that was registered with
   // SessionRestore's callback list. When objects of this class are destroyed,
-  // the subscription object's destructor will automatically unregister the
-  // callback in SessionRestore, so that the callback list does not contain any
-  // obsolete callbacks.
-  SessionRestore::CallbackSubscription
-      on_session_restored_callback_subscription_;
+  // the subscription's destructor will automatically unregister the callback in
+  // SessionRestore, so that the callback list does not contain any obsolete
+  // callbacks.
+  base::CallbackListSubscription on_session_restored_callback_subscription_;
 
   scoped_refptr<content::JankMonitor> jank_monitor_;
 

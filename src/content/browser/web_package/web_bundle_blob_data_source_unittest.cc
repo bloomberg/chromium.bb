@@ -49,11 +49,10 @@ class WebBundleBlobDataSourceTest : public testing::Test {
   std::unique_ptr<WebBundleBlobDataSource> CreateTestDataSource(
       const std::string& test_data,
       mojo::Remote<web_package::mojom::BundleDataSource>* remote_source,
-      base::Optional<int64_t> content_length = base::nullopt) {
+      absl::optional<int64_t> content_length = absl::nullopt) {
     mojo::ScopedDataPipeProducerHandle producer;
     mojo::ScopedDataPipeConsumerHandle consumer;
-    CHECK_EQ(MOJO_RESULT_OK,
-             mojo::CreateDataPipe(nullptr, &producer, &consumer));
+    CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, producer, consumer));
     mojo::BlockingCopyFromString(test_data, producer);
     producer.reset();
 
@@ -85,13 +84,13 @@ TEST_F(WebBundleBlobDataSourceTest, Read) {
   auto source = CreateTestDataSource(kData, &remote_source);
 
   base::RunLoop run_loop;
-  base::Optional<std::vector<uint8_t>> read_result;
+  absl::optional<std::vector<uint8_t>> read_result;
   remote_source->Read(
       1, 3,
       base::BindOnce(
           [](base::OnceClosure closure,
-             base::Optional<std::vector<uint8_t>>* read_result,
-             const base::Optional<std::vector<uint8_t>>& result) {
+             absl::optional<std::vector<uint8_t>>* read_result,
+             const absl::optional<std::vector<uint8_t>>& result) {
             *read_result = result;
             std::move(closure).Run();
           },
@@ -110,13 +109,13 @@ TEST_F(WebBundleBlobDataSourceTest, Read_EndOfSourceReached) {
   auto source = CreateTestDataSource(kData, &remote_source);
 
   base::RunLoop run_loop;
-  base::Optional<std::vector<uint8_t>> read_result;
+  absl::optional<std::vector<uint8_t>> read_result;
   remote_source->Read(
       6, 100,
       base::BindOnce(
           [](base::OnceClosure closure,
-             base::Optional<std::vector<uint8_t>>* read_result,
-             const base::Optional<std::vector<uint8_t>>& result) {
+             absl::optional<std::vector<uint8_t>>* read_result,
+             const absl::optional<std::vector<uint8_t>>& result) {
             *read_result = result;
             std::move(closure).Run();
           },
@@ -134,13 +133,13 @@ TEST_F(WebBundleBlobDataSourceTest, Read_OutOfRangeError) {
   auto source = CreateTestDataSource(kData, &remote_source);
 
   base::RunLoop run_loop;
-  base::Optional<std::vector<uint8_t>> read_result;
+  absl::optional<std::vector<uint8_t>> read_result;
   remote_source->Read(
       10, 100,
       base::BindOnce(
           [](base::OnceClosure closure,
-             base::Optional<std::vector<uint8_t>>* read_result,
-             const base::Optional<std::vector<uint8_t>>& result) {
+             absl::optional<std::vector<uint8_t>>* read_result,
+             const absl::optional<std::vector<uint8_t>>& result) {
             *read_result = result;
             std::move(closure).Run();
           },
@@ -155,13 +154,13 @@ TEST_F(WebBundleBlobDataSourceTest, Read_ContentLengthTooSmall) {
   auto source = CreateTestDataSource(kData, &remote_source, kData.size() - 1);
 
   base::RunLoop run_loop;
-  base::Optional<std::vector<uint8_t>> read_result;
+  absl::optional<std::vector<uint8_t>> read_result;
   remote_source->Read(
       0, kData.size(),
       base::BindOnce(
           [](base::OnceClosure closure,
-             base::Optional<std::vector<uint8_t>>* read_result,
-             const base::Optional<std::vector<uint8_t>>& result) {
+             absl::optional<std::vector<uint8_t>>* read_result,
+             const absl::optional<std::vector<uint8_t>>& result) {
             *read_result = result;
             std::move(closure).Run();
           },
@@ -178,13 +177,13 @@ TEST_F(WebBundleBlobDataSourceTest, Read_ContentLengthTooLarge) {
   auto source = CreateTestDataSource(kData, &remote_source, kData.size() + 1);
 
   base::RunLoop run_loop;
-  base::Optional<std::vector<uint8_t>> read_result;
+  absl::optional<std::vector<uint8_t>> read_result;
   remote_source->Read(
       0, kData.size() + 1,
       base::BindOnce(
           [](base::OnceClosure closure,
-             base::Optional<std::vector<uint8_t>>* read_result,
-             const base::Optional<std::vector<uint8_t>>& result) {
+             absl::optional<std::vector<uint8_t>>* read_result,
+             const absl::optional<std::vector<uint8_t>>& result) {
             *read_result = result;
             std::move(closure).Run();
           },
@@ -203,13 +202,13 @@ TEST_F(WebBundleBlobDataSourceTest, Read_NoStorage) {
   auto source = CreateTestDataSource(content, &remote_source);
 
   base::RunLoop run_loop;
-  base::Optional<std::vector<uint8_t>> read_result;
+  absl::optional<std::vector<uint8_t>> read_result;
   remote_source->Read(
       1, 100,
       base::BindOnce(
           [](base::OnceClosure closure,
-             base::Optional<std::vector<uint8_t>>* read_result,
-             const base::Optional<std::vector<uint8_t>>& result) {
+             absl::optional<std::vector<uint8_t>>* read_result,
+             const absl::optional<std::vector<uint8_t>>& result) {
             *read_result = result;
             std::move(closure).Run();
           },
@@ -227,7 +226,7 @@ TEST_F(WebBundleBlobDataSourceTest, ReadToDataPipe) {
 
   mojo::ScopedDataPipeProducerHandle producer;
   mojo::ScopedDataPipeConsumerHandle consumer;
-  CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, &producer, &consumer));
+  CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, producer, consumer));
 
   net::Error read_response_body_result = net::ERR_FAILED;
   source->ReadToDataPipe(
@@ -257,7 +256,7 @@ TEST_F(WebBundleBlobDataSourceTest, ReadToDataPipe_EndOfSourceReached) {
 
   mojo::ScopedDataPipeProducerHandle producer;
   mojo::ScopedDataPipeConsumerHandle consumer;
-  CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, &producer, &consumer));
+  CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, producer, consumer));
 
   net::Error read_response_body_result = net::ERR_FAILED;
   source->ReadToDataPipe(
@@ -286,7 +285,7 @@ TEST_F(WebBundleBlobDataSourceTest, ReadToDataPipe_OutOfRangeError) {
 
   mojo::ScopedDataPipeProducerHandle producer;
   mojo::ScopedDataPipeConsumerHandle consumer;
-  CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, &producer, &consumer));
+  CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, producer, consumer));
 
   net::Error read_response_body_result = net::ERR_FAILED;
   source->ReadToDataPipe(
@@ -311,7 +310,7 @@ TEST_F(WebBundleBlobDataSourceTest, ReadToDataPipe_ContentLengthTooSmall) {
 
   mojo::ScopedDataPipeProducerHandle producer;
   mojo::ScopedDataPipeConsumerHandle consumer;
-  CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, &producer, &consumer));
+  CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, producer, consumer));
 
   net::Error read_response_body_result = net::OK;
   source->ReadToDataPipe(
@@ -340,7 +339,7 @@ TEST_F(WebBundleBlobDataSourceTest, ReadToDataPipe_ContentLengthTooLarge) {
 
   mojo::ScopedDataPipeProducerHandle producer;
   mojo::ScopedDataPipeConsumerHandle consumer;
-  CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, &producer, &consumer));
+  CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, producer, consumer));
 
   net::Error read_response_body_result = net::OK;
   source->ReadToDataPipe(
@@ -371,7 +370,7 @@ TEST_F(WebBundleBlobDataSourceTest, ReadToDataPipe_NoStorage) {
 
   mojo::ScopedDataPipeProducerHandle producer;
   mojo::ScopedDataPipeConsumerHandle consumer;
-  CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, &producer, &consumer));
+  CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, producer, consumer));
 
   net::Error read_response_body_result = net::OK;
   source->ReadToDataPipe(
@@ -396,7 +395,7 @@ TEST_F(WebBundleBlobDataSourceTest, ReadToDataPipe_Destructed) {
 
   mojo::ScopedDataPipeProducerHandle producer;
   mojo::ScopedDataPipeConsumerHandle consumer;
-  CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, &producer, &consumer));
+  CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, producer, consumer));
 
   net::Error read_response_body_result = net::OK;
   source->ReadToDataPipe(

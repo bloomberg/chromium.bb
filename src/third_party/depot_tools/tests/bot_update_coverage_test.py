@@ -174,7 +174,7 @@ class BotUpdateUnittests(unittest.TestCase):
     setattr(bot_update, 'git', fake_git)
 
     self.old_os_cwd = os.getcwd
-    setattr(os, 'getcwd', lambda: '/b/build/slave/foo/build')
+    setattr(os, 'getcwd', lambda: '/b/build/foo/build')
 
     setattr(bot_update, 'open', self.filesystem.open)
     self.old_codecs_open = codecs.open
@@ -196,6 +196,12 @@ class BotUpdateUnittests(unittest.TestCase):
     bot_update.ensure_checkout(**self.params)
     return self.call.records
 
+  def testBasicCachepackOffloading(self):
+    os.environ['PACKFILE_OFFLOADING'] = '1'
+    bot_update.ensure_checkout(**self.params)
+    os.environ.pop('PACKFILE_OFFLOADING')
+    return self.call.records
+
   def testBasicRevision(self):
     self.params['revisions'] = {
         'src': 'HEAD', 'src/v8': 'deadbeef', 'somename': 'DNE'}
@@ -206,7 +212,8 @@ class BotUpdateUnittests(unittest.TestCase):
         '--revision', idx_first_revision+1)
     idx_third_revision = args.index('--revision', idx_second_revision+1)
     self.assertEqual(args[idx_first_revision+1], 'somename@unmanaged')
-    self.assertEqual(args[idx_second_revision+1], 'src@origin/master')
+    self.assertEqual(
+        args[idx_second_revision+1], 'src@refs/remotes/origin/master')
     self.assertEqual(args[idx_third_revision+1], 'src/v8@deadbeef')
     return self.call.records
 
@@ -272,7 +279,7 @@ class BotUpdateUnittests(unittest.TestCase):
 
   def testGitCheckoutBreaksLocks(self):
     self.overrideSetupForWindows()
-    path = '/b/build/slave/foo/build/.git'
+    path = '/b/build/foo/build/.git'
     lockfile = 'index.lock'
     removed = []
     old_os_walk = os.walk

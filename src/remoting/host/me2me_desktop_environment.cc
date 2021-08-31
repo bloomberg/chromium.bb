@@ -4,6 +4,7 @@
 
 #include "remoting/host/me2me_desktop_environment.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
@@ -85,6 +86,11 @@ std::string Me2MeDesktopEnvironment::GetCapabilities() const {
   }
 #endif  // defined(OS_WIN)
 
+#if !defined(NDEBUG) && defined(OS_LINUX)
+  capabilities += " ";
+  capabilities += protocol::kRemoteOpenUrlCapability;
+#endif  // !defined(NDEBUG) && defined(OS_LINUX)
+
   return capabilities;
 }
 
@@ -161,8 +167,8 @@ bool Me2MeDesktopEnvironment::InitializeSecurity(
 #else
     disconnect_window_ = HostWindow::CreateDisconnectWindow();
 #endif
-    disconnect_window_.reset(new HostWindowProxy(
-        caller_task_runner(), ui_task_runner(), std::move(disconnect_window_)));
+    disconnect_window_ = std::make_unique<HostWindowProxy>(
+        caller_task_runner(), ui_task_runner(), std::move(disconnect_window_));
     disconnect_window_->Start(client_session_control);
   }
 

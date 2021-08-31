@@ -23,7 +23,7 @@ public:
     sk_sp<SkSurface> onNewSurface(const SkImageInfo&) override;
     sk_sp<SkImage> onNewImageSnapshot(const SkIRect* subset) override;
     void onWritePixels(const SkPixmap&, int x, int y) override;
-    void onDraw(SkCanvas*, SkScalar x, SkScalar y, const SkPaint*) override;
+    void onDraw(SkCanvas*, SkScalar, SkScalar, const SkSamplingOptions&, const SkPaint*) override;
     void onCopyOnWrite(ContentChangeMode) override;
     void onRestoreBackingMutability() override;
 
@@ -83,8 +83,8 @@ sk_sp<SkSurface> SkSurface_Raster::onNewSurface(const SkImageInfo& info) {
 }
 
 void SkSurface_Raster::onDraw(SkCanvas* canvas, SkScalar x, SkScalar y,
-                              const SkPaint* paint) {
-    canvas->drawBitmap(fBitmap, x, y, paint);
+                              const SkSamplingOptions& sampling, const SkPaint* paint) {
+    canvas->drawImage(fBitmap.asImage().get(), x, y, sampling, paint);
 }
 
 sk_sp<SkImage> SkSurface_Raster::onNewImageSnapshot(const SkIRect* subset) {
@@ -94,7 +94,7 @@ sk_sp<SkImage> SkSurface_Raster::onNewImageSnapshot(const SkIRect* subset) {
         dst.allocPixels(fBitmap.info().makeDimensions(subset->size()));
         SkAssertResult(fBitmap.readPixels(dst.pixmap(), subset->left(), subset->top()));
         dst.setImmutable(); // key, so MakeFromBitmap doesn't make a copy of the buffer
-        return SkImage::MakeFromBitmap(dst);
+        return dst.asImage();
     }
 
     SkCopyPixelsMode cpm = kIfMutable_SkCopyPixelsMode;
@@ -144,7 +144,7 @@ void SkSurface_Raster::onCopyOnWrite(ContentChangeMode mode) {
         // what is being used by the image. Next we update the canvas to use
         // this as its backend, so we can't modify the image's pixels anymore.
         SkASSERT(this->getCachedCanvas());
-        this->getCachedCanvas()->getDevice()->replaceBitmapBackendForRasterSurface(fBitmap);
+        this->getCachedCanvas()->baseDevice()->replaceBitmapBackendForRasterSurface(fBitmap);
     }
 }
 
