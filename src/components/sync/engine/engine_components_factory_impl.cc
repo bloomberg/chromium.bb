@@ -7,10 +7,10 @@
 #include <map>
 #include <utility>
 
-#include "components/sync/engine_impl/backoff_delay_provider.h"
-#include "components/sync/engine_impl/cycle/sync_cycle_context.h"
-#include "components/sync/engine_impl/sync_scheduler_impl.h"
-#include "components/sync/engine_impl/syncer.h"
+#include "components/sync/engine/backoff_delay_provider.h"
+#include "components/sync/engine/cycle/sync_cycle_context.h"
+#include "components/sync/engine/sync_scheduler_impl.h"
+#include "components/sync/engine/syncer.h"
 
 namespace syncer {
 
@@ -23,17 +23,16 @@ std::unique_ptr<SyncScheduler> EngineComponentsFactoryImpl::BuildScheduler(
     SyncCycleContext* context,
     CancelationSignal* cancelation_signal,
     bool ignore_auth_credentials) {
-  std::unique_ptr<BackoffDelayProvider> delay(
-      BackoffDelayProvider::FromDefaults());
-
-  if (switches_.backoff_override == BACKOFF_SHORT_INITIAL_RETRY_OVERRIDE) {
-    delay.reset(BackoffDelayProvider::WithShortInitialRetryOverride());
-  }
+  std::unique_ptr<BackoffDelayProvider> delay =
+      (switches_.backoff_override == BACKOFF_SHORT_INITIAL_RETRY_OVERRIDE)
+          ? BackoffDelayProvider::WithShortInitialRetryOverride()
+          : BackoffDelayProvider::FromDefaults();
 
   std::unique_ptr<SyncSchedulerImpl> scheduler =
-      std::make_unique<SyncSchedulerImpl>(name, delay.release(), context,
-                                          new Syncer(cancelation_signal),
-                                          ignore_auth_credentials);
+      std::make_unique<SyncSchedulerImpl>(
+          name, std::move(delay), context,
+          std::make_unique<Syncer>(cancelation_signal),
+          ignore_auth_credentials);
   if (switches_.force_short_nudge_delay_for_test) {
     scheduler->ForceShortNudgeDelayForTest();
   }

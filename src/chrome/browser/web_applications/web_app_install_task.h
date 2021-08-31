@@ -11,8 +11,6 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
@@ -20,7 +18,9 @@
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 class Profile;
@@ -64,7 +64,7 @@ class WebAppInstallTask : content::WebContentsObserver {
   // kExpectedAppIdCheckFailed if actual app_id doesn't match expected app_id.
   // The actual resulting app_id is reported as a part of OnceInstallCallback.
   void ExpectAppId(const AppId& expected_app_id);
-  const base::Optional<AppId>& app_id_to_expect() const {
+  const absl::optional<AppId>& app_id_to_expect() const {
     return expected_app_id_;
   }
 
@@ -76,7 +76,7 @@ class WebAppInstallTask : content::WebContentsObserver {
       InstallResultCode code)>;
   // Load a web app from the given URL and check for valid manifest.
   void LoadWebAppAndCheckManifest(const GURL& url,
-                                  WebappInstallSource install_source,
+                                  webapps::WebappInstallSource install_source,
                                   WebAppUrlLoader* url_loader,
                                   LoadWebAppAndCheckManifestCallback callback);
 
@@ -85,7 +85,7 @@ class WebAppInstallTask : content::WebContentsObserver {
   void InstallWebAppFromManifest(
       content::WebContents* web_contents,
       bool bypass_service_worker_check,
-      WebappInstallSource install_source,
+      webapps::WebappInstallSource install_source,
       InstallManager::WebAppInstallDialogCallback dialog_callback,
       InstallManager::OnceInstallCallback callback);
 
@@ -96,7 +96,7 @@ class WebAppInstallTask : content::WebContentsObserver {
   void InstallWebAppFromManifestWithFallback(
       content::WebContents* web_contents,
       bool force_shortcut_app,
-      WebappInstallSource install_source,
+      webapps::WebappInstallSource install_source,
       InstallManager::WebAppInstallDialogCallback dialog_callback,
       InstallManager::OnceInstallCallback callback);
 
@@ -107,7 +107,7 @@ class WebAppInstallTask : content::WebContentsObserver {
       const GURL& launch_url,
       content::WebContents* web_contents,
       WebAppUrlLoader* url_loader,
-      WebappInstallSource install_source,
+      webapps::WebappInstallSource install_source,
       InstallManager::OnceInstallCallback callback);
 
   // Fetches the icon URLs in |web_application_info| to populate the icon
@@ -125,7 +125,7 @@ class WebAppInstallTask : content::WebContentsObserver {
   void InstallWebAppFromInfo(
       std::unique_ptr<WebApplicationInfo> web_application_info,
       ForInstallableSite for_installable_site,
-      WebappInstallSource install_source,
+      webapps::WebappInstallSource install_source,
       InstallManager::OnceInstallCallback callback);
 
   // Starts a background web app installation process for a given
@@ -135,13 +135,14 @@ class WebAppInstallTask : content::WebContentsObserver {
   void InstallWebAppWithParams(
       content::WebContents* web_contents,
       const InstallManager::InstallParams& install_params,
-      WebappInstallSource install_source,
+      webapps::WebappInstallSource install_source,
       InstallManager::OnceInstallCallback callback);
 
   void UpdateWebAppFromInfo(
       content::WebContents* web_contents,
       const AppId& app_id,
       std::unique_ptr<WebApplicationInfo> web_application_info,
+      bool redownload_app_icons,
       InstallManager::OnceInstallCallback callback);
 
   // Obtains WebApplicationInfo about web app located at |start_url|, fallbacks
@@ -182,17 +183,26 @@ class WebAppInstallTask : content::WebContentsObserver {
       content::WebContents* web_contents,
       WebAppUrlLoader::Result result);
   void OnWebAppInstallabilityChecked(
-      base::Optional<blink::Manifest> opt_manifest,
+      absl::optional<blink::Manifest> opt_manifest,
+      const GURL& manifest_url,
       bool valid_manifest_for_web_app,
       bool is_installable);
 
   void OnGetWebApplicationInfo(
       bool force_shortcut_app,
       std::unique_ptr<WebApplicationInfo> web_app_info);
+
+  // Makes amendments to |web_app_info| based on the options set in
+  // |install_params|.
+  void ApplyParamsToWebApplicationInfo(
+      const InstallManager::InstallParams& install_params,
+      WebApplicationInfo& web_app_info);
+
   void OnDidPerformInstallableCheck(
       std::unique_ptr<WebApplicationInfo> web_app_info,
       bool force_shortcut_app,
-      base::Optional<blink::Manifest> opt_manifest,
+      absl::optional<blink::Manifest> opt_manifest,
+      const GURL& manifest_url,
       bool valid_manifest_for_web_app,
       bool is_installable);
 
@@ -201,7 +211,7 @@ class WebAppInstallTask : content::WebContentsObserver {
   // synchronously calls OnDidCheckForIntentToPlayStore() implicitly failing the
   // check if it cannot be made.
   void CheckForPlayStoreIntentOrGetIcons(
-      base::Optional<blink::Manifest> opt_manifest,
+      absl::optional<blink::Manifest> opt_manifest,
       std::unique_ptr<WebApplicationInfo> web_app_info,
       std::vector<GURL> icon_urls,
       ForInstallableSite for_installable_site,
@@ -226,6 +236,7 @@ class WebAppInstallTask : content::WebContentsObserver {
       IconsMap icons_map);
   void OnIconsRetrievedFinalizeUpdate(
       std::unique_ptr<WebApplicationInfo> web_app_info,
+      bool redownload_app_icons,
       IconsMap icons_map);
   void OnDialogCompleted(ForInstallableSite for_installable_site,
                          bool user_accepted,
@@ -250,15 +261,15 @@ class WebAppInstallTask : content::WebContentsObserver {
   InstallManager::WebAppInstallDialogCallback dialog_callback_;
   InstallManager::OnceInstallCallback install_callback_;
   RetrieveWebApplicationInfoWithIconsCallback retrieve_info_callback_;
-  base::Optional<InstallManager::InstallParams> install_params_;
-  base::Optional<AppId> expected_app_id_;
+  absl::optional<InstallManager::InstallParams> install_params_;
+  absl::optional<AppId> expected_app_id_;
   bool background_installation_ = false;
 
   // The mechanism via which the app creation was triggered, will stay as
   // kNoInstallSource for updates.
-  static constexpr WebappInstallSource kNoInstallSource =
-      WebappInstallSource::COUNT;
-  WebappInstallSource install_source_ = kNoInstallSource;
+  static constexpr webapps::WebappInstallSource kNoInstallSource =
+      webapps::WebappInstallSource::COUNT;
+  webapps::WebappInstallSource install_source_ = kNoInstallSource;
 
   std::unique_ptr<WebAppDataRetriever> data_retriever_;
   std::unique_ptr<WebApplicationInfo> web_application_info_;

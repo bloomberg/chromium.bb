@@ -14,6 +14,7 @@
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/user/login_status.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/insets.h"
 
@@ -27,14 +28,16 @@ class TrayEventFilter;
 // inherits from ActionableView so that the tray items can override
 // PerformAction when clicked on.
 class ASH_EXPORT TrayBackgroundView : public ActionableView,
-                                      public ui::ImplicitAnimationObserver,
+                                      public ui::LayerAnimationObserver,
                                       public ShelfBackgroundAnimatorObserver,
                                       public TrayBubbleView::Delegate,
                                       public VirtualKeyboardModel::Observer {
  public:
-  static const char kViewClassName[];
+  METADATA_HEADER(TrayBackgroundView);
 
   explicit TrayBackgroundView(Shelf* shelf);
+  TrayBackgroundView(const TrayBackgroundView&) = delete;
+  TrayBackgroundView& operator=(const TrayBackgroundView&) = delete;
   ~TrayBackgroundView() override;
 
   // Called after the tray has been added to the widget containing it.
@@ -44,9 +47,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   static void InitializeBubbleAnimations(views::Widget* bubble_widget);
 
   // ActionableView:
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
+  void OnThemeChanged() override;
 
   // VirtualKeyboardModel::Observer:
   void OnVirtualKeyboardVisibilityChanged() override;
@@ -55,13 +56,17 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // nullptr.
   virtual TrayBubbleView* GetBubbleView();
 
+  // Returns the associated tray bubble widget, if a bubble exists. Otherwise
+  // returns nullptr.
+  virtual views::Widget* GetBubbleWidget() const;
+
   // Closes the associated tray bubble view if it exists and is currently
   // showing.
   virtual void CloseBubble();
 
   // Shows the associated tray bubble if one exists. |show_by_click| indicates
   // whether the showing operation is initiated by mouse or gesture click.
-  virtual void ShowBubble(bool show_by_click);
+  virtual void ShowBubble();
 
   // Calculates the ideal bounds that this view should have depending on the
   // constraints.
@@ -80,7 +85,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   virtual void AnchorUpdated() {}
 
   // Called from GetAccessibleNodeData, must return a valid accessible name.
-  virtual base::string16 GetAccessibleNameForTray() = 0;
+  virtual std::u16string GetAccessibleNameForTray() = 0;
 
   // Called when a locale change is detected. It should reload any strings the
   // view may be using. Note that the locale is not expected to change after the
@@ -108,9 +113,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   TrayEventFilter* tray_event_filter() { return tray_event_filter_.get(); }
   Shelf* shelf() { return shelf_; }
 
-  // Updates the arrow visibility based on the launcher visibility.
-  void UpdateBubbleViewArrow(TrayBubbleView* bubble_view);
-
   // Updates the visibility of this tray's separator.
   void set_separator_visibility(bool visible) { separator_visible_ = visible; }
 
@@ -133,6 +135,9 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // based on background insets returned from GetBackgroundInsets().
   gfx::Rect GetBackgroundBounds() const;
 
+  // ActionableView:
+  bool PerformAction(const ui::Event& event) override;
+
   // Sets whether the tray item should be shown by default (e.g. it is
   // activated). The effective visibility of the tray item is determined by the
   // current state of the status tray (i.e. whether the virtual keyboard is
@@ -140,37 +145,66 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   virtual void SetVisiblePreferred(bool visible_preferred);
   bool visible_preferred() const { return visible_preferred_; }
 
+  // Disables bounce in and fade in animation. The animation will remain
+  // disabled until the returned scoped closure runner is run.
+  base::ScopedClosureRunner DisableShowAnimation() WARN_UNUSED_RESULT;
+
  protected:
   // ActionableView:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   bool ShouldEnterPushedState(const ui::Event& event) override;
-  bool PerformAction(const ui::Event& event) override;
   void HandlePerformActionResult(bool action_performed,
                                  const ui::Event& event) override;
   views::PaintInfo::ScaleType GetPaintScaleType() const override;
+
+  virtual void OnShouldShowAnimationChanged(bool should_animate) {}
 
   void set_show_with_virtual_keyboard(bool show_with_virtual_keyboard) {
     show_with_virtual_keyboard_ = show_with_virtual_keyboard;
   }
 
+  void set_use_bounce_in_animation(bool use_bounce_in_animation) {
+    use_bounce_in_animation_ = use_bounce_in_animation;
+  }
+
  private:
   class TrayWidgetObserver;
+  class TrayBackgroundViewSessionChangeHandler;
 
   void StartVisibilityAnimation(bool visible);
+
+  // Updates status area widget by calling `UpdateCollapseState()` and
+  // `LogVisiblePodCountMetric()`.
+  void UpdateStatusArea(bool should_log_visible_pod_count);
+
+  // After hide animation is finished/aborted/removed, we will need to do an
+  // update to the view's visibility and the view's status area widget state.
+  void OnVisibilityAnimationFinished(bool should_log_visible_pod_count,
+                                     bool aborted);
 
   // views::View:
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void ChildPreferredSizeChanged(views::View* child) override;
-  const char* GetClassName() const override;
+  // In some cases, we expect the layer's visibility to be set to false right
+  // away when the layer is replaced. See
+  // `OverviewButtonTrayTest.HideAnimationAlwaysCompletesOnDelete` test as an
+  // example. We use `::wm::RecreateLayers(root_window)` to create fresh layers
+  // for the window. If we don't override this method, the old layer and its
+  // child layers will still be there until all the animation finished.
+  std::unique_ptr<ui::Layer> RecreateLayer() override;
 
   // ui::ImplicitAnimationObserver:
-  void OnImplicitAnimationsCompleted() override;
-  bool RequiresNotificationWhenAnimatorDestroyed() const override;
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* sequence) override {}
 
   // Applies transformations to the |layer()| to animate the view when
   // SetVisible(false) is called.
-  void HideTransformation();
+  void HideAnimation();
+  void FadeInAnimation();
+  void BounceInAnimation();
 
   // Helper function that calculates background insets relative to local bounds.
   gfx::Insets GetBackgroundInsets() const;
@@ -178,6 +212,11 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Returns the effective visibility of the tray item based on the current
   // state.
   bool GetEffectiveVisibility();
+
+  // Checks if we should show bounce in or fade in animation.
+  bool IsShowAnimationEnabled() const {
+    return disable_show_animation_count_ == 0u;
+  }
 
   // The shelf containing the system tray for this view.
   Shelf* shelf_;
@@ -204,10 +243,17 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // If true, the view is visible when the status area is collapsed.
   bool show_when_collapsed_;
 
+  bool use_bounce_in_animation_ = true;
+  bool is_starting_animation_ = false;
+
+  // Number of active requests to disable the bounce-in and fade-in animation.
+  size_t disable_show_animation_count_ = 0;
+
   std::unique_ptr<TrayWidgetObserver> widget_observer_;
   std::unique_ptr<TrayEventFilter> tray_event_filter_;
+  std::unique_ptr<TrayBackgroundViewSessionChangeHandler> handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(TrayBackgroundView);
+  base::WeakPtrFactory<TrayBackgroundView> weak_factory_{this};
 };
 
 }  // namespace ash

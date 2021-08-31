@@ -154,7 +154,8 @@ class ClockTracker {
 
   // Appends a new snapshot for the given clock domains.
   // This is typically called by the code that reads the ClockSnapshot packet.
-  void AddSnapshot(const std::vector<ClockValue>&);
+  // Returns the internal snapshot id of this set of clocks.
+  uint32_t AddSnapshot(const std::vector<ClockValue>&);
 
   // Converts a timestamp between two clock domains. Tries to use the cache
   // first (only for single-path resolutions), then falls back on path finding
@@ -187,7 +188,8 @@ class ClockTracker {
 
   void SetTraceTimeClock(ClockId clock_id) {
     PERFETTO_DCHECK(!IsReservedSeqScopedClockId(clock_id));
-    if (trace_time_clock_id_used_for_conversion_) {
+    if (trace_time_clock_id_used_for_conversion_ &&
+        trace_time_clock_id_ != clock_id) {
       PERFETTO_ELOG("Not updating trace time clock from %" PRIu64 " to %" PRIu64
                     " because the old clock was already used for timestamp "
                     "conversion - ClockSnapshot too late in trace?",

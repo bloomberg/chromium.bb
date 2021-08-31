@@ -5,9 +5,6 @@
 #ifndef COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_SYNC_SERVICE_H_
 #define COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_SYNC_SERVICE_H_
 
-#include <memory>
-#include <string>
-
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
@@ -39,8 +36,11 @@ class DeviceInfoSyncService : public KeyedService {
   // Interface to refresh local copy of device info in memory, and informs sync
   // of the change. Used when the caller knows a property of local device info
   // has changed (e.g. SharingInfo), and must be sync-ed to other devices as
-  // soon as possible, without waiting for the periodic commits. |callback| will
-  // be called when device info is synced.
+  // soon as possible, without waiting for the periodic commits. The device info
+  // will be compared to the local copy. If the device info has been actually
+  // changed, then it will be committed and the |callback| will be called when
+  // device info is synced. Otherwise nothing happens and the |callback| will
+  // never be called.
   virtual void RefreshLocalDeviceInfo(
       base::OnceClosure callback = base::DoNothing()) = 0;
 };

@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/platform/json/json_parser.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -338,7 +337,7 @@ ImportMap::SpecifierMap ImportMap::SortAndNormalizeSpecifierMap(
 }
 
 // <specdef href="https://wicg.github.io/import-maps/#resolve-an-imports-match">
-base::Optional<ImportMap::MatchResult> ImportMap::MatchPrefix(
+absl::optional<ImportMap::MatchResult> ImportMap::MatchPrefix(
     const ParsedSpecifier& parsed_specifier,
     const SpecifierMap& specifier_map) const {
   const String key = parsed_specifier.GetImportMapKeyString();
@@ -353,7 +352,7 @@ base::Optional<ImportMap::MatchResult> ImportMap::MatchPrefix(
   // "most-specific wins", i.e. when there are multiple matching keys,
   // choose the longest.
   // https://github.com/WICG/import-maps/issues/102
-  base::Optional<MatchResult> best_match;
+  absl::optional<MatchResult> best_match;
 
   // <spec step="1">For each specifierKey → resolutionResult of
   // specifierMap,</spec>
@@ -384,7 +383,7 @@ ImportMap::ImportMap(SpecifierMap&& imports, ScopeType&& scopes)
 
 // <specdef
 // href="https://wicg.github.io/import-maps/#resolve-a-module-specifier">
-base::Optional<KURL> ImportMap::Resolve(const ParsedSpecifier& parsed_specifier,
+absl::optional<KURL> ImportMap::Resolve(const ParsedSpecifier& parsed_specifier,
                                         const KURL& base_url,
                                         String* debug_message) const {
   DCHECK(debug_message);
@@ -399,7 +398,7 @@ base::Optional<KURL> ImportMap::Resolve(const ParsedSpecifier& parsed_specifier,
          base_url.GetString().StartsWith(entry.first))) {
       // <spec step="8.1.1">Let scopeImportsMatch be the result of resolving an
       // imports match given normalizedSpecifier and scopeImports.</spec>
-      base::Optional<KURL> scope_match =
+      absl::optional<KURL> scope_match =
           ResolveImportsMatch(parsed_specifier, entry.second, debug_message);
 
       // <spec step="8.1.2">If scopeImportsMatch is not null, then return
@@ -418,7 +417,7 @@ base::Optional<KURL> ImportMap::Resolve(const ParsedSpecifier& parsed_specifier,
 }
 
 // <specdef href="https://wicg.github.io/import-maps/#resolve-an-imports-match">
-base::Optional<KURL> ImportMap::ResolveImportsMatch(
+absl::optional<KURL> ImportMap::ResolveImportsMatch(
     const ParsedSpecifier& parsed_specifier,
     const SpecifierMap& specifier_map,
     String* debug_message) const {
@@ -431,6 +430,15 @@ base::Optional<KURL> ImportMap::ResolveImportsMatch(
     return ResolveImportsMatchInternal(key, exact, debug_message);
   }
 
+  // <spec step="1.2">... either asURL is null, or asURL is special</spec>
+  if (parsed_specifier.GetType() == ParsedSpecifier::Type::kURL &&
+      !SchemeRegistry::IsSpecialScheme(parsed_specifier.GetUrl().Protocol())) {
+    *debug_message = "Import Map: \"" + key +
+                     "\" skips prefix match because of non-special URL scheme";
+
+    return absl::nullopt;
+  }
+
   // Step 1.2.
   if (auto prefix_match = MatchPrefix(parsed_specifier, specifier_map)) {
     return ResolveImportsMatchInternal(key, *prefix_match, debug_message);
@@ -439,7 +447,7 @@ base::Optional<KURL> ImportMap::ResolveImportsMatch(
   // <spec step="2">Return null.</spec>
   *debug_message = "Import Map: \"" + key +
                    "\" matches with no entries and thus is not mapped.";
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 // <specdef href="https://wicg.github.io/import-maps/#resolve-an-imports-match">
@@ -483,7 +491,17 @@ KURL ImportMap::ResolveImportsMatchInternal(const String& key,
     return NullURL();
   }
 
-  // <spec step="1.2.8">Return url.</spec>
+  // <spec step="1.2.8">If the serialization of url does not start with the
+  // serialization of resolutionResult, then throw a TypeError indicating that
+  // resolution of normalizedSpecifier was blocked due to it backtracking above
+  // its prefix specifierKey.</spec>
+  if (!url.GetString().StartsWith(matched->value.GetString())) {
+    *debug_message = "Import Map: \"" + key + "\" matches with \"" +
+                     matched->key + "\" but is blocked due to backtracking";
+    return NullURL();
+  }
+
+  // <spec step="1.2.9">Return url.</spec>
   *debug_message = "Import Map: \"" + key + "\" matches with \"" +
                    matched->key + "\" and is mapped to " + url.ElidedString();
   return url;

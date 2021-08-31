@@ -228,7 +228,7 @@ class ExtensionTabUtil {
 
   // Executes the specified callback for all tabs in all browser windows.
   static void ForEachTab(
-      const base::Callback<void(content::WebContents*)>& callback);
+      base::RepeatingCallback<void(content::WebContents*)> callback);
 
   static WindowController* GetWindowControllerOfTab(
       const content::WebContents* web_contents);
@@ -253,6 +253,18 @@ class ExtensionTabUtil {
   // some non-const member functions of |contents|, but actually leaves it
   // unmodified.
   static api::tabs::TabStatus GetLoadingStatus(content::WebContents* contents);
+
+  // Clears the back-forward cache for all active tabs across all browser
+  // contexts.
+  static void ClearBackForwardCache();
+
+  // Check TabStripModel editability in every browser because a drag session
+  // could be running in another browser that reverts to the current browser. Or
+  // a drag could be mid-handoff if from one browser to another.
+  static bool IsTabStripEditable();
+
+  // Retrieve a TabStripModel only if every browser is editable.
+  static TabStripModel* GetEditableTabStripModel(Browser* browser);
 };
 
 }  // namespace extensions

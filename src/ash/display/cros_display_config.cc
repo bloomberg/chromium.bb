@@ -22,9 +22,10 @@
 #include "ash/touch/ash_touch_transform_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
-#include "base/optional.h"
+#include "base/containers/contains.h"
 #include "base/strings/string_number_conversions.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/display_layout_builder.h"
@@ -166,7 +167,7 @@ mojom::DisplayConfigResult SetDisplayLayoutMode(
   if (info.layout_mode == mojom::DisplayLayoutMode::kNormal) {
     display_manager->SetDefaultMultiDisplayModeForCurrentDisplays(
         display::DisplayManager::EXTENDED);
-    display_manager->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
+    display_manager->SetMirrorMode(display::MirrorMode::kOff, absl::nullopt);
     return mojom::DisplayConfigResult::kSuccess;
   }
 
@@ -175,7 +176,7 @@ mojom::DisplayConfigResult SetDisplayLayoutMode(
       return mojom::DisplayConfigResult::kUnifiedNotEnabledError;
     display_manager->SetDefaultMultiDisplayModeForCurrentDisplays(
         display::DisplayManager::UNIFIED);
-    display_manager->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
+    display_manager->SetMirrorMode(display::MirrorMode::kOff, absl::nullopt);
     return mojom::DisplayConfigResult::kSuccess;
   }
 
@@ -183,7 +184,7 @@ mojom::DisplayConfigResult SetDisplayLayoutMode(
 
   // 'Normal' mirror mode.
   if (!info.mirror_source_id) {
-    display_manager->SetMirrorMode(display::MirrorMode::kNormal, base::nullopt);
+    display_manager->SetMirrorMode(display::MirrorMode::kNormal, absl::nullopt);
     return mojom::DisplayConfigResult::kSuccess;
   }
 
@@ -205,8 +206,8 @@ mojom::DisplayConfigResult SetDisplayLayoutMode(
     for (const display::Display& display : displays)
       destination_ids.emplace_back(display.id());
   }
-  base::Optional<display::MixedMirrorModeParams> mixed_params(
-      base::in_place, source.id(), destination_ids);
+  absl::optional<display::MixedMirrorModeParams> mixed_params(
+      absl::in_place, source.id(), destination_ids);
   const display::MixedMirrorModeParamsErrors error_type =
       display::ValidateParamsForMixedMirrorMode(
           display_manager->GetCurrentDisplayIdList(), *mixed_params);
@@ -262,11 +263,13 @@ display::Display::Rotation DisplayRotationFromRotationOptions(
 
 mojom::DisplayRotationOptions RotationOptionsFromDisplayRotation(
     display::Display::Rotation rotation) {
-  const bool is_in_tablet_physical_state =
-      Shell::Get()->tablet_mode_controller()->is_in_tablet_physical_state();
+  auto* screen_orientation_controller =
+      Shell::Get()->screen_orientation_controller();
+  const bool is_auto_rotation_allowed =
+      screen_orientation_controller->IsAutoRotationAllowed();
   const bool is_auto_rotate_enabled =
-      !Shell::Get()->screen_orientation_controller()->user_rotation_locked();
-  if (is_in_tablet_physical_state && is_auto_rotate_enabled)
+      !screen_orientation_controller->user_rotation_locked();
+  if (is_auto_rotation_allowed && is_auto_rotate_enabled)
     return mojom::DisplayRotationOptions::kAutoRotate;
 
   switch (rotation) {
@@ -307,8 +310,8 @@ mojom::DisplayUnitInfoPtr GetDisplayUnitInfo(const display::Display& display,
   info->is_primary = display.id() == primary_id;
   info->is_internal = display.IsInternal();
   info->is_enabled = true;
-  info->is_in_tablet_physical_state =
-      Shell::Get()->tablet_mode_controller()->is_in_tablet_physical_state();
+  info->is_auto_rotation_allowed =
+      Shell::Get()->screen_orientation_controller()->IsAutoRotationAllowed();
   const bool has_accelerometer_support =
       display.accelerometer_support() ==
       display::Display::AccelerometerSupport::AVAILABLE;
@@ -753,21 +756,22 @@ void CrosDisplayConfig::SetDisplayProperties(
   if (properties->rotation) {
     const mojom::DisplayRotationOptions rotation_options =
         properties->rotation->rotation;
-    const bool is_in_tablet_physical_state =
-        Shell::Get()->tablet_mode_controller()->is_in_tablet_physical_state();
     auto* screen_orientation_controller =
         Shell::Get()->screen_orientation_controller();
+    const bool is_auto_rotation_allowed =
+        screen_orientation_controller->IsAutoRotationAllowed();
     const bool auto_rotate_requested =
         rotation_options == mojom::DisplayRotationOptions::kAutoRotate;
-    if (auto_rotate_requested && !is_in_tablet_physical_state) {
-      LOG(ERROR) << "Auto-rotate is supported only when the device is in "
-                 << "physical tablet state. This will be treated as a request "
-                 << " to set the display rotation to 0 degrees.";
+    if (auto_rotate_requested && !is_auto_rotation_allowed) {
+      LOG(ERROR) << "Auto-rotate is supported when the device is in physical "
+                 << "tablet state or kSupportsClamshellAutoRotation is set. "
+                 << "This will be treated as a request to set the display "
+                 << "rotation to 0 degrees.";
     }
 
     display::Display::Rotation rotation =
         DisplayRotationFromRotationOptions(properties->rotation->rotation);
-    if (is_in_tablet_physical_state) {
+    if (is_auto_rotation_allowed) {
       if (auto_rotate_requested) {
         if (screen_orientation_controller->user_rotation_locked())
           screen_orientation_controller->ToggleUserRotationLock();
@@ -816,7 +820,7 @@ void CrosDisplayConfig::SetUnifiedDesktopEnabled(bool enabled) {
 void CrosDisplayConfig::OverscanCalibration(
     const std::string& display_id,
     mojom::DisplayConfigOperation op,
-    const base::Optional<gfx::Insets>& delta,
+    const absl::optional<gfx::Insets>& delta,
     OverscanCalibrationCallback callback) {
   display::Display display = GetDisplay(display_id);
   if (display.id() == display::kInvalidDisplayId) {
@@ -930,7 +934,7 @@ void CrosDisplayConfig::TouchCalibration(const std::string& display_id,
 
   if (op == mojom::DisplayConfigOperation::kReset) {
     Shell::Get()->display_manager()->ClearTouchCalibrationData(display.id(),
-                                                               base::nullopt);
+                                                               absl::nullopt);
     std::move(callback).Run(mojom::DisplayConfigResult::kSuccess);
     return;
   }

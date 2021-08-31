@@ -351,8 +351,14 @@ void av1_filter_block_plane_vert(const AV1_COMMON *const cm,
   const uint32_t scale_vert = plane_ptr->subsampling_y;
   uint8_t *const dst_ptr = plane_ptr->dst.buf;
   const int dst_stride = plane_ptr->dst.stride;
-  const int y_range = (MAX_MIB_SIZE >> scale_vert);
-  const int x_range = (MAX_MIB_SIZE >> scale_horz);
+  const int plane_mi_rows =
+      ROUND_POWER_OF_TWO(cm->mi_params.mi_rows, scale_vert);
+  const int plane_mi_cols =
+      ROUND_POWER_OF_TWO(cm->mi_params.mi_cols, scale_horz);
+  const int y_range = AOMMIN((int)(plane_mi_rows - (mi_row >> scale_vert)),
+                             (MAX_MIB_SIZE >> scale_vert));
+  const int x_range = AOMMIN((int)(plane_mi_cols - (mi_col >> scale_horz)),
+                             (MAX_MIB_SIZE >> scale_horz));
   for (int y = 0; y < y_range; y++) {
     uint8_t *p = dst_ptr + y * MI_SIZE * dst_stride;
     for (int x = 0; x < x_range;) {
@@ -376,8 +382,8 @@ void av1_filter_block_plane_vert(const AV1_COMMON *const cm,
       }
 
 #if CONFIG_AV1_HIGHBITDEPTH
-      const int use_highbitdepth = cm->seq_params.use_highbitdepth;
-      const aom_bit_depth_t bit_depth = cm->seq_params.bit_depth;
+      const int use_highbitdepth = cm->seq_params->use_highbitdepth;
+      const aom_bit_depth_t bit_depth = cm->seq_params->bit_depth;
       switch (params.filter_length) {
         // apply 4-tap filtering
         case 4:
@@ -464,8 +470,14 @@ void av1_filter_block_plane_horz(const AV1_COMMON *const cm,
   const uint32_t scale_vert = plane_ptr->subsampling_y;
   uint8_t *const dst_ptr = plane_ptr->dst.buf;
   const int dst_stride = plane_ptr->dst.stride;
-  const int y_range = (MAX_MIB_SIZE >> scale_vert);
-  const int x_range = (MAX_MIB_SIZE >> scale_horz);
+  const int plane_mi_rows =
+      ROUND_POWER_OF_TWO(cm->mi_params.mi_rows, scale_vert);
+  const int plane_mi_cols =
+      ROUND_POWER_OF_TWO(cm->mi_params.mi_cols, scale_horz);
+  const int y_range = AOMMIN((int)(plane_mi_rows - (mi_row >> scale_vert)),
+                             (MAX_MIB_SIZE >> scale_vert));
+  const int x_range = AOMMIN((int)(plane_mi_cols - (mi_col >> scale_horz)),
+                             (MAX_MIB_SIZE >> scale_horz));
   for (int x = 0; x < x_range; x++) {
     uint8_t *p = dst_ptr + x * MI_SIZE;
     for (int y = 0; y < y_range;) {
@@ -489,8 +501,8 @@ void av1_filter_block_plane_horz(const AV1_COMMON *const cm,
       }
 
 #if CONFIG_AV1_HIGHBITDEPTH
-      const int use_highbitdepth = cm->seq_params.use_highbitdepth;
-      const aom_bit_depth_t bit_depth = cm->seq_params.bit_depth;
+      const int use_highbitdepth = cm->seq_params->use_highbitdepth;
+      const aom_bit_depth_t bit_depth = cm->seq_params->bit_depth;
       switch (params.filter_length) {
         // apply 4-tap filtering
         case 4:
@@ -679,7 +691,7 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
       else if (plane == 2 && !(cm->lf.filter_level_v))
         continue;
 
-      av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, 0, 0,
+      av1_setup_dst_planes(pd, cm->seq_params->sb_size, frame_buffer, 0, 0,
                            plane, plane + 1);
 
       av1_build_bitmask_vert_info(cm, &pd[plane], plane);
@@ -722,13 +734,13 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
       for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
         for (mi_col = col_start; mi_col < col_end; mi_col += MAX_MIB_SIZE) {
           // filter vertical edges
-          av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
-                               mi_col, plane, plane + 1);
+          av1_setup_dst_planes(pd, cm->seq_params->sb_size, frame_buffer,
+                               mi_row, mi_col, plane, plane + 1);
           av1_filter_block_plane_vert(cm, xd, plane, &pd[plane], mi_row,
                                       mi_col);
           // filter horizontal edges
           if (mi_col - MAX_MIB_SIZE >= 0) {
-            av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer,
+            av1_setup_dst_planes(pd, cm->seq_params->sb_size, frame_buffer,
                                  mi_row, mi_col - MAX_MIB_SIZE, plane,
                                  plane + 1);
             av1_filter_block_plane_horz(cm, xd, plane, &pd[plane], mi_row,
@@ -736,7 +748,7 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
           }
         }
         // filter horizontal edges
-        av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
+        av1_setup_dst_planes(pd, cm->seq_params->sb_size, frame_buffer, mi_row,
                              mi_col - MAX_MIB_SIZE, plane, plane + 1);
         av1_filter_block_plane_horz(cm, xd, plane, &pd[plane], mi_row,
                                     mi_col - MAX_MIB_SIZE);
@@ -745,8 +757,8 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
       // filter all vertical edges in every 128x128 super block
       for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
         for (mi_col = col_start; mi_col < col_end; mi_col += MAX_MIB_SIZE) {
-          av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
-                               mi_col, plane, plane + 1);
+          av1_setup_dst_planes(pd, cm->seq_params->sb_size, frame_buffer,
+                               mi_row, mi_col, plane, plane + 1);
           av1_filter_block_plane_vert(cm, xd, plane, &pd[plane], mi_row,
                                       mi_col);
         }
@@ -755,8 +767,8 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
       // filter all horizontal edges in every 128x128 super block
       for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
         for (mi_col = col_start; mi_col < col_end; mi_col += MAX_MIB_SIZE) {
-          av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
-                               mi_col, plane, plane + 1);
+          av1_setup_dst_planes(pd, cm->seq_params->sb_size, frame_buffer,
+                               mi_row, mi_col, plane, plane + 1);
           av1_filter_block_plane_horz(cm, xd, plane, &pd[plane], mi_row,
                                       mi_col);
         }

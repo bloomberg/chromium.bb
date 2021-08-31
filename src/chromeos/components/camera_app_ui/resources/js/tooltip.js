@@ -17,11 +17,17 @@ let wrapper = null;
 let hovered = null;
 
 /**
- * Positions the tooltip wrapper over the hovered element.
+ * Name of event triggered for positioning tooltip.
+ * @const {string}
  */
-function position() {
+export const TOOLTIP_POSITION_EVENT_NAME = 'tooltipposition';
+
+/**
+ * Positions tooltip relative to UI.
+ * @param {!DOMRectReadOnly} rect UI's reference region.
+ */
+export function position(rect) {
   const [edgeMargin, elementMargin] = [5, 8];
-  const rect = hovered.getBoundingClientRect();
   let tooltipTop = rect.top - wrapper.offsetHeight - elementMargin;
   if (tooltipTop < edgeMargin) {
     tooltipTop = rect.bottom + elementMargin;
@@ -29,7 +35,7 @@ function position() {
   wrapper.style.top = tooltipTop + 'px';
 
   // Center over the hovered element but avoid touching edges.
-  const hoveredCenter = rect.left + hovered.offsetWidth / 2;
+  const hoveredCenter = rect.left + rect.width / 2;
   const left = Math.min(
       Math.max(hoveredCenter - wrapper.clientWidth / 2, edgeMargin),
       document.body.offsetWidth - wrapper.offsetWidth - edgeMargin);
@@ -49,29 +55,36 @@ export function hide() {
 
 /**
  * Shows a tooltip over the hovered element.
- * @param {!HTMLInputElement} element Hovered element whose tooltip to be shown.
+ * @param {!HTMLElement} element Hovered element whose tooltip to be shown.
  */
 function show(element) {
   hide();
   let message = element.getAttribute('aria-label');
-  if (element.hasAttribute('tooltip-true') && element.checked) {
-    message = element.getAttribute('tooltip-true');
-  }
-  if (element.hasAttribute('tooltip-false') && !element.checked) {
-    message = element.getAttribute('tooltip-false');
+  if (element instanceof HTMLInputElement) {
+    if (element.hasAttribute('tooltip-true') && element.checked) {
+      message = element.getAttribute('tooltip-true');
+    }
+    if (element.hasAttribute('tooltip-false') && !element.checked) {
+      message = element.getAttribute('tooltip-false');
+    }
   }
   wrapper.textContent = message;
   hovered = element;
-  position();
+  const positionEvent = new CustomEvent(
+      TOOLTIP_POSITION_EVENT_NAME, {cancelable: true, target: hovered});
+  const doDefault = hovered.dispatchEvent(positionEvent);
+  if (doDefault) {
+    position(hovered.getBoundingClientRect());
+  }
   wrapper.classList.add('visible');
 }
 
 /**
  * Sets up tooltips for elements.
- * @param {!NodeList<!HTMLInputElement>} elements Elements whose tooltips to be
- *     shown.
- * @return {!NodeList<!HTMLInputElement>} Elements whose tooltips have been set
- *     up.
+ * @param {!NodeListOf<!HTMLElement>} elements Elements whose tooltips to
+ *     be shown.
+ * @return {!NodeListOf<!HTMLElement>} Elements whose tooltips have been
+ *     set up.
  */
 export function setup(elements) {
   wrapper = dom.get('#tooltip', HTMLElement);

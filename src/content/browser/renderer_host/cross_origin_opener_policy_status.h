@@ -11,9 +11,14 @@
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
+namespace net {
+class NetworkIsolationKey;
+}  // namespace net
+
 namespace content {
 class CrossOriginOpenerPolicyReporter;
 class FrameTreeNode;
+class NavigationRequest;
 class StoragePartition;
 
 // Groups information used to apply COOP during navigations. This class will be
@@ -21,18 +26,22 @@ class StoragePartition;
 // reporting.
 class CrossOriginOpenerPolicyStatus {
  public:
-  CrossOriginOpenerPolicyStatus(
-      FrameTreeNode* frame_tree_node,
-      const base::Optional<url::Origin>& intiator_origin);
+  explicit CrossOriginOpenerPolicyStatus(NavigationRequest* navigation_request);
   ~CrossOriginOpenerPolicyStatus();
 
-  // Called after receiving a network response. Returns a BlockedByResponse
-  // reason if the navigation should be blocked, nullopt otherwise.
-  base::Optional<network::mojom::BlockedByResponseReason> EnforceCOOP(
+  // Called after receiving a network response. Returns the
+  // Cross-Origin-Opener-Policy contained in the response.
+  network::CrossOriginOpenerPolicy& RetrieveCOOPFromResponse(
       network::mojom::URLResponseHead* response_head,
+      const url::Origin& response_origin);
+
+  // Called when receiving a redirect or the final response. Returns a
+  // BlockedByResponse reason if the navigation should be blocked, nullopt
+  // otherwise.
+  absl::optional<network::mojom::BlockedByResponseReason> EnforceCOOP(
+      const network::CrossOriginOpenerPolicy& response_coop,
       const url::Origin& response_origin,
-      const GURL& response_url,
-      const GURL& response_referrer_url);
+      const net::NetworkIsolationKey& network_isolation_key);
 
   // Set to true whenever the Cross-Origin-Opener-Policy spec requires a
   // "BrowsingContext group" swap:
@@ -52,12 +61,6 @@ class CrossOriginOpenerPolicyStatus {
   // a browsing context group swap if enforced.
   int virtual_browsing_context_group() const {
     return virtual_browsing_context_group_;
-  }
-
-  // This is used to warn developer a COOP header has been ignored, because
-  // the origin was not trustworthy.
-  bool header_ignored_due_to_insecure_context() const {
-    return header_ignored_due_to_insecure_context_;
   }
 
   // The COOP used when comparing to the COOP and origin of a response. At the
@@ -81,6 +84,9 @@ class CrossOriginOpenerPolicyStatus {
                            const url::Origin& response_origin,
                            network::mojom::URLResponseHead* response_head);
 
+  // The NavigationRequest which owns this object.
+  NavigationRequest* const navigation_request_;
+
   // Tracks the FrameTreeNode in which this navigation is taking place.
   const FrameTreeNode* frame_tree_node_;
 
@@ -88,15 +94,8 @@ class CrossOriginOpenerPolicyStatus {
 
   int virtual_browsing_context_group_;
 
-  // When a page has a reachable opener and COOP triggers a browsing instance
-  // swap we sever the window.open relationship. This is one of the cases that
-  // can be reported using the COOP reporting API.
-  const bool had_opener_;
-
   // Whether this is the first navigation happening in the browsing context.
   const bool is_initial_navigation_;
-
-  bool header_ignored_due_to_insecure_context_ = false;
 
   network::CrossOriginOpenerPolicy current_coop_;
 

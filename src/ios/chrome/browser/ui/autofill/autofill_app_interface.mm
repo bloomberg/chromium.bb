@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/payments/credit_card_save_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "components/autofill/ios/browser/credit_card_save_manager_test_observer_bridge.h"
 #include "components/autofill/ios/browser/ios_test_event_waiter.h"
@@ -20,6 +21,7 @@
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
@@ -35,8 +37,8 @@
 
 namespace {
 
-const char kExampleUsername[] = "concrete username";
-const char kExamplePassword[] = "concrete password";
+const char16_t kExampleUsername[] = u"concrete username";
+const char16_t kExamplePassword[] = u"concrete password";
 
 // Gets the current password store.
 scoped_refptr<password_manager::PasswordStore> GetPasswordStore() {
@@ -119,8 +121,8 @@ void SaveToPasswordStore(const password_manager::PasswordForm& form) {
 // Saves an example form in the store.
 void SaveExamplePasswordForm() {
   password_manager::PasswordForm example;
-  example.username_value = base::ASCIIToUTF16(kExampleUsername);
-  example.password_value = base::ASCIIToUTF16(kExamplePassword);
+  example.username_value = kExampleUsername;
+  example.password_value = kExamplePassword;
   example.url = GURL("https://example.com/");
   example.signon_realm = example.url.spec();
   SaveToPasswordStore(example);
@@ -129,8 +131,8 @@ void SaveExamplePasswordForm() {
 // Saves an example form in the store for the passed URL.
 void SaveLocalPasswordForm(const GURL& url) {
   password_manager::PasswordForm localForm;
-  localForm.username_value = base::ASCIIToUTF16(kExampleUsername);
-  localForm.password_value = base::ASCIIToUTF16(kExamplePassword);
+  localForm.username_value = kExampleUsername;
+  localForm.password_value = kExamplePassword;
   localForm.url = url;
   localForm.signon_realm = localForm.url.spec();
   SaveToPasswordStore(localForm);
@@ -169,10 +171,9 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
 
 namespace autofill {
 
-// Helper class that provides access to private members of AutofillManager,
-// FormDataImporter and CreditCardSaveManager.
-// This class is friend with some autofill internal classes to access private
-// fields.
+// Helper class that provides access to private members of
+// BrowserAutofillManager, FormDataImporter and CreditCardSaveManager. This
+// class is friend with some autofill internal classes to access private fields.
 class SaveCardInfobarEGTestHelper
     : public CreditCardSaveManager::ObserverForTest {
  public:
@@ -363,6 +364,8 @@ class SaveCardInfobarEGTestHelper
   base::test::ios::TimeUntilCondition(
       nil, conditionBlock, false,
       base::TimeDelta::FromSeconds(base::test::ios::kWaitForActionTimeout));
+
+  autofill::prefs::SetAutofillProfileEnabled(browserState->GetPrefs(), YES);
 }
 
 + (void)saveExampleProfile {
@@ -371,7 +374,7 @@ class SaveCardInfobarEGTestHelper
 
 + (NSString*)exampleProfileName {
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  base::string16 name =
+  std::u16string name =
       profile.GetInfo(autofill::AutofillType(autofill::NAME_FULL),
                       GetApplicationContext()->GetApplicationLocale());
   return base::SysUTF16ToNSString(name);
@@ -383,6 +386,10 @@ class SaveCardInfobarEGTestHelper
   for (const auto* creditCard : personalDataManager->GetCreditCards()) {
     personalDataManager->RemoveByGUID(creditCard->guid());
   }
+
+  ChromeBrowserState* browserState =
+      chrome_test_util::GetOriginalBrowserState();
+  autofill::prefs::SetAutofillCreditCardEnabled(browserState->GetPrefs(), YES);
 }
 
 + (NSString*)saveLocalCreditCard {

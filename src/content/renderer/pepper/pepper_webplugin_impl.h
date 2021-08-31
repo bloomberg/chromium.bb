@@ -44,10 +44,10 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   v8::Local<v8::Object> V8ScriptableObject(v8::Isolate* isolate) override;
   bool SupportsKeyboardFocus() const override;
   void UpdateAllLifecyclePhases(blink::DocumentUpdateReason) override {}
-  void Paint(cc::PaintCanvas* canvas, const blink::WebRect& rect) override;
-  void UpdateGeometry(const blink::WebRect& window_rect,
-                      const blink::WebRect& clip_rect,
-                      const blink::WebRect& unobscured_rect,
+  void Paint(cc::PaintCanvas* canvas, const gfx::Rect& rect) override;
+  void UpdateGeometry(const gfx::Rect& window_rect,
+                      const gfx::Rect& clip_rect,
+                      const gfx::Rect& unobscured_rect,
                       bool is_visible) override;
   void UpdateFocus(bool focused, blink::mojom::FocusType focus_type) override;
   void UpdateVisibility(bool visible) override;
@@ -65,7 +65,6 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   bool HasEditableText() const override;
   bool CanUndo() const override;
   bool CanRedo() const override;
-  bool ExecuteEditCommand(const blink::WebString& name) override;
   bool ExecuteEditCommand(const blink::WebString& name,
                           const blink::WebString& value) override;
   blink::WebURL LinkAtPosition(const gfx::Point& position) const override;

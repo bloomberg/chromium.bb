@@ -33,6 +33,8 @@
 #include <stdio.h>
 
 #include "libavutil/float_dsp.h"
+#include "libavutil/mem_internal.h"
+
 #include "avcodec.h"
 #include "get_bits.h"
 #include "fft.h"
@@ -392,5 +394,5 @@ AVCodec ff_atrac1_decoder = {
     .capabilities   = AV_CODEC_CAP_DR1,
     .sample_fmts    = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_FLTP,
                                                       AV_SAMPLE_FMT_NONE },
-    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

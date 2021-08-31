@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/base64.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_hints_manager.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
@@ -18,16 +21,17 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/optimization_guide/command_line_top_host_provider.h"
-#include "components/optimization_guide/optimization_guide_enums.h"
-#include "components/optimization_guide/optimization_guide_features.h"
-#include "components/optimization_guide/optimization_guide_prefs.h"
-#include "components/optimization_guide/optimization_guide_store.h"
-#include "components/optimization_guide/optimization_guide_switches.h"
+#include "components/optimization_guide/core/command_line_top_host_provider.h"
+#include "components/optimization_guide/core/optimization_guide_enums.h"
+#include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/optimization_guide/core/optimization_guide_prefs.h"
+#include "components/optimization_guide/core/optimization_guide_store.h"
+#include "components/optimization_guide/core/optimization_guide_switches.h"
+#include "components/optimization_guide/core/optimization_hints_component_update_listener.h"
+#include "components/optimization_guide/core/test_hints_component_creator.h"
 #include "components/optimization_guide/proto/hints.pb.h"
-#include "components/optimization_guide/test_hints_component_creator.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/core/previews_switches.h"
+#include "components/site_engagement/content/site_engagement_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/hashing.h"
@@ -160,8 +164,8 @@ class OptimizationGuideKeyedServiceBrowserTest
   void SetUpOnMainThread() override {
     OptimizationGuideKeyedServiceDisabledBrowserTest::SetUpOnMainThread();
 
-    https_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
     https_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     https_server_->RegisterRequestHandler(base::BindRepeating(
         &OptimizationGuideKeyedServiceBrowserTest::HandleRequest,
@@ -192,8 +196,8 @@ class OptimizationGuideKeyedServiceBrowserTest
             {optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
 
     // Set up an OptimizationGuideKeyedService consumer.
-    consumer_.reset(new OptimizationGuideConsumerWebContentsObserver(
-        browser()->tab_strip_model()->GetActiveWebContents()));
+    consumer_ = std::make_unique<OptimizationGuideConsumerWebContentsObserver>(
+        browser()->tab_strip_model()->GetActiveWebContents());
   }
 
   optimization_guide::TopHostProvider* top_host_provider() {
@@ -219,10 +223,10 @@ class OptimizationGuideKeyedServiceBrowserTest
     const optimization_guide::HintsComponentInfo& component_info =
         test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
             optimization_guide::proto::NOSCRIPT, {url_with_hints_.host()},
-            "simple.html", {});
+            "simple.html");
 
-    g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
-        component_info);
+    optimization_guide::OptimizationHintsComponentUpdateListener::GetInstance()
+        ->MaybeUpdateHintsComponent(component_info);
 
     run_loop.Run();
   }
@@ -278,7 +282,7 @@ class OptimizationGuideKeyedServiceBrowserTest
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
     if (request.GetURL().spec().find("redirect") == std::string::npos) {
-      return std::unique_ptr<net::test_server::HttpResponse>();
+      return nullptr;
     }
 
     GURL request_url = request.GetURL();
@@ -313,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
 
   // ChromeOS has multiple profiles and optimization guide currently does not
   // run on non-Android.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   histogram_tester()->ExpectUniqueSample(
       "OptimizationGuide.RemoteFetchingEnabled", false, 1);
   EXPECT_TRUE(IsInSyntheticTrialGroup(
@@ -482,7 +486,6 @@ IN_PROC_BROWSER_TEST_F(
   PushHintsComponentAndWaitForCompletion();
   RegisterWithKeyedService();
 
-  ukm::TestAutoSetUkmRecorder ukm_recorder;
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url_that_redirects_to_hints());
@@ -504,7 +507,6 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   PushHintsComponentAndWaitForCompletion();
   RegisterWithKeyedService();
 
-  ukm::TestAutoSetUkmRecorder ukm_recorder;
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), GURL("https://nohints.com/"));
@@ -523,6 +525,61 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
       static_cast<int>(
           optimization_guide::OptimizationTypeDecision::kNoHintAvailable),
       1);
+}
+
+IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
+                       CheckForBlocklistFilter) {
+  PushHintsComponentAndWaitForCompletion();
+
+  OptimizationGuideKeyedService* ogks =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
+
+  {
+    base::HistogramTester histogram_tester;
+
+    // Register an optimization type with an optimization filter.
+    ogks->RegisterOptimizationTypes(
+        {optimization_guide::proto::FAST_HOST_HINTS});
+    // Wait until filter is loaded. This histogram will record twice: once when
+    // the config is found and once when the filter is created.
+    RetryForHistogramUntilCountReached(
+        histogram_tester,
+        "OptimizationGuide.OptimizationFilterStatus.FastHostHints", 2);
+
+    EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+              ogks->CanApplyOptimization(
+                  GURL("https://blockedhost.com/whatever"),
+                  optimization_guide::proto::FAST_HOST_HINTS, nullptr));
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.ApplyDecision.FastHostHints",
+        static_cast<int>(optimization_guide::OptimizationTypeDecision::
+                             kNotAllowedByOptimizationFilter),
+        1);
+  }
+
+  // Register another type with optimization filter.
+  {
+    base::HistogramTester histogram_tester;
+    ogks->RegisterOptimizationTypes(
+        {optimization_guide::proto::LITE_PAGE_REDIRECT});
+    // Wait until filter is loaded. This histogram will record twice: once when
+    // the config is found and once when the filter is created.
+    RetryForHistogramUntilCountReached(
+        histogram_tester,
+        "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect", 2);
+
+    // The previously loaded filter should still be loaded and give the same
+    // result.
+    EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+              ogks->CanApplyOptimization(
+                  GURL("https://blockedhost.com/whatever"),
+                  optimization_guide::proto::FAST_HOST_HINTS, nullptr));
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.ApplyDecision.FastHostHints",
+        static_cast<int>(optimization_guide::OptimizationTypeDecision::
+                             kNotAllowedByOptimizationFilter),
+        1);
+  }
 }
 
 class OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest
@@ -549,18 +606,16 @@ class OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest
     OptimizationGuideKeyedServiceBrowserTest::SetUpOnMainThread();
 
     SeedSiteEngagementService();
-    // Set the blacklist state to initialized so the sites in the engagement
-    // service will be used and not blacklisted on the first GetTopHosts
+    // Set the blocklist state to initialized so the sites in the engagement
+    // service will be used and not blocklisted on the first GetTopHosts
     // request.
-    InitializeTopHostBlacklist();
+    InitializeTopHostBlocklist();
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
     OptimizationGuideKeyedServiceBrowserTest::SetUpCommandLine(cmd);
 
     cmd->AppendSwitch("enable-spdy-proxy-auth");
-    // Add switch to avoid having to see the infobar in the test.
-    cmd->AppendSwitch(previews::switches::kDoNotRequireLitePageRedirectInfoBar);
     // Add switch to avoid racing navigations in the test.
     cmd->AppendSwitch(optimization_guide::switches::
                           kDisableFetchingHintsAtNavigationStartForTesting);
@@ -570,7 +625,7 @@ class OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest
   // Seeds the Site Engagement Service with two HTTP and two HTTPS sites for the
   // current profile.
   void SeedSiteEngagementService() {
-    SiteEngagementService* service = SiteEngagementService::Get(
+    auto* service = site_engagement::SiteEngagementService::Get(
         Profile::FromBrowserContext(browser()
                                         ->tab_strip_model()
                                         ->GetActiveWebContents()
@@ -582,16 +637,16 @@ class OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest
     service->AddPointsForTesting(https_url2, 3);
   }
 
-  void InitializeTopHostBlacklist() {
+  void InitializeTopHostBlocklist() {
     Profile::FromBrowserContext(browser()
                                     ->tab_strip_model()
                                     ->GetActiveWebContents()
                                     ->GetBrowserContext())
         ->GetPrefs()
         ->SetInteger(
-            optimization_guide::prefs::kHintsFetcherTopHostBlacklistState,
+            optimization_guide::prefs::kHintsFetcherTopHostBlocklistState,
             static_cast<int>(
-                optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
+                optimization_guide::prefs::HintsFetcherTopHostBlocklistState::
                     kInitialized));
   }
 
@@ -609,12 +664,78 @@ IN_PROC_BROWSER_TEST_F(
 
   // ChromeOS has multiple profiles and optimization guide currently does not
   // run on non-Android.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   histogram_tester()->ExpectUniqueSample(
       "OptimizationGuide.RemoteFetchingEnabled", true, 1);
   EXPECT_TRUE(IsInSyntheticTrialGroup(
       "SyntheticOptimizationGuideRemoteFetching", "Enabled"));
 #endif
+}
+
+IN_PROC_BROWSER_TEST_F(
+    OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest,
+    IncognitoCanStillReadFromComponentHints) {
+  // Wait until initialization logic finishes running and component pushed to
+  // both incognito and regular browsers.
+  PushHintsComponentAndWaitForCompletion();
+
+  // Set up incognito browser and incognito OptimizationGuideKeyedService
+  // consumer.
+  Browser* otr_browser = CreateIncognitoBrowser(browser()->profile());
+
+  // Instantiate off the record Optimization Guide Service.
+  OptimizationGuideKeyedService* otr_ogks =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(
+          browser()->profile()->GetPrimaryOTRProfile(
+              /*create_if_needed=*/true));
+  otr_ogks->RegisterOptimizationTypes({optimization_guide::proto::NOSCRIPT});
+
+  // Navigate to a URL that has a hint from a component and wait for that hint
+  // to have loaded.
+  base::HistogramTester histogram_tester;
+  ui_test_utils::NavigateToURL(otr_browser, url_with_hints());
+  RetryForHistogramUntilCountReached(histogram_tester,
+                                     "OptimizationGuide.LoadedHint.Result", 1);
+
+  EXPECT_EQ(
+      optimization_guide::OptimizationGuideDecision::kTrue,
+      otr_ogks->CanApplyOptimization(
+          url_with_hints(), optimization_guide::proto::NOSCRIPT, nullptr));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest,
+    IncognitoStillProcessesBloomFilter) {
+  PushHintsComponentAndWaitForCompletion();
+
+  CreateIncognitoBrowser(browser()->profile());
+
+  // Instantiate off the record Optimization Guide Service.
+  OptimizationGuideKeyedService* otr_ogks =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(
+          browser()->profile()->GetPrimaryOTRProfile(
+              /*create_if_needed=*/true));
+
+  base::HistogramTester histogram_tester;
+
+  // Register an optimization type with an optimization filter.
+  otr_ogks->RegisterOptimizationTypes(
+      {optimization_guide::proto::FAST_HOST_HINTS});
+  // Wait until filter is loaded. This histogram will record twice: once when
+  // the config is found and once when the filter is created.
+  RetryForHistogramUntilCountReached(
+      histogram_tester,
+      "OptimizationGuide.OptimizationFilterStatus.FastHostHints", 2);
+
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            otr_ogks->CanApplyOptimization(
+                GURL("https://blockedhost.com/whatever"),
+                optimization_guide::proto::FAST_HOST_HINTS, nullptr));
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ApplyDecision.FastHostHints",
+      static_cast<int>(optimization_guide::OptimizationTypeDecision::
+                           kNotAllowedByOptimizationFilter),
+      1);
 }
 
 class OptimizationGuideKeyedServiceCommandLineOverridesTest
@@ -643,7 +764,7 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceCommandLineOverridesTest,
 
   // ChromeOS has multiple profiles and optimization guide currently does not
   // run on non-Android.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   histogram_tester()->ExpectUniqueSample(
       "OptimizationGuide.RemoteFetchingEnabled", true, 1);
   EXPECT_TRUE(IsInSyntheticTrialGroup(

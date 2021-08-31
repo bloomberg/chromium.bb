@@ -6,13 +6,13 @@
 #define ASH_PUBLIC_CPP_APP_LIST_APP_LIST_CONTROLLER_H_
 
 #include <memory>
+#include <string>
 
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
-#include "base/optional.h"
-#include "base/strings/string16.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window.h"
 
 namespace ash {
@@ -68,7 +68,7 @@ class ASH_PUBLIC_EXPORT AppListController {
   virtual void SetSearchEngineIsGoogle(bool is_google) = 0;
 
   // Sets the text for the search box's Textfield and the voice search flag.
-  virtual void UpdateSearchBox(const base::string16& text,
+  virtual void UpdateSearchBox(const std::u16string& text,
                                bool initiated_by_user) = 0;
 
   // Publishes search results to Ash to render them.
@@ -82,6 +82,9 @@ class ASH_PUBLIC_EXPORT AppListController {
   // Updates an item's icon.
   virtual void SetItemIcon(const std::string& id,
                            const gfx::ImageSkia& icon) = 0;
+
+  virtual void SetItemNotificationBadgeColor(const std::string& id,
+                                             const SkColor color) = 0;
 
   // Update the whole model, usually when profile changes happen in Chrome.
   virtual void SetModelData(
@@ -143,7 +146,7 @@ class ASH_PUBLIC_EXPORT AppListController {
   // Returns whether the AppList is visible on the provided display.
   // If |display_id| is null, returns whether an app list is visible on any
   // display.
-  virtual bool IsVisible(const base::Optional<int64_t>& display_id) = 0;
+  virtual bool IsVisible(const absl::optional<int64_t>& display_id) = 0;
 
  protected:
   AppListController();

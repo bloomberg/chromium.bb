@@ -38,17 +38,15 @@ bool SkModeColorFilter::onAsAColorMode(SkColor* color, SkBlendMode* mode) const 
     return true;
 }
 
-uint32_t SkModeColorFilter::onGetFlags() const {
-    uint32_t flags = 0;
+bool SkModeColorFilter::onIsAlphaUnchanged() const {
     switch (fMode) {
         case SkBlendMode::kDst:      //!< [Da, Dc]
         case SkBlendMode::kSrcATop:  //!< [Da, Sc * Da + (1 - Sa) * Dc]
-            flags |= kAlphaUnchanged_Flag;
-            break;
+            return true;
         default:
             break;
     }
-    return flags;
+    return false;
 }
 
 void SkModeColorFilter::flatten(SkWriteBuffer& buffer) const {
@@ -86,9 +84,9 @@ skvm::Color SkModeColorFilter::onProgram(skvm::Builder* p, skvm::Color c,
 ///////////////////////////////////////////////////////////////////////////////
 #if SK_SUPPORT_GPU
 #include "src/gpu/GrBlend.h"
+#include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/effects/GrBlendFragmentProcessor.h"
-#include "src/gpu/effects/generated/GrConstColorProcessor.h"
 
 GrFPResult SkModeColorFilter::asFragmentProcessor(std::unique_ptr<GrFragmentProcessor> inputFP,
                                                   GrRecordingContext*,
@@ -101,7 +99,7 @@ GrFPResult SkModeColorFilter::asFragmentProcessor(std::unique_ptr<GrFragmentProc
 
     SkDEBUGCODE(const bool fpHasConstIO = !inputFP || inputFP->hasConstantOutputForConstantInput();)
 
-    auto colorFP = GrConstColorProcessor::Make(SkColorToPMColor4f(fColor, dstColorInfo));
+    auto colorFP = GrFragmentProcessor::MakeColor(SkColorToPMColor4f(fColor, dstColorInfo));
     auto xferFP = GrBlendFragmentProcessor::Make(
             std::move(colorFP), std::move(inputFP), fMode,
             GrBlendFragmentProcessor::BlendBehavior::kSkModeBehavior);

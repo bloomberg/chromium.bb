@@ -58,6 +58,7 @@ public:
 	bool hasExtension(const char *extensionName) const;
 	VkQueue getQueue(uint32_t queueFamilyIndex, uint32_t queueIndex) const;
 	VkResult waitForFences(uint32_t fenceCount, const VkFence *pFences, VkBool32 waitAll, uint64_t timeout);
+	VkResult waitForSemaphores(const VkSemaphoreWaitInfo *pWaitInfo, uint64_t timeout);
 	VkResult waitIdle();
 	void getDescriptorSetLayoutSupport(const VkDescriptorSetLayoutCreateInfo *pCreateInfo,
 	                                   VkDescriptorSetLayoutSupport *pSupport) const;
@@ -140,6 +141,7 @@ public:
 
 		uint32_t index(const SamplerState &samplerState);
 		void remove(const SamplerState &samplerState);
+		const SamplerState *find(uint32_t id);
 
 	private:
 		struct Identifier
@@ -156,6 +158,7 @@ public:
 
 	uint32_t indexSampler(const SamplerState &samplerState);
 	void removeSampler(const SamplerState &samplerState);
+	const SamplerState *findSampler(uint32_t samplerId) const;
 
 	std::shared_ptr<vk::dbg::Context> getDebuggerContext() const
 	{
@@ -168,6 +171,10 @@ public:
 
 	VkResult setDebugUtilsObjectName(const VkDebugUtilsObjectNameInfoEXT *pNameInfo);
 	VkResult setDebugUtilsObjectTag(const VkDebugUtilsObjectTagInfoEXT *pTagInfo);
+
+#ifdef SWIFTSHADER_DEVICE_MEMORY_REPORT
+	void emitDeviceMemoryReport(VkDeviceMemoryReportEventTypeEXT type, uint64_t memoryObjectId, VkDeviceSize size, VkObjectType objectType, uint64_t objectHandle, uint32_t heapIndex = 0);
+#endif  // SWIFTSHADER_DEVICE_MEMORY_REPORT
 
 private:
 	PhysicalDevice *const physicalDevice = nullptr;
@@ -193,6 +200,10 @@ private:
 		std::shared_ptr<vk::dbg::Server> server;
 	} debugger;
 #endif  // ENABLE_VK_DEBUGGER
+
+#ifdef SWIFTSHADER_DEVICE_MEMORY_REPORT
+	std::vector<std::pair<PFN_vkDeviceMemoryReportCallbackEXT, void *>> deviceMemoryReportCallbacks;
+#endif  // SWIFTSHADER_DEVICE_MEMORY_REPORT
 };
 
 using DispatchableDevice = DispatchableObject<Device, VkDevice>;

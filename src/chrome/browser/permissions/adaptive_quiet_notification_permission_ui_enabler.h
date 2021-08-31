@@ -9,17 +9,13 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/optional.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/permissions/permission_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefChangeRegistrar;
 class Profile;
-
-namespace base {
-class Clock;
-}
 
 // Keeps track of past user interactions with notification permission requests,
 // and adaptively enables the quiet permission UX if various heuristics estimate
@@ -50,17 +46,8 @@ class AdaptiveQuietNotificationPermissionUiEnabler : public KeyedService {
   static AdaptiveQuietNotificationPermissionUiEnabler* GetForProfile(
       Profile* profile);
 
-  // Records the outcome of a notification permission prompt, i.e. how the user
-  // interacted with it, to be called once a permission request finishes.
-  void RecordPermissionPromptOutcome(permissions::PermissionAction action);
-
-  // Delete logs of past user interactions. To be called when clearing
-  // browsing data.
-  void ClearInteractionHistory(const base::Time& delete_begin,
-                               const base::Time& delete_end);
-
-  // The |clock| must outlive this instance.
-  void set_clock_for_testing(base::Clock* clock) { clock_ = clock; }
+  // Called after a notification permission prompt was resolved.
+  void PermissionPromptResolved();
 
   // Only used for testing.
   void BackfillEnablingMethodIfMissingForTesting() {
@@ -81,10 +68,6 @@ class AdaptiveQuietNotificationPermissionUiEnabler : public KeyedService {
   Profile* profile_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   bool is_enabling_adaptively_ = false;
-
-  // The clock to use as a source of time, materialized so that a mock clock can
-  // be injected for tests.
-  base::Clock* clock_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AdaptiveQuietNotificationPermissionUiEnabler);
 };

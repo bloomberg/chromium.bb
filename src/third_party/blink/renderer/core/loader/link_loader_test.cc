@@ -4,8 +4,9 @@
 
 #include "third_party/blink/renderer/core/loader/link_loader.h"
 
-#include <base/macros.h>
 #include <memory>
+
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,6 +18,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/link_rel_attribute.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -29,7 +31,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
@@ -52,10 +53,6 @@ class MockLinkLoaderClient final
 
   void LinkLoaded() override {}
   void LinkLoadingErrored() override {}
-  void DidStartLinkPrerender() override {}
-  void DidStopLinkPrerender() override {}
-  void DidSendLoadForLinkPrerender() override {}
-  void DidSendDOMContentLoadedForLinkPrerender() override {}
 
   scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() override {
     return Thread::Current()->GetTaskRunner();
@@ -381,9 +378,11 @@ TEST_P(LinkLoaderPreloadNonceTest, Preload) {
   dummy_page_holder_->GetFrame()
       .DomWindow()
       ->GetContentSecurityPolicy()
-      ->DidReceiveHeader(test_case.content_security_policy,
-                         network::mojom::ContentSecurityPolicyType::kEnforce,
-                         network::mojom::ContentSecurityPolicySource::kHTTP);
+      ->AddPolicies(ParseContentSecurityPolicies(
+          test_case.content_security_policy,
+          network::mojom::ContentSecurityPolicyType::kEnforce,
+          network::mojom::ContentSecurityPolicySource::kHTTP,
+          *(dummy_page_holder_->GetFrame().DomWindow()->GetSecurityOrigin())));
   LinkLoadParameters params(
       LinkRelAttribute("preload"), kCrossOriginAttributeNotSet, String(),
       "script", String(), test_case.nonce, String(), String(),

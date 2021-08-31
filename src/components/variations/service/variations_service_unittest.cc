@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -66,9 +67,10 @@ void StubStoreClientInfo(const metrics::ClientInfo& /* client_info */) {}
 
 // A stub for the metrics state manager.
 std::unique_ptr<metrics::ClientInfo> StubLoadClientInfo() {
-  return std::unique_ptr<metrics::ClientInfo>();
+  return nullptr;
 }
 
+// TODO(crbug.com/1167566): Remove when fake VariationsServiceClient created.
 class TestVariationsServiceClient : public VariationsServiceClient {
  public:
   TestVariationsServiceClient() {
@@ -304,8 +306,8 @@ class VariationsServiceTest : public ::testing::Test {
       : network_tracker_(network::TestNetworkConnectionTracker::GetInstance()),
         enabled_state_provider_(
             new metrics::TestEnabledStateProvider(false, false)) {
-    VariationsService::RegisterPrefs(prefs_.registry());
     metrics::CleanExitBeacon::RegisterPrefs(prefs_.registry());
+    VariationsService::RegisterPrefs(prefs_.registry());
     metrics::MetricsStateManager::RegisterPrefs(prefs_.registry());
   }
 
@@ -314,7 +316,7 @@ class VariationsServiceTest : public ::testing::Test {
     // stability state from prefs after tests have a chance to initialize it.
     if (!metrics_state_manager_) {
       metrics_state_manager_ = metrics::MetricsStateManager::Create(
-          &prefs_, enabled_state_provider_.get(), base::string16(),
+          &prefs_, enabled_state_provider_.get(), std::wstring(),
           base::BindRepeating(&StubStoreClientInfo),
           base::BindRepeating(&StubLoadClientInfo));
     }

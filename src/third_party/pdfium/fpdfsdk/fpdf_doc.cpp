@@ -27,6 +27,7 @@
 #include "core/fpdfdoc/cpdf_pagelabel.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "public/fpdf_formfill.h"
+#include "third_party/base/check.h"
 #include "third_party/base/stl_util.h"
 
 namespace {
@@ -47,13 +48,13 @@ CPDF_Bookmark FindBookmark(const CPDF_BookmarkTree& tree,
   }
 
   // Go into children items.
-  CPDF_Bookmark child = tree.GetFirstChild(&bookmark);
+  CPDF_Bookmark child = tree.GetFirstChild(bookmark);
   while (child.GetDict() && !pdfium::Contains(*visited, child.GetDict())) {
     // Check this item and its children.
     CPDF_Bookmark found = FindBookmark(tree, child, title, visited);
     if (found.GetDict())
       return found;
-    child = tree.GetNextSibling(&child);
+    child = tree.GetNextSibling(child);
   }
   return CPDF_Bookmark();
 }
@@ -80,7 +81,7 @@ FPDFBookmark_GetFirstChild(FPDF_DOCUMENT document, FPDF_BOOKMARK bookmark) {
   CPDF_BookmarkTree tree(pDoc);
   CPDF_Bookmark cBookmark(CPDFDictionaryFromFPDFBookmark(bookmark));
   return FPDFBookmarkFromCPDFDictionary(
-      tree.GetFirstChild(&cBookmark).GetDict());
+      tree.GetFirstChild(cBookmark).GetDict());
 }
 
 FPDF_EXPORT FPDF_BOOKMARK FPDF_CALLCONV
@@ -95,7 +96,7 @@ FPDFBookmark_GetNextSibling(FPDF_DOCUMENT document, FPDF_BOOKMARK bookmark) {
   CPDF_BookmarkTree tree(pDoc);
   CPDF_Bookmark cBookmark(CPDFDictionaryFromFPDFBookmark(bookmark));
   return FPDFBookmarkFromCPDFDictionary(
-      tree.GetNextSibling(&cBookmark).GetDict());
+      tree.GetNextSibling(cBookmark).GetDict());
 }
 
 FPDF_EXPORT unsigned long FPDF_CALLCONV
@@ -160,17 +161,16 @@ FPDF_EXPORT unsigned long FPDF_CALLCONV FPDFAction_GetType(FPDF_ACTION action) {
     return PDFACTION_UNSUPPORTED;
 
   CPDF_Action cAction(CPDFDictionaryFromFPDFAction(action));
-  CPDF_Action::ActionType type = cAction.GetType();
-  switch (type) {
-    case CPDF_Action::GoTo:
+  switch (cAction.GetType()) {
+    case CPDF_Action::Type::kGoTo:
       return PDFACTION_GOTO;
-    case CPDF_Action::GoToR:
+    case CPDF_Action::Type::kGoToR:
       return PDFACTION_REMOTEGOTO;
-    case CPDF_Action::GoToE:
+    case CPDF_Action::Type::kGoToE:
       return PDFACTION_EMBEDDEDGOTO;
-    case CPDF_Action::URI:
+    case CPDF_Action::Type::kURI:
       return PDFACTION_URI;
-    case CPDF_Action::Launch:
+    case CPDF_Action::Type::kLaunch:
       return PDFACTION_LAUNCH;
     default:
       return PDFACTION_UNSUPPORTED;
@@ -248,7 +248,7 @@ FPDFDest_GetView(FPDF_DEST dest, unsigned long* pNumParams, FS_FLOAT* pParams) {
 
   CPDF_Dest destination(CPDFArrayFromFPDFDest(dest));
   unsigned long nParams = destination.GetNumParams();
-  ASSERT(nParams <= 4);
+  DCHECK(nParams <= 4);
   *pNumParams = nParams;
   for (unsigned long i = 0; i < nParams; ++i)
     pParams[i] = destination.GetParam(i);

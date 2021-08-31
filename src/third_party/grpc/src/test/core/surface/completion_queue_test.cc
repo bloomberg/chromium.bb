@@ -31,7 +31,7 @@
 
 static void* create_test_tag(void) {
   static intptr_t i = 0;
-  return (void*)(++i);
+  return reinterpret_cast<void*>(++i);
 }
 
 /* helper for tests to shutdown correctly and tersely */
@@ -129,7 +129,8 @@ static void test_wait_empty(void) {
   }
 }
 
-static void do_nothing_end_completion(void* arg, grpc_cq_completion* c) {}
+static void do_nothing_end_completion(void* /*arg*/,
+                                      grpc_cq_completion* /*c*/) {}
 
 static void test_cq_end_op(void) {
   grpc_event ev;
@@ -379,8 +380,9 @@ static void test_callback(void) {
   bool got_shutdown = false;
   class ShutdownCallback : public grpc_experimental_completion_queue_functor {
    public:
-    ShutdownCallback(bool* done) : done_(done) {
+    explicit ShutdownCallback(bool* done) : done_(done) {
       functor_run = &ShutdownCallback::Run;
+      inlineable = false;
     }
     ~ShutdownCallback() {}
     static void Run(grpc_experimental_completion_queue_functor* cb, int ok) {
@@ -415,6 +417,8 @@ static void test_callback(void) {
        public:
         TagCallback(int* counter, int tag) : counter_(counter), tag_(tag) {
           functor_run = &TagCallback::Run;
+          // Inlineable should be false since this callback takes locks.
+          inlineable = false;
         }
         ~TagCallback() {}
         static void Run(grpc_experimental_completion_queue_functor* cb,
@@ -428,7 +432,7 @@ static void test_callback(void) {
             gpr_cv_signal(&cv);
           }
           gpr_mu_unlock(&mu);
-          grpc_core::Delete(callback);
+          delete callback;
         };
 
        private:
@@ -437,7 +441,7 @@ static void test_callback(void) {
       };
 
       for (i = 0; i < GPR_ARRAY_SIZE(tags); i++) {
-        tags[i] = static_cast<void*>(grpc_core::New<TagCallback>(&counter, i));
+        tags[i] = static_cast<void*>(new TagCallback(&counter, i));
         sumtags += i;
       }
 

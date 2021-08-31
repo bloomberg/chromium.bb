@@ -13,6 +13,7 @@
 #include "base/test/task_environment.h"
 #include "components/services/filesystem/directory_test_helper.h"
 #include "components/services/filesystem/public/mojom/directory.mojom.h"
+#include "components/services/filesystem/public/mojom/file.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,7 +67,7 @@ TEST_F(DirectoryImplTest, Read) {
   EXPECT_EQ(base::File::Error::FILE_OK, error);
 
   error = base::File::Error::FILE_ERROR_FAILED;
-  base::Optional<std::vector<mojom::DirectoryEntryPtr>> directory_contents;
+  absl::optional<std::vector<mojom::DirectoryEntryPtr>> directory_contents;
   handled = directory->Read(&error, &directory_contents);
   ASSERT_TRUE(handled);
   EXPECT_EQ(base::File::Error::FILE_OK, error);

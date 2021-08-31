@@ -16,13 +16,17 @@ namespace remoting {
 
 namespace {
 
-class ClipboardTestClient : public x11::Connection::Delegate {
+class ClipboardTestClient : public x11::EventObserver {
  public:
   ClipboardTestClient() = default;
-  ~ClipboardTestClient() override = default;
+  ~ClipboardTestClient() override {
+    DCHECK(connection_);
+    connection_->RemoveEventObserver(this);
+  }
 
   void Init(x11::Connection* connection) {
     connection_ = connection;
+    connection_->AddEventObserver(this);
     clipboard_.Init(connection, base::BindRepeating(
                                     &ClipboardTestClient::OnClipboardChanged,
                                     base::Unretained(this)));
@@ -43,15 +47,13 @@ class ClipboardTestClient : public x11::Connection::Delegate {
   bool PumpXEvents() {
     dispatched_event_ = false;
     connection_->Sync();
-    connection_->Dispatch(this);
+    connection_->DispatchAll();
     return dispatched_event_;
   }
 
-  bool ShouldContinueStream() const override { return true; }
-
-  void DispatchXEvent(x11::Event* event) override {
+  void OnEvent(const x11::Event& event) override {
     dispatched_event_ = true;
-    clipboard_.ProcessXEvent(*event);
+    clipboard_.ProcessXEvent(event);
   }
 
   const std::string& clipboard_data() const { return clipboard_data_; }

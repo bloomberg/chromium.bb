@@ -205,7 +205,7 @@ void PepperMediaStreamVideoTrackHost::FrameDeliverer::DeliverFrameOnIO(
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   // The time when this frame is generated is unknown so give a null value to
   // |estimated_capture_time|.
-  new_frame_callback_.Run(std::move(frame), base::TimeTicks());
+  new_frame_callback_.Run(std::move(frame), {}, base::TimeTicks());
 }
 
 PepperMediaStreamVideoTrackHost::PepperMediaStreamVideoTrackHost(
@@ -349,9 +349,11 @@ int32_t PepperMediaStreamVideoTrackHost::SendFrameToTrack(int32_t index) {
 
 void PepperMediaStreamVideoTrackHost::OnVideoFrame(
     scoped_refptr<VideoFrame> video_frame,
+    std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames,
     base::TimeTicks estimated_capture_time) {
   DCHECK(video_frame);
   // TODO(penghuang): Check |frame->end_of_stream()| and close the track.
+  // Scaled video frames are currently ignored.
   scoped_refptr<media::VideoFrame> frame = video_frame;
   // Drop alpha channel since we do not support it yet.
   if (frame->format() == media::PIXEL_FORMAT_I420A)
@@ -444,18 +446,23 @@ class PepperMediaStreamVideoTrackHost::VideoSource final
       host_->frame_deliverer_ = nullptr;
   }
 
+  base::WeakPtr<MediaStreamVideoSource> GetWeakPtr() const final {
+    return weak_factory_.GetWeakPtr();
+  }
+
  private:
-  base::Optional<media::VideoCaptureFormat> GetCurrentFormat() const override {
+  absl::optional<media::VideoCaptureFormat> GetCurrentFormat() const override {
     if (host_) {
-      return base::Optional<media::VideoCaptureFormat>(
+      return absl::optional<media::VideoCaptureFormat>(
           media::VideoCaptureFormat(
               host_->plugin_frame_size_, kDefaultOutputFrameRate,
               ToPixelFormat(host_->plugin_frame_format_)));
     }
-    return base::Optional<media::VideoCaptureFormat>();
+    return absl::optional<media::VideoCaptureFormat>();
   }
 
   const base::WeakPtr<PepperMediaStreamVideoTrackHost> host_;
+  base::WeakPtrFactory<MediaStreamVideoSource> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoSource);
 };
@@ -468,7 +475,8 @@ void PepperMediaStreamVideoTrackHost::DidConnectPendingHostToResource() {
       media::BindToCurrentLoop(
           base::BindRepeating(&PepperMediaStreamVideoTrackHost::OnVideoFrame,
                               weak_factory_.GetWeakPtr())),
-      false);
+      MediaStreamVideoSink::IsSecure::kNo,
+      MediaStreamVideoSink::UsesAlpha::kDefault);
 }
 
 int32_t PepperMediaStreamVideoTrackHost::OnResourceMessageReceived(

@@ -23,9 +23,9 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/layers/texture_layer.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/frame_messages.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -53,7 +53,6 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "content/renderer/render_widget.h"
 #include "content/renderer/sad_plugin.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "ppapi/c/dev/ppp_text_input_dev.h"
@@ -98,7 +97,6 @@
 #include "third_party/blink/public/common/input/web_pointer_event.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/blink/public/platform/url_conversion.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -118,10 +116,10 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"
-#include "ui/events/blink/web_input_event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/range/range.h"
@@ -134,7 +132,7 @@
 #include "printing/metafile_skia.h"          // nogncheck
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #endif
 
@@ -323,7 +321,7 @@ std::unique_ptr<const char* []> StringVectorToArgArray(
 // all keys sent to them. This can prevent keystrokes from working for things
 // like screen brightness and volume control.
 bool IsReservedSystemInputEvent(const blink::WebInputEvent& event) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (event.GetType() != WebInputEvent::Type::kKeyDown &&
       event.GetType() != WebInputEvent::Type::kKeyUp)
     return false;
@@ -341,7 +339,7 @@ bool IsReservedSystemInputEvent(const blink::WebInputEvent& event) {
     default:
       return false;
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   return false;
 }
 
@@ -542,9 +540,11 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
   module_->InstanceCreated(this);
 
   if (render_frame_) {  // NULL in tests or if the frame has been destroyed.
-    render_frame_->PepperInstanceCreated(this);
+    render_frame_->PepperInstanceCreated(
+        this, pepper_receiver_.BindNewEndpointAndPassRemote(),
+        pepper_host_remote_.BindNewEndpointAndPassReceiver());
     view_data_.is_page_visible =
-        !render_frame_->GetLocalRootRenderWidget()->GetWebWidget()->IsHidden();
+        !render_frame_->GetLocalRootWebFrameWidget()->IsHidden();
 
     if (!module_->IsProxied()) {
       created_in_process_instance_ = true;
@@ -702,10 +702,6 @@ void PepperPluginInstanceImpl::InvalidateRect(const gfx::Rect& rect) {
   if (!container_ || view_data_.rect.size.width == 0 ||
       view_data_.rect.size.height == 0)
     return;  // Nothing to do.
-  if (rect.IsEmpty())
-    container_->Invalidate();
-  else
-    container_->InvalidateRect(rect);
 
   if (texture_layer_) {
     if (rect.IsEmpty()) {
@@ -713,6 +709,8 @@ void PepperPluginInstanceImpl::InvalidateRect(const gfx::Rect& rect) {
     } else {
       texture_layer_->SetNeedsDisplayRect(rect);
     }
+  } else {
+    container_->Invalidate();
   }
 }
 
@@ -744,11 +742,10 @@ void PepperPluginInstanceImpl::PassCommittedTextureToTextureLayer() {
   if (committed_texture_.mailbox_holder.mailbox.IsZero())
     return;
 
-  std::unique_ptr<viz::SingleReleaseCallback> callback(
-      viz::SingleReleaseCallback::Create(base::BindOnce(
-          &PepperPluginInstanceImpl::FinishedConsumingCommittedTexture,
-          weak_factory_.GetWeakPtr(), committed_texture_,
-          committed_texture_graphics_3d_)));
+  viz::ReleaseCallback callback(base::BindOnce(
+      &PepperPluginInstanceImpl::FinishedConsumingCommittedTexture,
+      weak_factory_.GetWeakPtr(), committed_texture_,
+      committed_texture_graphics_3d_));
 
   IncrementTextureReferenceCount(committed_texture_);
   texture_layer_->SetTransferableResource(committed_texture_,
@@ -785,8 +782,8 @@ void PepperPluginInstanceImpl::InstanceCrashed() {
   BindGraphics(pp_instance(), 0);
   InvalidateRect(gfx::Rect());
 
-  if (render_frame_)
-    render_frame_->PluginCrashed(module_->path(), module_->GetPeerProcessId());
+  if (auto* host = GetPepperPluginInstanceHost())
+    host->InstanceCrashed(module_->path(), module_->GetPeerProcessId());
 }
 
 bool PepperPluginInstanceImpl::Initialize(
@@ -886,7 +883,7 @@ bool PepperPluginInstanceImpl::HandleDocumentLoad(
 
 bool PepperPluginInstanceImpl::SendCompositionEventToPlugin(
     PP_InputEvent_Type type,
-    const base::string16& text) {
+    const std::u16string& text) {
   std::vector<ui::ImeTextSpan> empty;
   return SendCompositionEventWithImeTextSpanInformationToPlugin(
       type, text, empty, static_cast<int>(text.size()),
@@ -896,7 +893,7 @@ bool PepperPluginInstanceImpl::SendCompositionEventToPlugin(
 bool PepperPluginInstanceImpl::
     SendCompositionEventWithImeTextSpanInformationToPlugin(
         PP_InputEvent_Type type,
-        const base::string16& text,
+        const std::u16string& text,
         const std::vector<ui::ImeTextSpan>& ime_text_spans,
         int selection_start,
         int selection_end) {
@@ -980,13 +977,13 @@ void PepperPluginInstanceImpl::RequestInputEventsHelper(
 }
 
 bool PepperPluginInstanceImpl::HandleCompositionStart(
-    const base::string16& text) {
+    const std::u16string& text) {
   return SendCompositionEventToPlugin(PP_INPUTEVENT_TYPE_IME_COMPOSITION_START,
                                       text);
 }
 
 bool PepperPluginInstanceImpl::HandleCompositionUpdate(
-    const base::string16& text,
+    const std::u16string& text,
     const std::vector<ui::ImeTextSpan>& ime_text_spans,
     int selection_start,
     int selection_end) {
@@ -996,24 +993,24 @@ bool PepperPluginInstanceImpl::HandleCompositionUpdate(
 }
 
 bool PepperPluginInstanceImpl::HandleCompositionEnd(
-    const base::string16& text) {
+    const std::u16string& text) {
   return SendCompositionEventToPlugin(PP_INPUTEVENT_TYPE_IME_COMPOSITION_END,
                                       text);
 }
 
-bool PepperPluginInstanceImpl::HandleTextInput(const base::string16& text) {
+bool PepperPluginInstanceImpl::HandleTextInput(const std::u16string& text) {
   return SendCompositionEventToPlugin(PP_INPUTEVENT_TYPE_IME_TEXT, text);
 }
 
-void PepperPluginInstanceImpl::GetSurroundingText(base::string16* text,
+void PepperPluginInstanceImpl::GetSurroundingText(std::u16string* text,
                                                   gfx::Range* range) const {
   std::vector<size_t> offsets;
   offsets.push_back(selection_anchor_);
   offsets.push_back(selection_caret_);
   *text = base::UTF8ToUTF16AndAdjustOffsets(surrounding_text_, &offsets);
-  range->set_start(offsets[0] == base::string16::npos ? text->size()
+  range->set_start(offsets[0] == std::u16string::npos ? text->size()
                                                       : offsets[0]);
-  range->set_end(offsets[1] == base::string16::npos ? text->size()
+  range->set_end(offsets[1] == std::u16string::npos ? text->size()
                                                     : offsets[1]);
 }
 
@@ -1199,8 +1196,7 @@ void PepperPluginInstanceImpl::ViewChanged(
   view_data_.css_scale =
       container_->PageZoomFactor() * container_->PageScaleFactor();
   if (IsUseZoomForDSFEnabled()) {
-    WebWidget* widget =
-        render_frame()->GetLocalRootRenderWidget()->GetWebWidget();
+    WebWidget* widget = render_frame()->GetLocalRootWebFrameWidget();
 
     viewport_to_dip_scale_ =
         1.0f / widget->GetOriginalScreenInfo().device_scale_factor;
@@ -1212,12 +1208,14 @@ void PepperPluginInstanceImpl::ViewChanged(
   view_data_.css_scale *= viewport_to_dip_scale_;
   view_data_.device_scale /= viewport_to_dip_scale_;
 
-  gfx::Size scroll_offset = gfx::ScaleToRoundedSize(
-      container_->GetDocument().GetFrame()->GetScrollOffset(),
-      viewport_to_dip_scale_);
+  gfx::ScrollOffset scroll_offset =
+      container_->GetDocument().GetFrame()->GetScrollOffset();
+  scroll_offset.Scale(viewport_to_dip_scale_);
 
-  view_data_.scroll_offset = PP_MakePoint(scroll_offset.width(),
-                                          scroll_offset.height());
+  gfx::Vector2d floored_scroll_offset =
+      ScrollOffsetToFlooredVector2d(scroll_offset);
+  view_data_.scroll_offset =
+      PP_MakePoint(floored_scroll_offset.x(), floored_scroll_offset.y());
 
   // The view size may have changed and we might need to update
   // our registration of event listeners.
@@ -1290,7 +1288,7 @@ void PepperPluginInstanceImpl::ViewInitiatedPaint() {
 }
 
 void PepperPluginInstanceImpl::SetSelectedText(
-    const base::string16& selected_text) {
+    const std::u16string& selected_text) {
   if (!render_frame_)
     return;
 
@@ -1331,11 +1329,11 @@ void PepperPluginInstanceImpl::UnregisterMessageHandler(PP_Instance instance) {
   NOTIMPLEMENTED();
 }
 
-base::string16 PepperPluginInstanceImpl::GetSelectedText(bool html) {
+std::u16string PepperPluginInstanceImpl::GetSelectedText(bool html) {
   return selected_text_;
 }
 
-base::string16 PepperPluginInstanceImpl::GetLinkAtPosition(
+std::u16string PepperPluginInstanceImpl::GetLinkAtPosition(
     const gfx::Point& point) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
@@ -1355,7 +1353,7 @@ base::string16 PepperPluginInstanceImpl::GetLinkAtPosition(
   if (rv.type == PP_VARTYPE_UNDEFINED)
     return link_under_cursor_;
   StringVar* string = StringVar::FromPPVar(rv);
-  base::string16 link;
+  std::u16string link;
   if (string)
     link = base::UTF8ToUTF16(string->value());
   // Release the ref the plugin transfered to us.
@@ -1429,25 +1427,7 @@ void PepperPluginInstanceImpl::SelectAll() {
   if (!LoadPdfInterface())
     return;
 
-  // Keep a reference on the stack. See NOTE above.
-  scoped_refptr<PepperPluginInstanceImpl> ref(this);
-
-  // TODO(https://crbug.com/836074) |kPlatformModifier| should be
-  // |ui::EF_PLATFORM_ACCELERATOR| (|ui::EF_COMMAND_DOWN| on Mac).
-  static const ui::EventFlags kPlatformModifier = ui::EF_CONTROL_DOWN;
-  // Synthesize a ctrl + a key event to send to the plugin and let it sort out
-  // the event. See also https://crbug.com/739529.
-  ui::KeyEvent char_event(L'A', ui::VKEY_A, ui::DomCode::NONE,
-                          kPlatformModifier);
-
-  // Also synthesize a key up event to look more like a real key press.
-  // Otherwise the plugin will not do all the required work to keep the renderer
-  // in sync.
-  ui::KeyEvent keyup_event(ui::ET_KEY_RELEASED, ui::VKEY_A, kPlatformModifier);
-
-  ui::Cursor dummy_cursor_info;
-  HandleInputEvent(MakeWebKeyboardEvent(char_event), &dummy_cursor_info);
-  HandleInputEvent(MakeWebKeyboardEvent(keyup_event), &dummy_cursor_info);
+  plugin_pdf_interface_->SelectAll(pp_instance());
 }
 
 bool PepperPluginInstanceImpl::CanUndo() {
@@ -1950,7 +1930,7 @@ bool PepperPluginInstanceImpl::GetPrintPresetOptionsFromDocument(
   preset_options->copies = options.copies;
   preset_options->is_page_size_uniform =
       PP_ToBool(options.is_page_size_uniform);
-  preset_options->uniform_page_size = blink::WebSize(
+  preset_options->uniform_page_size = gfx::Size(
       options.uniform_page_size.width, options.uniform_page_size.height);
 
   return true;
@@ -1994,7 +1974,7 @@ bool PepperPluginInstanceImpl::SetFullscreen(bool fullscreen) {
     return false;
 
   if (fullscreen) {
-    if (!render_frame_->render_view()
+    if (!render_frame_->GetWebView()
              ->GetRendererPreferences()
              .plugin_fullscreen_allowed) {
       return false;
@@ -2040,7 +2020,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
   }
 
   if (texture_layer_) {
-    container_->SetCcLayer(nullptr, false);
+    container_->SetCcLayer(nullptr);
     texture_layer_->ClearClient();
     texture_layer_ = nullptr;
   }
@@ -2066,7 +2046,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
   }
 
   if (texture_layer_) {
-    container_->SetCcLayer(texture_layer_.get(), true);
+    container_->SetCcLayer(texture_layer_.get());
   }
 
   layer_is_hardware_ = want_3d_layer;
@@ -2076,7 +2056,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
 bool PepperPluginInstanceImpl::PrepareTransferableResource(
     cc::SharedBitmapIdRegistrar* bitmap_registrar,
     viz::TransferableResource* transferable_resource,
-    std::unique_ptr<viz::SingleReleaseCallback>* release_callback) {
+    viz::ReleaseCallback* release_callback) {
   if (!bound_graphics_2d_platform_)
     return false;
   return bound_graphics_2d_platform_->PrepareTransferableResource(
@@ -2189,7 +2169,7 @@ void PepperPluginInstanceImpl::SimulateImeSetCompositionEvent(
                  input_event.composition_segment_offsets.begin(),
                  input_event.composition_segment_offsets.end());
 
-  base::string16 utf16_text =
+  std::u16string utf16_text =
       base::UTF8ToUTF16AndAdjustOffsets(input_event.character_text, &offsets);
 
   std::vector<ui::ImeTextSpan> ime_text_spans;
@@ -2381,8 +2361,10 @@ uint32_t PepperPluginInstanceImpl::GetAudioHardwareOutputBufferSize(
 PP_Var PepperPluginInstanceImpl::GetDefaultCharSet(PP_Instance instance) {
   if (!render_frame_)
     return PP_MakeUndefined();
-  return StringVar::StringToPPVar(
-      render_frame_->render_view()->GetBlinkPreferences().default_encoding);
+  return StringVar::StringToPPVar(render_frame_->GetWebFrame()
+                                      ->View()
+                                      ->GetWebPreferences()
+                                      .default_encoding);
 }
 
 void PepperPluginInstanceImpl::SetPluginToHandleFindRequests(
@@ -2427,15 +2409,14 @@ void PepperPluginInstanceImpl::SetTickmarks(PP_Instance instance,
   if (!render_frame_ || !render_frame_->GetWebFrame())
     return;
 
-  blink::WebVector<blink::WebRect> tickmarks_converted(
-      static_cast<size_t>(count));
+  blink::WebVector<gfx::Rect> tickmarks_converted(static_cast<size_t>(count));
   for (uint32_t i = 0; i < count; ++i) {
     gfx::RectF tickmark(tickmarks[i].point.x,
                         tickmarks[i].point.y,
                         tickmarks[i].size.width,
                         tickmarks[i].size.height);
     tickmark.Scale(1 / viewport_to_dip_scale_);
-    tickmarks_converted[i] = blink::WebRect(gfx::ToEnclosedRect(tickmark));
+    tickmarks_converted[i] = gfx::ToEnclosedRect(tickmark);
   }
 
   WebLocalFrame* frame = render_frame_->GetWebFrame();
@@ -2459,9 +2440,8 @@ PP_Bool PepperPluginInstanceImpl::GetScreenSize(PP_Instance instance,
   // All other cases: Report the screen size.
   if (!render_frame_)
     return PP_FALSE;
-  blink::ScreenInfo info = render_frame_->GetLocalRootRenderWidget()
-                               ->GetWebWidget()
-                               ->GetScreenInfo();
+  blink::ScreenInfo info =
+      render_frame_->GetLocalRootWebFrameWidget()->GetScreenInfo();
   *size = PP_MakeSize(info.rect.width(), info.rect.height());
   return PP_TRUE;
 }
@@ -2885,8 +2865,7 @@ void PepperPluginInstanceImpl::DoSetCursor(std::unique_ptr<ui::Cursor> cursor) {
     // e.g., the plugin would like to set an invisible cursor when there isn't
     // any user input for a while.
     if (container()->WasTargetForLastMouseEvent()) {
-      render_frame_->GetLocalRootRenderWidget()->GetWebWidget()->SetCursor(
-          *cursor_);
+      render_frame_->GetLocalRootWebFrameWidget()->SetCursor(*cursor_);
     }
   }
 }
@@ -2954,9 +2933,8 @@ void PepperPluginInstanceImpl::SetSizeAttributesForFullscreen() {
   // behavior, the width and height should probably be set to 100%, rather than
   // a fixed screen size.
 
-  blink::ScreenInfo info = render_frame_->GetLocalRootRenderWidget()
-                               ->GetWebWidget()
-                               ->GetScreenInfo();
+  blink::ScreenInfo info =
+      render_frame_->GetLocalRootWebFrameWidget()->GetScreenInfo();
   screen_size_for_fullscreen_ = info.rect.size();
   std::string width = base::NumberToString(screen_size_for_fullscreen_.width());
   std::string height =
@@ -3099,7 +3077,7 @@ void PepperPluginInstanceImpl::HandleAccessibilityChange() {
 }
 
 void PepperPluginInstanceImpl::OnImeSetComposition(
-    const base::string16& text,
+    const std::u16string& text,
     const std::vector<ui::ImeTextSpan>& ime_text_spans,
     int selection_start,
     int selection_end) {
@@ -3115,11 +3093,11 @@ void PepperPluginInstanceImpl::OnImeSetComposition(
 
     // Empty -> nonempty: composition started.
     if (composition_text_.empty() && !text.empty()) {
-      HandleCompositionStart(base::string16());
+      HandleCompositionStart(std::u16string());
     }
     // Nonempty -> empty: composition canceled.
     if (!composition_text_.empty() && text.empty()) {
-      HandleCompositionEnd(base::string16());
+      HandleCompositionEnd(std::u16string());
     }
     composition_text_ = text;
     // Nonempty: composition is ongoing.
@@ -3131,19 +3109,19 @@ void PepperPluginInstanceImpl::OnImeSetComposition(
 }
 
 void PepperPluginInstanceImpl::OnImeCommitText(
-    const base::string16& text,
+    const std::u16string& text,
     const gfx::Range& replacement_range,
     int relative_cursor_pos) {
   HandlePepperImeCommit(text);
 }
 
 void PepperPluginInstanceImpl::OnImeFinishComposingText(bool keep_selection) {
-  const base::string16& text = composition_text_;
+  const std::u16string& text = composition_text_;
   HandlePepperImeCommit(text);
 }
 
 void PepperPluginInstanceImpl::HandlePepperImeCommit(
-    const base::string16& text) {
+    const std::u16string& text) {
   if (text.empty())
     return;
 
@@ -3173,6 +3151,10 @@ void PepperPluginInstanceImpl::HandlePepperImeCommit(
     HandleTextInput(text);
   }
   composition_text_.clear();
+}
+
+void PepperPluginInstanceImpl::SetVolume(double volume) {
+  audio_controller().SetVolume(volume);
 }
 
 }  // namespace content

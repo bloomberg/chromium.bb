@@ -9,7 +9,9 @@ import {describe, it} from '../../shared/mocha-extensions.js';
 import {listenForSourceFilesAdded, openFileInSourcesPanel, retrieveSourceFilesAdded, waitForAdditionalSourceFiles} from '../helpers/sources-helpers.js';
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Window {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     __sourceFilesAddedEvents: string[];
   }
 }

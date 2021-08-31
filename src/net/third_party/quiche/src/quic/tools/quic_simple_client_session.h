@@ -5,8 +5,8 @@
 #ifndef QUICHE_QUIC_TOOLS_QUIC_SIMPLE_CLIENT_SESSION_H_
 #define QUICHE_QUIC_TOOLS_QUIC_SIMPLE_CLIENT_SESSION_H_
 
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_session.h"
-#include "net/third_party/quiche/src/quic/tools/quic_simple_client_stream.h"
+#include "quic/core/http/quic_spdy_client_session.h"
+#include "quic/tools/quic_simple_client_stream.h"
 
 namespace quic {
 
@@ -19,11 +19,21 @@ class QuicSimpleClientSession : public QuicSpdyClientSession {
                           QuicCryptoClientConfig* crypto_config,
                           QuicClientPushPromiseIndex* push_promise_index,
                           bool drop_response_body);
+  QuicSimpleClientSession(const QuicConfig& config,
+                          const ParsedQuicVersionVector& supported_versions,
+                          QuicConnection* connection,
+                          const QuicServerId& server_id,
+                          QuicCryptoClientConfig* crypto_config,
+                          QuicClientPushPromiseIndex* push_promise_index,
+                          bool drop_response_body,
+                          bool enable_web_transport);
 
   std::unique_ptr<QuicSpdyClientStream> CreateClientStream() override;
+  bool ShouldNegotiateWebTransport() override;
 
  private:
   const bool drop_response_body_;
+  const bool enable_web_transport_;
 };
 
 }  // namespace quic

@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "extensions/browser/api/socket/socket.h"
-#include "extensions/browser/api/socket/tcp_socket.h"
 #include "extensions/common/api/socket.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -51,7 +50,7 @@ class TCPSocket : public Socket {
   TCPSocket(mojo::PendingRemote<network::mojom::TCPConnectedSocket> socket,
             mojo::ScopedDataPipeConsumerHandle receive_stream,
             mojo::ScopedDataPipeProducerHandle send_stream,
-            const base::Optional<net::IPEndPoint>& remote_addr,
+            const absl::optional<net::IPEndPoint>& remote_addr,
             const std::string& owner_extension_id);
 
   ~TCPSocket() override;
@@ -113,13 +112,13 @@ class TCPSocket : public Socket {
       scoped_refptr<base::SequencedTaskRunner> original_task_runner,
       network::mojom::NetworkContext::CreateTCPConnectedSocketCallback callback,
       int result,
-      const base::Optional<net::IPEndPoint>& local_addr,
-      const base::Optional<net::IPEndPoint>& peer_addr,
+      const absl::optional<net::IPEndPoint>& local_addr,
+      const absl::optional<net::IPEndPoint>& peer_addr,
       mojo::ScopedDataPipeConsumerHandle receive_stream,
       mojo::ScopedDataPipeProducerHandle send_stream);
   void OnConnectComplete(int result,
-                         const base::Optional<net::IPEndPoint>& local_addr,
-                         const base::Optional<net::IPEndPoint>& peer_addr,
+                         const absl::optional<net::IPEndPoint>& local_addr,
+                         const absl::optional<net::IPEndPoint>& peer_addr,
                          mojo::ScopedDataPipeConsumerHandle receive_stream,
                          mojo::ScopedDataPipeProducerHandle send_stream);
 
@@ -137,12 +136,12 @@ class TCPSocket : public Socket {
       const scoped_refptr<base::SequencedTaskRunner>& original_task_runner,
       network::mojom::NetworkContext::CreateTCPServerSocketCallback callback,
       int result,
-      const base::Optional<net::IPEndPoint>& local_addr);
+      const absl::optional<net::IPEndPoint>& local_addr);
   void OnListenComplete(int result,
-                        const base::Optional<net::IPEndPoint>& local_addr);
+                        const absl::optional<net::IPEndPoint>& local_addr);
   void OnAccept(
       int result,
-      const base::Optional<net::IPEndPoint>& remote_addr,
+      const absl::optional<net::IPEndPoint>& remote_addr,
       mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
       mojo::ScopedDataPipeConsumerHandle receive_stream,
       mojo::ScopedDataPipeProducerHandle send_stream);
@@ -156,7 +155,7 @@ class TCPSocket : public Socket {
       int result,
       mojo::ScopedDataPipeConsumerHandle receive_stream,
       mojo::ScopedDataPipeProducerHandle send_stream,
-      const base::Optional<net::SSLInfo>& ssl_info);
+      const absl::optional<net::SSLInfo>& ssl_info);
 
   content::StoragePartition* GetStoragePartitionHelper();
 
@@ -186,8 +185,8 @@ class TCPSocket : public Socket {
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  base::Optional<net::IPEndPoint> local_addr_;
-  base::Optional<net::IPEndPoint> peer_addr_;
+  absl::optional<net::IPEndPoint> local_addr_;
+  absl::optional<net::IPEndPoint> peer_addr_;
 
   // Only used in tests.
   content::StoragePartition* storage_partition_ = nullptr;
@@ -211,7 +210,7 @@ class ResumableTCPSocket : public TCPSocket {
       mojo::PendingRemote<network::mojom::TCPConnectedSocket> socket,
       mojo::ScopedDataPipeConsumerHandle receive_stream,
       mojo::ScopedDataPipeProducerHandle send_stream,
-      const base::Optional<net::IPEndPoint>& remote_addr,
+      const absl::optional<net::IPEndPoint>& remote_addr,
       const std::string& owner_extension_id);
 
   ~ResumableTCPSocket() override;

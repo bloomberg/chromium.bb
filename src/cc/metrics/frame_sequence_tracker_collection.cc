@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 #include "cc/metrics/frame_sequence_tracker.h"
@@ -65,6 +66,8 @@ FrameSequenceTracker* FrameSequenceTrackerCollection::StartSequenceInternal(
   if (IsScrollType(type)) {
     DCHECK_NE(scrolling_thread, ThreadType::kUnknown);
     metrics->SetScrollingThread(scrolling_thread);
+    compositor_frame_reporting_controller_->SetScrollingThread(
+        scrolling_thread);
   }
 
   if (metrics->GetEffectiveThread() == ThreadType::kCompositor) {
@@ -117,6 +120,8 @@ void FrameSequenceTrackerCollection::StopSequence(
 
   auto key = std::make_pair(type, ThreadType::kUnknown);
   if (IsScrollType(type)) {
+    compositor_frame_reporting_controller_->SetScrollingThread(
+        ThreadType::kUnknown);
     key = std::make_pair(type, ThreadType::kCompositor);
     if (!frame_trackers_.contains(key))
       key = std::make_pair(type, ThreadType::kMain);
@@ -363,7 +368,7 @@ void FrameSequenceTrackerCollection::RecreateTrackers(
 }
 
 ActiveFrameSequenceTrackers
-FrameSequenceTrackerCollection::FrameSequenceTrackerActiveTypes() {
+FrameSequenceTrackerCollection::FrameSequenceTrackerActiveTypes() const {
   ActiveFrameSequenceTrackers encoded_types = 0;
   for (const auto& key : frame_trackers_) {
     auto thread_type = key.first.first;

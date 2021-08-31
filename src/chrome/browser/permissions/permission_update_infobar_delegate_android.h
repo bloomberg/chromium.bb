@@ -11,7 +11,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
@@ -50,7 +49,7 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
   // The |callback| will not be triggered if this is deleted.
   static infobars::InfoBar* Create(
       content::WebContents* web_contents,
-      const std::vector<std::string>& android_permissions,
+      const std::vector<std::string>& required_android_permissions,
       int permission_msg_id,
       PermissionUpdatedCallback callback);
 
@@ -61,14 +60,16 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   static infobars::InfoBar* Create(
       content::WebContents* web_contents,
-      const std::vector<std::string>& android_permissions,
+      const std::vector<std::string>& required_android_permissions,
+      const std::vector<std::string>& optional_android_permissions,
       const std::vector<ContentSettingsType> content_settings_types,
       int permission_msg_id,
       PermissionUpdatedCallback callback);
 
   PermissionUpdateInfoBarDelegate(
       content::WebContents* web_contents,
-      const std::vector<std::string>& android_permissions,
+      const std::vector<std::string>& required_android_permissions,
+      const std::vector<std::string>& optional_android_permissions,
       const std::vector<ContentSettingsType>& content_settings_types,
       int permission_msg_id,
       PermissionUpdatedCallback callback);
@@ -79,11 +80,11 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // PermissionInfoBarDelegate:
   int GetIconId() const override;
-  base::string16 GetMessageText() const override;
+  std::u16string GetMessageText() const override;
 
   // ConfirmInfoBarDelegate:
   int GetButtons() const override;
-  base::string16 GetButtonLabel(InfoBarButton button) const override;
+  std::u16string GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
 
@@ -91,7 +92,6 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
   void InfoBarDismissed() override;
 
   base::android::ScopedJavaGlobalRef<jobject> java_delegate_;
-  std::vector<std::string> android_permissions_;
   std::vector<ContentSettingsType> content_settings_types_;
   int permission_msg_id_;
   PermissionUpdatedCallback callback_;

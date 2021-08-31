@@ -13,25 +13,19 @@
 # limitations under the License.
 """Server of the Python example of customizing authentication mechanism."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import argparse
 import contextlib
 import logging
-import time
 from concurrent import futures
 
 import grpc
-from examples import helloworld_pb2
-from examples import helloworld_pb2_grpc
-from examples.python.auth import _credentials
+import _credentials
+
+helloworld_pb2, helloworld_pb2_grpc = grpc.protos_and_services(
+    "helloworld.proto")
 
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.INFO)
-
-_ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 _LISTEN_ADDRESS_TEMPLATE = 'localhost:%d'
 _SIGNATURE_HEADER_KEY = 'x-signature'
@@ -68,9 +62,8 @@ class SimpleGreeter(helloworld_pb2_grpc.GreeterServicer):
 @contextlib.contextmanager
 def run_server(port):
     # Bind interceptor to server
-    server = grpc.server(
-        futures.ThreadPoolExecutor(),
-        interceptors=(SignatureValidationInterceptor(),))
+    server = grpc.server(futures.ThreadPoolExecutor(),
+                         interceptors=(SignatureValidationInterceptor(),))
     helloworld_pb2_grpc.add_GreeterServicer_to_server(SimpleGreeter(), server)
 
     # Loading credentials
@@ -85,24 +78,23 @@ def run_server(port):
 
     server.start()
     try:
-        yield port
+        yield server, port
     finally:
         server.stop(0)
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--port', nargs='?', type=int, default=50051, help='the listening port')
+    parser.add_argument('--port',
+                        nargs='?',
+                        type=int,
+                        default=50051,
+                        help='the listening port')
     args = parser.parse_args()
 
-    with run_server(args.port) as port:
+    with run_server(args.port) as (server, port):
         logging.info('Server is listening at port :%d', port)
-        try:
-            while True:
-                time.sleep(_ONE_DAY_IN_SECONDS)
-        except KeyboardInterrupt:
-            pass
+        server.wait_for_termination()
 
 
 if __name__ == '__main__':

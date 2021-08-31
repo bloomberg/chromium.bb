@@ -4,7 +4,7 @@
 
 const {assert} = chai;
 
-import {_getPositionFromLabelType, _getLabelType, LabelTypes} from '../../../inspector_overlay/tool_source_order.js';
+import {getPositionFromLabelType, getLabelType, LabelTypes} from '../../../inspector_overlay/tool_source_order.js';
 
 const positionTypes = Object.values(LabelTypes);
 const labelHeight = 22;
@@ -16,8 +16,8 @@ const defaultBounds = {
   maxY: 200,
 };
 
-describe('_getPositionFromLabelType', () => {
-  type positionId = 'to'|'ab'|'be'|'bo';
+describe('getPositionFromLabelType', () => {
+  type PositionId = 'to'|'ab'|'be'|'bo';
   const expectedPositions = {
     'to': defaultBounds.minY,
     'ab': defaultBounds.minY - labelHeight,
@@ -27,17 +27,17 @@ describe('_getPositionFromLabelType', () => {
 
   for (const positionType of positionTypes) {
     it('can place ' + positionType, () => {
-      const position = _getPositionFromLabelType(positionType, defaultBounds, labelHeight);
+      const position = getPositionFromLabelType(positionType, defaultBounds, labelHeight);
       const positionId = positionType.slice(0, 2);
 
       assert.strictEqual(
-          position.contentTop, expectedPositions[<positionId>positionId], 'incorrect offset from the top of the page');
+          position.contentTop, expectedPositions[<PositionId>positionId], 'incorrect offset from the top of the page');
       assert.strictEqual(position.contentLeft, defaultBounds.minX, 'incorrect offset from the left of the page');
     });
   }
 });
 
-describe('_getLabelType', () => {
+describe('getLabelType', () => {
   const thinBounds = {minX: 100, minY: 100, maxX: 110, maxY: 200};
   const shortBounds = {minX: 100, minY: 100, maxX: 200, maxY: 110};
   const canvasHeight = 1000;
@@ -125,7 +125,7 @@ describe('_getLabelType', () => {
         otherLabelsCollection[0] = overlappingLabel;
       }
 
-      const positionType = _getLabelType(bounds, labelHeight, labelWidth, otherLabelsCollection, canvasHeight);
+      const positionType = getLabelType(bounds, labelHeight, labelWidth, otherLabelsCollection, canvasHeight);
       assert.strictEqual(positionType, expectedType, 'incorrect position type');
     });
   }

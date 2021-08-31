@@ -1,13 +1,13 @@
 # libcast
 
-libcast is an open source implementation of the Cast procotol supporting Cast
+libcast is an open source implementation of the Cast protocol supporting Cast
 applications and streaming to Cast-compatible devices.
 
 ## Using the standalone implementations
 
 To run the standalone sender and receivers together, first you need to install
 the following dependencies: FFMPEG, LibVPX, LibOpus, LibSDL2, as well as their
-headers (frequently in a seperate -dev package). From here, you just need a
+headers (frequently in a separate -dev package). From here, you just need a
 video to use with the cast_sender, as the cast_receiver can generate a
 self-signed certificate and private key for each session. You can also generate
 your own RSA private key and either create or have the receiver automatically

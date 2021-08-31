@@ -6,7 +6,6 @@
 #define COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_OBJC_IDENTITY_MANAGER_OBSERVER_BRIDGE_H_
 
 #import <Foundation/Foundation.h>
-#include <vector>
 
 #include "components/signin/public/identity_manager/identity_manager.h"
 
@@ -22,9 +21,7 @@
 // IdentityManager::Observer in identity_manager.h for the specification of
 // these semantics.
 
-- (void)onPrimaryAccountSet:(const CoreAccountInfo&)primaryAccountInfo;
-- (void)onPrimaryAccountCleared:
-    (const CoreAccountInfo&)previousPrimaryAccountInfo;
+- (void)onPrimaryAccountChanged:(const signin::PrimaryAccountChangeEvent&)event;
 - (void)onRefreshTokenUpdatedForAccount:(const CoreAccountInfo&)accountInfo;
 - (void)onRefreshTokenRemovedForAccount:(const CoreAccountId&)accountId;
 - (void)onRefreshTokensLoaded;
@@ -47,10 +44,8 @@ class IdentityManagerObserverBridge : public IdentityManager::Observer {
   ~IdentityManagerObserverBridge() override;
 
   // IdentityManager::Observer.
-  void OnPrimaryAccountSet(
-      const CoreAccountInfo& primary_account_info) override;
-  void OnPrimaryAccountCleared(
-      const CoreAccountInfo& previous_primary_account_info) override;
+  void OnPrimaryAccountChanged(
+      const signin::PrimaryAccountChangeEvent& event) override;
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
   void OnRefreshTokenRemovedForAccount(

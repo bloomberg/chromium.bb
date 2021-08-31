@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -222,7 +223,7 @@ class IncidentReportingServiceTest : public testing::Test {
     scoped_feature_list_.InitAndEnableFeature(
         safe_browsing::kIncidentReportingEnableUpload);
 
-    instance_.reset(new TestIncidentReportingService(
+    instance_ = std::make_unique<TestIncidentReportingService>(
         base::ThreadTaskRunnerHandle::Get(),
         base::BindRepeating(&IncidentReportingServiceTest::PreProfileAdd,
                             base::Unretained(this)),
@@ -232,7 +233,7 @@ class IncidentReportingServiceTest : public testing::Test {
         base::BindRepeating(&IncidentReportingServiceTest::CreateDownloadFinder,
                             base::Unretained(this)),
         base::BindRepeating(&IncidentReportingServiceTest::StartUpload,
-                            base::Unretained(this))));
+                            base::Unretained(this)));
   }
 
   // Sets the action to be taken by the test fixture when the service creates a
@@ -272,8 +273,7 @@ class IncidentReportingServiceTest : public testing::Test {
         profile_name, std::move(prefs), base::ASCIIToUTF16(profile_name),
         0,              // avatar_id (unused)
         std::string(),  // supervised_user_id (unused)
-        TestingProfile::TestingFactories(),
-        /*override_new_profile=*/base::Optional<bool>(false));
+        TestingProfile::TestingFactories());
     mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
     return profile;
@@ -525,22 +525,22 @@ class IncidentReportingServiceTest : public testing::Test {
         non_binary_download;
     if (on_create_download_finder_action_ ==
         ON_CREATE_DOWNLOAD_FINDER_NO_PROFILES) {
-      return std::unique_ptr<safe_browsing::LastDownloadFinder>();
+      return nullptr;
     }
     if (on_create_download_finder_action_ ==
             ON_CREATE_DOWNLOAD_FINDER_DOWNLOADS_FOUND ||
         on_create_download_finder_action_ ==
             ON_CREATE_DOWNLOAD_FINDER_BINARY_DOWNLOAD_FOUND) {
-      binary_download.reset(
-          new safe_browsing::ClientIncidentReport_DownloadDetails);
+      binary_download = std::make_unique<
+          safe_browsing::ClientIncidentReport_DownloadDetails>();
       binary_download->set_token(kFakeDownloadToken);
     }
     if (on_create_download_finder_action_ ==
             ON_CREATE_DOWNLOAD_FINDER_DOWNLOADS_FOUND ||
         on_create_download_finder_action_ ==
             ON_CREATE_DOWNLOAD_FINDER_NON_BINARY_DOWNLOAD_FOUND) {
-      non_binary_download.reset(
-          new safe_browsing::ClientIncidentReport_NonBinaryDownloadDetails);
+      non_binary_download = std::make_unique<
+          safe_browsing::ClientIncidentReport_NonBinaryDownloadDetails>();
       non_binary_download->set_host(kFakeDownloadHost);
     }
 
@@ -558,7 +558,8 @@ class IncidentReportingServiceTest : public testing::Test {
       safe_browsing::IncidentReportUploader::OnResultCallback callback,
       const safe_browsing::ClientIncidentReport& report) {
     // Remember the report that is being uploaded.
-    uploaded_report_.reset(new safe_browsing::ClientIncidentReport(report));
+    uploaded_report_ =
+        std::make_unique<safe_browsing::ClientIncidentReport>(report);
     // Run and clear the OnStartUpload callback, if provided.
     if (!on_start_upload_callback_.is_null()) {
       std::move(on_start_upload_callback_).Run();
@@ -1308,8 +1309,8 @@ TEST_F(IncidentReportingServiceTest, UploadsWithBothDownloadTypes) {
 // Test that a profile's prune state is properly cleaned upon load.
 TEST_F(IncidentReportingServiceTest, CleanLegacyPruneState) {
   CreateIncidentReportingService();
-  const std::string blacklist_load_type(base::NumberToString(
-      static_cast<int>(safe_browsing::IncidentType::OBSOLETE_BLACKLIST_LOAD)));
+  const std::string blocklist_load_type(base::NumberToString(
+      static_cast<int>(safe_browsing::IncidentType::OBSOLETE_BLOCKLIST_LOAD)));
   const std::string preference_type(base::NumberToString(
       static_cast<int>(safe_browsing::IncidentType::TRACKED_PREFERENCE)));
 
@@ -1318,12 +1319,12 @@ TEST_F(IncidentReportingServiceTest, CleanLegacyPruneState) {
       new base::DictionaryValue());
   auto type_dict = std::make_unique<base::DictionaryValue>();
   type_dict->SetKey("foo", base::Value("47"));
-  incidents_sent->SetWithoutPathExpansion(blacklist_load_type,
-                                          std::move(type_dict));
+  incidents_sent->SetKey(blocklist_load_type,
+                         base::Value::FromUniquePtrValue(std::move(type_dict)));
   type_dict = std::make_unique<base::DictionaryValue>();
   type_dict->SetKey("bar", base::Value("43"));
-  incidents_sent->SetWithoutPathExpansion(preference_type,
-                                          std::move(type_dict));
+  incidents_sent->SetKey(preference_type,
+                         base::Value::FromUniquePtrValue(std::move(type_dict)));
 
   // Add a profile.
   Profile* profile =
@@ -1336,7 +1337,7 @@ TEST_F(IncidentReportingServiceTest, CleanLegacyPruneState) {
   const base::DictionaryValue* new_state =
       profile->GetPrefs()->GetDictionary(prefs::kSafeBrowsingIncidentsSent);
   // The legacy value must be gone.
-  ASSERT_FALSE(new_state->HasKey(blacklist_load_type));
+  ASSERT_FALSE(new_state->HasKey(blocklist_load_type));
   // But other data must be untouched.
   ASSERT_TRUE(new_state->HasKey(preference_type));
 }

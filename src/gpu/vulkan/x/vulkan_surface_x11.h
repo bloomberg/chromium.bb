@@ -9,11 +9,16 @@
 
 #include "base/macros.h"
 #include "gpu/vulkan/vulkan_surface.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/event.h"
+
+namespace x11 {
+class XScopedEventSelector;
+}
 
 namespace gpu {
 
-class VulkanSurfaceX11 : public VulkanSurface {
+class VulkanSurfaceX11 : public VulkanSurface, public x11::EventObserver {
  public:
   static std::unique_ptr<VulkanSurfaceX11> Create(VkInstance vk_instance,
                                                   x11::Window parent_window);
@@ -29,13 +34,12 @@ class VulkanSurfaceX11 : public VulkanSurface {
                gfx::OverlayTransform pre_transform) override;
 
  private:
-  class ExposeEventForwarder;
-  bool CanDispatchXEvent(const x11::Event* event);
-  void ForwardXExposeEvent(const x11::Event* event);
+  // x11::EventObserver:
+  void OnEvent(const x11::Event& xevent) override;
 
   const x11::Window parent_window_;
   x11::Window window_;
-  std::unique_ptr<ExposeEventForwarder> expose_event_forwarder_;
+  std::unique_ptr<x11::XScopedEventSelector> event_selector_;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanSurfaceX11);
 };

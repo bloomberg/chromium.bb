@@ -4,11 +4,16 @@
 
 #include "components/version_ui/version_ui_constants.h"
 
+#include "build/chromeos_buildflags.h"
+
 namespace version_ui {
 
 // Resource paths.
 const char kAboutVersionCSS[] = "about_version.css";
-const char kVersionJS[] = "version.js";
+#if defined(OS_IOS) || defined(OS_ANDROID)
+const char kAboutVersionMobileCSS[] = "about_version_mobile.css";
+#endif
+const char kVersionJS[] = "about_version.js";
 
 // Message handlers.
 const char kRequestVersionInfo[] = "requestVersionInfo";
@@ -23,7 +28,7 @@ const char kKeyProfilePath[] = "profilePath";
 
 // Strings.
 const char kApplicationLabel[] = "application_label";
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kARC[] = "arc_label";
 #endif
 const char kCL[] = "cl";
@@ -37,14 +42,14 @@ const char kCompiler[] = "compiler";
 const char kUpdateCohortName[] = "update_cohort_name";
 #endif
 const char kCopyright[] = "copyright";
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kCustomizationId[] = "customization_id";
 #endif
 #if !defined(OS_IOS)
 const char kExecutablePath[] = "executable_path";
 const char kExecutablePathName[] = "executable_path_name";
 #endif
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kFirmwareVersion[] = "firmware_version";
 #endif
 #if !defined(OS_IOS)
@@ -53,7 +58,7 @@ const char kJSVersion[] = "js_version";
 #endif
 const char kLogoAltText[] = "logo_alt_text";
 const char kOfficial[] = "official";
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 const char kOSName[] = "os_name";
 const char kOSType[] = "os_type";
 #endif
@@ -62,7 +67,7 @@ const char kOSVersion[] = "os_version";
 const char kGmsName[] = "gms_name";
 const char kGmsVersion[] = "gms_version";
 #endif
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kPlatform[] = "platform";
 #endif
 #if !defined(OS_IOS)

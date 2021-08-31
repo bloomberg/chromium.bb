@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
@@ -17,9 +17,8 @@ namespace browsing_data {
 
 MockServiceWorkerHelper::MockServiceWorkerHelper(
     content::BrowserContext* browser_context)
-    : ServiceWorkerHelper(
-          content::BrowserContext::GetDefaultStoragePartition(browser_context)
-              ->GetServiceWorkerContext()) {}
+    : ServiceWorkerHelper(browser_context->GetDefaultStoragePartition()
+                              ->GetServiceWorkerContext()) {}
 
 MockServiceWorkerHelper::~MockServiceWorkerHelper() {}
 

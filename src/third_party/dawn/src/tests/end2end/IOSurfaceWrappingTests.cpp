@@ -182,7 +182,7 @@ TEST_P(IOSurfaceValidationTests, InvalidMipLevelCount) {
 // Test an error occurs if the descriptor depth isn't 1
 TEST_P(IOSurfaceValidationTests, InvalidDepth) {
     DAWN_SKIP_TEST_IF(UsesWire());
-    descriptor.size.depth = 2;
+    descriptor.size.depthOrArrayLayers = 2;
 
     ASSERT_DEVICE_ERROR(wgpu::Texture texture =
                             WrapIOSurface(&descriptor, defaultIOSurface.get(), 0));
@@ -247,46 +247,52 @@ class IOSurfaceUsageTests : public IOSurfaceTestBase {
         // The simplest texture sampling pipeline.
         wgpu::RenderPipeline pipeline;
         {
-            wgpu::ShaderModule vs =
-                utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-                #version 450
-                layout (location = 0) out vec2 o_texCoord;
-                void main() {
-                    const vec2 pos[6] = vec2[6](vec2(-2.f, -2.f),
-                                                vec2(-2.f,  2.f),
-                                                vec2( 2.f, -2.f),
-                                                vec2(-2.f,  2.f),
-                                                vec2( 2.f, -2.f),
-                                                vec2( 2.f,  2.f));
-                    const vec2 texCoord[6] = vec2[6](vec2(0.f, 0.f),
-                                                     vec2(0.f, 1.f),
-                                                     vec2(1.f, 0.f),
-                                                     vec2(0.f, 1.f),
-                                                     vec2(1.f, 0.f),
-                                                     vec2(1.f, 1.f));
-                    gl_Position = vec4(pos[gl_VertexIndex], 0.f, 1.f);
-                    o_texCoord = texCoord[gl_VertexIndex];
+            wgpu::ShaderModule vs = utils::CreateShaderModule(device, R"(
+                struct VertexOut {
+                    [[location(0)]] texCoord : vec2<f32>;
+                    [[builtin(position)]] position : vec4<f32>;
+                };
+
+                [[stage(vertex)]]
+                fn main([[builtin(vertex_index)]] VertexIndex : u32) -> VertexOut {
+                    let pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+                        vec2<f32>(-2.0, -2.0),
+                        vec2<f32>(-2.0,  2.0),
+                        vec2<f32>( 2.0, -2.0),
+                        vec2<f32>(-2.0,  2.0),
+                        vec2<f32>( 2.0, -2.0),
+                        vec2<f32>( 2.0,  2.0));
+
+                    let texCoord : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+                        vec2<f32>(0.0, 0.0),
+                        vec2<f32>(0.0, 1.0),
+                        vec2<f32>(1.0, 0.0),
+                        vec2<f32>(0.0, 1.0),
+                        vec2<f32>(1.0, 0.0),
+                        vec2<f32>(1.0, 1.0));
+
+                    var output : VertexOut;
+                    output.position = vec4<f32>(pos[VertexIndex], 0.0, 1.0);
+                    output.texCoord = texCoord[VertexIndex];
+                    return output;
                 }
             )");
-            wgpu::ShaderModule fs =
-                utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-                #version 450
-                layout(set = 0, binding = 0) uniform sampler sampler0;
-                layout(set = 0, binding = 1) uniform texture2D texture0;
-                layout(location = 0) in vec2 texCoord;
-                layout(location = 0) out vec4 fragColor;
+            wgpu::ShaderModule fs = utils::CreateShaderModule(device, R"(
+                [[group(0), binding(0)]] var sampler0 : sampler;
+                [[group(0), binding(1)]] var texture0 : texture_2d<f32>;
 
-                void main() {
-                    fragColor = texture(sampler2D(texture0, sampler0), texCoord);
+                [[stage(fragment)]]
+                fn main([[location(0)]] texCoord : vec2<f32>) -> [[location(0)]] vec4<f32> {
+                    return textureSample(texture0, sampler0, texCoord);
                 }
             )");
 
-            utils::ComboRenderPipelineDescriptor descriptor(device);
-            descriptor.vertexStage.module = vs;
-            descriptor.cFragmentStage.module = fs;
-            descriptor.cColorStates[0].format = wgpu::TextureFormat::RGBA8Unorm;
+            utils::ComboRenderPipelineDescriptor2 descriptor;
+            descriptor.vertex.module = vs;
+            descriptor.cFragment.module = fs;
+            descriptor.cTargets[0].format = wgpu::TextureFormat::RGBA8Unorm;
 
-            pipeline = device.CreateRenderPipeline(&descriptor);
+            pipeline = device.CreateRenderPipeline2(&descriptor);
         }
 
         // The bindgroup containing the texture view for the ioSurface as well as the sampler.
@@ -303,8 +309,7 @@ class IOSurfaceUsageTests : public IOSurfaceTestBase {
 
             wgpu::TextureView textureView = wrappingTexture.CreateView();
 
-            wgpu::SamplerDescriptor samplerDescriptor = utils::GetDefaultSamplerDescriptor();
-            wgpu::Sampler sampler = device.CreateSampler(&samplerDescriptor);
+            wgpu::Sampler sampler = device.CreateSampler();
 
             bindGroup = utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
                                              {{0, sampler}, {1, textureView}});

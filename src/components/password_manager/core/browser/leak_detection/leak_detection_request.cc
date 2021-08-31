@@ -150,9 +150,6 @@ void LeakDetectionRequest::OnLookupSingleLeakResponse(
 
     int net_error = simple_url_loader_->NetError();
     DLOG(ERROR) << "Net Error: " << net::ErrorToString(net_error);
-    // Network error codes are negative. See: src/net/base/net_error_list.h.
-    base::UmaHistogramSparse("PasswordManager.LeakDetection.NetErrorCode",
-                             -net_error);
 
     std::move(callback).Run(nullptr, error);
     return;
@@ -183,7 +180,7 @@ void LeakDetectionRequest::OnLookupSingleLeakResponse(
   base::UmaHistogramCounts100000(
       "PasswordManager.LeakDetection.SingleLeakResponsePrefixes",
       single_lookup_response->encrypted_leak_match_prefixes.size());
-  std::move(callback).Run(std::move(single_lookup_response), base::nullopt);
+  std::move(callback).Run(std::move(single_lookup_response), absl::nullopt);
 }
 
 }  // namespace password_manager

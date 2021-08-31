@@ -62,6 +62,7 @@ class SANDBOX_EXPORT SyscallSets {
   static bool IsKernelModule(int sysno);
   static bool IsGlobalFSViewChange(int sysno);
   static bool IsFsControl(int sysno);
+  static bool IsSendfile(int sysno);
   static bool IsNuma(int sysno);
   static bool IsMessageQueue(int sysno);
   static bool IsGlobalProcessEnvironment(int sysno);
@@ -99,6 +100,7 @@ class SANDBOX_EXPORT SyscallSets {
   static bool IsFaNotify(int sysno);
   static bool IsTimer(int sysno);
   static bool IsAdvancedTimer(int sysno);
+  static bool IsClockApi(int sysno);
   static bool IsExtendedAttributes(int sysno);
   static bool IsMisc(int sysno);
 #if defined(__arm__)

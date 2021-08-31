@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_ACTION_PLATFORM_DELEGATE_VIEWS_H_
 
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/ui/extensions/extension_action_platform_delegate.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -38,7 +38,6 @@ class ExtensionActionPlatformDelegateViews
       std::unique_ptr<extensions::ExtensionViewHost> host,
       bool grant_tab_permissions,
       ExtensionActionViewController::PopupShowAction show_action) override;
-  void ShowContextMenu() override;
 
   // extensions::CommandService::Observer:
   void OnExtensionCommandAdded(const std::string& extension_id,
@@ -60,9 +59,9 @@ class ExtensionActionPlatformDelegateViews
   // for (to show the popup).
   std::unique_ptr<ui::Accelerator> action_keybinding_;
 
-  ScopedObserver<extensions::CommandService,
-                 extensions::CommandService::Observer>
-      command_service_observer_{this};
+  base::ScopedObservation<extensions::CommandService,
+                          extensions::CommandService::Observer>
+      command_service_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionPlatformDelegateViews);
 };

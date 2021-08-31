@@ -4,13 +4,15 @@
 
 #include "content/test/web_contents_observer_consistency_checker.h"
 
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/common/content_navigation_policy.h"
-#include "content/common/frame_messages.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -25,6 +27,8 @@ namespace {
 
 const char kWebContentsObserverConsistencyCheckerKey[] =
     "WebContentsObserverConsistencyChecker";
+
+using LifecycleStateImpl = RenderFrameHostImpl::LifecycleStateImpl;
 
 GlobalRoutingID GetRoutingPair(RenderFrameHost* host) {
   if (!host)
@@ -111,7 +115,7 @@ void WebContentsObserverConsistencyChecker::RenderFrameDeleted(
 
   // All players should have been paused by this point.
   for (const auto& id : active_media_players_)
-    CHECK_NE(id.render_frame_host, render_frame_host);
+    CHECK_NE(RenderFrameHost::FromID(id.frame_routing_id), render_frame_host);
 }
 
 void WebContentsObserverConsistencyChecker::RenderFrameHostChanged(
@@ -122,6 +126,7 @@ void WebContentsObserverConsistencyChecker::RenderFrameHostChanged(
   CHECK(GetRoutingPair(old_host) != GetRoutingPair(new_host));
 
   if (old_host) {
+    CHECK(base::Contains(frame_tree_node_ids_, new_host->GetFrameTreeNodeId()));
     EnsureStableParentValue(old_host);
     CHECK_EQ(old_host->GetParent(), new_host->GetParent());
     GlobalRoutingID routing_pair = GetRoutingPair(old_host);
@@ -134,19 +139,32 @@ void WebContentsObserverConsistencyChecker::RenderFrameHostChanged(
           << "RenderFrameHostChanged called with old host that did not exist:"
           << Format(old_host);
     }
+  } else {
+    CHECK(frame_tree_node_ids_.insert(new_host->GetFrameTreeNodeId()).second);
   }
 
-  CHECK(new_host->IsCurrent());
+  auto* new_host_impl = static_cast<RenderFrameHostImpl*>(new_host);
+  CHECK(new_host_impl->lifecycle_state() == LifecycleStateImpl::kActive ||
+        new_host_impl->lifecycle_state() == LifecycleStateImpl::kPrerendering);
   EnsureStableParentValue(new_host);
   if (new_host->GetParent()) {
     AssertRenderFrameExists(new_host->GetParent());
+    // RenderFrameCreated should be called before RenderFrameHostChanged for all
+    // the subframes except for Portals which do not have a live RenderFrame in
+    // the renderer process.
+    if (new_host->GetFrameOwnerElementType() !=
+        blink::mojom::FrameOwnerElementType::kPortal) {
+      AssertRenderFrameExists(new_host);
+    }
     CHECK(current_hosts_.count(GetRoutingPair(new_host->GetParent())))
         << "Parent of frame being committed must be current.";
   }
 
   GlobalRoutingID routing_pair = GetRoutingPair(new_host);
   bool host_exists = !current_hosts_.insert(routing_pair).second;
-  if (host_exists) {
+  // TODO(https://crbug.com/1179683): Figure out a better way to deal with
+  // MPArch.
+  if (host_exists && !blink::features::IsPrerender2Enabled()) {
     CHECK(false)
         << "RenderFrameHostChanged called more than once for routing pair:"
         << Format(new_host);
@@ -155,17 +173,36 @@ void WebContentsObserverConsistencyChecker::RenderFrameHostChanged(
   // If |new_host| is restored from the BackForwardCache, it can contain
   // iframes, otherwise it has just been created and can't contain iframes for
   // the moment.
-  if (!IsBackForwardCacheEnabled()) {
+  //
+  // TODO(https://crbug.com/1179683): Figure out a better way to deal with
+  // handling the new RenderFrameHost coming from a prerendered activation
+  // rather than an ordinary activation.
+  if (!IsBackForwardCacheEnabled() && !blink::features::IsPrerender2Enabled()) {
     CHECK(!HasAnyChildren(new_host))
         << "A frame should not have children before it is committed.";
   }
 }
 
 void WebContentsObserverConsistencyChecker::FrameDeleted(
-    RenderFrameHost* render_frame_host) {
+    int frame_tree_node_id) {
   // A frame can be deleted before RenderFrame in the renderer process is
   // created, so there is not much that can be enforced here.
   CHECK(!web_contents_destroyed_);
+
+  CHECK(frame_tree_node_ids_.erase(frame_tree_node_id));
+
+  RenderFrameHostImpl* render_frame_host =
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id)->current_frame_host();
+
+  // Will be nullptr if this is main frame of a non primary FrameTree whose page
+  // was moved out (e.g. due Prerender activation).
+  if (!render_frame_host) {
+    DCHECK_NE(FrameTreeNode::GloballyFindByID(frame_tree_node_id)
+                  ->frame_tree()
+                  ->type(),
+              FrameTree::Type::kPrimary);
+    return;
+  }
 
   EnsureStableParentValue(render_frame_host);
 
@@ -206,9 +243,9 @@ void WebContentsObserverConsistencyChecker::ReadyToCommitNavigation(
   CHECK(NavigationIsOngoing(navigation_handle));
 
   CHECK(!navigation_handle->HasCommitted());
-  CHECK(navigation_handle->GetRenderFrameHost());
   CHECK_EQ(navigation_handle->GetWebContents(), web_contents());
-  CHECK(navigation_handle->GetRenderFrameHost() != nullptr);
+  CHECK(navigation_handle->GetRenderFrameHost());
+  CHECK(navigation_handle->GetRenderFrameHost()->IsRenderFrameLive());
 
   ready_to_commit_hosts_.insert(
       std::make_pair(navigation_handle->GetNavigationId(),
@@ -225,10 +262,17 @@ void WebContentsObserverConsistencyChecker::DidFinishNavigation(
   CHECK_EQ(navigation_handle->GetWebContents(), web_contents());
 
   CHECK(!navigation_handle->HasCommitted() ||
-        navigation_handle->GetRenderFrameHost() != nullptr);
+        navigation_handle->GetRenderFrameHost());
+
+  if (navigation_handle->HasCommitted()) {
+    RenderFrameHostImpl* new_rfh = static_cast<RenderFrameHostImpl*>(
+        navigation_handle->GetRenderFrameHost());
+    CHECK(new_rfh->lifecycle_state() == LifecycleStateImpl::kActive ||
+          new_rfh->lifecycle_state() == LifecycleStateImpl::kPrerendering);
+  }
 
   CHECK(!navigation_handle->HasCommitted() ||
-        navigation_handle->GetRenderFrameHost()->IsCurrent());
+        navigation_handle->GetRenderFrameHost()->IsRenderFrameLive());
 
   // If ReadyToCommitNavigation was dispatched, verify that the
   // |navigation_handle| has the same RenderFrameHost at this time as the one
@@ -243,12 +287,13 @@ void WebContentsObserverConsistencyChecker::DidFinishNavigation(
   ongoing_navigations_.erase(navigation_handle);
 }
 
-void WebContentsObserverConsistencyChecker::DocumentAvailableInMainFrame() {
+void WebContentsObserverConsistencyChecker::DocumentAvailableInMainFrame(
+    RenderFrameHost* render_frame_host) {
   AssertMainFrameExists();
 }
 
-void WebContentsObserverConsistencyChecker::
-    DocumentOnLoadCompletedInMainFrame() {
+void WebContentsObserverConsistencyChecker::DocumentOnLoadCompletedInMainFrame(
+    RenderFrameHost* render_frame_host) {
   CHECK(web_contents()->IsDocumentOnLoadCompletedInMainFrame());
   AssertMainFrameExists();
 }
@@ -315,12 +360,14 @@ void WebContentsObserverConsistencyChecker::WebContentsDestroyed() {
   CHECK(ongoing_navigations_.empty());
   CHECK(active_media_players_.empty());
   CHECK(live_routes_.empty());
+  CHECK(frame_tree_node_ids_.empty());
 }
 
 void WebContentsObserverConsistencyChecker::DidStartLoading() {
   // TODO(clamy): add checks for the loading state in the rest of observer
   // methods.
-  CHECK(!is_loading_);
+  // TODO(crbug.com/1145572): Add back CHECK(!is_loading_). The CHECK was
+  // removed because of flaky failures during some browser_tests.
   CHECK(web_contents()->IsLoading());
   is_loading_ = true;
 }

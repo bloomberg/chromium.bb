@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/token.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
@@ -16,7 +16,9 @@
 #include "chrome/browser/ui/views/user_education/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/views/user_education/feature_promo_controller_views.h"
 #include "chrome/grit/generated_resources.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/theme_provider.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/color_palette.h"
@@ -30,7 +32,7 @@
 
 namespace {
 
-base::Optional<ViewID> GetViewID(
+absl::optional<ViewID> GetViewID(
     ContentSettingImageModel::ImageType image_type) {
   using ImageType = ContentSettingImageModel::ImageType;
   switch (image_type) {
@@ -42,8 +44,6 @@ base::Optional<ViewID> GetViewID(
 
     case ImageType::COOKIES:
     case ImageType::IMAGES:
-    case ImageType::PPAPI_BROKER:
-    case ImageType::PLUGINS:
     case ImageType::GEOLOCATION:
     case ImageType::MIXEDSCRIPT:
     case ImageType::PROTOCOL_HANDLERS:
@@ -56,13 +56,13 @@ base::Optional<ViewID> GetViewID(
     case ImageType::CLIPBOARD_READ_WRITE:
     case ImageType::SENSORS:
     case ImageType::NOTIFICATIONS_QUIET_PROMPT:
-      return base::nullopt;
+      return absl::nullopt;
 
     case ImageType::NUM_IMAGE_TYPES:
       break;
   }
   NOTREACHED();
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 // The preferred max width for the promo to be shown.
@@ -83,7 +83,7 @@ ContentSettingImageView::ContentSettingImageView(
   SetUpForInOutAnimation();
   image()->SetFlipCanvasOnPaintForRTLUI(true);
 
-  base::Optional<ViewID> view_id =
+  absl::optional<ViewID> view_id =
       GetViewID(content_setting_image_model_->image_type());
   if (view_id)
     SetID(*view_id);
@@ -102,6 +102,7 @@ void ContentSettingImageView::Update() {
 
   if (!content_setting_image_model_->is_visible()) {
     SetVisible(false);
+    current_iph_id_for_testing_.reset();
     return;
   }
   DCHECK(web_contents);
@@ -137,14 +138,17 @@ void ContentSettingImageView::Update() {
   content_setting_image_model_->SetAnimationHasRun(web_contents);
 }
 
-void ContentSettingImageView::SetIconColor(SkColor color) {
+void ContentSettingImageView::SetIconColor(absl::optional<SkColor> color) {
+  if (icon_color_ == color)
+    return;
   icon_color_ = color;
   if (content_setting_image_model_->is_visible())
     UpdateImage();
+  OnPropertyChanged(&icon_color_, views::kPropertyEffectsNone);
 }
 
-const char* ContentSettingImageView::GetClassName() const {
-  return "ContentSettingsImageView";
+absl::optional<SkColor> ContentSettingImageView::GetIconColor() const {
+  return icon_color_;
 }
 
 bool ContentSettingImageView::OnMousePressed(const ui::MouseEvent& event) {
@@ -189,7 +193,7 @@ bool ContentSettingImageView::ShowBubbleImpl() {
     bubble_view_->SetHighlightedButton(this);
     views::Widget* bubble_widget =
         views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
-    observer_.Add(bubble_widget);
+    observation_.Observe(bubble_widget);
     bubble_widget->Show();
     delegate_->OnContentSettingImageBubbleShown(
         content_setting_image_model_->image_type());
@@ -211,7 +215,8 @@ void ContentSettingImageView::OnWidgetDestroying(views::Widget* widget) {
   if (!bubble_view_ || bubble_view_->GetWidget() != widget)
     return;
 
-  observer_.Remove(widget);
+  DCHECK(observation_.IsObservingSource(widget));
+  observation_.Reset();
   bubble_view_ = nullptr;
   UnpauseAnimation();
 }
@@ -238,12 +243,21 @@ void ContentSettingImageView::AnimationEnded(const gfx::Animation* animation) {
         IDS_NOTIFICATIONS_QUIET_PERMISSION_NEW_REQUEST_PROMO;
     bubble_params.anchor_view = this;
     bubble_params.arrow = views::BubbleBorder::TOP_RIGHT;
-    bubble_params.allow_focus = true;
+    bubble_params.focus_on_create = true;
     bubble_params.persist_on_blur = false;
     bubble_params.preferred_width = promo_width;
 
     auto* promo_controller = FeaturePromoControllerViews::GetForView(this);
     DCHECK(promo_controller);
-    promo_controller->ShowCriticalPromo(bubble_params);
+    current_iph_id_for_testing_ =
+        promo_controller->ShowCriticalPromo(bubble_params);
+    content_setting_image_model_->SetPromoWasShown(web_contents);
+  } else {
+    // Set a token that is is_zero() to make it not empty for testing.
+    current_iph_id_for_testing_.emplace(0, 0);
   }
 }
+
+BEGIN_METADATA(ContentSettingImageView, IconLabelBubbleView)
+ADD_PROPERTY_METADATA(absl::optional<SkColor>, IconColor)
+END_METADATA

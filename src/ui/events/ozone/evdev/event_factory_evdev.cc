@@ -15,6 +15,7 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
+#include "ui/events/devices/microphone_mute_switch_monitor.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_manager.h"
@@ -136,6 +137,14 @@ class ProxyDeviceEventDispatcher : public DeviceEventDispatcherEvdev {
                        event_factory_evdev_, stylus_state));
   }
 
+  void DispatchMicrophoneMuteSwitchValueChanged(bool muted) override {
+    ui_thread_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &EventFactoryEvdev::DispatchMicrophoneMuteSwitchValueChanged,
+            event_factory_evdev_, muted));
+  }
+
   void DispatchGamepadDevicesUpdated(
       const std::vector<GamepadDevice>& devices) override {
     ui_thread_runner_->PostTask(
@@ -195,7 +204,9 @@ EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor,
                 base::BindRepeating(&EventFactoryEvdev::DispatchUiEvent,
                                     base::Unretained(this))),
       cursor_(cursor),
-      input_controller_(&keyboard_, &button_map_),
+      input_controller_(&keyboard_,
+                        &mouse_button_map_,
+                        &pointing_stick_button_map_),
       touch_id_generator_(0) {
   DCHECK(device_manager_);
 }
@@ -263,8 +274,11 @@ void EventFactoryEvdev::DispatchMouseButtonEvent(
 
   // Mouse buttons can be remapped, touchpad taps & clicks cannot.
   unsigned int button = params.button;
-  if (params.allow_remap)
-    button = button_map_.GetMappedButton(button);
+  if (params.map_type == MouseButtonMapType::kMouse) {
+    button = mouse_button_map_.GetMappedButton(button);
+  } else if (params.map_type == MouseButtonMapType::kPointingStick) {
+    button = pointing_stick_button_map_.GetMappedButton(button);
+  }
 
   int modifier = MODIFIER_NONE;
   switch (button) {
@@ -426,6 +440,12 @@ void EventFactoryEvdev::DispatchStylusStateChanged(StylusState stylus_state) {
   TRACE_EVENT0("evdev", "EventFactoryEvdev::DispatchStylusStateChanged");
   DeviceHotplugEventObserver* observer = DeviceDataManager::GetInstance();
   observer->OnStylusStateChanged(stylus_state);
+}
+
+void EventFactoryEvdev::DispatchMicrophoneMuteSwitchValueChanged(bool muted) {
+  TRACE_EVENT0("evdev",
+               "EventFactoryEvdev::DispatchMicrophoneMuteSwitchValueChanged");
+  MicrophoneMuteSwitchMonitor::Get()->SetMicrophoneMuteSwitchValue(muted);
 }
 
 void EventFactoryEvdev::DispatchUncategorizedDevicesUpdated(
