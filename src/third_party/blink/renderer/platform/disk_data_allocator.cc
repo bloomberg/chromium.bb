@@ -137,8 +137,6 @@ std::unique_ptr<DiskDataMetadata> DiskDataAllocator::Write(const void* data,
 }
 
 void DiskDataAllocator::Read(const DiskDataMetadata& metadata, void* data) {
-  DCHECK(IsMainThread());
-
   // Doesn't need locking as files support concurrent access, and we don't
   // update metadata.
   char* data_char = reinterpret_cast<char*>(data);
@@ -202,7 +200,7 @@ void DiskDataAllocator::ProvideTemporaryFile(base::File file) {
 
 // static
 DiskDataAllocator& DiskDataAllocator::Instance() {
-  DEFINE_STATIC_LOCAL(DiskDataAllocator, instance, ());
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(DiskDataAllocator, instance, ());
   return instance;
 }
 

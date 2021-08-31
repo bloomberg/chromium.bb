@@ -8,7 +8,6 @@
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/interface_handle.h>
 #include <lib/fidl/cpp/interface_request.h>
-#include <memory>
 
 #include "third_party/blink/public/common/messaging/web_message_port.h"
 
@@ -40,7 +39,7 @@ enum class TransferableHostType {
 };
 
 // Converts a BlinkMessage to a fuchsia::web::WebMessage.
-base::Optional<fuchsia::web::WebMessage> FidlWebMessageFromBlink(
+absl::optional<fuchsia::web::WebMessage> FidlWebMessageFromBlink(
     blink::WebMessagePort::Message blink_message,
     TransferableHostType port_type);
 

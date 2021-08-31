@@ -19,7 +19,7 @@ double LinearTimingFunction::Evaluate(double fraction) const {
 
 void LinearTimingFunction::Range(double* min_value, double* max_value) const {}
 
-std::unique_ptr<cc::TimingFunction> LinearTimingFunction::CloneToCC() const {
+std::unique_ptr<gfx::TimingFunction> LinearTimingFunction::CloneToCC() const {
   return nullptr;
 }
 
@@ -54,7 +54,7 @@ CubicBezierTimingFunction* CubicBezierTimingFunction::Preset(
 }
 
 String CubicBezierTimingFunction::ToString() const {
-  switch (this->GetEaseType()) {
+  switch (GetEaseType()) {
     case CubicBezierTimingFunction::EaseType::EASE:
       return "ease";
     case CubicBezierTimingFunction::EaseType::EASE_IN:
@@ -64,10 +64,10 @@ String CubicBezierTimingFunction::ToString() const {
     case CubicBezierTimingFunction::EaseType::EASE_IN_OUT:
       return "ease-in-out";
     case CubicBezierTimingFunction::EaseType::CUSTOM:
-      return "cubic-bezier(" + String::NumberToStringECMAScript(this->X1()) +
-             ", " + String::NumberToStringECMAScript(this->Y1()) + ", " +
-             String::NumberToStringECMAScript(this->X2()) + ", " +
-             String::NumberToStringECMAScript(this->Y2()) + ")";
+      return "cubic-bezier(" + String::NumberToStringECMAScript(X1()) + ", " +
+             String::NumberToStringECMAScript(Y1()) + ", " +
+             String::NumberToStringECMAScript(X2()) + ", " +
+             String::NumberToStringECMAScript(Y2()) + ")";
     default:
       NOTREACHED();
       return "";
@@ -95,7 +95,7 @@ void CubicBezierTimingFunction::Range(double* min_value,
   *max_value = std::max(std::max(*max_value, solution1), solution2);
 }
 
-std::unique_ptr<cc::TimingFunction> CubicBezierTimingFunction::CloneToCC()
+std::unique_ptr<gfx::TimingFunction> CubicBezierTimingFunction::CloneToCC()
     const {
   return bezier_->Clone();
 }
@@ -130,7 +130,7 @@ String StepsTimingFunction::ToString() const {
 
   StringBuilder builder;
   builder.Append("steps(");
-  builder.Append(String::NumberToStringECMAScript(this->NumberOfSteps()));
+  builder.Append(String::NumberToStringECMAScript(NumberOfSteps()));
   if (position_string) {
     builder.Append(", ");
     builder.Append(position_string);
@@ -154,21 +154,21 @@ double StepsTimingFunction::Evaluate(double fraction) const {
   return steps_->GetPreciseValue(fraction, LimitDirection::RIGHT);
 }
 
-std::unique_ptr<cc::TimingFunction> StepsTimingFunction::CloneToCC() const {
+std::unique_ptr<gfx::TimingFunction> StepsTimingFunction::CloneToCC() const {
   return steps_->Clone();
 }
 
 scoped_refptr<TimingFunction> CreateCompositorTimingFunctionFromCC(
-    const cc::TimingFunction* timing_function) {
+    const gfx::TimingFunction* timing_function) {
   if (!timing_function)
     return LinearTimingFunction::Shared();
 
   switch (timing_function->GetType()) {
-    case cc::TimingFunction::Type::CUBIC_BEZIER: {
+    case gfx::TimingFunction::Type::CUBIC_BEZIER: {
       auto* cubic_timing_function =
-          static_cast<const cc::CubicBezierTimingFunction*>(timing_function);
+          static_cast<const gfx::CubicBezierTimingFunction*>(timing_function);
       if (cubic_timing_function->ease_type() !=
-          cc::CubicBezierTimingFunction::EaseType::CUSTOM)
+          gfx::CubicBezierTimingFunction::EaseType::CUSTOM)
         return CubicBezierTimingFunction::Preset(
             cubic_timing_function->ease_type());
 
@@ -177,9 +177,9 @@ scoped_refptr<TimingFunction> CreateCompositorTimingFunctionFromCC(
                                                bezier.GetX2(), bezier.GetY2());
     }
 
-    case cc::TimingFunction::Type::STEPS: {
+    case gfx::TimingFunction::Type::STEPS: {
       auto* steps_timing_function =
-          static_cast<const cc::StepsTimingFunction*>(timing_function);
+          static_cast<const gfx::StepsTimingFunction*>(timing_function);
       return StepsTimingFunction::Create(
           steps_timing_function->steps(),
           steps_timing_function->step_position());

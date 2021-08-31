@@ -10,7 +10,7 @@ namespace cast {
 EncodedFrame::EncodedFrame() = default;
 EncodedFrame::~EncodedFrame() = default;
 
-EncodedFrame::EncodedFrame(EncodedFrame&&) = default;
+EncodedFrame::EncodedFrame(EncodedFrame&&) noexcept = default;
 EncodedFrame& EncodedFrame::operator=(EncodedFrame&&) = default;
 
 void EncodedFrame::CopyMetadataTo(EncodedFrame* dest) const {

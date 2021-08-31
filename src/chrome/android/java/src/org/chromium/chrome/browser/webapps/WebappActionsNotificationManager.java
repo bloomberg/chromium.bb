@@ -13,11 +13,12 @@ import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.intents.WebDisplayMode;
+import org.chromium.chrome.browser.browserservices.intents.WebappExtras;
 import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
@@ -27,7 +28,7 @@ import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
-import org.chromium.chrome.browser.share.ShareDelegateImpl.ShareOrigin;
+import org.chromium.chrome.browser.share.ShareDelegate.ShareOrigin;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
@@ -140,7 +141,7 @@ class WebappActionsNotificationManager implements PauseResumeWithNativeObserver 
             Context context, Tab tab, String action) {
         Intent intent = new Intent(action);
         intent.setClass(context, WebappLauncherActivity.class);
-        intent.putExtra(IntentHandler.EXTRA_TAB_ID, tab.getId());
+        IntentHandler.setTabId(intent, tab.getId());
         IntentHandler.addTrustedIntentExtras(intent);
         return PendingIntentProvider.getActivity(context, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
@@ -156,8 +157,7 @@ class WebappActionsNotificationManager implements PauseResumeWithNativeObserver 
     public static boolean handleNotificationAction(Intent intent) {
         if (!IntentHandler.wasIntentSenderChrome(intent)) return false;
 
-        int tabId =
-                IntentUtils.safeGetIntExtra(intent, IntentHandler.EXTRA_TAB_ID, Tab.INVALID_TAB_ID);
+        int tabId = IntentHandler.getTabId(intent);
         WeakReference<BaseCustomTabActivity> customTabActivityRef =
                 WebappLocator.findWebappActivityWithTabId(tabId);
         if (customTabActivityRef == null) return false;

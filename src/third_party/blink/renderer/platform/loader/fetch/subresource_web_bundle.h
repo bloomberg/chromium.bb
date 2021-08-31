@@ -5,25 +5,26 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_SUBRESOURCE_WEB_BUNDLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_SUBRESOURCE_WEB_BUNDLE_H_
 
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/network/public/mojom/url_loader_factory.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+
+namespace base {
+class UnguessableToken;
+}
 
 namespace blink {
 
 class KURL;
 
-// SubresourceWebBundle is attached to ResourceFetcher and used to intercept
-// subresource requests for a certain set of URLs and serve responses from a
-// WebBundle. This is used for Subresource loading with Web Bundles
-// (https://github.com/WICG/webpackage/blob/master/explainers/subresource-loading.md).
+// SubresourceWebBundle is used for Subresource loading with Web Bundles.
+// (https://github.com/WICG/webpackage/blob/main/explainers/subresource-loading.md).
 class PLATFORM_EXPORT SubresourceWebBundle : public GarbageCollectedMixin {
  public:
   void Trace(Visitor* visitor) const override {}
   virtual bool CanHandleRequest(const KURL& url) const = 0;
-  virtual mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
-  GetURLLoaderFactory() = 0;
+  virtual const KURL& GetBundleUrl() const = 0;
+  virtual const base::UnguessableToken& WebBundleToken() const = 0;
   virtual String GetCacheIdentifier() const = 0;
 };
 

@@ -7,6 +7,7 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
+#include "third_party/blink/renderer/platform/graphics/resource_id_traits.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -86,7 +87,7 @@ void OffscreenCanvasPlaceholder::SetOffscreenCanvasDispatcher(
   // the corresponding offscreen canvas.
   if (filter_quality_) {
     SkFilterQuality quality = filter_quality_.value();
-    filter_quality_ = base::nullopt;
+    filter_quality_ = absl::nullopt;
     UpdateOffscreenCanvasFilterQuality(quality);
   }
 }

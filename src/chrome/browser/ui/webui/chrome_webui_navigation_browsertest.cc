@@ -11,32 +11,34 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/scoped_web_ui_controller_factory_registration.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/web_ui_browsertest_util.h"
 #include "ipc/ipc_security_test_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/webui/untrusted_web_ui_browsertest_util.h"
 #include "url/url_constants.h"
 
 // Tests embedder specific behavior of WebUIs.
 class ChromeWebUINavigationBrowserTest : public InProcessBrowserTest {
- public:
-  ChromeWebUINavigationBrowserTest() {
-    content::WebUIControllerFactory::RegisterFactory(&factory_);
-  }
-
-  ~ChromeWebUINavigationBrowserTest() override {
-    content::WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
-  }
-
  protected:
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
+  ui::TestUntrustedWebUIControllerFactory& untrusted_factory() {
+    return untrusted_factory_;
+  }
+
  private:
   content::TestWebUIControllerFactory factory_;
+  content::ScopedWebUIControllerFactoryRegistration factory_registration_{
+      &factory_};
+  ui::TestUntrustedWebUIControllerFactory untrusted_factory_;
+  content::ScopedWebUIControllerFactoryRegistration
+      untrusted_factory_registration_{&untrusted_factory_};
 };
 
 // Verify that a browser check stops websites from embeding chrome:// iframes.
@@ -94,10 +96,11 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ("about:blank", child->GetLastCommittedURL());
 
   content::TestNavigationObserver observer(web_contents);
-  content::TestUntrustedDataSourceCSP csp;
-  csp.no_xfo = true;
-  content::AddUntrustedDataSource(browser()->profile(), "test-iframe-host",
-                                  csp);
+  content::TestUntrustedDataSourceHeaders headers;
+  headers.no_xfo = true;
+  untrusted_factory().add_web_ui_config(
+      std::make_unique<ui::TestUntrustedWebUIConfig>("test-iframe-host",
+                                                     headers));
 
   content::PwnMessageHelper::OpenURL(
       child, content::GetChromeUntrustedUIURL("test-iframe-host/title1.html"));

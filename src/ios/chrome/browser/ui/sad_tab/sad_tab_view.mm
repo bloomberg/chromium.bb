@@ -7,7 +7,6 @@
 #import <MaterialComponents/MaterialButtons.h>
 #import <MaterialComponents/MaterialTypography.h>
 
-#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/grit/components_scaled_resources.h"
@@ -16,7 +15,6 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -250,7 +248,7 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
   NSString* label = nil;
   switch (self.mode) {
     case SadTabViewMode::RELOAD: {
-      base::string16 footerLinkText(
+      std::u16string footerLinkText(
           l10n_util::GetStringUTF16(IDS_SAD_TAB_HELP_LINK));
       label = base::SysUTF16ToNSString(
           l10n_util::GetStringFUTF16(IDS_SAD_TAB_HELP_MESSAGE, footerLinkText));
@@ -267,7 +265,7 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
   NSString* label = nil;
   switch (self.mode) {
     case SadTabViewMode::RELOAD: {
-      base::string16 footerLinkText(
+      std::u16string footerLinkText(
           l10n_util::GetStringUTF16(IDS_SAD_TAB_HELP_LINK));
       label = base::SysUTF16ToNSString(footerLinkText);
     } break;
@@ -564,15 +562,11 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
     [_actionButton addTarget:self
                       action:@selector(handleActionButtonTapped)
             forControlEvents:UIControlEventTouchUpInside];
-#if defined(__IPHONE_13_4)
     if (@available(iOS 13.4, *)) {
-      if (base::FeatureList::IsEnabled(kPointerSupport)) {
         _actionButton.pointerInteractionEnabled = YES;
         _actionButton.pointerStyleProvider =
             CreateOpaqueButtonPointerStyleProvider();
-      }
     }
-#endif  // defined(__IPHONE_13_4)
   }
   return _actionButton;
 }

@@ -15,11 +15,14 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_codec_state.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_web_codecs_error_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_webcodecs_error_callback.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/webcodecs/codec_config_eval.h"
+#include "third_party/blink/renderer/modules/webcodecs/codec_logger.h"
+#include "third_party/blink/renderer/modules/webcodecs/codec_trace_names.h"
+#include "third_party/blink/renderer/modules/webcodecs/hardware_preference.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -27,6 +30,7 @@
 
 namespace media {
 class GpuVideoAcceleratorFactories;
+class ScopedDecodeTrace;
 }
 
 namespace blink {
@@ -45,6 +49,8 @@ class MODULES_EXPORT DecoderTemplate
   typedef typename Traits::MediaOutputType MediaOutputType;
   typedef typename Traits::OutputType OutputType;
   typedef typename Traits::OutputCallbackType OutputCallbackType;
+
+  static const CodecTraceNames* GetTraceNames();
 
   DecoderTemplate(ScriptState*, const InitType*, ExceptionState&);
   ~DecoderTemplate() override;
@@ -72,6 +78,22 @@ class MODULES_EXPORT DecoderTemplate
                                           MediaConfigType* out_media_config,
                                           String* out_console_message) = 0;
 
+  // Gets the AccelerationPreference from a config.
+  // If derived classes do not override this, this will default to kAllow.
+  virtual HardwarePreference GetHardwarePreference(const ConfigType& config);
+
+  // Get the low delay preference from a config.
+  // If derived classes do not override this, this will default to false.
+  virtual bool GetLowDelayPreference(const ConfigType& config);
+
+  // Sets the HardwarePreference on the |decoder_|.
+  // The default implementation does nothing and must be overridden by derived
+  // classes if needed.
+  // Decoder
+  virtual void SetHardwarePreference(HardwarePreference preference);
+
+  MediaDecoderType* decoder() { return decoder_.get(); }
+
   // Convert a chunk to a DecoderBuffer. You can assume that the last
   // configuration sent to MakeMediaConfig() is the active configuration for
   // |chunk|. If there is an error in the conversion process, the resulting
@@ -91,10 +113,22 @@ class MODULES_EXPORT DecoderTemplate
 
     void Trace(Visitor*) const;
 
+    // Starts an async trace event.
+    void StartTracing();
+
+    // Ends the async trace event associated with |this|.
+    void EndTracing(bool shutting_down = false);
+
+    // Get a trace event name from DecoderTemplate::GetTraceNames() and |type|.
+    const char* TraceNameFromType();
+
     Type type;
 
-    // For kConfigure Requests.
+    // For kConfigure Requests. Prefer absl::optional<> to ensure values are
+    // only accessed on the proper request type.
     std::unique_ptr<MediaConfigType> media_config;
+    absl::optional<HardwarePreference> hw_pref;
+    absl::optional<bool> low_delay;
 
     // For kDecode Requests.
     scoped_refptr<media::DecoderBuffer> decoder_buffer;
@@ -108,6 +142,14 @@ class MODULES_EXPORT DecoderTemplate
     // The value of |reset_generation_| at the time of this request. Used to
     // abort pending requests following a reset().
     uint32_t reset_generation = 0;
+
+    // Used for tracing kDecode requests.
+    std::unique_ptr<media::ScopedDecodeTrace> decode_trace;
+
+#if DCHECK_IS_ON()
+    // Tracks the state of tracing for debug purposes.
+    bool is_tracing;
+#endif
   };
 
   void ProcessRequests();
@@ -115,7 +157,6 @@ class MODULES_EXPORT DecoderTemplate
   bool ProcessDecodeRequest(Request* request);
   bool ProcessFlushRequest(Request* request);
   bool ProcessResetRequest(Request* request);
-  void HandleError(std::string context, media::Status);
   void ResetAlgorithm();
   void Shutdown(DOMException* ex = nullptr);
 
@@ -123,12 +164,13 @@ class MODULES_EXPORT DecoderTemplate
   void OnInitializeDone(media::Status status);
   void OnDecodeDone(uint32_t id, media::Status);
   void OnFlushDone(media::Status);
-  void OnConfigureFlushDone(media::Status);
   void OnResetDone();
   void OnOutput(uint32_t reset_generation, scoped_refptr<MediaOutputType>);
 
   // Helper function making it easier to check |state_|.
   bool IsClosed();
+
+  void TraceQueueSizes() const;
 
   Member<ScriptState> script_state_;
   Member<OutputCallbackType> output_cb_;
@@ -147,17 +189,14 @@ class MODULES_EXPORT DecoderTemplate
   // Could be a configure, flush, or reset. Decodes go in |pending_decodes_|.
   Member<Request> pending_request_;
 
-  // |parent_media_log_| must be destroyed if ever the ExecutionContext is
-  // destroyed, since the blink::MediaInspectorContext* pointer given to
-  // InspectorMediaEventHandler might no longer be valid.
-  // |parent_media_log_| should not be used directly. Use |media_log_| instead.
-  std::unique_ptr<media::MediaLog> parent_media_log_;
-
-  // We might destroy |parent_media_log_| at any point, so keep a clone which
-  // can be safely accessed, and whose raw pointer can be given to |decoder_|.
-  std::unique_ptr<media::MediaLog> media_log_;
+  std::unique_ptr<CodecLogger> logger_;
 
   media::GpuVideoAcceleratorFactories* gpu_factories_ = nullptr;
+
+  // Cached config from the last kConfigure request which successfully completed
+  // initialization.
+  bool low_delay_ = false;
+  std::unique_ptr<MediaConfigType> active_config_;
 
   // TODO(sandersd): Store the last config, flush, and reset so that
   // duplicates can be elided.
@@ -166,6 +205,10 @@ class MODULES_EXPORT DecoderTemplate
 
   // TODO(sandersd): Can this just be a HashSet by ptr comparison?
   uint32_t pending_decode_id_ = 0;
+
+  // Used to differentiate Decoders' counters during tracing.
+  int trace_counter_id_;
+
   HeapHashMap<uint32_t, Member<Request>> pending_decodes_;
 };
 

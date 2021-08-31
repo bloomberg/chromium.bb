@@ -4,6 +4,7 @@
 
 #include "chromeos/components/sync_wifi/fake_local_network_collector.h"
 
+#include "base/callback.h"
 #include "components/sync/protocol/wifi_configuration_specifics.pb.h"
 
 namespace chromeos {
@@ -28,10 +29,10 @@ void FakeLocalNetworkCollector::GetSyncableNetwork(const std::string& guid,
     }
   }
 
-  std::move(callback).Run(base::nullopt);
+  std::move(callback).Run(absl::nullopt);
 }
 
-base::Optional<NetworkIdentifier>
+absl::optional<NetworkIdentifier>
 FakeLocalNetworkCollector::GetNetworkIdentifierFromGuid(
     const std::string& guid) {
   for (sync_pb::WifiConfigurationSpecifics proto : networks_) {
@@ -40,7 +41,7 @@ FakeLocalNetworkCollector::GetNetworkIdentifierFromGuid(
       return id;
     }
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void FakeLocalNetworkCollector::AddNetwork(
@@ -54,6 +55,18 @@ void FakeLocalNetworkCollector::ClearNetworks() {
 
 void FakeLocalNetworkCollector::SetNetworkMetadataStore(
     base::WeakPtr<NetworkMetadataStore> network_metadata_store) {}
+
+void FakeLocalNetworkCollector::FixAutoconnect(
+    std::vector<sync_pb::WifiConfigurationSpecifics> protos,
+    base::OnceCallback<void()> success_callback) {
+  has_fixed_autoconnect_ = true;
+  std::move(success_callback).Run();
+}
+
+void FakeLocalNetworkCollector::ExecuteAfterNetworksLoaded(
+    base::OnceCallback<void()> callback) {
+  std::move(callback).Run();
+}
 
 }  // namespace sync_wifi
 

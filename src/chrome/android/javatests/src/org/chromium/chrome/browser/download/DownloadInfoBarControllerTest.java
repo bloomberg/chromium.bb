@@ -13,6 +13,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
@@ -34,6 +35,8 @@ import java.util.UUID;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Features.EnableFeatures(ChromeFeatureList.DOWNLOAD_PROGRESS_INFOBAR)
+@Batch(Batch.PER_CLASS)
+@Batch.SplitByFeature
 public class DownloadInfoBarControllerTest {
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
@@ -46,7 +49,8 @@ public class DownloadInfoBarControllerTest {
     private static final String MESSAGE_TWO_DOWNLOAD_FAILED = "2 downloads failed.";
     private static final String MESSAGE_DOWNLOAD_PENDING = "1 download pending.";
     private static final String MESSAGE_TWO_DOWNLOAD_PENDING = "2 downloads pending.";
-    private static final String MESSAGE_DOWNLOAD_SCHEDULED_WIFI = "Download will start on Wi-Fi.";
+    private static final String MESSAGE_DOWNLOAD_SCHEDULED_WIFI =
+            "You’ll see a notification when this download starts on Wi-Fi.";
     private static final String MESSAGE_TWO_DOWNLOAD_SCHEDULED = "2 downloads scheduled.";
 
     private static final String TEST_FILE_NAME = "TestFile";
@@ -65,7 +69,7 @@ public class DownloadInfoBarControllerTest {
         private DownloadProgressInfoBarData mInfo;
 
         public TestDownloadInfoBarController() {
-            super(false);
+            super(/*otrProfileID=*/null);
         }
 
         @Override

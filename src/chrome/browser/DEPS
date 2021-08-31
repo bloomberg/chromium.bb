@@ -1,28 +1,25 @@
 include_rules = [
   "+apps",
+  "+cc/input/browser_controls_state.h",
   "+cc/metrics",
   "+cc/paint",
   "+cc/test",
 
-  # Restricting uses of ChromeActivity in favor of direct dependency aquisition. Code that lives
+  # Restricting uses of Chrome*Activity in favor of direct dependency aquisition. Code that lives
   # under java/src/.../chrome/browser has a seperate exception under that same directory.
   # Exceptions can be found under "specific_include_rules" below.
   "-chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java",
+  "-chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java",
+  "-chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity2.java",
 
   "+chrome/android/native_j_unittests_jni_headers",
   "+chrome/android/chrome_jni_headers",
   "+chrome/android/features/autofill_assistant/jni_headers",
+  "+chrome/android/features/autofill_assistant/jni_headers_public",
   "+chrome/android/features/dev_ui",
   "+chrome/android/modules",
   "+chrome/android/test_support_jni_headers",
   "+chrome/app",
-  "+chrome/browser/error_reporting",
-  "+chrome/browser/flags/android",
-  "+chrome/browser/preferences/android",
-  "+chrome/browser/profiles/android/jni_headers",
-  "+chrome/browser/util/android",
-  "+chrome/browser/version",
-  "+chrome/browser/video_tutorials",
   "+chrome/credential_provider/common",
   "+chrome/grit",
   "+chrome/install_static",
@@ -31,6 +28,7 @@ include_rules = [
   "+chrome/services/cups_proxy",
   "+chrome/services/diagnosticsd/public",
   "+chrome/services/file_util/public",
+  "+chrome/services/mac_notifications/public",
   "+chrome/services/machine_learning/public",
   "+chrome/services/media_gallery_util/public",
   "+chrome/services/printing/public",
@@ -42,14 +40,17 @@ include_rules = [
   "+components/account_id",
   "+components/federated_learning",
   "+components/arc",
+  "+components/account_manager_core",
   "+components/assist_ranker",
   "+components/autofill_assistant/browser",
   "+components/autofill/content/browser",
   "+components/autofill/content/common",
   "+components/autofill/core/browser",
   "+components/autofill/core/common",
-  "+components/background_task_scheduler",
+  "+components/back_forward_cache",
+  "+components/background_fetch",
   "+components/background_sync",
+  "+components/background_task_scheduler",
   "+components/base32",
   "+components/blocked_content",
   "+components/blocklist/opt_out_blocklist",
@@ -57,11 +58,17 @@ include_rules = [
   "+components/bookmarks/common",
   "+components/bookmarks/managed",
   "+components/bookmarks/test",
+  "+components/browser_sync",
+  "+components/browser_ui/bottomsheet",
+  "+components/browser_ui/modaldialog",
+  "+components/browser_ui/notifications",
+  "+components/browser_ui/photo_picker",
   "+components/browser_ui/settings",
   "+components/browser_ui/util",
   "+components/browser_ui/widget",
-  "+components/browser_sync",
   "+components/browser_ui/site_settings",
+  "+components/browser_ui/strings",
+  "+components/browser_ui/styles",
   "+components/browser_watcher",
   "+components/browsing_data/content",
   "+components/browsing_data/core",
@@ -89,6 +96,7 @@ include_rules = [
   "+components/contextual_search/content/browser",
   "+components/contextual_search/content/common",
   "+components/contextual_search/core/browser",
+  "+components/continuous_search/browser",
   "+components/cookie_config",
   "+components/country_codes",
   "+components/crash/content/app",
@@ -105,6 +113,7 @@ include_rules = [
   "+components/data_use_measurement/core",
   "+components/dbus",
   "+components/device_event_log",
+  "+components/digital_asset_links",
   "+components/domain_reliability",
   "+components/dom_distiller/content/browser",
   "+components/dom_distiller/content/common",
@@ -117,7 +126,6 @@ include_rules = [
   "+components/download/public/background_service",
   "+components/download/public/common",
   "+components/download/public/task",
-  "+components/download/quarantine",
   "+components/drive",
   "+components/embedder_support",
   "+components/encrypted_messages",
@@ -133,7 +141,6 @@ include_rules = [
   "+components/feedback",
   "+components/find_in_page",
   "+components/flags_ui",
-  "+components/games/core",
   "+components/gcm_driver",
   "+components/google/core/browser",
   "+components/google/core/common",
@@ -141,13 +148,17 @@ include_rules = [
   "+components/guest_view/browser",
   "+components/handoff",
   "+components/heap_profiling",
+  "+components/heavy_ad_intervention",
   "+components/history/content/browser",
   "+components/history/core/browser",
   "+components/history/core/common",
   "+components/history/core/test",
+  "+components/history/metrics",
   "+components/image_fetcher/core",
+  "+components/infobars/android",
   "+components/infobars/content",
   "+components/infobars/core",
+  "+components/installedapp",
   "+components/invalidation/impl",
   "+components/invalidation/public",
   "+components/javascript_dialogs",
@@ -157,15 +168,17 @@ include_rules = [
   "+components/language/content/browser",
   "+components/language/core/browser",
   "+components/language/core/common",
-  "+components/language_usage_metrics",
+  "+components/lens",
   "+components/leveldb_proto/content",
   "+components/leveldb_proto/public",
   "+components/leveldb_proto/testing",
+  "+components/live_caption",
   "+components/location/android",
   "+components/lookalikes/core",
   "+components/login",
   "+components/media_message_center",
   "+components/media_router/browser",
+  "+components/history_clusters/core",
   "+components/messages/android",
   "+components/metal_util",
   "+components/metrics",
@@ -197,6 +210,7 @@ include_rules = [
   "+components/omnibox/browser",
   "+components/onc",
   "+components/open_from_clipboard",
+  "+components/optimization_guide/content",
   "+components/optimization_guide",
   "+components/os_crypt",
   "+components/ownership",
@@ -226,12 +240,12 @@ include_rules = [
   "+components/previews/core",
   "+components/printing/browser",
   "+components/printing/common",
+  "+components/privacy_sandbox",
   "+components/profile_metrics",
   "+components/proxy_config",
   "+components/query_parser",
   "+components/query_tiles",
   "+components/quirks",
-  "+components/rappor",
   "+components/reading_list/core",
   "+components/reading_list/features",
   "+components/remote_cocoa/app_shim",
@@ -239,6 +253,7 @@ include_rules = [
   "+components/remote_cocoa/common",
   "+components/renderer_context_menu",
   "+components/reputation",
+  "+components/reporting",
   "+components/rlz",
   "+components/safe_browsing",
   "+components/safe_search_api",
@@ -251,6 +266,7 @@ include_rules = [
   "+components/security_interstitials/core",
   "+components/security_state/content",
   "+components/security_state/core",
+  "+components/segmentation_platform/public",
   "+components/send_tab_to_self",
   "+components/services/app_service/public",
   "+components/services/app_service/public/mojom",
@@ -318,10 +334,12 @@ include_rules = [
   "+components/viz/common",
   "+components/viz/host",
   "+components/web_cache/browser",
-  "+components/webdata/common",
-  "+components/webdata_services",
   "+components/web_modal",
   "+components/web_resource",
+  "+components/webapps/browser",
+  "+components/webapps/common",
+  "+components/webdata/common",
+  "+components/webdata_services",
   "+components/webrtc_logging/browser",
   "+components/webrtc_logging/common",
   "+components/wifi",
@@ -396,13 +414,14 @@ include_rules = [
   "+third_party/widevine/cdm/buildflags.h",
   "+third_party/widevine/cdm/widevine_cdm_common.h",
   "+chrome/services/machine_learning",
-
+  "+chrome/services/speech",
   # Code under //ash should be accessed via its public API. See //ash/README.md.
   "-ash",
+  "+ash/constants",
+  "+ash/content",
   "+ash/public",
   "+ash/keyboard/ui/grit",
   "+ash/keyboard/ui/resources",
-  "+ash/components/shortcut_viewer",
 
   # The message center should only be accessed through
   # //chrome/browser/notifications.
@@ -431,7 +450,6 @@ include_rules = [
   "+chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux.h",
   "+chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux_x11.h",
   "+chrome/browser/ui/views/extensions/request_file_system_dialog_view.h",
-  "+chrome/browser/ui/views/sharesheet/sharesheet_bubble_view.h",
   "+chrome/browser/ui/views/try_chrome_dialog_win/try_chrome_dialog.h",
 
   # Ensure that only the public interface of performance_manager gets used.
@@ -449,6 +467,10 @@ include_rules = [
   # Allows in-process use of NetworkService for URLRequestContext configuration.
   # Should be removed once the actual network service ships.
   "+content/public/network",
+
+  # ASK TEXT-TO-SPEECH content/browser/speech/OWNERS BEFORE OVERRIDING THIS IN A
+  # SUBDIRECTORY.
+  "-content/public/browser/tts_controller.h",
 
   # Other libraries.
   "+third_party/google_toolbox_for_mac/src",
@@ -479,6 +501,7 @@ specific_include_rules = {
     # Android instrumentation tests depend on the whole app.
     "+chrome/android",
     "+chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java",
+    "+chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java",
   ],
   "platform_util_linux.cc": [
     # The following is used to call the org.freedesktop.FileManager1
@@ -498,8 +521,11 @@ specific_include_rules = {
   "browser_process_impl.cc": [
     "+ui/message_center/message_center.h",
   ],
+  "browser_process_platform_part_chromeos.cc": [
+    "+ash/components/account_manager",
+  ],
   "input_method_engine.cc": [
-    # For GetInputMethodKeyboardController.
+    # For GetVirtualKeyboardController.
     "+ash/keyboard/ui/keyboard_ui_controller.h",
   ],
   "chrome_browsing_data_remover_delegate_unittest.cc": [
@@ -515,4 +541,13 @@ specific_include_rules = {
   "chrome_content_browser_client_receiver_bindings\.cc" : [
     "+chrome/browser/performance_manager/mechanisms/userspace_swap_chromeos.h",
   ],
+  "chrome_content_browser_client\.cc" : [
+    "+content/public/browser/tts_controller.h",
+  ],
+  "chrome_navigation_browsertest.cc" : [
+    "+content/common/content_navigation_policy.h",
+  ],
+  "about_flags\.cc" : [
+    "+mojo/core/embedder/features.h",
+  ]
 }

@@ -9,17 +9,19 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
+#include "base/containers/flat_set.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_controller.h"
 #include "mojo/public/cpp/bindings/lib/may_auto_lock.h"
 #include "mojo/public/cpp/bindings/lib/message_quota_checker.h"
+#include "mojo/public/cpp/bindings/message_header_validator.h"
 #include "mojo/public/cpp/bindings/sequence_local_sync_event_watcher.h"
 
 namespace mojo {
@@ -68,11 +70,11 @@ class MultiplexRouter::InterfaceEndpoint
     handle_created_ = true;
   }
 
-  const base::Optional<DisconnectReason>& disconnect_reason() const {
+  const absl::optional<DisconnectReason>& disconnect_reason() const {
     return disconnect_reason_;
   }
   void set_disconnect_reason(
-      const base::Optional<DisconnectReason>& disconnect_reason) {
+      const absl::optional<DisconnectReason>& disconnect_reason) {
     router_->AssertLockAcquired();
     disconnect_reason_ = disconnect_reason;
   }
@@ -103,6 +105,11 @@ class MultiplexRouter::InterfaceEndpoint
     task_runner_ = nullptr;
     client_ = nullptr;
     sync_watcher_.reset();
+  }
+
+  bool UnregisterExternalSyncWaiter(uint64_t request_id) {
+    router_->AssertLockAcquired();
+    return requests_with_external_sync_waiter_.erase(request_id) != 0;
   }
 
   void SignalSyncMessageEvent() {
@@ -141,11 +148,21 @@ class MultiplexRouter::InterfaceEndpoint
     sync_watcher_->AllowWokenUpBySyncWatchOnSameSequence();
   }
 
-  bool SyncWatch(const bool* should_stop) override {
+  bool SyncWatch(const bool& should_stop) override {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     EnsureSyncWatcherExists();
-    return sync_watcher_->SyncWatch(should_stop);
+    return sync_watcher_->SyncWatch(&should_stop);
+  }
+
+  bool SyncWatchExclusive(uint64_t request_id) override {
+    return router_->ExclusiveSyncWaitForReply(id_, request_id);
+  }
+
+  void RegisterExternalSyncWaiter(uint64_t request_id) override {
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
+    MayAutoLock locker(&router_->lock_);
+    requests_with_external_sync_waiter_.insert(request_id);
   }
 
  private:
@@ -210,7 +227,7 @@ class MultiplexRouter::InterfaceEndpoint
   // endpoint.
   bool handle_created_;
 
-  base::Optional<DisconnectReason> disconnect_reason_;
+  absl::optional<DisconnectReason> disconnect_reason_;
 
   // The task runner on which |client_|'s methods can be called.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -222,6 +239,7 @@ class MultiplexRouter::InterfaceEndpoint
 
   // Guarded by the router's lock. Used to synchronously wait on replies.
   std::unique_ptr<SequenceLocalSyncEventWatcher> sync_watcher_;
+  base::flat_set<uint64_t> requests_with_external_sync_waiter_;
 
   DISALLOW_COPY_AND_ASSIGN(InterfaceEndpoint);
 };
@@ -312,13 +330,35 @@ struct MultiplexRouter::Task {
   DISALLOW_COPY_AND_ASSIGN(Task);
 };
 
+// static
+scoped_refptr<MultiplexRouter> MultiplexRouter::Create(
+    ScopedMessagePipeHandle message_pipe,
+    Config config,
+    bool set_interface_id_namespace_bit,
+    scoped_refptr<base::SequencedTaskRunner> runner,
+    const char* primary_interface_name) {
+  auto router = base::MakeRefCounted<MultiplexRouter>(
+      base::PassKey<MultiplexRouter>(), std::move(message_pipe), config,
+      set_interface_id_namespace_bit, runner, primary_interface_name);
+  if (runner->RunsTasksInCurrentSequence()) {
+    router->BindToCurrentSequence();
+  } else {
+    runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&MultiplexRouter::BindToCurrentSequence, router));
+  }
+  return router;
+}
+
 MultiplexRouter::MultiplexRouter(
+    base::PassKey<MultiplexRouter>,
     ScopedMessagePipeHandle message_pipe,
     Config config,
     bool set_interface_id_namespace_bit,
     scoped_refptr<base::SequencedTaskRunner> runner,
     const char* primary_interface_name)
-    : set_interface_id_namespace_bit_(set_interface_id_namespace_bit),
+    : config_(config),
+      set_interface_id_namespace_bit_(set_interface_id_namespace_bit),
       task_runner_(runner),
       dispatcher_(this),
       connector_(std::move(message_pipe),
@@ -328,13 +368,17 @@ MultiplexRouter::MultiplexRouter(
                  primary_interface_name),
       control_message_handler_(this),
       control_message_proxy_(&connector_) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-
-  if (config == MULTI_INTERFACE)
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+  if (config_ == MULTI_INTERFACE)
     lock_.emplace();
+}
 
-  if (config == SINGLE_INTERFACE_WITH_SYNC_METHODS ||
-      config == MULTI_INTERFACE) {
+void MultiplexRouter::BindToCurrentSequence() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (config_ == SINGLE_INTERFACE_WITH_SYNC_METHODS ||
+      config_ == MULTI_INTERFACE) {
     // Always participate in sync handle watching in multi-interface mode,
     // because even if it doesn't expect sync requests during sync handle
     // watching, it may still need to dispatch messages to associated endpoints
@@ -356,8 +400,8 @@ MultiplexRouter::MultiplexRouter(
   header_validator_ = header_validator.get();
   dispatcher_.SetValidator(std::move(header_validator));
 
+  const char* primary_interface_name = connector_.interface_name();
   if (primary_interface_name) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     header_validator_->SetDescription(base::JoinString(
         {primary_interface_name, "[primary] MessageHeaderValidator"}, " "));
     control_message_handler_.SetDescription(base::JoinString(
@@ -445,7 +489,7 @@ ScopedInterfaceEndpointHandle MultiplexRouter::CreateLocalEndpointHandle(
 
 void MultiplexRouter::CloseEndpointHandle(
     InterfaceId id,
-    const base::Optional<DisconnectReason>& reason) {
+    const absl::optional<DisconnectReason>& reason) {
   if (!IsValidInterfaceId(id))
     return;
 
@@ -504,7 +548,8 @@ void MultiplexRouter::RaiseError() {
     connector_.RaiseError();
   } else {
     task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(&MultiplexRouter::RaiseError, this));
+                           base::BindOnce(&MultiplexRouter::RaiseError,
+                                          base::WrapRefCounted(this)));
   }
 }
 
@@ -592,6 +637,37 @@ void MultiplexRouter::EnableTestingMode() {
   connector_.set_enforce_errors_from_incoming_receiver(false);
 }
 
+bool MultiplexRouter::CanUnblockExternalSyncWait(const Message& message) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Only sync replies can possibly be unblock sync waits.
+  if (!message.has_flag(Message::kFlagIsResponse) ||
+      !message.has_flag(Message::kFlagIsSync)) {
+    return false;
+  }
+
+  InterfaceEndpoint* endpoint = FindEndpoint(message.interface_id());
+  if (!endpoint)
+    return false;
+
+  return endpoint->UnregisterExternalSyncWaiter(message.request_id());
+}
+
+bool MultiplexRouter::CanUnblockExclusiveSameThreadSyncWait(
+    const Message& message) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(exclusive_sync_wait_);
+
+  // Only sync replies can possibly be unblock sync waits.
+  if (!message.has_flag(Message::kFlagIsResponse) ||
+      !message.has_flag(Message::kFlagIsSync)) {
+    return false;
+  }
+
+  return exclusive_sync_wait_->interface_id == message.interface_id() &&
+         exclusive_sync_wait_->request_id == message.request_id();
+}
+
 bool MultiplexRouter::Accept(Message* message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -618,10 +694,22 @@ bool MultiplexRouter::Accept(Message* message) {
           ? ALLOW_DIRECT_CLIENT_CALLS_FOR_SYNC_MESSAGES
           : ALLOW_DIRECT_CLIENT_CALLS;
 
+  bool can_process;
+  if (exclusive_sync_wait_) {
+    can_process = CanUnblockExclusiveSameThreadSyncWait(*message);
+  } else {
+    can_process = tasks_.empty() || CanUnblockExternalSyncWait(*message);
+  }
   MessageWrapper message_wrapper(this, std::move(*message));
-  bool processed = tasks_.empty() && ProcessIncomingMessage(
-                                         &message_wrapper, client_call_behavior,
-                                         connector_.task_runner());
+  const bool processed =
+      can_process &&
+      ProcessIncomingMessage(&message_wrapper, client_call_behavior,
+                             connector_.task_runner());
+
+  if (exclusive_sync_wait_ && can_process) {
+    DCHECK(processed);
+    exclusive_sync_wait_->finished = true;
+  }
 
   if (!processed) {
     // Either the task queue is not empty or we cannot process the message
@@ -636,7 +724,7 @@ bool MultiplexRouter::Accept(Message* message) {
       if (endpoint)
         endpoint->SignalSyncMessageEvent();
     }
-  } else if (!tasks_.empty()) {
+  } else if (!tasks_.empty() && !exclusive_sync_wait_) {
     // Processing the message may result in new tasks (for error notification)
     // being added to the queue. In this case, we have to attempt to process the
     // tasks.
@@ -650,7 +738,7 @@ bool MultiplexRouter::Accept(Message* message) {
 
 bool MultiplexRouter::OnPeerAssociatedEndpointClosed(
     InterfaceId id,
-    const base::Optional<DisconnectReason>& reason) {
+    const absl::optional<DisconnectReason>& reason) {
   MayAutoLock locker(&lock_);
   InterfaceEndpoint* endpoint = FindOrInsertEndpoint(id, nullptr);
 
@@ -687,7 +775,8 @@ bool MultiplexRouter::WaitForFlushToComplete(ScopedMessagePipeHandle pipe) {
   flush_pipe_watcher_->Watch(
       pipe.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
       MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
-      base::BindRepeating(&MultiplexRouter::OnFlushPipeSignaled, this));
+      base::BindRepeating(&MultiplexRouter::OnFlushPipeSignaled,
+                          base::WrapRefCounted(this)));
   if (flush_pipe_watcher_->Arm() != MOJO_RESULT_OK) {
     // The peer must already be closed, so consider the flush to be complete.
     flush_pipe_watcher_.reset();
@@ -758,6 +847,39 @@ void MultiplexRouter::PauseInternal(bool must_resume_manually) {
   // the last Resume and we must never unpause until at least one call to Resume
   // is made.
   must_resume_manually_ = must_resume_manually_ || must_resume_manually;
+}
+
+bool MultiplexRouter::ExclusiveSyncWaitForReply(InterfaceId interface_id,
+                                                uint64_t request_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Nested exclusive sync waits should be impossible.
+  DCHECK(!exclusive_sync_wait_);
+
+  scoped_refptr<MultiplexRouter> keep_alive(this);
+  exclusive_sync_wait_.emplace();
+  exclusive_sync_wait_->interface_id = interface_id;
+  exclusive_sync_wait_->request_id = request_id;
+  while (!exclusive_sync_wait_->finished) {
+    if (!WaitForIncomingMessage()) {
+      exclusive_sync_wait_.reset();
+      return false;
+    }
+
+    MayAutoLock locker(&lock_);
+    if (!FindEndpoint(interface_id)) {
+      exclusive_sync_wait_.reset();
+      return false;
+    }
+  }
+
+  exclusive_sync_wait_.reset();
+
+  // Ensure that any deferred tasks are processed, and any deferred sync events
+  // are signalled.
+  ResumeIncomingMethodCallProcessing();
+
+  return true;
 }
 
 void MultiplexRouter::ProcessTasks(
@@ -862,7 +984,7 @@ bool MultiplexRouter::ProcessNotifyErrorTask(
   DCHECK(endpoint->task_runner()->RunsTasksInCurrentSequence());
 
   InterfaceEndpointClient* client = endpoint->client();
-  base::Optional<DisconnectReason> disconnect_reason(
+  absl::optional<DisconnectReason> disconnect_reason(
       endpoint->disconnect_reason());
 
   {
@@ -969,8 +1091,8 @@ void MultiplexRouter::MaybePostToProcessTasks(
   posted_to_process_tasks_ = true;
   posted_to_task_runner_ = task_runner;
   task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&MultiplexRouter::LockAndCallProcessTasks, this));
+      FROM_HERE, base::BindOnce(&MultiplexRouter::LockAndCallProcessTasks,
+                                base::WrapRefCounted(this)));
 }
 
 void MultiplexRouter::LockAndCallProcessTasks() {
@@ -1093,7 +1215,7 @@ void MultiplexRouter::CloseEndpointsForMessage(const Message& message) {
 
     UpdateEndpointStateMayRemove(endpoint, ENDPOINT_CLOSED);
     MayAutoUnlock unlocker(&lock_);
-    control_message_proxy_.NotifyPeerEndpointClosed(ids[i], base::nullopt);
+    control_message_proxy_.NotifyPeerEndpointClosed(ids[i], absl::nullopt);
   }
 
   ProcessTasks(NO_DIRECT_CLIENT_CALLS, nullptr);

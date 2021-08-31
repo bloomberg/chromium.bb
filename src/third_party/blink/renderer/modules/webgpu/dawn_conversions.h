@@ -10,6 +10,8 @@
 #include <memory>
 
 #include "base/check.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_typedefs.h"
+#include "third_party/blink/renderer/modules/webgpu/dawn_enum_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -21,40 +23,36 @@ namespace blink {
 
 class DoubleSequenceOrGPUColorDict;
 class GPUColorDict;
-class GPUProgrammableStageDescriptor;
-class GPUTextureCopyView;
-class GPUTextureDataLayout;
+class GPUProgrammableStage;
+class GPUImageCopyTexture;
+class GPUImageDataLayout;
 class UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict;
 class UnsignedLongEnforceRangeSequenceOrGPUOrigin3DDict;
-
-// Convert WebGPU bitfield values to Dawn enums. These have the same value.
-template <typename DawnEnum>
-DawnEnum AsDawnEnum(uint32_t webgpu_enum) {
-  return static_cast<DawnEnum>(webgpu_enum);
-}
-
-// Convert WebGPU string enums to Dawn enums.
-template <typename DawnEnum>
-DawnEnum AsDawnEnum(const WTF::String& webgpu_enum);
 
 // These conversions are used multiple times and are declared here. Conversions
 // used only once, for example for object construction, are defined
 // individually.
 WGPUColor AsDawnColor(const Vector<double>&);
 WGPUColor AsDawnType(const GPUColorDict*);
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+WGPUColor AsDawnType(const V8GPUColor* webgpu_color);
+WGPUExtent3D AsDawnType(const V8GPUExtent3D* webgpu_extent, GPUDevice* device);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 WGPUColor AsDawnType(const DoubleSequenceOrGPUColorDict*);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+// TODO(crbug.com/1181288): Remove the old IDL union version.
 WGPUExtent3D AsDawnType(
-    const UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict*);
+    const UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict*,
+    GPUDevice* device);
 WGPUOrigin3D AsDawnType(
     const UnsignedLongEnforceRangeSequenceOrGPUOrigin3DDict*);
-WGPUTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view,
+WGPUTextureCopyView AsDawnType(const GPUImageCopyTexture* webgpu_view,
                                GPUDevice* device);
-const char* ValidateTextureDataLayout(const GPUTextureDataLayout* webgpu_layout,
+const char* ValidateTextureDataLayout(const GPUImageDataLayout* webgpu_layout,
                                       WGPUTextureDataLayout* layout);
 using OwnedProgrammableStageDescriptor =
     std::tuple<WGPUProgrammableStageDescriptor, std::unique_ptr<char[]>>;
-OwnedProgrammableStageDescriptor AsDawnType(
-    const GPUProgrammableStageDescriptor*);
+OwnedProgrammableStageDescriptor AsDawnType(const GPUProgrammableStage*);
 
 // WebGPU objects are converted to Dawn objects by getting the opaque handle
 // which can be passed to Dawn.

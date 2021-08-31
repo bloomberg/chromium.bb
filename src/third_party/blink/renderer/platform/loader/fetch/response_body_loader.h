@@ -9,6 +9,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink-forward.h"
+#include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -24,6 +25,7 @@ class SingleThreadTaskRunner;
 
 namespace blink {
 
+class BackForwardCacheLoaderHelper;
 class ResponseBodyLoader;
 
 // See ResponseBodyLoader for details. This is a virtual interface to expose
@@ -46,6 +48,7 @@ class PLATFORM_EXPORT ResponseBodyLoaderDrainableInterface
   // cancels the resource loading (if |this| is associated with
   // blink::ResourceLoader). A user of this function should ensure that calling
   // the client's method doesn't lead to a reentrant problem.
+  // Note that the drained datapipe is not subject to the freezing effect.
   virtual mojo::ScopedDataPipeConsumerHandle DrainAsDataPipe(
       ResponseBodyLoaderClient** client) = 0;
 
@@ -54,6 +57,8 @@ class PLATFORM_EXPORT ResponseBodyLoaderDrainableInterface
   // been drained. Unlike DrainAsDataPipe, this function always succeeds.
   // This ResponseBodyLoader will still monitor the loading signals, and report
   // them back to the associated client asynchronously.
+  // Note that the drained BytesConsumer is subject to the freezing effect, and
+  // the loading is cancelled when freezing is for back-forward cache.
   virtual BytesConsumer& DrainAsBytesConsumer() = 0;
 
   virtual void Trace(Visitor*) const {}
@@ -74,9 +79,11 @@ class PLATFORM_EXPORT ResponseBodyLoader final
       private ResponseBodyLoaderClient,
       private BytesConsumer::Client {
  public:
-  ResponseBodyLoader(BytesConsumer&,
-                     ResponseBodyLoaderClient&,
-                     scoped_refptr<base::SingleThreadTaskRunner>);
+  ResponseBodyLoader(
+      BytesConsumer&,
+      ResponseBodyLoaderClient&,
+      scoped_refptr<base::SingleThreadTaskRunner>,
+      BackForwardCacheLoaderHelper* back_forward_cache_loader_helper);
 
   // ResponseBodyLoaderDrainableInterface implementation.
   mojo::ScopedDataPipeConsumerHandle DrainAsDataPipe(
@@ -105,9 +112,13 @@ class PLATFORM_EXPORT ResponseBodyLoader final
     return suspended_state_ ==
            WebURLLoader::DeferType::kDeferredWithBackForwardCache;
   }
-  bool IsDrained() const { return drained_; }
+  bool IsDrained() const {
+    return drained_as_datapipe_ || drained_as_bytes_consumer_;
+  }
 
-  void EvictFromBackForwardCacheIfDrained();
+  // Evicts the back-forward cache entry if the response body has already been
+  // passed and drained as bytes consumer.
+  void EvictFromBackForwardCacheIfDrainedAsBytesConsumer();
 
   void Trace(Visitor*) const override;
 
@@ -127,23 +138,26 @@ class PLATFORM_EXPORT ResponseBodyLoader final
   void DidFinishLoadingBody() override;
   void DidFailLoadingBody() override;
   void DidCancelLoadingBody() override;
-  void EvictFromBackForwardCache(mojom::blink::RendererEvictionReason) override;
+  void EvictFromBackForwardCache(mojom::blink::RendererEvictionReason);
+  void DidBufferLoadWhileInBackForwardCache(size_t num_bytes);
+  bool CanContinueBufferingWhileInBackForwardCache();
 
   // BytesConsumer::Client implementation.
   void OnStateChange() override;
   String DebugName() const override { return "ResponseBodyLoader"; }
-  // When |buffer_data_while_suspended_for_bfcache_| is true, we'll save the
-  // response body read when suspended.
+
   Member<Buffer> body_buffer_;
   Member<BytesConsumer> bytes_consumer_;
   Member<DelegatingBytesConsumer> delegating_bytes_consumer_;
   const Member<ResponseBodyLoaderClient> client_;
+  WeakMember<BackForwardCacheLoaderHelper> back_forward_cache_loader_helper_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   WebURLLoader::DeferType suspended_state_ =
       WebURLLoader::DeferType::kNotDeferred;
   bool started_ = false;
   bool aborted_ = false;
-  bool drained_ = false;
+  bool drained_as_datapipe_ = false;
+  bool drained_as_bytes_consumer_ = false;
   bool finish_signal_is_pending_ = false;
   bool fail_signal_is_pending_ = false;
   bool cancel_signal_is_pending_ = false;

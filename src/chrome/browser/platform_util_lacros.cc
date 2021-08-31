@@ -9,7 +9,9 @@
 #include "base/notreached.h"
 #include "chrome/browser/platform_util_internal.h"
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
-#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/lacros_service.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace platform_util {
 namespace {
@@ -24,43 +26,48 @@ void OnOpenResult(const base::FilePath& path,
   LOG(ERROR) << "Unable to open " << path.AsUTF8Unsafe() << " " << result;
 }
 
-}  // namespace
-
-namespace internal {
-
-void PlatformOpenVerifiedItem(const base::FilePath& path, OpenItemType type) {
-  auto* service = chromeos::LacrosChromeServiceImpl::Get();
+// Requests that ash open an item at |path|.
+void OpenItemOnUiThread(const base::FilePath& path, OpenItemType type) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  auto* service = chromeos::LacrosService::Get();
   if (service->GetInterfaceVersion(crosapi::mojom::FileManager::Uuid_) < 1) {
     LOG(ERROR) << "Unsupported ash version.";
     return;
   }
   switch (type) {
     case OPEN_FILE:
-      service->file_manager_remote()->OpenFile(
+      service->GetRemote<crosapi::mojom::FileManager>()->OpenFile(
           path, base::BindOnce(&OnOpenResult, path));
       break;
     case OPEN_FOLDER:
-      service->file_manager_remote()->OpenFolder(
+      service->GetRemote<crosapi::mojom::FileManager>()->OpenFolder(
           path, base::BindOnce(&OnOpenResult, path));
       break;
   }
 }
 
+}  // namespace
+
+namespace internal {
+
+void PlatformOpenVerifiedItem(const base::FilePath& path, OpenItemType type) {
+  // The file manager remote can only be accessed on the UI thread.
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&OpenItemOnUiThread, path, type));
+}
+
 }  // namespace internal
 
 void ShowItemInFolder(Profile* profile, const base::FilePath& full_path) {
-  auto* service = chromeos::LacrosChromeServiceImpl::Get();
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  auto* service = chromeos::LacrosService::Get();
   int interface_version =
       service->GetInterfaceVersion(crosapi::mojom::FileManager::Uuid_);
-  if (interface_version < 0) {
+  if (interface_version < 1) {
     DLOG(ERROR) << "Unsupported ash version.";
     return;
   }
-  if (interface_version < 1) {
-    service->file_manager_remote()->DeprecatedShowItemInFolder(full_path);
-    return;
-  }
-  service->file_manager_remote()->ShowItemInFolder(
+  service->GetRemote<crosapi::mojom::FileManager>()->ShowItemInFolder(
       full_path, base::BindOnce(&OnOpenResult, full_path));
 }
 

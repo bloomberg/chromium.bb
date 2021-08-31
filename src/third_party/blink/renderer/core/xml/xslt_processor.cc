@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/xml/document_xslt.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -88,12 +87,15 @@ Document* XSLTProcessor::CreateDocumentFromSource(
   }
 
   if (frame) {
-    auto params = std::make_unique<WebNavigationParams>();
-    params->url = url;
+    auto* previous_document_loader = frame->Loader().GetDocumentLoader();
+    DCHECK(previous_document_loader);
+    std::unique_ptr<WebNavigationParams> params =
+        previous_document_loader->CreateWebNavigationParamsToCloneDocument();
     WebNavigationParams::FillStaticResponse(
         params.get(), mime_type,
         source_encoding.IsEmpty() ? "UTF-8" : source_encoding,
         StringUTF8Adaptor(document_source));
+    params->frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
     frame->Loader().CommitNavigation(std::move(params), nullptr,
                                      CommitReason::kXSLT);
     return frame->GetDocument();

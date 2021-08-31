@@ -8,38 +8,38 @@
 
 #include <memory>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_regular.h"
-#include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
-#include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
-#include "chrome/browser/chromeos/login/quick_unlock/pin_storage_prefs.h"
-#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
-#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
-#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ash/login/easy_unlock/easy_unlock_service_factory.h"
+#include "chrome/browser/ash/login/easy_unlock/easy_unlock_service_regular.h"
+#include "chrome/browser/ash/login/quick_unlock/auth_token.h"
+#include "chrome/browser/ash/login/quick_unlock/pin_backend.h"
+#include "chrome/browser/ash/login/quick_unlock/pin_storage_prefs.h"
+#include "chrome/browser/ash/login/quick_unlock/quick_unlock_factory.h"
+#include "chrome/browser/ash/login/quick_unlock/quick_unlock_storage.h"
+#include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/cryptohome/mock_homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
-#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
+#include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
+#include "chromeos/dbus/userdataauth/fake_userdataauth_client.h"
 #include "chromeos/login/auth/fake_extended_authenticator.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
@@ -169,9 +169,10 @@ class QuickUnlockPrivateUnitTest
     feature_list_.InitWithFeatureState(
         features::kQuickUnlockPinAutosubmit, std::get<1>(param));
 
-    CryptohomeClient::InitializeFake();
+    CryptohomeMiscClient::InitializeFake();
+    UserDataAuthClient::InitializeFake();
     if (std::get<0>(param) == TestType::kCryptohome) {
-      auto* cryptohome_client = FakeCryptohomeClient::Get();
+      auto* cryptohome_client = FakeUserDataAuthClient::Get();
       cryptohome_client->set_supports_low_entropy_credentials(true);
       cryptohome_client->set_enable_auth_check(true);
     }
@@ -184,7 +185,6 @@ class QuickUnlockPrivateUnitTest
     ExtensionApiUnittest::SetUp();
 
     SystemSaltGetter::Get()->SetRawSaltForTesting({1, 2, 3, 4, 5, 6, 7, 8});
-    cryptohome::HomedirMethods::Initialize();
     fake_user_manager_->CreateLocalState();
 
     // Rebuild quick unlock state.
@@ -206,9 +206,9 @@ class QuickUnlockPrivateUnitTest
     test_pref_service_ = pref_service.get();
 
     TestingProfile* profile = profile_manager()->CreateTestingProfile(
-        kTestUserEmail, std::move(pref_service),
-        base::ASCIIToUTF16("Test profile"), 1 /* avatar_id */,
-        std::string() /* supervised_user_id */, GetTestingFactories());
+        kTestUserEmail, std::move(pref_service), u"Test profile",
+        1 /* avatar_id */, std::string() /* supervised_user_id */,
+        GetTestingFactories());
 
     // Setup a primary user.
     auto test_account =
@@ -241,8 +241,8 @@ class QuickUnlockPrivateUnitTest
     scoped_user_manager_.reset();
 
     SystemSaltGetter::Shutdown();
-    CryptohomeClient::Shutdown();
-    cryptohome::HomedirMethods::Shutdown();
+    UserDataAuthClient::Shutdown();
+    CryptohomeMiscClient::Shutdown();
   }
 
   TestingProfile::TestingFactories GetTestingFactories() override {
@@ -252,14 +252,14 @@ class QuickUnlockPrivateUnitTest
 
   // If a mode change event is raised, fail the test.
   void FailIfModesChanged() {
-    modes_changed_handler_ = base::Bind(&FailIfCalled);
+    modes_changed_handler_ = base::BindRepeating(&FailIfCalled);
   }
 
   // If a mode change event is raised, expect the given |modes|.
   void ExpectModesChanged(const QuickUnlockModeList& modes) {
     modes_changed_handler_ =
-        base::Bind(&QuickUnlockPrivateUnitTest::ExpectModeList,
-                   base::Unretained(this), modes);
+        base::BindRepeating(&QuickUnlockPrivateUnitTest::ExpectModeList,
+                            base::Unretained(this), modes);
     expect_modes_changed_ = true;
   }
 
@@ -270,7 +270,7 @@ class QuickUnlockPrivateUnitTest
     // Setup a fake authenticator to avoid calling cryptohome methods.
     auto* func = new extensions::QuickUnlockPrivateGetAuthTokenFunction();
     func->SetAuthenticatorAllocatorForTesting(
-        base::Bind(&CreateFakeAuthenticator));
+        base::BindRepeating(&CreateFakeAuthenticator));
 
     auto params = std::make_unique<base::ListValue>();
     params->Append(base::Value(password));
@@ -287,7 +287,7 @@ class QuickUnlockPrivateUnitTest
     // Setup a fake authenticator to avoid calling cryptohome methods.
     auto* func = new extensions::QuickUnlockPrivateGetAuthTokenFunction();
     func->SetAuthenticatorAllocatorForTesting(
-        base::Bind(&CreateFakeAuthenticator));
+        base::BindRepeating(&CreateFakeAuthenticator));
 
     auto params = std::make_unique<base::ListValue>();
     params->Append(base::Value(kInvalidPassword));
@@ -324,9 +324,8 @@ class QuickUnlockPrivateUnitTest
     // Extract the results.
     QuickUnlockModeList modes;
 
-    base::ListValue* list = nullptr;
-    EXPECT_TRUE(result->GetAsList(&list));
-    for (const base::Value& value : *list) {
+    EXPECT_TRUE(result->is_list());
+    for (const base::Value& value : result->GetList()) {
       std::string mode;
       EXPECT_TRUE(value.GetAsString(&mode));
       modes.push_back(quick_unlock_private::ParseQuickUnlockMode(mode));
@@ -343,9 +342,8 @@ class QuickUnlockPrivateUnitTest
 
     QuickUnlockModeList modes;
 
-    base::ListValue* list = nullptr;
-    EXPECT_TRUE(result->GetAsList(&list));
-    for (const base::Value& value : *list) {
+    EXPECT_TRUE(result->is_list());
+    for (const base::Value& value : result->GetList()) {
       std::string mode;
       EXPECT_TRUE(value.GetAsString(&mode));
       modes.push_back(quick_unlock_private::ParseQuickUnlockMode(mode));

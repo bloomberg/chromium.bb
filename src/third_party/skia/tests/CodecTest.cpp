@@ -610,7 +610,10 @@ static void test_dimensions(skiatest::Reporter* r, const char path[]) {
         options.fSampleSize = sampleSize;
         SkCodec::Result result =
                 codec->getAndroidPixels(scaledInfo, pixels.get(), rowBytes, &options);
-        REPORTER_ASSERT(r, SkCodec::kSuccess == result);
+        if (result != SkCodec::kSuccess) {
+            ERRORF(r, "Failed to decode %s with sample size %i; error: %s", path, sampleSize,
+                    SkCodec::ResultToString(result));
+        }
     }
 }
 
@@ -1679,7 +1682,7 @@ DEF_TEST(Codec_ossfuzz6274, r) {
     bm.eraseColor(SK_ColorTRANSPARENT);
 
     SkCanvas canvas(bm);
-    canvas.drawImage(image, 0, 0, nullptr);
+    canvas.drawImage(image, 0, 0);
 
     for (int i = 0; i < image->width();  ++i)
     for (int j = 0; j < image->height(); ++j) {
@@ -1769,7 +1772,7 @@ DEF_TEST(Codec_crbug807324, r) {
     bm.eraseColor(SK_ColorTRANSPARENT);
 
     SkCanvas canvas(bm);
-    canvas.drawImage(image, 0, 0, nullptr);
+    canvas.drawImage(image, 0, 0);
 
     for (int i = 0; i < kWidth;  ++i)
     for (int j = 0; j < kHeight; ++j) {

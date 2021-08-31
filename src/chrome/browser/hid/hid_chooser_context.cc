@@ -6,15 +6,16 @@
 
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/usb/usb_blocklist.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/device_service.h"
+#include "services/device/public/cpp/hid/hid_blocklist.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -25,10 +26,6 @@ constexpr char kHidVendorIdKey[] = "vendor-id";
 constexpr char kHidProductIdKey[] = "product-id";
 constexpr char kHidSerialNumberKey[] = "serial-number";
 
-bool CanStorePersistentEntry(const device::mojom::HidDeviceInfo& device) {
-  return !device.serial_number.empty() && !device.product_name.empty();
-}
-
 base::Value DeviceInfoToValue(const device::mojom::HidDeviceInfo& device) {
   base::Value value(base::Value::Type::DICTIONARY);
   value.SetStringKey(
@@ -36,7 +33,7 @@ base::Value DeviceInfoToValue(const device::mojom::HidDeviceInfo& device) {
       base::UTF16ToUTF8(HidChooserContext::DisplayNameFromDeviceInfo(device)));
   value.SetIntKey(kHidVendorIdKey, device.vendor_id);
   value.SetIntKey(kHidProductIdKey, device.product_id);
-  if (CanStorePersistentEntry(device)) {
+  if (HidChooserContext::CanStorePersistentEntry(device)) {
     // Use the USB serial number as a persistent identifier. If it is
     // unavailable, only ephemeral permissions may be granted.
     value.SetStringKey(kHidSerialNumberKey, device.serial_number);
@@ -57,12 +54,16 @@ void HidChooserContext::DeviceObserver::OnDeviceAdded(
 void HidChooserContext::DeviceObserver::OnDeviceRemoved(
     const device::mojom::HidDeviceInfo& device) {}
 
+void HidChooserContext::DeviceObserver::OnDeviceChanged(
+    const device::mojom::HidDeviceInfo& device) {}
+
 void HidChooserContext::DeviceObserver::OnHidManagerConnectionError() {}
 
 HidChooserContext::HidChooserContext(Profile* profile)
-    : ChooserContextBase(ContentSettingsType::HID_GUARD,
-                         ContentSettingsType::HID_CHOOSER_DATA,
-                         HostContentSettingsMapFactory::GetForProfile(profile)),
+    : ObjectPermissionContextBase(
+          ContentSettingsType::HID_GUARD,
+          ContentSettingsType::HID_CHOOSER_DATA,
+          HostContentSettingsMapFactory::GetForProfile(profile)),
       is_incognito_(profile->IsOffTheRecord()) {}
 
 HidChooserContext::~HidChooserContext() {
@@ -72,26 +73,28 @@ HidChooserContext::~HidChooserContext() {
     observer.OnHidChooserContextShutdown();
     DCHECK(!device_observer_list_.HasObserver(&observer));
   }
-  DCHECK(!permission_observer_list_.might_have_observers());
+  DCHECK(permission_observer_list_.empty());
 }
 
 // static
-base::string16 HidChooserContext::DisplayNameFromDeviceInfo(
+std::u16string HidChooserContext::DisplayNameFromDeviceInfo(
     const device::mojom::HidDeviceInfo& device) {
-  auto vendor_id_string =
-      base::ASCIIToUTF16(base::StringPrintf("0x%04x", device.vendor_id));
-  auto product_id_string =
-      base::ASCIIToUTF16(base::StringPrintf("0x%04x", device.product_id));
   if (device.product_name.empty()) {
+    auto device_id_string = base::ASCIIToUTF16(
+        base::StringPrintf("%04X:%04X", device.vendor_id, device.product_id));
     return l10n_util::GetStringFUTF16(IDS_HID_CHOOSER_ITEM_WITHOUT_NAME,
-                                      vendor_id_string, product_id_string);
+                                      device_id_string);
   }
-  return l10n_util::GetStringFUTF16(IDS_HID_CHOOSER_ITEM_WITH_NAME,
-                                    base::UTF8ToUTF16(device.product_name),
-                                    vendor_id_string, product_id_string);
+  return base::UTF8ToUTF16(device.product_name);
 }
 
-base::string16 HidChooserContext::GetObjectDisplayName(
+// static
+bool HidChooserContext::CanStorePersistentEntry(
+    const device::mojom::HidDeviceInfo& device) {
+  return !device.serial_number.empty() && !device.product_name.empty();
+}
+
+std::u16string HidChooserContext::GetObjectDisplayName(
     const base::Value& object) {
   const std::string* name = object.FindStringKey(kHidDeviceNameKey);
   DCHECK(name);
@@ -111,15 +114,13 @@ bool HidChooserContext::IsValidObject(const base::Value& object) {
   return (guid && !guid->empty()) || (serial_number && !serial_number->empty());
 }
 
-std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
-HidChooserContext::GetGrantedObjects(const url::Origin& requesting_origin,
-                                     const url::Origin& embedding_origin) {
-  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-      ChooserContextBase::GetGrantedObjects(requesting_origin,
-                                            embedding_origin);
+std::vector<std::unique_ptr<permissions::ObjectPermissionContextBase::Object>>
+HidChooserContext::GetGrantedObjects(const url::Origin& origin) {
+  std::vector<std::unique_ptr<Object>> objects =
+      ObjectPermissionContextBase::GetGrantedObjects(origin);
 
-  if (CanRequestObjectPermission(requesting_origin, embedding_origin)) {
-    auto it = ephemeral_devices_.find({requesting_origin, embedding_origin});
+  if (CanRequestObjectPermission(origin)) {
+    auto it = ephemeral_devices_.find(origin);
     if (it != ephemeral_devices_.end()) {
       for (const std::string& guid : it->second) {
         // |devices_| should be initialized when |ephemeral_devices_| is filled.
@@ -129,9 +130,8 @@ HidChooserContext::GetGrantedObjects(const url::Origin& requesting_origin,
         // which always returns after the device list initialization in this
         // class.
         DCHECK(base::Contains(devices_, guid));
-        objects.push_back(std::make_unique<ChooserContextBase::Object>(
-            requesting_origin, embedding_origin,
-            DeviceInfoToValue(*devices_[guid]),
+        objects.push_back(std::make_unique<Object>(
+            origin, DeviceInfoToValue(*devices_[guid]),
             content_settings::SettingSource::SETTING_SOURCE_USER,
             is_incognito_));
       }
@@ -143,23 +143,21 @@ HidChooserContext::GetGrantedObjects(const url::Origin& requesting_origin,
   return objects;
 }
 
-std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+std::vector<std::unique_ptr<permissions::ObjectPermissionContextBase::Object>>
 HidChooserContext::GetAllGrantedObjects() {
-  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
-      ChooserContextBase::GetAllGrantedObjects();
+  std::vector<std::unique_ptr<Object>> objects =
+      ObjectPermissionContextBase::GetAllGrantedObjects();
 
   for (const auto& map_entry : ephemeral_devices_) {
-    const url::Origin& requesting_origin = map_entry.first.first;
-    const url::Origin& embedding_origin = map_entry.first.second;
+    const url::Origin& origin = map_entry.first;
 
-    if (!CanRequestObjectPermission(requesting_origin, embedding_origin))
+    if (!CanRequestObjectPermission(origin))
       continue;
 
     for (const auto& guid : map_entry.second) {
       DCHECK(base::Contains(devices_, guid));
-      objects.push_back(std::make_unique<ChooserContextBase::Object>(
-          requesting_origin, embedding_origin,
-          DeviceInfoToValue(*devices_[guid]),
+      objects.push_back(std::make_unique<Object>(
+          origin, DeviceInfoToValue(*devices_[guid]),
           content_settings::SettingSource::SETTING_SOURCE_USER, is_incognito_));
     }
   }
@@ -169,20 +167,17 @@ HidChooserContext::GetAllGrantedObjects() {
   return objects;
 }
 
-void HidChooserContext::RevokeObjectPermission(
-    const url::Origin& requesting_origin,
-    const url::Origin& embedding_origin,
-    const base::Value& object) {
+void HidChooserContext::RevokeObjectPermission(const url::Origin& origin,
+                                               const base::Value& object) {
   const std::string* guid = object.FindStringKey(kHidGuidKey);
 
   if (!guid) {
-    ChooserContextBase::RevokeObjectPermission(requesting_origin,
-                                               embedding_origin, object);
+    ObjectPermissionContextBase::RevokeObjectPermission(origin, object);
     // TODO(crbug.com/964041): Record UMA (WEBHID_PERMISSION_REVOKED).
     return;
   }
 
-  auto it = ephemeral_devices_.find({requesting_origin, embedding_origin});
+  auto it = ephemeral_devices_.find(origin);
   if (it != ephemeral_devices_.end()) {
     std::set<std::string>& devices = it->second;
 
@@ -190,47 +185,40 @@ void HidChooserContext::RevokeObjectPermission(
     devices.erase(*guid);
     if (devices.empty())
       ephemeral_devices_.erase(it);
-    NotifyPermissionRevoked(requesting_origin, embedding_origin);
+    NotifyPermissionRevoked(origin);
   }
 
   // TODO(crbug.com/964041): Record UMA (WEBHID_PERMISSION_REVOKED_EPHEMERAL).
 }
 
 void HidChooserContext::GrantDevicePermission(
-    const url::Origin& requesting_origin,
-    const url::Origin& embedding_origin,
+    const url::Origin& origin,
     const device::mojom::HidDeviceInfo& device) {
   DCHECK(base::Contains(devices_, device.guid));
   if (CanStorePersistentEntry(device)) {
-    GrantObjectPermission(requesting_origin, embedding_origin,
-                          DeviceInfoToValue(device));
+    GrantObjectPermission(origin, DeviceInfoToValue(device));
   } else {
-    ephemeral_devices_[{requesting_origin, embedding_origin}].insert(
-        device.guid);
+    ephemeral_devices_[origin].insert(device.guid);
     NotifyPermissionChanged();
   }
 }
 
 bool HidChooserContext::HasDevicePermission(
-    const url::Origin& requesting_origin,
-    const url::Origin& embedding_origin,
+    const url::Origin& origin,
     const device::mojom::HidDeviceInfo& device) {
-  if (UsbBlocklist::Get().IsExcluded(
-          {device.vendor_id, device.product_id, 0})) {
-    return false;
-  }
-
-  if (!CanRequestObjectPermission(requesting_origin, embedding_origin))
+  if (device::HidBlocklist::IsDeviceExcluded(device))
     return false;
 
-  auto it = ephemeral_devices_.find({requesting_origin, embedding_origin});
+  if (!CanRequestObjectPermission(origin))
+    return false;
+
+  auto it = ephemeral_devices_.find(origin);
   if (it != ephemeral_devices_.end() &&
       base::Contains(it->second, device.guid)) {
     return true;
   }
 
-  std::vector<std::unique_ptr<ChooserContextBase::Object>> object_list =
-      GetGrantedObjects(requesting_origin, embedding_origin);
+  std::vector<std::unique_ptr<Object>> object_list = GetGrantedObjects(origin);
   for (const auto& object : object_list) {
     const base::Value& device_value = object->value;
     DCHECK(IsValidObject(device_value));
@@ -292,7 +280,18 @@ void HidChooserContext::SetHidManagerForTesting(
       &HidChooserContext::OnHidManagerConnectionError, base::Unretained(this)));
 
   hid_manager_->GetDevicesAndSetClient(
-      client_receiver_.BindNewEndpointAndPassRemote(), std::move(callback));
+      client_receiver_.BindNewEndpointAndPassRemote(),
+      base::BindOnce(&HidChooserContext::OnHidManagerInitializedForTesting,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void HidChooserContext::OnHidManagerInitializedForTesting(
+    device::mojom::HidManager::GetDevicesCallback callback,
+    std::vector<device::mojom::HidDeviceInfoPtr> devices) {
+  DCHECK(devices.empty());
+  DCHECK(pending_get_devices_requests_.empty());
+  is_initialized_ = true;
+  std::move(callback).Run({});
 }
 
 base::WeakPtr<HidChooserContext> HidChooserContext::AsWeakPtr() {
@@ -328,21 +327,33 @@ void HidChooserContext::DeviceRemoved(device::mojom::HidDeviceInfoPtr device) {
   if (CanStorePersistentEntry(*device))
     return;
 
-  std::vector<std::pair<url::Origin, url::Origin>> revoked_url_pairs;
+  std::vector<url::Origin> revoked_origins;
   for (auto& map_entry : ephemeral_devices_) {
     if (map_entry.second.erase(device->guid) > 0)
-      revoked_url_pairs.push_back(map_entry.first);
+      revoked_origins.push_back(map_entry.first);
   }
-  if (revoked_url_pairs.empty())
+  if (revoked_origins.empty())
     return;
 
   for (auto& observer : permission_observer_list_) {
-    observer.OnChooserObjectPermissionChanged(guard_content_settings_type_,
-                                              data_content_settings_type_);
-    for (auto& url_pair : revoked_url_pairs) {
-      observer.OnPermissionRevoked(url_pair.first, url_pair.second);
+    observer.OnObjectPermissionChanged(guard_content_settings_type_,
+                                       data_content_settings_type_);
+    for (auto& origin : revoked_origins) {
+      observer.OnPermissionRevoked(origin);
     }
   }
+}
+
+void HidChooserContext::DeviceChanged(device::mojom::HidDeviceInfoPtr device) {
+  DCHECK(device);
+  DCHECK(base::Contains(devices_, device->guid));
+
+  // Update the device list.
+  devices_[device->guid] = device->Clone();
+
+  // Notify all observers.
+  for (auto& observer : device_observer_list_)
+    observer.OnDeviceChanged(*device);
 }
 
 void HidChooserContext::EnsureHidManagerConnection() {
@@ -390,7 +401,7 @@ void HidChooserContext::OnHidManagerConnectionError() {
   client_receiver_.reset();
   devices_.clear();
 
-  std::vector<std::pair<url::Origin, url::Origin>> revoked_origins;
+  std::vector<url::Origin> revoked_origins;
   revoked_origins.reserve(ephemeral_devices_.size());
   for (const auto& map_entry : ephemeral_devices_)
     revoked_origins.push_back(map_entry.first);
@@ -403,9 +414,9 @@ void HidChooserContext::OnHidManagerConnectionError() {
   // Notify permission observers that all ephemeral permissions have been
   // revoked.
   for (auto& observer : permission_observer_list_) {
-    observer.OnChooserObjectPermissionChanged(guard_content_settings_type_,
-                                              data_content_settings_type_);
+    observer.OnObjectPermissionChanged(guard_content_settings_type_,
+                                       data_content_settings_type_);
     for (const auto& origin : revoked_origins)
-      observer.OnPermissionRevoked(origin.first, origin.second);
+      observer.OnPermissionRevoked(origin);
   }
 }

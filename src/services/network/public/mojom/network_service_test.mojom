@@ -5,6 +5,7 @@
 module network.mojom;
 
 import "mojo/public/mojom/base/memory_pressure_level.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/network_types.mojom";
@@ -18,12 +19,15 @@ enum ResolverType {
   kResolverTypeDirectLookup,
 };
 
+// `dns_aliases` is a list of aliases read from DNS records, e.g. CNAME
+// aliases, and is intended to preserve the alias chain in reverse, from
+// canonical name (i.e. address record name) through to query name.
 struct Rule {
   ResolverType resolver_type;
   string host_pattern;
   string replacement;
   int32 host_resolver_flags;
-  string canonical_name;
+  array<string> dns_aliases;
 };
 
 // Testing interface to the network service.
@@ -118,8 +122,23 @@ interface NetworkServiceTest {
   [Sync]
   SetEVPolicy(array<uint8, 32> fingerprint_sha256, string policy_oid) => ();
 
-  // Gets the current count of entries in the preloaded First-Party sets
-  // mapping. Note that each entry is a registered domain mapped to its owner.
+  // Gets the current count of entries in the First-Party sets mapping. Note
+  // that each entry is a registered domain mapped to its owner.
   [Sync]
-  GetPreloadedFirstPartySetEntriesCount() => (int64 entries);
+  GetFirstPartySetEntriesCount() => (int64 entries);
+
+  // Set how long of an initial delay should be used for exponential backoff in
+  // SCT auditing retries. Setting the delay to nullopt will reset to the
+  // default.
+  [Sync]
+  SetSCTAuditingRetryDelay(mojo_base.mojom.TimeDelta? delay) => ();
+
+  // Gets the current count of pending reports in the SCT auditing cache.
+  [Sync]
+  GetSCTAuditingPendingReportsCount() => (uint64 reports);
+
+  // Runs the callback passed by the caller when an SCT auditing report
+  // completes. This lets the caller wait on report completion by passing a
+  // QuitClosure as the callback and running a RunLoop.
+  SetSCTAuditingReportCompletionCallback() => ();
 };

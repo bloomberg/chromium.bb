@@ -10,6 +10,7 @@
 #include "core/fpdfapi/page/cpdf_pattern.h"
 #include "core/fpdfapi/page/cpdf_tilingpattern.h"
 #include "core/fxge/dib/fx_dib.h"
+#include "third_party/base/check.h"
 
 CPDF_ColorState::CPDF_ColorState() = default;
 
@@ -98,14 +99,15 @@ void CPDF_ColorState::SetColor(const RetainPtr<CPDF_ColorSpace>& pCS,
                                const std::vector<float>& values,
                                CPDF_Color* color,
                                FX_COLORREF* colorref) {
-  ASSERT(color);
-  ASSERT(colorref);
+  DCHECK(color);
+  DCHECK(colorref);
 
-  if (pCS)
+  if (pCS) {
     color->SetColorSpace(pCS);
-  else if (color->IsNull())
-    color->SetColorSpace(CPDF_ColorSpace::GetStockCS(PDFCS_DEVICEGRAY));
-
+  } else if (color->IsNull()) {
+    color->SetColorSpace(
+        CPDF_ColorSpace::GetStockCS(CPDF_ColorSpace::Family::kDeviceGray));
+  }
   if (color->CountComponents() > values.size())
     return;
 
@@ -121,8 +123,8 @@ void CPDF_ColorState::SetPattern(const RetainPtr<CPDF_Pattern>& pPattern,
                                  const std::vector<float>& values,
                                  CPDF_Color* color,
                                  FX_COLORREF* colorref) {
-  ASSERT(color);
-  ASSERT(colorref);
+  DCHECK(color);
+  DCHECK(colorref);
 
   color->SetValueForPattern(pPattern, values);
   int R;
@@ -151,8 +153,10 @@ CPDF_ColorState::ColorData::~ColorData() = default;
 void CPDF_ColorState::ColorData::SetDefault() {
   m_FillColorRef = 0;
   m_StrokeColorRef = 0;
-  m_FillColor.SetColorSpace(CPDF_ColorSpace::GetStockCS(PDFCS_DEVICEGRAY));
-  m_StrokeColor.SetColorSpace(CPDF_ColorSpace::GetStockCS(PDFCS_DEVICEGRAY));
+  m_FillColor.SetColorSpace(
+      CPDF_ColorSpace::GetStockCS(CPDF_ColorSpace::Family::kDeviceGray));
+  m_StrokeColor.SetColorSpace(
+      CPDF_ColorSpace::GetStockCS(CPDF_ColorSpace::Family::kDeviceGray));
 }
 
 RetainPtr<CPDF_ColorState::ColorData> CPDF_ColorState::ColorData::Clone()

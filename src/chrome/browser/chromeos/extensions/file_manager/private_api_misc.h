@@ -13,9 +13,9 @@
 #include <vector>
 
 #include "base/files/file.h"
+#include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
+#include "chrome/browser/chromeos/extensions/file_manager/files_extension_function.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
-#include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
-#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "storage/browser/file_system/file_system_url.h"
@@ -100,7 +100,7 @@ class FileManagerPrivateInternalZipSelectionFunction
   ResponseAction Run() override;
 
   // Receives the result from ZipFileCreator.
-  void OnZipDone(bool success);
+  void OnZipDone(const std::string& dest_file, bool success);
 };
 
 // Implements the chrome.fileManagerPrivate.zoom method.
@@ -138,7 +138,6 @@ class FileManagerPrivateRequestWebStoreAccessTokenFunction
 
   void OnAccessTokenFetched(google_apis::DriveApiErrorCode code,
                             const std::string& access_token);
-  const ChromeExtensionFunctionDetails chrome_details_;
 };
 
 class FileManagerPrivateGetProfilesFunction : public ExtensionFunction {
@@ -212,7 +211,6 @@ class FileManagerPrivateGetProvidersFunction : public ExtensionFunction {
 
  private:
   ResponseAction Run() override;
-  const ChromeExtensionFunctionDetails chrome_details_;
 };
 
 // Implements the chrome.fileManagerPrivate.addProvidedFileSystem method.
@@ -233,7 +231,6 @@ class FileManagerPrivateAddProvidedFileSystemFunction
 
  private:
   ResponseAction Run() override;
-  const ChromeExtensionFunctionDetails chrome_details_;
 };
 
 // Implements the chrome.fileManagerPrivate.configureVolume method.
@@ -255,8 +252,6 @@ class FileManagerPrivateConfigureVolumeFunction
  private:
   ResponseAction Run() override;
   void OnCompleted(base::File::Error result);
-
-  const ChromeExtensionFunctionDetails chrome_details_;
 };
 
 // Implements the chrome.fileManagerPrivate.mountCrostini method.
@@ -277,6 +272,7 @@ class FileManagerPrivateMountCrostiniFunction : public LoggedExtensionFunction {
 
   ResponseAction Run() override;
   void RestartCallback(crostini::CrostiniResult);
+  void MountCallback(crostini::CrostiniResult);
 };
 
 // Implements the chrome.fileManagerPrivate.importCrostiniImage method.
@@ -355,7 +351,7 @@ class FileManagerPrivateInternalUnsharePathWithCrostiniFunction
 // Implements the chrome.fileManagerPrivate.getCrostiniSharedPaths
 // method.  Returns list of file entries.
 class FileManagerPrivateInternalGetCrostiniSharedPathsFunction
-    : public ExtensionFunction {
+    : public FilesExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "fileManagerPrivateInternal.getCrostiniSharedPaths",
@@ -440,8 +436,6 @@ class FileManagerPrivateInternalGetCustomActionsFunction
   ResponseAction Run() override;
   void OnCompleted(const chromeos::file_system_provider::Actions& actions,
                    base::File::Error result);
-
-  const ChromeExtensionFunctionDetails chrome_details_;
 };
 
 // Implements the chrome.fileManagerPrivate.executeCustomAction method.
@@ -463,8 +457,6 @@ class FileManagerPrivateInternalExecuteCustomActionFunction
  private:
   ResponseAction Run() override;
   void OnCompleted(base::File::Error result);
-
-  const ChromeExtensionFunctionDetails chrome_details_;
 };
 
 // Implements the chrome.fileManagerPrivateInternal.getRecentFiles method.
@@ -491,8 +483,6 @@ class FileManagerPrivateInternalGetRecentFilesFunction
   void OnConvertFileDefinitionListToEntryDefinitionList(
       std::unique_ptr<file_manager::util::EntryDefinitionList>
           entry_definition_list);
-
-  const ChromeExtensionFunctionDetails chrome_details_;
 };
 
 // Implements the chrome.fileManagerPrivate.detectCharacterEncoding method.
@@ -505,6 +495,19 @@ class FileManagerPrivateDetectCharacterEncodingFunction
  protected:
   ~FileManagerPrivateDetectCharacterEncodingFunction() override = default;
 
+  ResponseAction Run() override;
+};
+
+// Implements the chrome.fileManagerPrivate.isTabletModeEnabled method.
+class FileManagerPrivateIsTabletModeEnabledFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.isTabletModeEnabled",
+                             FILEMANAGERPRIVATE_ISTABLETMODEENABLED)
+
+ protected:
+  ~FileManagerPrivateIsTabletModeEnabledFunction() override = default;
+
+ private:
   ResponseAction Run() override;
 };
 

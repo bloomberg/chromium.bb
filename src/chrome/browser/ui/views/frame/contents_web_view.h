@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler_delegate.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/webview/webview.h"
 
 class StatusBubbleViews;
@@ -23,12 +24,16 @@ class ContentsWebView
     : public views::WebView,
       public WebContentsCloseHandlerDelegate {
  public:
+  METADATA_HEADER(ContentsWebView);
   explicit ContentsWebView(content::BrowserContext* browser_context);
+  ContentsWebView(const ContentsWebView&) = delete;
+  ContentsWebView& operator=(const ContentsWebView&) = delete;
   ~ContentsWebView() override;
 
   // Sets the status bubble, which should be repositioned every time
   // this view changes visible bounds.
   void SetStatusBubble(StatusBubbleViews* status_bubble);
+  StatusBubbleViews* GetStatusBubble() const;
 
   // WebView overrides:
   bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
@@ -51,8 +56,6 @@ class ContentsWebView
   StatusBubbleViews* status_bubble_;
 
   std::unique_ptr<ui::LayerTreeOwner> cloned_layer_tree_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentsWebView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_CONTENTS_WEB_VIEW_H_

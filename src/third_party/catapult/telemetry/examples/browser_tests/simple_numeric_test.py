@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import string
 import sys
 import time
@@ -38,7 +39,7 @@ class SimpleTest(
       test_names.append(prefix + character)
     for character in string.uppercase[:26]:
       test_names.append(prefix + character)
-    for num in xrange(20):
+    for num in range(20):
       test_names.append(prefix + str(num))
 
     # Shuffle |test_names| so the tests will be generated in a random order.

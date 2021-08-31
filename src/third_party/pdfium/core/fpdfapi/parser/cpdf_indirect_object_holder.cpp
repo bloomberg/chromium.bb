@@ -22,7 +22,7 @@ CPDF_Object* FilterInvalidObjNum(CPDF_Object* obj) {
 }  // namespace
 
 CPDF_IndirectObjectHolder::CPDF_IndirectObjectHolder()
-    : m_LastObjNum(0), m_pByteStringPool(std::make_unique<ByteStringPool>()) {}
+    : m_pByteStringPool(std::make_unique<ByteStringPool>()) {}
 
 CPDF_IndirectObjectHolder::~CPDF_IndirectObjectHolder() {
   m_pByteStringPool.DeleteObject();  // Make weak.
@@ -75,7 +75,7 @@ CPDF_Object* CPDF_IndirectObjectHolder::AddIndirectObject(
 bool CPDF_IndirectObjectHolder::ReplaceIndirectObjectIfHigherGeneration(
     uint32_t objnum,
     RetainPtr<CPDF_Object> pObj) {
-  ASSERT(objnum);
+  DCHECK(objnum);
   if (!pObj || objnum == CPDF_Object::kInvalidObjNum)
     return false;
 

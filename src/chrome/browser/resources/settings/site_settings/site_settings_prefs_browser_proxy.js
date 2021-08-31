@@ -70,9 +70,9 @@ export let SiteGroup;
  * @typedef {{embeddingOrigin: string,
  *            incognito: boolean,
  *            isEmbargoed: boolean,
- *            isDiscarded: boolean,
  *            origin: string,
  *            displayName: string,
+ *            settingDetail: ?string,
  *            type: string,
  *            setting: !ContentSetting,
  *            source: !SiteSettingSource}}
@@ -86,9 +86,9 @@ export let RawSiteException;
  *            embeddingOrigin: string,
  *            incognito: boolean,
  *            isEmbargoed: boolean,
- *            isDiscarded: boolean,
  *            origin: string,
  *            displayName: string,
+ *            settingDetail: ?string,
  *            setting: !ContentSetting,
  *            enforcement: ?chrome.settingsPrivate.Enforcement,
  *            controlledBy: !chrome.settingsPrivate.ControlledBy,
@@ -373,14 +373,6 @@ export class SiteSettingsPrefsBrowserProxy {
    */
   removeZoomLevel(host) {}
 
-  // <if expr="chromeos">
-  /**
-   * Links to com.android.settings.Settings$ManageDomainUrlsActivity on ARC
-   * side, this is to manage app preferences.
-   */
-  showAndroidManageAppLinks() {}
-  // </if>
-
   /**
    * Fetches the current block autoplay state. Returns the results via
    * onBlockAutoplayStatusChanged.
@@ -544,13 +536,6 @@ export class SiteSettingsPrefsBrowserProxyImpl {
   removeZoomLevel(host) {
     chrome.send('removeZoomLevel', [host]);
   }
-
-  // <if expr="chromeos">
-  /** @override */
-  showAndroidManageAppLinks() {
-    chrome.send('showAndroidManageAppLinks');
-  }
-  // </if>
 
   /** @override */
   fetchBlockAutoplayStatus() {

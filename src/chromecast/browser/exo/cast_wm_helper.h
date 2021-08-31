@@ -95,6 +95,8 @@ class CastWMHelper : public WMHelper, public VSyncTimingManager::Delegate {
   void RemovePostTargetHandler(ui::EventHandler* handler) override;
   bool InTabletMode() const override;
   double GetDefaultDeviceScaleFactor() const override;
+  double GetDeviceScaleFactorForWindow(aura::Window* window) const override;
+  void SetDefaultScaleCancellation(bool default_scale_cancellation) override;
   void SetImeBlocked(aura::Window* window, bool ime_blocked) override;
   bool IsImeBlocked(aura::Window* window) const override;
 
@@ -103,10 +105,14 @@ class CastWMHelper : public WMHelper, public VSyncTimingManager::Delegate {
 
   // Overridden from aura::client::DragDropDelegate:
   void OnDragEntered(const ui::DropTargetEvent& event) override;
-  int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  aura::client::DragUpdateInfo OnDragUpdated(
+      const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
-  int OnPerformDrop(const ui::DropTargetEvent& event,
-                    std::unique_ptr<ui::OSExchangeData> data) override;
+  ui::mojom::DragOperation OnPerformDrop(
+      const ui::DropTargetEvent& event,
+      std::unique_ptr<ui::OSExchangeData> data) override;
+  WMHelper::DropCallback GetDropCallback(
+      const ui::DropTargetEvent& event) override;
 
   // Overridden from VSyncTimingManager::Delegate:
   void AddVSyncParameterObserver(

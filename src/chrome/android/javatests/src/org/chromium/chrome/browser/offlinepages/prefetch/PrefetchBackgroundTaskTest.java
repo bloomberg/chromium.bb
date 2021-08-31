@@ -131,6 +131,11 @@ public class PrefetchBackgroundTaskTest {
         }
 
         @Override
+        public boolean isScheduled(Context context, int taskId) {
+            return (mTasks.get(taskId) != null);
+        }
+
+        @Override
         public void checkForOSUpgrade(Context context) {}
 
         @Override
@@ -191,12 +196,12 @@ public class PrefetchBackgroundTaskTest {
         OfflineTestUtil.setPrefetchingEnabledByServer(true);
         OfflineTestUtil.setGCMTokenForTesting("dummy_gcm_token");
 
-        PrefetchBackgroundTask.alwaysSupportServiceManagerOnlyForTesting();
+        PrefetchBackgroundTask.alwaysSupportMinimalBrowserForTesting();
     }
 
     @After
     public void tearDown() {
-        mNativeTestRule.assertOnlyServiceManagerStarted();
+        mNativeTestRule.assertMinimalBrowserStarted();
     }
 
     private void scheduleTask(int additionalDelaySeconds) {

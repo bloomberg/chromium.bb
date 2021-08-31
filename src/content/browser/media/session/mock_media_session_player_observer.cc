@@ -44,6 +44,13 @@ void MockMediaSessionPlayerObserver::OnSeekBackward(int player_id,
   ++received_seek_backward_calls_;
 }
 
+void MockMediaSessionPlayerObserver::OnSeekTo(int player_id,
+                                              base::TimeDelta seek_time) {
+  EXPECT_GE(player_id, 0);
+  EXPECT_GT(players_.size(), static_cast<size_t>(player_id));
+  ++received_seek_to_calls_;
+}
+
 void MockMediaSessionPlayerObserver::OnSetVolumeMultiplier(
     int player_id,
     double volume_multiplier) {
@@ -82,7 +89,7 @@ void MockMediaSessionPlayerObserver::OnSetAudioSinkId(
   players_[player_id].audio_sink_id_ = raw_device_id;
 }
 
-base::Optional<media_session::MediaPosition>
+absl::optional<media_session::MediaPosition>
 MockMediaSessionPlayerObserver::GetPosition(int player_id) const {
   EXPECT_GE(player_id, 0);
   EXPECT_GT(players_.size(), static_cast<size_t>(player_id));
@@ -150,6 +157,10 @@ int MockMediaSessionPlayerObserver::received_seek_backward_calls() const {
   return received_seek_backward_calls_;
 }
 
+int MockMediaSessionPlayerObserver::received_seek_to_calls() const {
+  return received_seek_to_calls_;
+}
+
 int MockMediaSessionPlayerObserver::received_enter_picture_in_picture_calls()
     const {
   return received_enter_picture_in_picture_calls_;
@@ -162,6 +173,12 @@ int MockMediaSessionPlayerObserver::received_exit_picture_in_picture_calls()
 
 int MockMediaSessionPlayerObserver::received_set_audio_sink_id_calls() const {
   return received_set_audio_sink_id_calls_;
+}
+
+bool MockMediaSessionPlayerObserver::HasAudio(int player_id) const {
+  EXPECT_GE(player_id, 0);
+  EXPECT_GT(players_.size(), static_cast<size_t>(player_id));
+  return true;
 }
 
 bool MockMediaSessionPlayerObserver::HasVideo(int player_id) const {

@@ -84,18 +84,20 @@ void TestCallback::OnCalled() {
 }
 
 MockUploader::MockUploader(UploadRequestCallback callback)
-    : callback_(std::move(callback)), discard_uploads_(true) {}
+    : callback_(callback), discard_uploads_(true) {}
 
 MockUploader::~MockUploader() = default;
 
 bool MockUploader::discard_uploads() const { return discard_uploads_; }
 
-void MockUploader::UploadReport(const std::string& report_json,
-                                int max_upload_depth,
-                                const GURL& upload_url,
-                                UploadCallback callback) {
-  std::move(callback_).Run(report_json, max_upload_depth, upload_url,
-                           std::move(callback));
+void MockUploader::UploadReport(
+    const std::string& report_json,
+    int max_upload_depth,
+    const GURL& upload_url,
+    const net::NetworkIsolationKey& network_isolation_key,
+    UploadCallback callback) {
+  callback_.Run(report_json, max_upload_depth, upload_url,
+                network_isolation_key, std::move(callback));
 }
 
 void MockUploader::Shutdown() {}
@@ -108,11 +110,16 @@ int MockUploader::GetDiscardedUploadCount() const {
   return 0;
 }
 
+base::TimeTicks MockTickClock::NowTicks() const {
+  return mock_time_->NowTicks();
+}
+
 MockTime::MockTime()
     : now_(base::Time::Now()),
       now_ticks_(base::TimeTicks::Now()),
       epoch_ticks_(now_ticks_),
-      task_sequence_number_(0) {
+      task_sequence_number_(0),
+      tick_clock_(this) {
   VLOG(1) << "Creating mock time: T=" << elapsed_sec() << "s";
 }
 
@@ -127,6 +134,10 @@ base::TimeTicks MockTime::NowTicks() const {
 
 std::unique_ptr<MockableTime::Timer> MockTime::CreateTimer() {
   return std::unique_ptr<MockableTime::Timer>(new MockTimer(this));
+}
+
+const base::TickClock* MockTime::AsTickClock() const {
+  return &tick_clock_;
 }
 
 void MockTime::Advance(base::TimeDelta delta) {

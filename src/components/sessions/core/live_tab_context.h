@@ -8,13 +8,12 @@
 #include <string>
 #include <vector>
 
-#include "base/optional.h"
-#include "base/strings/string16.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/sessions_export.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 
@@ -43,7 +42,7 @@ class SESSIONS_EXPORT LiveTabContext {
   virtual LiveTab* GetLiveTabAt(int index) const = 0;
   virtual LiveTab* GetActiveLiveTab() const = 0;
   virtual bool IsTabPinned(int index) const = 0;
-  virtual base::Optional<tab_groups::TabGroupId> GetTabGroupForTab(
+  virtual absl::optional<tab_groups::TabGroupId> GetTabGroupForTab(
       int index) const = 0;
   // Should not be called for |group| unless GetTabGroupForTab() returned
   // |group|.
@@ -58,30 +57,31 @@ class SESSIONS_EXPORT LiveTabContext {
   virtual ui::WindowShowState GetRestoredState() const = 0;
   virtual std::string GetWorkspace() const = 0;
 
-  // Note: |tab_platform_data| may be null (e.g., if |from_last_session| is
-  // true, as this data is not persisted, or if the platform does not provide
+  // Note: |tab_platform_data| may be null (e.g., if restoring from last session
+  // as this data is not persisted, or if the platform does not provide
   // platform-specific data).
+  // |tab_id| is the tab's unique SessionID. Only present if a historical tab
+  // has been created by TabRestoreService.
   virtual LiveTab* AddRestoredTab(
       const std::vector<SerializedNavigationEntry>& navigations,
       int tab_index,
       int selected_navigation,
       const std::string& extension_app_id,
-      base::Optional<tab_groups::TabGroupId> group,
+      absl::optional<tab_groups::TabGroupId> group,
       const tab_groups::TabGroupVisualData& group_visual_data,
       bool select,
       bool pin,
-      bool from_last_session,
       const PlatformSpecificTabData* tab_platform_data,
-      const sessions::SerializedUserAgentOverride& user_agent_override) = 0;
+      const sessions::SerializedUserAgentOverride& user_agent_override,
+      const SessionID* tab_id) = 0;
 
-  // Note: |tab_platform_data| may be null (e.g., if |from_last_session| is
-  // true, as this data is not persisted, or if the platform does not provide
+  // Note: |tab_platform_data| may be null (e.g., if restoring from last session
+  // as this data is not persisted, or if the platform does not provide
   // platform-specific data).
   virtual LiveTab* ReplaceRestoredTab(
       const std::vector<SerializedNavigationEntry>& navigations,
-      base::Optional<tab_groups::TabGroupId> group,
+      absl::optional<tab_groups::TabGroupId> group,
       int selected_navigation,
-      bool from_last_session,
       const std::string& extension_app_id,
       const PlatformSpecificTabData* tab_platform_data,
       const sessions::SerializedUserAgentOverride& user_agent_override) = 0;

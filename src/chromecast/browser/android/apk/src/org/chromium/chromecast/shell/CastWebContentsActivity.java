@@ -18,13 +18,11 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import org.chromium.base.Log;
-import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.chromecast.base.Both;
 import org.chromium.chromecast.base.CastSwitches;
 import org.chromium.chromecast.base.Controller;
@@ -109,12 +107,7 @@ public class CastWebContentsActivity extends Activity {
         });
         createdAndNotTestingState.subscribe(Observers.onEnter(x -> {
             // Do this in onCreate() only if not testing.
-            if (!CastBrowserHelper.initializeBrowser(getApplicationContext())) {
-                Toast.makeText(this, R.string.browser_process_initialization_failed,
-                             Toast.LENGTH_SHORT)
-                        .show();
-                mIsFinishingState.set("Failed to initialize browser");
-            }
+            CastBrowserHelper.initializeBrowser(getApplicationContext());
 
             setContentView(R.layout.cast_web_contents_activity);
 
@@ -299,22 +292,18 @@ public class CastWebContentsActivity extends Activity {
         }
     }
 
-    @RemovableInRelease
     public void finishForTesting() {
         mIsFinishingState.set("Finish for testing");
     }
 
-    @RemovableInRelease
     public void testingModeForTesting() {
         mIsTestingState.set(Unit.unit());
     }
 
-    @RemovableInRelease
     public void setAudioManagerForTesting(CastAudioManager audioManager) {
         mAudioManagerState.set(audioManager);
     }
 
-    @RemovableInRelease
     public void setSurfaceHelperForTesting(CastWebContentsSurfaceHelper surfaceHelper) {
         mSurfaceHelperState.set(surfaceHelper);
     }

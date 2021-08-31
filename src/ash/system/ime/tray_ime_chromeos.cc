@@ -21,6 +21,7 @@
 #include "ash/system/tray/tri_view.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -78,9 +79,8 @@ void IMEDetailedView::ShowSettings() {
   Shell::Get()->system_tray_model()->client()->ShowIMESettings();
 }
 
-const char* IMEDetailedView::GetClassName() const {
-  return "IMEDetailedView";
-}
+BEGIN_METADATA(IMEDetailedView, ImeListView)
+END_METADATA
 
 }  // namespace tray
 

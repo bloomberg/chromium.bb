@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_alarm.h"
+#include "quic/core/quic_alarm.h"
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
+#include "quic/platform/api/quic_test.h"
 
 using testing::Invoke;
 
@@ -24,7 +24,7 @@ class DestructiveDelegate : public QuicAlarm::Delegate {
   void set_alarm(QuicAlarm* alarm) { alarm_ = alarm; }
 
   void OnAlarm() override {
-    DCHECK(alarm_);
+    QUICHE_DCHECK(alarm_);
     delete alarm_;
   }
 
@@ -46,12 +46,12 @@ class TestAlarm : public QuicAlarm {
 
  protected:
   void SetImpl() override {
-    DCHECK(deadline().IsInitialized());
+    QUICHE_DCHECK(deadline().IsInitialized());
     scheduled_ = true;
   }
 
   void CancelImpl() override {
-    DCHECK(!deadline().IsInitialized());
+    QUICHE_DCHECK(!deadline().IsInitialized());
     scheduled_ = false;
   }
 

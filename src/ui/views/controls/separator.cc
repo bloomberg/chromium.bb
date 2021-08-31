@@ -6,14 +6,14 @@
 
 #include <algorithm>
 
-#include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace views {
+
+constexpr int Separator::kThickness;
 
 Separator::Separator() = default;
 
@@ -95,7 +95,7 @@ void Separator::OnPaint(gfx::Canvas* canvas) {
 }
 
 BEGIN_METADATA(Separator, View)
-ADD_PROPERTY_METADATA(SkColor, Color)
+ADD_PROPERTY_METADATA(SkColor, Color, ui::metadata::SkColorConverter)
 ADD_PROPERTY_METADATA(int, PreferredHeight)
 END_METADATA
 

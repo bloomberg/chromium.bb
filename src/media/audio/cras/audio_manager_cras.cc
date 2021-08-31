@@ -92,6 +92,9 @@ AudioParameters AudioManagerCras::GetInputStreamParameters(
       AudioParameters::HardwareCapabilities(limits::kMinAudioBufferSize,
                                             limits::kMaxAudioBufferSize));
 
+  if (CrasHasKeyboardMic())
+    params.set_effects(AudioParameters::KEYBOARD_MIC);
+
   // Allow experimentation with system echo cancellation with all devices,
   // but enable it by default on devices that actually support it.
   params.set_effects(params.effects() |
@@ -126,6 +129,47 @@ std::string AudioManagerCras::GetDefaultOutputDeviceID() {
   return base::NumberToString(GetPrimaryActiveOutputNode());
 }
 
+std::string AudioManagerCras::GetGroupIDInput(const std::string& device_id) {
+  for (const auto& device : CrasGetAudioDevices(DeviceType::kInput)) {
+    if (base::NumberToString(device.id) == device_id ||
+        (AudioDeviceDescription::IsDefaultDevice(device_id) && device.active)) {
+      return device.dev_name;
+    }
+  }
+  return "";
+}
+
+std::string AudioManagerCras::GetGroupIDOutput(const std::string& device_id) {
+  for (const auto& device : CrasGetAudioDevices(DeviceType::kOutput)) {
+    if (base::NumberToString(device.id) == device_id ||
+        (AudioDeviceDescription::IsDefaultDevice(device_id) && device.active)) {
+      return device.dev_name;
+    }
+  }
+  return "";
+}
+
+std::string AudioManagerCras::GetAssociatedOutputDeviceID(
+    const std::string& input_device_id) {
+  if (AudioDeviceDescription::IsDefaultDevice(input_device_id)) {
+    // Note: the default input should not be associated to any output, as this
+    // may lead to accidental uses of a pinned stream.
+    return "";
+  }
+
+  std::string device_name = GetGroupIDInput(input_device_id);
+
+  if (device_name.empty())
+    return "";
+
+  // Now search for an output device with the same device name.
+  for (const auto& device : CrasGetAudioDevices(DeviceType::kOutput)) {
+    if (device.dev_name == device_name)
+      return base::NumberToString(device.id);
+  }
+  return "";
+}
+
 AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
     const std::string& output_device_id,
     const AudioParameters& input_params) {
@@ -144,6 +188,9 @@ AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
   }
 
   if (!buffer_size)  // Not user-provided.
+    buffer_size = CrasGetDefaultOutputBufferSize();
+
+  if (buffer_size <= 0)
     buffer_size = kDefaultOutputBufferSize;
 
   return AudioParameters(
@@ -154,17 +201,23 @@ AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
 }
 
 uint64_t AudioManagerCras::GetPrimaryActiveInputNode() {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  for (const auto& device : CrasGetAudioDevices(DeviceType::kInput)) {
+    if (device.active)
+      return device.id;
+  }
   return 0;
 }
 
 uint64_t AudioManagerCras::GetPrimaryActiveOutputNode() {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  for (const auto& device : CrasGetAudioDevices(DeviceType::kOutput)) {
+    if (device.active)
+      return device.id;
+  }
   return 0;
 }
 
 bool AudioManagerCras::IsDefault(const std::string& device_id, bool is_input) {
-  return device_id == AudioDeviceDescription::kDefaultDeviceId;
+  return AudioDeviceDescription::IsDefaultDevice(device_id);
 }
 
 enum CRAS_CLIENT_TYPE AudioManagerCras::GetClientType() {

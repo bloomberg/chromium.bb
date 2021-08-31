@@ -13,16 +13,16 @@ Polymer({
 
   properties: {
     /**
-     * Whether Bookmark apps off Extensions is enabled.
-     * @private {!boolean}
-     */
-    isBmoEnabled_: Boolean,
-
-    /**
      * List of internal details about installed web apps.
      * @private {!Array<!mojom.webAppInternals.WebApp>}
      */
     webAppList_: Array,
+
+    /**
+     * Debug information about preinstalled web apps.
+     * @private {!mojom.webAppInternals.PreinstalledWebAppDebugInfo|null}
+     */
+    preinstalledWebAppDebugInfo_: Object,
 
     /**
      * Prefs associated with non-user installed web apps.
@@ -40,10 +40,11 @@ Polymer({
       const remote =
           mojom.webAppInternals.WebAppInternalsPageHandler.getRemote();
 
-      this.isBmoEnabled_ = (await remote.isBmoEnabled()).isBmoEnabled;
-
       this.webAppList_ = (await remote.getWebApps()).webAppList;
       this.webAppList_.sort((a, b) => a.name.localeCompare(b.name));
+
+      this.preinstalledWebAppDebugInfo_ =
+          (await remote.getPreinstalledWebAppDebugInfo()).status;
 
       this.externallyInstalledWebAppPrefs_ =
           (await remote.getExternallyInstalledWebAppPrefs())
@@ -52,6 +53,10 @@ Polymer({
       this.highlightHashedId_();
       this.hashChangeListener_ = () => this.highlightHashedId_();
       window.addEventListener('hashchange', this.hashChangeListener_);
+
+      this.$.saveButton.addEventListener('click', () => this.save());
+      this.$.loadButton.addEventListener(
+          'change', event => this.load(event.target.files[0]));
     })();
   },
 
@@ -84,5 +89,39 @@ Polymer({
 
     highlighted.scrollIntoView();
     highlighted.classList.add('highlight');
+  },
+
+  /**
+   * Saves the data contents of the page to a JSON file.
+   * @private
+   */
+  save() {
+    const data = Object.fromEntries(
+        Object.keys(this.properties).map(key => [key, this[key]]));
+    const file = new Blob(
+        [JSON.stringify(data, null, '  ')], {type: 'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(file);
+    a.download = 'web-app-internals.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  },
+
+  /**
+   * Loads the given JSON file as the data contents of the page.
+   * @param {File} file
+   * @private
+   * @suppress {checkTypes} Closure doesn't know about
+         FileReader.readAsText(File).
+   */
+  load(file) {
+    const reader = new FileReader();
+    reader.addEventListener('load', event => {
+      const json = JSON.parse(event.target.result);
+      for (const key of Object.keys(this.properties)) {
+        this[key] = json[key];
+      }
+    });
+    reader.readAsText(file);
   },
 });

@@ -76,8 +76,8 @@ static Handle<JSFunction> Compile(const char* source) {
           v8::ScriptCompiler::kNoCompileOptions,
           ScriptCompiler::kNoCacheNoReason, NOT_NATIVES_CODE)
           .ToHandleChecked();
-  return isolate->factory()->NewFunctionFromSharedFunctionInfo(
-      shared, isolate->native_context());
+  return Factory::JSFunctionBuilder{isolate, shared, isolate->native_context()}
+      .Build();
 }
 
 
@@ -274,8 +274,9 @@ TEST(Regression236) {
 
 TEST(GetScriptLineNumber) {
   LocalContext context;
-  v8::HandleScope scope(CcTest::isolate());
-  v8::ScriptOrigin origin = v8::ScriptOrigin(v8_str("test"));
+  v8::Isolate* isolate = CcTest::isolate();
+  v8::HandleScope scope(isolate);
+  v8::ScriptOrigin origin = v8::ScriptOrigin(isolate, v8_str("test"));
   const char function_f[] = "function f() {}";
   const int max_rows = 1000;
   const int buffer_size = max_rows + sizeof(function_f);
@@ -650,11 +651,10 @@ TEST(CompileFunctionInContextQuirks) {
 
 TEST(CompileFunctionInContextScriptOrigin) {
   CcTest::InitializeVM();
-  v8::HandleScope scope(CcTest::isolate());
+  v8::Isolate* isolate = CcTest::isolate();
+  v8::HandleScope scope(isolate);
   LocalContext env;
-  v8::ScriptOrigin origin(v8_str("test"),
-                          v8::Integer::New(CcTest::isolate(), 22),
-                          v8::Integer::New(CcTest::isolate(), 41));
+  v8::ScriptOrigin origin(isolate, v8_str("test"), 22, 41);
   v8::ScriptCompiler::Source script_source(v8_str("throw new Error()"), origin);
   Local<ScriptOrModule> script;
   v8::Local<v8::Function> fun =
@@ -693,14 +693,15 @@ void TestCompileFunctionInContextToStringImpl() {
     }                                                                      \
   } while (false)
 
-  {  // NOLINT
+  {
     CcTest::InitializeVM();
-    v8::HandleScope scope(CcTest::isolate());
+    v8::Isolate* isolate = CcTest::isolate();
+    v8::HandleScope scope(isolate);
     LocalContext env;
 
     // Regression test for v8:6190
     {
-      v8::ScriptOrigin origin(v8_str("test"), v8_int(22), v8_int(41));
+      v8::ScriptOrigin origin(isolate, v8_str("test"), 22, 41);
       v8::ScriptCompiler::Source script_source(v8_str("return event"), origin);
 
       v8::Local<v8::String> params[] = {v8_str("event")};
@@ -727,7 +728,7 @@ void TestCompileFunctionInContextToStringImpl() {
 
     // With no parameters:
     {
-      v8::ScriptOrigin origin(v8_str("test"), v8_int(17), v8_int(31));
+      v8::ScriptOrigin origin(isolate, v8_str("test"), 17, 31);
       v8::ScriptCompiler::Source script_source(v8_str("return 0"), origin);
 
       v8::TryCatch try_catch(CcTest::isolate());
@@ -752,7 +753,7 @@ void TestCompileFunctionInContextToStringImpl() {
 
     // With a name:
     {
-      v8::ScriptOrigin origin(v8_str("test"), v8_int(17), v8_int(31));
+      v8::ScriptOrigin origin(isolate, v8_str("test"), 17, 31);
       v8::ScriptCompiler::Source script_source(v8_str("return 0"), origin);
 
       v8::TryCatch try_catch(CcTest::isolate());
@@ -928,120 +929,6 @@ TEST(DeepEagerCompilationPeakMemory) {
   CHECK_LE(peak_mem_4 - peak_mem_3, peak_mem_3);
 }
 
-// TODO(mslekova): Remove the duplication with test-heap.cc
-static int AllocationSitesCount(Heap* heap) {
-  int count = 0;
-  for (Object site = heap->allocation_sites_list(); site.IsAllocationSite();) {
-    AllocationSite cur = AllocationSite::cast(site);
-    CHECK(cur.HasWeakNext());
-    site = cur.weak_next();
-    count++;
-  }
-  return count;
-}
-
-// This test simulates a specific race-condition if GC is triggered just
-// before CompilationDependencies::Commit is finished, and this changes
-// the pretenuring decision, thus causing a deoptimization.
-TEST(DecideToPretenureDuringCompilation) {
-  // The test makes use of optimization and relies on deterministic
-  // compilation.
-  if (!i::FLAG_opt || i::FLAG_always_opt || i::FLAG_minor_mc ||
-      i::FLAG_stress_incremental_marking || i::FLAG_optimize_for_size ||
-      i::FLAG_turbo_nci || i::FLAG_turbo_nci_as_midtier ||
-      i::FLAG_stress_concurrent_allocation) {
-    return;
-  }
-
-  FLAG_stress_gc_during_compilation = true;
-  FLAG_allow_natives_syntax = true;
-  FLAG_allocation_site_pretenuring = true;
-  FLAG_flush_bytecode = false;
-  // Turn on lazy feedback allocation, so we create exactly one allocation site.
-  // Without lazy feedback allocation, we create two allocation sites.
-  FLAG_lazy_feedback_allocation = true;
-
-  // We want to trigger exactly 1 optimization.
-  FLAG_use_osr = false;
-
-  // We'll do manual initialization.
-  ManualGCScope manual_gc_scope;
-  v8::Isolate::CreateParams create_params;
-
-  // This setting ensures Heap::MaximumSizeScavenge will return `true`.
-  // We need to initialize the heap with at least 1 page, while keeping the
-  // limit low, to ensure the new space fills even on 32-bit architectures.
-  create_params.constraints.set_max_young_generation_size_in_bytes(
-      3 * Page::kPageSize);
-  create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
-  v8::Isolate* isolate = v8::Isolate::New(create_params);
-
-  isolate->Enter();
-  {
-    i::Isolate* i_isolate = reinterpret_cast<i::Isolate*>(isolate);
-    Heap* heap = i_isolate->heap();
-    GlobalHandles* global_handles = i_isolate->global_handles();
-    HandleScope handle_scope(i_isolate);
-
-    // The allocation site at the head of the list is ours.
-    Handle<AllocationSite> site;
-    {
-      LocalContext context(isolate);
-      v8::HandleScope scope(context->GetIsolate());
-
-      int count = AllocationSitesCount(heap);
-      CompileRun(
-          "let arr = [];"
-          "function foo(shouldKeep) {"
-          "  let local_array = new Array();"
-          "  if (shouldKeep) arr.push(local_array);"
-          "}"
-          "function bar(shouldKeep) {"
-          "  for (let i = 0; i < 10000; i++) {"
-          "    foo(shouldKeep);"
-          "  }"
-          "}"
-          "%PrepareFunctionForOptimization(bar);"
-          "bar();");
-
-      // This number should be >= kPretenureRatio * 10000,
-      // where 10000 is the number of iterations in `bar`,
-      // in order to make the ratio in DigestPretenuringFeedback close to 1.
-      const int memento_found_bump = 8500;
-
-      // One allocation site should have been created.
-      int new_count = AllocationSitesCount(heap);
-      CHECK_EQ(new_count, (count + 1));
-      site = Handle<AllocationSite>::cast(global_handles->Create(
-          AllocationSite::cast(heap->allocation_sites_list())));
-      site->set_memento_found_count(memento_found_bump);
-
-      CompileRun("%OptimizeFunctionOnNextCall(bar);");
-      CompileRun("bar(true);");
-
-      // The last call should have caused `foo` to bail out of compilation
-      // due to dependency change (the pretenuring decision in this case).
-      // This will cause recompilation.
-
-      // Check `bar` can get optimized again, meaning the compiler state is
-      // recoverable from this point.
-      CompileRun(
-          "%PrepareFunctionForOptimization(bar);"
-          "%OptimizeFunctionOnNextCall(bar);");
-      CompileRun("bar();");
-
-      Handle<Object> foo_obj =
-          JSReceiver::GetProperty(i_isolate, i_isolate->global_object(), "bar")
-              .ToHandleChecked();
-      Handle<JSFunction> bar = Handle<JSFunction>::cast(foo_obj);
-
-      CHECK(bar->HasAttachedOptimizedCode());
-    }
-  }
-  isolate->Exit();
-  isolate->Dispose();
-}
-
 namespace {
 
 // Dummy external source stream which returns the whole source in one go.
@@ -1099,11 +986,12 @@ TEST(ProfilerEnabledDuringBackgroundCompile) {
   v8::Local<v8::Script> script =
       v8::ScriptCompiler::Compile(isolate->GetCurrentContext(),
                                   &streamed_source, v8_str(source),
-                                  v8::ScriptOrigin(v8_str("foo")))
+                                  v8::ScriptOrigin(isolate, v8_str("foo")))
           .ToLocalChecked();
 
   i::Handle<i::Object> obj = Utils::OpenHandle(*script);
-  CHECK(i::JSFunction::cast(*obj).shared().AreSourcePositionsAvailable());
+  CHECK(i::JSFunction::cast(*obj).shared().AreSourcePositionsAvailable(
+      CcTest::i_isolate()));
 
   cpu_profiler->StopProfiling(profile);
 }

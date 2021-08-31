@@ -8,28 +8,29 @@
 #include <memory>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_data_reader.h"
-#include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
-#include "net/third_party/quiche/src/quic/core/quic_tag.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_data_reader.h"
+#include "quic/core/quic_data_writer.h"
+#include "quic/core/quic_tag.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_containers.h"
+#include "quic/platform/api/quic_socket_address.h"
 
 namespace quic {
 
 // TransportParameters contains parameters for QUIC's transport layer that are
 // exchanged during the TLS handshake. This struct is a mirror of the struct in
 // the "Transport Parameter Encoding" section of draft-ietf-quic-transport.
-// This struct currently uses the values from draft 20.
+// This struct currently uses the values from draft 29.
 struct QUIC_EXPORT_PRIVATE TransportParameters {
   // The identifier used to differentiate transport parameters.
   enum TransportParameterId : uint64_t;
   // A map used to specify custom parameters.
-  using ParameterMap = QuicHashMap<TransportParameterId, std::string>;
+  using ParameterMap = absl::flat_hash_map<TransportParameterId, std::string>;
   // Represents an individual QUIC transport parameter that only encodes a
   // variable length integer. Can only be created inside the constructor for
   // TransportParameters.
@@ -47,7 +48,7 @@ struct QUIC_EXPORT_PRIVATE TransportParameters {
     // Writes to a crypto byte buffer, used during serialization. Does not write
     // anything if the value is equal to the parameter's default value.
     // Returns whether the write was successful.
-    bool Write(QuicDataWriter* writer, ParsedQuicVersion version) const;
+    bool Write(QuicDataWriter* writer) const;
     // Reads from a crypto byte string, used during parsing.
     // Returns whether the read was successful.
     // On failure, this method will write a human-readable error message to
@@ -206,9 +207,6 @@ struct QUIC_EXPORT_PRIVATE TransportParameters {
 
   // Google-specific user agent identifier.
   absl::optional<std::string> user_agent_id;
-
-  // Google-specific handshake done support. This is only used for T050.
-  bool support_handshake_done;
 
   // Google-specific mechanism to indicate that IETF QUIC Key Update has not
   // yet been implemented. This will be removed once we implement it.

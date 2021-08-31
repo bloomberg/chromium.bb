@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-// UNSUPPORTED: c++98, c++03, c++11, c++14, c++17
+// UNSUPPORTED: c++03, c++11, c++14, c++17
 // <chrono>
 
 // template <class Duration>
 // class hh_mm_ss
-// 
+//
 // constexpr bool is_negative() const noexcept;
 
 #include <chrono>
@@ -29,10 +29,10 @@ constexpr bool check_neg(Duration d)
 int main(int, char**)
 {
 	using microfortnights = std::chrono::duration<int, std::ratio<756, 625>>;
-	
+
 	static_assert(!check_neg(std::chrono::minutes( 1)), "");
 	static_assert( check_neg(std::chrono::minutes(-1)), "");
-	
+
 	assert(!check_neg(std::chrono::seconds( 5000)));
 	assert( check_neg(std::chrono::seconds(-5000)));
 	assert(!check_neg(std::chrono::minutes( 5000)));

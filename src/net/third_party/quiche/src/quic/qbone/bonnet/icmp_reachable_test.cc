@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/qbone/bonnet/icmp_reachable.h"
+#include "quic/qbone/bonnet/icmp_reachable.h"
 
 #include <netinet/ip6.h>
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_epoll.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ip_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/qbone/platform/mock_kernel.h"
+#include "absl/container/node_hash_map.h"
+#include "quic/platform/api/quic_containers.h"
+#include "quic/platform/api/quic_epoll.h"
+#include "quic/platform/api/quic_ip_address.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/qbone/platform/mock_kernel.h"
 
 namespace quic {
 namespace {
@@ -27,7 +28,7 @@ constexpr char kDestinationAddress[] = "fe80:4:3:2:1::1";
 constexpr int kFakeWriteFd = 0;
 
 icmp6_hdr GetHeaderFromPacket(const void* buf, size_t len) {
-  CHECK_GE(len, sizeof(ip6_hdr) + sizeof(icmp6_hdr));
+  QUICHE_CHECK_GE(len, sizeof(ip6_hdr) + sizeof(icmp6_hdr));
 
   auto* buffer = reinterpret_cast<const char*>(buf);
   return *reinterpret_cast<const icmp6_hdr*>(&buffer[sizeof(ip6_hdr)]);
@@ -73,18 +74,18 @@ class StatsInterface : public IcmpReachable::StatsInterface {
 
   std::string current_source_{};
 
-  QuicUnorderedMap<int, int> read_errors_;
-  QuicUnorderedMap<int, int> write_errors_;
+  absl::node_hash_map<int, int> read_errors_;
+  absl::node_hash_map<int, int> write_errors_;
 };
 
 class IcmpReachableTest : public QuicTest {
  public:
   IcmpReachableTest() {
-    CHECK(source_.FromString(kSourceAddress));
-    CHECK(destination_.FromString(kDestinationAddress));
+    QUICHE_CHECK(source_.FromString(kSourceAddress));
+    QUICHE_CHECK(destination_.FromString(kDestinationAddress));
 
     int pipe_fds[2];
-    CHECK(pipe(pipe_fds) >= 0) << "pipe() failed";
+    QUICHE_CHECK(pipe(pipe_fds) >= 0) << "pipe() failed";
 
     read_fd_ = pipe_fds[0];
     read_src_fd_ = pipe_fds[1];

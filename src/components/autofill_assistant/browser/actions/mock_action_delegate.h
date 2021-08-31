@@ -20,6 +20,9 @@
 #include "components/autofill_assistant/browser/user_action.h"
 #include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/web/element_finder.h"
+#include "components/autofill_assistant/browser/web/element_store.h"
+#include "components/autofill_assistant/browser/web/fake_element_store.h"
+#include "components/autofill_assistant/browser/web/web_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
@@ -39,220 +42,90 @@ class MockActionDelegate : public ActionDelegate {
       override {
     OnShortWaitForElement(selector, callback);
   }
+  void ShortWaitForElementWithSlowWarning(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&, base::TimeDelta)> callback) {
+    OnShortWaitForElement(selector, callback);
+  }
   MOCK_METHOD2(
       OnShortWaitForElement,
       void(const Selector& selector,
            base::OnceCallback<void(const ClientStatus&, base::TimeDelta)>&));
 
-  void WaitForDom(
-      base::TimeDelta max_wait_time,
-      bool allow_interrupt,
-      base::RepeatingCallback<
-          void(BatchElementChecker*,
+  MOCK_METHOD5(
+      WaitForDom,
+      void(base::TimeDelta max_wait_time,
+           bool allow_interrupt,
+           WaitForDomObserver* observer,
+           base::RepeatingCallback<void(
+               BatchElementChecker*,
                base::OnceCallback<void(const ClientStatus&)>)> check_elements,
-      base::OnceCallback<void(const ClientStatus&, base::TimeDelta)> callback)
-      override {
-    OnWaitForDom(max_wait_time, allow_interrupt, check_elements, callback);
-  }
-  MOCK_METHOD4(
-      OnWaitForDom,
-      void(base::TimeDelta,
-           bool,
-           base::RepeatingCallback<
-               void(BatchElementChecker*,
-                    base::OnceCallback<void(const ClientStatus&)>)>&,
-           base::OnceCallback<void(const ClientStatus&, base::TimeDelta)>&));
-
+           base::OnceCallback<void(const ClientStatus&, base::TimeDelta)>
+               callback));
+  MOCK_METHOD5(
+      WaitForDomWithSlowWarning,
+      void(base::TimeDelta max_wait_time,
+           bool allow_interrupt,
+           WaitForDomObserver* observer,
+           base::RepeatingCallback<void(
+               BatchElementChecker*,
+               base::OnceCallback<void(const ClientStatus&)>)> check_elements,
+           base::OnceCallback<void(const ClientStatus&, base::TimeDelta)>
+               callback));
   MOCK_METHOD1(SetStatusMessage, void(const std::string& message));
-
   MOCK_METHOD0(GetStatusMessage, std::string());
-
   MOCK_METHOD1(SetBubbleMessage, void(const std::string& message));
-
   MOCK_METHOD0(GetBubbleMessage, std::string());
-
   MOCK_CONST_METHOD2(FindElement,
                      void(const Selector& selector, ElementFinder::Callback));
-
   MOCK_CONST_METHOD2(FindAllElements,
                      void(const Selector& selector,
                           ElementFinder::Callback callback));
-
-  MOCK_METHOD3(ClickOrTapElement,
-               void(ClickType click_type,
-                    const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&)> callback));
-
-  MOCK_METHOD2(ScrollIntoView,
-               void(const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&)> callback));
-
-  MOCK_METHOD4(WaitUntilElementIsStable,
-               void(int,
-                    base::TimeDelta,
-                    const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&)> callback));
-
-  MOCK_METHOD2(CheckOnTop,
-               void(const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&)> callback));
-
   MOCK_METHOD5(Prompt,
                void(std::unique_ptr<std::vector<UserAction>> user_actions,
                     bool disable_force_expand_sheet,
                     base::OnceCallback<void()> end_on_navigation_callback,
                     bool browse_mode,
                     bool browse_mode_invisible));
-
   MOCK_METHOD0(CleanUpAfterPrompt, void());
-
   MOCK_METHOD1(SetBrowseDomainsAllowlist,
                void(std::vector<std::string> domains));
-
-  void FillAddressForm(
-      const autofill::AutofillProfile* profile,
-      const Selector& selector,
-      base::OnceCallback<void(const ClientStatus&)> callback) override {
-    OnFillAddressForm(profile, selector, callback);
-  }
-  MOCK_METHOD3(OnFillAddressForm,
+  MOCK_METHOD3(FillAddressForm,
                void(const autofill::AutofillProfile* profile,
                     const Selector& selector,
-                    base::OnceCallback<void(const ClientStatus&)>& callback));
-
-  void FillCardForm(
-      std::unique_ptr<autofill::CreditCard> card,
-      const base::string16& cvc,
-      const Selector& selector,
-      base::OnceCallback<void(const ClientStatus&)> callback) override {
-    OnFillCardForm(card.get(), cvc, selector, callback);
-  }
-
-  void RetrieveElementFormAndFieldData(
-      const Selector& selector,
-      base::OnceCallback<void(const ClientStatus&,
-                              const autofill::FormData&,
-                              const autofill::FormFieldData&)> callback)
-      override {
-    OnRetrieveElementFormAndFieldData(selector, callback);
-  }
-
+                    base::OnceCallback<void(const ClientStatus&)> callback));
+  MOCK_METHOD4(FillCardForm,
+               void(std::unique_ptr<autofill::CreditCard> card,
+                    const std::u16string& cvc,
+                    const Selector& selector,
+                    base::OnceCallback<void(const ClientStatus&)> callback));
   MOCK_METHOD2(
-      OnRetrieveElementFormAndFieldData,
+      RetrieveElementFormAndFieldData,
       void(const Selector& selector,
            base::OnceCallback<void(const ClientStatus&,
                                    const autofill::FormData&,
-                                   const autofill::FormFieldData&)>& callback));
-
-  MOCK_METHOD4(OnFillCardForm,
-               void(const autofill::CreditCard* card,
-                    const base::string16& cvc,
-                    const Selector& selector,
-                    base::OnceCallback<void(const ClientStatus&)>& callback));
-
-  MOCK_METHOD4(SelectOption,
-               void(const std::string& value,
-                    DropdownSelectStrategy select_strategy,
-                    const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&)> callback));
-
-  MOCK_METHOD4(ScrollToElementPosition,
+                                   const autofill::FormFieldData&)> callback));
+  MOCK_METHOD5(ScrollToElementPosition,
                void(const Selector& selector,
                     const TopPadding& top_padding,
+                    std::unique_ptr<ElementFinder::Result> scrollable_element,
                     const ElementFinder::Result& element,
                     base::OnceCallback<void(const ClientStatus&)> callback));
-
   MOCK_METHOD1(SetTouchableElementArea,
                void(const ElementAreaProto& touchable_element_area));
-
-  MOCK_METHOD2(HighlightElement,
-               void(const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&)> callback));
-
   MOCK_METHOD1(CollectUserData,
                void(CollectUserDataOptions* collect_user_data_options));
-
   MOCK_METHOD1(
       SetLastSuccessfulUserDataOptions,
       void(std::unique_ptr<CollectUserDataOptions> collect_user_data_options));
-
   MOCK_CONST_METHOD0(GetLastSuccessfulUserDataOptions,
                      CollectUserDataOptions*());
-
   MOCK_METHOD1(
       WriteUserData,
       void(base::OnceCallback<void(UserData*, UserData::FieldChange*)>));
-
-  void GetFullCard(const autofill::CreditCard* credit_card,
-                   ActionDelegate::GetFullCardCallback callback) override {
-    OnGetFullCard(credit_card, callback);
-  }
-
-  MOCK_METHOD2(
-      OnGetFullCard,
-      void(const autofill::CreditCard* credit_card,
-           base::OnceCallback<void(std::unique_ptr<autofill::CreditCard> card,
-                                   const base::string16& cvc)>& callback));
-
-  MOCK_METHOD2(GetFieldValue,
-               void(const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&,
-                                            const std::string&)> callback));
-
-  MOCK_METHOD3(GetStringAttribute,
-               void(const std::vector<std::string>& attributes,
-                    const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&,
-                                            const std::string&)> callback));
-
-  MOCK_METHOD3(SetValueAttribute,
-               void(const std::string& value,
-                    const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&)> callback));
-
-  MOCK_METHOD4(SetAttribute,
-               void(const std::vector<std::string>& attribute,
-                    const std::string& value,
-                    const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&)> callback));
-
-  MOCK_METHOD2(SelectFieldValue,
-               void(const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&)> callback));
-
-  MOCK_METHOD2(FocusField,
-               void(const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&)> callback));
-
-  void SendKeyboardInput(
-      const std::vector<UChar32>& codepoints,
-      int delay_in_millisecond,
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&)> callback) {
-    OnSendKeyboardInput(codepoints, delay_in_millisecond, element, callback);
-  }
-  MOCK_METHOD4(OnSendKeyboardInput,
-               void(const std::vector<UChar32>& codepoints,
-                    int delay_in_millisecond,
-                    const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&)>& callback));
-
-  MOCK_METHOD2(GetOuterHtml,
-               void(const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&,
-                                            const std::string&)> callback));
-
-  MOCK_METHOD2(
-      GetOuterHtmls,
-      void(const ElementFinder::Result& elements,
-           base::OnceCallback<void(const ClientStatus&,
-                                   const std::vector<std::string>&)> callback));
-
-  MOCK_METHOD2(GetElementTag,
-               void(const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&,
-                                            const std::string&)> callback));
-
+  MOCK_METHOD2(GetFullCard,
+               void(const autofill::CreditCard* credit_card,
+                    ActionDelegate::GetFullCardCallback callback));
   MOCK_METHOD0(ExpectNavigation, void());
   MOCK_METHOD0(ExpectedNavigationHasStarted, bool());
   MOCK_METHOD1(WaitForNavigation,
@@ -263,11 +136,15 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(Restart, void());
   MOCK_CONST_METHOD0(GetUserData, UserData*());
   MOCK_METHOD0(GetPersonalDataManager, autofill::PersonalDataManager*());
-  MOCK_METHOD0(GetWebsiteLoginManager, WebsiteLoginManager*());
+  MOCK_CONST_METHOD0(GetWebsiteLoginManager, WebsiteLoginManager*());
   MOCK_METHOD0(GetWebContents, content::WebContents*());
+  MOCK_CONST_METHOD0(GetWebController, WebController*());
   MOCK_METHOD0(GetEmailAddressForAccessTokenAccount, std::string());
   MOCK_METHOD0(GetLocale, std::string());
-  MOCK_METHOD1(SetDetails, void(std::unique_ptr<Details> details));
+  MOCK_METHOD2(SetDetails,
+               void(std::unique_ptr<Details> details, base::TimeDelta delay));
+  MOCK_METHOD2(AppendDetails,
+               void(std::unique_ptr<Details> details, base::TimeDelta delay));
   MOCK_METHOD1(SetInfoBox, void(const InfoBox& info_box));
   MOCK_METHOD0(ClearInfoBox, void());
   MOCK_METHOD1(SetProgress, void(int progress));
@@ -296,72 +173,45 @@ class MockActionDelegate : public ActionDelegate {
            base::OnceCallback<void(const ClientStatus&)> cancel_callback));
   MOCK_METHOD0(GetUserModel, UserModel*());
   MOCK_METHOD0(GetEventHandler, EventHandler*());
-
-  void WaitForWindowHeightChange(
-      base::OnceCallback<void(const ClientStatus&)> callback) override {
-    OnWaitForWindowHeightChange(callback);
-  }
-
-  MOCK_METHOD1(OnWaitForWindowHeightChange,
-               void(base::OnceCallback<void(const ClientStatus&)>& callback));
-
-  MOCK_METHOD2(
-      OnGetDocumentReadyState,
-      void(const ElementFinder::Result&,
-           base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>&));
-
-  void GetDocumentReadyState(
-      const ElementFinder::Result& optional_frame_element,
-      base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
-          callback) override {
-    OnGetDocumentReadyState(optional_frame_element, callback);
-  }
-
-  MOCK_METHOD3(OnWaitForDocumentReadyState,
-               void(DocumentReadyState,
-                    const ElementFinder::Result&,
+  MOCK_METHOD1(WaitForWindowHeightChange,
+               void(base::OnceCallback<void(const ClientStatus&)> callback));
+  MOCK_METHOD4(WaitForDocumentReadyState,
+               void(base::TimeDelta max_wait_time,
+                    DocumentReadyState min_ready_state,
+                    const ElementFinder::Result& optional_frame_element,
                     base::OnceCallback<void(const ClientStatus&,
                                             DocumentReadyState,
-                                            base::TimeDelta)>&));
-
-  void WaitForDocumentReadyState(
-      base::TimeDelta max_wait_time,
-      DocumentReadyState min_ready_state,
-      const ElementFinder::Result& optional_frame_element,
-      base::OnceCallback<void(const ClientStatus&,
-                              DocumentReadyState,
-                              base::TimeDelta)> callback) override {
-    OnWaitForDocumentReadyState(min_ready_state, optional_frame_element,
-                                callback);
-  }
-
-  MOCK_METHOD4(WaitUntilDocumentIsInReadyState,
-               void(base::TimeDelta,
-                    DocumentReadyState,
-                    const ElementFinder::Result&,
-                    base::OnceCallback<void(const ClientStatus&)>));
-
+                                            base::TimeDelta)> callback));
+  MOCK_METHOD4(
+      WaitUntilDocumentIsInReadyState,
+      void(base::TimeDelta,
+           DocumentReadyState,
+           const ElementFinder::Result&,
+           base::OnceCallback<void(const ClientStatus&, base::TimeDelta)>));
   MOCK_METHOD0(RequireUI, void());
   MOCK_METHOD0(SetExpandSheetForPromptAction, bool());
-
   MOCK_METHOD3(
-      OnSetGenericUi,
+      SetGenericUi,
       void(std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-           base::OnceCallback<void(const ClientStatus&)>& end_action_callback,
-           base::OnceCallback<void(const ClientStatus&)>&
+           base::OnceCallback<void(const ClientStatus&)> end_action_callback,
+           base::OnceCallback<void(const ClientStatus&)>
                view_inflation_finished_callback));
 
-  void SetGenericUi(
-      std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-      base::OnceCallback<void(const ClientStatus&)> end_action_callback,
-      base::OnceCallback<void(const ClientStatus&)>
-          view_inflation_finished_callback) override {
-    OnSetGenericUi(std::move(generic_ui), end_action_callback,
-                   view_inflation_finished_callback);
-  }
+  MOCK_METHOD2(SetPersistentGenericUi,
+               void(std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+                    base::OnceCallback<void(const ClientStatus&)>
+                        view_inflation_finished_callback));
+
   MOCK_METHOD0(ClearGenericUi, void());
+  MOCK_METHOD0(ClearPersistentGenericUi, void());
   MOCK_METHOD1(SetOverlayBehavior,
                void(ConfigureUiStateProto::OverlayBehavior));
+  MOCK_METHOD1(MaybeShowSlowWebsiteWarning,
+               void(base::OnceCallback<void(bool)>));
+  MOCK_METHOD0(MaybeShowSlowConnectionWarning, void());
+  MOCK_CONST_METHOD1(
+      DispatchJsEvent,
+      void(base::OnceCallback<void(const ClientStatus&)> callback));
 
   base::WeakPtr<ActionDelegate> GetWeakPtr() const override {
     return weak_ptr_factory_.GetWeakPtr();
@@ -371,7 +221,15 @@ class MockActionDelegate : public ActionDelegate {
     return client_settings_;
   }
 
+  ElementStore* GetElementStore() const override {
+    if (!element_store_) {
+      element_store_ = std::make_unique<FakeElementStore>();
+    }
+    return element_store_.get();
+  }
+
   ClientSettings client_settings_;
+  mutable std::unique_ptr<ElementStore> element_store_;
 
   base::WeakPtrFactory<MockActionDelegate> weak_ptr_factory_{this};
 };

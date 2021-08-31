@@ -122,8 +122,13 @@ DOMWrapperWorld::~DOMWrapperWorld() {
 }
 
 void DOMWrapperWorld::Dispose() {
-  dom_data_store_->Dispose();
-  dom_data_store_.Clear();
+  if (dom_data_store_) {
+    // The data_store_ might be cleared on thread termination in the same
+    // garbage collection cycle which prohibits accessing the references from
+    // the dtor.
+    dom_data_store_->Dispose();
+    dom_data_store_.Clear();
+  }
   DCHECK(GetWorldMap().Contains(world_id_));
   GetWorldMap().erase(world_id_);
 }
@@ -169,14 +174,14 @@ static scoped_refptr<SecurityOrigin> GetIsolatedWorldSecurityOrigin(
 
 scoped_refptr<SecurityOrigin> DOMWrapperWorld::IsolatedWorldSecurityOrigin(
     const base::UnguessableToken& cluster_id) {
-  DCHECK(this->IsIsolatedWorld());
+  DCHECK(IsIsolatedWorld());
   return GetIsolatedWorldSecurityOrigin(GetWorldId(), cluster_id);
 }
 
 scoped_refptr<const SecurityOrigin>
 DOMWrapperWorld::IsolatedWorldSecurityOrigin(
     const base::UnguessableToken& cluster_id) const {
-  DCHECK(this->IsIsolatedWorld());
+  DCHECK(IsIsolatedWorld());
   return GetIsolatedWorldSecurityOrigin(GetWorldId(), cluster_id);
 }
 
@@ -200,7 +205,7 @@ static IsolatedWorldStableIdMap& IsolatedWorldStableIds() {
 }
 
 String DOMWrapperWorld::NonMainWorldStableId() const {
-  DCHECK(!this->IsMainWorld());
+  DCHECK(!IsMainWorld());
   return IsolatedWorldStableIds().at(GetWorldId());
 }
 
@@ -220,7 +225,7 @@ static IsolatedWorldHumanReadableNameMap& IsolatedWorldHumanReadableNames() {
 }
 
 String DOMWrapperWorld::NonMainWorldHumanReadableName() const {
-  DCHECK(!this->IsMainWorld());
+  DCHECK(!IsMainWorld());
   return IsolatedWorldHumanReadableNames().at(GetWorldId());
 }
 

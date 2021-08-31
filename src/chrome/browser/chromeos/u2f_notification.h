@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 
@@ -27,13 +27,13 @@ class U2FNotification {
 
  private:
   // Checks status given the current U2F flags.
-  void CheckStatus(base::Optional<std::set<std::string>> flags);
+  void CheckStatus(absl::optional<std::set<std::string>> flags);
 
   // Shows the notification.
   void ShowNotification();
 
   // Handles clicks on the notification.
-  void OnNotificationClick(const base::Optional<int> button_index);
+  void OnNotificationClick(const absl::optional<int> button_index);
 
   base::WeakPtrFactory<U2FNotification> weak_factory_{this};
 
@@ -41,5 +41,11 @@ class U2FNotification {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::U2FNotification;
+}
 
 #endif  // CHROME_BROWSER_CHROMEOS_U2F_NOTIFICATION_H_

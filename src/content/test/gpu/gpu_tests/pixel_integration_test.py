@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import logging
 import os
 import sys
@@ -45,6 +47,11 @@ test_harness_script = r"""
 
   window.domAutomationController = domAutomationController;
 """
+
+# We're not sure if this is actually a fixed value or not, but it's 10 pixels
+# wide on the only device we've had issues with so far (Pixel 4), so assume
+# 10 pixels until we find evidence supporting something else.
+SCROLLBAR_WIDTH = 10
 
 
 class PixelIntegrationTest(
@@ -154,10 +161,13 @@ class PixelIntegrationTest(
       self.fail('Could not capture screenshot')
     dpr = tab.EvaluateJavaScript('window.devicePixelRatio')
     if page.test_rect:
+      # When actually clamping the value, it's possible we'll catch the
+      # scrollbar, so account for its width in the clamp.
+      end_x = min(int(page.test_rect[2] * dpr),
+                  image_util.Width(screenshot) - SCROLLBAR_WIDTH)
+      end_y = min(int(page.test_rect[3] * dpr), image_util.Height(screenshot))
       screenshot = image_util.Crop(screenshot, int(page.test_rect[0] * dpr),
-                                   int(page.test_rect[1] * dpr),
-                                   int(page.test_rect[2] * dpr),
-                                   int(page.test_rect[3] * dpr))
+                                   int(page.test_rect[1] * dpr), end_x, end_y)
 
     image_name = self._UrlToImageName(page.name)
     self._UploadTestResultToSkiaGold(image_name, screenshot, page)
@@ -205,6 +215,18 @@ class PixelIntegrationTest(
     # Wait for 2 seconds so that new tab becomes visible.
     dummy_tab.action_runner.Wait(2)
     tab.Activate()
+
+  def _SwitchTabsAndCopyImage(self, tab, page):
+    del page  # Unused in this particular action.
+    if not tab.browser.supports_tab_control:
+      self.fail('Browser must support tab control')
+    dummy_tab = tab.browser.tabs.New()
+    dummy_tab.Activate()
+    # Wait for 2 seconds so that new tab becomes visible.
+    dummy_tab.action_runner.Wait(2)
+    # Close new tab.
+    dummy_tab.Close()
+    tab.EvaluateJavaScript("copyImage()")
 
   def _RunTestWithHighPerformanceTab(self, tab, page):
     del page  # Unused in this particular action.

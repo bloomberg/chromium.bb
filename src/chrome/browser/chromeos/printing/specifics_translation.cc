@@ -59,8 +59,6 @@ std::unique_ptr<Printer> SpecificsToPrinter(
   auto printer = std::make_unique<Printer>(specifics.id());
   printer->set_display_name(specifics.display_name());
   printer->set_description(specifics.description());
-  printer->set_manufacturer(specifics.manufacturer());
-  printer->set_model(specifics.model());
   if (!specifics.make_and_model().empty()) {
     printer->set_make_and_model(specifics.make_and_model());
   } else {
@@ -116,12 +114,6 @@ void MergePrinterToSpecifics(const Printer& printer,
   if (!printer.description().empty())
     specifics->set_description(printer.description());
 
-  if (!printer.manufacturer().empty())
-    specifics->set_manufacturer(printer.manufacturer());
-
-  if (!printer.model().empty())
-    specifics->set_model(printer.model());
-
   if (!printer.make_and_model().empty())
     specifics->set_make_and_model(printer.make_and_model());
 
@@ -139,7 +131,7 @@ void MergePrinterToSpecifics(const Printer& printer,
 }
 
 std::string MakeAndModel(base::StringPiece make, base::StringPiece model) {
-  return base::StartsWith(model, make) ? model.as_string()
+  return base::StartsWith(model, make) ? std::string(model)
                                        : base::JoinString({make, model}, " ");
 }
 

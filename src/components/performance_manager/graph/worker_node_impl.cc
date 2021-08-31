@@ -32,6 +32,7 @@ WorkerNodeImpl::~WorkerNodeImpl() {
   DCHECK(client_frames_.empty());
   DCHECK(client_workers_.empty());
   DCHECK(child_workers_.empty());
+  DCHECK(!execution_context_);
 }
 
 void WorkerNodeImpl::AddClientFrame(FrameNodeImpl* frame_node) {
@@ -153,6 +154,7 @@ const base::flat_set<WorkerNodeImpl*>& WorkerNodeImpl::child_workers() const {
 }
 
 const PriorityAndReason& WorkerNodeImpl::priority_and_reason() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return priority_and_reason_.value();
 }
 
@@ -166,6 +168,11 @@ void WorkerNodeImpl::OnBeforeLeavingGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   process_node_->RemoveWorker(this);
+}
+
+void WorkerNodeImpl::RemoveNodeAttachedData() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  execution_context_.reset();
 }
 
 WorkerNode::WorkerType WorkerNodeImpl::GetWorkerType() const {
@@ -220,6 +227,17 @@ const base::flat_set<const WorkerNode*> WorkerNodeImpl::GetChildWorkers()
     child_workers.insert(static_cast<const WorkerNode*>(child));
   DCHECK_EQ(child_workers.size(), child_workers_.size());
   return child_workers;
+}
+
+bool WorkerNodeImpl::VisitChildDedicatedWorkers(
+    const WorkerNodeVisitor& visitor) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (auto* worker_node_impl : child_workers_) {
+    const WorkerNode* node = worker_node_impl;
+    if (node->GetWorkerType() == WorkerType::kDedicated && !visitor.Run(node))
+      return false;
+  }
+  return true;
 }
 
 const PriorityAndReason& WorkerNodeImpl::GetPriorityAndReason() const {

@@ -197,7 +197,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
   }
 
   void FrameReady(scoped_refptr<VideoFrame> frame) {
-    DCHECK(!frame->metadata()->end_of_stream);
+    DCHECK(!frame->metadata().end_of_stream);
     output_frames_.push_back(std::move(frame));
   }
 
@@ -258,6 +258,14 @@ TEST_F(FFmpegVideoDecoderTest, DecodeFrame_Normal) {
   // Simulate decoding a single frame.
   EXPECT_TRUE(DecodeSingleFrame(i_frame_buffer_).is_ok());
   ASSERT_EQ(1U, output_frames_.size());
+}
+
+TEST_F(FFmpegVideoDecoderTest, DecodeFrame_OOM) {
+  Initialize();
+  decoder_->force_allocation_error_for_testing();
+  EXPECT_MEDIA_LOG(_);
+  EXPECT_FALSE(DecodeSingleFrame(i_frame_buffer_).is_ok());
+  EXPECT_TRUE(output_frames_.empty());
 }
 
 TEST_F(FFmpegVideoDecoderTest, DecodeFrame_DecodeError) {

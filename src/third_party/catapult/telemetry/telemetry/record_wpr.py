@@ -2,11 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import argparse
 import logging
 import shutil
 import sys
 import tempfile
+import six
 
 from telemetry import benchmark
 from telemetry import story
@@ -233,7 +235,7 @@ class WprRecorder(object):
   def _HintMostLikelyBenchmarksStories(self, target):
     def _Impl(all_items, category_name):
       candidates = matching.GetMostLikelyMatchedObject(
-          all_items.iteritems(), target, name_func=lambda kv: kv[1].Name())
+          six.iteritems(all_items), target, name_func=lambda kv: kv[1].Name())
       if candidates:
         sys.stderr.write('\nDo you mean any of those %s below?\n' %
                          category_name)

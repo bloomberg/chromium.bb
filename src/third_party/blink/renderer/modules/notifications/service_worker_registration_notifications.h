@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_SERVICE_WORKER_REGISTRATION_NOTIFICATIONS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_SERVICE_WORKER_REGISTRATION_NOTIFICATIONS_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom-blink-forward.h"
@@ -66,7 +64,6 @@ class ServiceWorkerRegistrationNotifications final
                         ScriptPromiseResolver* resolver,
                         NotificationResourcesLoader* loader);
 
-  Member<ServiceWorkerRegistration> registration_;
   HeapHashSet<Member<NotificationResourcesLoader>> loaders_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegistrationNotifications);

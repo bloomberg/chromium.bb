@@ -9,20 +9,35 @@ tests = [
   'layout.gpos2',
   'layout.gpos3',
   'layout.gpos4',
+  'layout.gpos5',
   'layout.gpos6',
   'layout.gpos8',
+  'layout.gpos8.amiri',
+  'layout.gpos9',
   'layout.gsub3',
+  'layout.gsub5',
   'layout.gsub6',
+  'layout.gsub8',
   'layout.gdef',
+  'layout.khmer',
   'layout.context',
   'layout.gdef-varstore',
   'layout.gdef-attachlist',
+  'layout.notonastaliqurdu',
   'cmap',
   'cmap14',
   'sbix',
   'colr',
   'cbdt',
+  'variable',
 ]
+
+repack_tests = [
+  'basic',
+  'prioritization',
+  'table_duplication',
+]
+
 
 run_test = find_program('run-tests.py')
 
@@ -39,5 +54,20 @@ foreach t : tests
     timeout: 500,
     workdir: join_paths(meson.current_build_dir(), '..', '..'),
     suite: ['subset', 'slow'],
+  )
+endforeach
+
+run_repack_test = find_program('run-repack-tests.py')
+
+foreach t : repack_tests
+  fname = '@0@.tests'.format(t)
+
+  test(t, run_repack_test,
+    args: [
+      hb_subset,
+      join_paths(meson.current_source_dir(), 'data', 'repack_tests', fname),
+    ],
+    workdir: join_paths(meson.current_build_dir(), '..', '..'),
+    suite: ['subset', 'repack'],
   )
 endforeach

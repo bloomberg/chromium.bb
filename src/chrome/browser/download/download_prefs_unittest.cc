@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/download/download_prompt_status.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -18,14 +19,21 @@
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/drive/drive_integration_service.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "components/drive/drive_pref_names.h"
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "base/path_service.h"
+#include "chrome/common/chrome_paths.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 using safe_browsing::FileTypePolicies;
+
+namespace {
 
 TEST(DownloadPrefsTest, Prerequisites) {
   // Most of the tests below are based on the assumption that .swf files are not
@@ -361,7 +369,7 @@ TEST(DownloadPrefsTest, DefaultPathChangedToInvalidValue) {
             download_prefs.GetDefaultDownloadDirectory());
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 void ExpectValidDownloadDir(Profile* profile,
                             DownloadPrefs* prefs,
                             base::FilePath path) {
@@ -372,15 +380,39 @@ void ExpectValidDownloadDir(Profile* profile,
 }
 
 TEST(DownloadPrefsTest, DownloadDirSanitization) {
-  content::BrowserTaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment;
   TestingProfile profile(base::FilePath("/home/chronos/u-0123456789abcdef"));
   DownloadPrefs prefs(&profile);
   const base::FilePath default_dir =
       prefs.GetDefaultDownloadDirectoryForProfile();
 
-  // Test a valid path.
+  // Test a valid subdirectory of downloads.
   ExpectValidDownloadDir(&profile, &prefs, default_dir.AppendASCII("testdir"));
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Test a valid subdirectory of documents. This isn't tested for ash because
+  // these tests run on the linux "emulator", where ash uses ~/Documents, but
+  // the ash path sanitization code doesn't handle that path.
+  base::FilePath documents_path =
+      base::PathService::CheckedGet(chrome::DIR_USER_DOCUMENTS);
+  ExpectValidDownloadDir(&profile, &prefs,
+                         documents_path.AppendASCII("testdir"));
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+  // Test with an invalid path outside the download directory.
+  profile.GetPrefs()->SetString(prefs::kDownloadDefaultDirectory,
+                                "/home/chronos");
+  EXPECT_EQ(prefs.DownloadPath(), default_dir);
+
+  // Test with an invalid path containing parent references.
+  base::FilePath parent_reference = default_dir.AppendASCII("..");
+  profile.GetPrefs()->SetString(prefs::kDownloadDefaultDirectory,
+                                parent_reference.value());
+  EXPECT_EQ(prefs.DownloadPath(), default_dir);
+
+  // TODO(https://crbug.com/1148848): Sort out path sanitization for Lacros.
+  // Once the ash-only code can be shared the tests below can be enabled.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Test a valid path for Android files.
   ExpectValidDownloadDir(
       &profile, &prefs,
@@ -396,22 +428,11 @@ TEST(DownloadPrefsTest, DownloadDirSanitization) {
       base::FilePath(
           "/media/fuse/crostini_0123456789abcdef_termina_penguin/testdir"));
 
-  // Test with an invalid path outside the download directory.
-  profile.GetPrefs()->SetString(prefs::kDownloadDefaultDirectory,
-                                "/home/chronos");
-  EXPECT_EQ(prefs.DownloadPath(), default_dir);
-
-  // Test with an invalid path containing parent references.
-  base::FilePath parent_reference = default_dir.AppendASCII("..");
-  profile.GetPrefs()->SetString(prefs::kDownloadDefaultDirectory,
-                                parent_reference.value());
-  EXPECT_EQ(prefs.DownloadPath(), default_dir);
-
   // DriveFS
   {
     // Create new profile for enabled feature to work.
     TestingProfile profile2(base::FilePath("/home/chronos/u-0123456789abcdef"));
-    chromeos::FakeChromeUserManager user_manager;
+    ash::FakeChromeUserManager user_manager;
     DownloadPrefs prefs2(&profile2);
     AccountId account_id =
         AccountId::FromUserEmailGaiaId(profile2.GetProfileUserName(), "12345");
@@ -446,8 +467,9 @@ TEST(DownloadPrefsTest, DownloadDirSanitization) {
                                    "/media/fuse/drivefs-something-else/root");
     EXPECT_EQ(prefs2.DownloadPath(), default_dir2);
   }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #ifdef OS_ANDROID
 TEST(DownloadPrefsTest, DownloadLaterPrefs) {
@@ -474,4 +496,33 @@ TEST(DownloadPrefsTest, DownloadLaterPrefs) {
   EXPECT_TRUE(prefs.HasDownloadLaterPromptShown());
 }
 
+// Verfies the returned value of PromptForDownload() and PromptDownloadLater()
+// when prefs::kPromptForDownload is managed by enterprise policy,
+TEST(DownloadPrefsTest, ManagedPromptForDownload) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(download::features::kDownloadLater);
+
+  content::BrowserTaskEnvironment task_environment_;
+  TestingProfile profile;
+  profile.GetTestingPrefService()->SetManagedPref(
+      prefs::kPromptForDownload, std::make_unique<base::Value>(true));
+  DownloadPrefs prefs(&profile);
+
+  profile.GetPrefs()->SetInteger(
+      prefs::kDownloadLaterPromptStatus,
+      static_cast<int>(DownloadLaterPromptStatus::kShowPreference));
+  profile.GetPrefs()->SetInteger(
+      prefs::kPromptForDownloadAndroid,
+      static_cast<int>(DownloadPromptStatus::DONT_SHOW));
+  EXPECT_FALSE(prefs.PromptDownloadLater());
+  EXPECT_TRUE(prefs.PromptForDownload());
+
+  profile.GetTestingPrefService()->SetManagedPref(
+      prefs::kPromptForDownload, std::make_unique<base::Value>(false));
+  EXPECT_FALSE(prefs.PromptDownloadLater());
+  EXPECT_FALSE(prefs.PromptForDownload());
+}
+
 #endif  // OS_ANDROID
+
+}  // namespace

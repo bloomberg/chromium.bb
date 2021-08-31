@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import {click, waitFor} from '../../shared/helper.js';
-import {openPanelViaMoreTools} from './settings-helpers';
+import type * as puppeteer from 'puppeteer';
+
+import {$$, click, hasClass, waitFor, waitForClass, waitForFunction} from '../../shared/helper.js';
+import {openPanelViaMoreTools} from './settings-helpers.js';
 
 export const CATEGORY = '.issue-category';
 export const CATEGORY_NAME = '.issue-category .title';
@@ -17,6 +19,7 @@ export const ELEMENTS_PANEL_SELECTOR = '.panel[aria-label="elements"]';
 export const SOURCES_LINK = '.affected-source-location > span';
 export const BLOCKED_STATUS = '.affected-resource-blocked-status';
 export const REPORT_ONLY_STATUS = '.affected-resource-report-only-status';
+export const RESOURCES_LABEL = '.affected-resource-label';
 
 export async function navigateToIssuesTab() {
   await openPanelViaMoreTools('Issues');
@@ -32,6 +35,22 @@ export async function assertIssueTitle(issueMessage: string) {
   const issueMessageElement = await waitFor(ISSUE_TITLE);
   const selectedIssueMessage = await issueMessageElement.evaluate(node => node.textContent);
   assert.strictEqual(selectedIssueMessage, issueMessage);
+}
+
+export async function getIssueByTitle(issueMessage: string): Promise<puppeteer.ElementHandle<HTMLElement>|undefined> {
+  const issueMessageElement = await waitFor(ISSUE_TITLE);
+  const selectedIssueMessage = await issueMessageElement.evaluate(node => node.textContent);
+  assert.strictEqual(selectedIssueMessage, issueMessage);
+  const header = await issueMessageElement.evaluateHandle(el => el.parentElement);
+  if (header) {
+    const headerClassList = await header.evaluate(el => el.classList.toString());
+    assert.include(headerClassList, 'header');
+    const issue = await header.evaluateHandle(el => el.parentElement.nextSibling);
+    if (issue) {
+      return issue as puppeteer.ElementHandle<HTMLElement>;
+    }
+  }
+  return undefined;
 }
 
 export async function assertStatus(status: 'blocked'|'report-only') {
@@ -60,6 +79,56 @@ export async function expandIssue() {
   await waitFor(ISSUE);
   await click(ISSUE);
   await waitFor('.message');
+}
+
+interface IssueResourceSection {
+  label: puppeteer.ElementHandle<Element>;
+  content: puppeteer.ElementHandle<Element>;
+}
+
+export async function getResourcesElement(
+    resourceName: string, issueElement?: puppeteer.ElementHandle<Element>|undefined,
+    className?: string): Promise<IssueResourceSection> {
+  return await waitForFunction(async () => {
+    const elements = await $$(className ?? RESOURCES_LABEL, issueElement);
+    for (const el of elements) {
+      const text = await el.evaluate(el => el.textContent);
+      if (text && text.includes(resourceName)) {
+        const content = await el.evaluateHandle(el => el.parentElement && el.parentElement.nextSibling);
+        return {label: el, content: content as puppeteer.ElementHandle<Element>};
+      }
+    }
+    return undefined;
+  });
+}
+
+export async function ensureResourceSectionIsExpanded(section: IssueResourceSection) {
+  await section.label.evaluate(el => {
+    el.scrollIntoView();
+  });
+  const isExpanded = await hasClass(section.content, 'expanded');
+  if (!isExpanded) {
+    await section.label.click();
+  }
+  await waitForClass(section.content, 'expanded');
+}
+
+export async function extractTableFromResourceSection(resourceContentElement: puppeteer.ElementHandle<Element>) {
+  const table = await resourceContentElement.$('.affected-resource-list');
+  if (table) {
+    return await table.evaluate(table => {
+      const rows = [];
+      for (const tableRow of table.childNodes) {
+        const row = [];
+        for (const cell of tableRow.childNodes) {
+          row.push(cell.textContent);
+        }
+        rows.push(row);
+      }
+      return rows;
+    });
+  }
+  return null;
 }
 
 export async function getGroupByCategoryChecked() {
