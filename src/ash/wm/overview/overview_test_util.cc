@@ -35,8 +35,6 @@ void WaitForOverviewAnimationState(OverviewAnimationState state) {
 
 }  // namespace
 
-// TODO(sammiequon): Consider adding an overload for this function to trigger
-// the key event |count| times.
 void SendKey(ui::KeyboardCode key, int flags) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.PressKey(key, flags);
@@ -44,8 +42,10 @@ void SendKey(ui::KeyboardCode key, int flags) {
 }
 
 bool HighlightOverviewWindow(const aura::Window* window) {
-  if (GetOverviewHighlightedWindow() == nullptr)
+  if (GetOverviewHighlightedWindow() == nullptr) {
     SendKey(ui::VKEY_TAB);
+    SendKey(ui::VKEY_TAB);
+  }
   const aura::Window* start_window = GetOverviewHighlightedWindow();
   if (start_window == window)
     return true;

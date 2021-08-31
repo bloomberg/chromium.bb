@@ -20,6 +20,8 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.compat.ApiHelperForM;
+import org.chromium.base.compat.ApiHelperForQ;
 
 /**
  * Class used to forward view, input events down to native.
@@ -78,8 +80,9 @@ public class EventForwarder {
             final int apiVersion = Build.VERSION.SDK_INT;
             final boolean isTouchpadScroll = event.getButtonState() == 0
                     && (event.getActionMasked() == MotionEvent.ACTION_DOWN
-                               || event.getActionMasked() == MotionEvent.ACTION_MOVE
-                               || event.getActionMasked() == MotionEvent.ACTION_UP);
+                            || event.getActionMasked() == MotionEvent.ACTION_MOVE
+                            || event.getActionMasked() == MotionEvent.ACTION_UP
+                            || event.getActionMasked() == MotionEvent.ACTION_CANCEL);
 
             if (apiVersion >= android.os.Build.VERSION_CODES.M && !isTouchpadScroll) {
                 return onMouseEvent(event);
@@ -145,7 +148,7 @@ public class EventForwarder {
 
             int gestureClassification = 0;
             if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                gestureClassification = event.getClassification();
+                gestureClassification = ApiHelperForQ.getClassification(event);
             }
 
             final boolean consumed = EventForwarderJni.get().onTouchEvent(mNativeEventForwarder,
@@ -271,14 +274,6 @@ public class EventForwarder {
 
         int eventAction = event.getActionMasked();
 
-        // Ignore ACTION_HOVER_ENTER & ACTION_HOVER_EXIT because every mouse-down on Android
-        // follows a hover-exit and is followed by a hover-enter.  https://crbug.com/715114
-        // filed on distinguishing actual hover enter/exit from these bogus ones.
-        if (eventAction == MotionEvent.ACTION_HOVER_ENTER
-                || eventAction == MotionEvent.ACTION_HOVER_EXIT) {
-            return false;
-        }
-
         // For mousedown and mouseup events, we use ACTION_BUTTON_PRESS
         // and ACTION_BUTTON_RELEASE respectively because they provide
         // info about the changed-button.
@@ -314,7 +309,9 @@ public class EventForwarder {
 
     @TargetApi(Build.VERSION_CODES.M)
     public static int getMouseEventActionButton(MotionEvent event) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) return event.getActionButton();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return ApiHelperForM.getActionButton(event);
+        }
 
         // On <M, the only mice events sent are hover events, which cannot have a button.
         return 0;

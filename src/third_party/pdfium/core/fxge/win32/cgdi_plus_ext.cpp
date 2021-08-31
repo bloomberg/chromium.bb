@@ -391,7 +391,8 @@ Gdiplus::GpPen* GdipCreatePenImpl(const CFX_GraphStateData* pGraphState,
     float* pDashArray =
         FX_Alloc(float, FxAlignToBoundary<2>(pGraphState->m_DashArray.size()));
     int nCount = 0;
-    float on_leftover = 0, off_leftover = 0;
+    float on_leftover = 0;
+    float off_leftover = 0;
     for (size_t i = 0; i < pGraphState->m_DashArray.size(); i += 2) {
       float on_phase = pGraphState->m_DashArray[i];
       float off_phase;
@@ -468,7 +469,7 @@ Optional<std::pair<size_t, size_t>> IsSmallTriangle(
 
 class GpStream final : public IStream {
  public:
-  GpStream() : m_RefCount(1), m_ReadPos(0) {}
+  GpStream() = default;
   ~GpStream() = default;
 
   // IUnknown
@@ -597,8 +598,8 @@ class GpStream final : public IStream {
   }
 
  private:
-  LONG m_RefCount;
-  std::streamoff m_ReadPos;
+  LONG m_RefCount = 1;
+  std::streamoff m_ReadPos = 0;
   std::ostringstream m_InterStream;
 };
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/qbone/qbone_packet_processor.h"
+#include "quic/qbone/qbone_packet_processor.h"
 
 #include <utility>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/qbone/qbone_packet_processor_test_tools.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/qbone/qbone_packet_processor_test_tools.h"
 
 namespace quic {
 namespace {
@@ -138,9 +138,9 @@ class MockPacketFilter : public QbonePacketProcessor::Filter {
 class QbonePacketProcessorTest : public QuicTest {
  protected:
   QbonePacketProcessorTest() {
-    CHECK(client_ip_.FromString("fd00:0:0:1::1"));
-    CHECK(self_ip_.FromString("fd00:0:0:4::1"));
-    CHECK(network_ip_.FromString("fd00:0:0:5::1"));
+    QUICHE_CHECK(client_ip_.FromString("fd00:0:0:1::1"));
+    QUICHE_CHECK(self_ip_.FromString("fd00:0:0:4::1"));
+    QUICHE_CHECK(network_ip_.FromString("fd00:0:0:5::1"));
 
     processor_ = std::make_unique<QbonePacketProcessor>(
         self_ip_, client_ip_, /*client_ip_subnet_length=*/62, &output_,

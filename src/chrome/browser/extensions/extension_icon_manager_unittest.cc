@@ -15,6 +15,7 @@
 #include "base/test/scoped_command_line.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
@@ -121,9 +122,9 @@ TEST_F(ExtensionIconManagerTest, LoadRemoveLoad) {
   ASSERT_TRUE(manifest.get() != NULL);
 
   std::string error;
-  scoped_refptr<Extension> extension(
-      Extension::Create(manifest_path.DirName(), Manifest::INVALID_LOCATION,
-                        *manifest, Extension::NO_FLAGS, &error));
+  scoped_refptr<Extension> extension(Extension::Create(
+      manifest_path.DirName(), mojom::ManifestLocation::kInvalidLocation,
+      *manifest, Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension.get());
   ExtensionIconManager icon_manager;
   icon_manager.set_observer(this);
@@ -147,7 +148,7 @@ TEST_F(ExtensionIconManagerTest, LoadRemoveLoad) {
   EXPECT_TRUE(gfx::test::AreImagesEqual(first_icon, second_icon));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Tests loading an icon for a component extension.
 TEST_F(ExtensionIconManagerTest, LoadComponentExtensionResource) {
   std::unique_ptr<Profile> profile(new TestingProfile());
@@ -165,8 +166,8 @@ TEST_F(ExtensionIconManagerTest, LoadComponentExtensionResource) {
 
   std::string error;
   scoped_refptr<Extension> extension(Extension::Create(
-      manifest_path.DirName(), Manifest::COMPONENT, *manifest.get(),
-      Extension::NO_FLAGS, &error));
+      manifest_path.DirName(), mojom::ManifestLocation::kComponent,
+      *manifest.get(), Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension.get());
 
   ExtensionIconManager icon_manager;
@@ -208,9 +209,9 @@ TEST_F(ExtensionIconManagerTest, ScaleFactors) {
   ASSERT_TRUE(manifest);
 
   std::string error;
-  scoped_refptr<Extension> extension(
-      Extension::Create(manifest_path.DirName(), Manifest::INVALID_LOCATION,
-                        *manifest, Extension::NO_FLAGS, &error));
+  scoped_refptr<Extension> extension(Extension::Create(
+      manifest_path.DirName(), mojom::ManifestLocation::kInvalidLocation,
+      *manifest, Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension);
 
   constexpr int kMaxIconSizeInManifest = 32;

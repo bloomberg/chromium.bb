@@ -65,8 +65,6 @@ class MODULES_EXPORT HTMLMediaElementEncryptedMedia final
                                  EventListener*);
   EventListener* GetAttributeEventListener(const AtomicString& event_type);
 
-  Member<HTMLMediaElement> media_element_;
-
   // Internal values specified by the EME spec:
   // http://w3c.github.io/encrypted-media/#idl-def-HTMLMediaElement
   // The following internal values are added to the HTMLMediaElement:
@@ -80,4 +78,4 @@ class MODULES_EXPORT HTMLMediaElementEncryptedMedia final
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_HTML_MEDIA_ELEMENT_ENCRYPTED_MEDIA_H_

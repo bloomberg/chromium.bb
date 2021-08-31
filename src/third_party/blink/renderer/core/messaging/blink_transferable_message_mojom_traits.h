@@ -10,6 +10,7 @@
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/message_port_descriptor.h"
 #include "third_party/blink/public/common/messaging/message_port_descriptor_mojom_traits.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom-shared.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -56,6 +57,11 @@ struct CORE_EXPORT StructTraits<blink::mojom::TransferableMessageDataView,
   static const blink::mojom::blink::UserActivationSnapshotPtr& user_activation(
       const blink::BlinkTransferableMessage& input) {
     return input.user_activation;
+  }
+
+  static bool delegate_payment_request(
+      const blink::BlinkTransferableMessage& input) {
+    return input.delegate_payment_request;
   }
 
   static bool Read(blink::mojom::TransferableMessageDataView,

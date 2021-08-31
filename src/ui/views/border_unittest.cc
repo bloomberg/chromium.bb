@@ -19,6 +19,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/painter.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
@@ -209,7 +210,7 @@ TEST_F(BorderTest, SolidBorder) {
 
 TEST_F(BorderTest, RoundedRectBorder) {
   std::unique_ptr<Border> border(CreateRoundedRectBorder(
-      3, LayoutProvider::Get()->GetCornerRadiusMetric(EMPHASIS_LOW),
+      3, LayoutProvider::Get()->GetCornerRadiusMetric(Emphasis::kLow),
       SK_ColorBLUE));
   EXPECT_EQ(gfx::Size(6, 6), border->GetMinimumSize());
   EXPECT_EQ(gfx::Insets(3, 3, 3, 3), border->GetInsets());

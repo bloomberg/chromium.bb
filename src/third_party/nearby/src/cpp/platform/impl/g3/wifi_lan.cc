@@ -19,6 +19,7 @@
 #include <string>
 
 #include "platform/api/wifi_lan.h"
+#include "platform/base/cancellation_flag_listener.h"
 #include "platform/base/logging.h"
 #include "platform/base/medium_environment.h"
 #include "platform/base/nsd_service_info.h"
@@ -317,8 +318,8 @@ bool WifiLanMedium::StopAcceptingConnections(const std::string& service_id) {
 }
 
 std::unique_ptr<api::WifiLanSocket> WifiLanMedium::Connect(
-    api::WifiLanService& remote_wifi_lan_service,
-    const std::string& service_id) {
+    api::WifiLanService& remote_wifi_lan_service, const std::string& service_id,
+    CancellationFlag* cancellation_flag) {
   NEARBY_LOG(
       INFO,
       "G3 WifiLan Connect: medium=%p, wifi_lan_service=%p, "
@@ -353,6 +354,18 @@ std::unique_ptr<api::WifiLanSocket> WifiLanMedium::Connect(
       return {};
     }
   }
+
+  if (cancellation_flag->Cancelled()) {
+    NEARBY_LOGS(INFO) << "G3 WifiLan Connect: Has been cancelled: "
+                         "service_id="
+                      << service_id;
+    return {};
+  }
+
+  CancellationFlagListener listener(cancellation_flag, [this]() {
+    NEARBY_LOGS(INFO) << "G3 WifiLan Cancel Connect.";
+    if (server_socket_ != nullptr) server_socket_->Close();
+  });
 
   WifiLanService wifi_lan_service =
       static_cast<WifiLanService&>(remote_wifi_lan_service);

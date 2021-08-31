@@ -4,10 +4,7 @@
 
 #import "ios/chrome/browser/ui/fancy_ui/primary_action_button.h"
 
-#include "base/feature_list.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 
@@ -38,16 +35,12 @@
 
 - (void)updateStyling {
   self.hasOpaqueBackground = YES;
-#if defined(__IPHONE_13_4)
   if (@available(iOS 13.4, *)) {
-    if (base::FeatureList::IsEnabled(kPointerSupport)) {
       self.pointerInteractionEnabled = YES;
       self.pointerStyleProvider = CreateOpaqueButtonPointerStyleProvider();
-    }
   }
-#endif  // defined(__IPHONE_13_4)
 
-  UIColor* hintColor = UIColor.cr_systemBackgroundColor;
+  UIColor* hintColor = [UIColor colorNamed:kPrimaryBackgroundColor];
   UIColor* inkColor = [UIColor colorWithWhite:1 alpha:0.2f];
   UIColor* backgroundColor = [UIColor colorNamed:kBlueColor];
   UIColor* disabledColor = [UIColor colorNamed:kDisabledTintColor];

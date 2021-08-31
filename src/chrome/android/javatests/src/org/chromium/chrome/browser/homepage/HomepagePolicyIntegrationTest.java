@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.view.View;
 
-import androidx.preference.Preference;
 import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Matchers;
@@ -17,6 +16,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
@@ -28,7 +28,6 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.homepage.settings.HomepageMetricsEnums.HomepageLocationType;
 import org.chromium.chrome.browser.homepage.settings.HomepageSettings;
@@ -40,9 +39,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
-import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.policy.test.annotations.Policies;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
@@ -68,11 +65,15 @@ public class HomepagePolicyIntegrationTest {
 
     private EmbeddedTestServer mTestServer;
 
-    @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
-    @Rule
     public SettingsActivityTestRule<HomepageSettings> mSettingsActivityTestRule =
             new SettingsActivityTestRule<>(HomepageSettings.class);
+
+    // SettingsActivity has to be finished before the outer CTA can be finished or trying to finish
+    // CTA won't work.
+    @Rule
+    public final RuleChain mRuleChain =
+            RuleChain.outerRule(mActivityTestRule).around(mSettingsActivityTestRule);
 
     @Rule
     public HomepageTestRule mHomepageTestRule = new HomepageTestRule();
@@ -161,35 +162,6 @@ public class HomepagePolicyIntegrationTest {
         Assert.assertEquals("After clicking HomeButton, URL should be back to Homepage", TEST_URL,
                 ChromeTabUtils.getUrlStringOnUiThread(
                         mActivityTestRule.getActivity().getActivityTab()));
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"Homepage"})
-    @DisableFeatures(ChromeFeatureList.HOMEPAGE_SETTINGS_UI_CONVERSION)
-    public void testHomepagePreference() {
-        // Launch homepage preference page
-        mSettingsActivityTestRule.startSettingsActivity();
-        HomepageSettings fragment = mSettingsActivityTestRule.getFragment();
-        Assert.assertNotNull(fragment);
-
-        ChromeSwitchPreference homepageSwitch = (ChromeSwitchPreference) fragment.findPreference(
-                HomepageSettings.PREF_HOMEPAGE_SWITCH);
-
-        Preference homepageEdit = fragment.findPreference(HomepageSettings.PREF_HOMEPAGE_EDIT);
-
-        Assert.assertNotNull(homepageSwitch);
-        Assert.assertNotNull(homepageEdit);
-
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertFalse("Switch should be disabled", homepageSwitch.isEnabled());
-            Assert.assertTrue("Switch should be checked", homepageSwitch.isChecked());
-
-            Assert.assertFalse(
-                    "Homepage Edit should be disabled under policy", homepageEdit.isEnabled());
-            Assert.assertEquals("Homepage Url should be set as policy setting",
-                    homepageEdit.getSummary(), TEST_URL);
-        });
     }
 
     private void destroyAndRestartActivity() {

@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/policy/affiliated_cloud_policy_invalidator.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -56,7 +58,7 @@ FakeCloudPolicyStore::FakeCloudPolicyStore() {
 }
 
 void FakeCloudPolicyStore::Store(const em::PolicyFetchResponse& policy) {
-  policy_.reset(new em::PolicyData);
+  policy_ = std::make_unique<em::PolicyData>();
   policy_->ParseFromString(policy.policy_data());
   Load();
 }
@@ -128,10 +130,10 @@ TEST(AffiliatedCloudPolicyInvalidatorTest, CreateUseDestroy) {
   // timestamp in microseconds. The policy blob contains a timestamp in
   // milliseconds. Convert from one to the other by multiplying by 1000.
   const int64_t invalidation_version = policy.policy_data().timestamp() * 1000;
-  syncer::Invalidation invalidation = syncer::Invalidation::Init(
+  invalidation::Invalidation invalidation = invalidation::Invalidation::Init(
       kPolicyInvalidationTopic, invalidation_version, "dummy payload");
 
-  syncer::TopicInvalidationMap invalidation_map;
+  invalidation::TopicInvalidationMap invalidation_map;
   invalidation_map.Insert(invalidation);
   invalidator->OnIncomingInvalidation(invalidation_map);
 

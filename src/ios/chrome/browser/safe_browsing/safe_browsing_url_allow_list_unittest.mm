@@ -4,7 +4,7 @@
 
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/web_state_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
@@ -64,7 +64,7 @@ class SafeBrowsingUrlAllowListTest : public PlatformTest {
  protected:
   MockWebStateObserver web_state_observer_;
   MockAllowListObserver allow_list_observer_;
-  web::TestWebState web_state_;
+  web::FakeWebState web_state_;
 };
 
 // Tests that the allowed threat types are properly recorded.
@@ -185,7 +185,7 @@ TEST_F(SafeBrowsingUrlAllowListTest, DomainAllowDecisions) {
   allow_list()->AddPendingUnsafeNavigationDecision(url, kFirstThreatType);
   EXPECT_TRUE(allow_list()->IsUnsafeNavigationDecisionPending(url_with_path));
 
-  // Whitelist the URL and verify that it is allowed for other URLs from the
+  // Allowlist the URL and verify that it is allowed for other URLs from the
   // same domain.
   EXPECT_CALL(allow_list_observer_,
               ThreatPolicyUpdated(allow_list(), url, kFirstThreatType,

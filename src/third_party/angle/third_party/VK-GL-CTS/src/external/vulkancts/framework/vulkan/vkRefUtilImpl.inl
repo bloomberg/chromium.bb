@@ -137,15 +137,15 @@ void Deleter<VkSwapchainKHR>::operator() (VkSwapchainKHR obj) const
 }
 
 template<>
-void Deleter<VkValidationCacheEXT>::operator() (VkValidationCacheEXT obj) const
+void Deleter<VkDeferredOperationKHR>::operator() (VkDeferredOperationKHR obj) const
 {
-	m_deviceIface->destroyValidationCacheEXT(m_device, obj, m_allocator);
+	m_deviceIface->destroyDeferredOperationKHR(m_device, obj, m_allocator);
 }
 
 template<>
-void Deleter<VkAccelerationStructureKHR>::operator() (VkAccelerationStructureKHR obj) const
+void Deleter<VkValidationCacheEXT>::operator() (VkValidationCacheEXT obj) const
 {
-	m_deviceIface->destroyAccelerationStructureKHR(m_device, obj, m_allocator);
+	m_deviceIface->destroyValidationCacheEXT(m_device, obj, m_allocator);
 }
 
 template<>
@@ -167,9 +167,21 @@ void Deleter<VkPrivateDataSlotEXT>::operator() (VkPrivateDataSlotEXT obj) const
 }
 
 template<>
-void Deleter<VkDeferredOperationKHR>::operator() (VkDeferredOperationKHR obj) const
+void Deleter<VkAccelerationStructureKHR>::operator() (VkAccelerationStructureKHR obj) const
 {
-	m_deviceIface->destroyDeferredOperationKHR(m_device, obj, m_allocator);
+	m_deviceIface->destroyAccelerationStructureKHR(m_device, obj, m_allocator);
+}
+
+template<>
+void Deleter<VkVideoSessionKHR>::operator() (VkVideoSessionKHR obj) const
+{
+	m_deviceIface->destroyVideoSessionKHR(m_device, obj, m_allocator);
+}
+
+template<>
+void Deleter<VkVideoSessionParametersKHR>::operator() (VkVideoSessionParametersKHR obj) const
+{
+	m_deviceIface->destroyVideoSessionParametersKHR(m_device, obj, m_allocator);
 }
 
 } // refdetails
@@ -356,6 +368,13 @@ Move<VkSwapchainKHR> createSharedSwapchainsKHR (const DeviceInterface& vk, VkDev
 	return Move<VkSwapchainKHR>(check<VkSwapchainKHR>(object), Deleter<VkSwapchainKHR>(vk, device, pAllocator));
 }
 
+Move<VkDeferredOperationKHR> createDeferredOperationKHR (const DeviceInterface& vk, VkDevice device, const VkAllocationCallbacks* pAllocator)
+{
+	VkDeferredOperationKHR object = 0;
+	VK_CHECK(vk.createDeferredOperationKHR(device, pAllocator, &object));
+	return Move<VkDeferredOperationKHR>(check<VkDeferredOperationKHR>(object), Deleter<VkDeferredOperationKHR>(vk, device, pAllocator));
+}
+
 Move<VkDebugReportCallbackEXT> createDebugReportCallbackEXT (const InstanceInterface& vk, VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator)
 {
 	VkDebugReportCallbackEXT object = 0;
@@ -405,6 +424,13 @@ Move<VkPrivateDataSlotEXT> createPrivateDataSlotEXT (const DeviceInterface& vk, 
 	return Move<VkPrivateDataSlotEXT>(check<VkPrivateDataSlotEXT>(object), Deleter<VkPrivateDataSlotEXT>(vk, device, pAllocator));
 }
 
+Move<VkAccelerationStructureKHR> createAccelerationStructureKHR (const DeviceInterface& vk, VkDevice device, const VkAccelerationStructureCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator)
+{
+	VkAccelerationStructureKHR object = 0;
+	VK_CHECK(vk.createAccelerationStructureKHR(device, pCreateInfo, pAllocator, &object));
+	return Move<VkAccelerationStructureKHR>(check<VkAccelerationStructureKHR>(object), Deleter<VkAccelerationStructureKHR>(vk, device, pAllocator));
+}
+
 Move<VkSurfaceKHR> createAndroidSurfaceKHR (const InstanceInterface& vk, VkInstance instance, const VkAndroidSurfaceCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator)
 {
 	VkSurfaceKHR object = 0;
@@ -412,18 +438,18 @@ Move<VkSurfaceKHR> createAndroidSurfaceKHR (const InstanceInterface& vk, VkInsta
 	return Move<VkSurfaceKHR>(check<VkSurfaceKHR>(object), Deleter<VkSurfaceKHR>(vk, instance, pAllocator));
 }
 
-Move<VkDeferredOperationKHR> createDeferredOperationKHR (const DeviceInterface& vk, VkDevice device, const VkAllocationCallbacks* pAllocator)
+Move<VkVideoSessionKHR> createVideoSessionKHR (const DeviceInterface& vk, VkDevice device, const VkVideoSessionCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator)
 {
-	VkDeferredOperationKHR object = 0;
-	VK_CHECK(vk.createDeferredOperationKHR(device, pAllocator, &object));
-	return Move<VkDeferredOperationKHR>(check<VkDeferredOperationKHR>(object), Deleter<VkDeferredOperationKHR>(vk, device, pAllocator));
+	VkVideoSessionKHR object = 0;
+	VK_CHECK(vk.createVideoSessionKHR(device, pCreateInfo, pAllocator, &object));
+	return Move<VkVideoSessionKHR>(check<VkVideoSessionKHR>(object), Deleter<VkVideoSessionKHR>(vk, device, pAllocator));
 }
 
-Move<VkAccelerationStructureKHR> createAccelerationStructureKHR (const DeviceInterface& vk, VkDevice device, const VkAccelerationStructureCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator)
+Move<VkVideoSessionParametersKHR> createVideoSessionParametersKHR (const DeviceInterface& vk, VkDevice device, const VkVideoSessionParametersCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator)
 {
-	VkAccelerationStructureKHR object = 0;
-	VK_CHECK(vk.createAccelerationStructureKHR(device, pCreateInfo, pAllocator, &object));
-	return Move<VkAccelerationStructureKHR>(check<VkAccelerationStructureKHR>(object), Deleter<VkAccelerationStructureKHR>(vk, device, pAllocator));
+	VkVideoSessionParametersKHR object = 0;
+	VK_CHECK(vk.createVideoSessionParametersKHR(device, pCreateInfo, pAllocator, &object));
+	return Move<VkVideoSessionParametersKHR>(check<VkVideoSessionParametersKHR>(object), Deleter<VkVideoSessionParametersKHR>(vk, device, pAllocator));
 }
 
 Move<VkSurfaceKHR> createImagePipeSurfaceFUCHSIA (const InstanceInterface& vk, VkInstance instance, const VkImagePipeSurfaceCreateInfoFUCHSIA* pCreateInfo, const VkAllocationCallbacks* pAllocator)

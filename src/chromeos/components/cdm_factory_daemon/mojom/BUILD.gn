@@ -13,9 +13,10 @@ mojom_component("mojom") {
   ]
 
   public_deps = [
-    "//components/arc/mojom:media",
     "//components/arc/mojom:oemcrypto",
+    "//components/arc/mojom:protected_buffer_manager",
     "//mojo/public/mojom/base",
+    "//ui/gfx/geometry/mojom",
   ]
 
   cpp_typemaps = [

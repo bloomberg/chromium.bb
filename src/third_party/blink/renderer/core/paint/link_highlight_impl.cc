@@ -33,8 +33,6 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/paint/display_item_list.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_rect.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -42,7 +40,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -116,7 +114,7 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node)
 
   DCHECK(GetLayoutObject());
   GetLayoutObject()->SetNeedsPaintPropertyUpdate();
-  SetPaintArtifactCompositorNeedsUpdate();
+  SetNeedsRepaintAndCompositingUpdate();
 
 #if DCHECK_IS_ON()
   effect_->SetDebugName("LinkHighlightEffect");
@@ -139,7 +137,7 @@ void LinkHighlightImpl::ReleaseResources() {
   if (auto* layout_object = GetLayoutObject())
     layout_object->SetNeedsPaintPropertyUpdate();
 
-  SetPaintArtifactCompositorNeedsUpdate();
+  SetNeedsRepaintAndCompositingUpdate();
 
   node_.Clear();
 }
@@ -154,7 +152,7 @@ LinkHighlightImpl::LinkHighlightFragment::~LinkHighlightFragment() {
   layer_->ClearClient();
 }
 
-gfx::Rect LinkHighlightImpl::LinkHighlightFragment::PaintableRegion() {
+gfx::Rect LinkHighlightImpl::LinkHighlightFragment::PaintableRegion() const {
   return gfx::Rect(layer_->bounds());
 }
 
@@ -253,7 +251,7 @@ void LinkHighlightImpl::UpdateAfterPrePaint() {
 
   if (fragment_count != fragments_.size()) {
     fragments_.resize(fragment_count);
-    SetPaintArtifactCompositorNeedsUpdate();
+    SetNeedsRepaintAndCompositingUpdate();
   }
 }
 
@@ -295,8 +293,7 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
     // NGFragmentItem to renderer rounded rect even if nested inline, e.g.
     // <a>ABC<b>DEF</b>GHI</a>.
     // See gesture-tapHighlight-simple-nested.html
-    if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled() &&
-        use_rounded_rects && object->IsLayoutInline() &&
+    if (use_rounded_rects && object->IsLayoutInline() &&
         object->IsInLayoutNGInlineFormattingContext()) {
       NGInlineCursor cursor;
       cursor.MoveTo(*object);
@@ -343,15 +340,24 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
   DCHECK_EQ(index, fragments_.size());
 }
 
-void LinkHighlightImpl::SetPaintArtifactCompositorNeedsUpdate() {
+void LinkHighlightImpl::SetNeedsRepaintAndCompositingUpdate() {
   DCHECK(node_);
-  if (auto* frame_view = node_->GetDocument().View())
+  if (auto* frame_view = node_->GetDocument().View()) {
+    frame_view->SetVisualViewportOrOverlayNeedsRepaint();
     frame_view->SetPaintArtifactCompositorNeedsUpdate();
+  }
 }
 
 void LinkHighlightImpl::UpdateOpacity(float opacity) {
-  effect_->Update(EffectPaintPropertyNode::Root(),
-                  LinkHighlightEffectNodeState(opacity, element_id_));
+  auto change =
+      effect_->Update(EffectPaintPropertyNode::Root(),
+                      LinkHighlightEffectNodeState(opacity, element_id_));
+  // If there is no |node_|, |ReleaseResources| has already handled the call to
+  // |SetNeedsRepaintAndCompositingUpdate|.
+  if (!node_)
+    return;
+  if (change > PaintPropertyChangeType::kChangedOnlyCompositedValues)
+    SetNeedsRepaintAndCompositingUpdate();
 }
 
 }  // namespace blink

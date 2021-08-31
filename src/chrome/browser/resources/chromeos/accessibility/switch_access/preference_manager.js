@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {AutoScanManager} from './auto_scan_manager.js';
+import {SAConstants} from './switch_access_constants.js';
+
 /**
  * Class to manage user preferences.
  */
-class PreferenceManager {
+export class PreferenceManager {
   /** @private */
   constructor() {
     /**
@@ -59,6 +62,22 @@ class PreferenceManager {
     return null;
   }
 
+  /**
+   * Get the preference value for the given name, or |null| if the value is not
+   * a dictionary or does not exist.
+   *
+   * @param {SAConstants.Preference} name
+   * @return {Object|null}
+   * @private
+   */
+  getDict_(name) {
+    const pref = this.preferences_.get(name);
+    if (pref && pref.type === chrome.settingsPrivate.PrefType.DICTIONARY) {
+      return /** @type {Object} */ (pref.value);
+    }
+    return null;
+  }
+
   /** @private */
   init_() {
     chrome.settingsPrivate.onPrefsChanged.addListener(
@@ -74,19 +93,26 @@ class PreferenceManager {
    * @private
    */
   settingsAreConfigured_() {
-    const selectSetting =
-        this.getNumber_(SAConstants.Preference.SELECT_SETTING);
-    const nextSetting = this.getNumber_(SAConstants.Preference.NEXT_SETTING);
-    const previousSetting =
-        this.getNumber_(SAConstants.Preference.PREVIOUS_SETTING);
+    const selectPref =
+        this.getDict_(SAConstants.Preference.SELECT_DEVICE_KEY_CODES);
+    const selectSet = selectPref ? Object.keys(selectPref).length : false;
+
+    const nextPref =
+        this.getDict_(SAConstants.Preference.NEXT_DEVICE_KEY_CODES);
+    const nextSet = nextPref ? Object.keys(nextPref).length : false;
+
+    const previousPref =
+        this.getDict_(SAConstants.Preference.PREVIOUS_DEVICE_KEY_CODES);
+    const previousSet = previousPref ? Object.keys(previousPref).length : false;
+
     const autoScanEnabled =
         !!this.getBoolean_(SAConstants.Preference.AUTO_SCAN_ENABLED);
 
-    if (!selectSetting) {
+    if (!selectSet) {
       return false;
     }
 
-    if (nextSetting || previousSetting) {
+    if (nextSet || previousSet) {
       return true;
     }
 

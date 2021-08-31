@@ -8,13 +8,13 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/home_screen/drag_window_from_shelf_controller.h"
 #include "ash/public/cpp/app_list/app_list_controller_observer.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/wallpaper_controller.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
+#include "ash/shelf/drag_window_from_shelf_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_metrics.h"
 #include "ash/shelf/shelf_widget.h"
@@ -28,17 +28,17 @@
 #include "ash/wm/wm_default_layout_manager.h"
 #include "ash/wm/workspace/workspace_types.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/timer/timer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/message_center/message_center_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace ui {
@@ -60,6 +60,7 @@ class Shelf;
 class ShelfLayoutManagerObserver;
 class ShelfLayoutManagerTestBase;
 class ShelfWidget;
+class SwipeHomeToOverviewController;
 
 // ShelfLayoutManager is the layout manager responsible for the shelf and
 // status widgets. The shelf is given the total available width and told the
@@ -81,7 +82,6 @@ class ASH_EXPORT ShelfLayoutManager
       public WallpaperControllerObserver,
       public LocaleChangeObserver,
       public DesksController::Observer,
-      public message_center::MessageCenterObserver,
       public ShelfConfig::Observer {
  public:
   // Suspend work area updates within its scope. Note that relevant
@@ -95,6 +95,17 @@ class ASH_EXPORT ShelfLayoutManager
    private:
     ShelfLayoutManager* const manager_;
     DISALLOW_COPY_AND_ASSIGN(ScopedSuspendWorkAreaUpdate);
+  };
+
+  // Used to maintain a lock for the shelf visibility state. If locked, then we
+  // should not update the state of the shelf visibility.
+  class ScopedVisibilityLock {
+   public:
+    explicit ScopedVisibilityLock(ShelfLayoutManager* shelf);
+    ~ScopedVisibilityLock();
+
+   private:
+    base::WeakPtr<ShelfLayoutManager> shelf_;
   };
 
   ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf);
@@ -165,11 +176,14 @@ class ASH_EXPORT ShelfLayoutManager
   // Handles events from ShelfWidget.
   void ProcessGestureEventFromShelfWidget(ui::GestureEvent* event_in_screen);
 
-  // Handles mouse wheel events from the shelf. We use |from_touchpad| to
-  // distinguish if a event originated from a touchpad scroll or a mousewheel
-  // scroll.
-  void ProcessMouseWheelEventFromShelf(ui::MouseWheelEvent* event,
-                                       bool from_touchpad);
+  // Handles mouse wheel events from the shelf.
+  void ProcessMouseWheelEventFromShelf(ui::MouseWheelEvent* event);
+
+  // Handles scroll events from the shelf.
+  void ProcessScrollEventFromShelf(ui::ScrollEvent* event);
+
+  // Contains logic that is the same between mouse wheel and gesture scrolling.
+  void ProcessScrollOffset(int offset, base::TimeTicks time_stamp);
 
   // Returns how the shelf background should be painted.
   ShelfBackgroundType GetShelfBackgroundType() const;
@@ -250,6 +264,7 @@ class ASH_EXPORT ShelfLayoutManager
   // DesksController::Observer:
   void OnDeskAdded(const Desk* desk) override {}
   void OnDeskRemoved(const Desk* desk) override {}
+  void OnDeskReordered(int old_index, int new_index) override {}
   void OnDeskActivationChanged(const Desk* activated,
                                const Desk* deactivated) override {}
   void OnDeskSwitchAnimationLaunching() override;
@@ -267,6 +282,10 @@ class ASH_EXPORT ShelfLayoutManager
     is_auto_hide_state_locked_ = lock_auto_hide_state;
   }
 
+  ShelfAutoHideBehavior auto_hide_behavior() const {
+    return shelf_->auto_hide_behavior();
+  }
+
   // ShelfConfig::Observer:
   void OnShelfConfigUpdated() override;
 
@@ -280,6 +299,11 @@ class ASH_EXPORT ShelfLayoutManager
 
   DragWindowFromShelfController* window_drag_controller_for_testing() {
     return window_drag_controller_.get();
+  }
+
+  SwipeHomeToOverviewController*
+  swipe_home_to_overview_controller_for_testing() {
+    return swipe_home_to_overview_controller_.get();
   }
 
   HomeToOverviewNudgeController*
@@ -296,6 +320,10 @@ class ASH_EXPORT ShelfLayoutManager
   // TODO(manucornet): Move this to the hotseat class.
   HotseatState CalculateHotseatState(ShelfVisibilityState visibility_state,
                                      ShelfAutoHideState auto_hide_state) const;
+
+  // Called when the visibility for a tray bubble in the shelf's status area
+  // changes.
+  void OnShelfTrayBubbleVisibilityChanged(bool bubble_shown);
 
  private:
   class UpdateShelfObserver;
@@ -347,10 +375,6 @@ class ASH_EXPORT ShelfLayoutManager
     kAiming,  // Calculating target bounds
     kMoving,  // Laying out and animating to target bounds
   };
-
-  // MessageCenterObserver:
-  void OnCenterVisibilityChanged(
-      message_center::Visibility visibility) override;
 
   // Suspends/resumes work area updates.
   void SuspendWorkAreaUpdate();
@@ -410,7 +434,7 @@ class ASH_EXPORT ShelfLayoutManager
   ShelfAutoHideState CalculateAutoHideState(
       ShelfVisibilityState visibility_state) const;
 
-  base::Optional<ShelfAutoHideState>
+  absl::optional<ShelfAutoHideState>
   CalculateAutoHideStateBasedOnCursorLocation() const;
 
   // Returns true if |window| is a descendant of the shelf.
@@ -459,7 +483,8 @@ class ASH_EXPORT ShelfLayoutManager
                   float scroll_y);
   void CompleteDrag(const ui::LocatedEvent& event_in_screen);
   void CompleteAppListDrag(const ui::LocatedEvent& event_in_screen);
-  void CancelDrag(base::Optional<ShelfWindowDragResult> window_drag_result);
+  void CompleteDragHomeToOverview(const ui::LocatedEvent& event_in_screen);
+  void CancelDrag(absl::optional<ShelfWindowDragResult> window_drag_result);
   void CompleteDragWithChangedVisibility();
 
   float GetAppListBackgroundOpacityOnShelfOpacity();
@@ -487,7 +512,7 @@ class ASH_EXPORT ShelfLayoutManager
                                      const gfx::Vector2dF& scroll);
   void MaybeUpdateWindowDrag(const ui::LocatedEvent& event_in_screen,
                              const gfx::Vector2dF& scroll);
-  base::Optional<ShelfWindowDragResult> MaybeEndWindowDrag(
+  absl::optional<ShelfWindowDragResult> MaybeEndWindowDrag(
       const ui::LocatedEvent& event_in_screen);
   // If overview session is active, goes to home screen if the gesture should
   // initiate transition to home. It handles the gesture only if the
@@ -497,9 +522,10 @@ class ASH_EXPORT ShelfLayoutManager
   void MaybeCancelWindowDrag();
   bool IsWindowDragInProgress() const;
 
-  // Updates the visibility state because of the change on the system tray.
-  void UpdateVisibilityStateForSystemTrayChange(
-      message_center::Visibility visibility);
+  // Updates the visibility state because of the change on a status area tray.
+  void UpdateVisibilityStateForTrayBubbleChange(bool bubble_shown);
+
+  bool IsShelfContainerAnimating() const;
 
   bool in_shutdown_ = false;
 
@@ -605,8 +631,8 @@ class ASH_EXPORT ShelfLayoutManager
       ShelfBackgroundType::kDefaultBg;
 
   ScopedSessionObserver scoped_session_observer_{this};
-  ScopedObserver<WallpaperController, WallpaperControllerObserver>
-      wallpaper_controller_observer_{this};
+  base::ScopedObservation<WallpaperController, WallpaperControllerObserver>
+      wallpaper_controller_observation_{this};
 
   // Location of the most recent mouse drag event in screen coordinate.
   gfx::Point last_mouse_drag_position_;
@@ -622,12 +648,17 @@ class ASH_EXPORT ShelfLayoutManager
   // visibility update is requested for overview and resets when overview no
   // longer needs it. It is used because OnOverviewModeStarting() and
   // OnOverviewModeStartingAnimationComplete() calls are not balanced.
-  base::Optional<ScopedSuspendWorkAreaUpdate>
+  absl::optional<ScopedSuspendWorkAreaUpdate>
       overview_suspend_work_area_update_;
 
   // The window drag controller that will be used when a window can be dragged
   // up from shelf to homescreen, overview or splitview.
   std::unique_ptr<DragWindowFromShelfController> window_drag_controller_;
+
+  // The gesture controller that switches from home screen to overview when it
+  // detects an upward swipe from the home launcher shelf area.
+  std::unique_ptr<SwipeHomeToOverviewController>
+      swipe_home_to_overview_controller_;
 
   std::unique_ptr<HomeToOverviewNudgeController>
       home_to_overview_nudge_controller_;
@@ -636,12 +667,11 @@ class ASH_EXPORT ShelfLayoutManager
   std::unique_ptr<InAppToHomeNudgeController> in_app_to_home_nudge_controller_;
 
   // Whether upward fling from shelf should be handled as potential gesture from
-  // overview to home. This is set when the swipe would otherwise be handled by
-  // |window_drag_controller_|, but the swipe cannot be associated with a window
-  // to drag (for example, because the swipe started in split view mode on a
-  // side which is showing overview). Note that the gesture will be handled only
-  // if the overview session is active.
-  bool allow_fling_from_overview_to_home_ = false;
+  // overview to home. This is set to false when the swipe is handled by
+  // |window_drag_controller_|, when the swipe is associated with a window
+  // to drag. Note that the gesture will be handled only when the overview
+  // session is active.
+  bool allow_fling_from_overview_to_home_ = true;
 
   // Indicates whether shelf drag gesture can start window drag from shelf to
   // overview or home when hotseat is in extended state (the window drag will
@@ -661,6 +691,8 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Records the presentation time for hotseat dragging.
   std::unique_ptr<PresentationTimeRecorder> hotseat_presentation_time_recorder_;
+
+  base::WeakPtrFactory<ShelfLayoutManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

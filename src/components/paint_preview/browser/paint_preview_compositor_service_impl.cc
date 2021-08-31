@@ -4,27 +4,13 @@
 
 #include "components/paint_preview/browser/paint_preview_compositor_service_impl.h"
 
+#include "base/bind_post_task.h"
 #include "base/callback.h"
 #include "components/paint_preview/browser/compositor_utils.h"
 #include "components/paint_preview/browser/paint_preview_compositor_client_impl.h"
 #include "components/paint_preview/public/paint_preview_compositor_client.h"
 
 namespace paint_preview {
-
-namespace {
-
-base::OnceClosure BindToTaskRunner(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    base::OnceClosure closure) {
-  return base::BindOnce(
-      [](scoped_refptr<base::SequencedTaskRunner> task_runner,
-         base::OnceClosure closure) {
-        task_runner->PostTask(FROM_HERE, std::move(closure));
-      },
-      task_runner, std::move(closure));
-}
-
-}  // namespace
 
 PaintPreviewCompositorServiceImpl::PaintPreviewCompositorServiceImpl(
     mojo::PendingRemote<mojom::PaintPreviewCompositorCollection> pending_remote,
@@ -48,7 +34,7 @@ PaintPreviewCompositorServiceImpl::PaintPreviewCompositorServiceImpl(
             remote->set_disconnect_handler(std::move(disconnect_closure));
           },
           compositor_service_.get(), std::move(pending_remote),
-          BindToTaskRunner(
+          base::BindPostTask(
               default_task_runner_,
               base::BindOnce(
                   &PaintPreviewCompositorServiceImpl::DisconnectHandler,
@@ -75,7 +61,7 @@ PaintPreviewCompositorServiceImpl::CreateCompositor(
       FROM_HERE,
       base::BindOnce(
           [](mojo::Remote<mojom::PaintPreviewCompositorCollection>* remote,
-             PaintPreviewCompositorClientImpl* compositor,
+             mojo::Remote<mojom::PaintPreviewCompositor>* compositor,
              base::OnceCallback<void(const base::UnguessableToken&)>
                  on_connected) {
             // This binds the remote in compositor to the
@@ -84,7 +70,10 @@ PaintPreviewCompositorServiceImpl::CreateCompositor(
                 compositor->BindNewPipeAndPassReceiver(),
                 std::move(on_connected));
           },
-          compositor_service_.get(), compositor.get(),
+          // These are both deleted on `compositor_task_runner_` using
+          // TaskRunnerDeleter and at this point neither can be scheduled for
+          // deletion so passing raw pointers is safe.
+          compositor_service_.get(), compositor->GetCompositor(),
           // This builder ensures the callback it returns is called on the
           // correct sequence.
           compositor->BuildCompositorCreatedCallback(

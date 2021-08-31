@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/base64.h"
@@ -139,12 +141,12 @@ void SetExtensionIdSet(base::DictionaryValue* dictionary,
 bool GetExtensionIdSet(const base::DictionaryValue& dictionary,
                        const char* key,
                        ExtensionIdSet* ids) {
-  const base::ListValue* id_list = NULL;
+  const base::ListValue* id_list = nullptr;
   if (!dictionary.GetList(key, &id_list))
     return false;
-  for (auto i = id_list->begin(); i != id_list->end(); ++i) {
+  for (const auto& entry : id_list->GetList()) {
     std::string id;
-    if (!i->GetAsString(&id)) {
+    if (!entry.GetAsString(&id)) {
       return false;
     }
     ids->insert(id);
@@ -450,7 +452,7 @@ void InstallSigner::HandleSignatureResult(const std::string& signature,
 
   std::unique_ptr<InstallSignature> result;
   if (!signature.empty()) {
-    result.reset(new InstallSignature);
+    result = std::make_unique<InstallSignature>();
     result->ids = valid_ids;
     result->invalid_ids = invalid_ids;
     result->salt = salt_;

@@ -10,12 +10,12 @@
 #include <string>
 
 #include "absl/types/optional.h"
-#include "net/third_party/quiche/src/quic/core/crypto/transport_parameters.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
+#include "quic/core/crypto/transport_parameters.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_time.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -134,23 +134,25 @@ class QUIC_EXPORT_PRIVATE QuicFixedUint62 : public QuicConfigValue {
   uint64_t receive_value_;
 };
 
-// Stores uint128 from CHLO or SHLO messages that are not negotiated.
-class QUIC_EXPORT_PRIVATE QuicFixedUint128 : public QuicConfigValue {
+// Stores StatelessResetToken from CHLO or SHLO messages that are not
+// negotiated.
+class QUIC_EXPORT_PRIVATE QuicFixedStatelessResetToken
+    : public QuicConfigValue {
  public:
-  QuicFixedUint128(QuicTag tag, QuicConfigPresence presence);
-  ~QuicFixedUint128() override;
+  QuicFixedStatelessResetToken(QuicTag tag, QuicConfigPresence presence);
+  ~QuicFixedStatelessResetToken() override;
 
   bool HasSendValue() const;
 
-  QuicUint128 GetSendValue() const;
+  const StatelessResetToken& GetSendValue() const;
 
-  void SetSendValue(QuicUint128 value);
+  void SetSendValue(const StatelessResetToken& value);
 
   bool HasReceivedValue() const;
 
-  QuicUint128 GetReceivedValue() const;
+  const StatelessResetToken& GetReceivedValue() const;
 
-  void SetReceivedValue(QuicUint128 value);
+  void SetReceivedValue(const StatelessResetToken& value);
 
   // If has_send_value is true, serialises |tag_| and |send_value_| to |out|.
   void ToHandshakeMessage(CryptoHandshakeMessage* out) const override;
@@ -163,8 +165,8 @@ class QUIC_EXPORT_PRIVATE QuicFixedUint128 : public QuicConfigValue {
  private:
   bool has_send_value_;
   bool has_receive_value_;
-  QuicUint128 send_value_;
-  QuicUint128 receive_value_;
+  StatelessResetToken send_value_;
+  StatelessResetToken receive_value_;
 };
 
 // Stores tag from CHLO or SHLO messages that are not negotiated.
@@ -382,11 +384,6 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   void SetDisableConnectionMigration();
   bool DisableConnectionMigration() const;
 
-  // Support handshake done.
-  void SetSupportHandshakeDone();
-  bool HandshakeDoneSupported() const;
-  bool PeerSupportsHandshakeDone() const;
-
   // Key update support.
   void SetKeyUpdateSupportedLocally();
   bool KeyUpdateSupportedForConnection() const;
@@ -396,14 +393,27 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   // IPv6 alternate server address.
   void SetIPv6AlternateServerAddressToSend(
       const QuicSocketAddress& alternate_server_address_ipv6);
+  void SetIPv6AlternateServerAddressToSend(
+      const QuicSocketAddress& alternate_server_address_ipv6,
+      const QuicConnectionId& connection_id,
+      const StatelessResetToken& stateless_reset_token);
   bool HasReceivedIPv6AlternateServerAddress() const;
   const QuicSocketAddress& ReceivedIPv6AlternateServerAddress() const;
 
   // IPv4 alternate server address.
   void SetIPv4AlternateServerAddressToSend(
       const QuicSocketAddress& alternate_server_address_ipv4);
+  void SetIPv4AlternateServerAddressToSend(
+      const QuicSocketAddress& alternate_server_address_ipv4,
+      const QuicConnectionId& connection_id,
+      const StatelessResetToken& stateless_reset_token);
   bool HasReceivedIPv4AlternateServerAddress() const;
   const QuicSocketAddress& ReceivedIPv4AlternateServerAddress() const;
+
+  // Preferred Address Connection ID and Token.
+  bool HasReceivedPreferredAddressConnectionIdAndToken() const;
+  const std::pair<QuicConnectionId, StatelessResetToken>&
+  ReceivedPreferredAddressConnectionIdAndToken() const;
 
   // Original destination connection ID.
   void SetOriginalConnectionIdToSend(
@@ -412,9 +422,10 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   QuicConnectionId ReceivedOriginalConnectionId() const;
 
   // Stateless reset token.
-  void SetStatelessResetTokenToSend(QuicUint128 stateless_reset_token);
+  void SetStatelessResetTokenToSend(
+      const StatelessResetToken& stateless_reset_token);
   bool HasReceivedStatelessResetToken() const;
-  QuicUint128 ReceivedStatelessResetToken() const;
+  const StatelessResetToken& ReceivedStatelessResetToken() const;
 
   // Manage the IETF QUIC Max ACK Delay transport parameter.
   // The sent value is the delay that this node uses
@@ -582,10 +593,6 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   // Uses the disable_active_migration transport parameter in IETF QUIC.
   QuicFixedUint32 connection_migration_disabled_;
 
-  // Whether handshake done is supported. Only used in T050.
-  // Uses the support_handshake_done transport parameter in IETF QUIC.
-  QuicFixedUint32 support_handshake_done_;
-
   // Whether key update is supported by the peer. Uses key_update_not_yet
   // supported transport parameter in IETF QUIC.
   bool key_update_supported_remotely_;
@@ -598,10 +605,14 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   // Note that when QUIC_CRYPTO is in use, only one of the addresses is sent.
   QuicFixedSocketAddress alternate_server_address_ipv6_;
   QuicFixedSocketAddress alternate_server_address_ipv4_;
+  // Connection Id data to send from the server or receive at the client as part
+  // of the preferred address transport parameter.
+  absl::optional<std::pair<QuicConnectionId, StatelessResetToken>>
+      preferred_address_connection_id_and_token_;
 
   // Stateless reset token used in IETF public reset packet.
   // Uses the stateless_reset_token transport parameter in IETF QUIC.
-  QuicFixedUint128 stateless_reset_token_;
+  QuicFixedStatelessResetToken stateless_reset_token_;
 
   // List of QuicTags whose presence immediately causes the session to
   // be created. This allows for CHLOs that are larger than a single

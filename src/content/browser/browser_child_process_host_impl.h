@@ -37,6 +37,10 @@ namespace base {
 class CommandLine;
 }
 
+namespace tracing {
+class SystemTracingService;
+}
+
 namespace content {
 
 class BrowserChildProcessHostIterator;
@@ -90,7 +94,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   ChildProcessTerminationInfo GetTerminationInfo(bool known_dead) override;
   std::unique_ptr<base::PersistentMemoryAllocator> TakeMetricsAllocator()
       override;
-  void SetName(const base::string16& name) override;
+  void SetName(const std::u16string& name) override;
   void SetMetricsName(const std::string& metrics_name) override;
   void SetProcess(base::Process process) override;
 
@@ -136,8 +140,6 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   mojo::OutgoingInvitation* GetInProcessMojoInvitation() {
     return &child_process_host_->GetMojoInvitation().value();
   }
-
-  IPC::Channel* child_channel() const { return channel_; }
 
   mojom::ChildProcess* child_process() const {
     return static_cast<ChildProcessHostImpl*>(child_process_host_.get())
@@ -229,6 +231,11 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // Keeps this process registered with the tracing subsystem.
   std::unique_ptr<TracingServiceController::ClientRegistration>
       tracing_registration_;
+
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+  // For child process to connect to the system tracing service.
+  std::unique_ptr<tracing::SystemTracingService> system_tracing_service_;
+#endif
 
   base::WeakPtrFactory<BrowserChildProcessHostImpl> weak_factory_{this};
 };

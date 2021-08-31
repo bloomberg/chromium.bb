@@ -84,7 +84,8 @@ public class AssistantTextInputSection implements AssistantAdditionalSection {
                     EditorFieldModel.createTextInput(typeHint, mHint, /* suggestions = */ null,
                             /* formatter = */ null, /* validator = */ null,
                             /* valueIconGenerator = */ null, /* requiredErrorMessage = */ null,
-                            /* invalidErrorMessage = */ null, mValue),
+                            /* invalidErrorMessage = */ null,
+                            EditorFieldModel.LENGTH_COUNTER_LIMIT_NONE, mValue),
                     (v, actionId, event)
                             -> false,
                     /* filter = */ null, textWatcher);
@@ -143,8 +144,8 @@ public class AssistantTextInputSection implements AssistantAdditionalSection {
                         result.first, new AssistantValue(new String[] {result.second}));
             });
             inputView.getEditText().setOnFocusChangeListener((unusedView, hasFocus) -> {
-                if (!hasFocus && mDelegate != null) {
-                    mDelegate.onTextFocusLost();
+                if (mDelegate != null) {
+                    mDelegate.onInputTextFocusChanged(hasFocus);
                 }
             });
             mInputContainer.addView(inputView);

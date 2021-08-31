@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NG_BASE_LAYOUT_ALGORITHM_TEST_H_
-#define NG_BASE_LAYOUT_ALGORITHM_TEST_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BASE_LAYOUT_ALGORITHM_TEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BASE_LAYOUT_ALGORITHM_TEST_H_
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
@@ -76,10 +76,10 @@ class FragmentChildIterator {
 NGConstraintSpace ConstructBlockLayoutTestConstraintSpace(
     WritingDirectionMode writing_direction,
     LogicalSize size,
-    bool shrink_to_fit = false,
+    bool stretch_inline_size_if_auto = true,
     bool is_new_formatting_context = false,
     LayoutUnit fragmentainer_space_available = kIndefiniteSize);
 
 }  // namespace blink
 
-#endif  // NG_BASE_LAYOUT_ALGORITHM_TEST_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BASE_LAYOUT_ALGORITHM_TEST_H_

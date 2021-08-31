@@ -17,17 +17,21 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
 #include "components/policy/policy_export.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "components/policy/proto/record.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace content {
+class BrowserContext;
+}
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -36,7 +40,6 @@ class SharedURLLoaderFactory;
 namespace policy {
 
 class SigningService;
-class DMAuth;
 class DMServerJobConfiguration;
 
 // Implements the core logic required to talk to the device management service.
@@ -75,11 +78,16 @@ class POLICY_EXPORT CloudPolicyClient {
   using DeviceDMTokenCallback = base::RepeatingCallback<std::string(
       const std::vector<std::string>& user_affiliation_ids)>;
 
+  // Callback that processes response value received from the server,
+  // or nullopt, if there was a failure.
+  using ResponseCallback =
+      base::OnceCallback<void(absl::optional<base::Value>)>;
+
   using ClientCertProvisioningStartCsrCallback = base::OnceCallback<void(
       DeviceManagementStatus,
-      base::Optional<
+      absl::optional<
           enterprise_management::ClientCertificateProvisioningResponse::Error>,
-      base::Optional<int64_t> try_later,
+      absl::optional<int64_t> try_later,
       const std::string& invalidation_topic,
       const std::string& va_challenge,
       enterprise_management::HashingAlgorithm hash_algorithm,
@@ -87,15 +95,15 @@ class POLICY_EXPORT CloudPolicyClient {
 
   using ClientCertProvisioningFinishCsrCallback = base::OnceCallback<void(
       DeviceManagementStatus,
-      base::Optional<
+      absl::optional<
           enterprise_management::ClientCertificateProvisioningResponse::Error>,
-      base::Optional<int64_t> try_later)>;
+      absl::optional<int64_t> try_later)>;
 
   using ClientCertProvisioningDownloadCertCallback = base::OnceCallback<void(
       DeviceManagementStatus,
-      base::Optional<
+      absl::optional<
           enterprise_management::ClientCertificateProvisioningResponse::Error>,
-      base::Optional<int64_t> try_later,
+      absl::optional<int64_t> try_later,
       const std::string& pem_encoded_certificate)>;
 
   // Observer interface for state and policy changes.
@@ -194,7 +202,7 @@ class POLICY_EXPORT CloudPolicyClient {
   // error notification.
   virtual void RegisterWithCertificate(const RegistrationParameters& parameters,
                                        const std::string& client_id,
-                                       std::unique_ptr<DMAuth> auth,
+                                       DMAuth auth,
                                        const std::string& pem_certificate_chain,
                                        const std::string& sub_organization);
 
@@ -246,7 +254,7 @@ class POLICY_EXPORT CloudPolicyClient {
   // the type of the robot account associated with this request.
   // The |callback| will be called when the operation completes.
   virtual void FetchRobotAuthCodes(
-      std::unique_ptr<DMAuth> auth,
+      DMAuth auth,
       enterprise_management::DeviceServiceApiAccessRequest::DeviceType
           device_type,
       const std::set<std::string>& oauth_scopes,
@@ -304,17 +312,21 @@ class POLICY_EXPORT CloudPolicyClient {
       StatusCallback callback);
 
   // Uploads a report containing enterprise connectors real-time security
-  // events. As above, the client must be in a registered state.  The |callback|
-  // will be called when the operation completes.
-  virtual void UploadSecurityEventReport(base::Value report,
+  // events for |context|. As above, the client must be in a registered state.
+  // If |include_device_info| is true, information specific to the device such
+  // as the device name, user, id and OS will be included in the report. The
+  // |callback| will be called when the operation completes.
+  virtual void UploadSecurityEventReport(content::BrowserContext* context,
+                                         bool include_device_info,
+                                         base::Value report,
                                          StatusCallback callback);
 
-  // Uploads a report containing an EncryptedRecord. The client must be in a
-  // registered state. The |callback| will be called when the operation
-  // completes.
-  virtual void UploadEncryptedReport(const ::reporting::EncryptedRecord& record,
-                                     base::Optional<base::Value> context,
-                                     StatusCallback callback);
+  // Uploads a report containing |merging_payload| (merged into the default
+  // payload of the job). The client must be in a registered state. The
+  // |callback| will be called when the operation completes.
+  virtual void UploadEncryptedReport(base::Value merging_payload,
+                                     absl::optional<base::Value> context,
+                                     ResponseCallback callback);
 
   // Uploads a report on the status of app push-installs. The client must be in
   // a registered state. The |callback| will be called when the operation
@@ -357,13 +369,12 @@ class POLICY_EXPORT CloudPolicyClient {
   // |auth| to identify user who requests a permission to name a device, calls
   // a |callback| from the enrollment screen to indicate whether the device
   // naming prompt should be shown.
-  void GetDeviceAttributeUpdatePermission(std::unique_ptr<DMAuth> auth,
-                                          StatusCallback callback);
+  void GetDeviceAttributeUpdatePermission(DMAuth auth, StatusCallback callback);
 
   // Sends a device naming information (Asset Id and Location) to the
   // device management server, uses |auth| to identify user who names a device,
   // the |callback| will be called when the operation completes.
-  void UpdateDeviceAttributes(std::unique_ptr<DMAuth> auth,
+  void UpdateDeviceAttributes(DMAuth auth,
                               const std::string& asset_id,
                               const std::string& location,
                               StatusCallback callback);
@@ -585,7 +596,7 @@ class POLICY_EXPORT CloudPolicyClient {
 
   // Callback for siganture of requests.
   void OnRegisterWithCertificateRequestSigned(
-      std::unique_ptr<DMAuth> auth,
+      DMAuth auth,
       bool success,
       enterprise_management::SignedData signed_data);
 
@@ -642,7 +653,7 @@ class POLICY_EXPORT CloudPolicyClient {
                                        const base::Value& response);
 
   // Callback for encrypted report upload requests.
-  void OnEncryptedReportUploadCompleted(StatusCallback callback,
+  void OnEncryptedReportUploadCompleted(ResponseCallback callback,
                                         DeviceManagementService::Job* job,
                                         DeviceManagementStatus status,
                                         int net_error,
@@ -784,12 +795,15 @@ class POLICY_EXPORT CloudPolicyClient {
  private:
   // Creates a new real-time reporting job and appends it to |request_jobs_|.
   // The job will send its report to the |server_url| endpoint.  If
+  // |include_device_info| is true, information specific to the device such as
+  // the device name, user, id and OS will be included in the report. If
   // |add_connector_url_params| is true then URL paramaters specific to
   // enterprise connectors are added to the request uploading the report.
   // |callback| is invoked once the report is uploaded.
   DeviceManagementService::Job* CreateNewRealtimeReportingJob(
       base::Value report,
       const std::string& server_url,
+      bool include_device_info,
       bool add_connector_url_params,
       StatusCallback callback);
 

@@ -4,16 +4,17 @@
 
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
 
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #include "device/base/features.h"
 
@@ -79,12 +80,6 @@ BluetoothAdapter::DeviceList FilterUnknownDevices(
 
   BluetoothAdapter::DeviceList result;
   for (BluetoothDevice* device : devices) {
-    // Always allow paired devices to appear in the UI.
-    if (device->IsPaired()) {
-      result.push_back(device);
-      continue;
-    }
-
     // Always filter out laptops, etc. There is no intended use case or
     // Bluetooth profile in this context.
     if (base::FeatureList::IsEnabled(
@@ -98,6 +93,12 @@ BluetoothAdapter::DeviceList FilterUnknownDevices(
     if (base::FeatureList::IsEnabled(
             chromeos::features::kBluetoothPhoneFilter) &&
         device->GetDeviceType() == BluetoothDeviceType::PHONE) {
+      continue;
+    }
+
+    // Allow paired devices which are not filtered above to appear in the UI.
+    if (device->IsPaired()) {
+      result.push_back(device);
       continue;
     }
 
@@ -195,7 +196,7 @@ device::BluetoothAdapter::DeviceList FilterBluetoothDeviceList(
   return GetLimitedNumDevices(max_devices, filtered_devices);
 }
 
-void RecordPairingResult(base::Optional<ConnectionFailureReason> failure_reason,
+void RecordPairingResult(absl::optional<ConnectionFailureReason> failure_reason,
                          BluetoothTransport transport,
                          base::TimeDelta duration) {
   RecordPairingTransport(transport);
@@ -246,7 +247,7 @@ void RecordPairingResult(base::Optional<ConnectionFailureReason> failure_reason,
 }
 
 void RecordUserInitiatedReconnectionAttemptResult(
-    base::Optional<ConnectionFailureReason> failure_reason,
+    absl::optional<ConnectionFailureReason> failure_reason,
     BluetoothUiSurface surface) {
   bool success = !failure_reason.has_value();
   std::string base_histogram_name =

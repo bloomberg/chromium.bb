@@ -9,8 +9,8 @@ import {isChromeOS, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {PageStatus, Router, routes, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
-import {getSyncAllPrefs, setupRouterWithSyncRoutes, simulateStoredAccounts} from 'chrome://test/settings/sync_test_util.m.js';
-import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
+import {getSyncAllPrefs, setupRouterWithSyncRoutes, simulateStoredAccounts} from 'chrome://test/settings/sync_test_util.js';
+import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.js';
 import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js';
 
 // clang-format on
@@ -58,25 +58,24 @@ suite('SyncSettingsTests', function() {
     loadTimeData.overrideValues({signinAllowed: true});
   });
 
-  setup(function() {
+  setup(async function() {
     setupRouterWithSyncRoutes();
     browserProxy = new TestSyncBrowserProxy();
     SyncBrowserProxyImpl.instance_ = browserProxy;
 
     setupSyncPage();
 
-    return waitBeforeNextRender().then(() => {
-      encryptionElement = syncPage.$$('settings-sync-encryption-options');
-      assertTrue(!!encryptionElement);
-      encryptionRadioGroup = encryptionElement.$$('#encryptionRadioGroup');
-      encryptWithGoogle =
-          encryptionElement.$$('cr-radio-button[name="encrypt-with-google"]');
-      encryptWithPassphrase = encryptionElement.$$(
-          'cr-radio-button[name="encrypt-with-passphrase"]');
-      assertTrue(!!encryptionRadioGroup);
-      assertTrue(!!encryptWithGoogle);
-      assertTrue(!!encryptWithPassphrase);
-    });
+    await waitBeforeNextRender();
+    encryptionElement = syncPage.$$('settings-sync-encryption-options');
+    assertTrue(!!encryptionElement);
+    encryptionRadioGroup = encryptionElement.$$('#encryptionRadioGroup');
+    encryptWithGoogle =
+        encryptionElement.$$('cr-radio-button[name="encrypt-with-google"]');
+    encryptWithPassphrase =
+        encryptionElement.$$('cr-radio-button[name="encrypt-with-passphrase"]');
+    assertTrue(!!encryptionRadioGroup);
+    assertTrue(!!encryptWithGoogle);
+    assertTrue(!!encryptWithPassphrase);
   });
 
   teardown(function() {
@@ -87,39 +86,30 @@ suite('SyncSettingsTests', function() {
   // TESTS FOR ALL PLATFORMS
   // #######################
 
-  test('NotifiesHandlerOfNavigation', function() {
+  test('NotifiesHandlerOfNavigation', async function() {
+    await browserProxy.whenCalled('didNavigateToSyncPage');
+
+    // Navigate away.
     const router = Router.getInstance();
-    function testNavigateAway() {
-      router.navigateTo(router.getRoutes().PEOPLE);
-      return browserProxy.whenCalled('didNavigateAwayFromSyncPage');
-    }
+    router.navigateTo(router.getRoutes().PEOPLE);
+    await browserProxy.whenCalled('didNavigateAwayFromSyncPage');
 
-    function testNavigateBack() {
-      browserProxy.resetResolver('didNavigateToSyncPage');
-      router.navigateTo(router.getRoutes().SYNC);
-      return browserProxy.whenCalled('didNavigateToSyncPage');
-    }
+    // Navigate back to the page.
+    browserProxy.resetResolver('didNavigateToSyncPage');
+    router.navigateTo(router.getRoutes().SYNC);
+    await browserProxy.whenCalled('didNavigateToSyncPage');
 
-    function testDetach() {
-      browserProxy.resetResolver('didNavigateAwayFromSyncPage');
-      syncPage.remove();
-      return browserProxy.whenCalled('didNavigateAwayFromSyncPage');
-    }
+    // Remove page element.
+    browserProxy.resetResolver('didNavigateAwayFromSyncPage');
+    syncPage.remove();
+    await browserProxy.whenCalled('didNavigateAwayFromSyncPage');
 
-    function testRecreate() {
-      browserProxy.resetResolver('didNavigateToSyncPage');
-      syncPage = document.createElement('settings-sync-page');
-      router.navigateTo(router.getRoutes().SYNC);
-
-      document.body.appendChild(syncPage);
-      return browserProxy.whenCalled('didNavigateToSyncPage');
-    }
-
-    return browserProxy.whenCalled('didNavigateToSyncPage')
-        .then(testNavigateAway)
-        .then(testNavigateBack)
-        .then(testDetach)
-        .then(testRecreate);
+    // Recreate page element.
+    browserProxy.resetResolver('didNavigateToSyncPage');
+    syncPage = document.createElement('settings-sync-page');
+    router.navigateTo(router.getRoutes().SYNC);
+    document.body.appendChild(syncPage);
+    await browserProxy.whenCalled('didNavigateToSyncPage');
   });
 
   test('SyncSectionLayout_SignedIn', function() {
@@ -337,7 +327,7 @@ suite('SyncSettingsTests', function() {
     assertTrue(passphraseConfirmationInput.invalid);
   });
 
-  test('CreatingPassphraseValidPassphrase', function() {
+  test('CreatingPassphraseValidPassphrase', async function() {
     encryptWithPassphrase.click();
     flush();
 
@@ -350,34 +340,31 @@ suite('SyncSettingsTests', function() {
         encryptionElement.$$('#passphraseConfirmationInput');
     passphraseInput.value = 'foo';
     passphraseConfirmationInput.value = 'foo';
+    browserProxy.encryptionPassphraseSuccess = true;
     saveNewPassphrase.click();
 
-    function verifySetSyncEncryption(args) {
-      assertTrue(args.setNewPassphrase);
-      assertEquals('foo', args.passphrase);
+    const passphrase = await browserProxy.whenCalled('setEncryptionPassphrase');
 
-      // Fake backend response.
-      const newPrefs = getSyncAllPrefs();
-      newPrefs.fullEncryptionBody = 'Encrypted with custom passphrase';
-      newPrefs.encryptAllData = true;
-      webUIListenerCallback('sync-prefs-changed', newPrefs);
+    assertEquals('foo', passphrase);
 
-      flush();
+    // Fake backend response.
+    const newPrefs = getSyncAllPrefs();
+    newPrefs.fullEncryptionBody = 'Encrypted with custom passphrase';
+    newPrefs.encryptAllData = true;
+    webUIListenerCallback('sync-prefs-changed', newPrefs);
 
-      return waitBeforeNextRender(syncPage).then(() => {
-        // Need to re-retrieve this, as a different show passphrase radio
-        // button is shown once |syncPrefs.fullEncryptionBody| is non-empty.
-        encryptWithPassphrase = encryptionElement.$$(
-            'cr-radio-button[name="encrypt-with-passphrase"]');
+    flush();
 
-        // Assert that the radio boxes are disabled after encryption enabled.
-        assertTrue(encryptionRadioGroup.disabled);
-        assertEquals(-1, encryptWithGoogle.$.button.tabIndex);
-        assertEquals(-1, encryptWithPassphrase.$.button.tabIndex);
-      });
-    }
-    return browserProxy.whenCalled('setSyncEncryption')
-        .then(verifySetSyncEncryption);
+    await waitBeforeNextRender(syncPage);
+    // Need to re-retrieve this, as a different show passphrase radio
+    // button is shown once |syncPrefs.fullEncryptionBody| is non-empty.
+    encryptWithPassphrase =
+        encryptionElement.$$('cr-radio-button[name="encrypt-with-passphrase"]');
+
+    // Assert that the radio boxes are disabled after encryption enabled.
+    assertTrue(encryptionRadioGroup.disabled);
+    assertEquals(-1, encryptWithGoogle.$.button.tabIndex);
+    assertEquals(-1, encryptWithPassphrase.$.button.tabIndex);
   });
 
   test('RadioBoxesHiddenWhenPassphraseRequired', function() {
@@ -415,7 +402,7 @@ suite('SyncSettingsTests', function() {
         assertFalse(submitExistingPassphrase.disabled);
       });
 
-  test('EnterExistingWrongPassphrase', function() {
+  test('EnterExistingWrongPassphrase', async function() {
     const prefs = getSyncAllPrefs();
     prefs.encryptAllData = true;
     prefs.passphraseRequired = true;
@@ -425,21 +412,19 @@ suite('SyncSettingsTests', function() {
     const existingPassphraseInput = syncPage.$$('#existingPassphraseInput');
     assertTrue(!!existingPassphraseInput);
     existingPassphraseInput.value = 'wrong';
-    browserProxy.encryptionResponse = PageStatus.PASSPHRASE_FAILED;
+    browserProxy.decryptionPassphraseSuccess = false;
 
     const submitExistingPassphrase = syncPage.$$('#submitExistingPassphrase');
     assertTrue(!!submitExistingPassphrase);
     submitExistingPassphrase.click();
 
-    return browserProxy.whenCalled('setSyncEncryption').then(function(args) {
-      assertFalse(args.setNewPassphrase);
-      assertEquals('wrong', args.passphrase);
-      assertTrue(args.passphraseRequired);
-      assertTrue(existingPassphraseInput.invalid);
-    });
+    const passphrase = await browserProxy.whenCalled('setDecryptionPassphrase');
+
+    assertEquals('wrong', passphrase);
+    assertTrue(existingPassphraseInput.invalid);
   });
 
-  test('EnterExistingCorrectPassphrase', function() {
+  test('EnterExistingCorrectPassphrase', async function() {
     const prefs = getSyncAllPrefs();
     prefs.encryptAllData = true;
     prefs.passphraseRequired = true;
@@ -449,29 +434,27 @@ suite('SyncSettingsTests', function() {
     const existingPassphraseInput = syncPage.$$('#existingPassphraseInput');
     assertTrue(!!existingPassphraseInput);
     existingPassphraseInput.value = 'right';
-    browserProxy.encryptionResponse = PageStatus.CONFIGURE;
+    browserProxy.decryptionPassphraseSuccess = true;
 
     const submitExistingPassphrase = syncPage.$$('#submitExistingPassphrase');
     assertTrue(!!submitExistingPassphrase);
     submitExistingPassphrase.click();
 
-    return browserProxy.whenCalled('setSyncEncryption').then(function(args) {
-      assertFalse(args.setNewPassphrase);
-      assertEquals('right', args.passphrase);
-      assertTrue(args.passphraseRequired);
+    const passphrase = await browserProxy.whenCalled('setDecryptionPassphrase');
 
-      // Fake backend response.
-      const newPrefs = getSyncAllPrefs();
-      newPrefs.encryptAllData = true;
-      webUIListenerCallback('sync-prefs-changed', newPrefs);
+    assertEquals('right', passphrase);
 
-      flush();
+    // Fake backend response.
+    const newPrefs = getSyncAllPrefs();
+    newPrefs.encryptAllData = true;
+    webUIListenerCallback('sync-prefs-changed', newPrefs);
 
-      // Verify that the encryption radio boxes are shown but disabled.
-      assertTrue(encryptionRadioGroup.disabled);
-      assertEquals(-1, encryptWithGoogle.$.button.tabIndex);
-      assertEquals(-1, encryptWithPassphrase.$.button.tabIndex);
-    });
+    flush();
+
+    // Verify that the encryption radio boxes are shown but disabled.
+    assertTrue(encryptionRadioGroup.disabled);
+    assertEquals(-1, encryptWithGoogle.$.button.tabIndex);
+    assertEquals(-1, encryptWithPassphrase.$.button.tabIndex);
   });
 
   test('SyncAdvancedRow', function() {
@@ -497,7 +480,7 @@ suite('SyncSettingsTests', function() {
     // 1) Normal user (full data encryption allowed)
     // EXPECTED: encryptionOptions enabled
     const prefs1 = getSyncAllPrefs();
-    prefs1.encryptAllDataAllowed = true;
+    prefs1.customPassphraseAllowed = true;
     webUIListenerCallback('sync-prefs-changed', prefs1);
     syncPage.syncStatus = {supervisedUser: false};
     flush();
@@ -506,11 +489,11 @@ suite('SyncSettingsTests', function() {
     assertEquals(encryptWithPassphrase.ariaDisabled, 'false');
 
     // 2) Normal user (full data encryption not allowed)
-    // encryptAllDataAllowed is usually false only for supervised
+    // customPassphraseAllowed is usually false only for supervised
     // users, but it's better to be check this case.
     // EXPECTED: encryptionOptions disabled
     const prefs2 = getSyncAllPrefs();
-    prefs2.encryptAllDataAllowed = false;
+    prefs2.customPassphraseAllowed = false;
     webUIListenerCallback('sync-prefs-changed', prefs2);
     syncPage.syncStatus = {supervisedUser: false};
     flush();
@@ -521,7 +504,7 @@ suite('SyncSettingsTests', function() {
     // 3) Supervised user (full data encryption not allowed)
     // EXPECTED: encryptionOptions disabled
     const prefs3 = getSyncAllPrefs();
-    prefs3.encryptAllDataAllowed = false;
+    prefs3.customPassphraseAllowed = false;
     webUIListenerCallback('sync-prefs-changed', prefs3);
     syncPage.syncStatus = {supervisedUser: true};
     flush();
@@ -533,7 +516,7 @@ suite('SyncSettingsTests', function() {
     // This never happens in practice, but just to be safe.
     // EXPECTED: encryptionOptions disabled
     const prefs4 = getSyncAllPrefs();
-    prefs4.encryptAllDataAllowed = true;
+    prefs4.customPassphraseAllowed = true;
     webUIListenerCallback('sync-prefs-changed', prefs4);
     syncPage.syncStatus = {supervisedUser: true};
     flush();
@@ -566,7 +549,7 @@ suite('SyncSettingsTests', function() {
   // ##################################
 
   if (!isChromeOS) {
-    test('SyncSetupCancel', function() {
+    test('SyncSetupCancel', async function() {
       syncPage.syncStatus = {
         syncSystemEnabled: true,
         firstSetupInProgress: true,
@@ -582,13 +565,12 @@ suite('SyncSettingsTests', function() {
 
       // Clicking the setup cancel button aborts sync.
       cancelButton.click();
-      return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
-          .then(abort => {
-            assertTrue(abort);
-          });
+      const abort =
+          await browserProxy.whenCalled('didNavigateAwayFromSyncPage');
+      assertTrue(abort);
     });
 
-    test('SyncSetupConfirm', function() {
+    test('SyncSetupConfirm', async function() {
       syncPage.syncStatus = {
         syncSystemEnabled: true,
         firstSetupInProgress: true,
@@ -604,13 +586,12 @@ suite('SyncSettingsTests', function() {
       assertTrue(!!confirmButton);
       confirmButton.click();
 
-      return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
-          .then(abort => {
-            assertFalse(abort);
-          });
+      const abort =
+          await browserProxy.whenCalled('didNavigateAwayFromSyncPage');
+      assertFalse(abort);
     });
 
-    test('SyncSetupLeavePage', function() {
+    test('SyncSetupLeavePage', async function() {
       syncPage.syncStatus = {
         syncSystemEnabled: true,
         firstSetupInProgress: true,
@@ -622,44 +603,32 @@ suite('SyncSettingsTests', function() {
       // dialog.
       const router = Router.getInstance();
       router.navigateTo(routes.BASIC);
-      return eventToPromise('cr-dialog-open', syncPage)
-          .then(() => {
-            assertEquals(router.getRoutes().SYNC, router.getCurrentRoute());
-            assertTrue(syncPage.$$('#setupCancelDialog').open);
+      await eventToPromise('cr-dialog-open', syncPage);
+      assertEquals(router.getRoutes().SYNC, router.getCurrentRoute());
+      assertTrue(syncPage.$$('#setupCancelDialog').open);
 
-            // Clicking the cancel button on the 'Cancel sync?' dialog closes
-            // the dialog and removes it from the DOM.
-            syncPage.$$('#setupCancelDialog')
-                .querySelector('.cancel-button')
-                .click();
+      // Clicking the cancel button on the 'Cancel sync?' dialog closes
+      // the dialog and removes it from the DOM.
+      syncPage.$$('#setupCancelDialog').querySelector('.cancel-button').click();
+      await eventToPromise('close', syncPage.$$('#setupCancelDialog'));
+      flush();
+      assertEquals(router.getRoutes().SYNC, router.getCurrentRoute());
+      assertFalse(!!syncPage.$$('#setupCancelDialog'));
 
-            return eventToPromise('close', syncPage.$$('#setupCancelDialog'));
-          })
-          .then(() => {
-            flush();
-            assertEquals(router.getRoutes().SYNC, router.getCurrentRoute());
-            assertFalse(!!syncPage.$$('#setupCancelDialog'));
+      // Navigating away while setup is in progress opens the
+      // dialog again.
+      router.navigateTo(routes.BASIC);
+      await eventToPromise('cr-dialog-open', syncPage);
+      assertTrue(syncPage.$$('#setupCancelDialog').open);
 
-            // Navigating away while setup is in progress opens the
-            // dialog again.
-            router.navigateTo(routes.BASIC);
-            return eventToPromise('cr-dialog-open', syncPage);
-          })
-          .then(() => {
-            assertTrue(syncPage.$$('#setupCancelDialog').open);
-
-            // Clicking the confirm button on the dialog aborts sync.
-            syncPage.$$('#setupCancelDialog')
-                .querySelector('.action-button')
-                .click();
-            return browserProxy.whenCalled('didNavigateAwayFromSyncPage');
-          })
-          .then(abort => {
-            assertTrue(abort);
-          });
+      // Clicking the confirm button on the dialog aborts sync.
+      syncPage.$$('#setupCancelDialog').querySelector('.action-button').click();
+      const abort =
+          await browserProxy.whenCalled('didNavigateAwayFromSyncPage');
+      assertTrue(abort);
     });
 
-    test('SyncSetupSearchSettings', function() {
+    test('SyncSetupSearchSettings', async function() {
       syncPage.syncStatus = {
         syncSystemEnabled: true,
         firstSetupInProgress: true,
@@ -672,10 +641,9 @@ suite('SyncSettingsTests', function() {
       router.navigateTo(
           router.getRoutes().BASIC, new URLSearchParams('search=foo'));
 
-      return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
-          .then(abort => {
-            assertTrue(abort);
-          });
+      const abort =
+          await browserProxy.whenCalled('didNavigateAwayFromSyncPage');
+      assertTrue(abort);
     });
 
     test('ShowAccountRow', function() {

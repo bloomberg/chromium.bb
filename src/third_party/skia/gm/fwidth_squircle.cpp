@@ -25,19 +25,16 @@
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrOpsRenderPass.h"
 #include "src/gpu/GrPipeline.h"
-#include "src/gpu/GrPrimitiveProcessor.h"
 #include "src/gpu/GrProcessor.h"
 #include "src/gpu/GrProcessorSet.h"
 #include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetContext.h"
-#include "src/gpu/GrRenderTargetContextPriv.h"
 #include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrShaderCaps.h"
 #include "src/gpu/GrShaderVar.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
-#include "src/gpu/glsl/GrGLSLPrimitiveProcessor.h"
 #include "src/gpu/glsl/GrGLSLProgramDataManager.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
@@ -65,18 +62,18 @@ static constexpr GrGeometryProcessor::Attribute gVertex =
 class FwidthSquircleTestProcessor : public GrGeometryProcessor {
 public:
     static GrGeometryProcessor* Make(SkArenaAlloc* arena, const SkMatrix& viewMatrix) {
-        return arena->make<FwidthSquircleTestProcessor>(viewMatrix);
+        return arena->make([&](void* ptr) {
+            return new (ptr) FwidthSquircleTestProcessor(viewMatrix);
+        });
     }
 
     const char* name() const override { return "FwidthSquircleTestProcessor"; }
 
     void getGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder* b) const final {}
 
-    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const final;
+    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const final;
 
 private:
-    friend class ::SkArenaAlloc; // for access to ctor
-
     FwidthSquircleTestProcessor(const SkMatrix& viewMatrix)
             : GrGeometryProcessor(kFwidthSquircleTestProcessor_ClassID)
             , fViewMatrix(viewMatrix) {
@@ -92,7 +89,7 @@ private:
 
 class FwidthSquircleTestProcessor::Impl : public GrGLSLGeometryProcessor {
     void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
-        const auto& proc = args.fGP.cast<FwidthSquircleTestProcessor>();
+        const auto& proc = args.fGeomProc.cast<FwidthSquircleTestProcessor>();
 
         auto* uniforms = args.fUniformHandler;
         fViewMatrixHandle = uniforms->addUniform(nullptr, kVertex_GrShaderFlag, kFloat3x3_GrSLType,
@@ -124,20 +121,21 @@ class FwidthSquircleTestProcessor::Impl : public GrGLSLGeometryProcessor {
         f->codeAppendf("fnwidth += 1e-10;");  // Guard against divide-by-zero.
         f->codeAppendf("half coverage = clamp(half(.5 - fn/fnwidth), 0, 1);");
 
-        f->codeAppendf("%s = half4(.51, .42, .71, 1) * .89;", args.fOutputColor);
-        f->codeAppendf("%s = half4(coverage);", args.fOutputCoverage);
+        f->codeAppendf("half4 %s = half4(.51, .42, .71, 1) * .89;", args.fOutputColor);
+        f->codeAppendf("half4 %s = half4(coverage);", args.fOutputCoverage);
     }
 
     void setData(const GrGLSLProgramDataManager& pdman,
-                 const GrPrimitiveProcessor& primProc) override {
-        const auto& proc = primProc.cast<FwidthSquircleTestProcessor>();
+                 const GrShaderCaps&,
+                 const GrGeometryProcessor& geomProc) override {
+        const auto& proc = geomProc.cast<FwidthSquircleTestProcessor>();
         pdman.setSkMatrix(fViewMatrixHandle, proc.fViewMatrix);
     }
 
     UniformHandle fViewMatrixHandle;
 };
 
-GrGLSLPrimitiveProcessor* FwidthSquircleTestProcessor::createGLSLInstance(
+GrGLSLGeometryProcessor* FwidthSquircleTestProcessor::createGLSLInstance(
         const GrShaderCaps&) const {
     return new Impl();
 }
@@ -162,24 +160,24 @@ private:
 
     const char* name() const override { return "FwidthSquircleTestOp"; }
     FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
-    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*,
-                                      bool hasMixedSampledCoverage, GrClampType) override {
+    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrClampType) override {
         return GrProcessorSet::EmptySetAnalysis();
     }
 
     GrProgramInfo* createProgramInfo(const GrCaps* caps,
                                      SkArenaAlloc* arena,
-                                     const GrSurfaceProxyView* writeView,
+                                     const GrSurfaceProxyView& writeView,
                                      GrAppliedClip&& appliedClip,
                                      const GrXferProcessor::DstProxyView& dstProxyView,
-                                     GrXferBarrierFlags renderPassXferBarriers) const {
+                                     GrXferBarrierFlags renderPassXferBarriers,
+                                     GrLoadOp colorLoadOp) const {
         GrGeometryProcessor* geomProc = FwidthSquircleTestProcessor::Make(arena, fViewMatrix);
 
         return sk_gpu_test::CreateProgramInfo(caps, arena, writeView,
                                               std::move(appliedClip), dstProxyView,
                                               geomProc, SkBlendMode::kSrcOver,
                                               GrPrimitiveType::kTriangleStrip,
-                                              renderPassXferBarriers);
+                                              renderPassXferBarriers, colorLoadOp);
     }
 
     GrProgramInfo* createProgramInfo(GrOpFlushState* flushState) const {
@@ -188,14 +186,16 @@ private:
                                        flushState->writeView(),
                                        flushState->detachAppliedClip(),
                                        flushState->dstProxyView(),
-                                       flushState->renderPassBarriers());
+                                       flushState->renderPassBarriers(),
+                                       flushState->colorLoadOp());
     }
 
     void onPrePrepare(GrRecordingContext* context,
-                      const GrSurfaceProxyView* writeView,
+                      const GrSurfaceProxyView& writeView,
                       GrAppliedClip* clip,
                       const GrXferProcessor::DstProxyView& dstProxyView,
-                      GrXferBarrierFlags renderPassXferBarriers) final {
+                      GrXferBarrierFlags renderPassXferBarriers,
+                      GrLoadOp colorLoadOp) final {
         SkArenaAlloc* arena = context->priv().recordTimeAllocator();
 
         // This is equivalent to a GrOpFlushState::detachAppliedClip
@@ -203,7 +203,7 @@ private:
 
         fProgramInfo = this->createProgramInfo(context->priv().caps(), arena, writeView,
                                                std::move(appliedClip), dstProxyView,
-                                               renderPassXferBarriers);
+                                               renderPassXferBarriers, colorLoadOp);
 
         context->priv().recordProgramInfo(fProgramInfo);
     }
@@ -240,10 +240,10 @@ private:
     sk_sp<GrBuffer> fVertexBuffer;
     const SkMatrix  fViewMatrix;
 
-    // The program info (and both the GrPipeline and GrPrimitiveProcessor it relies on), when
+    // The program info (and both the GrPipeline and GrGeometryProcessor it relies on), when
     // allocated, are allocated in either the ddl-record-time or flush-time arena. It is the
     // arena's job to free up their memory so we just have a bare programInfo pointer here. We
-    // don't even store the GrPipeline and GrPrimitiveProcessor pointers here bc they are
+    // don't even store the GrPipeline and GrGeometryProcessor pointers here bc they are
     // guaranteed to have the same lifetime as the program info.
     GrProgramInfo*  fProgramInfo = nullptr;
 
@@ -263,7 +263,7 @@ DEF_SIMPLE_GPU_GM_CAN_FAIL(fwidth_squircle, ctx, rtc, canvas, errorMsg, 200, 200
 
     // Draw the test directly to the frame buffer.
     canvas->clear(SK_ColorWHITE);
-    rtc->priv().testingOnly_addDrawOp(FwidthSquircleTestOp::Make(ctx, canvas->getTotalMatrix()));
+    rtc->addDrawOp(FwidthSquircleTestOp::Make(ctx, canvas->getTotalMatrix()));
     return skiagm::DrawResult::kOk;
 }
 

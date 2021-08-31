@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -207,11 +208,12 @@ VdaVideoDecoder::~VdaVideoDecoder() {
   DCHECK(!gpu_weak_vda_);
 }
 
-std::string VdaVideoDecoder::GetDisplayName() const {
+VideoDecoderType VdaVideoDecoder::GetDecoderType() const {
   DVLOG(3) << __func__;
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
-
-  return "VdaVideoDecoder";
+  // TODO(tmathmeyer) query the accelerator for it's implementation type and
+  // return that instead.
+  return VideoDecoderType::kVda;
 }
 
 void VdaVideoDecoder::Initialize(const VideoDecoderConfig& config,
@@ -279,7 +281,7 @@ void VdaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // (https://crbug.com/929565). We should support reinitialization for profile
   // changes. We limit this support as small as possible for safety.
   const bool is_profile_change =
-#if BUILDFLAG(IS_ASH) && BUILDFLAG(USE_VAAPI)
+#if BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(USE_VAAPI)
       config_.profile() != config.profile();
 #else
       false;
@@ -376,8 +378,9 @@ void VdaVideoDecoder::InitializeOnGpuThread() {
     return;
   }
 
-  gpu_weak_vda_factory_.reset(
-      new base::WeakPtrFactory<VideoDecodeAccelerator>(vda_.get()));
+  gpu_weak_vda_factory_ =
+      std::make_unique<base::WeakPtrFactory<VideoDecodeAccelerator>>(
+          vda_.get());
   gpu_weak_vda_ = gpu_weak_vda_factory_->GetWeakPtr();
 
   vda_initialized_ = true;
@@ -544,7 +547,7 @@ void VdaVideoDecoder::ProvidePictureBuffersAsync(uint32_t count,
   std::vector<PictureBuffer> picture_buffers =
       picture_buffer_manager_->CreatePictureBuffers(
           count, pixel_format, planes, texture_size, texture_target,
-          vda_->SupportsSharedImagePictureBuffers());
+          vda_->GetSharedImageTextureAllocationMode());
   if (picture_buffers.empty()) {
     parent_task_runner_->PostTask(
         FROM_HERE,
@@ -766,6 +769,10 @@ void VdaVideoDecoder::NotifyError(VideoDecodeAccelerator::Error error) {
 
 gpu::SharedImageStub* VdaVideoDecoder::GetSharedImageStub() const {
   return command_buffer_helper_->GetSharedImageStub();
+}
+
+CommandBufferHelper* VdaVideoDecoder::GetCommandBufferHelper() const {
+  return command_buffer_helper_.get();
 }
 
 void VdaVideoDecoder::NotifyErrorOnParentThread(

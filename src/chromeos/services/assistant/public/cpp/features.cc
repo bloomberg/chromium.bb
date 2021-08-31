@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chromeos/services/assistant/public/cpp/features.h"
-#include "chromeos/constants/chromeos_features.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/feature_list.h"
 
 namespace chromeos {
@@ -29,26 +29,14 @@ const base::Feature kAssistantDebugging{"AssistantDebugging",
 const base::Feature kAssistantLauncherChipIntegration{
     "AssistantLauncherChipIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAssistantResponseProcessingV2{
-    "AssistantResponseProcessingV2", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kAssistantRoutines{"AssistantRoutines",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kAssistantTimersV2{"AssistantTimersV2",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAssistantWaitScheduling{"AssistantWaitScheduling",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableBetterAssistant{"EnableBetterAssistant",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kEnableBloom{"EnableBloom",
-                                 base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kEnableAmbientAssistant{"EnableAmbientAssistant",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableDspHotword{"EnableDspHotword",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
@@ -59,9 +47,6 @@ const base::Feature kEnableStereoAudioInput{"AssistantEnableStereoAudioInput",
 const base::Feature kEnablePowerManager{"ChromeOSAssistantEnablePowerManager",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kEnableOnDeviceAssistant{"OnDeviceAssistant",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kEnableLibAssistantBetaBackend{
     "LibAssistantBetaBackend", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -71,12 +56,6 @@ const base::Feature kEnableMediaSessionIntegration{
 // Disable voice match for test purpose.
 const base::Feature kDisableVoiceMatch{"DisableVoiceMatch",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-bool IsAmbientAssistantEnabled() {
-  return chromeos::features::IsAmbientModeEnabled() &&
-         base::FeatureList::IsEnabled(
-             assistant::features::kEnableAmbientAssistant);
-}
 
 bool IsAppSupportEnabled() {
   return base::FeatureList::IsEnabled(
@@ -93,10 +72,6 @@ bool IsBetterAssistantEnabled() {
 
 bool IsBetterOnboardingEnabled() {
   return base::FeatureList::IsEnabled(kAssistantBetterOnboarding);
-}
-
-bool IsBloomEnabled() {
-  return base::FeatureList::IsEnabled(kEnableBloom);
 }
 
 bool IsConversationStartersV2Enabled() {
@@ -123,16 +98,8 @@ bool IsPowerManagerEnabled() {
   return base::FeatureList::IsEnabled(kEnablePowerManager);
 }
 
-bool IsOnDeviceAssistantEnabled() {
-  return base::FeatureList::IsEnabled(kEnableOnDeviceAssistant);
-}
-
 bool IsLibAssistantBetaBackendEnabled() {
   return base::FeatureList::IsEnabled(kEnableLibAssistantBetaBackend);
-}
-
-bool IsResponseProcessingV2Enabled() {
-  return base::FeatureList::IsEnabled(kAssistantResponseProcessingV2);
 }
 
 bool IsRoutinesEnabled() {
@@ -145,18 +112,12 @@ bool IsStereoAudioInputEnabled() {
          base::FeatureList::IsEnabled(kAssistantAudioEraser);
 }
 
-bool IsTimersV2Enabled() {
-  return base::FeatureList::IsEnabled(kAssistantTimersV2);
-}
-
 bool IsVoiceMatchDisabled() {
   return base::FeatureList::IsEnabled(kDisableVoiceMatch);
 }
 
 bool IsWaitSchedulingEnabled() {
-  // Wait scheduling is only supported for response processing v2 and routines.
-  return base::FeatureList::IsEnabled(kAssistantWaitScheduling) &&
-         (IsResponseProcessingV2Enabled() || IsRoutinesEnabled());
+  return base::FeatureList::IsEnabled(kAssistantWaitScheduling);
 }
 
 }  // namespace features

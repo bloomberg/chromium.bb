@@ -13,7 +13,6 @@
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/cdm_factory.h"
-#include "media/base/fallback_video_decoder.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
@@ -55,13 +54,13 @@
 
 #if defined(OS_ANDROID)
 #include "media/mojo/services/android_mojo_util.h"
-using media::android_mojo_util::CreateProvisionFetcher;
 using media::android_mojo_util::CreateMediaDrmStorage;
+using media::android_mojo_util::CreateProvisionFetcher;
 #endif  // defined(OS_ANDROID)
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/components/cdm_factory_daemon/chromeos_cdm_factory.h"
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace media {
 
@@ -106,21 +105,12 @@ D3D11VideoDecoder::GetD3D11DeviceCB GetD3D11DeviceCallback() {
 #endif
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-// Returns true if |gpu_preferences| says that the direct video decoder is
-// supported and the feature flag says so. This only applies to ChromeOS builds,
-// otherwise it returns false.
+// Returns true if |gpu_preferences| says that the direct video decoder is in
+// use.
 bool ShouldUseChromeOSDirectVideoDecoder(
     const gpu::GpuPreferences& gpu_preferences) {
-#if BUILDFLAG(IS_ASH)
-  const bool should_use_direct_video_decoder =
-      !gpu_preferences.platform_disallows_chromeos_direct_video_decoder &&
-      base::FeatureList::IsEnabled(kUseChromeOSDirectVideoDecoder);
-
-  // For testing purposes, the following flag allows using the "other" video
-  // decoder implementation.
-  if (base::FeatureList::IsEnabled(kUseAlternateVideoDecoderImplementation))
-    return !should_use_direct_video_decoder;
-  return should_use_direct_video_decoder;
+#if defined(OS_CHROMEOS)
+  return gpu_preferences.enable_chromeos_direct_video_decoder;
 #else
   return false;
 #endif
@@ -248,9 +238,9 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
       auto get_stub_cb = base::BindRepeating(
           &GetCommandBufferStub, gpu_task_runner_, media_gpu_channel_manager_,
           command_buffer_id->channel_token, command_buffer_id->route_id);
-      std::unique_ptr<SharedImageVideoProvider> image_provider;
-      image_provider = std::make_unique<DirectSharedImageVideoProvider>(
-          gpu_task_runner_, get_stub_cb);
+      std::unique_ptr<SharedImageVideoProvider> image_provider =
+          std::make_unique<DirectSharedImageVideoProvider>(gpu_task_runner_,
+                                                           get_stub_cb);
       if (base::FeatureList::IsEnabled(kUsePooledSharedImageVideoProvider)) {
         // Wrap |image_provider| in a pool.
         image_provider = PooledSharedImageVideoProvider::Create(
@@ -323,6 +313,10 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
         if (!d3d11_supported_configs_)
           GetSupportedVideoDecoderConfigs();
 
+        const bool enable_hdr =
+            gl::DirectCompositionSurfaceWin::IsHDRSupported() ||
+            base::FeatureList::IsEnabled(kD3D11VideoDecoderForceEnableHDR);
+
         video_decoder = D3D11VideoDecoder::Create(
             gpu_task_runner_, media_log->Clone(), gpu_preferences_,
             gpu_workarounds_,
@@ -330,11 +324,10 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
                                 media_gpu_channel_manager_,
                                 command_buffer_id->channel_token,
                                 command_buffer_id->route_id),
-            GetD3D11DeviceCallback(), *d3d11_supported_configs_,
-            gl::DirectCompositionSurfaceWin::IsHDRSupported());
+            GetD3D11DeviceCallback(), *d3d11_supported_configs_, enable_hdr);
       }
 #endif  // defined(OS_WIN)
-  break;
+      break;
   };  // switch
 
   // |video_decoder| may be null if we don't support |implementation|.
@@ -347,7 +340,7 @@ std::unique_ptr<CdmFactory> GpuMojoMediaClient::CreateCdmFactory(
   return std::make_unique<AndroidCdmFactory>(
       base::BindRepeating(&CreateProvisionFetcher, frame_interfaces),
       base::BindRepeating(&CreateMediaDrmStorage, frame_interfaces));
-#elif BUILDFLAG(IS_ASH)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
   return std::make_unique<chromeos::ChromeOsCdmFactory>(frame_interfaces);
 #else
   return nullptr;

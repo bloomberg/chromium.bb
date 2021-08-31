@@ -15,12 +15,8 @@
 #ifndef DAWNNATIVE_D3D12_COMMANDBUFFERD3D12_H_
 #define DAWNNATIVE_D3D12_COMMANDBUFFERD3D12_H_
 
-#include "common/Constants.h"
 #include "dawn_native/CommandBuffer.h"
 #include "dawn_native/Error.h"
-#include "dawn_native/d3d12/Forward.h"
-
-#include <array>
 
 namespace dawn_native {
     struct BeginRenderPassCmd;
@@ -30,20 +26,21 @@ namespace dawn_native { namespace d3d12 {
 
     class BindGroupStateTracker;
     class CommandRecordingContext;
-    class Device;
-    class RenderPassDescriptorHeapTracker;
     class RenderPassBuilder;
-    class RenderPipeline;
 
     class CommandBuffer final : public CommandBufferBase {
       public:
-        CommandBuffer(CommandEncoder* encoder, const CommandBufferDescriptor* descriptor);
+        static Ref<CommandBuffer> Create(CommandEncoder* encoder,
+                                         const CommandBufferDescriptor* descriptor);
 
         MaybeError RecordCommands(CommandRecordingContext* commandContext);
 
       private:
+        CommandBuffer(CommandEncoder* encoder, const CommandBufferDescriptor* descriptor);
+
         MaybeError RecordComputePass(CommandRecordingContext* commandContext,
-                                     BindGroupStateTracker* bindingTracker);
+                                     BindGroupStateTracker* bindingTracker,
+                                     const ComputePassResourceUsage& resourceUsages);
         MaybeError RecordRenderPass(CommandRecordingContext* commandContext,
                                     BindGroupStateTracker* bindingTracker,
                                     BeginRenderPassCmd* renderPass,

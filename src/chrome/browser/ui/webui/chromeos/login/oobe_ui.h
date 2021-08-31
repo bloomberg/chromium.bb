@@ -14,9 +14,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/login/oobe_screen.h"
+#include "chrome/browser/ash/login/oobe_screen.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chrome/browser/ash/login/screens/error_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
+#include "chromeos/services/cellular_setup/public/mojom/esim_manager.mojom-forward.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom-forward.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"  // nogncheck
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -31,8 +34,6 @@ class WebUIDataSource;
 }
 
 namespace chromeos {
-
-class ErrorScreen;
 class NetworkStateInformer;
 class OobeDisplayChooser;
 class SigninScreenHandler;
@@ -45,13 +46,12 @@ class SigninScreenHandlerDelegate;
 class OobeUI : public ui::MojoWebUIController {
  public:
   // List of known types of OobeUI. Type added as path in chrome://oobe url, for
-  // example chrome://oobe/user-adding.
+  // example chrome://oobe/login.
   static const char kAppLaunchSplashDisplay[];
   static const char kGaiaSigninDisplay[];
   static const char kLockDisplay[];
   static const char kLoginDisplay[];
   static const char kOobeDisplay[];
-  static const char kUserAddingDisplay[];
 
   class Observer {
    public:
@@ -83,7 +83,7 @@ class OobeUI : public ui::MojoWebUIController {
 
   bool IsScreenInitialized(OobeScreenId screen);
 
-  bool IsJSReady(const base::Closure& display_is_ready_callback);
+  bool IsJSReady(base::OnceClosure display_is_ready_callback);
 
   // Shows or hides OOBE UI elements.
   void ShowOobeUI(bool show);
@@ -93,9 +93,6 @@ class OobeUI : public ui::MojoWebUIController {
 
   // Forwards an accelerator to the webui to be handled.
   void ForwardAccelerator(std::string accelerator_name);
-
-  // Resets the delegate set in ShowSigninScreen.
-  void ResetSigninScreenHandlerDelegate();
 
   gfx::NativeView GetNativeView();
 
@@ -126,6 +123,8 @@ class OobeUI : public ui::MojoWebUIController {
 
   // Notify WebUI of the user count on the views login screen.
   void SetLoginUserCount(int user_count);
+
+  void OnSystemTrayBubbleShown();
 
   // Find a *View instance provided by a given *Handler type.
   //
@@ -164,6 +163,11 @@ class OobeUI : public ui::MojoWebUIController {
   void BindInterface(
       mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
           receiver);
+
+  // Instantiates implementor of the mojom::ESimManager mojo interface
+  // passing the pending receiver that will be internally bound.
+  void BindInterface(
+      mojo::PendingReceiver<cellular_setup::mojom::ESimManager> receiver);
 
   static void AddOobeComponents(content::WebUIDataSource* source,
                                 const base::DictionaryValue& localized_strings);
@@ -207,7 +211,7 @@ class OobeUI : public ui::MojoWebUIController {
   bool ready_ = false;
 
   // Callbacks to notify when JS part is fully loaded and ready to accept calls.
-  std::vector<base::Closure> ready_callbacks_;
+  base::OnceClosureList ready_callbacks_;
 
   // List of registered observers.
   base::ObserverList<Observer>::Unchecked observer_list_;
@@ -224,5 +228,10 @@ class OobeUI : public ui::MojoWebUIController {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to ash.
+namespace ash {
+using ::chromeos::OobeUI;
+}
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_OOBE_UI_H_

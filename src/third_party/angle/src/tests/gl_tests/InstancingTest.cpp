@@ -122,10 +122,6 @@ class InstancingTest : public ANGLETest
         // Unknown problem.  FL9_3 is not officially supported anyway.
         ANGLE_SKIP_TEST_IF(IsD3D11_FL93() && geometry == Quad && draw == NonIndexed);
 
-        // http://anglebug.com/5271
-        ANGLE_SKIP_TEST_IF(IsOSX() && IsIntelUHD630Mobile() && IsDesktopOpenGL() &&
-                           draw == NonIndexed && offset != 0);
-
         // The window is divided into kMaxDrawn slices of size kDrawSize.
         // The slice drawn into is determined by the instance datum.
         // The instance data array selects all the slices in order.
@@ -820,8 +816,10 @@ TEST_P(InstancingTestES3, LargestDivisor)
         << "Vertex attrib divisor read was not the same that was passed in.";
 }
 
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(InstancingTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(InstancingTestES3);
 
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(InstancingTestES31);
 ANGLE_INSTANTIATE_TEST_ES31(InstancingTestES31);
 
 ANGLE_INSTANTIATE_TEST_ES2(InstancingTest);

@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/buildflags.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
@@ -23,6 +24,10 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/notification_service.h"
+
+#if BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
+#include "chrome/browser/sessions/app_session_service_factory.h"
+#endif
 
 using base::UserMetricsAction;
 using content::WebContents;
@@ -55,7 +60,7 @@ base::LazyInstance<base::ObserverList<BrowserListObserver>::Unchecked>::Leaky
     BrowserList::observers_ = LAZY_INSTANCE_INITIALIZER;
 
 // static
-BrowserList* BrowserList::instance_ = NULL;
+BrowserList* BrowserList::instance_ = nullptr;
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserList, public:
@@ -63,7 +68,7 @@ BrowserList* BrowserList::instance_ = NULL;
 Browser* BrowserList::GetLastActive() const {
   if (!last_active_browsers_.empty())
     return *(last_active_browsers_.rbegin());
-  return NULL;
+  return nullptr;
 }
 
 // static
@@ -83,15 +88,10 @@ void BrowserList::AddBrowser(Browser* browser) {
 
   browser->RegisterKeepAlive();
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BROWSER_OPENED, content::Source<Browser>(browser),
-      content::NotificationService::NoDetails());
-
   for (BrowserListObserver& observer : observers_.Get())
     observer.OnBrowserAdded(browser);
 
-  if (browser->window()->IsActive())
-    SetLastActive(browser);
+  AddBrowserToActiveList(browser);
 
   if (browser->profile()->IsGuestSession() ||
       browser->profile()->IsEphemeralGuestProfile()) {
@@ -134,6 +134,23 @@ void BrowserList::RemoveBrowser(Browser* browser) {
 }
 
 // static
+void BrowserList::AddBrowserToActiveList(Browser* browser) {
+  if (browser->window()->IsActive()) {
+    SetLastActive(browser);
+  } else if (browser->window()->IsMinimized()) {
+    // Put minimized windows at the start of the active browsers vector, so that
+    // GetIndexAndBrowserOfExistingTab will find them, but prefer active
+    // windows, when it is searching from the end of |last_active_browsers_| to
+    // the beginning. |last_active_browsers_| is in reverse order of most
+    // recently active, i.e., most recently active browsers are at the end of
+    // the vector. We check IsMinimized because SHOW_STATE_INACTIVE windows are
+    // not supposed to be in the active list.
+    BrowserVector* active_browsers = &GetInstance()->last_active_browsers_;
+    active_browsers->insert(active_browsers->begin(), browser);
+  }
+}
+
+// static
 void BrowserList::AddObserver(BrowserListObserver* observer) {
   observers_.Get().AddObserver(observer);
 }
@@ -166,7 +183,10 @@ void BrowserList::CloseAllBrowsersWithProfile(
     bool skip_beforeunload) {
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   SessionServiceFactory::ShutdownForProfile(profile);
-#endif
+#if BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
+  AppSessionServiceFactory::ShutdownForProfile(profile);
+#endif  //  BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
+#endif  //  BUILDFLAG(ENABLE_SESSION_SERVICE)
 
   TryToCloseBrowserList(GetBrowsersToClose(profile), on_close_success,
                         on_close_aborted, profile->GetPath(),
@@ -203,9 +223,10 @@ void BrowserList::TryToCloseBrowserList(const BrowserVector& browsers_to_close,
        ++it) {
     if ((*it)->TryToCloseWindow(
             skip_beforeunload,
-            base::Bind(&BrowserList::PostTryToCloseBrowserWindow,
-                       browsers_to_close, on_close_success, on_close_aborted,
-                       profile_path, skip_beforeunload))) {
+            base::BindRepeating(&BrowserList::PostTryToCloseBrowserWindow,
+                                browsers_to_close, on_close_success,
+                                on_close_aborted, profile_path,
+                                skip_beforeunload))) {
       return;
     }
   }

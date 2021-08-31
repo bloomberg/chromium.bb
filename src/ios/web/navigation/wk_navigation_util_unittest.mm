@@ -119,7 +119,7 @@ TEST_F(WKNavigationUtilTest, GetSafeItemRange) {
 TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrl) {
   auto item0 = std::make_unique<NavigationItemImpl>();
   item0->SetURL(GURL("http://www.0.com"));
-  item0->SetTitle(base::ASCIIToUTF16("Test Website 0"));
+  item0->SetTitle(u"Test Website 0");
   auto item1 = std::make_unique<NavigationItemImpl>();
   item1->SetURL(GURL("http://www.1.com"));
   // Create an App-specific URL
@@ -438,8 +438,14 @@ TEST_F(WKNavigationUtilTest, URLNeedsUserAgentType) {
   EXPECT_FALSE(URLNeedsUserAgentType(
       non_user_agent_urls.ReplaceComponents(scheme_replacements)));
 
-  // Not a placeholder or normal URL.
-  EXPECT_TRUE(URLNeedsUserAgentType(GURL("about:blank?for=")));
+  if (base::FeatureList::IsEnabled(features::kUseJSForErrorPage)) {
+    // about:blank pages.
+    EXPECT_FALSE(URLNeedsUserAgentType(GURL("about:blank")));
+  } else {
+    // Not a placeholder.
+    EXPECT_TRUE(URLNeedsUserAgentType(GURL("about:blank?for=")));
+  }
+  // Normal URL.
   EXPECT_TRUE(URLNeedsUserAgentType(GURL("http://www.0.com")));
 
   // file:// URL.

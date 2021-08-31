@@ -7,15 +7,16 @@
 #include <memory>
 #include <utility>
 
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/button/button_controller_delegate.h"
 #include "ui/views/controls/button/menu_button_controller.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
+#include "ui/views/view_class_properties.h"
 
 namespace views {
 
 MenuButton::MenuButton(PressedCallback callback,
-                       const base::string16& text,
+                       const std::u16string& text,
                        int button_context)
     : LabelButton(PressedCallback(), text, button_context) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);

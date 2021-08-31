@@ -5,9 +5,9 @@
 #include "cc/animation/scroll_offset_animation_curve.h"
 
 #include "cc/animation/scroll_offset_animation_curve_factory.h"
-#include "cc/animation/timing_function.h"
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/animation/keyframe/timing_function.h"
 
 using DurationBehavior = cc::ScrollOffsetAnimationCurve::DurationBehavior;
 
@@ -20,6 +20,8 @@ namespace {
 
 // This is the value of the default Impulse bezier curve when t = 0.5
 constexpr double halfway_through_default_impulse_curve = 0.874246;
+
+}  // namespace
 
 TEST(ScrollOffsetAnimationCurveTest, DeltaBasedDuration) {
   gfx::ScrollOffset target_value(100.f, 200.f);
@@ -75,7 +77,6 @@ TEST(ScrollOffsetAnimationCurveTest, GetValue) {
   EXPECT_GT(curve->Duration().InSecondsF(), 0);
   EXPECT_LT(curve->Duration().InSecondsF(), 0.1);
 
-  EXPECT_EQ(AnimationCurve::SCROLL_OFFSET, curve->Type());
   EXPECT_EQ(duration, curve->Duration());
 
   EXPECT_VECTOR2DF_EQ(initial_value,
@@ -104,30 +105,25 @@ TEST(ScrollOffsetAnimationCurveTest, Clone) {
   curve->SetInitialValue(initial_value);
   base::TimeDelta duration = curve->Duration();
 
-  std::unique_ptr<AnimationCurve> clone(curve->Clone());
+  std::unique_ptr<gfx::AnimationCurve> clone(curve->Clone());
 
-  EXPECT_EQ(AnimationCurve::SCROLL_OFFSET, clone->Type());
   EXPECT_EQ(duration, clone->Duration());
 
-  EXPECT_VECTOR2DF_EQ(initial_value,
-                      clone->ToScrollOffsetAnimationCurve()->GetValue(
-                          base::TimeDelta::FromSecondsD(-1.0)));
+  ScrollOffsetAnimationCurve* cloned_curve =
+      ScrollOffsetAnimationCurve::ToScrollOffsetAnimationCurve(clone.get());
+
+  EXPECT_VECTOR2DF_EQ(initial_value, cloned_curve->GetValue(
+                                         base::TimeDelta::FromSecondsD(-1.0)));
+  EXPECT_VECTOR2DF_EQ(initial_value, cloned_curve->GetValue(base::TimeDelta()));
+  EXPECT_VECTOR2DF_NEAR(gfx::ScrollOffset(6.f, 30.f),
+                        cloned_curve->GetValue(duration * 0.5f), 0.00025);
+  EXPECT_VECTOR2DF_EQ(target_value, cloned_curve->GetValue(duration));
   EXPECT_VECTOR2DF_EQ(
-      initial_value,
-      clone->ToScrollOffsetAnimationCurve()->GetValue(base::TimeDelta()));
-  EXPECT_VECTOR2DF_NEAR(
-      gfx::ScrollOffset(6.f, 30.f),
-      clone->ToScrollOffsetAnimationCurve()->GetValue(duration * 0.5f),
-      0.00025);
-  EXPECT_VECTOR2DF_EQ(
-      target_value, clone->ToScrollOffsetAnimationCurve()->GetValue(duration));
-  EXPECT_VECTOR2DF_EQ(target_value,
-                      clone->ToScrollOffsetAnimationCurve()->GetValue(
-                          duration + base::TimeDelta::FromSecondsD(1.f)));
+      target_value,
+      cloned_curve->GetValue(duration + base::TimeDelta::FromSecondsD(1.f)));
 
   // Verify that the timing function was cloned correctly.
-  gfx::ScrollOffset value =
-      clone->ToScrollOffsetAnimationCurve()->GetValue(duration * 0.25f);
+  gfx::ScrollOffset value = cloned_curve->GetValue(duration * 0.25f);
   EXPECT_NEAR(3.0333f, value.x(), 0.0002f);
   EXPECT_NEAR(37.4168f, value.y(), 0.0002f);
 }
@@ -208,8 +204,8 @@ TEST(ScrollOffsetAnimationCurveTest, ImpulseUpdateTarget) {
   gfx::Vector2dF new_delta =
       new_target_value.DeltaFrom(distance_halfway_through_initial_animation);
   base::TimeDelta updated_segment_duration =
-      ScrollOffsetAnimationCurve::ImpulseSegmentDuration(new_delta,
-                                                         base::TimeDelta());
+      curve->EaseInOutBoundedSegmentDuration(new_delta, base::TimeDelta(),
+                                             base::TimeDelta());
 
   base::TimeDelta overall_duration = time_of_update + updated_segment_duration;
   EXPECT_NEAR(overall_duration.InSecondsF(), curve->Duration().InSecondsF(),
@@ -257,25 +253,26 @@ TEST(ScrollOffsetAnimationCurveTest, ImpulseUpdateTargetSwitchDirections) {
   curve->UpdateTarget(base::TimeDelta::FromSecondsD(initial_duration / 2),
                       updated_target);
 
-  double updated_duration =
-      ScrollOffsetAnimationCurve::ImpulseSegmentDuration(
-          gfx::Vector2dF(updated_initial_value.x(), updated_initial_value.y()),
-          base::TimeDelta())
-          .InSecondsF();
-
   EXPECT_NEAR(
       initial_target_value.y() * halfway_through_default_impulse_curve,
       curve->GetValue(base::TimeDelta::FromSecondsD(initial_duration / 2.0))
           .y(),
       0.01f);
 
-  EXPECT_NEAR(
-      updated_initial_value.y() * (1.0 - halfway_through_default_impulse_curve),
-      curve
-          ->GetValue(base::TimeDelta::FromSecondsD(initial_duration / 2.0 +
-                                                   updated_duration / 2.0))
-          .y(),
-      0.01f);
+  // Once the impulse style curve is updated, it turns to an ease-in ease-out
+  // type curve.
+  double updated_duration = curve
+                                ->EaseInOutBoundedSegmentDuration(
+                                    gfx::Vector2dF(updated_initial_value.x(),
+                                                   updated_initial_value.y()),
+                                    base::TimeDelta(), base::TimeDelta())
+                                .InSecondsF();
+  EXPECT_NEAR(updated_initial_value.y() * 0.5,
+              curve
+                  ->GetValue(base::TimeDelta::FromSecondsD(
+                      initial_duration / 2.0 + updated_duration / 2.0))
+                  .y(),
+              0.01f);
   EXPECT_NEAR(0.0,
               curve
                   ->GetValue(base::TimeDelta::FromSecondsD(
@@ -453,5 +450,4 @@ TEST(ScrollOffsetAnimationCurveTest, UpdateTargetZeroLastSegmentDuration) {
   EXPECT_NEAR(expected_duration, curve->Duration().InSecondsF(), 0.0002f);
 }
 
-}  // namespace
 }  // namespace cc
