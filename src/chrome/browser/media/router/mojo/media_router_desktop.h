@@ -11,7 +11,6 @@
 #include "chrome/browser/media/router/mojo/media_sink_service_status.h"
 #include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
 #include "chrome/browser/media/router/providers/dial/dial_media_route_provider.h"
-#include "chrome/browser/media/router/providers/extension/extension_media_route_provider_proxy.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
@@ -66,12 +65,11 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
 
  protected:
   // MediaRouterMojoImpl override:
-  base::Optional<MediaRouteProviderId> GetProviderIdForPresentation(
+  absl::optional<MediaRouteProviderId> GetProviderIdForPresentation(
       const std::string& presentation_id) override;
 
  private:
   friend class MediaRouterDesktopTest;
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterDesktopTest, ProvideSinks);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterDesktopTest,
                            ExtensionMrpRecoversFromConnectionError);
 
@@ -93,41 +91,19 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   void GetMediaSinkServiceStatus(
       mojom::MediaRouter::GetMediaSinkServiceStatusCallback callback) override;
 
-  // Registers a Mojo remote to the extension MRP with
-  // |extension_provider_proxy_| and does initializations specific to the
-  // extension MRP.
-  void RegisterExtensionMediaRouteProvider(
-      mojo::PendingRemote<mojom::MediaRouteProvider> extension_provider_remote);
-
   // Binds |this| to a Mojo pending receiver, so that clients can acquire a
   // handle to a MediaRouter instance via the Mojo service connector.
   // Passes the extension's ID to the event page request manager.
   void BindToMojoReceiver(mojo::PendingReceiver<mojom::MediaRouter> receiver,
                           const extensions::Extension& extension);
 
-  // Provides the current list of sinks from |media_sink_service_| to the
-  // extension. Also registers with |media_sink_service_| to listen for updates.
-  void ProvideSinksToExtension();
-
-  // Notifies the Media Router that the list of MediaSinks discovered by a
-  // MediaSinkService has been updated.
-  // |provider_name|: Name of the MediaSinkService providing the sinks.
-  // |sinks|: sinks discovered by MediaSinkService.
-  void ProvideSinks(const std::string& provider_name,
-                    const std::vector<MediaSinkInternal>& sinks);
-
   // Initializes MRPs and adds them to |media_route_providers_|.
   void InitializeMediaRouteProviders();
 
   // Helper methods for InitializeMediaRouteProviders().
-  void InitializeExtensionMediaRouteProviderProxy();
   void InitializeWiredDisplayMediaRouteProvider();
   void InitializeCastMediaRouteProvider();
   void InitializeDialMediaRouteProvider();
-
-  // Invoked when a Mojo connection error is encountered with the message pipe
-  // to |extension_provider_proxy_|.
-  void OnExtensionProviderError();
 
 #if defined(OS_WIN)
   // Ensures that mDNS discovery is enabled in the MRPM extension. This can be
@@ -144,10 +120,6 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   // Gets the per-profile Cast SDK hash token used by Cast and DIAL MRPs.
   std::string GetHashToken();
 
-  // MediaRouteProvider proxy that forwards calls to the MRPM in the component
-  // extension.
-  std::unique_ptr<ExtensionMediaRouteProviderProxy> extension_provider_proxy_;
-
   // MediaRouteProvider for casting to local screens.
   std::unique_ptr<WiredDisplayMediaRouteProvider> wired_display_provider_;
 
@@ -160,7 +132,7 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
       dial_provider_;
 
   DualMediaSinkService* media_sink_service_;
-  DualMediaSinkService::Subscription media_sink_service_subscription_;
+  base::CallbackListSubscription media_sink_service_subscription_;
 
   // A flag to ensure that we record the provider version once, during the
   // initial event page wakeup attempt.
@@ -177,10 +149,6 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   // |false| to |true|.
   bool should_enable_mdns_discovery_ = false;
 #endif
-
-  // The number of times a Mojo connection error is encountered with the
-  // message pipe to |extension_provider_proxy_|.
-  int extension_provider_error_count_ = 0;
 
   base::WeakPtrFactory<MediaRouterDesktop> weak_factory_{this};
 

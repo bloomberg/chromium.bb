@@ -12,9 +12,9 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/pin.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
 
@@ -49,19 +49,22 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthTokenRequester {
     std::set<pin::Permissions> token_permissions;
 
     // rp_id is the permissions RP ID for the token to be requested.
-    base::Optional<std::string> rp_id;
+    absl::optional<std::string> rp_id;
 
     // skip_pin_touch indicates whether not to request a touch before attempting
     // to obtain a token using a PIN.
     bool skip_pin_touch = false;
+
+    // internal_uv_locked indicates that internal user verification was already
+    // locked for the authenticator when building this AuthTokenRequester.
+    bool internal_uv_locked = false;
   };
 
   class COMPONENT_EXPORT(DEVICE_FIDO) Delegate {
    public:
     // ProvidePINCallback is used to provide the AuthTokenRequester with a PIN
-    // entered by the user. Callers must use |pin::IsValid()| to validate |pin|
-    // before invoking this callback.
-    using ProvidePINCallback = base::OnceCallback<void(std::string pin)>;
+    // entered by the user.
+    using ProvidePINCallback = base::OnceCallback<void(std::u16string pin)>;
 
     virtual ~Delegate();
 
@@ -77,30 +80,20 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthTokenRequester {
     virtual void AuthenticatorSelectedForPINUVAuthToken(
         FidoAuthenticator* authenticator) = 0;
 
-    // CollectNewPIN is invoked to prompt the user to enter a new PIN for an
-    // authenticator.
+    // CollectNewPIN is invoked to prompt the user to enter a PIN for an
+    // authenticator. |min_pin_length| is the minimum length for a valid PIN.
+    // |attempts| is the number of attempts before the authenticator is locked.
+    // This number may be zero if the number is unlimited, e.g. when setting a
+    // new PIN.
     //
     // The callee must provide the PIN by invoking |provide_pin_cb|. The
     // callback is weakly bound and safe to invoke even after the
     // AuthTokenRequester was freed.
-    virtual void CollectNewPIN(ProvidePINCallback provide_pin_cb) = 0;
-
-    // CollectExistingPIN is invoked to prompt the user to provide the existing
-    // PIN to an authenticator. |attempts| is the number of remaining attempts
-    // before the authenticator is locked.
-    //
-    // The callee must provide the PIN by invoking |provide_pin_cb|. The
-    // callback is weakly bound and safe to invoke even after the
-    // AuthTokenRequester was freed. If CollectExistingPIN() is called again
-    // after callback invocation, the provided PIN was incorrect.
-    virtual void CollectExistingPIN(int attempts,
-                                    ProvidePINCallback provide_pin_cb) = 0;
-
-    // InternalUVLockedForAuthToken() notifies the delegate that the
-    // authenticator's internal modality was locked due to too many invalid
-    // authentication attempts. It is followed by a call to CollectExistingPIN()
-    // to prompt for a PIN as a fallback authentication mechanism.
-    virtual void InternalUVLockedForAuthToken() = 0;
+    virtual void CollectPIN(pin::PINEntryReason reason,
+                            pin::PINEntryError error,
+                            uint32_t min_pin_length,
+                            int attempts,
+                            ProvidePINCallback provide_pin_cb) = 0;
 
     // PromptForInternalUVRetry is invoked to prompt the user to retry internal
     // user verification (usually on a fingerprint sensor). |attempts| is the
@@ -110,12 +103,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthTokenRequester {
     virtual void PromptForInternalUVRetry(int attempts) = 0;
 
     // HavePINUVAuthTokenResultForAuthenticator notifies the delegate of the
-    // outcome of ObtainPINUVAuthToken(). |response| is `base::nullopt`, unless
+    // outcome of ObtainPINUVAuthToken(). |response| is `absl::nullopt`, unless
     // |result| is |Result::kSuccess|.
     virtual void HavePINUVAuthTokenResultForAuthenticator(
         FidoAuthenticator* authenticator,
         Result result,
-        base::Optional<pin::TokenResponse> response) = 0;
+        absl::optional<pin::TokenResponse> response) = 0;
   };
 
   // Instantiates a new AuthTokenRequester. |delegate| and |authenticator| must
@@ -138,22 +131,23 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthTokenRequester {
  private:
   void ObtainTokenFromInternalUV();
   void OnGetUVRetries(CtapDeviceResponseCode status,
-                      base::Optional<pin::RetriesResponse> response);
+                      absl::optional<pin::RetriesResponse> response);
   void OnGetUVToken(CtapDeviceResponseCode status,
-                    base::Optional<pin::TokenResponse> response);
+                    absl::optional<pin::TokenResponse> response);
 
   void ObtainTokenFromPIN();
   void OnGetPINRetries(CtapDeviceResponseCode status,
-                       base::Optional<pin::RetriesResponse> response);
-  void HavePIN(std::string pin);
-  void OnGetPINToken(CtapDeviceResponseCode status,
-                     base::Optional<pin::TokenResponse> response);
+                       absl::optional<pin::RetriesResponse> response);
+  void HavePIN(std::u16string pin);
+  void OnGetPINToken(std::string pin,
+                     CtapDeviceResponseCode status,
+                     absl::optional<pin::TokenResponse> response);
 
   void ObtainTokenFromNewPIN();
-  void HaveNewPIN(std::string pin);
+  void HaveNewPIN(std::u16string pin);
   void OnSetPIN(std::string pin,
                 CtapDeviceResponseCode status,
-                base::Optional<pin::EmptyResponse> response);
+                absl::optional<pin::EmptyResponse> response);
 
   void NotifyAuthenticatorSelected();
   void NotifyAuthenticatorSelectedAndFailWithResult(Result result);
@@ -165,6 +159,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthTokenRequester {
 
   bool authenticator_was_selected_ = false;
   bool is_internal_uv_retry_ = false;
+  absl::optional<std::string> current_pin_;
+  bool internal_uv_locked_ = false;
+  bool pin_invalid_ = false;
+  int pin_retries_ = 0;
 
   base::WeakPtrFactory<AuthTokenRequester> weak_factory_{this};
 };

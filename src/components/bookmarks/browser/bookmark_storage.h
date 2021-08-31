@@ -7,10 +7,6 @@
 
 #include <stdint.h>
 
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/files/important_file_writer.h"
@@ -33,7 +29,8 @@ class BookmarkModel;
 // ModelLoader which takes care of loading).
 //
 // Internally BookmarkStorage uses BookmarkCodec to do the actual write.
-class BookmarkStorage : public base::ImportantFileWriter::DataSerializer {
+class BookmarkStorage
+    : public base::ImportantFileWriter::BackgroundDataSerializer {
  public:
   // How often the file is saved at most.
   static constexpr base::TimeDelta kSaveDelay =
@@ -52,8 +49,9 @@ class BookmarkStorage : public base::ImportantFileWriter::DataSerializer {
   // a pending save, it is saved immediately.
   void BookmarkModelDeleted();
 
-  // ImportantFileWriter::DataSerializer implementation.
-  bool SerializeData(std::string* output) override;
+  // ImportantFileWriter::BackgroundDataSerializer implementation.
+  base::ImportantFileWriter::BackgroundDataProducerCallback
+  GetSerializedDataProducerForBackgroundSequence() override;
 
   // Returns whether there is still a pending write.
   bool HasScheduledSaveForTesting() const;

@@ -4,6 +4,7 @@
 
 #include "net/url_request/url_request_context_builder.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -91,7 +92,7 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       const IPEndPoint& endpoint,
-      base::Optional<GURL>* preserve_fragment_on_redirect_url) override {
+      absl::optional<GURL>* preserve_fragment_on_redirect_url) override {
     return OK;
   }
 
@@ -104,7 +105,7 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
 
   void OnURLRequestDestroyed(URLRequest* request) override {}
 
-  void OnPACScriptError(int line_number, const base::string16& error) override {
+  void OnPACScriptError(int line_number, const std::u16string& error) override {
   }
 
   bool OnCanGetCookies(const URLRequest& request,
@@ -190,8 +191,6 @@ void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
   session_context->cert_verifier = request_context->cert_verifier();
   session_context->transport_security_state =
       request_context->transport_security_state();
-  session_context->cert_transparency_verifier =
-      request_context->cert_transparency_verifier();
   session_context->ct_policy_enforcer = request_context->ct_policy_enforcer();
   session_context->sct_auditing_delegate =
       request_context->sct_auditing_delegate();
@@ -250,11 +249,6 @@ void URLRequestContextBuilder::SetSpdyAndQuicEnabled(bool spdy_enabled,
                                                      bool quic_enabled) {
   http_network_session_params_.enable_http2 = spdy_enabled;
   http_network_session_params_.enable_quic = quic_enabled;
-}
-
-void URLRequestContextBuilder::set_ct_verifier(
-    std::unique_ptr<CTVerifier> ct_verifier) {
-  ct_verifier_ = std::move(ct_verifier);
 }
 
 void URLRequestContextBuilder::set_ct_policy_enforcer(
@@ -468,12 +462,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
         CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr));
   }
 
-  if (ct_verifier_) {
-    storage->set_cert_transparency_verifier(std::move(ct_verifier_));
-  } else {
-    storage->set_cert_transparency_verifier(
-        std::make_unique<MultiLogCTVerifier>());
-  }
   if (ct_policy_enforcer_) {
     storage->set_ct_policy_enforcer(std::move(ct_policy_enforcer_));
   } else {
@@ -554,6 +542,10 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 
   HttpNetworkSession::Context network_session_context;
   SetHttpNetworkSessionComponents(context.get(), &network_session_context);
+  // Unlike the other fields of HttpNetworkSession::Context,
+  // |client_socket_factory| is not mirrored in URLRequestContext.
+  network_session_context.client_socket_factory =
+      client_socket_factory_for_testing_;
 
   storage->set_http_network_session(std::make_unique<HttpNetworkSession>(
       http_network_session_params_, network_session_context));
@@ -588,9 +580,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
           NOTREACHED();
           break;
       }
-      http_cache_backend.reset(new HttpCache::DefaultBackend(
+      http_cache_backend = std::make_unique<HttpCache::DefaultBackend>(
           DISK_CACHE, backend_type, http_cache_params_.path,
-          http_cache_params_.max_size, http_cache_params_.reset_cache));
+          http_cache_params_.max_size, http_cache_params_.reset_cache);
     } else {
       http_cache_backend =
           HttpCache::DefaultBackend::InMemory(http_cache_params_.max_size);
@@ -600,9 +592,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
         http_cache_params_.app_status_listener);
 #endif
 
-    http_transaction_factory.reset(
-        new HttpCache(std::move(http_transaction_factory),
-                      std::move(http_cache_backend), true));
+    http_transaction_factory =
+        std::make_unique<HttpCache>(std::move(http_transaction_factory),
+                                    std::move(http_cache_backend), true);
   }
   storage->set_http_transaction_factory(std::move(http_transaction_factory));
 

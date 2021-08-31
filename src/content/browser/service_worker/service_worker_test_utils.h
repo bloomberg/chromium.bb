@@ -12,16 +12,13 @@
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "components/services/storage/public/mojom/service_worker_storage_control.mojom.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
-#include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/service_worker/service_worker_single_script_update_checker.h"
 #include "content/common/navigation_client.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -42,23 +39,25 @@ class ServiceWorkerVersion;
 template <typename Arg>
 void ReceiveResult(BrowserThread::ID run_quit_thread,
                    base::OnceClosure quit,
-                   base::Optional<Arg>* out,
+                   absl::optional<Arg>* out,
                    Arg actual) {
   *out = actual;
-  if (!quit.is_null())
-    base::PostTask(FROM_HERE, {run_quit_thread}, std::move(quit));
+  if (!quit.is_null()) {
+    BrowserThread::GetTaskRunnerForThread(run_quit_thread)
+        ->PostTask(FROM_HERE, std::move(quit));
+  }
 }
 
 template <typename Arg>
 base::OnceCallback<void(Arg)> CreateReceiver(BrowserThread::ID run_quit_thread,
                                              base::OnceClosure quit,
-                                             base::Optional<Arg>* out) {
+                                             absl::optional<Arg>* out) {
   return base::BindOnce(&ReceiveResult<Arg>, run_quit_thread, std::move(quit),
                         out);
 }
 
 base::OnceCallback<void(blink::ServiceWorkerStatusCode)>
-ReceiveServiceWorkerStatus(base::Optional<blink::ServiceWorkerStatusCode>* out,
+ReceiveServiceWorkerStatus(absl::optional<blink::ServiceWorkerStatusCode>* out,
                            base::OnceClosure quit_closure);
 
 blink::ServiceWorkerStatusCode StartServiceWorker(
@@ -384,7 +383,7 @@ class MockServiceWorkerDataPipeStateNotifier
   // storage::mojom::ServiceWorkerDataPipeStateNotifier implementations:
   void OnComplete(int32_t status) override;
 
-  base::Optional<int32_t> complete_status_;
+  absl::optional<int32_t> complete_status_;
   base::OnceClosure on_complete_callback_;
   mojo::Receiver<storage::mojom::ServiceWorkerDataPipeStateNotifier> receiver_{
       this};

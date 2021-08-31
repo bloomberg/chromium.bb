@@ -95,7 +95,7 @@ class FileDestructionWatcher {
     // destroyed between the existence check and when we start watching, if the
     // order were reversed.
     EXPECT_TRUE(watcher_->Watch(
-        watched_file_path_, false /* recursive */,
+        watched_file_path_, base::FilePathWatcher::Type::kNonRecursive,
         base::BindRepeating(&FileDestructionWatcher::OnPathChanged,
                             base::Unretained(this))));
     CheckIfPathExists();
@@ -133,8 +133,8 @@ IN_PROC_BROWSER_TEST_F(ProfileDeleteMediaBrowserTest, DeleteMediaCache) {
   // Make sure the legacy media cache directory (created in SetUp) gets deleted
   // properly.
   base::FilePath cache_base;
-  chrome::GetUserCacheDirectory(TabModelList::get(0)->GetProfile()->GetPath(),
-                                &cache_base);
+  chrome::GetUserCacheDirectory(
+      TabModelList::models()[0]->GetProfile()->GetPath(), &cache_base);
 
   // |cache_base_| computation in SetUp() makes assumptions on implementation
   // details to be able to run that early, so verify its result is sane.

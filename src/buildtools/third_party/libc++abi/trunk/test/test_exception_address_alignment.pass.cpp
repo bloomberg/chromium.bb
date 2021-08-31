@@ -6,13 +6,21 @@
 //
 //===----------------------------------------------------------------------===//
 
-// UNSUPPORTED: libcxxabi-no-exceptions
-// UNSUPPORTED: c++98, c++03
+// UNSUPPORTED: no-exceptions
+// UNSUPPORTED: c++03
 
-// The system unwind.h on OS X provides an incorrectly aligned _Unwind_Exception
-// type. That causes these tests to fail. This XFAIL is my best attempt at
-// working around this failure.
-// XFAIL: darwin && libcxxabi-has-system-unwinder
+// The <unwind.h> header provided in the SDK of older Xcodes used to provide
+// an incorrectly aligned _Unwind_Exception type on non-ARM. That causes these
+// tests to fail when compiling against such a SDK, or when running against a
+// system libc++abi that was compiled with an incorrect definition of _Unwind_Exception.
+// XFAIL: apple-clang-12.0.0 && !target-arm
+// XFAIL: apple-clang-11 && !target-arm
+// XFAIL: apple-clang-10 && !target-arm
+// XFAIL: apple-clang-9 && !target-arm
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.12
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.11
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.10
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.9
 
 // Test that the address of the exception object is properly aligned as required
 // by the relevant ABI
@@ -39,7 +47,7 @@ static_assert(alignof(_Unwind_Exception) == EXPECTED_ALIGNMENT,
 struct MinAligned {  };
 static_assert(alignof(MinAligned) == 1 && sizeof(MinAligned) == 1, "");
 
-int main() {
+int main(int, char**) {
   for (int i=0; i < 10; ++i) {
     try {
       throw MinAligned{};
@@ -47,4 +55,6 @@ int main() {
       assert(reinterpret_cast<uintptr_t>(&ref) % EXPECTED_ALIGNMENT == 0);
     }
   }
+
+  return 0;
 }

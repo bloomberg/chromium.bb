@@ -122,10 +122,6 @@ bool IsValidCookieValue(const std::string& value) {
   return true;
 }
 
-bool IsControlCharacter(unsigned char c) {
-  return c <= 31;
-}
-
 }  // namespace
 
 namespace net {
@@ -139,6 +135,9 @@ ParsedCookie::ParsedCookie(const std::string& cookie_line) {
   ParseTokenValuePairs(cookie_line);
   if (!pairs_.empty())
     SetupAttributes();
+
+  if (IsValid())
+    RecordCookieAttributeValueLengthHistograms();
 }
 
 ParsedCookie::~ParsedCookie() = default;
@@ -350,7 +349,7 @@ bool ParsedCookie::IsValidCookieAttributeValue(const std::string& value) {
   // The greatest common denominator of cookie attribute values is
   // <any CHAR except CTLs or ";"> according to RFC 6265.
   for (std::string::const_iterator i = value.begin(); i != value.end(); ++i) {
-    if (IsControlCharacter(*i) || *i == ';')
+    if (HttpUtil::IsControlChar(*i) || *i == ';')
       return false;
   }
   return true;
@@ -440,6 +439,23 @@ void ParsedCookie::ParseTokenValuePairs(const std::string& cookie_line) {
     // the string or a ValueSeparator like ';', which we want to skip.
     if (it != end)
       ++it;
+  }
+
+  // For metrics on name/value truncation.
+  //
+  // If we stopped before the (real) end of the string and the leftovers include
+  // something other than terminating characters or whitespace then this cookie
+  // was truncated due to a terminating CTL.
+  //
+  // We only care about the name or value being truncated which means we only
+  // care about the first pair. If the pairs_.size() > 1 then that means the
+  // truncation happened after name/value parsing which we're not concerned
+  // about for metrics.
+  using std::string_literals::operator""s;
+  if (pairs_.size() == 1 &&
+      cookie_line.find_first_not_of("\n\r\0 \t"s, end - start) !=
+          std::string::npos) {
+    truncated_name_or_value_ = true;
   }
 }
 
@@ -539,6 +555,17 @@ void ParsedCookie::ClearAttributePair(size_t index) {
       --(*attribute_index);
   }
   pairs_.erase(pairs_.begin() + index);
+}
+
+void ParsedCookie::RecordCookieAttributeValueLengthHistograms() const {
+  DCHECK(IsValid());
+  // These all max out at 4096 total. (See ParsedCookie::kMaxCookieSize.)
+  UMA_HISTOGRAM_COUNTS_10000("Cookie.Length.NameAndValue",
+                             Name().length() + Value().length());
+  UMA_HISTOGRAM_COUNTS_10000("Cookie.Length.Domain",
+                             HasDomain() ? Domain().length() : 0);
+  UMA_HISTOGRAM_COUNTS_10000("Cookie.Length.Path",
+                             HasPath() ? Path().length() : 0);
 }
 
 }  // namespace net

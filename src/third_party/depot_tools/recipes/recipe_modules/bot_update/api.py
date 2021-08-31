@@ -19,11 +19,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
     self._last_returned_properties = {}
     super(BotUpdateApi, self).__init__(*args, **kwargs)
 
-  def initialize(self):
-    assert len(self.m.buildbucket.build.input.gerrit_changes) <= 1, (
-        'bot_update does not support more than one '
-        'buildbucket.build.input.gerrit_changes')
-
   def __call__(self, name, cmd, **kwargs):
     """Wrapper for easy calling of bot_update."""
     assert isinstance(cmd, (list, tuple))
@@ -35,8 +30,14 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # aborted. Otherwise, it would wait for global timeout to be reached.
     env = {
         'GIT_HTTP_LOW_SPEED_LIMIT': '102400',  # in bytes
-        'GIT_HTTP_LOW_SPEED_TIME': 300,  # in seconds
+        'GIT_HTTP_LOW_SPEED_TIME': 1800,  # in seconds
     }
+    if self.m.buildbucket.build.id != 0:
+      env['DEPOT_TOOLS_REPORT_BUILD'] = '%s/%s/%s/%s' % (
+          self.m.buildbucket.build.builder.project,
+          self.m.buildbucket.build.builder.bucket,
+          self.m.buildbucket.build.builder.builder,
+          self.m.buildbucket.build.id)
     with self.m.context(env=env):
       with self.m.depot_tools.on_path():
         return self.m.python(name, bot_update_path, cmd, **kwargs)
@@ -93,6 +94,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       patchset=None,
                       gerrit_no_reset=False,
                       gerrit_no_rebase_patch_ref=False,
+                      assert_one_gerrit_change=True,
                       disable_syntax_validation=False,
                       patch_refs=None,
                       ignore_input_commit=False,
@@ -127,6 +129,10 @@ class BotUpdateApi(recipe_api.RecipeApi):
         Use test_api.output_json to generate test data.
       * enforce_fetch: Enforce a new fetch to refresh the git cache, even if the
         solution revision passed in already exists in the current git cache.
+      * assert_one_gerrit_change: if True, assert that there is at most one
+        change in self.m.buildbucket.build.input.gerrit_changes, because
+        bot_update module ONLY supports one change. Users may specify a change
+        via tryserver.set_change() and explicitly set this flag False.
     """
     assert use_site_config_creds is None, "use_site_config_creds is deprecated"
     assert rietveld is None, "rietveld is deprecated"
@@ -135,6 +141,10 @@ class BotUpdateApi(recipe_api.RecipeApi):
     assert patch_oauth2 is None, "patch_oauth2 is deprecated"
     assert oauth2_json is None, "oauth2_json is deprecated"
     assert not (ignore_input_commit and set_output_commit)
+    if assert_one_gerrit_change:
+      assert len(self.m.buildbucket.build.input.gerrit_changes) <= 1, (
+          'bot_update does not support more than one '
+          'buildbucket.build.input.gerrit_changes')
 
     refs = refs or []
     # We can re-use the gclient spec from the gclient module, since all the
@@ -236,8 +246,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
       fixed_revision = self.m.gclient.resolve_revision(revision)
       if fixed_revision:
         fixed_revisions[name] = fixed_revision
-        if fixed_revision.upper() == 'HEAD':
-          # Sync to correct destination ref if HEAD was specified.
+        if fixed_revision.upper() == 'HEAD' and patch:
+          # Sync to correct destination ref
           fixed_revision = self._destination_ref(cfg, name)
         # If we're syncing to a ref, we want to make sure it exists before
         # trying to check it out.
@@ -284,6 +294,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--gerrit_no_rebase_patch_ref')
     if disable_syntax_validation or cfg.disable_syntax_validation:
       cmd.append('--disable-syntax-validation')
+    if self.m.properties.get('bot_update_experiments'):
+      cmd.append('--experiments=%s' %
+          ','.join(self.m.properties['bot_update_experiments']))
 
     # Inject Json output for testing.
     first_sln = cfg.solutions[0].name
@@ -300,12 +313,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # Ah hah! Now that everything is in place, lets run bot_update!
     step_result = None
     try:
-      # 87 and 88 are the 'patch failure' codes for patch download and patch
-      # apply, respectively. We don't actually use the error codes, and instead
-      # rely on emitted json to determine cause of failure.
-      step_result = self(
-           name, cmd, step_test_data=step_test_data,
-           ok_ret=(0, 87, 88), **kwargs)
+      step_result = self(name, cmd, step_test_data=step_test_data, **kwargs)
     except self.m.step.StepFailure as f:
       step_result = f.result
       raise
@@ -324,6 +332,24 @@ class BotUpdateApi(recipe_api.RecipeApi):
         if 'step_text' in result:
           step_text = result['step_text']
           step_result.presentation.step_text = step_text
+
+        if result.get('patch_failure'):
+          patch_body = result.get('failed_patch_body')
+          if patch_body:
+            step_result.presentation.logs['patch error'] = (
+                patch_body.splitlines())
+
+          if result.get('patch_apply_return_code') == 3:
+            # This is download failure, hence an infra failure.
+            raise self.m.step.InfraFailure(
+                'Patch failure: Git reported a download failure')
+          else:
+            # This is actual patch failure.
+            self.m.tryserver.set_patch_failure_tryjob_result()
+            self.m.cq.set_do_not_retry_build()
+            raise self.m.step.StepFailure(
+                'Patch failure: See patch error log attached to bot_update. '
+                'Try rebasing?')
 
         if add_blamelists and 'manifest' in result:
           blamelist_pins = []
@@ -359,7 +385,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
           # Determine the output ref.
           got_revision_cp = self._last_returned_properties.get('got_revision_cp')
-          in_rev = revisions.get(out_solution)
+          in_rev = self.m.gclient.resolve_revision(revisions.get(out_solution))
+          if not in_rev:
+            in_rev = 'HEAD'
           if got_revision_cp:
             # If commit position string is available, read the ref from there.
             out_commit.ref, out_commit.position = (
@@ -376,7 +404,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
             out_commit.ref = in_commit.ref
           else: # pragma: no cover
             assert False, (
-                'Unsupposed case. '
+                'Unsupported case. '
                 'Call buildbucket.set_output_gitiles_commit directly.'
             )
           self.m.buildbucket.set_output_gitiles_commit(out_commit)
@@ -384,29 +412,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
         # Set the "checkout" path for the main solution.
         # This is used by the Chromium module to figure out where to look for
         # the checkout.
-        # If there is a patch failure, emit another step that said things
-        # failed.
-        if result.get('patch_failure'):
-          return_code = result.get('patch_apply_return_code')
-          patch_body = result.get('failed_patch_body')
-          try:
-            if return_code == 3:
-              # This is download failure, hence an infra failure.
-              with self.m.context(infra_steps=True):
-                self.m.python.failing_step(
-                    'Patch failure', 'Git reported a download failure')
-            else:
-              # This is actual patch failure.
-              self.m.tryserver.set_patch_failure_tryjob_result()
-              self.m.cq.set_do_not_retry_build()
-              self.m.python.failing_step(
-                  'Patch failure', 'See attached log. Try rebasing?')
-          except self.m.step.StepFailure as e:
-            if patch_body:
-              e.result.presentation.logs['patch error'] = (
-                  patch_body.splitlines())
-            raise e
-
         # bot_update actually just sets root to be the folder name of the
         # first solution.
         if (result.get('did_run')
@@ -444,7 +449,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
       return 'HEAD'
 
     target_ref = self.m.tryserver.gerrit_change_target_ref
-    if target_ref in ['refs/heads/master', 'refs/heads/master']:
+    if target_ref == 'refs/heads/master':
       return 'HEAD'
 
     return target_ref

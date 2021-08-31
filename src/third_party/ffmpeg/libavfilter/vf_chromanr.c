@@ -32,7 +32,13 @@ typedef struct ChromaNRContext {
     const AVClass *class;
 
     float threshold;
+    float threshold_y;
+    float threshold_u;
+    float threshold_v;
     int thres;
+    int thres_y;
+    int thres_u;
+    int thres_v;
     int sizew;
     int sizeh;
     int stepw;
@@ -52,11 +58,11 @@ typedef struct ChromaNRContext {
 static int query_formats(AVFilterContext *ctx)
 {
     static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV444P,
+        AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUV411P, AV_PIX_FMT_YUV444P,
         AV_PIX_FMT_YUVA420P, AV_PIX_FMT_YUVA422P, AV_PIX_FMT_YUVA444P,
         AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ440P, AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ411P,
         AV_PIX_FMT_YUV420P9,   AV_PIX_FMT_YUV422P9,   AV_PIX_FMT_YUV444P9,
-        AV_PIX_FMT_YUV420P10,  AV_PIX_FMT_YUV422P10,  AV_PIX_FMT_YUV444P10,
+        AV_PIX_FMT_YUV420P10,  AV_PIX_FMT_YUV422P10,  AV_PIX_FMT_YUV440P10, AV_PIX_FMT_YUV444P10,
         AV_PIX_FMT_YUV444P12,  AV_PIX_FMT_YUV422P12,  AV_PIX_FMT_YUV440P12, AV_PIX_FMT_YUV420P12,
         AV_PIX_FMT_YUV444P14,  AV_PIX_FMT_YUV422P14,  AV_PIX_FMT_YUV420P14,
         AV_PIX_FMT_YUV420P16,  AV_PIX_FMT_YUV422P16,  AV_PIX_FMT_YUV444P16,
@@ -91,6 +97,9 @@ static int filter_slice##name(AVFilterContext *ctx, void *arg, int jobnr, int nb
     const int sizew = s->sizew;                                                          \
     const int sizeh = s->sizeh;                                                          \
     const int thres = s->thres;                                                          \
+    const int thres_y = s->thres_y;                                                      \
+    const int thres_u = s->thres_u;                                                      \
+    const int thres_v = s->thres_v;                                                      \
     const int h = s->planeheight[1];                                                     \
     const int w = s->planewidth[1];                                                      \
     const int slice_start = (h * jobnr) / nb_jobs;                                       \
@@ -142,6 +151,8 @@ static int filter_slice##name(AVFilterContext *ctx, void *arg, int jobnr, int nb
                     const int V = in_vptr[xx];                                         \
                                                                                        \
                     if (FFABS(cu - U) + FFABS(cv - V) + FFABS(cy - Y) < thres &&       \
+                        FFABS(cu - U) < thres_u && FFABS(cv - V) < thres_v &&          \
+                        FFABS(cy - Y) < thres_y &&                                     \
                         xx != x && yy != y) {                                          \
                         su += U;                                                       \
                         sv += V;                                                       \
@@ -172,6 +183,9 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     AVFrame *out;
 
     s->thres = s->threshold * (1 << (s->depth - 8));
+    s->thres_y = s->threshold_y * (1 << (s->depth - 8));
+    s->thres_u = s->threshold_u * (1 << (s->depth - 8));
+    s->thres_v = s->threshold_v * (1 << (s->depth - 8));
 
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
@@ -217,11 +231,14 @@ static int config_input(AVFilterLink *inlink)
 #define VF AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_FILTERING_PARAM | AV_OPT_FLAG_RUNTIME_PARAM
 
 static const AVOption chromanr_options[] = {
-    { "thres", "set u/v threshold",   OFFSET(threshold), AV_OPT_TYPE_FLOAT, {.dbl=30}, 1, 200, VF },
+    { "thres", "set y+u+v threshold", OFFSET(threshold), AV_OPT_TYPE_FLOAT, {.dbl=30}, 1, 200, VF },
     { "sizew", "set horizontal size", OFFSET(sizew),     AV_OPT_TYPE_INT,   {.i64=5},  1, 100, VF },
     { "sizeh", "set vertical size",   OFFSET(sizeh),     AV_OPT_TYPE_INT,   {.i64=5},  1, 100, VF },
     { "stepw", "set horizontal step", OFFSET(stepw),     AV_OPT_TYPE_INT,   {.i64=1},  1,  50, VF },
     { "steph", "set vertical step",   OFFSET(steph),     AV_OPT_TYPE_INT,   {.i64=1},  1,  50, VF },
+    { "threy", "set y threshold",   OFFSET(threshold_y), AV_OPT_TYPE_FLOAT, {.dbl=200},1, 200, VF },
+    { "threu", "set u threshold",   OFFSET(threshold_u), AV_OPT_TYPE_FLOAT, {.dbl=200},1, 200, VF },
+    { "threv", "set v threshold",   OFFSET(threshold_v), AV_OPT_TYPE_FLOAT, {.dbl=200},1, 200, VF },
     { NULL }
 };
 

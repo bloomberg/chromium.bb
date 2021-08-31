@@ -28,7 +28,7 @@ class MockSyncService : public syncer::TestSyncService {
   void SetStatus(bool has_passphrase, bool history_enabled, bool active) {
     SetTransportState(active ? TransportState::ACTIVE
                              : TransportState::INITIALIZING);
-    SetIsUsingSecondaryPassphrase(has_passphrase);
+    SetIsUsingExplicitPassphrase(has_passphrase);
     SetPreferredDataTypes(
         history_enabled
             ? syncer::ModelTypeSet(syncer::HISTORY_DELETE_DIRECTIVES)
@@ -40,8 +40,8 @@ class MockSyncService : public syncer::TestSyncService {
         /*birthday=*/std::string(), /*bag_of_chips=*/std::string(),
         syncer::ModelNeutralState(), syncer::ProgressMarkerMap(), false, 0, 0,
         0, true, 0, base::Time::Now(), base::Time::Now(),
-        std::vector<int>(syncer::ModelType::NUM_ENTRIES, 0),
-        std::vector<int>(syncer::ModelType::NUM_ENTRIES, 0),
+        std::vector<int>(syncer::GetNumModelTypes(), 0),
+        std::vector<int>(syncer::GetNumModelTypes(), 0),
         sync_pb::SyncEnums::UNKNOWN_ORIGIN, base::TimeDelta::FromMinutes(1),
         false));
 

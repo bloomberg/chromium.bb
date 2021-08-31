@@ -1,0 +1,6 @@
+uniform half a, b, c;
+uniform half4 d, e, f;
+void main() {
+    sk_FragColor.x = faceforward(a, b, c);
+    sk_FragColor = faceforward(d, e, f);
+}

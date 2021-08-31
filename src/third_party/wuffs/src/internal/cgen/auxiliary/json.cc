@@ -86,7 +86,7 @@ const char DecodeJson_NoMatch[] = "wuffs_aux::DecodeJson: no match";
   }                                                                      \
   uint8_t* token_ptr = io_buf->data.ptr + cursor_index;                  \
   (void)(token_ptr);                                                     \
-  cursor_index += token_len
+  cursor_index += static_cast<size_t>(token_len)
 
 // --------
 
@@ -100,7 +100,7 @@ namespace {
 std::pair<std::string, size_t>  //
 DecodeJson_SplitJsonPointer(std::string& s,
                             size_t i,
-                            bool allow_tilde_r_tilde_n) {
+                            bool allow_tilde_n_tilde_r_tilde_t) {
   std::string fragment;
   while (i < s.size()) {
     char c = s[i];
@@ -124,13 +124,17 @@ DecodeJson_SplitJsonPointer(std::string& s,
       fragment.push_back('/');
       i++;
       continue;
-    } else if (allow_tilde_r_tilde_n) {
-      if (c == 'r') {
+    } else if (allow_tilde_n_tilde_r_tilde_t) {
+      if (c == 'n') {
+        fragment.push_back('\n');
+        i++;
+        continue;
+      } else if (c == 'r') {
         fragment.push_back('\r');
         i++;
         continue;
-      } else if (c == 'n') {
-        fragment.push_back('\n');
+      } else if (c == 't') {
+        fragment.push_back('\t');
         i++;
         continue;
       }
@@ -197,7 +201,7 @@ do_dict:
                      WUFFS_BASE__TOKEN__VBD__STRING__CONVERT_1_DST_1_SRC_COPY) {
             const char* ptr =  // Convert from (uint8_t*).
                 static_cast<const char*>(static_cast<void*>(token_ptr));
-            str.append(ptr, token_len);
+            str.append(ptr, static_cast<size_t>(token_len));
           } else {
             goto fail;
           }
@@ -307,7 +311,7 @@ check_that_a_value_follows:
     // Undo the last part of WUFFS_AUX__DECODE_JSON__GET_THE_NEXT_TOKEN, so that
     // we're only peeking at the next token.
     tok_buf.meta.ri--;
-    cursor_index -= token_len;
+    cursor_index -= static_cast<size_t>(token_len);
 
     if ((vbc == WUFFS_BASE__TOKEN__VBC__STRUCTURE) &&
         (vbd & WUFFS_BASE__TOKEN__VBD__STRUCTURE__POP)) {
@@ -353,12 +357,12 @@ DecodeJson(DecodeJsonCallbacks& callbacks,
       ret_error_message = "wuffs_aux::DecodeJson: out of memory";
       goto done;
     }
-    bool allow_tilde_r_tilde_n = false;
+    bool allow_tilde_n_tilde_r_tilde_t = false;
     for (size_t i = 0; i < quirks.len; i++) {
       dec->set_quirk_enabled(quirks.ptr[i], true);
       if (quirks.ptr[i] ==
-          WUFFS_JSON__QUIRK_JSON_POINTER_ALLOW_TILDE_R_TILDE_N) {
-        allow_tilde_r_tilde_n = true;
+          WUFFS_JSON__QUIRK_JSON_POINTER_ALLOW_TILDE_N_TILDE_R_TILDE_T) {
+        allow_tilde_n_tilde_r_tilde_t = true;
       }
     }
 
@@ -380,7 +384,7 @@ DecodeJson(DecodeJsonCallbacks& callbacks,
         goto done;
       }
       std::pair<std::string, size_t> split = DecodeJson_SplitJsonPointer(
-          json_pointer, i + 1, allow_tilde_r_tilde_n);
+          json_pointer, i + 1, allow_tilde_n_tilde_r_tilde_t);
       i = std::move(split.second);
       if (i == 0) {
         ret_error_message = DecodeJson_BadJsonPointer;
@@ -427,7 +431,7 @@ DecodeJson(DecodeJsonCallbacks& callbacks,
                      WUFFS_BASE__TOKEN__VBD__STRING__CONVERT_1_DST_1_SRC_COPY) {
             const char* ptr =  // Convert from (uint8_t*).
                 static_cast<const char*>(static_cast<void*>(token_ptr));
-            str.append(ptr, token_len);
+            str.append(ptr, static_cast<size_t>(token_len));
           } else {
             goto fail;
           }
@@ -467,7 +471,8 @@ DecodeJson(DecodeJsonCallbacks& callbacks,
           if (vbd & WUFFS_BASE__TOKEN__VBD__NUMBER__FORMAT_TEXT) {
             if (vbd & WUFFS_BASE__TOKEN__VBD__NUMBER__CONTENT_INTEGER_SIGNED) {
               wuffs_base__result_i64 r = wuffs_base__parse_number_i64(
-                  wuffs_base__make_slice_u8(token_ptr, token_len),
+                  wuffs_base__make_slice_u8(token_ptr,
+                                            static_cast<size_t>(token_len)),
                   WUFFS_BASE__PARSE_NUMBER_XXX__DEFAULT_OPTIONS);
               if (r.status.is_ok()) {
                 ret_error_message = callbacks.AppendI64(r.value);
@@ -476,7 +481,8 @@ DecodeJson(DecodeJsonCallbacks& callbacks,
             }
             if (vbd & WUFFS_BASE__TOKEN__VBD__NUMBER__CONTENT_FLOATING_POINT) {
               wuffs_base__result_f64 r = wuffs_base__parse_number_f64(
-                  wuffs_base__make_slice_u8(token_ptr, token_len),
+                  wuffs_base__make_slice_u8(token_ptr,
+                                            static_cast<size_t>(token_len)),
                   WUFFS_BASE__PARSE_NUMBER_XXX__DEFAULT_OPTIONS);
               if (r.status.is_ok()) {
                 ret_error_message = callbacks.AppendF64(r.value);

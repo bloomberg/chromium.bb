@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
 namespace blink {
@@ -91,8 +90,7 @@ class NeedsAdjustPointer<T, false> {
   static_assert(sizeof(T), "T must be fully defined");
 
  public:
-  static const bool value =
-      IsGarbageCollectedMixin<typename std::remove_const<T>::type>::value;
+  static const bool value = true;
 };
 
 // TODO(sof): migrate to wtf/TypeTraits.h

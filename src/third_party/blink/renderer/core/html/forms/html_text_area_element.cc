@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -293,7 +294,7 @@ bool HTMLTextAreaElement::HasCustomFocusLogic() const {
 bool HTMLTextAreaElement::IsKeyboardFocusable() const {
   // If a given text area can be focused at all, then it will always be keyboard
   // focusable.
-  return IsFocusable();
+  return IsBaseElementFocusable();
 }
 
 bool HTMLTextAreaElement::MayTriggerVirtualKeyboard() const {
@@ -357,7 +358,7 @@ void HTMLTextAreaElement::SubtreeHasChanged() {
 
   // When typing in a textarea, childrenChanged is not called, so we need to
   // force the directionality check.
-  CalculateAndAdjustDirectionality();
+  CalculateAndAdjustAutoDirectionality(this);
 
   DCHECK(GetDocument().IsActive());
   GetDocument().GetPage()->GetChromeClient().DidChangeValueInTextField(*this);
@@ -617,7 +618,7 @@ bool HTMLTextAreaElement::IsValidValue(const String& candidate) const {
          !TooShort(&candidate, kIgnoreDirtyFlag);
 }
 
-void HTMLTextAreaElement::AccessKeyAction(bool) {
+void HTMLTextAreaElement::AccessKeyAction(SimulatedClickCreationScope) {
   focus();
 }
 
@@ -632,11 +633,11 @@ void HTMLTextAreaElement::setRows(unsigned rows) {
 }
 
 bool HTMLTextAreaElement::MatchesReadOnlyPseudoClass() const {
-  return IsReadOnly();
+  return IsDisabledOrReadOnly();
 }
 
 bool HTMLTextAreaElement::MatchesReadWritePseudoClass() const {
-  return !IsReadOnly();
+  return !IsDisabledOrReadOnly();
 }
 
 void HTMLTextAreaElement::SetPlaceholderVisibility(bool visible) {
@@ -646,6 +647,7 @@ void HTMLTextAreaElement::SetPlaceholderVisibility(bool visible) {
 void HTMLTextAreaElement::UpdatePlaceholderText() {
   HTMLElement* placeholder = PlaceholderElement();
   const String placeholder_text = GetPlaceholderValue();
+  const bool is_suggested_value = !SuggestedValue().IsEmpty();
   if (placeholder_text.IsEmpty()) {
     if (placeholder)
       UserAgentShadowRoot()->RemoveChild(placeholder);
@@ -661,6 +663,12 @@ void HTMLTextAreaElement::UpdatePlaceholderText() {
         CSSPropertyID::kDisplay,
         IsPlaceholderVisible() ? CSSValueID::kBlock : CSSValueID::kNone, true);
     UserAgentShadowRoot()->InsertBefore(placeholder, InnerEditorElement());
+  }
+  if (is_suggested_value) {
+    placeholder->SetInlineStyleProperty(CSSPropertyID::kUserSelect,
+                                        CSSValueID::kNone, true);
+  } else {
+    placeholder->RemoveInlineStyleProperty(CSSPropertyID::kUserSelect);
   }
   String normalized_value = placeholder_text;
   // https://html.spec.whatwg.org/multipage/form-elements.html#attr-textarea-placeholder

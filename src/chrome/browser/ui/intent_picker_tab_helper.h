@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_INTENT_PICKER_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_INTENT_PICKER_TAB_HELPER_H_
 
-#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -51,6 +50,9 @@ class IntentPickerTabHelper
   void LoadAppIcon(std::vector<apps::IntentPickerAppInfo> apps,
                    IntentPickerIconLoaderCallback callback,
                    size_t index);
+
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   bool should_show_icon_ = false;
 

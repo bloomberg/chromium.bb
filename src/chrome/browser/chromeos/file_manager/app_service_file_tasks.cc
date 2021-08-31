@@ -22,7 +22,6 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "components/arc/intent_helper/intent_constants.h"
@@ -46,6 +45,7 @@ TaskType GetTaskType(apps::mojom::AppType app_type) {
     case apps::mojom::AppType::kArc:
       return TASK_TYPE_ARC_APP;
     case apps::mojom::AppType::kWeb:
+    case apps::mojom::AppType::kSystemWeb:
       return TASK_TYPE_WEB_APP;
     case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kCrostini:
@@ -53,7 +53,7 @@ TaskType GetTaskType(apps::mojom::AppType app_type) {
     case apps::mojom::AppType::kExtension:
     case apps::mojom::AppType::kMacOs:
     case apps::mojom::AppType::kPluginVm:
-    case apps::mojom::AppType::kLacros:
+    case apps::mojom::AppType::kStandaloneBrowser:
     case apps::mojom::AppType::kRemote:
     case apps::mojom::AppType::kBorealis:
       return TASK_TYPE_UNKNOWN;
@@ -72,7 +72,7 @@ void FindAppServiceTasks(Profile* profile,
   if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile))
     return;
 
-  apps::AppServiceProxy* proxy =
+  apps::AppServiceProxyChromeOs* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
 
   std::vector<std::string> mime_types;
@@ -119,9 +119,6 @@ void ExecuteAppServiceTask(
   if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile))
     return;
 
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile);
-
   constexpr auto launch_source = apps::mojom::LaunchSource::kFromFileManager;
   constexpr auto launch_container =
       apps::mojom::LaunchContainer::kLaunchContainerWindow;
@@ -131,7 +128,7 @@ void ExecuteAppServiceTask(
   for (auto& file_system_url : file_system_urls)
     file_urls.push_back(file_system_url.ToGURL());
 
-  proxy->LaunchAppWithFileUrls(
+  apps::AppServiceProxyFactory::GetForProfile(profile)->LaunchAppWithFileUrls(
       task.app_id,
       apps::GetEventFlags(launch_container, WindowOpenDisposition::NEW_WINDOW,
                           /*prefer_container=*/true),

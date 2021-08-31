@@ -10,12 +10,19 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_size.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/display/display.h"
 #include "ui/views/widget/unique_widget_ptr.h"
+
+namespace gfx {
+class ImageSkia;
+class ImageSkiaRep;
+}  // namespace gfx
 
 namespace ash {
 
@@ -28,12 +35,23 @@ class CursorWindowDelegate;
 // When cursor compositing is enabled, just draw the cursor as-is.
 class ASH_EXPORT CursorWindowController {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    virtual void OnCursorCompositingStateChanged(bool enabled) = 0;
+
+   protected:
+    ~Observer() override = default;
+  };
+
   CursorWindowController();
   ~CursorWindowController();
 
   bool is_cursor_compositing_enabled() const {
     return is_cursor_compositing_enabled_;
   }
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   void SetLargeCursorSizeInDip(int large_cursor_size_in_dip);
   void SetCursorColor(SkColor cursor_color);
@@ -84,6 +102,8 @@ class ASH_EXPORT CursorWindowController {
   SkBitmap GetAdjustedBitmap(const gfx::ImageSkiaRep& image_rep) const;
 
   const gfx::ImageSkia& GetCursorImageForTest() const;
+
+  base::ObserverList<Observer> observers_;
 
   aura::Window* container_ = nullptr;
 

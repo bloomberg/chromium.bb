@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
+#include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -55,6 +56,7 @@ class Element;
 class ExceptionState;
 class ExecutionContext;
 class GCObservation;
+class HTMLCanvasElement;
 class HTMLIFrameElement;
 class HTMLInputElement;
 class HTMLMediaElement;
@@ -72,6 +74,7 @@ class Node;
 class OriginTrialsTest;
 class Page;
 class Range;
+class ReadableStream;
 class RecordTest;
 class ScriptPromiseResolver;
 class ScrollState;
@@ -122,8 +125,6 @@ class Internals final : public ScriptWrappable {
 
   ShadowRoot* shadowRoot(Element* host);
   String shadowRootType(const Node*, ExceptionState&) const;
-  bool hasShadowInsertionPoint(const Node*, ExceptionState&) const;
-  bool hasContentElement(const Node*, ExceptionState&) const;
   uint32_t countElementShadow(const Node*, ExceptionState&) const;
   const AtomicString& shadowPseudoId(Element*);
 
@@ -138,7 +139,6 @@ class Internals final : public ScriptWrappable {
   // animation update for CSS and advance the SMIL timeline by one frame.
   void advanceImageAnimation(Element* image, ExceptionState&);
 
-  bool isValidContentSelect(Element* insertion_point, ExceptionState&);
   Node* treeScopeRootNode(Node*);
   Node* parentTreeScope(Node*);
   uint16_t compareTreeScopePosition(const Node*,
@@ -325,9 +325,6 @@ class Internals final : public ScriptWrappable {
   bool canHyphenate(const AtomicString& locale);
   void setMockHyphenation(const AtomicString& locale);
 
-  bool isOverwriteModeEnabled(Document*);
-  void toggleOverwriteModeEnabled(Document*);
-
   unsigned numberOfScrollableAreas(Document*);
 
   bool isPageBoxVisible(Document*, int page_number);
@@ -468,9 +465,9 @@ class Internals final : public ScriptWrappable {
   DOMRect* selectionBounds(ExceptionState&);
   String textAffinity();
 
-  bool loseSharedGraphicsContext3D();
-
   void forceCompositingUpdate(Document*, ExceptionState&);
+
+  void setForcedColorsAndDarkPreferredColorScheme(Document* document);
 
   void setShouldRevealPassword(Element*, bool, ExceptionState&);
 
@@ -508,6 +505,8 @@ class Internals final : public ScriptWrappable {
 
   bool isInCanvasFontCache(Document*, const String&);
   unsigned canvasFontCacheMaxFonts();
+  void forceLoseCanvasContext(HTMLCanvasElement* canvas,
+                              const String& context_type);
 
   void setScrollChain(ScrollState*,
                       const HeapVector<Member<Element>>& elements,
@@ -596,8 +595,6 @@ class Internals final : public ScriptWrappable {
   bool isSiteIsolated(HTMLIFrameElement* iframe) const;
   bool isTrackingOcclusionForIFrame(HTMLIFrameElement* iframe) const;
 
-  void DisableFrequencyCappingForOverlayPopupDetection() const;
-
   void addEmbedderCustomElementName(const AtomicString& name, ExceptionState&);
 
   LocalFrame* GetFrame() const;
@@ -613,6 +610,18 @@ class Internals final : public ScriptWrappable {
 
   void setIsAdSubframe(HTMLIFrameElement* iframe,
                        ExceptionState& exception_state);
+
+  ReadableStream* createReadableStream(ScriptState* script_state,
+                                       int32_t queueSize,
+                                       const String& optimizer,
+                                       ExceptionState&);
+
+  ScriptValue createWritableStreamAndSink(ScriptState* script_state,
+                                          int32_t queueSize,
+                                          const String& optimizer,
+                                          ExceptionState&);
+
+  void setAllowPerChunkTransferring(ReadableStream* stream);
 
  private:
   Document* ContextDocument() const;

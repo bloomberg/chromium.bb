@@ -4,6 +4,7 @@
 
 module network.mojom;
 
+import "mojo/public/mojom/base/byte_string.mojom";
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/memory_pressure_level.mojom";
@@ -19,6 +20,7 @@ import "services/network/public/mojom/mutable_network_traffic_annotation_tag.moj
 import "services/network/public/mojom/net_log.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/network_context.mojom";
+import "services/network/public/mojom/ip_address_space.mojom";
 import "services/network/public/mojom/network_interface.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/network_quality_estimator_manager.mojom";
@@ -26,85 +28,15 @@ import "services/network/public/mojom/network_service_test.mojom";
 import "services/network/public/mojom/trust_tokens.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
+import "services/network/public/mojom/url_loader_network_service_observer.mojom";
+import "services/network/public/mojom/url_request.mojom";
 import "services/network/public/mojom/url_response_head.mojom";
+import "services/network/public/mojom/client_security_state.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
 [EnableIf=is_android]
 import "mojo/public/mojom/base/application_state.mojom";
-
-struct LoadInfo {
-  int32 process_id;
-  int32 routing_id;
-  string host;
-  uint32 load_state;  // net::LoadState enum
-  mojo_base.mojom.String16 state_param;
-  uint64 upload_position;
-  uint64 upload_size;
-};
-
-// Implemented by the browser process. The network service sends messages to
-// the browser process over this interface.
-interface NetworkServiceClient {
-  // Called periodically to update the client about progress of the current
-  // loads. To avoid flooding the client, it has to ack the update before it can
-  // receive the next update.
-  OnLoadingStateUpdate(array<LoadInfo> infos) => ();
-
-  // Called on every request completion to update the network traffic annotation
-  // ID, and the total bytes received and sent.
-  // |network_traffic_annotation_id_hash| represents the hash of unique tag that
-  // identifies the annotation of the request.
-  OnDataUseUpdate(int32 network_traffic_annotation_id_hash, int64 recv_bytes,
-                  int64 sent_bytes);
-
-  // Called to send raw header information and information about excluded
-  // cookies. Only called when |devtool_request_id| is available to the
-  // URLLoader.
-  OnRawRequest(
-    int32 process_id,
-    int32 routing_id,
-    string devtool_request_id,
-    array<CookieWithAccessResult> cookies_with_access_result,
-    array<HttpRawHeaderPair> headers);
-
-  // Called to send information about the cookies blocked from storage from a
-  // received response. Only called when |devtool_request_id| is available to
-  // the URLLoader.
-  OnRawResponse(
-    int32 process_id,
-    int32 routing_id,
-    string devtool_request_id,
-    array<CookieAndLineWithAccessResult> cookies_with_access_result,
-    array<HttpRawHeaderPair> headers,
-    string? raw_response_headers);
-
-  // Called to send the CORS preflight request information. Only called when
-  // |devtool_request_id| is available on the original request.
-  OnCorsPreflightRequest(
-    int32 process_id,
-    int32 render_frame_id,
-    mojo_base.mojom.UnguessableToken devtool_request_id,
-    URLRequest request,
-    url.mojom.Url initiator_url);
-
-  // Called to send the CORS preflight response information. Only called when
-  // |devtool_request_id| is available on the original request.
-  OnCorsPreflightResponse(
-    int32 process_id,
-    int32 render_frame_id,
-    mojo_base.mojom.UnguessableToken devtool_request_id,
-    url.mojom.Url url,
-    URLResponseHead head);
-
-  // Called to send the CORS preflight completion status. Only called when
-  // |devtool_request_id| is available on the original request.
-  OnCorsPreflightRequestCompleted(
-    int32 process_id,
-    int32 render_frame_id,
-    mojo_base.mojom.UnguessableToken devtool_request_id,
-    URLLoaderCompletionStatus status);
-};
 
 // Values for configuring HTTP authentication that can only be set once.
 struct HttpAuthStaticParams {
@@ -167,6 +99,13 @@ struct CryptConfig {
   // The product name to use for permission prompts.
   string product_name;
 
+  // The application name to store the crypto key against. For Chromium/Chrome
+  // builds leave this unset and it will default correctly.  This config option
+  // is for embedders to provide their application name in place of "Chromium".
+  // Only used when the allow_runtime_configurable_key_storage feature is
+  // enabled
+  string application_name;
+
   // Controls whether preference on using or ignoring backends is used.
   bool should_use_preference;
 
@@ -188,11 +127,15 @@ struct NetworkServiceParams {
   // A set of environment variables that should be set in the network
   // service when starting up.
   array<EnvironmentVariable> environment;
+
+  // An URLLoaderFactory can provide its own URLLoaderNetworkServiceObserver
+  // but if it does not, this default will be used.
+  pending_remote<URLLoaderNetworkServiceObserver> default_observer;
 };
 
 // Information about how logging should be configured.
 // Corresponds to logging::LoggingSettings.
-[EnableIf=is_chromeos]
+[EnableIf=is_chromeos_ash]
 struct LoggingSettings {
   uint32 logging_dest;
   handle<platform> log_file_descriptor;
@@ -204,16 +147,13 @@ struct LoggingSettings {
 // This is a trusted interface that only the browser process should have access
 // to. It must not be sent to any untrusted process like a renderer process.
 interface NetworkService {
-  // Sets client used by all |NetworkContext|s creating by |NetworkService|.
-  // Pending requests may hang if the |client| pipe is closed before they
-  // complete.
-  SetClient(pending_remote<NetworkServiceClient> client,
-            NetworkServiceParams params);
+  // Sets the parameters and initializes the service.
+  SetParams(NetworkServiceParams params);
 
   // Reinitializes the Network Service's logging with the given settings. This
   // is needed on Chrome OS, which switches to a log file in the user's home
   // directory once they log in.
-  [EnableIf=is_chromeos]
+  [EnableIf=is_chromeos_ash]
   ReinitializeLogging(LoggingSettings settings);
 
   // Starts observing the NetLog event stream and writing entries to |file|.
@@ -248,13 +188,13 @@ interface NetworkService {
   // https://tools.ietf.org/html/rfc1034#section-5.3.1 for definition of a stub
   // resolver.
   //
-  // |dns_over_https_servers| is an optional list of DNS over HTTPS servers.
-  // DnsTransactions will by default follow the behavior of |secure_dns_mode|.
+  // `dns_over_https_servers` is an optional list of DNS over HTTPS servers.
+  // DnsTransactions will by default follow the behavior of `secure_dns_mode`.
   // In SECURE mode, only DoH lookups will be performed. In AUTOMATIC mode,
   // DoH lookups to available servers will be performed first, and insecure
   // lookups will be used as a fallback. In OFF mode, only insecure lookups will
   // be performed. When insecure lookups are performed, they will be sent by
-  // the async resolver first if |insecure_dns_client_enabled| is true and
+  // the async resolver first if `insecure_dns_client_enabled` is true and
   // then by the system resolver as a fallback.
   //
   // DNS over HTTPS will use the primary NetworkContext, so can only be enabled
@@ -262,9 +202,15 @@ interface NetworkService {
   // limitation, this method can be called at any time to change DNS
   // configuration, though calling it will fail any DNS lookups that have
   // already been started.
+  //
+  // `additional_dns_types_enabled` controls whether additional DNS query types,
+  // e.g. HTTPS (DNS type 65) will be allowed besides the traditional A and AAAA
+  // queries when a request is being made via insecure DNS. Has no effect on
+  // Secure DNS which always allows additional types.
   ConfigureStubHostResolver(bool insecure_dns_client_enabled,
                             SecureDnsMode secure_dns_mode,
-                            array<DnsOverHttpsServer>? dns_over_https_servers);
+                            array<DnsOverHttpsServer>? dns_over_https_servers,
+                            bool additional_dns_types_enabled);
 
   // Disables QUIC for the NetworkService. Affects all existing NetworkContexts,
   // and all new ones that are created. Once called, QUIC cannot be re-enabled.
@@ -312,9 +258,6 @@ interface NetworkService {
   GetDnsConfigChangeManager(
       pending_receiver<DnsConfigChangeManager> receiver);
 
-  // Gets the accumulated network usage since the start/restart of the service.
-  GetTotalNetworkUsages() => (array<NetworkUsage> total_network_usages);
-
   // Gets list of network interfaces.
   // The |policy| parameter is a flag that specifies whether to include/exclude
   // network interfaces. Corresponds to enum net::HostAddressSelectionPolicy.
@@ -327,11 +270,6 @@ interface NetworkService {
   // this call, will use the same CRLSet.
   UpdateCRLSet(mojo_base.mojom.ReadOnlyBuffer crl_set) => ();
 
-  // Updates the configuration used for determining if a site should have legacy
-  // TLS warnings suppressed. Configs that cannot be parsed as a
-  // LegacyTLSExperimentConfig (protobuf) will be ignored.
-  UpdateLegacyTLSConfig(mojo_base.mojom.ReadOnlyBuffer config) => ();
-
   // Notification that the certificate database has been modified.
   OnCertDBChanged();
 
@@ -342,20 +280,11 @@ interface NetworkService {
 
   // Send the encryption key to the network service to use for AES encryption.
   [EnableIf=is_mac]
-  SetEncryptionKey(string encryption_key);
+  SetEncryptionKey(mojo_base.mojom.ByteString encryption_key);
 
   // Send the encryption key to the network service to use for AES encryption.
   [EnableIf=is_win]
-  SetEncryptionKey(string encryption_key);
-
-  // Notifies CORB (Cross-Origin Read Blocking) that |process_id| is proxying
-  // requests on behalf of a universal-access plugin and therefore CORB should
-  // stop blocking requests marked as ResourceType::kPluginResource.
-  //
-  // TODO(lukasza, laforge): https://crbug.com/702995: Remove the ...ForPlugin
-  // methods once Flash support is removed from Chromium (probably around 2020
-  // - see https://www.chromium.org/flash-roadmap).
-  AddCorbExceptionForPlugin(int32 process_id);
+  SetEncryptionKey(mojo_base.mojom.ByteString encryption_key);
 
   // Notifies |request_initiator_origin_lock| enforcement code that |process_id|
   // is proxying requests on behalf of a plugin from
@@ -367,7 +296,7 @@ interface NetworkService {
       int32 process_id,
       url.mojom.Origin allowed_request_initiator);
 
-  // Reverts AddCorbExceptionForPlugin and AddAllowedRequestInitiatorForPlugin.
+  // Reverts AddAllowedRequestInitiatorForPlugin.
   RemoveSecurityExceptionsForPlugin(int32 process_id);
 
   // Called when the system is low on memory.
@@ -419,14 +348,16 @@ interface NetworkService {
   // environments.
   BindTestInterface(pending_receiver<NetworkServiceTest> receiver);
 
-  // Sets the preloaded First-Party Sets data. |raw_sets| is the JSON-encoded
+  // Sets the First-Party Sets data. |raw_sets| is the JSON-encoded
   // string representation of a collection of set declarations according to the
   // format specified in this document:
   // https://github.com/privacycg/first-party-sets
-  // Note that by setting the preloaded First-Party Sets, any previous notion of
-  // preloaded First-Party Sets is cleared. This method can be partially
-  // successful in the event of malformed input (which also clears previously-
-  // known First-Party Sets), but does nothing if given non-JSON input or JSON
-  // which is not a dictionary.
-  SetPreloadedFirstPartySets(string raw_sets);
+  // Note that by setting the First-Party Sets, any previous notion of
+  // First-Party Sets is cleared. On any kind of error, all First-Party Sets are
+  // cleared (except for the manually-specified set, if one exists).
+  SetFirstPartySets(string raw_sets);
+
+  // Sets the list of ports which will be permitted even if they normally would
+  // be restricted.
+  SetExplicitlyAllowedPorts(array<uint16> ports);
 };

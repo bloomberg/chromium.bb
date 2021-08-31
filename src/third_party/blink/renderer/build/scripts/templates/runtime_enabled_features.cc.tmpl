@@ -1,39 +1,39 @@
-{% from 'templates/macros.tmpl' import license, source_files_for_generated_file %}
+{% from 'templates/macros.tmpl' import license, source_files_for_generated_file, platform_define %}
 {{license()}}
 
 {{source_files_for_generated_file(template_file, input_files)}}
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
-RuntimeEnabledFeatures::Backup::Backup()
+RuntimeEnabledFeaturesBase::Backup::Backup()
   : {% for feature in features -%}
-    {{feature.data_member_name}}(RuntimeEnabledFeatures::{{feature.data_member_name}})
+    {{feature.data_member_name}}(RuntimeEnabledFeaturesBase::{{feature.data_member_name}})
     {%- if not loop.last %},
     {%+ endif -%}
     {% endfor %} {}
 
-void RuntimeEnabledFeatures::Backup::Restore() {
+void RuntimeEnabledFeaturesBase::Backup::Restore() {
   {% for feature in features %}
-  RuntimeEnabledFeatures::{{feature.data_member_name}} = {{feature.data_member_name}};
+  RuntimeEnabledFeaturesBase::{{feature.data_member_name}} = {{feature.data_member_name}};
   {% endfor %}
 }
 
 {% for feature_set in feature_sets %}
-void RuntimeEnabledFeatures::Set{{feature_set|capitalize}}FeaturesEnabled(bool enable) {
+void RuntimeEnabledFeaturesBase::Set{{feature_set|capitalize}}FeaturesEnabled(bool enable) {
   {% for feature in features if feature.status_type == 'str' and feature.status == feature_set %}
   Set{{feature.name}}Enabled(enable);
   {% endfor %}
 
   // Platform-dependent features
   {% for platform in platforms %}
-#if defined(OS_{{platform | upper}})
+#if {{platform_define(platform)}}
   {% for feature in features if feature.status_type == 'dict' and feature.status[platform] == feature_set %}
   Set{{feature.name}}Enabled(enable);
   {% endfor %}
@@ -44,7 +44,7 @@ void RuntimeEnabledFeatures::Set{{feature_set|capitalize}}FeaturesEnabled(bool e
 #if
   {%- for platform in platforms %}
   {%- if not loop.first %} &&{% endif %}
- !defined(OS_{{platform | upper}})
+ !{{platform_define(platform)}}
   {%- endfor %}
 
   {% for feature in features if feature.status_type == 'dict' and feature.status['default'] == feature_set %}
@@ -55,13 +55,13 @@ void RuntimeEnabledFeatures::Set{{feature_set|capitalize}}FeaturesEnabled(bool e
 
 {% endfor %}
 
-void RuntimeEnabledFeatures::SetOriginTrialControlledFeaturesEnabled(bool enable) {
+void RuntimeEnabledFeaturesBase::SetOriginTrialControlledFeaturesEnabled(bool enable) {
   {% for feature in origin_trial_controlled_features %}
   Set{{feature.name}}Enabled(enable);
   {% endfor %}
 }
 
-void RuntimeEnabledFeatures::SetFeatureEnabledFromString(
+void RuntimeEnabledFeaturesBase::SetFeatureEnabledFromString(
     const std::string& name, bool enable) {
   static const struct {
     const char* name;
@@ -82,13 +82,13 @@ void RuntimeEnabledFeatures::SetFeatureEnabledFromString(
 
 {% for feature in origin_trial_controlled_features %}
 
-bool RuntimeEnabledFeatures::{{feature.name}}Enabled(const FeatureContext* context) {
+bool RuntimeEnabledFeaturesBase::{{feature.name}}Enabled(const FeatureContext* context) {
   {% for depends_on in feature.depends_on %}
-  if (!RuntimeEnabledFeatures::{{depends_on}}Enabled(context))
+  if (!RuntimeEnabledFeaturesBase::{{depends_on}}Enabled(context))
     return false;
   {% endfor %}
   {% for implied_by in feature.implied_by %}
-  if (RuntimeEnabledFeatures::{{implied_by}}Enabled(context))
+  if (RuntimeEnabledFeaturesBase::{{implied_by}}Enabled(context))
     return true;
   {% endfor %}
   if ({{feature.data_member_name}})
@@ -106,16 +106,16 @@ bool RuntimeEnabledFeatures::{{feature.name}}Enabled(const FeatureContext* conte
 
 {% for feature in features %}
 {% if feature.status_type == 'str' %}
-bool RuntimeEnabledFeatures::{{feature.data_member_name}} = {{'true' if feature.status == 'stable' else 'false'}};
+bool RuntimeEnabledFeaturesBase::{{feature.data_member_name}} = {{'true' if feature.status == 'stable' else 'false'}};
 {% endif %}
 {% endfor %}
 
 // Platform-dependent features
 {% for platform in platforms %}
-#if defined(OS_{{platform | upper}})
+#if {{platform_define(platform)}}
 {% for feature in features %}
 {% if feature.status_type == 'dict' %}
-bool RuntimeEnabledFeatures::{{feature.data_member_name}} = {{'true' if feature.status[platform] == 'stable' else 'false'}};
+bool RuntimeEnabledFeaturesBase::{{feature.data_member_name}} = {{'true' if feature.status[platform] == 'stable' else 'false'}};
 {% endif %}
 {% endfor %}
 #endif
@@ -125,12 +125,12 @@ bool RuntimeEnabledFeatures::{{feature.data_member_name}} = {{'true' if feature.
 #if
 {%- for platform in platforms %}
 {%- if not loop.first %} &&{% endif %}
- !defined(OS_{{platform | upper}})
+ !{{platform_define(platform)}}
 {%- endfor %}
 
 {% for feature in features %}
 {% if feature.status_type == 'dict' %}
-bool RuntimeEnabledFeatures::{{feature.data_member_name}} = {{'true' if feature.status['default'] == 'stable' else 'false'}};
+bool RuntimeEnabledFeaturesBase::{{feature.data_member_name}} = {{'true' if feature.status['default'] == 'stable' else 'false'}};
 {% endif %}
 {% endfor %}
 #endif

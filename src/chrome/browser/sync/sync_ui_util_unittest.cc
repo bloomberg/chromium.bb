@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/test/task_environment.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
@@ -17,9 +18,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/constants/chromeos_features.h"
 #endif
 
 namespace sync_ui_util {
@@ -98,7 +99,7 @@ StatusLabels SetUpDistinctCase(
       service->SetDetailedSyncStatus(false, syncer::SyncStatus());
       return {
         SYNC_ERROR,
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
             IDS_SYNC_STATUS_UNRECOVERABLE_ERROR,
 #else
             IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT,
@@ -114,10 +115,12 @@ StatusLabels SetUpDistinctCase(
 
       // Make sure to fail authentication with an error in this case.
       CoreAccountId account_id =
-          test_environment->identity_manager()->GetPrimaryAccountId();
+          test_environment->identity_manager()->GetPrimaryAccountId(
+              signin::ConsentLevel::kSync);
       test_environment->SetRefreshTokenForPrimaryAccount();
       service->SetAuthenticatedAccountInfo(
-          test_environment->identity_manager()->GetPrimaryAccountInfo());
+          test_environment->identity_manager()->GetPrimaryAccountInfo(
+              signin::ConsentLevel::kSync));
       test_environment->UpdatePersistentErrorOfRefreshTokenForAccount(
           account_id,
           GoogleServiceAuthError(GoogleServiceAuthError::State::SERVICE_ERROR));
@@ -254,7 +257,7 @@ TEST(SyncUIUtilTest, UnrecoverableErrorWithActionableError) {
   EXPECT_THAT(GetStatusLabels(&service, environment.identity_manager(),
                               /*is_user_signout_allowed=*/true),
               StatusLabelsMatch(SYNC_ERROR,
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
                                 IDS_SYNC_STATUS_UNRECOVERABLE_ERROR,
 #else
                                 IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT,
@@ -357,9 +360,9 @@ TEST(SyncUIUtilTest, ShouldShowPassphraseError) {
 TEST(SyncUIUtilTest, ShouldShowPassphraseError_SyncDisabled) {
   syncer::TestSyncService service;
   service.SetFirstSetupComplete(false);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   service.GetUserSettings()->SetOsSyncFeatureEnabled(false);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   service.SetPassphraseRequiredForPreferredDataTypes(true);
   EXPECT_FALSE(ShouldShowPassphraseError(&service));
 }
@@ -371,7 +374,7 @@ TEST(SyncUIUtilTest, ShouldShowPassphraseError_NotUsingPassphrase) {
   EXPECT_FALSE(ShouldShowPassphraseError(&service));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST(SyncUIUtilTest, ShouldShowPassphraseError_OsSyncEnabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(chromeos::features::kSplitSettingsSync);
@@ -381,7 +384,7 @@ TEST(SyncUIUtilTest, ShouldShowPassphraseError_OsSyncEnabled) {
   service.GetUserSettings()->SetOsSyncFeatureEnabled(true);
   EXPECT_TRUE(ShouldShowPassphraseError(&service));
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 

@@ -28,12 +28,13 @@
 
 #include <iostream>
 
-#include "net/third_party/quiche/src/quic/core/quic_framer.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
-#include "absl/strings/string_view.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/string_view.h"
+#include "quic/core/quic_framer.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "common/quiche_text_utils.h"
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(std::string,
                               quic_version,
@@ -80,9 +81,9 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
     std::cerr << "OnUnauthenticatedHeader: " << header;
     return true;
   }
-  void OnDecryptedPacket(EncryptionLevel level) override {
+  void OnDecryptedPacket(size_t /*length*/, EncryptionLevel level) override {
     // This only currently supports "decrypting" null encrypted packets.
-    DCHECK_EQ(ENCRYPTION_INITIAL, level);
+    QUICHE_DCHECK_EQ(ENCRYPTION_INITIAL, level);
     std::cerr << "OnDecryptedPacket\n";
   }
   bool OnPacketHeader(const QuicPacketHeader& /*header*/) override {
@@ -213,7 +214,8 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
     return true;
   }
   void OnPacketComplete() override { std::cerr << "OnPacketComplete\n"; }
-  bool IsValidStatelessResetToken(QuicUint128 /*token*/) const override {
+  bool IsValidStatelessResetToken(
+      const StatelessResetToken& /*token*/) const override {
     std::cerr << "IsValidStatelessResetToken\n";
     return false;
   }
@@ -270,13 +272,10 @@ int main(int argc, char* argv[]) {
   quic::QuicTime start(quic::QuicTime::Zero());
   quic::QuicFramer framer(versions, start, perspective,
                           quic::kQuicDefaultConnectionIdLength);
-  if (!GetQuicFlag(FLAGS_quic_version).empty()) {
-    for (const quic::ParsedQuicVersion& version : versions) {
-      if (quic::QuicVersionToString(version.transport_version) ==
-          GetQuicFlag(FLAGS_quic_version)) {
-        framer.set_version(version);
-      }
-    }
+  const quic::ParsedQuicVersion& version =
+      quic::ParseQuicVersionString(GetQuicFlag(FLAGS_quic_version));
+  if (version != quic::ParsedQuicVersion::Unsupported()) {
+    framer.set_version(version);
   }
   quic::QuicPacketPrinter visitor(&framer);
   framer.set_visitor(&visitor);

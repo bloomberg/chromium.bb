@@ -22,15 +22,14 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "base/strings/pattern.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "components/prefs/pref_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/fake/fake_display_snapshot.h"
 #include "ui/display/manager/display_change_observer.h"
@@ -216,7 +215,7 @@ class NightLightTest : public NoSessionAshTestBase {
     CreateTestUserSessions();
 
     // Simulate user 1 login.
-    SwitchActiveUser(kUser1Email);
+    SimulateNewUserFirstLogin(kUser1Email);
 
     // Start with ambient color pref disabled.
     SetAmbientColorPrefEnabled(false);
@@ -350,13 +349,13 @@ TEST_F(NightLightTest, TestNightLightWithDisplayConfigurationChanges) {
 
   // While we have the second display, enable mirror mode, the compositors
   // should still have the same temperature.
-  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, base::nullopt);
+  display_manager()->SetMirrorMode(display::MirrorMode::kNormal, absl::nullopt);
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
   base::RunLoop().RunUntilIdle();
   TestCompositorsTemperature(temperature);
 
   // Exit mirror mode, temperature is still applied.
-  display_manager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
+  display_manager()->SetMirrorMode(display::MirrorMode::kOff, absl::nullopt);
   EXPECT_FALSE(display_manager()->IsInMirrorMode());
   base::RunLoop().RunUntilIdle();
   TestCompositorsTemperature(temperature);
@@ -1670,7 +1669,7 @@ TEST_F(AutoNightLightTest, Notification) {
   // Simulate the user clicking the notification body to go to settings, and
   // turning off Night Light manually for tonight. The notification should be
   // dismissed.
-  notification->delegate()->Click(base::nullopt, base::nullopt);
+  notification->delegate()->Click(absl::nullopt, absl::nullopt);
   controller->SetEnabled(false,
                          NightLightControllerImpl::AnimationDuration::kShort);
   EXPECT_FALSE(controller->GetEnabled());
@@ -1718,6 +1717,7 @@ TEST_F(AutoNightLightTest, DismissNotificationOnTurningOff) {
   EXPECT_TRUE(controller->GetAutoNightLightNotificationForTesting());
 }
 TEST_F(AutoNightLightTest, CannotDisableNotificationWhenSessionIsBlocked) {
+  BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
   EXPECT_TRUE(Shell::Get()->session_controller()->IsUserSessionBlocked());
 
   // Simulate reaching sunset.

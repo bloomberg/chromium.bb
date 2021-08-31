@@ -10,6 +10,12 @@
 namespace internal {
 
 extern const char kHistogramFirstPaintAfterBackForwardCacheRestore[];
+extern const char
+    kHistogramFirstRequestAnimationFrameAfterBackForwardCacheRestore[];
+extern const char
+    kHistogramSecondRequestAnimationFrameAfterBackForwardCacheRestore[];
+extern const char
+    kHistogramThirdRequestAnimationFrameAfterBackForwardCacheRestore[];
 extern const char kHistogramFirstInputDelayAfterBackForwardCacheRestore[];
 extern const char kHistogramCumulativeShiftScoreAfterBackForwardCacheRestore[];
 extern const char
@@ -36,7 +42,8 @@ class BackForwardCachePageLoadMetricsObserver
       const page_load_metrics::mojom::BackForwardCacheTiming& timing,
       size_t index) override;
   void OnRequestAnimationFramesAfterBackForwardCacheRestoreInPage(
-      const page_load_metrics::mojom::BackForwardCacheTiming& timing) override;
+      const page_load_metrics::mojom::BackForwardCacheTiming& timing,
+      size_t index) override;
   void OnFirstInputAfterBackForwardCacheRestoreInPage(
       const page_load_metrics::mojom::BackForwardCacheTiming& timing,
       size_t index) override;
@@ -65,8 +72,8 @@ class BackForwardCachePageLoadMetricsObserver
 
   // The layout shift score. These are recorded when the page is navigated away.
   // These serve as "deliminators" between back-forward cache navigations.
-  base::Optional<double> last_main_frame_layout_shift_score_;
-  base::Optional<double> last_layout_shift_score_;
+  absl::optional<double> last_main_frame_layout_shift_score_;
+  absl::optional<double> last_layout_shift_score_;
 
   // IDs for the navigations when the page is restored from the back-forward
   // cache.

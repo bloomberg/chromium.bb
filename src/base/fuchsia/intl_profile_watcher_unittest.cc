@@ -109,8 +109,8 @@ class FakePropertyProviderAsync {
       fidl::InterfaceRequest<::fuchsia::intl::PropertyProvider>
           provider_request)
       : thread_("Property Provider Thread") {
-    base::Thread::Options options(base::MessagePumpType::IO, 0);
-    CHECK(thread_.StartWithOptions(options));
+    CHECK(thread_.StartWithOptions(
+        base::Thread::Options(base::MessagePumpType::IO, 0)));
     property_provider_ = base::SequenceBound<FakePropertyProvider>(
         thread_.task_runner(), std::move(provider_request));
   }
@@ -119,19 +119,17 @@ class FakePropertyProviderAsync {
       delete;
   ~FakePropertyProviderAsync() = default;
 
-  void Close() {
-    property_provider_.Post(FROM_HERE, &FakePropertyProvider::Close);
-  }
+  void Close() { property_provider_.AsyncCall(&FakePropertyProvider::Close); }
   void SetTimeZones(const std::vector<std::string>& zone_ids) {
-    property_provider_.Post(FROM_HERE, &FakePropertyProvider::SetTimeZones,
-                            zone_ids);
+    property_provider_.AsyncCall(&FakePropertyProvider::SetTimeZones)
+        .WithArgs(zone_ids);
   }
   void SetLocales(const std::vector<std::string>& locale_ids) {
-    property_provider_.Post(FROM_HERE, &FakePropertyProvider::SetLocales,
-                            locale_ids);
+    property_provider_.AsyncCall(&FakePropertyProvider::SetLocales)
+        .WithArgs(locale_ids);
   }
   void NotifyChange() {
-    property_provider_.Post(FROM_HERE, &FakePropertyProvider::NotifyChange);
+    property_provider_.AsyncCall(&FakePropertyProvider::NotifyChange);
   }
 
  private:

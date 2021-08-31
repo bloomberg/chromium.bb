@@ -42,10 +42,10 @@ class MojoDecryptorTest : public ::testing::Test {
   void SetWriterCapacity(uint32_t capacity) { writer_capacity_ = capacity; }
 
   void Initialize() {
-    decryptor_.reset(new StrictMock<MockDecryptor>());
+    decryptor_ = std::make_unique<StrictMock<MockDecryptor>>();
 
-    mojo_decryptor_service_.reset(
-        new MojoDecryptorService(decryptor_.get(), nullptr));
+    mojo_decryptor_service_ =
+        std::make_unique<MojoDecryptorService>(decryptor_.get(), nullptr);
 
     receiver_ = std::make_unique<mojo::Receiver<mojom::Decryptor>>(
         mojo_decryptor_service_.get());
@@ -67,9 +67,8 @@ class MojoDecryptorTest : public ::testing::Test {
     mojo_decryptor_service_.reset();
   }
 
-  void ReturnSharedBufferVideoFrame(
-      scoped_refptr<DecoderBuffer> encrypted,
-      const Decryptor::VideoDecodeCB& video_decode_cb) {
+  void ReturnSharedBufferVideoFrame(scoped_refptr<DecoderBuffer> encrypted,
+                                    Decryptor::VideoDecodeCB video_decode_cb) {
     // We don't care about the encrypted data, just create a simple VideoFrame.
     scoped_refptr<VideoFrame> frame(
         MojoSharedBufferVideoFrame::CreateDefaultForTesting(
@@ -81,11 +80,11 @@ class MojoDecryptorTest : public ::testing::Test {
     // Currently freeing buffers only works for MojoSharedMemory, so make
     // sure |frame| is of that type.
     EXPECT_EQ(VideoFrame::STORAGE_MOJO_SHARED_BUFFER, frame->storage_type());
-    video_decode_cb.Run(Decryptor::kSuccess, std::move(frame));
+    std::move(video_decode_cb).Run(Decryptor::kSuccess, std::move(frame));
   }
 
   void ReturnAudioFrames(scoped_refptr<DecoderBuffer> encrypted,
-                         const Decryptor::AudioDecodeCB& audio_decode_cb) {
+                         Decryptor::AudioDecodeCB audio_decode_cb) {
     const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_4_0;
     const int kSampleRate = 48000;
     const base::TimeDelta start_time = base::TimeDelta::FromSecondsD(1000.0);
@@ -94,13 +93,14 @@ class MojoDecryptorTest : public ::testing::Test {
         ChannelLayoutToChannelCount(kChannelLayout), kSampleRate, 0.0f, 1.0f,
         kSampleRate / 10, start_time);
     Decryptor::AudioFrames audio_frames = {audio_buffer};
-    audio_decode_cb.Run(Decryptor::kSuccess, audio_frames);
+    std::move(audio_decode_cb).Run(Decryptor::kSuccess, audio_frames);
   }
 
   void ReturnEOSVideoFrame(scoped_refptr<DecoderBuffer> encrypted,
-                           const Decryptor::VideoDecodeCB& video_decode_cb) {
+                           Decryptor::VideoDecodeCB video_decode_cb) {
     // Simply create and return an End-Of-Stream VideoFrame.
-    video_decode_cb.Run(Decryptor::kSuccess, VideoFrame::CreateEOSFrame());
+    std::move(video_decode_cb)
+        .Run(Decryptor::kSuccess, VideoFrame::CreateEOSFrame());
   }
 
   MOCK_METHOD2(AudioDecoded,

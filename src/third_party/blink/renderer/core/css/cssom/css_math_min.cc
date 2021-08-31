@@ -10,6 +10,24 @@
 
 namespace blink {
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+CSSMathMin* CSSMathMin::Create(const HeapVector<Member<V8CSSNumberish>>& args,
+                               ExceptionState& exception_state) {
+  if (args.IsEmpty()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      "Arguments can't be empty");
+    return nullptr;
+  }
+
+  CSSMathMin* result = Create(CSSNumberishesToNumericValues(args));
+  if (!result) {
+    exception_state.ThrowTypeError("Incompatible types");
+    return nullptr;
+  }
+
+  return result;
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 CSSMathMin* CSSMathMin::Create(const HeapVector<CSSNumberish>& args,
                                ExceptionState& exception_state) {
   if (args.IsEmpty()) {
@@ -26,6 +44,7 @@ CSSMathMin* CSSMathMin::Create(const HeapVector<CSSNumberish>& args,
 
   return result;
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 CSSMathMin* CSSMathMin::Create(CSSNumericValueVector values) {
   bool error = false;
@@ -37,16 +56,16 @@ CSSMathMin* CSSMathMin::Create(CSSNumericValueVector values) {
                      final_type);
 }
 
-base::Optional<CSSNumericSumValue> CSSMathMin::SumValue() const {
+absl::optional<CSSNumericSumValue> CSSMathMin::SumValue() const {
   auto cur_min = NumericValues()[0]->SumValue();
   if (!cur_min || cur_min->terms.size() != 1)
-    return base::nullopt;
+    return absl::nullopt;
 
   for (const auto& value : NumericValues()) {
     const auto child_sum = value->SumValue();
     if (!child_sum || child_sum->terms.size() != 1 ||
         child_sum->terms[0].units != cur_min->terms[0].units)
-      return base::nullopt;
+      return absl::nullopt;
 
     if (child_sum->terms[0].value < cur_min->terms[0].value)
       cur_min = child_sum;

@@ -8,8 +8,10 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/hid.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_hid_report_item.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
@@ -33,6 +35,7 @@ class ScriptState;
 class MODULES_EXPORT HIDDevice
     : public EventTargetWithInlineData,
       public ExecutionContextLifecycleObserver,
+      public ActiveScriptWrappable<HIDDevice>,
       public device::mojom::blink::HidConnectionClient {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -60,16 +63,30 @@ class MODULES_EXPORT HIDDevice
 
   ScriptPromise open(ScriptState*);
   ScriptPromise close(ScriptState*);
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  ScriptPromise sendReport(ScriptState*,
+                           uint8_t report_id,
+                           const V8BufferSource* data);
+  ScriptPromise sendFeatureReport(ScriptState*,
+                                  uint8_t report_id,
+                                  const V8BufferSource* data);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   ScriptPromise sendReport(ScriptState*,
                            uint8_t report_id,
                            const ArrayBufferOrArrayBufferView& data);
   ScriptPromise sendFeatureReport(ScriptState*,
                                   uint8_t report_id,
                                   const ArrayBufferOrArrayBufferView& data);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   ScriptPromise receiveFeatureReport(ScriptState*, uint8_t report_id);
 
   // ExecutionContextLifecycleObserver:
   void ContextDestroyed() override;
+
+  // ActiveScriptWrappable:
+  bool HasPendingActivity() const override;
+
+  void UpdateDeviceInfo(device::mojom::blink::HidDeviceInfoPtr info);
 
   static HIDReportItem* ToHIDReportItem(
       const device::mojom::blink::HidReportItem& report_item);
@@ -88,11 +105,11 @@ class MODULES_EXPORT HIDDevice
   void FinishReceiveReport(ScriptPromiseResolver*,
                            bool success,
                            uint8_t report_id,
-                           const base::Optional<Vector<uint8_t>>&);
+                           const absl::optional<Vector<uint8_t>>&);
   void FinishSendFeatureReport(ScriptPromiseResolver*, bool success);
   void FinishReceiveFeatureReport(ScriptPromiseResolver*,
                                   bool success,
-                                  const base::Optional<Vector<uint8_t>>&);
+                                  const absl::optional<Vector<uint8_t>>&);
 
   void MarkRequestComplete(ScriptPromiseResolver*);
 

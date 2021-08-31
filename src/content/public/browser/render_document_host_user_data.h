@@ -72,10 +72,11 @@ CONTENT_EXPORT void RemoveRenderDocumentHostUserData(RenderFrameHost* rfh,
 template <typename T>
 class RenderDocumentHostUserData : public base::SupportsUserData::Data {
  public:
-  static void CreateForCurrentDocument(RenderFrameHost* rfh) {
+  template <typename... Args>
+  static void CreateForCurrentDocument(RenderFrameHost* rfh, Args&&... args) {
     DCHECK(rfh);
     if (!GetForCurrentDocument(rfh)) {
-      T* data = new T(rfh);
+      T* data = new T(rfh, std::forward<Args>(args)...);
       SetRenderDocumentHostUserData(rfh, UserDataKey(), base::WrapUnique(data));
     }
   }
@@ -87,9 +88,11 @@ class RenderDocumentHostUserData : public base::SupportsUserData::Data {
 
   static T* GetOrCreateForCurrentDocument(RenderFrameHost* rfh) {
     DCHECK(rfh);
-    if (!GetForCurrentDocument(rfh)) {
-      CreateForCurrentDocument(rfh);
+    if (auto* data = GetForCurrentDocument(rfh)) {
+      return data;
     }
+
+    CreateForCurrentDocument(rfh);
     return GetForCurrentDocument(rfh);
   }
 

@@ -12,11 +12,13 @@
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 class SkData;
-class SkROBuffer;
 template <typename T>
 class sk_sp;
 
 namespace blink {
+
+class ROBuffer;
+class ParkableImage;
 
 // Interface that looks like SharedBuffer. Used by ImageDecoders to use various
 // sources of input including:
@@ -24,7 +26,7 @@ namespace blink {
 //   - for when the caller already has a SharedBuffer
 // - SkData
 //   - for when the caller already has an SkData
-// - SkROBuffer
+// - ROBuffer
 //   - for when the caller wants to read/write in different threads
 //
 // Unlike SharedBuffer, this is a read-only interface. There is no way to
@@ -40,13 +42,18 @@ class PLATFORM_EXPORT SegmentReader
 
   // These versions use thread-safe input, so they are always thread-safe.
   static scoped_refptr<SegmentReader> CreateFromSkData(sk_sp<SkData>);
-  static scoped_refptr<SegmentReader> CreateFromSkROBuffer(sk_sp<SkROBuffer>);
+  static scoped_refptr<SegmentReader> CreateFromROBuffer(
+      scoped_refptr<ROBuffer>);
+  static scoped_refptr<SegmentReader> CreateFromParkableImage(
+      scoped_refptr<ParkableImage>);
 
   SegmentReader() = default;
   virtual ~SegmentReader() = default;
   virtual size_t size() const = 0;
   virtual size_t GetSomeData(const char*& data, size_t position) const = 0;
   virtual sk_sp<SkData> GetAsSkData() const = 0;
+  virtual void LockData() {}
+  virtual void UnlockData() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SegmentReader);

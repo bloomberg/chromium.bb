@@ -49,7 +49,7 @@ void HTMLStyleElement::ParseAttribute(
              GetDocument().IsActive() && sheet_) {
     sheet_->SetMediaQueries(
         MediaQuerySet::Create(params.new_value, GetExecutionContext()));
-    GetDocument().GetStyleEngine().MediaQueriesChangedInScope(GetTreeScope());
+    GetDocument().GetStyleEngine().SetNeedsActiveStyleUpdate(GetTreeScope());
   } else if (params.name == html_names::kTypeAttr) {
     HTMLElement::ParseAttribute(params);
     StyleElement::ChildrenChanged(*this);
@@ -129,11 +129,10 @@ void HTMLStyleElement::NotifyLoadedSheetAndAllCriticalSubresources(
       .GetTaskRunner(TaskType::kNetworking)
       ->PostTask(
           FROM_HERE,
-          WTF::Bind(&HTMLStyleElement::DispatchPendingEvent,
-                    WrapPersistent(this),
-                    WTF::Passed(std::make_unique<IncrementLoadEventDelayCount>(
-                        GetDocument())),
-                    is_load_event));
+          WTF::Bind(
+              &HTMLStyleElement::DispatchPendingEvent, WrapPersistent(this),
+              std::make_unique<IncrementLoadEventDelayCount>(GetDocument()),
+              is_load_event));
 }
 
 bool HTMLStyleElement::disabled() const {

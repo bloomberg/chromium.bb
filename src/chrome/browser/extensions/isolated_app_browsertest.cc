@@ -50,8 +50,9 @@ std::unique_ptr<net::test_server::HttpResponse> HandleExpectAndSetCookieRequest(
     const net::EmbeddedTestServer* test_server,
     const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(request.relative_url, "/expect-and-set-cookie?",
-                        base::CompareCase::SENSITIVE))
-    return std::unique_ptr<net::test_server::HttpResponse>();
+                        base::CompareCase::SENSITIVE)) {
+    return nullptr;
+  }
 
   std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
@@ -372,8 +373,8 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, DISABLED_NoCookieIsolationWithoutApp) {
 // Tests that subresource and media requests use the app's cookie store.
 // See http://crbug.com/141172.
 IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_SubresourceCookieIsolation) {
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&HandleExpectAndSetCookieRequest, embedded_test_server()));
+  embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+      &HandleExpectAndSetCookieRequest, embedded_test_server()));
 
   ASSERT_TRUE(embedded_test_server()->Start());
 

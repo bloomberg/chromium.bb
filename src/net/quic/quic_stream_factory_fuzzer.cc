@@ -15,6 +15,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/dns/context_host_resolver.h"
 #include "net/dns/fuzzed_host_resolver_util.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
 #include "net/quic/mock_crypto_client_stream_factory.h"
@@ -57,7 +58,6 @@ struct Env {
     ssl_config_service = std::make_unique<SSLConfigServiceDefaults>();
     crypto_client_stream_factory.set_use_mock_crypter(true);
     cert_verifier = std::make_unique<MockCertVerifier>();
-    cert_transparency_verifier = std::make_unique<DoNothingCTVerifier>();
     verify_details.cert_verify_result.verified_cert =
         X509Certificate::CreateFromBytes(kCertData, base::size(kCertData));
     CHECK(verify_details.cert_verify_result.verified_cert);
@@ -73,7 +73,6 @@ struct Env {
   TransportSecurityState transport_security_state;
   quic::QuicTagVector connection_options;
   quic::QuicTagVector client_connection_options;
-  std::unique_ptr<CTVerifier> cert_transparency_verifier;
   DefaultCTPolicyEnforcer ct_policy_enforcer;
   MockQuicContext quic_context;
 };
@@ -134,9 +133,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           env->net_log.net_log(), host_resolver.get(),
           env->ssl_config_service.get(), &socket_factory,
           &http_server_properties, env->cert_verifier.get(),
-          &env->ct_policy_enforcer, &env->transport_security_state,
-          env->cert_transparency_verifier.get(), nullptr, nullptr,
-          &env->crypto_client_stream_factory, &env->quic_context);
+          &env->ct_policy_enforcer, &env->transport_security_state, nullptr,
+          nullptr, &env->crypto_client_stream_factory, &env->quic_context);
 
   QuicStreamRequest request(factory.get());
   TestCompletionCallback callback;
@@ -150,8 +148,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   request.Request(
       env->host_port_pair, version, PRIVACY_MODE_DISABLED, DEFAULT_PRIORITY,
-      SocketTag(), NetworkIsolationKey(), false /* disable_secure_dns */,
-      kCertVerifyFlags, GURL(kUrl), env->net_log, &net_error_details,
+      SocketTag(), NetworkIsolationKey(), SecureDnsPolicy::kAllow,
+      true /* use_dns_aliases */, kCertVerifyFlags, GURL(kUrl), env->net_log,
+      &net_error_details,
       /*failed_on_default_network_callback=*/CompletionOnceCallback(),
       callback.callback());
 
@@ -160,7 +159,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       request.ReleaseSessionHandle();
   if (!session)
     return 0;
-  std::unique_ptr<HttpStream> stream(new QuicHttpStream(std::move(session)));
+  auto dns_aliases = session->GetDnsAliasesForSessionKey(request.session_key());
+  auto stream = std::make_unique<QuicHttpStream>(std::move(session),
+                                                 std::move(dns_aliases));
 
   HttpRequestInfo request_info;
   request_info.method = kMethod;

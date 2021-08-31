@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "extensions/renderer/bindings/api_event_listeners.h"
 #include "extensions/renderer/bindings/api_request_handler.h"
@@ -202,7 +201,7 @@ void DeclarativeEvent::HandleFunction(const std::string& signature_name,
   }
 
   request_handler_->StartRequest(
-      context, request_name, std::move(parse_result.arguments),
+      context, request_name, std::move(parse_result.arguments_list),
       parse_result.callback, v8::Local<v8::Function>());
 }
 

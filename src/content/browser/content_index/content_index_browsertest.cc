@@ -43,9 +43,9 @@ class ContentIndexTest : public ContentBrowserTest {
         shell_->web_contents()->GetBrowserContext()->GetContentIndexProvider());
     ASSERT_TRUE(provider_);
 
-    auto* storage_partition = BrowserContext::GetStoragePartition(
-        shell_->web_contents()->GetBrowserContext(),
-        shell_->web_contents()->GetSiteInstance());
+    auto* storage_partition =
+        shell_->web_contents()->GetBrowserContext()->GetStoragePartition(
+            shell_->web_contents()->GetSiteInstance());
     context_ = storage_partition->GetContentIndexContext();
     ASSERT_TRUE(context_);
   }
@@ -56,10 +56,9 @@ class ContentIndexTest : public ContentBrowserTest {
   }
 
   std::string RunScriptWithResult(const std::string& script) {
-    std::string result;
-    EXPECT_TRUE(
-        ExecuteScriptAndExtractString(shell_->web_contents(), script, &result));
-    return result;
+    return EvalJs(shell_->web_contents(), script,
+                  EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+        .ExtractString();
   }
 
   // Runs |script| and expects it to complete successfully.

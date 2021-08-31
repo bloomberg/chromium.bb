@@ -25,6 +25,7 @@
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace content {
 
@@ -85,7 +86,7 @@ class WebBundleURLLoaderFactory::EntryLoader final
       const std::vector<std::string>& removed_headers,
       const net::HttpRequestHeaders& modified_headers,
       const net::HttpRequestHeaders& modified_cors_exempt_headers,
-      const base::Optional<GURL>& new_url) override {}
+      const absl::optional<GURL>& new_url) override {}
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override {}
   void PauseReadingBodyFromNet() override {}
@@ -137,7 +138,7 @@ class WebBundleURLLoaderFactory::EntryLoader final
                  response->payload_length);
 
     auto result =
-        mojo::CreateDataPipe(&options, &producer_handle, &consumer_handle);
+        mojo::CreateDataPipe(&options, producer_handle, consumer_handle);
     loader_client_->OnStartLoadingResponseBody(std::move(consumer_handle));
     if (result != MOJO_RESULT_OK) {
       loader_client_->OnComplete(
@@ -172,7 +173,7 @@ class WebBundleURLLoaderFactory::EntryLoader final
   base::WeakPtr<WebBundleURLLoaderFactory> factory_;
   mojo::Remote<network::mojom::URLLoaderClient> loader_client_;
   const int frame_tree_node_id_;
-  base::Optional<net::HttpByteRange> byte_range_;
+  absl::optional<net::HttpByteRange> byte_range_;
 
   base::WeakPtrFactory<EntryLoader> weak_factory_{this};
 
@@ -193,7 +194,6 @@ void WebBundleURLLoaderFactory::SetFallbackFactory(
 
 void WebBundleURLLoaderFactory::CreateLoaderAndStart(
     mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
-    int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& resource_request,
@@ -209,8 +209,8 @@ void WebBundleURLLoaderFactory::CreateLoaderAndStart(
                                    std::move(loader_receiver)));
   } else if (fallback_factory_) {
     fallback_factory_->CreateLoaderAndStart(
-        std::move(loader_receiver), routing_id, request_id, options,
-        resource_request, std::move(loader_client), traffic_annotation);
+        std::move(loader_receiver), request_id, options, resource_request,
+        std::move(loader_client), traffic_annotation);
   } else {
     mojo::Remote<network::mojom::URLLoaderClient>(std::move(loader_client))
         ->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));

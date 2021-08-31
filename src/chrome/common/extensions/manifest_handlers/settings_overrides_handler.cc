@@ -25,22 +25,22 @@
 #include "url/gurl.h"
 
 using extensions::api::manifest_types::ChromeSettingsOverrides;
+using extensions::mojom::APIPermissionID;
 
 namespace extensions {
 namespace {
 
 std::unique_ptr<GURL> CreateManifestURL(const std::string& url) {
   std::unique_ptr<GURL> manifest_url(new GURL(url));
-  if (!manifest_url->is_valid() ||
-      !manifest_url->SchemeIsHTTPOrHTTPS())
-    return std::unique_ptr<GURL>();
+  if (!manifest_url->is_valid() || !manifest_url->SchemeIsHTTPOrHTTPS())
+    return nullptr;
   return manifest_url;
 }
 
 std::unique_ptr<GURL> ParseHomepage(const ChromeSettingsOverrides& overrides,
-                                    base::string16* error) {
+                                    std::u16string* error) {
   if (!overrides.homepage)
-    return std::unique_ptr<GURL>();
+    return nullptr;
   std::unique_ptr<GURL> manifest_url = CreateManifestURL(*overrides.homepage);
   if (!manifest_url) {
     *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
@@ -50,7 +50,7 @@ std::unique_ptr<GURL> ParseHomepage(const ChromeSettingsOverrides& overrides,
 }
 
 std::vector<GURL> ParseStartupPage(const ChromeSettingsOverrides& overrides,
-                                   base::string16* error) {
+                                   std::u16string* error) {
   std::vector<GURL> urls;
   if (!overrides.startup_pages)
     return urls;
@@ -72,14 +72,14 @@ std::vector<GURL> ParseStartupPage(const ChromeSettingsOverrides& overrides,
 
 std::unique_ptr<ChromeSettingsOverrides::SearchProvider> ParseSearchEngine(
     ChromeSettingsOverrides* overrides,
-    base::string16* error) {
+    std::u16string* error) {
   if (!overrides->search_provider)
-    return std::unique_ptr<ChromeSettingsOverrides::SearchProvider>();
+    return nullptr;
   if (!CreateManifestURL(overrides->search_provider->search_url)) {
     *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
         manifest_errors::kInvalidSearchEngineURL,
         overrides->search_provider->search_url);
-    return std::unique_ptr<ChromeSettingsOverrides::SearchProvider>();
+    return nullptr;
   }
   if (overrides->search_provider->prepopulated_id)
     return std::move(overrides->search_provider);
@@ -109,7 +109,7 @@ std::unique_ptr<ChromeSettingsOverrides::SearchProvider> ParseSearchEngine(
     *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
         manifest_errors::kInvalidSearchEngineURL,
         *overrides->search_provider->favicon_url);
-    return std::unique_ptr<ChromeSettingsOverrides::SearchProvider>();
+    return nullptr;
   }
   return std::move(overrides->search_provider);
 }
@@ -138,7 +138,7 @@ SettingsOverridesHandler::SettingsOverridesHandler() {}
 SettingsOverridesHandler::~SettingsOverridesHandler() {}
 
 bool SettingsOverridesHandler::Parse(Extension* extension,
-                                     base::string16* error) {
+                                     std::u16string* error) {
   const base::Value* dict = NULL;
   CHECK(extension->manifest()->Get(manifest_keys::kSettingsOverride, &dict));
   std::unique_ptr<ChromeSettingsOverrides> settings(
@@ -150,11 +150,11 @@ bool SettingsOverridesHandler::Parse(Extension* extension,
   // parse failure should result in hard error. Currently, Parse fails only when
   // all of these fail to parse.
   auto info = std::make_unique<SettingsOverrides>();
-  base::string16 homepage_error;
+  std::u16string homepage_error;
   info->homepage = ParseHomepage(*settings, &homepage_error);
-  base::string16 search_engine_error;
+  std::u16string search_engine_error;
   info->search_engine = ParseSearchEngine(settings.get(), &search_engine_error);
-  base::string16 startup_pages_error;
+  std::u16string startup_pages_error;
   info->startup_pages = ParseStartupPage(*settings, &startup_pages_error);
   if (!info->homepage && !info->search_engine && info->startup_pages.empty()) {
     if (!homepage_error.empty()) {
@@ -175,7 +175,7 @@ bool SettingsOverridesHandler::Parse(Extension* extension,
     PermissionsParser::AddAPIPermission(
         extension, new SettingsOverrideAPIPermission(
                        PermissionsInfo::GetInstance()->GetByID(
-                           APIPermission::kSearchProvider),
+                           APIPermissionID::kSearchProvider),
                        FormatUrlForDisplay(*CreateManifestURL(
                            info->search_engine->search_url))));
   }
@@ -184,7 +184,7 @@ bool SettingsOverridesHandler::Parse(Extension* extension,
         extension,
         new SettingsOverrideAPIPermission(
             PermissionsInfo::GetInstance()->GetByID(
-                APIPermission::kStartupPages),
+                APIPermissionID::kStartupPages),
             // We only support one startup page even though the type of the
             // manifest property is a list, only the first one is used.
             FormatUrlForDisplay(info->startup_pages[0])));
@@ -193,7 +193,7 @@ bool SettingsOverridesHandler::Parse(Extension* extension,
     PermissionsParser::AddAPIPermission(
         extension,
         new SettingsOverrideAPIPermission(
-            PermissionsInfo::GetInstance()->GetByID(APIPermission::kHomepage),
+            PermissionsInfo::GetInstance()->GetByID(APIPermissionID::kHomepage),
             FormatUrlForDisplay(*(info->homepage))));
   }
   extension->SetManifestData(manifest_keys::kSettingsOverride, std::move(info));

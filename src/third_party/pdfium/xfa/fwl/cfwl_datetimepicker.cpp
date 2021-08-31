@@ -101,7 +101,7 @@ void CFWL_DateTimePicker::DrawWidget(CFGAS_GEGraphics* pGraphics,
     DrawBorder(pGraphics, CFWL_Part::Border, matrix);
 
   if (!m_BtnRect.IsEmpty())
-    DrawDropDownButton(pGraphics, &matrix);
+    DrawDropDownButton(pGraphics, matrix);
 
   if (m_pEdit) {
     CFX_RectF rtEdit = m_pEdit->GetWidgetRect();
@@ -180,15 +180,12 @@ void CFWL_DateTimePicker::ModifyEditStylesEx(uint32_t dwStylesExAdded,
 }
 
 void CFWL_DateTimePicker::DrawDropDownButton(CFGAS_GEGraphics* pGraphics,
-                                             const CFX_Matrix* pMatrix) {
-  CFWL_ThemeBackground param;
-  param.m_pWidget = this;
+                                             const CFX_Matrix& mtMatrix) {
+  CFWL_ThemeBackground param(this, pGraphics);
   param.m_iPart = CFWL_Part::DropDownButton;
   param.m_dwStates = m_iBtnState;
-  param.m_pGraphics = pGraphics;
   param.m_PartRect = m_BtnRect;
-  if (pMatrix)
-    param.m_matrix.Concat(*pMatrix);
+  param.m_matrix = mtMatrix;
   GetThemeProvider()->DrawBackground(param);
 }
 
@@ -218,15 +215,11 @@ void CFWL_DateTimePicker::ShowMonthCalendar(bool bActivate) {
     if (m_iYear > 0 && m_iMonth > 0 && m_iDay > 0)
       m_pMonthCal->SetSelect(m_iYear, m_iMonth, m_iDay);
     m_pMonthCal->Update();
-  }
-  if (bActivate)
     m_pMonthCal->RemoveStates(FWL_WGTSTATE_Invisible);
-  else
-    m_pMonthCal->SetStates(FWL_WGTSTATE_Invisible);
-
-  if (bActivate) {
     CFWL_MessageSetFocus msg(m_pEdit, m_pMonthCal);
     m_pEdit->GetDelegate()->OnProcessMessage(&msg);
+  } else {
+    m_pMonthCal->SetStates(FWL_WGTSTATE_Invisible);
   }
 
   CFX_RectF rtInvalidate(0, 0, m_WidgetRect.width, m_WidgetRect.height);
@@ -291,10 +284,7 @@ void CFWL_DateTimePicker::ProcessSelChanged(int32_t iYear,
   m_pEdit->Update();
   RepaintRect(m_ClientRect);
 
-  CFWL_EventSelectChanged ev(this);
-  ev.iYear = m_iYear;
-  ev.iMonth = m_iMonth;
-  ev.iDay = m_iDay;
+  CFWL_EventSelectChanged ev(this, m_iYear, m_iMonth, m_iDay);
   DispatchEvent(&ev);
 }
 

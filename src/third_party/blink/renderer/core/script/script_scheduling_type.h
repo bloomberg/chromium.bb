@@ -69,11 +69,13 @@ enum class ScriptSchedulingType {
   // execute after parsing completes (due to ForceDeferScriptIntervention).
   //
   // Spec: not yet spec'ed. https://crbug.com/976061
-  kForceDefer,
+  // kDeprecatedForceDefer is deprecated, but kept here to ensure metrics are
+  // recorded correctly in-order.
+  kDeprecatedForceDefer,
 
-  kMaxValue = kForceDefer,
+  kMaxValue = kDeprecatedForceDefer,
 };
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_SCHEDULING_TYPE_H_

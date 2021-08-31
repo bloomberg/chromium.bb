@@ -40,14 +40,10 @@ static sk_sp<SkImage> make_raster_image(SkColorType colorType) {
         return nullptr;
     }
 
-    SkBitmap bitmap;
     SkImageInfo info = codec->getInfo().makeWH(kWidth, kHeight)
                                        .makeColorType(colorType)
                                        .makeAlphaType(kPremul_SkAlphaType);
-    bitmap.allocPixels(info);
-    codec->getPixels(info, bitmap.getPixels(), bitmap.rowBytes());
-    bitmap.setImmutable();
-    return SkImage::MakeFromBitmap(bitmap);
+    return std::get<0>(codec->getImage(info));
 }
 
 static sk_sp<SkImage> make_codec_image() {
@@ -124,7 +120,7 @@ static void draw_image(GrDirectContext* dContext, SkCanvas* canvas, SkImage* ima
     // Now that we have called readPixels(), dump the raw pixels into an srgb image.
     sk_sp<SkColorSpace> srgb = SkColorSpace::MakeSRGB();
     sk_sp<SkImage> raw = SkImage::MakeRasterData(dstInfo.makeColorSpace(srgb), data, rowBytes);
-    canvas->drawImage(raw.get(), 0.0f, 0.0f, nullptr);
+    canvas->drawImage(raw.get(), 0.0f, 0.0f);
 }
 
 class ReadPixelsGM : public skiagm::GM {

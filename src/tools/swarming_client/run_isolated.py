@@ -119,7 +119,7 @@ _CAS_CLIENT_DIR = u'cc'
 # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
 ISOLATED_PACKAGE = 'infra/tools/luci/isolated/${platform}'
 _CAS_PACKAGE = 'infra/tools/luci/cas/${platform}'
-_LUCI_GO_REVISION = 'git_revision:5b5ade4b2cdf59741959995632df99ec489b673d'
+_LUCI_GO_REVISION = 'git_revision:77944aa535e42e29faadf6cfa81aee252807d468'
 
 # Keep synced with task_request.py
 CACHE_NAME_RE = re.compile(r'^[a-z0-9_]{1,4096}$')
@@ -167,6 +167,8 @@ MAX_AGE_SECS = 21*24*60*60
 
 # TODO(1099655): Enable this once all prod issues are gone.
 _USE_GO_ISOLATED_TO_UPLOAD = False
+
+_CAS_KVS_CACHE_THRESHOLD = 5 * 1024 * 1024 * 1024  # 5 GiB
 
 TaskData = collections.namedtuple(
     'TaskData',
@@ -225,6 +227,8 @@ TaskData = collections.namedtuple(
         'cas_cache_dir',
         # Parameters passed to `cas` client.
         'cas_cache_policies',
+        # Parameters for kvs file used by `cas` client.
+        'cas_kvs',
         # Environment variables to set.
         'env',
         # Environment variables to mutate with relative directories.
@@ -557,7 +561,7 @@ def _run_go_cmd_and_wait(cmd):
 
 
 def _fetch_and_map_with_cas(cas_client, digest, instance, output_dir, cache_dir,
-                            policies):
+                            policies, kvs_file):
   """
   Fetches a CAS tree using cas client, create the tree and returns download
   stats.
@@ -599,6 +603,10 @@ def _fetch_and_map_with_cas(cas_client, digest, instance, output_dir, cache_dir,
         '-dump-stats-json',
         result_json_path,
     ]
+
+    if kvs_file:
+      cmd.extend(['-kvs-file', kvs_file])
+
     _run_go_cmd_and_wait(cmd)
 
     with open(result_json_path) as json_file:
@@ -617,7 +625,7 @@ def _fetch_and_map_with_go_isolated(isolated_hash, storage, outdir,
                                     go_cache_dir, policies, isolated_client):
   """
   Fetches an isolated tree using go client, create the tree and returns
-  (bundle, stats).
+  stats.
   """
   start = time.time()
   server_ref = storage.server_ref
@@ -656,13 +664,7 @@ def _fetch_and_map_with_go_isolated(isolated_hash, storage, outdir,
     with open(result_json_path) as json_file:
       result_json = json.load(json_file)
 
-    isolated = result_json['isolated']
-    bundle = isolateserver.IsolatedBundle(filter_cb=None)
-    # Only following properties are used in caller.
-    bundle.command = isolated.get('command')
-    bundle.relative_cwd = isolated.get('relative_cwd')
-
-    return bundle, {
+    return {
         'duration': time.time() - start,
         'items_cold': result_json['items_cold'],
         'items_hot': result_json['items_hot'],
@@ -675,9 +677,9 @@ def _fetch_and_map_with_go_isolated(isolated_hash, storage, outdir,
 
 # TODO(crbug.com/932396): remove this function.
 def fetch_and_map(isolated_hash, storage, cache, outdir):
-  """Fetches an isolated tree, create the tree and returns (bundle, stats)."""
+  """Fetches an isolated tree, create the tree and returns stats."""
   start = time.time()
-  bundle = isolateserver.fetch_isolated(
+  isolateserver.fetch_isolated(
       isolated_hash=isolated_hash,
       storage=storage,
       cache=cache,
@@ -685,7 +687,7 @@ def fetch_and_map(isolated_hash, storage, cache, outdir):
       use_symlinks=False)
   hot = (collections.Counter(cache.used) -
          collections.Counter(cache.added)).elements()
-  return bundle, {
+  return {
       'duration': time.time() - start,
       'items_cold': base64.b64encode(large.pack(sorted(cache.added))).decode(),
       'items_hot': base64.b64encode(large.pack(sorted(hot))).decode(),
@@ -1028,7 +1030,7 @@ def map_and_run(data, constant_run_path):
       isolated_stats = result['stats'].setdefault('isolated', {})
       if data.isolated_hash:
         if data.use_go_isolated:
-          bundle, stats = _fetch_and_map_with_go_isolated(
+          stats = _fetch_and_map_with_go_isolated(
               isolated_hash=data.isolated_hash,
               storage=data.storage,
               outdir=run_dir,
@@ -1036,20 +1038,12 @@ def map_and_run(data, constant_run_path):
               policies=data.go_cache_policies,
               isolated_client=go_isolated_client)
         else:
-          bundle, stats = fetch_and_map(
+          stats = fetch_and_map(
               isolated_hash=data.isolated_hash,
               storage=data.storage,
               cache=data.isolate_cache,
               outdir=run_dir)
         isolated_stats['download'].update(stats)
-
-        # Inject the command
-        if not command and bundle.command:
-          command = bundle.command
-          # Only set the relative directory if the isolated file specified a
-          # command, and no raw command was specified.
-          if bundle.relative_cwd:
-            cwd = os.path.normpath(os.path.join(cwd, bundle.relative_cwd))
 
       elif data.cas_digest:
         stats = _fetch_and_map_with_cas(
@@ -1058,7 +1052,8 @@ def map_and_run(data, constant_run_path):
             instance=data.cas_instance,
             output_dir=run_dir,
             cache_dir=data.cas_cache_dir,
-            policies=data.cas_cache_policies)
+            policies=data.cas_cache_policies,
+            kvs_file=data.cas_kvs)
         isolated_stats['download'].update(stats)
 
       if not command:
@@ -1147,11 +1142,15 @@ def map_and_run(data, constant_run_path):
         for directory in dirs_to_remove:
           if not fs.isdir(directory):
             continue
+          start = time.time()
           try:
-            success = success and file_path.rmtree(directory)
+            file_path.rmtree(directory)
           except OSError as e:
             logging.error('rmtree(%r) failed: %s', directory, e)
             success = False
+          finally:
+            logging.info('Cleanup: rmtree(%r) took %d seconds', directory,
+                         time.time() - start)
           if not success:
             sys.stderr.write(
                 OUTLIVING_ZOMBIE_MSG % (directory, data.grace_period))
@@ -1407,14 +1406,8 @@ def create_option_parser():
       type='float',
       help='Grace period between SIGTERM and SIGKILL')
   parser.add_option(
-      '--raw-cmd',
-      action='store_true',
-      help='Ignore the isolated command, use the one supplied at the command '
-      'line')
-  parser.add_option(
       '--relative-cwd',
-      help='Ignore the isolated \'relative_cwd\' and use this one instead; '
-      'requires --raw-cmd')
+      help='Ignore the isolated \'relative_cwd\' and use this one instead')
   parser.add_option(
       '--env',
       default=[],
@@ -1548,6 +1541,10 @@ def add_cas_cache_options(parser):
       default='cas-cache',
       help='Directory to keep a local cache of the files. Accelerates download '
       'by reusing already downloaded files. Default=%default')
+  group.add_option(
+      '--kvs-file',
+      default='',
+      help='CAS cache using kvs for small files. Default=%default')
   parser.add_option_group(group)
 
 
@@ -1642,6 +1639,40 @@ def _calc_named_cache_hint(named_cache, named_caches):
   return size
 
 
+def _clean_cmd(parser, options, caches, root):
+  """Cleanup cache dirs/files."""
+  if options.isolated:
+    parser.error('Can\'t use --isolated with --clean.')
+  if options.isolate_server:
+    parser.error('Can\'t use --isolate-server with --clean.')
+  if options.json:
+    parser.error('Can\'t use --json with --clean.')
+  if options.named_caches:
+    parser.error('Can\t use --named-cache with --clean.')
+  if options.cas_instance or options.cas_digest:
+    parser.error('Can\t use --cas-instance, --cas-digest with --clean.')
+
+  logging.info("initial free space: %d", file_path.get_free_space(root))
+
+  if options.kvs_file and fs.isfile(six.text_type(options.kvs_file)):
+    # Remove kvs file if its size exceeds fixed threshold.
+    st = fs.stat(six.text_type(options.kvs_file))
+    if st.st_size >= _CAS_KVS_CACHE_THRESHOLD:
+      logging.info("remove kvs file with size: %d", st.st_size)
+      fs.remove(six.text_type(options.kvs_file))
+
+  # Trim first, then clean.
+  local_caching.trim_caches(
+      caches,
+      root,
+      min_free_space=options.min_free_space,
+      max_age_secs=MAX_AGE_SECS)
+  logging.info("free space after trim: %d", file_path.get_free_space(root))
+  for c in caches:
+    c.cleanup()
+  logging.info("free space after cleanup: %d", file_path.get_free_space(root))
+
+
 def main(args):
   # Warning: when --argsfile is used, the strings are unicode instances, when
   # parsed normally, the strings are str instances.
@@ -1680,28 +1711,7 @@ def main(args):
     caches.append(named_cache)
   root = caches[0].cache_dir if caches else six.text_type(os.getcwd())
   if options.clean:
-    if options.isolated:
-      parser.error('Can\'t use --isolated with --clean.')
-    if options.isolate_server:
-      parser.error('Can\'t use --isolate-server with --clean.')
-    if options.json:
-      parser.error('Can\'t use --json with --clean.')
-    if options.named_caches:
-      parser.error('Can\t use --named-cache with --clean.')
-    if options.cas_instance or options.cas_digest:
-      parser.error('Can\t use --cas-instance, --cas-digest with --clean.')
-
-    logging.info("initial free space: %d", file_path.get_free_space(root))
-    # Trim first, then clean.
-    local_caching.trim_caches(
-        caches,
-        root,
-        min_free_space=options.min_free_space,
-        max_age_secs=MAX_AGE_SECS)
-    logging.info("free space after trim: %d", file_path.get_free_space(root))
-    for c in caches:
-      c.cleanup()
-    logging.info("free space after cleanup: %d", file_path.get_free_space(root))
+    _clean_cmd(parser, options, caches, root)
     return 0
 
   # Trim must still be done for the following case:
@@ -1713,8 +1723,9 @@ def main(args):
   local_caching.trim_caches(
       caches,
       root,
-      # Add 1GB more buffer for Go CLI.
-      min_free_space=options.min_free_space + _FREE_SPACE_BUFFER_FOR_GO,
+      # Add 5+1GB more buffer for Go CLI.
+      min_free_space=options.min_free_space + _CAS_KVS_CACHE_THRESHOLD +
+      _FREE_SPACE_BUFFER_FOR_GO,
       max_age_secs=MAX_AGE_SECS)
 
   # Save state of isolate/cas cache not to overwrite state from go client.
@@ -1868,6 +1879,7 @@ def main(args):
           max_items=None,
           max_age_secs=None,
       ),
+      cas_kvs=options.kvs_file,
       env=options.env,
       env_prefix=options.env_prefix,
       lower_priority=bool(options.lower_priority),

@@ -7,10 +7,40 @@
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
+
+namespace {
+
+EphemeralRange ComputeWholeContentRange(const ContainerNode& container) {
+  const auto& range = EphemeralRange::RangeOfContents(container);
+  auto* const text_control_element = EnclosingTextControl(&container);
+  if (!text_control_element)
+    return range;
+  auto* const inner_editor = text_control_element->InnerEditorElement();
+  if (container != inner_editor)
+    return range;
+  auto* const last_child = inner_editor->lastChild();
+  if (!IsA<HTMLBRElement>(last_child))
+    return range;
+  const Node* const before_placeholder = last_child->previousSibling();
+  if (!before_placeholder) {
+    // In case of <div><br></div>.
+    return EphemeralRange(Position::FirstPositionInNode(container),
+                          Position::FirstPositionInNode(container));
+  }
+  // We ignore placeholder <br> in <textarea> added by
+  // |TextControlElement::AddPlaceholderBreakElementIfNecessary()|.
+  // See http://crbug.com/1194349
+  return EphemeralRange(Position::FirstPositionInNode(container),
+                        Position::AfterNode(*before_placeholder));
+}
+
+}  // namespace
 
 // static
 TextIteratorBehavior CachedTextInputInfo::Behavior() {
@@ -28,6 +58,7 @@ void CachedTextInputInfo::ClearIfNeeded(const LayoutObject& layout_object) {
   text_ = g_empty_string;
   composition_.Clear();
   selection_.Clear();
+  offset_map_.clear();
 }
 
 void CachedTextInputInfo::DidLayoutSubtree(const LayoutObject& layout_object) {
@@ -58,8 +89,8 @@ void CachedTextInputInfo::EnsureCached(const ContainerNode& container) const {
   selection_.Clear();
   text_ = g_empty_string;
 
-  TextIteratorAlgorithm<EditingStrategy> it(
-      EphemeralRange::RangeOfContents(container), Behavior());
+  TextIteratorAlgorithm<EditingStrategy> it(ComputeWholeContentRange(container),
+                                            Behavior());
   if (it.AtEnd())
     return;
 
@@ -70,8 +101,17 @@ void CachedTextInputInfo::EnsureCached(const ContainerNode& container) const {
   constexpr unsigned kInitialCapacity = 1 << 15;
 
   StringBuilder builder;
-  if (needs_text)
-    builder.ReserveCapacity(kInitialCapacity);
+  if (needs_text) {
+    unsigned capacity = kInitialCapacity;
+    if (auto* block_flow =
+            DynamicTo<LayoutBlockFlow>(container.GetLayoutObject())) {
+      if (block_flow->HasNGInlineNodeData()) {
+        if (const auto* mapping = NGInlineNode::GetOffsetMapping(block_flow))
+          capacity = mapping->GetText().length();
+      }
+    }
+    builder.ReserveCapacity(capacity);
+  }
 
   const Node* last_text_node = nullptr;
   unsigned length = 0;
@@ -108,16 +148,21 @@ PlainTextRange CachedTextInputInfo::GetPlainTextRange(
     const EphemeralRange& range) const {
   if (range.IsNull())
     return PlainTextRange();
-  const unsigned start_offset = RangeLength(
-      EphemeralRange(Position(*container_, 0), range.StartPosition()));
+  const Position container_start = Position(*container_, 0);
+  // When selection is moved to another editable during IME composition,
+  // |range| may not in |container|. See http://crbug.com/1161562
+  if (container_start > range.StartPosition())
+    return PlainTextRange();
+  const unsigned start_offset =
+      RangeLength(EphemeralRange(container_start, range.StartPosition()));
   const unsigned end_offset =
-      range.IsCollapsed() ? start_offset
-                          : RangeLength(EphemeralRange(Position(*container_, 0),
-                                                       range.EndPosition()));
-  DCHECK_EQ(static_cast<unsigned>(TextIterator::RangeLength(
-                EphemeralRange(Position(*container_, 0), range.EndPosition()),
-                Behavior())),
-            end_offset);
+      range.IsCollapsed()
+          ? start_offset
+          : RangeLength(EphemeralRange(container_start, range.EndPosition()));
+  DCHECK_EQ(
+      static_cast<unsigned>(TextIterator::RangeLength(
+          EphemeralRange(container_start, range.EndPosition()), Behavior())),
+      end_offset);
   return PlainTextRange(start_offset, end_offset);
 }
 

@@ -5,9 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_READABLE_STREAM_DEFAULT_READER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_READABLE_STREAM_DEFAULT_READER_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/streams/readable_byte_stream_controller.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_generic_reader.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -18,7 +22,9 @@ class ScriptState;
 class StreamPromiseResolver;
 
 class CORE_EXPORT ReadableStreamDefaultReader
-    : public ReadableStreamGenericReader {
+    : public ReadableStreamGenericReader,
+      public ActiveScriptWrappable<ReadableStreamDefaultReader>,
+      public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -31,6 +37,9 @@ class CORE_EXPORT ReadableStreamDefaultReader
                               ReadableStream* stream,
                               ExceptionState&);
   ~ReadableStreamDefaultReader() override;
+
+  bool IsDefaultReader() const override { return true; }
+  bool IsBYOBReader() const override { return false; }
 
   // https://streams.spec.whatwg.org/#default-reader-read
   ScriptPromise read(ScriptState*, ExceptionState&);
@@ -53,12 +62,22 @@ class CORE_EXPORT ReadableStreamDefaultReader
 
   void Trace(Visitor*) const override;
 
+  bool HasPendingActivity() const final;
+
  private:
+  friend class ReadableByteStreamController;
   friend class ReadableStreamDefaultController;
   friend class ReadableStream;
 
   HeapDeque<Member<StreamPromiseResolver>> read_requests_;
   bool for_author_code_ = true;
+};
+
+template <>
+struct DowncastTraits<ReadableStreamDefaultReader> {
+  static bool AllowFrom(const ReadableStreamGenericReader& reader) {
+    return reader.IsDefaultReader();
+  }
 };
 
 }  // namespace blink

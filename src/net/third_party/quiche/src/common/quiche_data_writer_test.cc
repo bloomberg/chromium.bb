@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/common/quiche_data_writer.h"
+#include "common/quiche_data_writer.h"
 
 #include <cstdint>
 #include <cstring>
 
 #include "absl/base/macros.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
-#include "net/third_party/quiche/src/common/quiche_data_reader.h"
-#include "net/third_party/quiche/src/common/quiche_endian.h"
-#include "net/third_party/quiche/src/common/test_tools/quiche_test_utils.h"
+#include "common/platform/api/quiche_test.h"
+#include "common/quiche_data_reader.h"
+#include "common/quiche_endian.h"
+#include "common/test_tools/quiche_test_utils.h"
 
 namespace quiche {
 namespace test {
@@ -31,7 +31,7 @@ struct TestParams {
 
 // Used by ::testing::PrintToStringParamName().
 std::string PrintToString(const TestParams& p) {
-  return quiche::QuicheStrCat(
+  return absl::StrCat(
       (p.endianness == quiche::NETWORK_BYTE_ORDER ? "Network" : "Host"),
       "ByteOrder");
 }

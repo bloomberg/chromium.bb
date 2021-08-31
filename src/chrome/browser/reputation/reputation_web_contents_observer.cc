@@ -7,21 +7,30 @@
 #include <string>
 #include <utility>
 
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "chrome/browser/lookalikes/lookalike_url_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/reputation/reputation_service.h"
 #include "chrome/browser/reputation/safety_tip_ui.h"
+#include "components/lookalikes/core/features.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/common/page_visibility_state.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
+
+#if defined(OS_ANDROID)
+#include "components/messages/android/messages_feature.h"
+#endif
 
 namespace {
 
@@ -154,7 +163,7 @@ void RecordPostFlagCheckHistogram(security_state::SafetyTipStatus status) {
 // Records a histogram that embeds the safety tip status along with whether the
 // navigation was initiated cross- or same-origin.
 void RecordSafetyTipStatusWithInitiatorOriginInfo(
-    const base::Optional<url::Origin>& committed_initiator_origin,
+    const absl::optional<url::Origin>& committed_initiator_origin,
     const GURL& committed_url,
     const GURL& current_url,
     security_state::SafetyTipStatus status) {
@@ -223,7 +232,7 @@ ReputationWebContentsObserver::~ReputationWebContentsObserver() = default;
 
 void ReputationWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       !navigation_handle->HasCommitted() || navigation_handle->IsErrorPage()) {
     MaybeCallReputationCheckCallback(false);
     return;
@@ -376,6 +385,18 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
     return;
   }
 
+  // Log a console message if it's the first time we're going to open the Safety
+  // Tip. (Otherwise, we'd print the message each time the tab became visible.)
+  if (!called_from_visibility_check) {
+    web_contents()->GetMainFrame()->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kWarning,
+        base::StringPrintf(
+            "Chrome has determined that %s could be fake or fraudulent.\n\n"
+            "If you believe this is shown in error please visit "
+            "https://g.co/chrome/lookalike-warnings",
+            result.url.host().c_str()));
+  }
+
   if (!IsSafetyTipEnabled(result.safety_tip_status)) {
     // When the feature isn't enabled, we 'ignore' the UI after the first visit
     // to make it easier to disambiguate the control groups' first visit from
@@ -394,14 +415,84 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
     return;
   }
 
+  if (!base::FeatureList::IsEnabled(
+          lookalikes::features::kLookalikeDigitalAssetLinks) ||
+      !result.suggested_url.is_valid()) {
+    RecordPostFlagCheckHistogram(result.safety_tip_status);
+
+    bool should_call_safety_tip_dialog = true;
+    base::OnceCallback<void(SafetyTipInteraction)> close_callback =
+        base::BindOnce(OnSafetyTipClosed, result, base::Time::Now(),
+                       navigation_source_id, profile_, result.url,
+                       result.safety_tip_status,
+                       std::move(safety_tip_close_callback_for_testing_));
+#if defined(OS_ANDROID)
+    if (messages::IsSafetyTipMessagesUiEnabled()) {
+      should_call_safety_tip_dialog = false;
+      delegate_.DisplaySafetyTipPrompt(result.safety_tip_status,
+                                       result.suggested_url, web_contents(),
+                                       std::move(close_callback));
+    }
+#endif
+
+    if (should_call_safety_tip_dialog) {
+      ShowSafetyTipDialog(web_contents(), result.safety_tip_status,
+                          result.suggested_url, std::move(close_callback));
+    }
+    MaybeCallReputationCheckCallback(true);
+    return;
+  }
+
+  const url::Origin lookalike_origin = url::Origin::Create(result.url);
+  const url::Origin target_origin = url::Origin::Create(result.suggested_url);
+
+  DigitalAssetLinkCrossValidator::ResultCallback callback = base::BindOnce(
+      &ReputationWebContentsObserver::OnDigitalAssetLinkValidationResult,
+      weak_factory_.GetWeakPtr(), result, navigation_source_id);
+  digital_asset_link_validator_ =
+      std::make_unique<DigitalAssetLinkCrossValidator>(
+          profile_, lookalike_origin, target_origin,
+          LookalikeUrlService::kManifestFetchDelay.Get(),
+          LookalikeUrlService::Get(profile_)->clock(), std::move(callback));
+  digital_asset_link_validator_->Start();
+}
+
+void ReputationWebContentsObserver::OnDigitalAssetLinkValidationResult(
+    ReputationCheckResult result,
+    ukm::SourceId navigation_source_id,
+    bool validation_succeeded) {
+  if (validation_succeeded) {
+    // Don't show a safety tip dialog.
+    base::UmaHistogramEnumeration(
+        "Security.SafetyTips.ReputationCheckComplete.DidFinishNavigation",
+        security_state::SafetyTipStatus::kDigitalAssetLinkMatch);
+    RecordPostFlagCheckHistogram(
+        security_state::SafetyTipStatus::kDigitalAssetLinkMatch);
+    MaybeCallReputationCheckCallback(/*heuristics_checked=*/true);
+    return;
+  }
+
   RecordPostFlagCheckHistogram(result.safety_tip_status);
-  ShowSafetyTipDialog(
-      web_contents(), result.safety_tip_status, result.suggested_url,
+
+  bool should_call_safety_tip_dialog = true;
+  base::OnceCallback<void(SafetyTipInteraction)> close_callback =
       base::BindOnce(OnSafetyTipClosed, result, base::Time::Now(),
                      navigation_source_id, profile_, result.url,
                      result.safety_tip_status,
-                     std::move(safety_tip_close_callback_for_testing_)));
-  MaybeCallReputationCheckCallback(true);
+                     std::move(safety_tip_close_callback_for_testing_));
+#if defined(OS_ANDROID)
+  if (messages::IsSafetyTipMessagesUiEnabled()) {
+    should_call_safety_tip_dialog = false;
+    delegate_.DisplaySafetyTipPrompt(result.safety_tip_status,
+                                     result.suggested_url, web_contents(),
+                                     std::move(close_callback));
+  }
+#endif
+  if (should_call_safety_tip_dialog) {
+    ShowSafetyTipDialog(web_contents(), result.safety_tip_status,
+                        result.suggested_url, std::move(close_callback));
+  }
+  MaybeCallReputationCheckCallback(/*heuristics_checked=*/true);
 }
 
 void ReputationWebContentsObserver::MaybeCallReputationCheckCallback(

@@ -20,14 +20,19 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "gflags/gflags.h"
+#include "absl/flags/flag.h"
+#include "absl/flags/parse.h"
 #include "lib/quic_trace.pb.h"
 
-DEFINE_string(sequence, "Which time sequence to plot: send, ack or loss.", "");
-DEFINE_bool(filter_old_acks,
-            true,
-            "Do not show an ack for a packet if it was already previously "
-            "acknowledged");
+ABSL_FLAG(std::string,
+          sequence,
+          "",
+          "Which time sequence to plot: send, ack or loss.");
+ABSL_FLAG(bool,
+          filter_old_acks,
+          true,
+          "Do not show an ack for a packet if it was already previously "
+          "acknowledged");
 
 namespace quic_trace {
 namespace {
@@ -92,7 +97,7 @@ void PrintTimeSequence(std::istream* trace_source) {
     total_sent += sent_in_packet;
 
     // Output sent packets.
-    if (sent_in_packet != 0 && FLAGS_sequence == "send") {
+    if (sent_in_packet != 0 && absl::GetFlag(FLAGS_sequence) == "send") {
       std::cout << event.time_us() << " " << (total_sent - sent_in_packet)
                 << std::endl;
       std::cout << event.time_us() << " " << total_sent << std::endl;
@@ -100,18 +105,20 @@ void PrintTimeSequence(std::istream* trace_source) {
     }
 
     // Output loss events.
-    if (event.event_type() == PACKET_LOST && FLAGS_sequence == "loss") {
+    if (event.event_type() == PACKET_LOST &&
+        absl::GetFlag(FLAGS_sequence) == "loss") {
       PrintSentPacket(packet_map, event.packet_number(), event.time_us());
     }
 
     // Output acks.
     if (event.event_type() == PACKET_RECEIVED) {
       for (const Frame& frame : event.frames()) {
-        if (frame.frame_type() == ACK && FLAGS_sequence == "ack") {
+        if (frame.frame_type() == ACK &&
+            absl::GetFlag(FLAGS_sequence) == "ack") {
           for (const AckBlock& block : frame.ack_info().acked_packets()) {
             for (uint64_t packet = block.first_packet();
                  packet <= block.last_packet(); packet++) {
-              if (FLAGS_filter_old_acks) {
+              if (absl::GetFlag(FLAGS_filter_old_acks)) {
                 if (already_acknowledged.count(packet) > 0) {
                   continue;
                 }
@@ -130,12 +137,13 @@ void PrintTimeSequence(std::istream* trace_source) {
 }  // namespace quic_trace
 
 int main(int argc, char* argv[]) {
-  gflags::ParseCommandLineFlags(&argc, &argv, true);
+  absl::ParseCommandLine(argc, argv);
 
-  if (FLAGS_sequence != "send" && FLAGS_sequence != "ack" &&
-      FLAGS_sequence != "loss") {
-    std::cerr << "The --type parameter has to be set to either 'send', 'ack' "
-                 "or 'loss'."
+  if (absl::GetFlag(FLAGS_sequence) != "send" &&
+      absl::GetFlag(FLAGS_sequence) != "ack" &&
+      absl::GetFlag(FLAGS_sequence) != "loss") {
+    std::cerr << "The --sequence parameter has to be set to either 'send', "
+                 "'ack' or 'loss'."
               << std::endl;
     return 1;
   }

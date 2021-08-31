@@ -16,6 +16,7 @@
 #include "base/files/scoped_file.h"
 #include "base/no_destructor.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
@@ -138,8 +139,7 @@ gfx::GpuMemoryBufferHandle AllocateGpuMemoryBufferHandle(
     gfx::BufferUsage buffer_usage,
     base::ScopedClosureRunner& destroy_cb) {
   DCHECK(factory ||
-         buffer_usage ==
-             gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE);
+         buffer_usage == gfx::BufferUsage::VEA_READ_CAMERA_AND_CPU_READ_WRITE);
   gfx::GpuMemoryBufferHandle gmb_handle;
   auto buffer_format = VideoPixelFormatToGfxBufferFormat(pixel_format);
   if (!buffer_format)
@@ -254,7 +254,7 @@ scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
   return frame;
 }
 
-base::Optional<VideoFrameLayout> GetPlatformVideoFrameLayout(
+absl::optional<VideoFrameLayout> GetPlatformVideoFrameLayout(
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     VideoPixelFormat pixel_format,
     const gfx::Size& coded_size,
@@ -264,8 +264,8 @@ base::Optional<VideoFrameLayout> GetPlatformVideoFrameLayout(
   auto frame = CreatePlatformVideoFrame(
       gpu_memory_buffer_factory, pixel_format, coded_size,
       gfx::Rect(coded_size), coded_size, base::TimeDelta(), buffer_usage);
-  return frame ? base::make_optional<VideoFrameLayout>(frame->layout())
-               : base::nullopt;
+  return frame ? absl::make_optional<VideoFrameLayout>(frame->layout())
+               : absl::nullopt;
 }
 
 gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(

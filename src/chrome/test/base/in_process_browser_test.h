@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -81,7 +82,7 @@ class ScopedBundleSwizzlerMac;
 // . SetUpUserDataDirectory()
 //
 // Default command line switches are added in the default implementation of
-// SetUpDefaultCommandLine(). Addtional command line switches can be simply
+// SetUpDefaultCommandLine(). Additional command line switches can be simply
 // appended in SetUpCommandLine() without the need to invoke
 // InProcessBrowserTest::SetUpCommandLine(). If a test needs to change the
 // default command line, it can override SetUpDefaultCommandLine(), where it
@@ -149,6 +150,11 @@ class InProcessBrowserTest : public content::BrowserTestBase {
     global_browser_set_up_function_ = set_up_function;
   }
 
+  // Counts the number of "PRE_" prefixes in the test name. This is used to
+  // differentiate between different PRE tests in browser test constructors
+  // and setup functions.
+  static size_t GetTestPreCount();
+
   // Returns the browser created by BrowserMain().
   // If no browser is created in BrowserMain(), this will return nullptr unless
   // another browser instance is created at a later time and
@@ -209,6 +215,9 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // BrowserTestBase:
   void PreRunTestOnMainThread() override;
   void PostRunTestOnMainThread() override;
+#if defined(OS_MAC)
+  void CreatedBrowserMainParts(content::BrowserMainParts* parts) override;
+#endif
 
   // Ensures that no devtools are open, and then opens the devtools.
   void OpenDevToolsWindow(content::WebContents* web_contents);
@@ -227,9 +236,9 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // is omitted, the currently active profile will be used.
   Browser* CreateIncognitoBrowser(Profile* profile = nullptr);
 
-#if !defined(OS_ANDROID) && !defined(CHROME_OS)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // Similar to |CreateBrowser|, but creates a Guest browser.
-  // To create a Guest browser for ChromeOS, you need to add proper switches to
+  // To create a ChromeOS Guest user session, you need to add proper switches to
   // commandline while setting up the test. For an example see
   // AppListClientGuestModeBrowserTest::SetUpCommandLine.
   Browser* CreateGuestBrowser();
@@ -247,13 +256,14 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // the navigation to complete, and show the browser's window.
   void AddBlankTabAndShow(Browser* browser);
 
-#if !defined OS_MAC
+#if !defined OS_MAC && !BUILDFLAG(IS_CHROMEOS_LACROS)
   // Return a CommandLine object that is used to relaunch the browser_test
   // binary as a browser process. This function is deliberately not defined on
   // the Mac because re-using an existing browser process when launching from
   // the command line isn't a concept that we support on the Mac; AppleEvents
   // are the Mac solution for the same need. Any test based on these functions
-  // doesn't apply to the Mac.
+  // doesn't apply to the Mac. Likewise, Lacros is always launched by ash, and
+  // not by the the process restarting itself.
   base::CommandLine GetCommandLineForRelaunch();
 #endif
 
@@ -274,6 +284,10 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   void set_open_about_blank_on_browser_launch(bool value) {
     open_about_blank_on_browser_launch_ = value;
   }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  void set_skip_initial_restore(bool value) { skip_initial_restore_ = value; }
+#endif
 
   // Runs scheduled layouts on all Widgets using
   // Widget::LayoutRootViewIfNecessary(). No-op outside of Views.
@@ -332,6 +346,12 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 #endif
 
   std::unique_ptr<MainThreadStackSamplingProfiler> sampling_profiler_;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // False to create a browser by default before tests code run for browser
+  // tests. To run or test the full restore logic, sets the value as true.
+  bool skip_initial_restore_ = false;
+#endif
 };
 
 // When including either in_process_browser_test.h or android_browser_test.h

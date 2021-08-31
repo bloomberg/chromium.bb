@@ -29,13 +29,13 @@
 
 #include "chrome/browser/download/download_history.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -50,10 +50,13 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "extensions/buildflags/buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #endif
+
+using history::DownloadState;
 
 namespace {
 
@@ -115,7 +118,7 @@ class DownloadHistoryData : public base::SupportsUserData::Data {
   history::DownloadRow* info() { return info_.get(); }
   void set_info(const history::DownloadRow& i) {
     // TODO(qinmin): avoid creating a new copy each time.
-    info_.reset(new history::DownloadRow(i));
+    info_ = std::make_unique<history::DownloadRow>(i);
   }
   void clear_info() {
     info_.reset();
@@ -223,6 +226,52 @@ ShouldUpdateHistoryResult ShouldUpdateHistory(
   return ShouldUpdateHistoryResult::NO_UPDATE;
 }
 
+// Counts how many times a target file path exists in |rows| and stores
+// the result into |file_path_count|.
+void CountFilePathOccurences(const std::vector<history::DownloadRow>& rows,
+                             std::map<std::string, int>* file_path_count) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!base::FeatureList::IsEnabled(
+          download::features::kDeleteOverwrittenDownloads)) {
+    return;
+  }
+
+  for (const history::DownloadRow& row : rows) {
+    if (row.state != DownloadState::COMPLETE || row.target_path.empty())
+      continue;
+    std::string file_path = row.target_path.AsUTF8Unsafe();
+    if (file_path.empty())
+      continue;
+    ++(*file_path_count)[file_path];
+  }
+}
+
+// Checks whether a particular download row should be skipped from loading given
+// the number of times the same target file path appears in |file_path_count|.
+bool ShouldSkipLoadingDownload(const history::DownloadRow& row,
+                               std::map<std::string, int>* file_path_count) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!base::FeatureList::IsEnabled(
+          download::features::kDeleteOverwrittenDownloads)) {
+    return false;
+  }
+
+  if (row.state != DownloadState::COMPLETE || row.target_path.empty())
+    return false;
+  const std::string file_path = row.target_path.AsUTF8Unsafe();
+  if (file_path.empty())
+    return false;
+  auto iter = file_path_count->find(file_path);
+  DCHECK(iter != file_path_count->end());
+  --iter->second;
+  if (iter->second < 1)
+    return false;
+  return base::Time::Now() - row.end_time >=
+         download::GetOverwrittenDownloadDeleteTime();
+}
+
 }  // anonymous namespace
 
 DownloadHistory::HistoryAdapter::HistoryAdapter(
@@ -308,11 +357,21 @@ void DownloadHistory::QueryCallback(std::vector<history::DownloadRow> rows) {
 }
 
 void DownloadHistory::LoadHistoryDownloads(
-    std::vector<history::DownloadRow> rows) {
+    const std::vector<history::DownloadRow>& rows) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(notifier_.GetManager());
 
+  std::map<std::string, int> file_name_count;
+  CountFilePathOccurences(rows, &file_name_count);
+
+  int overwritten_download_removals = 0;
   for (const history::DownloadRow& row : rows) {
+    if (ShouldSkipLoadingDownload(row, &file_name_count)) {
+      ++overwritten_download_removals;
+      ScheduleRemoveDownload(row.id);
+      continue;
+    }
+
     loading_id_ = history::ToContentDownloadId(row.id);
     download::DownloadItem::DownloadState history_download_state =
         history::ToContentDownloadState(row.state);
@@ -323,7 +382,7 @@ void DownloadHistory::LoadHistoryDownloads(
     download::DownloadItem* item = notifier_.GetManager()->CreateDownloadItem(
         row.guid, loading_id_, row.current_path, row.target_path, url_chain,
         row.referrer_url, row.site_url, row.tab_url, row.tab_referrer_url,
-        base::nullopt, row.mime_type, row.original_mime_type, row.start_time,
+        absl::nullopt, row.mime_type, row.original_mime_type, row.start_time,
         row.end_time, row.etag, row.last_modified, row.received_bytes,
         row.total_bytes,
         std::string(),  // TODO(asanka): Need to persist and restore hash of
@@ -359,6 +418,8 @@ void DownloadHistory::LoadHistoryDownloads(
     DCHECK_EQ(DownloadHistoryData::PERSISTED,
               DownloadHistoryData::Get(item)->state());
   }
+  UMA_HISTOGRAM_COUNTS_1000("Download.OverwrittenDownloadRemovedFromHistory",
+                            overwritten_download_removals);
 
   // Indicate that the history db is initialized.
   notifier_.GetManager()->PostInitialization(
