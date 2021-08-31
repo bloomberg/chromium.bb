@@ -1,8 +1,0 @@
-inline half parameterWrite(half x) {
-    x *= 2;
-    return x;
-}
-
-void main() {
-    sk_FragColor.x = parameterWrite(1);
-}

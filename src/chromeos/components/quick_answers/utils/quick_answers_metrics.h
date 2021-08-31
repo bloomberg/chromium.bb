@@ -29,6 +29,10 @@ void RecordClick(ResultType result_type, const base::TimeDelta duration);
 // Record selected text length to learn about usage pattern.
 void RecordSelectedTextLength(int length);
 
+// Record selected text length of requests sent out to learn about usage
+// pattern.
+void RecordRequestTextLength(IntentType intent_type, int length);
+
 // Record active impression with result type and impression duration.
 void RecordActiveImpression(ResultType result_type,
                             const base::TimeDelta duration);
@@ -44,6 +48,9 @@ void RecordNoticeImpression(int nth_impression);
 
 // Record the intent generated on-device.
 void RecordIntentType(IntentType intent_type);
+
+// Record the intent type when network error occurs.
+void RecordNetworkError(IntentType intent_type);
 
 }  // namespace quick_answers
 }  // namespace chromeos

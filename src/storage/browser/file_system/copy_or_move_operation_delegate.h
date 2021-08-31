@@ -31,7 +31,8 @@ enum class FlushPolicy;
 class CopyOrMoveOperationDelegate : public RecursiveOperationDelegate {
  public:
   class CopyOrMoveImpl;
-  using CopyProgressCallback = FileSystemOperation::CopyProgressCallback;
+  using CopyOrMoveProgressCallback =
+      FileSystemOperation::CopyOrMoveProgressCallback;
   using CopyOrMoveOption = FileSystemOperation::CopyOrMoveOption;
   using ErrorBehavior = FileSystemOperation::ErrorBehavior;
 
@@ -84,14 +85,15 @@ class CopyOrMoveOperationDelegate : public RecursiveOperationDelegate {
     DISALLOW_COPY_AND_ASSIGN(StreamCopyHelper);
   };
 
-  CopyOrMoveOperationDelegate(FileSystemContext* file_system_context,
-                              const FileSystemURL& src_root,
-                              const FileSystemURL& dest_root,
-                              OperationType operation_type,
-                              CopyOrMoveOption option,
-                              ErrorBehavior error_behavior,
-                              const CopyProgressCallback& progress_callback,
-                              StatusCallback callback);
+  CopyOrMoveOperationDelegate(
+      FileSystemContext* file_system_context,
+      const FileSystemURL& src_root,
+      const FileSystemURL& dest_root,
+      OperationType operation_type,
+      CopyOrMoveOption option,
+      ErrorBehavior error_behavior,
+      const CopyOrMoveProgressCallback& progress_callback,
+      StatusCallback callback);
   ~CopyOrMoveOperationDelegate() override;
 
   // RecursiveOperationDelegate overrides:
@@ -107,9 +109,7 @@ class CopyOrMoveOperationDelegate : public RecursiveOperationDelegate {
   void OnCancel() override;
 
  private:
-  void DidCopyOrMoveFile(const FileSystemURL& src_url,
-                         const FileSystemURL& dest_url,
-                         StatusCallback callback,
+  void DidCopyOrMoveFile(StatusCallback callback,
                          CopyOrMoveImpl* impl,
                          base::File::Error error);
   void DidTryRemoveDestRoot(StatusCallback callback, base::File::Error error);
@@ -127,22 +127,23 @@ class CopyOrMoveOperationDelegate : public RecursiveOperationDelegate {
   void PostProcessDirectoryAfterTouchFile(const FileSystemURL& src_url,
                                           StatusCallback callback,
                                           base::File::Error error);
-  void DidRemoveSourceForMove(StatusCallback callback, base::File::Error error);
+  void DidRemoveSourceForMove(const FileSystemURL& src_url,
+                              StatusCallback callback,
+                              base::File::Error error);
 
-  void OnCopyFileProgress(const FileSystemURL& src_url, int64_t size);
   FileSystemURL CreateDestURL(const FileSystemURL& src_url) const;
 
 #if DCHECK_IS_ON()
   bool did_run_ = false;
 #endif
 
-  FileSystemURL src_root_;
-  FileSystemURL dest_root_;
+  const FileSystemURL src_root_;
+  const FileSystemURL dest_root_;
   bool same_file_system_;
-  OperationType operation_type_;
-  CopyOrMoveOption option_;
-  ErrorBehavior error_behavior_;
-  CopyProgressCallback progress_callback_;
+  const OperationType operation_type_;
+  const CopyOrMoveOption option_;
+  const ErrorBehavior error_behavior_;
+  const CopyOrMoveProgressCallback progress_callback_;
   StatusCallback callback_;
 
   std::map<CopyOrMoveImpl*, std::unique_ptr<CopyOrMoveImpl>> running_copy_set_;

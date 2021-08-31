@@ -5,7 +5,9 @@
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 
 #include "base/numerics/ranges.h"
+#include "third_party/blink/renderer/modules/xr/xr_camera.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame.h"
+#include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 
@@ -20,15 +22,17 @@ namespace {
 // to make the effect more obvious in initial testing.
 constexpr double kMinViewportScale = 0.05;
 
+const double kDegToRad = M_PI / 180.0;
+
 }  // namespace
 
 XRView::XRView(XRFrame* frame, XRViewData* view_data)
     : eye_(view_data->Eye()), frame_(frame), view_data_(view_data) {
   switch (eye_) {
-    case kEyeLeft:
+    case device::mojom::blink::XREye::kLeft:
       eye_string_ = "left";
       break;
-    case kEyeRight:
+    case device::mojom::blink::XREye::kRight:
       eye_string_ = "right";
       break;
     default:
@@ -57,6 +61,21 @@ DOMFloat32Array* XRView::projectionMatrix() const {
   }
 
   return projection_matrix_;
+}
+
+XRViewData::XRViewData(const device::mojom::blink::XRViewPtr& view,
+                       double depth_near,
+                       double depth_far)
+    : eye_(view->eye) {
+  const device::mojom::blink::VRFieldOfViewPtr& fov = view->field_of_view;
+
+  UpdateProjectionMatrixFromFoV(
+      fov->up_degrees * kDegToRad, fov->down_degrees * kDegToRad,
+      fov->left_degrees * kDegToRad, fov->right_degrees * kDegToRad, depth_near,
+      depth_far);
+
+  const TransformationMatrix matrix(view->head_from_eye.matrix());
+  SetHeadFromEyeTransform(matrix);
 }
 
 void XRViewData::UpdateProjectionMatrixFromFoV(float up_rad,
@@ -156,12 +175,36 @@ XRRigidTransform* XRView::transform() const {
   return ref_space_from_eye_;
 }
 
-base::Optional<double> XRView::recommendedViewportScale() const {
+absl::optional<double> XRView::recommendedViewportScale() const {
   return view_data_->recommendedViewportScale();
 }
 
-void XRView::requestViewportScale(base::Optional<double> scale) {
+void XRView::requestViewportScale(absl::optional<double> scale) {
   view_data_->requestViewportScale(scale);
+}
+
+XRCamera* XRView::camera() const {
+  const bool camera_access_enabled = frame_->session()->IsFeatureEnabled(
+      device::mojom::XRSessionFeature::CAMERA_ACCESS);
+  const bool is_immersive_ar_session =
+      frame_->session()->mode() ==
+      device::mojom::blink::XRSessionMode::kImmersiveAr;
+
+  if (camera_access_enabled && is_immersive_ar_session) {
+    // The feature is enabled and we're in immersive-ar session, so let's return
+    // a camera object if the camera image was received in the current frame.
+    // Note: currently our only implementation of AR sessions is provided by
+    // ARCore device, which should *not* return a frame data with camera image
+    // that is not set in case the raw camera access is enabled, so we could
+    // DCHECK that the camera image size has value. Since there may be other AR
+    // devices that implement raw camera access via a different mechanism that's
+    // not neccessarily frame-aligned, a DCHECK here would affect them.
+    if (frame_->session()->CameraImageSize().has_value()) {
+      return MakeGarbageCollected<XRCamera>(frame_);
+    }
+  }
+
+  return nullptr;
 }
 
 void XRView::Trace(Visitor* visitor) const {
@@ -172,11 +215,11 @@ void XRView::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
 }
 
-base::Optional<double> XRViewData::recommendedViewportScale() const {
+absl::optional<double> XRViewData::recommendedViewportScale() const {
   return recommended_viewport_scale_;
 }
 
-void XRViewData::requestViewportScale(base::Optional<double> scale) {
+void XRViewData::requestViewportScale(absl::optional<double> scale) {
   if (!scale)
     return;
 

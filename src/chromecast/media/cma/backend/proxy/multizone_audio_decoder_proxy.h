@@ -5,34 +5,29 @@
 #ifndef CHROMECAST_MEDIA_CMA_BACKEND_PROXY_MULTIZONE_AUDIO_DECODER_PROXY_H_
 #define CHROMECAST_MEDIA_CMA_BACKEND_PROXY_MULTIZONE_AUDIO_DECODER_PROXY_H_
 
-#include <limits>
-
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "chromecast/media/api/cma_backend.h"
 #include "chromecast/media/api/decoder_buffer_base.h"
+#include "chromecast/media/cma/backend/proxy/audio_decoder_pipeline_node.h"
 
 namespace chromecast {
 namespace media {
 
 // This class is used to decrypt then proxy audio data to an external
 // CmaBackend::AudioDecoder over gRPC.
-class MultizoneAudioDecoderProxy : public CmaBackend::AudioDecoder {
+class MultizoneAudioDecoderProxy : public AudioDecoderPipelineNode {
  public:
-  using BufferStatus = CmaBackend::Decoder::BufferStatus;
-  using Delegate = CmaBackend::Decoder::Delegate;
-  using Observer = CmaBackend::AudioDecoder::Observer;
-  using RenderingDelay = CmaBackend::AudioDecoder::RenderingDelay;
-  using Statistics = CmaBackend::AudioDecoder::Statistics;
-
+  MultizoneAudioDecoderProxy(CmaBackend::AudioDecoder* decoder)
+      : AudioDecoderPipelineNode(decoder) {}
   ~MultizoneAudioDecoderProxy() override = default;
 
-  virtual bool Initialize() = 0;
-  virtual bool Start(int64_t start_pts) = 0;
+  virtual void Initialize() = 0;
+  virtual void Start(int64_t start_pts) = 0;
   virtual void Stop() = 0;
-  virtual bool Pause() = 0;
-  virtual bool Resume() = 0;
-  virtual bool SetPlaybackRate(float rate) = 0;
+  virtual void Pause() = 0;
+  virtual void Resume() = 0;
+  virtual void SetPlaybackRate(float rate) = 0;
   virtual void LogicalPause() = 0;
   virtual void LogicalResume() = 0;
   virtual int64_t GetCurrentPts() const = 0;

@@ -7,10 +7,15 @@
 #include "base/format_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#import "components/autofill/ios/form_util/form_util_java_script_feature.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #include "ios/chrome/browser/web/chrome_web_test.h"
+#include "ios/web/public/js_messaging/web_frame.h"
+#import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/test/web_js_test.h"
+#import "ios/web/public/web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
@@ -20,6 +25,9 @@
 
 // Unit tests for ios/chrome/browser/web/resources/autofill_controller.js
 namespace {
+
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForJSCompletionTimeout;
 
 // Structure for getting element by name using JavaScripts.
 struct ElementByName {
@@ -813,6 +821,15 @@ class AutofillControllerJsTest : public web::WebJsTest<ChromeWebTest> {
       : web::WebJsTest<ChromeWebTest>(std::make_unique<ChromeWebClient>()) {}
 
  protected:
+  web::WebFrame* WaitForMainFrame() {
+    __block web::WebFrame* main_frame = nullptr;
+    EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+      main_frame = web_state()->GetWebFramesManager()->GetMainWebFrame();
+      return main_frame != nullptr;
+    }));
+    return main_frame;
+  }
+
   // Helper method that EXPECTs |javascript| evaluation on page
   // |kHTMLForTestingElements| with expectation given by
   // |elements_with_true_expected|.
@@ -1595,7 +1612,19 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
   html = [html stringByAppendingFormat:@"</body></html>"];
 
   LoadHtml(html);
-  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
+
+  web::WebFrame* main_frame = WaitForMainFrame();
+  ASSERT_TRUE(main_frame);
+
+  uint32_t next_available_id = 1;
+  autofill::FormUtilJavaScriptFeature::GetInstance()
+      ->SetUpForUniqueIDsWithInitialState(main_frame, next_available_id);
+
+  // Wait for |SetUpForUniqueIDsWithInitialState| to complete.
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+    return [ExecuteJavaScript(@"document[__gCrWeb.fill.ID_SYMBOL]") intValue] ==
+           int{next_available_id};
+  }));
 
   NSDictionary* expected = @{
     @"name" : @"TestForm",
@@ -1607,7 +1636,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"name_attribute" : @"firstname",
         @"id_attribute" : @"firstname",
         @"identifier" : @"firstname",
-        @"unique_renderer_id" : @"1",
+        @"unique_renderer_id" : @"2",
         @"form_control_type" : @"text",
         @"max_length" : GetDefaultMaxLength(),
         @"should_autocomplete" : @true,
@@ -1623,7 +1652,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"name_attribute" : @"vehicle",
         @"id_attribute" : @"vehicle1",
         @"identifier" : @"vehicle1",
-        @"unique_renderer_id" : @"2",
+        @"unique_renderer_id" : @"3",
         @"form_control_type" : @"checkbox",
         @"should_autocomplete" : @true,
         @"is_checkable" : @true,
@@ -1638,7 +1667,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"name_attribute" : @"vehicle",
         @"id_attribute" : @"vehicle2",
         @"identifier" : @"vehicle2",
-        @"unique_renderer_id" : @"3",
+        @"unique_renderer_id" : @"4",
         @"form_control_type" : @"checkbox",
         @"should_autocomplete" : @true,
         @"is_checkable" : @true,
@@ -1653,7 +1682,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"name_attribute" : @"vehicle",
         @"id_attribute" : @"vehicle3",
         @"identifier" : @"vehicle3",
-        @"unique_renderer_id" : @"4",
+        @"unique_renderer_id" : @"5",
         @"form_control_type" : @"checkbox",
         @"should_autocomplete" : @true,
         @"is_checkable" : @true,
@@ -1668,7 +1697,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"name_attribute" : @"nameintableth",
         @"id_attribute" : @"nameintableth",
         @"identifier" : @"nameintableth",
-        @"unique_renderer_id" : @"5",
+        @"unique_renderer_id" : @"6",
         @"form_control_type" : @"text",
         @"max_length" : GetDefaultMaxLength(),
         @"should_autocomplete" : @true,
@@ -1684,7 +1713,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"name_attribute" : @"",
         @"id_attribute" : @"emailtableth",
         @"identifier" : @"emailtableth",
-        @"unique_renderer_id" : @"6",
+        @"unique_renderer_id" : @"7",
         @"form_control_type" : @"email",
         @"max_length" : GetDefaultMaxLength(),
         @"should_autocomplete" : @true,
@@ -1700,7 +1729,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"name_attribute" : @"pwd",
         @"id_attribute" : @"pwd",
         @"identifier" : @"pwd",
-        @"unique_renderer_id" : @"7",
+        @"unique_renderer_id" : @"8",
         @"form_control_type" : @"password",
         @"autocomplete_attribute" : @"off",
         @"max_length" : GetDefaultMaxLength(),
@@ -1717,7 +1746,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"name_attribute" : @"state",
         @"id_attribute" : @"state",
         @"identifier" : @"state",
-        @"unique_renderer_id" : @"8",
+        @"unique_renderer_id" : @"9",
         @"form_control_type" : @"select-one",
         @"is_focusable" : @1,
         @"option_values" : @[ @"CA", @"TX" ],
@@ -1808,7 +1837,20 @@ TEST_F(AutofillControllerJsTest, FillActiveFormField) {
 
 TEST_F(AutofillControllerJsTest, FillActiveFormFieldUsingRendererIDs) {
   LoadHtml(kHTMLForTestingElements);
-  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
+
+  web::WebFrame* main_frame = WaitForMainFrame();
+  ASSERT_TRUE(main_frame);
+
+  uint32_t next_available_id = 1;
+  autofill::FormUtilJavaScriptFeature::GetInstance()
+      ->SetUpForUniqueIDsWithInitialState(main_frame, next_available_id);
+
+  // Wait for |SetUpForUniqueIDsWithInitialState| to complete.
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+    return [ExecuteJavaScript(@"document[__gCrWeb.fill.ID_SYMBOL]") intValue] ==
+           int{next_available_id};
+  }));
+
   // Simulate form parsing to set renderer IDs.
   ExecuteJavaScript(@"__gCrWeb.autofill.extractForms(0, true)");
 
@@ -1820,7 +1862,7 @@ TEST_F(AutofillControllerJsTest, FillActiveFormFieldUsingRendererIDs) {
            "element.focus();"
            "var "
            "data={\"name\":\"lastname\",\"value\":\"%@\","
-           "\"identifier\":\"lastname\",\"unique_renderer_id\":2};"
+           "\"identifier\":\"lastname\",\"unique_renderer_id\":3};"
            "__gCrWeb.autofill.fillActiveFormFieldUsingRendererIDs(data);"
            "element.value",
           newValue));
@@ -1832,7 +1874,7 @@ TEST_F(AutofillControllerJsTest, FillActiveFormFieldUsingRendererIDs) {
                  "var oldValue = element.value;"
                  "var "
                  "data={\"name\":\"lastname\",\"value\":\"%@\","
-                 "\"identifier\":\"lastname\",\"unique_renderer_id\":2};"
+                 "\"identifier\":\"lastname\",\"unique_renderer_id\":3};"
                  "__gCrWeb.autofill.fillActiveFormFieldUsingRendererIDs(data);"
                  "element.value === oldValue",
                 newValue))

@@ -11,10 +11,11 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
+#include "fuchsia/engine/web_engine_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class FuchsiaIntlProfileWatcher;
@@ -25,6 +26,7 @@ class Screen;
 }
 
 namespace content {
+class ContentBrowserClient;
 struct MainFunctionParams;
 }
 
@@ -32,18 +34,24 @@ namespace cr_fuchsia {
 class LegacyMetricsClient;
 }
 
+namespace sys {
+class ComponentInspector;
+}
+
 class MediaResourceProviderService;
 
-class WebEngineBrowserMainParts : public content::BrowserMainParts {
+class WEB_ENGINE_EXPORT WebEngineBrowserMainParts
+    : public content::BrowserMainParts {
  public:
-  explicit WebEngineBrowserMainParts(
-      const content::MainFunctionParams& parameters,
-      fidl::InterfaceRequest<fuchsia::web::Context> request);
+  WebEngineBrowserMainParts(content::ContentBrowserClient* browser_client,
+                            const content::MainFunctionParams& parameters);
   ~WebEngineBrowserMainParts() override;
 
-  content::BrowserContext* browser_context() const {
-    return browser_context_.get();
-  }
+  WebEngineBrowserMainParts(const WebEngineBrowserMainParts&) = delete;
+  WebEngineBrowserMainParts& operator=(const WebEngineBrowserMainParts&) =
+      delete;
+
+  std::vector<content::BrowserContext*> browser_contexts() const;
   WebEngineDevToolsController* devtools_controller() const {
     return devtools_controller_.get();
   }
@@ -53,24 +61,41 @@ class WebEngineBrowserMainParts : public content::BrowserMainParts {
 
   // content::BrowserMainParts overrides.
   void PostEarlyInitialization() override;
-  void PreMainMessageLoopRun() override;
-  void PreDefaultMainMessageLoopRun(base::OnceClosure quit_closure) override;
-  bool MainMessageLoopRun(int* result_code) override;
+  int PreMainMessageLoopRun() override;
+  void WillRunMainMessageLoop(
+      std::unique_ptr<base::RunLoop>& run_loop) override;
   void PostMainMessageLoopRun() override;
 
-  ContextImpl* context_for_test() const { return context_service_.get(); }
+  // Methods used by tests.
+  static void SetContextRequestForTest(
+      fidl::InterfaceRequest<fuchsia::web::Context> request);
+  ContextImpl* context_for_test() const;
 
  private:
+  // Handle fuchsia.web.Context and fuchsia.web.FrameHost connection requests.
+  void HandleContextRequest(
+      fidl::InterfaceRequest<fuchsia::web::Context> request);
+  void HandleFrameHostRequest(
+      fidl::InterfaceRequest<fuchsia::web::FrameHost> request);
+
+  // Notified if the system timezone, language, settings change.
   void OnIntlProfileChanged(const fuchsia::intl::Profile& profile);
 
+  content::ContentBrowserClient* const browser_client_;
   const content::MainFunctionParams& parameters_;
 
-  fidl::InterfaceRequest<fuchsia::web::Context> request_;
-
   std::unique_ptr<display::Screen> screen_;
-  std::unique_ptr<WebEngineBrowserContext> browser_context_;
-  std::unique_ptr<ContextImpl> context_service_;
-  std::unique_ptr<fidl::Binding<fuchsia::web::Context>> context_binding_;
+
+  // Used to publish diagnostics including the active Contexts and FrameHosts.
+  std::unique_ptr<sys::ComponentInspector> component_inspector_;
+
+  // Browsing contexts for the connected clients.
+  fidl::BindingSet<fuchsia::web::Context, std::unique_ptr<ContextImpl>>
+      context_bindings_;
+  fidl::BindingSet<fuchsia::web::FrameHost,
+                   std::unique_ptr<fuchsia::web::FrameHost>>
+      frame_host_bindings_;
+
   std::unique_ptr<WebEngineDevToolsController> devtools_controller_;
   std::unique_ptr<cr_fuchsia::LegacyMetricsClient> legacy_metrics_client_;
   std::unique_ptr<MediaResourceProviderService>
@@ -81,8 +106,6 @@ class WebEngineBrowserMainParts : public content::BrowserMainParts {
 
   bool run_message_loop_ = true;
   base::OnceClosure quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebEngineBrowserMainParts);
 };
 
 #endif  // FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_BROWSER_MAIN_PARTS_H_

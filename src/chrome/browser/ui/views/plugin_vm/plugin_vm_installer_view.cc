@@ -9,13 +9,13 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
-#include "base/optional.h"
+#include "base/callback_helpers.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_installer_factory.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_installer_factory.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_manager.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_manager_factory.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -23,9 +23,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -38,6 +40,10 @@
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view_class_properties.h"
+
+// This file contains VLOG logging to aid debugging tast tests.
+#define LOG_FUNCTION_CALL() \
+  VLOG(2) << "PluginVmInstallerView::" << __func__ << " called"
 
 namespace {
 
@@ -63,6 +69,7 @@ bool ShowRetryButton(plugin_vm::PluginVmInstaller::FailureReason reason) {
 }  // namespace
 
 void plugin_vm::ShowPluginVmInstallerView(Profile* profile) {
+  LOG_FUNCTION_CALL();
   if (!g_plugin_vm_installer_view) {
     g_plugin_vm_installer_view = new PluginVmInstallerView(profile);
     views::DialogDelegate::CreateDialogWidget(g_plugin_vm_installer_view,
@@ -80,6 +87,7 @@ PluginVmInstallerView::PluginVmInstallerView(Profile* profile)
       app_name_(l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME)),
       plugin_vm_installer_(
           plugin_vm::PluginVmInstallerFactory::GetForProfile(profile)) {
+  VLOG(2) << "PluginVmInstallerView created";
   // Layout constants from the spec.
   gfx::Insets kDialogInsets(60, 64, 0, 64);
   constexpr gfx::Size kLogoImageSize(32, 32);
@@ -158,7 +166,7 @@ PluginVmInstallerView::PluginVmInstallerView(Profile* profile)
   upper_container_view->AddChildView(progress_bar_);
 
   download_progress_message_label_ =
-      new views::Label(base::string16(), {kDownloadProgressMessageFont});
+      new views::Label(std::u16string(), {kDownloadProgressMessageFont});
   download_progress_message_label_->SetEnabledColor(gfx::kGoogleGrey700);
   download_progress_message_label_->SetProperty(
       views::kMarginsKey, gfx::Insets(kDownloadProgressMessageHeight -
@@ -191,6 +199,7 @@ bool PluginVmInstallerView::ShouldShowWindowTitle() const {
 }
 
 bool PluginVmInstallerView::Accept() {
+  LOG_FUNCTION_CALL();
   if (state_ == State::kConfirmInstall) {
     delete learn_more_link_;
     learn_more_link_ = nullptr;
@@ -212,6 +221,7 @@ bool PluginVmInstallerView::Accept() {
 }
 
 bool PluginVmInstallerView::Cancel() {
+  LOG_FUNCTION_CALL();
   return true;
 }
 
@@ -228,9 +238,9 @@ void PluginVmInstallerView::OnStateUpdated(InstallingState new_state) {
 }
 
 void PluginVmInstallerView::OnLinkClicked() {
-  NavigateParams params(
-      profile_, GURL("https://support.google.com/chromebook/?p=pluginvm"),
-      ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(profile_,
+                        GURL("https://support.google.com/chrome/a/?p=pluginvm"),
+                        ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
 }
@@ -297,7 +307,7 @@ void PluginVmInstallerView::OnCancelFinished() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-base::string16 PluginVmInstallerView::GetTitle() const {
+std::u16string PluginVmInstallerView::GetTitle() const {
   switch (state_) {
     case State::kConfirmInstall:
       return l10n_util::GetStringFUTF16(
@@ -324,7 +334,7 @@ base::string16 PluginVmInstallerView::GetTitle() const {
   }
 }
 
-base::string16 PluginVmInstallerView::GetMessage() const {
+std::u16string PluginVmInstallerView::GetMessage() const {
   switch (state_) {
     case State::kConfirmInstall:
       return l10n_util::GetStringFUTF16(
@@ -339,9 +349,10 @@ base::string16 PluginVmInstallerView::GetMessage() const {
           NOTREACHED();
           FALLTHROUGH;
         case InstallingState::kCheckingLicense:
+        case InstallingState::kCheckingForExistingVm:
         case InstallingState::kCheckingDiskSpace:
         case InstallingState::kDownloadingDlc:
-        case InstallingState::kCheckingForExistingVm:
+        case InstallingState::kStartingDispatcher:
           return l10n_util::GetStringUTF16(
               IDS_PLUGIN_VM_INSTALLER_START_DOWNLOADING_MESSAGE);
         case InstallingState::kDownloadingImage:
@@ -387,6 +398,10 @@ base::string16 PluginVmInstallerView::GetMessage() const {
               IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_CONFIG_ERROR, app_name_,
               base::NumberToString16(
                   static_cast<std::underlying_type_t<Reason>>(*reason_)));
+        case Reason::DOWNLOAD_FAILED_401:
+        case Reason::DOWNLOAD_FAILED_403:
+        case Reason::DOWNLOAD_FAILED_404:
+          // TODO(b/160897236): Add a new string for this case.
         case Reason::DOWNLOAD_FAILED_UNKNOWN:
         case Reason::DOWNLOAD_FAILED_NETWORK:
         case Reason::DOWNLOAD_FAILED_ABORTED:
@@ -413,6 +428,7 @@ base::string16 PluginVmInstallerView::GetMessage() const {
               IDS_PLUGIN_VM_DLC_NEED_REBOOT_FAILED_MESSAGE, app_name_);
         case Reason::INSUFFICIENT_DISK_SPACE:
         case Reason::DLC_NEED_SPACE:
+        case Reason::OUT_OF_DISK_SPACE:
           return l10n_util::GetStringFUTF16(
               IDS_PLUGIN_VM_INSUFFICIENT_DISK_SPACE_MESSAGE,
               ui::FormatBytesWithUnits(
@@ -430,6 +446,7 @@ void PluginVmInstallerView::SetFinishedCallbackForTesting(
 }
 
 PluginVmInstallerView::~PluginVmInstallerView() {
+  VLOG(2) << "PluginVmInstallerView destroyed";
   plugin_vm_installer_->RemoveObserver();
   // We call |Cancel()| if the user hasn't started installation to log to UMA.
   if (state_ == State::kConfirmInstall || state_ == State::kInstalling)
@@ -453,7 +470,7 @@ int PluginVmInstallerView::GetCurrentDialogButtons() const {
   }
 }
 
-base::string16 PluginVmInstallerView::GetCurrentDialogButtonLabel(
+std::u16string PluginVmInstallerView::GetCurrentDialogButtonLabel(
     ui::DialogButton button) const {
   switch (state_) {
     case State::kConfirmInstall:
@@ -486,6 +503,9 @@ void PluginVmInstallerView::AddedToWidget() {
 }
 
 void PluginVmInstallerView::OnStateUpdated() {
+  LOG_FUNCTION_CALL() << " with state_ = " << static_cast<int>(state_)
+                      << ", installing_state_ = "
+                      << static_cast<int>(installing_state_);
   SetTitleLabel();
   SetMessageLabel();
   SetBigImage();
@@ -519,7 +539,7 @@ void PluginVmInstallerView::OnStateUpdated() {
   }
 }
 
-base::string16 PluginVmInstallerView::GetDownloadProgressMessage(
+std::u16string PluginVmInstallerView::GetDownloadProgressMessage(
     uint64_t bytes_downloaded,
     int64_t content_length) const {
   DCHECK_EQ(installing_state_, InstallingState::kDownloadingImage);
@@ -577,14 +597,22 @@ void PluginVmInstallerView::SetBigImage() {
 }
 
 void PluginVmInstallerView::StartInstallation() {
+  LOG_FUNCTION_CALL();
   state_ = State::kInstalling;
   installing_state_ = InstallingState::kCheckingLicense;
   progress_bar_->SetValue(0);
   OnStateUpdated();
 
   plugin_vm_installer_->SetObserver(this);
-  base::Optional<plugin_vm::PluginVmInstaller::FailureReason> failure_reason =
+  absl::optional<plugin_vm::PluginVmInstaller::FailureReason> failure_reason =
       plugin_vm_installer_->Start();
   if (failure_reason)
     OnError(failure_reason.value());
 }
+
+BEGIN_METADATA(PluginVmInstallerView, views::BubbleDialogDelegateView)
+ADD_READONLY_PROPERTY_METADATA(std::u16string, Title)
+ADD_READONLY_PROPERTY_METADATA(std::u16string, Message)
+END_METADATA
+
+#undef LOG_FUNCTION_CALL

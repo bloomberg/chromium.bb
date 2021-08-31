@@ -12,7 +12,6 @@ source_set("public") {
     "endpoint_request_ids.h",
     "mdns_service_listener_factory.h",
     "mdns_service_publisher_factory.h",
-    "message_demuxer.cc",
     "message_demuxer.h",
     "network_metrics.h",
     "network_service_manager.h",
@@ -27,6 +26,7 @@ source_set("public") {
     "protocol_connection_server.cc",
     "protocol_connection_server.h",
     "protocol_connection_server_factory.h",
+    "request_response_handler.h",
     "server_config.cc",
     "server_config.h",
     "service_info.cc",
@@ -38,9 +38,7 @@ source_set("public") {
     "timestamp.h",
   ]
 
-  public_deps = [
-    "../msgs",
-  ]
+  public_deps = [ "../msgs" ]
 
   deps = [
     "../../platform",
@@ -51,7 +49,5 @@ source_set("public") {
 source_set("test_support") {
   testonly = true
 
-  sources = [
-    "testing/message_demuxer_test_support.h",
-  ]
+  sources = [ "testing/message_demuxer_test_support.h" ]
 }

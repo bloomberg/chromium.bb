@@ -9,9 +9,10 @@
 #include <string>
 #include <vector>
 
-#include "base/optional.h"
+#include "base/callback.h"
 #include "chromeos/dbus/lorgnette/lorgnette_service.pb.h"
 #include "chromeos/dbus/lorgnette_manager/lorgnette_manager_client.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 
@@ -34,7 +35,7 @@ class COMPONENT_EXPORT(LORGNETTE_MANAGER) FakeLorgnetteManagerClient
   void StartScan(
       const std::string& device_name,
       const lorgnette::ScanSettings& settings,
-      VoidDBusMethodCallback completion_callback,
+      base::OnceCallback<void(lorgnette::ScanFailureMode)> completion_callback,
       base::RepeatingCallback<void(std::string, uint32_t)> page_callback,
       base::RepeatingCallback<void(uint32_t, uint32_t)> progress_callback)
       override;
@@ -42,22 +43,22 @@ class COMPONENT_EXPORT(LORGNETTE_MANAGER) FakeLorgnetteManagerClient
 
   // Sets the response returned by ListScanners().
   void SetListScannersResponse(
-      const base::Optional<lorgnette::ListScannersResponse>&
+      const absl::optional<lorgnette::ListScannersResponse>&
           list_scanners_response);
 
   // Sets the response returned by GetScannerCapabilities().
   void SetScannerCapabilitiesResponse(
-      const base::Optional<lorgnette::ScannerCapabilities>&
+      const absl::optional<lorgnette::ScannerCapabilities>&
           capabilities_response);
 
   // Sets the response returned by StartScan().
   void SetScanResponse(
-      const base::Optional<std::vector<std::string>>& scan_response);
+      const absl::optional<std::vector<std::string>>& scan_response);
 
  private:
-  base::Optional<lorgnette::ListScannersResponse> list_scanners_response_;
-  base::Optional<lorgnette::ScannerCapabilities> capabilities_response_;
-  base::Optional<std::vector<std::string>> scan_response_;
+  absl::optional<lorgnette::ListScannersResponse> list_scanners_response_;
+  absl::optional<lorgnette::ScannerCapabilities> capabilities_response_;
+  absl::optional<std::vector<std::string>> scan_response_;
 };
 
 }  // namespace chromeos

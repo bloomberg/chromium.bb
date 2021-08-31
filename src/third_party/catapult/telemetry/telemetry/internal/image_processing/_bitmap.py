@@ -7,8 +7,14 @@ Bitmap is a basic wrapper for image pixels. It includes some basic processing
 tools: crop, find bounding box of a color and compute histogram of color values.
 """
 
+from __future__ import absolute_import
 import array
-import cStringIO
+
+try:
+  from cStringIO import StringIO
+except ImportError:
+  from io import BytesIO as StringIO
+
 import struct
 import subprocess
 import warnings
@@ -186,7 +192,7 @@ class Bitmap(object):
     out_width = max(self.width, other.width)
     out_height = max(self.height, other.height)
 
-    diff = [[0 for x in xrange(out_width * 3)] for x in xrange(out_height)]
+    diff = [[0 for x in range(out_width * 3)] for x in range(out_height)]
 
     # Loop over each pixel and write out the difference
     for y in range(out_height):
@@ -212,7 +218,7 @@ class Bitmap(object):
         'Using pure python png decoder, which could be very slow. To speed up, '
         'consider installing numpy & cv2 (OpenCV).')
     diff_img = png.from_array(diff, mode='RGB')
-    output = cStringIO.StringIO()
+    output = StringIO()
     try:
       diff_img.save(output)
       diff = Bitmap.FromPng(output.getvalue())

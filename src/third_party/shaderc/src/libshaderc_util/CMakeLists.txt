@@ -18,7 +18,7 @@ add_library(shaderc_util STATIC
   include/libshaderc_util/counting_includer.h
   include/libshaderc_util/file_finder.h
   include/libshaderc_util/format.h
-  include/libshaderc_util/io.h
+  include/libshaderc_util/io_shaderc.h
   include/libshaderc_util/mutex.h
   include/libshaderc_util/message.h
   include/libshaderc_util/resources.h
@@ -29,7 +29,7 @@ add_library(shaderc_util STATIC
   src/args.cc
   src/compiler.cc
   src/file_finder.cc
-  src/io.cc
+  src/io_shaderc.cc
   src/message.cc
   src/resources.cc
   src/shader_stage.cc
@@ -57,7 +57,7 @@ shaderc_add_tests(
     string_piece
     format
     file_finder
-    io
+    io_shaderc
     message
     mutex
     version_profile)
@@ -85,5 +85,5 @@ add_custom_target(testdata COMMAND
 
 if(${SHADERC_ENABLE_TESTS})
   add_dependencies(shaderc_util_file_finder_test testdata)
-  add_dependencies(shaderc_util_io_test testdata)
+  add_dependencies(shaderc_util_io_shaderc_test testdata)
 endif()

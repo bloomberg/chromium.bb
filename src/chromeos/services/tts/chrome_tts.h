@@ -15,24 +15,21 @@ bool GoogleTtsInit(const char* pipeline_path, const char* path_prefix);
 void GoogleTtsShutdown();
 
 bool GoogleTtsInstallVoice(const char* voice_name,
-                           const char* voice_bytes,
+                           const uint8_t* voice_bytes,
                            int size);
 
-bool GoogleTtsInitBuffered(const char* text_jspb, int text_jspb_len);
+bool GoogleTtsInitBuffered(const uint8_t* text_jspb,
+                           const uint8_t* speaker_params_jspb,
+                           int text_jspb_len,
+                           int speaker_params_jspb_len);
 
 int GoogleTtsReadBuffered(float* audio_channel_buffer, size_t* frames_written);
-
-void GoogleTtsFinalizeBuffered();
 
 size_t GoogleTtsGetTimepointsCount();
 
 float GoogleTtsGetTimepointsTimeInSecsAtIndex(size_t index);
 
 int GoogleTtsGetTimepointsCharIndexAtIndex(size_t index);
-
-char* GoogleTtsGetEventBufferPtr();
-
-size_t GoogleTtsGetEventBufferLen();
 
 size_t GoogleTtsGetFramesInAudioBuffer();
 

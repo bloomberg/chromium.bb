@@ -20,7 +20,7 @@ std::unique_ptr<ScopedTestMountPoint>
 ScopedTestMountPoint::CreateAndMountDownloads(Profile* profile) {
   auto mount_point = std::make_unique<ScopedTestMountPoint>(
       file_manager::util::GetDownloadsMountPointName(profile),
-      storage::kFileSystemTypeNativeLocal,
+      storage::kFileSystemTypeLocal,
       file_manager::VOLUME_TYPE_DOWNLOADS_DIRECTORY);
   mount_point->Mount(profile);
   return mount_point;
@@ -56,8 +56,7 @@ void ScopedTestMountPoint::Mount(Profile* profile) {
   storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       name_, file_system_type_, storage::FileSystemMountOption(),
       temp_dir_.GetPath());
-  file_manager::util::GetFileSystemContextForExtensionId(
-      profile, file_manager::kFileManagerAppId)
+  file_manager::util::GetFileManagerFileSystemContext(profile)
       ->external_backend()
       ->GrantFileAccessToExtension(file_manager::kFileManagerAppId,
                                    base::FilePath(name_));

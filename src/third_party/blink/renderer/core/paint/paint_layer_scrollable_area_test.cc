@@ -10,14 +10,14 @@
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
+#include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
-#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
-#include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 
 using testing::_;
 
@@ -26,15 +26,16 @@ namespace {
 
 class ScrollableAreaMockChromeClient : public RenderingTestChromeClient {
  public:
-  MOCK_METHOD3(MockSetToolTip, void(LocalFrame*, const String&, TextDirection));
-  void SetToolTip(LocalFrame& frame,
-                  const String& tooltip_text,
-                  TextDirection dir) override {
-    MockSetToolTip(&frame, tooltip_text, dir);
+  MOCK_METHOD3(MockUpdateTooltipUnderCursor,
+               void(LocalFrame*, const String&, TextDirection));
+  void UpdateTooltipUnderCursor(LocalFrame& frame,
+                                const String& tooltip_text,
+                                TextDirection dir) override {
+    MockUpdateTooltipUnderCursor(&frame, tooltip_text, dir);
   }
 };
 
-HeapVector<Member<ScrollTimelineOffset>>* CreateScrollOffsets(
+HeapVector<Member<ScrollTimelineOffset>> CreateScrollOffsets(
     ScrollTimelineOffset* start_scroll_offset =
         MakeGarbageCollected<ScrollTimelineOffset>(
             CSSNumericLiteralValue::Create(
@@ -45,20 +46,18 @@ HeapVector<Member<ScrollTimelineOffset>>* CreateScrollOffsets(
             CSSNumericLiteralValue::Create(
                 90.0,
                 CSSPrimitiveValue::UnitType::kPixels))) {
-  HeapVector<Member<ScrollTimelineOffset>>* scroll_offsets =
-      MakeGarbageCollected<HeapVector<Member<ScrollTimelineOffset>>>();
-  scroll_offsets->push_back(start_scroll_offset);
-  scroll_offsets->push_back(end_scroll_offset);
+  HeapVector<Member<ScrollTimelineOffset>> scroll_offsets;
+  scroll_offsets.push_back(start_scroll_offset);
+  scroll_offsets.push_back(end_scroll_offset);
   return scroll_offsets;
 }
 
 }  // namespace
 
-class PaintLayerScrollableAreaTest : public RenderingTest,
-                                     public PaintTestConfigurations {
+class PaintLayerScrollableAreaTest : public PaintControllerPaintTest {
  public:
   PaintLayerScrollableAreaTest()
-      : RenderingTest(MakeGarbageCollected<EmptyLocalFrameClient>()),
+      : PaintControllerPaintTest(MakeGarbageCollected<EmptyLocalFrameClient>()),
         chrome_client_(MakeGarbageCollected<ScrollableAreaMockChromeClient>()) {
   }
 
@@ -113,7 +112,8 @@ class PaintLayerScrollableAreaTest : public RenderingTest,
     return To<LayoutBoxModelObject>(scroller)
         ->Layer()
         ->GraphicsLayerBacking()
-        ->ContentsOpaque();
+        ->CcLayer()
+        .contents_opaque();
   }
 
  private:
@@ -660,16 +660,16 @@ TEST_P(PaintLayerScrollableAreaTest, HideTooltipWhenScrollPositionChanges) {
           ->GetScrollableArea();
   ASSERT_TRUE(scrollable_area);
 
-  EXPECT_CALL(GetChromeClient(),
-              MockSetToolTip(GetDocument().GetFrame(), String(), _))
+  EXPECT_CALL(GetChromeClient(), MockUpdateTooltipUnderCursor(
+                                     GetDocument().GetFrame(), String(), _))
       .Times(1);
   scrollable_area->SetScrollOffset(ScrollOffset(1, 1),
                                    mojom::blink::ScrollType::kUser);
 
-  // Programmatic scrolling should not dismiss the tooltip, so setToolTip
-  // should not be called for this invocation.
-  EXPECT_CALL(GetChromeClient(),
-              MockSetToolTip(GetDocument().GetFrame(), String(), _))
+  // Programmatic scrolling should not dismiss the tooltip, so
+  // UpdateTooltipUnderCursor should not be called for this invocation.
+  EXPECT_CALL(GetChromeClient(), MockUpdateTooltipUnderCursor(
+                                     GetDocument().GetFrame(), String(), _))
       .Times(0);
   scrollable_area->SetScrollOffset(ScrollOffset(2, 2),
                                    mojom::blink::ScrollType::kProgrammatic);
@@ -811,35 +811,36 @@ TEST_P(PaintLayerScrollableAreaTest, OverflowHiddenScrollOffsetInvalidation) {
   EXPECT_EQ(nullptr, properties->ScrollTranslation());
   EXPECT_EQ(FloatSize(0, 0), scrollable_area->GetScrollOffset());
 
-  // Going from zero scroll offset to non-zero may require a new paint property
-  // and should invalidate paint and paint properties.
+  // A property update is needed when scroll offset changes.
   scrollable_area->SetScrollOffset(ScrollOffset(0, 1),
                                    mojom::blink::ScrollType::kProgrammatic);
-  EXPECT_TRUE(scroller->PaintingLayer()->SelfNeedsRepaint());
   EXPECT_TRUE(scroller->NeedsPaintPropertyUpdate());
-  UpdateAllLifecyclePhasesForTest();
+  UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(scroller->PaintingLayer()->SelfNeedsRepaint());
 
   // A scroll offset translation is needed when scroll offset is non-zero.
   EXPECT_EQ(FloatSize(0, 1), scrollable_area->GetScrollOffset());
   EXPECT_NE(nullptr, properties->ScrollTranslation());
 
-  // A property update is needed when scroll offset changes.
+  UpdateAllLifecyclePhasesForTest();
+
   scrollable_area->SetScrollOffset(ScrollOffset(0, 2),
                                    mojom::blink::ScrollType::kProgrammatic);
   EXPECT_TRUE(scroller->NeedsPaintPropertyUpdate());
-  UpdateAllLifecyclePhasesForTest();
+  UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(scroller->PaintingLayer()->SelfNeedsRepaint());
 
   // A scroll offset translation is still needed when scroll offset is non-zero.
   EXPECT_EQ(FloatSize(0, 2), scrollable_area->GetScrollOffset());
   EXPECT_NE(nullptr, properties->ScrollTranslation());
 
-  // Going from non-zero scroll offset to zero may require destroying a paint
-  // property and should invalidate paint and paint properties.
+  UpdateAllLifecyclePhasesForTest();
+
   scrollable_area->SetScrollOffset(ScrollOffset(0, 0),
                                    mojom::blink::ScrollType::kProgrammatic);
-  EXPECT_TRUE(scroller->PaintingLayer()->SelfNeedsRepaint());
   EXPECT_TRUE(scroller->NeedsPaintPropertyUpdate());
-  UpdateAllLifecyclePhasesForTest();
+  UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(scroller->PaintingLayer()->SelfNeedsRepaint());
 
   // No scroll offset translation is needed when scroll offset is zero.
   EXPECT_EQ(nullptr, properties->ScrollTranslation());
@@ -1590,12 +1591,12 @@ class ScrollTimelineForTest : public ScrollTimeline {
  public:
   ScrollTimelineForTest(Document* document,
                         Element* scroll_source,
-                        HeapVector<Member<ScrollTimelineOffset>>*
+                        HeapVector<Member<ScrollTimelineOffset>>
                             scroll_offsets = CreateScrollOffsets())
       : ScrollTimeline(document,
                        scroll_source,
                        ScrollTimeline::Vertical,
-                       scroll_offsets,
+                       std::move(scroll_offsets),
                        100.0),
         invalidated_(false) {}
   void Invalidate() override {
@@ -1652,6 +1653,97 @@ TEST_P(PaintLayerScrollableAreaTest, ScrollTimelineInvalidation) {
   UpdateAllLifecyclePhasesForTest();
   EXPECT_TRUE(scroll_timeline->Invalidated());
   scroll_timeline->ResetInvalidated();
+}
+
+TEST_P(PaintLayerScrollableAreaTest,
+       RootScrollbarShouldUseParentOfOverscrollNodeAsTransformNode) {
+  auto& document = GetDocument();
+  document.GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
+      true);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    ::-webkit-scrollbar {
+      width: 12px;
+      background: darkblue;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: white;
+    }
+    #scroller {
+      height: 100px;
+      overflow-y: scroll;
+    }
+    .big {
+      height: 1000px;
+    }
+    </style>
+
+    <div class='big'></div>
+    <div id='scroller'>
+      <div class='big'></div>
+    </div>
+  )HTML");
+
+  {
+    const auto* root_scrollable = document.View()->LayoutViewport();
+    const auto& visual_viewport =
+        document.View()->GetPage()->GetVisualViewport();
+
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      const auto& paint_chunks = ContentPaintChunks();
+      bool found_root_scrollbar = false;
+      for (const auto& chunk : paint_chunks) {
+        if (chunk.id == PaintChunk::Id(*root_scrollable->VerticalScrollbar(),
+                                       DisplayItem::kCustomScrollbarHitTest)) {
+          EXPECT_EQ(
+              &chunk.properties.Transform(),
+              visual_viewport.GetOverscrollElasticityTransformNode()->Parent());
+          found_root_scrollbar = true;
+        }
+      }
+      EXPECT_TRUE(found_root_scrollbar);
+    } else {
+      auto* vertical_scrollbar_layer =
+          root_scrollable->GraphicsLayerForVerticalScrollbar();
+      ASSERT_TRUE(vertical_scrollbar_layer);
+      EXPECT_EQ(
+          &vertical_scrollbar_layer->GetPropertyTreeState().Transform(),
+          visual_viewport.GetOverscrollElasticityTransformNode()->Parent());
+    }
+  }
+
+  // Non root scrollbar should use scroller's transform node.
+  {
+    PaintLayer* scroller_layer = GetPaintLayerByElementId("scroller");
+    PaintLayerScrollableArea* scrollable_area =
+        scroller_layer->GetScrollableArea();
+    ASSERT_TRUE(scrollable_area);
+
+    auto paint_properties = scroller_layer->GetLayoutObject()
+                                .FirstFragment()
+                                .LocalBorderBoxProperties();
+
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      const auto& paint_chunks = ContentPaintChunks();
+      bool found_subscroller_scrollbar = false;
+      for (const auto& chunk : paint_chunks) {
+        if (chunk.id == PaintChunk::Id(*scrollable_area->VerticalScrollbar(),
+                                       DisplayItem::kCustomScrollbarHitTest)) {
+          EXPECT_EQ(&chunk.properties.Transform(),
+                    &paint_properties.Transform());
+
+          found_subscroller_scrollbar = true;
+        }
+      }
+      EXPECT_TRUE(found_subscroller_scrollbar);
+    } else {
+      auto* vertical_scrollbar_layer =
+          scrollable_area->GraphicsLayerForVerticalScrollbar();
+      ASSERT_TRUE(vertical_scrollbar_layer);
+      EXPECT_EQ(&vertical_scrollbar_layer->GetPropertyTreeState().Transform(),
+                &paint_properties.Transform());
+    }
+  }
 }
 
 }  // namespace blink

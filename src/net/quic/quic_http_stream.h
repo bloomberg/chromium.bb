@@ -14,7 +14,9 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_piece.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/idempotency.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_export.h"
@@ -34,12 +36,14 @@ class QuicHttpStreamPeer;
 }  // namespace test
 
 // The QuicHttpStream is a QUIC-specific HttpStream subclass.  It holds a
-// non-owning pointer to a QuicChromiumClientStream which it uses to
-// send and receive data.
+// handle of QuicChromiumClientStream which it uses to send and receive data.
+// The handle hides the details of the underlying stream's lifetime and can be
+// used even after the underlying stream is destroyed.
 class NET_EXPORT_PRIVATE QuicHttpStream : public MultiplexedHttpStream {
  public:
   explicit QuicHttpStream(
-      std::unique_ptr<QuicChromiumClientSession::Handle> session);
+      std::unique_ptr<QuicChromiumClientSession::Handle> session,
+      std::vector<std::string> dns_aliases);
 
   ~QuicHttpStream() override;
 
@@ -66,6 +70,9 @@ class NET_EXPORT_PRIVATE QuicHttpStream : public MultiplexedHttpStream {
       AlternativeService* alternative_service) const override;
   void PopulateNetErrorDetails(NetErrorDetails* details) override;
   void SetPriority(RequestPriority priority) override;
+  void SetRequestIdempotency(Idempotency idempotency) override;
+  const std::vector<std::string>& GetDnsAliases() const override;
+  base::StringPiece GetAcceptChViaAlps() const override;
 
   static HttpResponseInfo::ConnectionInfo ConnectionInfoFromQuicVersion(
       quic::ParsedQuicVersion quic_version);
@@ -217,6 +224,12 @@ class NET_EXPORT_PRIVATE QuicHttpStream : public MultiplexedHttpStream {
 
   // Session connect timing info.
   LoadTimingInfo::ConnectTiming connect_timing_;
+
+  // Stores any DNS aliases for the remote endpoint. The alias chain is
+  // preserved in reverse order, from canonical name (i.e. address record name)
+  // through to query name. These are stored in the stream instead of the
+  // session due to complications related to IP-pooling.
+  std::vector<std::string> dns_aliases_;
 
   base::WeakPtrFactory<QuicHttpStream> weak_factory_{this};
 

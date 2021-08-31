@@ -21,29 +21,10 @@ namespace blink {
 WTF::AtomicStringTable::WeakResult Element::WeakLowercaseIfNecessary(
     const StringView& name) const {
   if (LIKELY(IsHTMLElement() && IsA<HTMLDocument>(GetDocument()))) {
-#if defined(ARCH_CPU_ARMEL)
-    // The compiler on x64 and ARM32 produces code with very different
-    // performance characteristics for WeakFindLowercased(). On ARM, explicitly
-    // lowercasing the string into a new buffer before doing the lookup in the
-    // AtomicStringTable is ~15% faster than doing the WeakFindLowercased().
-    // This appears to be due to different inlining choices. Thus far, a
-    // single block of code that works well on both platforms hasn't been found
-    // so settling of an ifdef.
-    //
-    // TODO(ajwong): Figure out why this architecture divergence exists and
-    // remove.
-    StringView::StackBackingStore buf;
-    StringView lowered = name.LowerASCIIMaybeUsingBuffer(buf);
-    // TODO(ajwong): Why is this nearly 2x faster than calling the inlined
-    // WeakFind() which also does the same check?
-    if (LIKELY(lowered.IsAtomic())) {
-      return AtomicStringTable::WeakResult(lowered.SharedImpl());
-    } else {
-      return WTF::AtomicStringTable::Instance().WeakFind(lowered);
-    }
-#else
+    StringImpl* impl = name.SharedImpl();
+    if (impl && impl->IsAtomic() && impl->IsLowerASCII())
+      return WTF::AtomicStringTable::WeakResult(impl);
     return WTF::AtomicStringTable::Instance().WeakFindLowercased(name);
-#endif
   }
 
   return WTF::AtomicStringTable::Instance().WeakFind(name);
@@ -182,12 +163,15 @@ void Element::SetAttributeHinted(const AtomicString& local_name,
                        kNotInSynchronizationOfLazyAttribute);
 }
 
-void Element::SetAttributeHinted(
-    const AtomicString& local_name,
-    WTF::AtomicStringTable::WeakResult hint,
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&
-        string_or_trusted,
-    ExceptionState& exception_state) {
+void Element::SetAttributeHinted(const AtomicString& local_name,
+                                 WTF::AtomicStringTable::WeakResult hint,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                                 const V8TrustedString* trusted_string,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                                 const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&
+                                     string_or_trusted,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                                 ExceptionState& exception_state) {
   if (!Document::IsValidName(local_name)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidCharacterError,
@@ -199,9 +183,15 @@ void Element::SetAttributeHinted(
   wtf_size_t index;
   QualifiedName q_name = QualifiedName::Null();
   std::tie(index, q_name) = LookupAttributeQNameHinted(local_name, hint);
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  AtomicString value(TrustedTypesCheckFor(
+      ExpectedTrustedTypeForAttribute(q_name), trusted_string,
+      GetExecutionContext(), exception_state));
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   AtomicString value(TrustedTypesCheckFor(
       ExpectedTrustedTypeForAttribute(q_name), string_or_trusted,
       GetExecutionContext(), exception_state));
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   if (exception_state.HadException())
     return;
   SetAttributeInternal(index, q_name, value,

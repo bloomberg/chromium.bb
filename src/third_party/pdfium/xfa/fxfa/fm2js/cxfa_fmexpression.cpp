@@ -47,7 +47,7 @@ const wchar_t* const g_BuiltInFuncs[] = {
 const size_t g_BuiltInFuncsMaxLen = 12;
 
 struct XFA_FMSOMMethod {
-  const wchar_t* m_wsSomMethodName;
+  const wchar_t* m_wsSomMethodName;  // Ok, POD struct.
   uint32_t m_dParameters;
 };
 
@@ -450,7 +450,7 @@ uint32_t CXFA_FMCallExpression::IsMethodWithObjParam(
         return val.Compare(iter.m_wsSomMethodName) > 0;
       });
   if (result != std::end(gs_FMSomMethods) &&
-      !methodName.Compare(result->m_wsSomMethodName)) {
+      methodName == result->m_wsSomMethodName) {
     return result->m_dParameters;
   }
   return 0;

@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import * as puppeteer from 'puppeteer';
+import type * as puppeteer from 'puppeteer';
 
-import {$, click, getBrowserAndPages, goToResource, installEventListener, step, timeout, waitFor, waitForFunction} from '../../shared/helper.js';
+import {$, click, getBrowserAndPages, goToResource, installEventListener, step, waitFor, waitForFunction} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {addBreakpointForLine, checkBreakpointDidNotActivate, checkBreakpointIsActive, checkBreakpointIsNotActive, clearSourceFilesAdded, DEBUGGER_PAUSED_EVENT, getBreakpointDecorators, getNonBreakableLines, listenForSourceFilesAdded, openSourceCodeEditorForFile, openSourcesPanel, RESUME_BUTTON, retrieveSourceFilesAdded, retrieveTopCallFrameScriptLocation, retrieveTopCallFrameWithoutResuming, SCOPE_LOCAL_VALUES_SELECTOR, SELECTED_THREAD_SELECTOR, sourceLineNumberSelector, stepThroughTheCode, TURNED_OFF_PAUSE_BUTTON_SELECTOR, waitForAdditionalSourceFiles, waitForSourceCodeLines} from '../helpers/sources-helpers.js';
+import {addBreakpointForLine, checkBreakpointDidNotActivate, clearSourceFilesAdded, DEBUGGER_PAUSED_EVENT, getBreakpointDecorators, getCallFrameLocations, getCallFrameNames, getNonBreakableLines, getValuesForScope, isBreakpointSet, listenForSourceFilesAdded, openSourceCodeEditorForFile, openSourcesPanel, reloadPageAndWaitForSourceFile, removeBreakpointForLine, RESUME_BUTTON, retrieveSourceFilesAdded, retrieveTopCallFrameScriptLocation, retrieveTopCallFrameWithoutResuming, SELECTED_THREAD_SELECTOR, sourceLineNumberSelector, stepThroughTheCode, switchToCallFrame, TURNED_OFF_PAUSE_BUTTON_SELECTOR, waitForAdditionalSourceFiles} from '../helpers/sources-helpers.js';
 
 describe('Sources Tab', async function() {
   // The tests in this suite are particularly slow, as they perform a lot of actions
@@ -18,7 +18,6 @@ describe('Sources Tab', async function() {
     installEventListener(frontend, DEBUGGER_PAUSED_EVENT);
   });
 
-  // Disabled to the Chromium binary -> DevTools roller working again.
   it('shows the correct wasm source on load and reload', async () => {
     async function checkSources(frontend: puppeteer.Page) {
       await waitForAdditionalSourceFiles(frontend, 2);
@@ -43,7 +42,7 @@ describe('Sources Tab', async function() {
     const {target, frontend} = getBrowserAndPages();
 
     await openSourceCodeEditorForFile('add.wasm', 'wasm/call-to-add-wasm.html');
-    await addBreakpointForLine(frontend, 3);
+    await addBreakpointForLine(frontend, '0x023');
 
     const scriptLocation = await retrieveTopCallFrameScriptLocation('main();', target);
     assert.deepEqual(scriptLocation, 'add.wasm:0x23');
@@ -51,69 +50,47 @@ describe('Sources Tab', async function() {
 
   it('hits two breakpoints that are set and activated separately', async function() {
     const {target, frontend} = getBrowserAndPages();
+    const fileName = 'add.wasm';
 
     await step('navigate to a page and open the Sources tab', async () => {
-      await openSourceCodeEditorForFile('add.wasm', 'wasm/call-to-add-wasm.html');
+      await openSourceCodeEditorForFile(fileName, 'wasm/call-to-add-wasm.html');
     });
 
-    const numberOfLines = 7;
-
-    await step('wait for all the source code to appear', async () => {
-      await waitForSourceCodeLines(numberOfLines);
-    });
-    await step('add a breakpoint to line No.5', async () => {
-      await addBreakpointForLine(frontend, 5);
+    await step('add a breakpoint to line No.0x027', async () => {
+      await addBreakpointForLine(frontend, '0x027');
     });
 
     await step('reload the page', async () => {
-      await target.reload();
-      // FIXME(crbug/1112692): Refactor test to remove the timeout.
-      await timeout(100);
+      await reloadPageAndWaitForSourceFile(frontend, target, fileName);
     });
 
-    await step('wait for all the source code to appear', async () => {
-      await waitForSourceCodeLines(numberOfLines);
-    });
-
-    await checkBreakpointIsActive(5);
+    await waitForFunction(async () => await isBreakpointSet('0x027'));
 
     await step('check that the code has paused on the breakpoint at the correct script location', async () => {
       const scriptLocation = await retrieveTopCallFrameWithoutResuming();
       assert.deepEqual(scriptLocation, 'add.wasm:0x27');
     });
 
-    await step('remove the breakpoint from the fifth line', async () => {
-      await click(sourceLineNumberSelector(5));
+    await step('remove the breakpoint from the line 0x027', async () => {
+      await removeBreakpointForLine(frontend, '0x027');
     });
 
     await step('reload the page', async () => {
-      await target.reload();
-      // FIXME(crbug/1112692): Refactor test to remove the timeout.
-      await timeout(100);
+      await reloadPageAndWaitForSourceFile(frontend, target, fileName);
     });
 
-    await step('wait for all the source code to appear', async () => {
-      await waitForSourceCodeLines(numberOfLines);
-    });
-
-    await checkBreakpointIsNotActive(5);
+    await waitForFunction(async () => !(await isBreakpointSet('0x027')));
     await checkBreakpointDidNotActivate();
 
-    await step('add a breakpoint to line No.6', async () => {
-      await addBreakpointForLine(frontend, 6);
+    await step('add a breakpoint to line No.0x028', async () => {
+      await addBreakpointForLine(frontend, '0x028');
     });
 
     await step('reload the page', async () => {
-      await target.reload();
-      // FIXME(crbug/1112692): Refactor test to remove the timeout.
-      await timeout(100);
+      await reloadPageAndWaitForSourceFile(frontend, target, fileName);
     });
 
-    await step('wait for all the source code to appear', async () => {
-      await waitForSourceCodeLines(numberOfLines);
-    });
-
-    await checkBreakpointIsActive(6);
+    await waitForFunction(async () => await isBreakpointSet('0x028'));
 
     await step('check that the code has paused on the breakpoint at the correct script location', async () => {
       const scriptLocation = await retrieveTopCallFrameWithoutResuming();
@@ -123,31 +100,21 @@ describe('Sources Tab', async function() {
 
   it('shows variable value in popover', async function() {
     const {target, frontend} = getBrowserAndPages();
+    const fileName = 'add.wasm';
 
     await step('navigate to a page and open the Sources tab', async () => {
       await openSourceCodeEditorForFile('add.wasm', 'wasm/call-to-add-wasm.html');
     });
 
-    const numberOfLines = 7;
-
-    await step('wait for all the source code to appear', async () => {
-      await waitForSourceCodeLines(numberOfLines);
-    });
-    await step('add a breakpoint to line No.3', async () => {
-      await addBreakpointForLine(frontend, 3);
+    await step('add a breakpoint to line No.0x023', async () => {
+      await addBreakpointForLine(frontend, '0x023');
     });
 
     await step('reload the page', async () => {
-      await target.reload();
-      // FIXME(crbug/1112692): Refactor test to remove the timeout.
-      await timeout(100);
+      await reloadPageAndWaitForSourceFile(frontend, target, fileName);
     });
 
-    await step('wait for all the source code to appear', async () => {
-      await waitForSourceCodeLines(numberOfLines);
-    });
-
-    await step('hover over the $var0 in line No.3', async () => {
+    await step('hover over the $var0 in line No.0x023', async () => {
       const pausedPosition = await waitForFunction(async () => {
         const element = await $('.cm-variable-2.cm-execution-line-tail');
         if (element && await element.evaluate(e => e.isConnected)) {
@@ -174,42 +141,29 @@ describe('Sources Tab', async function() {
       0x020,
       0x04b,
     ]);
-    // Line 1 is non-breakable.
-    await addBreakpointForLine(frontend, 1, true);
     assert.deepEqual(await getBreakpointDecorators(frontend), []);
     // Line 3 is breakable.
-    await addBreakpointForLine(frontend, 3);
+    await addBreakpointForLine(frontend, '0x023');
     assert.deepEqual(await getBreakpointDecorators(frontend), [0x023]);
   });
 
   it('is able to step with state', async () => {
     const {target, frontend} = getBrowserAndPages();
+    const fileName = 'stepping-with-state.wasm';
 
     await step('navigate to a page and open the Sources tab', async () => {
       await openSourceCodeEditorForFile('stepping-with-state.wasm', 'wasm/stepping-with-state.html');
     });
 
-    const numberOfLines = 32;
-
-    await step('wait for all the source code to appear', async () => {
-      await waitForSourceCodeLines(numberOfLines);
-    });
-
-    await step('add a breakpoint to line No.23', async () => {
-      await addBreakpointForLine(frontend, 23);
+    await step('add a breakpoint to line No.0x060', async () => {
+      await addBreakpointForLine(frontend, '0x060');
     });
 
     await step('reload the page', async () => {
-      await target.reload();
-      // FIXME(crbug/1112692): Refactor test to remove the timeout.
-      await timeout(100);
+      await reloadPageAndWaitForSourceFile(frontend, target, fileName);
     });
 
-    await step('wait for all the source code to appear', async () => {
-      await waitForSourceCodeLines(numberOfLines);
-    });
-
-    await checkBreakpointIsActive(23);
+    await waitForFunction(async () => await isBreakpointSet('0x060'));
 
     await step('check that the code has paused on the breakpoint at the correct script location', async () => {
       const scriptLocation = await retrieveTopCallFrameWithoutResuming();
@@ -222,35 +176,27 @@ describe('Sources Tab', async function() {
     });
 
     await step('check that the variables in the scope view show the correct values', async () => {
-      await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
-      const localScopeView = await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
-      await waitForFunction(async () => {
-        const local_scope_values = await localScopeView.evaluate(element => {
-          return (element as HTMLElement).innerText;
-        });
-        return local_scope_values === 'var0: 42\nvar1: 8\nvar2: 5';
-      });
+      const localScopeValues = await getValuesForScope('Local', 0, 3);
+      assert.deepEqual(localScopeValues, [
+        '$var0: i32 {value: 42}',
+        '$var1: i32 {value: 8}',
+        '$var2: i32 {value: 5}',
+      ]);
     });
 
-    await step('remove the breakpoint from the 23rd line', async () => {
-      await click(sourceLineNumberSelector(23));
+    await step('remove the breakpoint from the line 0x060', async () => {
+      await removeBreakpointForLine(frontend, '0x060');
     });
 
-    await step('add a breakpoint to line No.8', async () => {
-      await addBreakpointForLine(frontend, 8);
+    await step('add a breakpoint to line No.0x048', async () => {
+      await addBreakpointForLine(frontend, '0x048');
     });
 
     await step('reload the page', async () => {
-      await target.reload();
-      // FIXME(crbug/1112692): Refactor test to remove the timeout.
-      await timeout(100);
+      await reloadPageAndWaitForSourceFile(frontend, target, fileName);
     });
 
-    await step('wait for all the source code to appear', async () => {
-      await waitForSourceCodeLines(numberOfLines);
-    });
-
-    await checkBreakpointIsActive(8);
+    await waitForFunction(async () => await isBreakpointSet('0x048'));
 
     await step('check that the code has paused on the breakpoint at the correct script location', async () => {
       const scriptLocation = await retrieveTopCallFrameWithoutResuming();
@@ -263,14 +209,11 @@ describe('Sources Tab', async function() {
     });
 
     await step('check that the variables in the scope view show the correct values', async () => {
-      await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
-      const localScopeView = await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
-      await waitForFunction(async () => {
-        const local_scope_values = await localScopeView.evaluate(element => {
-          return (element as HTMLElement).innerText;
-        });
-        return local_scope_values === 'var0: 50\nvar1: 5';
-      });
+      const localScopeValues = await getValuesForScope('Local', 0, 2);
+      assert.deepEqual(localScopeValues, [
+        '$var0: i32 {value: 50}',
+        '$var1: i32 {value: 5}',
+      ]);
     });
 
     await step('resume script execution', async () => {
@@ -281,14 +224,13 @@ describe('Sources Tab', async function() {
     await checkBreakpointDidNotActivate();
   });
 
-  it('is able to step with state in multi-threaded code in main thread', async () => {
+  // Flakey e2e test on Windows bot.
+  it.skip('[crbug.com/1177714] is able to step with state in multi-threaded code in main thread', async () => {
     const {target, frontend} = getBrowserAndPages();
-
+    const fileName = 'stepping-with-state.wasm';
     await step('navigate to a page and open the Sources tab', async () => {
       await openSourceCodeEditorForFile('stepping-with-state.wasm', 'wasm/stepping-with-state-and-threads.html');
     });
-
-    const numberOfLines = 32;
 
     await step('check that the main thread is selected', async () => {
       const selectedThreadElement = await waitFor(SELECTED_THREAD_SELECTOR);
@@ -298,21 +240,15 @@ describe('Sources Tab', async function() {
       assert.strictEqual(selectedThreadName, 'Main', 'the Main thread is not active');
     });
 
-    await step('add a breakpoint to line No.23', async () => {
-      await addBreakpointForLine(frontend, 23);
+    await step('add a breakpoint to line No.0x060', async () => {
+      await addBreakpointForLine(frontend, '0x060');
     });
 
     await step('reload the page', async () => {
-      await target.reload();
-      // FIXME(crbug/1112692): Refactor test to remove the timeout.
-      await timeout(100);
+      await reloadPageAndWaitForSourceFile(frontend, target, fileName);
     });
 
-    await step('wait for all the source code to appear', async () => {
-      await waitForSourceCodeLines(numberOfLines);
-    });
-
-    await checkBreakpointIsActive(23);
+    await waitForFunction(async () => await isBreakpointSet('0x060'));
 
     await step('check that the code has paused on the breakpoint at the correct script location', async () => {
       const scriptLocation = await retrieveTopCallFrameWithoutResuming();
@@ -325,35 +261,27 @@ describe('Sources Tab', async function() {
     });
 
     await step('check that the variables in the scope view show the correct values', async () => {
-      await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
-      const localScopeView = await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
-      await waitForFunction(async () => {
-        const local_scope_values = await localScopeView.evaluate(element => {
-          return (element as HTMLElement).innerText;
-        });
-        return local_scope_values === 'var0: 42\nvar1: 8\nvar2: 5';
-      });
+      const localScopeValues = await getValuesForScope('Local', 0, 3);
+      assert.deepEqual(localScopeValues, [
+        '$var0: 42 {type: "i32", value: 42}',
+        '$var1: 8 {type: "i32", value: 8}',
+        '$var2: 5 {type: "i32", value: 5}',
+      ]);
     });
 
-    await step('remove the breakpoint from the 23rd line', async () => {
-      await click(sourceLineNumberSelector(23));
+    await step('remove the breakpoint from the line 0x060', async () => {
+      await removeBreakpointForLine(frontend, '0x060');
     });
 
-    await step('add a breakpoint to line No.8', async () => {
-      await addBreakpointForLine(frontend, 8);
+    await step('add a breakpoint to line No.0x048', async () => {
+      await addBreakpointForLine(frontend, '0x048');
     });
 
     await step('reload the page', async () => {
-      await target.reload();
-      // FIXME(crbug/1112692): Refactor test to remove the timeout.
-      await timeout(100);
+      await reloadPageAndWaitForSourceFile(frontend, target, fileName);
     });
 
-    await step('wait for all the source code to appear', async () => {
-      await waitForSourceCodeLines(numberOfLines);
-    });
-
-    await checkBreakpointIsActive(8);
+    await waitForFunction(async () => await isBreakpointSet('0x048'));
 
     await step('check that the code has paused on the breakpoint at the correct script location', async () => {
       const scriptLocation = await retrieveTopCallFrameWithoutResuming();
@@ -374,18 +302,15 @@ describe('Sources Tab', async function() {
     });
 
     await step('check that the variables in the scope view show the correct values', async () => {
-      await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
-      const localScopeView = await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
-      await waitForFunction(async () => {
-        const local_scope_values = await localScopeView.evaluate(element => {
-          return (element as HTMLElement).innerText;
-        });
-        return local_scope_values === 'var0: 50\nvar1: 5';
-      });
+      const localScopeValues = await getValuesForScope('Local', 0, 2);
+      assert.deepEqual(localScopeValues, [
+        '$var0: 50 {type: "i32", value: 50}',
+        '$var1: 5 {type: "i32", value: 5}',
+      ]);
     });
 
     await step('remove the breakpoint from the 8th line', async () => {
-      await click(sourceLineNumberSelector(8));
+      await removeBreakpointForLine(frontend, '0x048');
     });
 
     await step('resume script execution', async () => {
@@ -399,12 +324,12 @@ describe('Sources Tab', async function() {
   // Setting a breakpoint on a worker does not hit breakpoint until reloaded a couple of times.
   it.skip('[crbug.com/1134120] is able to step with state in multi-threaded code in worker thread', async () => {
     const {target, frontend} = getBrowserAndPages();
+    const fileName = 'stepping-with-state.wasm';
 
     await step('navigate to a page and open the Sources tab', async () => {
-      await openSourceCodeEditorForFile('stepping-with-state.wasm', 'wasm/stepping-with-state-and-threads.html');
+      await openSourceCodeEditorForFile(fileName, 'wasm/stepping-with-state-and-threads.html');
     });
 
-    const numberOfLines = 32;
 
     await step('check that the main thread is selected', async () => {
       const selectedThreadElement = await waitFor(SELECTED_THREAD_SELECTOR);
@@ -419,16 +344,10 @@ describe('Sources Tab', async function() {
     });
 
     await step('reload the page', async () => {
-      await target.reload();
-      // FIXME(crbug/1112692): Refactor test to remove the timeout.
-      await timeout(100);
+      await reloadPageAndWaitForSourceFile(frontend, target, fileName);
     });
 
-    await step('wait for all the source code to appear', async () => {
-      await waitForSourceCodeLines(numberOfLines);
-    });
-
-    await checkBreakpointIsActive(30);
+    await waitForFunction(async () => await isBreakpointSet(30));
 
     await step('check that the code has paused on the breakpoint at the correct script location', async () => {
       const scriptLocation = await retrieveTopCallFrameWithoutResuming();
@@ -450,14 +369,8 @@ describe('Sources Tab', async function() {
     });
 
     await step('check that the variables in the scope view show the correct values', async () => {
-      await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
-      const localScopeView = await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
-      await waitForFunction(async () => {
-        const local_scope_values = await localScopeView.evaluate(element => {
-          return (element as HTMLElement).innerText;
-        });
-        return local_scope_values === '"": 42';
-      });
+      const localScopeValues = await getValuesForScope('Local', 0, 1);
+      assert.deepEqual(localScopeValues, ['"": 42']);
     });
 
     await step('remove the breakpoint from the 30th line', async () => {
@@ -469,16 +382,10 @@ describe('Sources Tab', async function() {
     });
 
     await step('reload the page', async () => {
-      await target.reload();
-      // FIXME(crbug/1112692): Refactor test to remove the timeout.
-      await timeout(100);
+      await reloadPageAndWaitForSourceFile(frontend, target, fileName);
     });
 
-    await step('wait for all the source code to appear', async () => {
-      await waitForSourceCodeLines(numberOfLines);
-    });
-
-    await checkBreakpointIsActive(13);
+    await waitForFunction(async () => await isBreakpointSet(13));
 
     await step('check that the code has paused on the breakpoint at the correct script location', async () => {
       const scriptLocation = await retrieveTopCallFrameWithoutResuming();
@@ -500,14 +407,8 @@ describe('Sources Tab', async function() {
     });
 
     await step('check that the variables in the scope view show the correct values', async () => {
-      await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
-      const localScopeView = await waitFor(SCOPE_LOCAL_VALUES_SELECTOR);
-      await waitForFunction(async () => {
-        const local_scope_values = await localScopeView.evaluate(element => {
-          return (element as HTMLElement).innerText;
-        });
-        return local_scope_values === '"": 42';
-      });
+      const localScopeValues = await getValuesForScope('Local', 0, 1);
+      assert.deepEqual(localScopeValues, ['"": 42']);
     });
 
     await step('resume script execution', async () => {
@@ -520,64 +421,47 @@ describe('Sources Tab', async function() {
 });
 
 describe('Raw-Wasm', async () => {
-  // Failing on Windows-only
-  it.skip('[crbug.com/1098707]: displays correct location in Wasm source', async () => {
-    const {frontend} = getBrowserAndPages();
+  it('displays correct location in Wasm source', async () => {
+    const {target} = getBrowserAndPages();
 
     // Have the target load the page.
-    await goToResource('sources/wasm/callstack-wasm-to-js.html');
+    await openSourceCodeEditorForFile('callstack-wasm-to-js.wasm', 'wasm/callstack-wasm-to-js.html');
+
+    // Go
+    const fooPromise = target.evaluate('foo();');  // Don't await this, the target hits a debugger statement.
 
     // This page automatically enters debugging.
-    const messageElement = await frontend.waitForSelector('.paused-message');
-    const statusMain = await $('.status-main', messageElement);
+    const messageElement = await waitFor('.paused-message');
+    const statusMain = await waitFor('.status-main', messageElement);
 
     if (!statusMain) {
       assert.fail('Unable to find .status-main element');
-      return;
     }
 
     const pauseMessage = await statusMain.evaluate(n => n.textContent);
 
     assert.strictEqual(pauseMessage, 'Debugger paused');
 
-    const sidebar = await messageElement.evaluateHandle(n => n.parentElement);
-
     // Find second frame of call stack
-    const callFrame = (await $('.call-frame-item.selected + .call-frame-item', sidebar));
-    if (!callFrame) {
-      assert.fail('Unable to find callframe');
-      return;
-    }
+    const titles = await getCallFrameNames();
+    const locations = await getCallFrameLocations();
 
-    const callFrameTitle = (await $('.call-frame-title-text', callFrame));
-    if (!callFrameTitle) {
-      assert.fail('Unable to find callframe title');
-      return;
-    }
+    assert.isAbove(titles.length, 1);
+    assert.isAbove(locations.length, 1);
+    assert.strictEqual(titles[1], '$foo');
+    assert.strictEqual(locations[1], 'callstack-wasm-to-js.wasm:0x32');
 
-    const title = await callFrameTitle.evaluate(n => n.textContent);
-    const callFrameLocation = await $('.call-frame-location', callFrame);
-    if (!callFrameLocation) {
-      assert.fail('Unable to find callframe location');
-      return;
-    }
-
-    const location = await callFrameLocation.evaluate(n => n.textContent);
-
-    assert.strictEqual(title, 'foo');
-    assert.strictEqual(location, 'callstack-wasm-to-js.wasm:0x32');
-
-    // Select next call frame.
-    await callFrame.press('ArrowDown');
-    await callFrame.press('Space');
+    // Select second call frame.
+    await switchToCallFrame(2);
 
     // Wasm code for function call should be highlighted
-    const codeLine = await frontend.waitForSelector('.cm-execution-line pre');
+    const codeLine = await waitFor('.cm-execution-line pre');
     const codeText = await codeLine.evaluate(n => n.textContent);
 
     assert.strictEqual(codeText, '    call $bar');
 
     // Resume the evaluation
     await click(RESUME_BUTTON);
+    await fooPromise;
   });
 });

@@ -6,11 +6,11 @@
 #define QUICHE_QUIC_PLATFORM_IMPL_BATCH_WRITER_QUIC_BATCH_WRITER_BASE_H_
 
 #include <cstdint>
-#include "net/third_party/quiche/src/quic/core/batch_writer/quic_batch_writer_buffer.h"
-#include "net/third_party/quiche/src/quic/core/quic_packet_writer.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ip_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
+#include "quic/core/batch_writer/quic_batch_writer_buffer.h"
+#include "quic/core/quic_packet_writer.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_ip_address.h"
+#include "quic/platform/api/quic_socket_address.h"
 
 namespace quic {
 
@@ -60,7 +60,7 @@ class QUIC_EXPORT_PRIVATE QuicBatchWriterBase : public QuicPacketWriter {
   const QuicBatchWriterBuffer& batch_buffer() const { return *batch_buffer_; }
   QuicBatchWriterBuffer& batch_buffer() { return *batch_buffer_; }
 
-  const QuicCircularDeque<BufferedWrite>& buffered_writes() const {
+  const quiche::QuicheCircularDeque<BufferedWrite>& buffered_writes() const {
     return batch_buffer_->buffered_writes();
   }
 
@@ -75,7 +75,8 @@ class QUIC_EXPORT_PRIVATE QuicBatchWriterBase : public QuicPacketWriter {
   };
   virtual ReleaseTime GetReleaseTime(
       const PerPacketOptions* /*options*/) const {
-    DCHECK(false) << "Should not be called since release time is unsupported.";
+    QUICHE_DCHECK(false)
+        << "Should not be called since release time is unsupported.";
     return ReleaseTime{0, QuicTime::Delta::Zero()};
   }
 

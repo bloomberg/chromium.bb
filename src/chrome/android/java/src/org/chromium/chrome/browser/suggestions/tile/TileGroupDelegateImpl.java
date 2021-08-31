@@ -11,6 +11,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.query_tiles.QueryTileUtils;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
@@ -64,7 +65,20 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
             recordOpenedTile(item);
         }
 
-        mNavigationDelegate.navigateToSuggestionUrl(windowDisposition, url);
+        mNavigationDelegate.navigateToSuggestionUrl(windowDisposition, url, false);
+        QueryTileUtils.onMostVisitedTileClicked();
+    }
+
+    @Override
+    public void openMostVisitedItemInGroup(int windowDisposition, Tile item) {
+        assert !mIsDestroyed;
+
+        String url = item.getUrl().getSpec();
+
+        recordOpenedTile(item);
+
+        mNavigationDelegate.navigateToSuggestionUrl(windowDisposition, url, true);
+        QueryTileUtils.onMostVisitedTileClicked();
     }
 
     @Override

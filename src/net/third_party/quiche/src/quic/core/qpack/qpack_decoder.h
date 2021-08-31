@@ -10,13 +10,13 @@
 #include <set>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder_stream_sender.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder_stream_receiver.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_header_table.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_progressive_decoder.h"
-#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/qpack/qpack_decoder_stream_sender.h"
+#include "quic/core/qpack/qpack_encoder_stream_receiver.h"
+#include "quic/core/qpack/qpack_header_table.h"
+#include "quic/core/qpack/qpack_progressive_decoder.h"
+#include "quic/core/quic_error_codes.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -111,7 +111,7 @@ class QUIC_EXPORT_PRIVATE QpackDecoder
   EncoderStreamErrorDelegate* const encoder_stream_error_delegate_;
   QpackEncoderStreamReceiver encoder_stream_receiver_;
   QpackDecoderStreamSender decoder_stream_sender_;
-  QpackHeaderTable header_table_;
+  QpackDecoderHeaderTable header_table_;
   std::set<QuicStreamId> blocked_streams_;
   const uint64_t maximum_blocked_streams_;
 

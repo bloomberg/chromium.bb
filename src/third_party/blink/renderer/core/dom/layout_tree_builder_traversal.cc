@@ -46,39 +46,23 @@ static bool IsLayoutObjectReparented(const LayoutObject* layout_object) {
   return element->IsInTopLayer();
 }
 
-void LayoutTreeBuilderTraversal::ParentDetails::DidTraverseInsertionPoint(
-    const V0InsertionPoint* insertion_point) {
-  if (!insertion_point_) {
-    insertion_point_ = insertion_point;
-  }
-}
-
-inline static void AssertPseudoElementParent(
-    const PseudoElement& pseudo_element) {
-  DCHECK(pseudo_element.parentNode());
-  DCHECK(pseudo_element.parentNode()->CanParticipateInFlatTree());
-}
-
-ContainerNode* LayoutTreeBuilderTraversal::Parent(const Node& node,
-                                                  ParentDetails* details) {
+ContainerNode* LayoutTreeBuilderTraversal::Parent(const Node& node) {
   // TODO(hayato): Uncomment this once we can be sure
   // LayoutTreeBuilderTraversal::parent() is used only for a node which is
   // connected.
   // DCHECK(node.isConnected());
   if (auto* element = DynamicTo<PseudoElement>(node)) {
-    AssertPseudoElementParent(*element);
+    DCHECK(node.parentNode());
     return node.parentNode();
   }
-  return FlatTreeTraversal::Parent(node, details);
+  return FlatTreeTraversal::Parent(node);
 }
 
-ContainerNode* LayoutTreeBuilderTraversal::LayoutParent(
-    const Node& node,
-    ParentDetails* details) {
-  ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(node, details);
+ContainerNode* LayoutTreeBuilderTraversal::LayoutParent(const Node& node) {
+  ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(node);
 
   while (parent && HasDisplayContentsStyle(*parent))
-    parent = LayoutTreeBuilderTraversal::Parent(*parent, details);
+    parent = LayoutTreeBuilderTraversal::Parent(*parent);
 
   return parent;
 }
@@ -92,8 +76,8 @@ Node* LayoutTreeBuilderTraversal::NextSibling(const Node& node) {
   PseudoId pseudo_id = node.GetPseudoId();
   Element* parent_element;
   if (pseudo_id != kPseudoIdNone) {
-    AssertPseudoElementParent(To<PseudoElement>(node));
     parent_element = DynamicTo<Element>(*node.parentNode());
+    DCHECK(parent_element);
   }
   switch (pseudo_id) {
     case kPseudoIdMarker:
@@ -127,8 +111,8 @@ Node* LayoutTreeBuilderTraversal::PreviousSibling(const Node& node) {
   PseudoId pseudo_id = node.GetPseudoId();
   Element* parent_element;
   if (pseudo_id != kPseudoIdNone) {
-    AssertPseudoElementParent(To<PseudoElement>(node));
     parent_element = DynamicTo<Element>(*node.parentNode());
+    DCHECK(parent_element);
   }
   switch (pseudo_id) {
     case kPseudoIdAfter:

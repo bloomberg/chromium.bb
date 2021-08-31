@@ -19,6 +19,7 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "ui/aura/env_observer.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 
 class PrefRegistrySimple;
@@ -181,13 +182,13 @@ class ASH_EXPORT NightLightControllerImpl
   bool GetEnabled() const override;
 
   // chromeos::PowerManagerClient::Observer:
-  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void SuspendDone(base::TimeDelta sleep_duration) override;
   void AmbientColorChanged(const int32_t color_temperature) override;
 
   // message_center::NotificationObserver:
   void Close(bool by_user) override;
-  void Click(const base::Optional<int>& button_index,
-             const base::Optional<base::string16>& reply) override;
+  void Click(const absl::optional<int>& button_index,
+             const absl::optional<std::u16string>& reply) override;
 
   void SetDelegateForTesting(std::unique_ptr<Delegate> delegate);
 

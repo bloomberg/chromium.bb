@@ -20,11 +20,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/engagement/site_engagement_score.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
@@ -59,6 +57,8 @@
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/permissions/permission_request_manager.h"
+#include "components/site_engagement/content/site_engagement_score.h"
+#include "components/site_engagement/content/site_engagement_service.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -118,7 +118,7 @@ std::string GetTestApplicationServerKey(bool base64_url_encoded = false) {
   return application_server_key;
 }
 
-void LegacyRegisterCallback(const base::Closure& done_callback,
+void LegacyRegisterCallback(base::OnceClosure done_callback,
                             std::string* out_registration_id,
                             gcm::GCMClient::Result* out_result,
                             const std::string& registration_id,
@@ -127,27 +127,27 @@ void LegacyRegisterCallback(const base::Closure& done_callback,
     *out_registration_id = registration_id;
   if (out_result)
     *out_result = result;
-  done_callback.Run();
+  std::move(done_callback).Run();
 }
 
-void DidRegister(base::Closure done_callback,
+void DidRegister(base::OnceClosure done_callback,
                  const std::string& registration_id,
                  const GURL& endpoint,
-                 const base::Optional<base::Time>& expiration_time,
+                 const absl::optional<base::Time>& expiration_time,
                  const std::vector<uint8_t>& p256dh,
                  const std::vector<uint8_t>& auth,
                  blink::mojom::PushRegistrationStatus status) {
   EXPECT_EQ(blink::mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE,
             status);
-  done_callback.Run();
+  std::move(done_callback).Run();
 }
 
-void InstanceIDResultCallback(base::Closure done_callback,
+void InstanceIDResultCallback(base::OnceClosure done_callback,
                               instance_id::InstanceID::Result* out_result,
                               instance_id::InstanceID::Result result) {
   DCHECK(out_result);
   *out_result = result;
-  done_callback.Run();
+  std::move(done_callback).Run();
 }
 
 }  // namespace
@@ -164,13 +164,13 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest:
   void SetUp() override {
-    https_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
     https_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     content::SetupCrossSiteRedirector(https_server_.get());
     ASSERT_TRUE(https_server_->Start());
 
-    SiteEngagementScore::SetParamValuesForTesting();
+    site_engagement::SiteEngagementScore::SetParamValuesForTesting();
     InProcessBrowserTest::SetUp();
   }
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -340,18 +340,18 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   // To be called when delivery of a push message has finished. The |run_loop|
   // will be told to quit after |messages_required| messages were received.
   void OnDeliveryFinished(std::vector<size_t>* number_of_notifications_shown,
-                          const base::Closure& done_closure) {
+                          base::OnceClosure done_closure) {
     DCHECK(number_of_notifications_shown);
     number_of_notifications_shown->push_back(GetNotificationCount());
 
-    done_closure.Run();
+    std::move(done_closure).Run();
   }
 
   PushMessagingServiceImpl* push_service() const { return push_service_; }
 
   void SetSiteEngagementScore(const GURL& url, double score) {
-    SiteEngagementService* service =
-        SiteEngagementService::Get(GetBrowser()->profile());
+    site_engagement::SiteEngagementService* service =
+        site_engagement::SiteEngagementService::Get(GetBrowser()->profile());
     service->ResetBaseScoreForURL(url, score);
     EXPECT_EQ(score, service->GetScore(url));
   }
@@ -1639,10 +1639,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 class PushMessagingBrowserTestWithAbusiveOriginPermissionRevocation
     : public PushMessagingBrowserTest {
  public:
-  PushMessagingBrowserTestWithAbusiveOriginPermissionRevocation() {
-    feature_list_.InitAndEnableFeature(
-        features::kAbusiveNotificationPermissionRevocation);
-  }
+  PushMessagingBrowserTestWithAbusiveOriginPermissionRevocation() = default;
 
   using SiteReputation = CrowdDenyPreloadData::SiteReputation;
 
@@ -1679,7 +1676,7 @@ class PushMessagingBrowserTestWithAbusiveOriginPermissionRevocation
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  base::Optional<testing::ScopedCrowdDenyPreloadDataOverride>
+  absl::optional<testing::ScopedCrowdDenyPreloadDataOverride>
       testing_preload_data_;
   scoped_refptr<CrowdDenyFakeSafeBrowsingDatabaseManager>
       fake_database_manager_;
@@ -1690,10 +1687,6 @@ class PushMessagingBrowserTestWithAbusiveOriginPermissionRevocation
 IN_PROC_BROWSER_TEST_F(
     PushMessagingBrowserTestWithAbusiveOriginPermissionRevocation,
     PushEventPermissionRevoked) {
-  AddToPreloadDataBlocklist(https_server()->GetURL("/").GetOrigin(),
-                            SiteReputation::ABUSIVE_CONTENT);
-  AddToSafeBrowsingBlocklist(https_server()->GetURL("/").GetOrigin());
-
   ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully());
   PushMessagingAppIdentifier app_identifier =
       GetAppIdentifierForServiceWorkerRegistration(0LL);
@@ -1702,6 +1695,11 @@ IN_PROC_BROWSER_TEST_F(
   std::string script_result;
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
   ASSERT_EQ("true - is controlled", script_result);
+
+  // Add an origin to blocking lists after service worker is registered.
+  AddToPreloadDataBlocklist(https_server()->GetURL("/").GetOrigin(),
+                            SiteReputation::ABUSIVE_CONTENT);
+  AddToSafeBrowsingBlocklist(https_server()->GetURL("/").GetOrigin());
 
   gcm::IncomingMessage message;
   message.sender_id = GetTestApplicationServerKey();
@@ -1878,7 +1876,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   {
     base::RunLoop run_loop;
-    push_service()->SetMessageCallbackForTesting(base::Bind(
+    push_service()->SetMessageCallbackForTesting(base::BindRepeating(
         &PushMessagingBrowserTest::OnDeliveryFinished, base::Unretained(this),
         &number_of_notifications_shown,
         base::BarrierClosure(2 /* num_closures */, run_loop.QuitClosure())));
@@ -1916,7 +1914,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_EQ("true - is controlled", script_result);
 
   base::RunLoop run_loop;
-  base::Closure quit_barrier =
+  base::RepeatingClosure quit_barrier =
       base::BarrierClosure(2 /* num_closures */, run_loop.QuitClosure());
   push_service()->SetMessageCallbackForTesting(quit_barrier);
   notification_tester_->SetNotificationAddedClosure(quit_barrier);
@@ -2706,11 +2704,11 @@ IN_PROC_BROWSER_TEST_F(
 
   // Simulate a user clearing site data (including Service Workers, crucially).
   content::BrowsingDataRemover* remover =
-      content::BrowserContext::GetBrowsingDataRemover(GetBrowser()->profile());
+      GetBrowser()->profile()->GetBrowsingDataRemover();
   content::BrowsingDataRemoverCompletionObserver observer(remover);
   remover->RemoveAndReply(
       base::Time(), base::Time::Max(),
-      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA,
+      chrome_browsing_data_remover::DATA_TYPE_SITE_DATA,
       content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, &observer);
   observer.BlockUntilCompletion();
 

@@ -46,7 +46,7 @@ public:
     // Set's the command playback head for a given picture/draw event.
     void setCommand(int nodeId, int frame, int command);
 
-    void drawLayerEventTo(SkCanvas* canvas, const int nodeId, const int frame);
+    void drawLayerEventTo(SkSurface*, const int nodeId, const int frame);
 
     // getLayerAsImage draws the given layer as it would have looked on frame and returns an image.
     // Though each picture can be played back in as many ways as there are commands, we will let
@@ -114,12 +114,6 @@ public:
     void setClipVizColor(SkColor clipVizColor);
     void setDrawGpuOpBounds(bool drawGpuOpBounds);
 
-private:
-    // This class is basically a map from (frame, node) to draw-event
-    // during recording, at the beginning of any frame, one or more layers could have been drawn on.
-    // every draw event was recorded, and when reading the mskp file they are stored and organized
-    // here.
-
     struct LayerKey{
         int frame; // frame of animation on which this event was recorded.
         int nodeId; // the render node id of the layer which was drawn to.
@@ -128,6 +122,15 @@ private:
             return this->frame==b.frame && this->nodeId==b.nodeId;
         }
     };
+
+    // return list of keys that identify layer update events
+    const std::vector<DebugLayerManager::LayerKey>& getKeys() const { return keys; }
+
+private:
+    // This class is basically a map from (frame, node) to draw-event
+    // during recording, at the beginning of any frame, one or more layers could have been drawn on.
+    // every draw event was recorded, and when reading the mskp file they are stored and organized
+    // here.
 
     struct DrawEvent {
         // true the pic's clip equals the layer bounds.

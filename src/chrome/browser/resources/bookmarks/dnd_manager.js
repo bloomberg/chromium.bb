@@ -9,6 +9,7 @@ import {changeFolderOpen, deselectItems, selectItem} from './actions.js';
 import {highlightUpdatedItems, trackUpdatedItems} from './api_listener.js';
 import {DropPosition, ROOT_NODE_ID} from './constants.js';
 import {Debouncer} from './debouncer.js';
+import {BookmarksFolderNodeElement} from './folder_node.js';
 import {Store} from './store.js';
 import {BookmarkElement, BookmarkNode, DragData, DropDestination} from './types.js';
 import {canEditNode, canReorderChildren, getDisplayedList, hasChildFolders, isShowingSearch, normalizeNode} from './util.js';
@@ -41,32 +42,6 @@ function isBookmarkFolderNode(element) {
  */
 function isBookmarkList(element) {
   return element.tagName === 'BOOKMARKS-LIST';
-}
-
-/**
- * @param {?Element} element
- * @return {?Element}
- */
-function getPreviousElementSibling(element) {
-  if (isBookmarkItem(element)) {
-    // Need to get previous element cousin.
-    const parentSibling = element.parentElement.previousElementSibling;
-    return parentSibling ? parentSibling.querySelector('bookmarks-item') : null;
-  }
-  return element.previousElementSibling;
-}
-
-/**
- * @param {?Element} element
- * @return {?Element}
- */
-function getNextElementSibling(element) {
-  if (isBookmarkItem(element)) {
-    // Need to get next element cousin.
-    const parentSibling = element.parentElement.nextElementSibling;
-    return parentSibling ? parentSibling.querySelector('bookmarks-item') : null;
-  }
-  return element.nextElementSibling;
 }
 
 /**
@@ -754,7 +729,7 @@ export class DNDManager {
     let validDropPositions = DropPosition.NONE;
 
     // Cannot drop above if the item above is already in the drag source.
-    const previousElem = getPreviousElementSibling(overElement);
+    const previousElem = overElement.previousElementSibling;
     if (!previousElem || !dragInfo.isDraggingBookmark(previousElem.itemId)) {
       validDropPositions |= DropPosition.ABOVE;
     }
@@ -766,7 +741,7 @@ export class DNDManager {
       return validDropPositions;
     }
 
-    const nextElement = getNextElementSibling(overElement);
+    const nextElement = overElement.nextElementSibling;
     // Cannot drop below if the item below is already in the drag source.
     if (!nextElement || !dragInfo.isDraggingBookmark(nextElement.itemId)) {
       validDropPositions |= DropPosition.BELOW;

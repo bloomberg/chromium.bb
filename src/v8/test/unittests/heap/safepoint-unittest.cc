@@ -3,26 +3,21 @@
 // found in the LICENSE file.
 
 #include "src/heap/safepoint.h"
+
 #include "src/base/platform/mutex.h"
 #include "src/base/platform/platform.h"
 #include "src/heap/heap.h"
 #include "src/heap/local-heap.h"
+#include "src/heap/parked-scope.h"
 #include "test/unittests/test-utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace v8 {
 namespace internal {
 
-void EnsureFlagLocalHeapsEnabled() {
-  // Avoid data race in concurrent thread by only setting the flag to true if
-  // not already enabled.
-  if (!FLAG_local_heaps) FLAG_local_heaps = true;
-}
-
 using SafepointTest = TestWithIsolate;
 
 TEST_F(SafepointTest, ReachSafepointWithoutLocalHeaps) {
-  EnsureFlagLocalHeapsEnabled();
   Heap* heap = i_isolate()->heap();
   bool run = false;
   {
@@ -52,7 +47,6 @@ class ParkedThread final : public v8::base::Thread {
 };
 
 TEST_F(SafepointTest, StopParkedThreads) {
-  EnsureFlagLocalHeapsEnabled();
   Heap* heap = i_isolate()->heap();
 
   int safepoints = 0;
@@ -112,7 +106,6 @@ class RunningThread final : public v8::base::Thread {
 };
 
 TEST_F(SafepointTest, StopRunningThreads) {
-  EnsureFlagLocalHeapsEnabled();
   Heap* heap = i_isolate()->heap();
 
   const int kThreads = 10;
@@ -142,26 +135,6 @@ TEST_F(SafepointTest, StopRunningThreads) {
   }
 
   CHECK_EQ(safepoint_count, kRuns * kSafepoints);
-}
-
-TEST_F(SafepointTest, SkipLocalHeapOfThisThread) {
-  EnsureFlagLocalHeapsEnabled();
-  Heap* heap = i_isolate()->heap();
-  LocalHeap local_heap(heap, ThreadKind::kMain);
-  UnparkedScope unparked_scope(&local_heap);
-  {
-    SafepointScope scope(heap);
-    local_heap.Safepoint();
-  }
-  {
-    ParkedScope parked_scope(&local_heap);
-    SafepointScope scope(heap);
-    local_heap.Safepoint();
-  }
-  {
-    SafepointScope scope(heap);
-    local_heap.Safepoint();
-  }
 }
 
 }  // namespace internal

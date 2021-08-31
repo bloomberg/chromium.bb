@@ -9,9 +9,12 @@
 namespace metrics {
 namespace structured {
 
-EventBase::EventBase(uint64_t event_name_hash, uint64_t project_name_hash)
+EventBase::EventBase(uint64_t event_name_hash,
+                     uint64_t project_name_hash,
+                     IdType id_type)
     : event_name_hash_(event_name_hash),
-      project_name_hash_(project_name_hash) {}
+      project_name_hash_(project_name_hash),
+      id_type_(id_type) {}
 EventBase::EventBase(const EventBase& other) = default;
 EventBase::~EventBase() = default;
 
@@ -25,7 +28,7 @@ void EventBase::AddStringMetric(uint64_t name_hash, const std::string& value) {
   metrics_.push_back(metric);
 }
 
-void EventBase::AddIntMetric(uint64_t name_hash, int value) {
+void EventBase::AddIntMetric(uint64_t name_hash, int64_t value) {
   Metric metric(name_hash, MetricType::kInt);
   metric.int_value = value;
   metrics_.push_back(metric);

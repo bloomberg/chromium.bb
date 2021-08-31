@@ -23,7 +23,7 @@ class IdentityManager;
 }
 
 // WebUI message handler for the sync confirmation dialog. IdentityManager calls
-// in this class use signin::ConsentLevel::kNotRequired because the user hasn't
+// in this class use signin::ConsentLevel::kSignin because the user hasn't
 // consented to sync yet.
 class SyncConfirmationHandler : public content::WebUIMessageHandler,
                                 public signin::IdentityManager::Observer,
@@ -70,10 +70,10 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
   // a single integer value for the height the native view should resize to.
   virtual void HandleInitializedWithSize(const base::ListValue* args);
 
-  // Handles the "accountImageRequest" message sent after the
-  // "account-image-changed" WebUIListener was added. This method calls
-  // |SetUserImageURL| with the signed-in user's picture url.
-  virtual void HandleAccountImageRequest(const base::ListValue* args);
+  // Handles the "accountInfoRequest" message sent after the
+  // "account-info-changed" WebUIListener was added. This method calls
+  // |SetAccountInfo| with the signed-in user's picture url.
+  virtual void HandleAccountInfoRequest(const base::ListValue* args);
 
   // Records the user's consent to sync. Called from |HandleConfirm| and
   // |HandleGoToSettings|, and expects two parameters to be passed through
@@ -85,8 +85,9 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
   // manner, i.e. clicks on the confirmation button or the settings link.
   virtual void RecordConsent(const base::ListValue* args);
 
-  // Sets the profile picture shown in the dialog to the image at |url|.
-  virtual void SetUserImageURL(const std::string& url);
+  // Sets the account image shown in the dialog based on |info|, which is
+  // expected to be valid.
+  virtual void SetAccountInfo(const AccountInfo& info);
 
   // Closes the modal signin window and calls
   // LoginUIService::SyncConfirmationUIClosed with |result|. |result| indicates

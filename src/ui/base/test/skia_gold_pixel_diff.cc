@@ -21,12 +21,11 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
-#include "base/strings/strcat.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_switches.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/skia_gold_matching_algorithm.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -90,38 +89,6 @@ void FillInSystemEnvironment(base::Value::DictStorage& ds) {
   ds["processor"] = base::Value(processor);
 }
 
-// Returns whether image comparison failure should result in Gerrit comments.
-// In general, when a pixel test fails on CQ, Gold will make a gerrit
-// comment indicating that the cl breaks some pixel tests. However,
-// if the test is flaky and has a failure->passing pattern, we don't
-// want Gold to make gerrit comments on the first failure.
-// This function returns true iff:
-//  * it's a tryjob and no retries left.
-//  or * it's a CI job.
-bool ShouldMakeGerritCommentsOnFailures() {
-  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  if (!cmd->HasSwitch(kIssueKey))
-    return true;
-  if (cmd->HasSwitch(switches::kTestLauncherRetriesLeft)) {
-    int retries_left = 0;
-    bool succeed = base::StringToInt(
-        cmd->GetSwitchValueASCII(switches::kTestLauncherRetriesLeft),
-        &retries_left);
-    if (!succeed) {
-      LOG(ERROR) << switches::kTestLauncherRetriesLeft << " = "
-                 << cmd->GetSwitchValueASCII(switches::kTestLauncherRetriesLeft)
-                 << " can not convert to integer.";
-      return true;
-    }
-    if (retries_left > 0) {
-      LOG(INFO) << "Test failure will not result in Gerrit comment because"
-                   " there are more retries.";
-      return false;
-    }
-  }
-  return true;
-}
-
 // Fill in test environment to the keys_file. The format is json.
 // We need the system information to determine whether a new screenshot
 // is good or not. All the information that can affect the output of pixels
@@ -165,7 +132,9 @@ std::string SkiaGoldPixelDiff::GetPlatform() {
   return "windows";
 #elif defined(OS_APPLE)
   return "macOS";
-#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   return "linux";
 #endif
 }
@@ -286,15 +255,6 @@ bool SkiaGoldPixelDiff::UploadToSkiaGoldServer(
 
   if (!BotModeEnabled(base::CommandLine::ForCurrentProcess())) {
     cmd.AppendSwitch(kDryRun);
-  }
-
-  std::map<std::string, std::string> optional_keys;
-  if (!ShouldMakeGerritCommentsOnFailures()) {
-    optional_keys["ignore"] = "1";
-  }
-  for (auto key : optional_keys) {
-    cmd.AppendSwitchASCII("add-test-optional-key",
-                          base::StrCat({key.first, ":", key.second}));
   }
 
   if (algorithm)

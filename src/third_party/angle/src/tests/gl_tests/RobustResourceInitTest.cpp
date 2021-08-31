@@ -425,6 +425,68 @@ TEST_P(RobustResourceInitTest, BufferDataZeroSize)
     glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_STATIC_DRAW);
 }
 
+// Regression test for images being recovered from storage not re-syncing to storage after being
+// initialized
+TEST_P(RobustResourceInitTestES3, D3D11RecoverFromStorageBug)
+{
+    ANGLE_SKIP_TEST_IF(!hasGLExtension());
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_dxt1"));
+
+    // http://anglebug.com/5770
+    // Vulkan uses incorrect copy sizes when redefining/zero initializing NPOT compressed textures.
+    ANGLE_SKIP_TEST_IF(IsVulkan());
+
+    // http://anglebug.com/4929
+    // Metal doesn't support robust resource init with compressed textures yet.
+    ANGLE_SKIP_TEST_IF(IsMetal());
+
+    static constexpr uint8_t img_8x8_rgb_dxt1[] = {
+        0xe0, 0x07, 0x00, 0xf8, 0x11, 0x10, 0x15, 0x00, 0x1f, 0x00, 0xe0,
+        0xff, 0x11, 0x10, 0x15, 0x00, 0xe0, 0x07, 0x1f, 0xf8, 0x44, 0x45,
+        0x40, 0x55, 0x1f, 0x00, 0xff, 0x07, 0x44, 0x45, 0x40, 0x55,
+    };
+
+    static constexpr uint8_t img_4x4_rgb_dxt1[] = {
+        0xe0, 0x07, 0x00, 0xf8, 0x11, 0x10, 0x15, 0x00,
+    };
+
+    static constexpr uint8_t img_4x4_rgb_dxt1_zeroes[] = {
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    };
+
+    for (size_t i = 0; i < 8; i++)
+    {
+        {
+            GLTexture texture;
+            glBindTexture(GL_TEXTURE_2D, texture);
+            glTexStorage2D(GL_TEXTURE_2D, 4, GL_COMPRESSED_RGB_S3TC_DXT1_EXT, 8, 8);
+            glCompressedTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 8, 8, GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+                                      ArraySize(img_8x8_rgb_dxt1), img_8x8_rgb_dxt1);
+            glCompressedTexSubImage2D(GL_TEXTURE_2D, 1, 0, 0, 4, 4, GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+                                      ArraySize(img_4x4_rgb_dxt1), img_4x4_rgb_dxt1);
+            glCompressedTexSubImage2D(GL_TEXTURE_2D, 2, 0, 0, 2, 2, GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+                                      ArraySize(img_4x4_rgb_dxt1), img_4x4_rgb_dxt1);
+            glCompressedTexSubImage2D(GL_TEXTURE_2D, 3, 0, 0, 1, 1, GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+                                      ArraySize(img_4x4_rgb_dxt1), img_4x4_rgb_dxt1);
+        }
+        {
+            GLTexture texture;
+            glBindTexture(GL_TEXTURE_2D, texture);
+            glTexStorage2D(GL_TEXTURE_2D, 4, GL_COMPRESSED_RGB_S3TC_DXT1_EXT, 12, 12);
+            glCompressedTexSubImage2D(GL_TEXTURE_2D, 3, 0, 0, 1, 1, GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+                                      ArraySize(img_4x4_rgb_dxt1_zeroes), img_4x4_rgb_dxt1_zeroes);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 3);
+
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glViewport(0, 0, 1, 1);
+            glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+            draw2DTexturedQuad(0.5f, 1.0f, true);
+            EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
+        }
+    }
+}
+
 // The following test code translated from WebGL 1 test:
 // https://www.khronos.org/registry/webgl/sdk/tests/conformance/misc/uninitialized-test.html
 void RobustResourceInitTest::setupTexture(GLTexture *tex)
@@ -597,7 +659,7 @@ TEST_P(RobustResourceInitTest, TexImageThenSubImage)
     ANGLE_SKIP_TEST_IF(!hasGLExtension());
 
     // http://anglebug.com/2407, but only fails on Nexus devices
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsOpenGLES());
+    ANGLE_SKIP_TEST_IF(IsNexus5X() && IsOpenGLES());
 
     // Put some data into the texture
     GLTexture tex;
@@ -811,7 +873,7 @@ TEST_P(RobustResourceInitTest, ReadingPartiallyInitializedTexture)
     ANGLE_SKIP_TEST_IF(!hasGLExtension());
 
     // http://anglebug.com/2407, but only fails on Nexus devices
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsOpenGLES());
+    ANGLE_SKIP_TEST_IF(IsNexus5X() && IsOpenGLES());
 
     GLTexture tex;
     setupTexture(&tex);
@@ -940,6 +1002,8 @@ TEST_P(RobustResourceInitTestES3, MultisampledDepthInitializedCorrectly)
 
     // http://anglebug.com/2407
     ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
+    // http://anglebug.com/5398
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsD3D11());
 
     ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::Red());
 
@@ -1112,6 +1176,11 @@ void RobustResourceInitTestES3::testIntegerTextureInit(const char *samplerType,
 TEST_P(RobustResourceInitTestES3, TextureInit_UIntRGB8)
 {
     ANGLE_SKIP_TEST_IF(!hasGLExtension());
+    // http://anglebug.com/5398
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsD3D11());
+    // TODO(anglebug.com/5491) iOS doesn't like to read this format as UNSIGNED_BYTE.
+    ANGLE_SKIP_TEST_IF(IsIOS() && IsOpenGLES());
+
     testIntegerTextureInit<uint8_t>("u", GL_RGBA8UI, GL_RGB8UI, GL_UNSIGNED_BYTE);
 }
 
@@ -1124,6 +1193,11 @@ TEST_P(RobustResourceInitTestES3, TextureInit_UIntRGB32)
 TEST_P(RobustResourceInitTestES3, TextureInit_IntRGB8)
 {
     ANGLE_SKIP_TEST_IF(!hasGLExtension());
+    // http://anglebug.com/5398
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsD3D11());
+    // TODO(stianglebug.com/5491) iOS doesn't like to read this format as BYTE.
+    ANGLE_SKIP_TEST_IF(IsIOS() && IsOpenGLES());
+
     testIntegerTextureInit<int8_t>("i", GL_RGBA8I, GL_RGB8I, GL_BYTE);
 }
 
@@ -1476,6 +1550,8 @@ TEST_P(RobustResourceInitTest, MaskedDepthClear)
 
     // http://anglebug.com/2407
     ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
+    // http://anglebug.com/5398
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsD3D11());
 
     auto clearFunc = [](float depth) {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -1493,6 +1569,8 @@ TEST_P(RobustResourceInitTestES3, MaskedDepthClearBuffer)
 
     // http://anglebug.com/2407
     ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
+    // http://anglebug.com/5398
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsD3D11());
 
     auto clearFunc = [](float depth) {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -1551,7 +1629,7 @@ TEST_P(RobustResourceInitTest, MaskedStencilClear)
     ANGLE_SKIP_TEST_IF(IsD3D11_FL93());
 
     // http://anglebug.com/2407, but only fails on Nexus devices
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsOpenGLES());
+    ANGLE_SKIP_TEST_IF(IsNexus5X() && IsOpenGLES());
 
     auto clearFunc = [](GLint clearValue) {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -1573,7 +1651,7 @@ TEST_P(RobustResourceInitTestES3, MaskedStencilClearBuffer)
     ANGLE_SKIP_TEST_IF(IsLinux() && IsOpenGL());
 
     // http://anglebug.com/2407, but only fails on Nexus devices
-    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsOpenGLES());
+    ANGLE_SKIP_TEST_IF(IsNexus5X() && IsOpenGLES());
 
     auto clearFunc = [](GLint clearValue) {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -2099,6 +2177,9 @@ TEST_P(RobustResourceInitTestES3, InitializeMultisampledDepthRenderbufferAfterCo
     ANGLE_SKIP_TEST_IF(!hasGLExtension());
     ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_CHROMIUM_copy_texture"));
 
+    // http://anglebug.com/5398
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsD3D11());
+
     // Call glCopyTextureCHROMIUM to set destTexture as the color attachment of the internal
     // framebuffer mScratchFBO.
     GLTexture sourceTexture;
@@ -2300,8 +2381,10 @@ TEST_P(RobustResourceInitTestES3, BlitDepthStencilAfterClearBuffer)
 ANGLE_INSTANTIATE_TEST_ES2_AND_ES3_AND(RobustResourceInitTest,
                                        WithAllocateNonZeroMemory(ES2_VULKAN()));
 
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(RobustResourceInitTestES3);
 ANGLE_INSTANTIATE_TEST_ES3_AND(RobustResourceInitTestES3, WithAllocateNonZeroMemory(ES3_VULKAN()));
 
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(RobustResourceInitTestES31);
 ANGLE_INSTANTIATE_TEST_ES31_AND(RobustResourceInitTestES31,
                                 WithAllocateNonZeroMemory(ES31_VULKAN()));
 

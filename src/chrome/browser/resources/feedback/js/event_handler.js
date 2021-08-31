@@ -9,11 +9,6 @@
  * @const
  */
 const FEEDBACK_WIDTH = 500;
-/**
- * @type {number}
- * @const
- */
-const FEEDBACK_HEIGHT = 610;
 
 /**
  * @type {string}
@@ -84,6 +79,8 @@ const feedbackCallerExtensions = [
   'C2ABD68C33A5B485971C9638B80D6A2E9CBA78C4',  // http://crbug.com/908458
   'B41E7F08E1179CC03CBD1F49E57CF353A40ADE07',  // http://crbug.com/908458
   'A948368FC53BE437A55FEB414106E207925482F5',  // ChromeOS Files App.
+  '754A9CB3C8623093180E10CF4C3AB64837179E68',  // https://crbug.com/1201800
+  'CF6B19571334F49878327D557597D23B1458AA39',  // https://crbug.com/1201800
 ];
 
 /**
@@ -288,7 +285,9 @@ function startFeedbackUI(feedbackInfo) {
         id: FEEDBACK_DEFAULT_WINDOW_ID,
         innerBounds: {
           minWidth: FEEDBACK_WIDTH,
-          minHeight: FEEDBACK_HEIGHT,
+        },
+        outerBounds: {
+          maxHeight: window.screen.availHeight,
         },
         hidden: true,
         resizable: false

@@ -52,25 +52,25 @@ void U2fRegisterOperation::WinkAndTrySign() {
 }
 
 void U2fRegisterOperation::TrySign() {
-  base::Optional<std::vector<uint8_t>> sign_command;
+  absl::optional<std::vector<uint8_t>> sign_command;
   if (probing_alternative_rp_id_) {
     CtapMakeCredentialRequest sign_request(request());
     sign_request.rp.id = *request().app_id;
     sign_command = ConvertToU2fSignCommandWithBogusChallenge(
-      sign_request, excluded_key_handle());
+        sign_request, excluded_key_handle());
   } else {
     sign_command = ConvertToU2fSignCommandWithBogusChallenge(
-      request(), excluded_key_handle());
+        request(), excluded_key_handle());
   }
 
-  DispatchDeviceRequest(
+  DispatchU2FCommand(
       std::move(sign_command),
       base::BindOnce(&U2fRegisterOperation::OnCheckForExcludedKeyHandle,
                      weak_factory_.GetWeakPtr()));
 }
 
 void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
-    base::Optional<std::vector<uint8_t>> device_response) {
+    absl::optional<std::vector<uint8_t>> device_response) {
   if (canceled_) {
     return;
   }
@@ -97,7 +97,7 @@ void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
       // user-presence.
       std::move(callback())
           .Run(CtapDeviceResponseCode::kCtap2ErrCredentialExcluded,
-               base::nullopt);
+               absl::nullopt);
       break;
 
     case apdu::ApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED:
@@ -135,7 +135,7 @@ void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
       FIDO_LOG(ERROR) << "Unexpected status " << static_cast<int>(result)
                       << " from U2F device";
       std::move(callback())
-          .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
+          .Run(CtapDeviceResponseCode::kCtap2ErrOther, absl::nullopt);
       break;
   }
 }
@@ -146,14 +146,14 @@ void U2fRegisterOperation::WinkAndTryRegistration() {
 }
 
 void U2fRegisterOperation::TryRegistration() {
-  DispatchDeviceRequest(
+  DispatchU2FCommand(
       ConvertToU2fRegisterCommand(request()),
       base::BindOnce(&U2fRegisterOperation::OnRegisterResponseReceived,
                      weak_factory_.GetWeakPtr()));
 }
 
 void U2fRegisterOperation::OnRegisterResponseReceived(
-    base::Optional<std::vector<uint8_t>> device_response) {
+    absl::optional<std::vector<uint8_t>> device_response) {
   if (canceled_) {
     return;
   }
@@ -162,7 +162,7 @@ void U2fRegisterOperation::OnRegisterResponseReceived(
   const auto apdu_response =
       device_response
           ? apdu::ApduResponse::CreateFromMessage(std::move(*device_response))
-          : base::nullopt;
+          : absl::nullopt;
   if (apdu_response) {
     result = apdu_response->status();
   }
@@ -197,7 +197,7 @@ void U2fRegisterOperation::OnRegisterResponseReceived(
       FIDO_LOG(ERROR) << "Unexpected status " << static_cast<int>(result)
                       << " from U2F device";
       std::move(callback())
-          .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
+          .Run(CtapDeviceResponseCode::kCtap2ErrOther, absl::nullopt);
       break;
   }
 }

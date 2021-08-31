@@ -7,10 +7,12 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -111,7 +113,7 @@ void ValidationMessageOverlayDelegate::PaintFrameOverlay(
     // The overlay frame is has a standalone paint property tree. Paint it in
     // its root space into a paint record, then draw the record into the proper
     // target space in the overlaid frame.
-    PaintRecordBuilder paint_record_builder(nullptr, &context);
+    PaintRecordBuilder paint_record_builder(context);
     FrameView().PaintOutsideOfLifecycle(paint_record_builder.Context(),
                                         kGlobalPaintNormalPhase);
     context.DrawRecord(paint_record_builder.EndRecording());
@@ -147,24 +149,22 @@ void ValidationMessageOverlayDelegate::CreatePage(const FrameOverlay& overlay) {
   // TODO(tkent): Can we share code with WebPagePopupImpl and
   // InspectorOverlayAgent?
   IntSize view_size = overlay.Size();
-  Page::PageClients page_clients;
-  FillWithEmptyClients(page_clients);
   chrome_client_ = MakeGarbageCollected<ValidationMessageChromeClient>(
       main_page_->GetChromeClient(), anchor_->GetDocument().View());
-  page_clients.chrome_client = chrome_client_;
   Settings& main_settings = main_page_->GetSettings();
-  page_ = Page::CreateNonOrdinary(page_clients);
+  page_ = Page::CreateNonOrdinary(
+      *chrome_client_,
+      main_page_->GetPageScheduler()->GetAgentGroupScheduler());
   page_->GetSettings().SetMinimumFontSize(main_settings.GetMinimumFontSize());
   page_->GetSettings().SetMinimumLogicalFontSize(
       main_settings.GetMinimumLogicalFontSize());
 
   auto* frame = MakeGarbageCollected<LocalFrame>(
       MakeGarbageCollected<EmptyLocalFrameClient>(), *page_, nullptr, nullptr,
-      nullptr, FrameInsertType::kInsertInConstructor,
-      base::UnguessableToken::Create(), nullptr, nullptr,
-      /* policy_container */ nullptr);
+      nullptr, FrameInsertType::kInsertInConstructor, LocalFrameToken(),
+      nullptr, nullptr);
   frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame, view_size));
-  frame->Init(nullptr);
+  frame->Init(/*opener=*/nullptr, /*policy_container=*/nullptr);
   frame->View()->SetCanHaveScrollbars(false);
   frame->View()->SetBaseBackgroundColor(Color::kTransparent);
   page_->GetVisualViewport().SetSize(view_size);

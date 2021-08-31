@@ -16,8 +16,8 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/renderer.h"
 #include "media/base/renderer_client.h"
-#include "media/remoting/media_remoting_rpc.pb.h"
 #include "media/remoting/rpc_broker.h"
+#include "third_party/openscreen/src/cast/streaming/remoting.pb.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -54,7 +54,7 @@ class Receiver final : public Renderer, public RendererClient {
                   RendererClient* client,
                   PipelineStatusCallback init_cb) override;
   void SetCdm(CdmContext* cdm_context, CdmAttachedCB cdm_attached_cb) override;
-  void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) override;
+  void SetLatencyHint(absl::optional<base::TimeDelta> latency_hint) override;
   void Flush(base::OnceClosure flush_cb) override;
   void StartPlayingFrom(base::TimeDelta time) override;
   void SetPlaybackRate(double playback_rate) override;
@@ -72,7 +72,7 @@ class Receiver final : public Renderer, public RendererClient {
   void OnVideoConfigChange(const VideoDecoderConfig& config) override;
   void OnVideoNaturalSizeChange(const gfx::Size& size) override;
   void OnVideoOpacityChange(bool opaque) override;
-  void OnVideoFrameRateChange(base::Optional<int>) override;
+  void OnVideoFrameRateChange(absl::optional<int>) override;
 
   // Used to set |remote_handle_| after Receiver is created, because the remote
   // handle might be received after Receiver is created.
@@ -82,17 +82,20 @@ class Receiver final : public Renderer, public RendererClient {
 
  private:
   // Send RPC message on |main_task_runner_|.
-  void SendRpcMessageOnMainThread(std::unique_ptr<pb::RpcMessage> message);
+  void SendRpcMessageOnMainThread(
+      std::unique_ptr<openscreen::cast::RpcMessage> message);
 
   // Callback function when RPC message is received.
-  void OnReceivedRpc(std::unique_ptr<pb::RpcMessage> message);
+  void OnReceivedRpc(std::unique_ptr<openscreen::cast::RpcMessage> message);
 
   // RPC message handlers.
-  void RpcInitialize(std::unique_ptr<pb::RpcMessage> message);
-  void RpcSetPlaybackRate(std::unique_ptr<pb::RpcMessage> message);
-  void RpcFlushUntil(std::unique_ptr<pb::RpcMessage> message);
-  void RpcStartPlayingFrom(std::unique_ptr<pb::RpcMessage> message);
-  void RpcSetVolume(std::unique_ptr<pb::RpcMessage> message);
+  void RpcInitialize(std::unique_ptr<openscreen::cast::RpcMessage> message);
+  void RpcSetPlaybackRate(
+      std::unique_ptr<openscreen::cast::RpcMessage> message);
+  void RpcFlushUntil(std::unique_ptr<openscreen::cast::RpcMessage> message);
+  void RpcStartPlayingFrom(
+      std::unique_ptr<openscreen::cast::RpcMessage> message);
+  void RpcSetVolume(std::unique_ptr<openscreen::cast::RpcMessage> message);
 
   void ShouldInitializeRenderer();
   void OnRendererInitialized(PipelineStatus status);

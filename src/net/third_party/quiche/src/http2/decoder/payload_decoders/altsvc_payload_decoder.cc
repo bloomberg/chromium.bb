@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/decoder/payload_decoders/altsvc_payload_decoder.h"
+#include "http2/decoder/payload_decoders/altsvc_payload_decoder.h"
 
 #include <stddef.h>
 
-#include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
-#include "net/third_party/quiche/src/http2/decoder/http2_frame_decoder_listener.h"
-#include "net/third_party/quiche/src/http2/http2_constants.h"
-#include "net/third_party/quiche/src/http2/http2_structures.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_bug_tracker.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_macros.h"
+#include "http2/decoder/decode_buffer.h"
+#include "http2/decoder/http2_frame_decoder_listener.h"
+#include "http2/http2_constants.h"
+#include "http2/http2_structures.h"
+#include "http2/platform/api/http2_bug_tracker.h"
+#include "http2/platform/api/http2_logging.h"
+#include "http2/platform/api/http2_macros.h"
 
 namespace http2 {
 
@@ -31,7 +31,8 @@ std::ostream& operator<<(std::ostream& out,
   // Since the value doesn't come over the wire, only a programming bug should
   // result in reaching this point.
   int unknown = static_cast<int>(v);
-  HTTP2_BUG << "Invalid AltSvcPayloadDecoder::PayloadState: " << unknown;
+  HTTP2_BUG(http2_bug_163_1)
+      << "Invalid AltSvcPayloadDecoder::PayloadState: " << unknown;
   return out << "AltSvcPayloadDecoder::PayloadState(" << unknown << ")";
 }
 
@@ -40,9 +41,9 @@ DecodeStatus AltSvcPayloadDecoder::StartDecodingPayload(
     DecodeBuffer* db) {
   HTTP2_DVLOG(2) << "AltSvcPayloadDecoder::StartDecodingPayload: "
                  << state->frame_header();
-  DCHECK_EQ(Http2FrameType::ALTSVC, state->frame_header().type);
-  DCHECK_LE(db->Remaining(), state->frame_header().payload_length);
-  DCHECK_EQ(0, state->frame_header().flags);
+  QUICHE_DCHECK_EQ(Http2FrameType::ALTSVC, state->frame_header().type);
+  QUICHE_DCHECK_LE(db->Remaining(), state->frame_header().payload_length);
+  QUICHE_DCHECK_EQ(0, state->frame_header().flags);
 
   state->InitializeRemainders();
   payload_state_ = PayloadState::kStartDecodingStruct;
@@ -56,13 +57,13 @@ DecodeStatus AltSvcPayloadDecoder::ResumeDecodingPayload(
   const Http2FrameHeader& frame_header = state->frame_header();
   HTTP2_DVLOG(2) << "AltSvcPayloadDecoder::ResumeDecodingPayload: "
                  << frame_header;
-  DCHECK_EQ(Http2FrameType::ALTSVC, frame_header.type);
-  DCHECK_LE(state->remaining_payload(), frame_header.payload_length);
-  DCHECK_LE(db->Remaining(), state->remaining_payload());
-  DCHECK_NE(PayloadState::kMaybeDecodedStruct, payload_state_);
+  QUICHE_DCHECK_EQ(Http2FrameType::ALTSVC, frame_header.type);
+  QUICHE_DCHECK_LE(state->remaining_payload(), frame_header.payload_length);
+  QUICHE_DCHECK_LE(db->Remaining(), state->remaining_payload());
+  QUICHE_DCHECK_NE(PayloadState::kMaybeDecodedStruct, payload_state_);
   // |status| has to be initialized to some value to avoid compiler error in
   // case PayloadState::kMaybeDecodedStruct below, but value does not matter,
-  // see DCHECK_NE above.
+  // see QUICHE_DCHECK_NE above.
   DecodeStatus status = DecodeStatus::kDecodeError;
   while (true) {
     HTTP2_DVLOG(2)
@@ -81,8 +82,8 @@ DecodeStatus AltSvcPayloadDecoder::ResumeDecodingPayload(
           state->listener()->OnAltSvcStart(frame_header, origin_length,
                                            value_length);
         } else if (status != DecodeStatus::kDecodeDone) {
-          DCHECK(state->remaining_payload() > 0 ||
-                 status == DecodeStatus::kDecodeError)
+          QUICHE_DCHECK(state->remaining_payload() > 0 ||
+                        status == DecodeStatus::kDecodeError)
               << "\nremaining_payload: " << state->remaining_payload()
               << "\nstatus: " << status << "\nheader: " << frame_header;
           // Assume in progress.
@@ -90,7 +91,8 @@ DecodeStatus AltSvcPayloadDecoder::ResumeDecodingPayload(
           return status;
         } else {
           // The origin's length is longer than the remaining payload.
-          DCHECK_GT(altsvc_fields_.origin_length, state->remaining_payload());
+          QUICHE_DCHECK_GT(altsvc_fields_.origin_length,
+                           state->remaining_payload());
           return state->ReportFrameSizeError();
         }
         HTTP2_FALLTHROUGH;
@@ -103,7 +105,7 @@ DecodeStatus AltSvcPayloadDecoder::ResumeDecodingPayload(
         payload_state_ = PayloadState::kMaybeDecodedStruct;
         continue;
     }
-    HTTP2_BUG << "PayloadState: " << payload_state_;
+    HTTP2_BUG(http2_bug_163_2) << "PayloadState: " << payload_state_;
   }
 }
 
@@ -130,8 +132,8 @@ DecodeStatus AltSvcPayloadDecoder::DecodeStrings(FrameDecoderState* state,
     }
   }
   // All that is left is the value string.
-  DCHECK_LE(state->remaining_payload(), value_length);
-  DCHECK_LE(db->Remaining(), state->remaining_payload());
+  QUICHE_DCHECK_LE(state->remaining_payload(), value_length);
+  QUICHE_DCHECK_LE(db->Remaining(), state->remaining_payload());
   if (db->HasData()) {
     size_t avail = db->Remaining();
     state->listener()->OnAltSvcValueData(db->cursor(), avail);

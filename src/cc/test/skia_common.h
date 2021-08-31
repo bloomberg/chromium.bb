@@ -54,7 +54,7 @@ PaintImage CreateDiscardablePaintImage(
     bool allocate_encoded_memory = true,
     PaintImage::Id id = PaintImage::kInvalidId,
     SkColorType color_type = kN32_SkColorType,
-    base::Optional<YUVSubsampling> yuv_format = base::nullopt,
+    absl::optional<YUVSubsampling> yuv_format = absl::nullopt,
     SkYUVAPixmapInfo::DataType yuv_data_type =
         SkYUVAPixmapInfo::DataType::kUnorm8);
 
@@ -62,7 +62,7 @@ DrawImage CreateDiscardableDrawImage(const gfx::Size& size,
                                      sk_sp<SkColorSpace> color_space,
                                      SkRect rect,
                                      SkFilterQuality filter_quality,
-                                     const SkMatrix& matrix);
+                                     const SkM44& matrix);
 
 PaintImage CreateAnimatedImage(
     const gfx::Size& size,

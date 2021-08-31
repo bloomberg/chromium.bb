@@ -19,12 +19,14 @@
 #include "base/files/file_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/time/default_tick_clock.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/cast_mirroring_service_host.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
@@ -225,7 +227,7 @@ void QueryTraceEvents(trace_analyzer::TraceAnalyzer* analyzer,
                       base::StringPiece event_name,
                       trace_analyzer::TraceEventVector* events) {
   const trace_analyzer::Query kQuery =
-      trace_analyzer::Query::EventNameIs(event_name.as_string()) &&
+      trace_analyzer::Query::EventNameIs(std::string(event_name)) &&
       (trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_BEGIN) ||
        trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_ASYNC_BEGIN) ||
        trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_FLOW_BEGIN) ||
@@ -833,7 +835,7 @@ class CastV2PerformanceTest : public InProcessBrowserTest,
 
  protected:
   // Ensure best effort tasks are not required for this test to pass.
-  base::Optional<base::ThreadPoolInstance::ScopedBestEffortExecutionFence>
+  absl::optional<base::ThreadPoolInstance::ScopedBestEffortExecutionFence>
       best_effort_fence_;
 
   // HTTPS server for loading pages from the test data dir.
@@ -894,6 +896,8 @@ class TestTabMirroringSession : public mirroring::mojom::SessionObserver,
 
   void DidStart() override {}
   void DidStop() override {}
+  void LogInfoMessage(const std::string& message) override {}
+  void LogErrorMessage(const std::string& message) override {}
 
   // CastMessageChannel implementation
   void Send(mirroring::mojom::CastMessagePtr message) override {
@@ -1077,7 +1081,10 @@ IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, Performance) {
   AnalyzeLatency(analyzer.get());
 }
 
-#if !defined(OS_CHROMEOS) || !defined(MEMORY_SANITIZER)
+#if BUILDFLAG(IS_CHROMEOS_ASH) && defined(MEMORY_SANITIZER)
+// Skip test on Chrome OS MSAN.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CastV2PerformanceTest);
+#else
 // TODO(b/161545049): reenable FPS value features.
 INSTANTIATE_TEST_SUITE_P(All,
                          CastV2PerformanceTest,

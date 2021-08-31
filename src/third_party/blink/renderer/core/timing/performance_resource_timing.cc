@@ -51,6 +51,7 @@ namespace blink {
 PerformanceResourceTiming::PerformanceResourceTiming(
     const mojom::blink::ResourceTimingInfo& info,
     base::TimeTicks time_origin,
+    bool cross_origin_isolated_capability,
     const AtomicString& initiator_type,
     mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
         worker_timing_receiver,
@@ -59,11 +60,13 @@ PerformanceResourceTiming::PerformanceResourceTiming(
                        Performance::MonotonicTimeToDOMHighResTimeStamp(
                            time_origin,
                            info.start_time,
-                           info.allow_negative_values),
+                           info.allow_negative_values,
+                           cross_origin_isolated_capability),
                        Performance::MonotonicTimeToDOMHighResTimeStamp(
                            time_origin,
                            info.response_end,
-                           info.allow_negative_values)),
+                           info.allow_negative_values,
+                           cross_origin_isolated_capability)),
       initiator_type_(initiator_type.IsEmpty()
                           ? fetch_initiator_type_names::kOther
                           : initiator_type),
@@ -71,19 +74,20 @@ PerformanceResourceTiming::PerformanceResourceTiming(
           static_cast<String>(info.alpn_negotiated_protocol)),
       connection_info_(static_cast<String>(info.connection_info)),
       time_origin_(time_origin),
+      cross_origin_isolated_capability_(cross_origin_isolated_capability),
       timing_(ResourceLoadTiming::FromMojo(info.timing.get())),
       last_redirect_end_time_(info.last_redirect_end_time),
       response_end_(info.response_end),
       context_type_(info.context_type),
       request_destination_(info.request_destination),
-      transfer_size_(info.transfer_size),
+      cache_state_(info.cache_state),
       encoded_body_size_(info.encoded_body_size),
       decoded_body_size_(info.decoded_body_size),
       did_reuse_connection_(info.did_reuse_connection),
       allow_timing_details_(info.allow_timing_details),
       allow_redirect_details_(info.allow_redirect_details),
       allow_negative_value_(info.allow_negative_values),
-      is_secure_context_(info.is_secure_context),
+      is_secure_transport_(info.is_secure_transport),
       server_timing_(
           PerformanceServerTiming::FromParsedServerTiming(info.server_timing)),
       worker_timing_receiver_(this, context) {
@@ -100,14 +104,16 @@ PerformanceResourceTiming::PerformanceResourceTiming(
 PerformanceResourceTiming::PerformanceResourceTiming(
     const AtomicString& name,
     base::TimeTicks time_origin,
-    bool is_secure_context,
+    bool cross_origin_isolated_capability,
+    bool is_secure_transport,
     HeapVector<Member<PerformanceServerTiming>> server_timing,
     ExecutionContext* context)
     : PerformanceEntry(name, 0.0, 0.0),
       time_origin_(time_origin),
+      cross_origin_isolated_capability_(cross_origin_isolated_capability),
       context_type_(mojom::blink::RequestContextType::HYPERLINK),
       request_destination_(network::mojom::RequestDestination::kDocument),
-      is_secure_context_(is_secure_context),
+      is_secure_transport_(is_secure_transport),
       server_timing_(std::move(server_timing)),
       worker_timing_receiver_(this, context) {
   DCHECK(context);
@@ -137,8 +143,23 @@ bool PerformanceResourceTiming::DidReuseConnection() const {
   return did_reuse_connection_;
 }
 
+uint64_t PerformanceResourceTiming::GetTransferSize(
+    uint64_t encoded_body_size,
+    mojom::blink::CacheState cache_state) {
+  switch (cache_state) {
+    case mojom::blink::CacheState::kLocal:
+      return 0;
+    case mojom::blink::CacheState::kValidated:
+      return kHeaderSize;
+    case mojom::blink::CacheState::kNone:
+      return encoded_body_size + kHeaderSize;
+  }
+  NOTREACHED();
+  return 0;
+}
+
 uint64_t PerformanceResourceTiming::GetTransferSize() const {
-  return transfer_size_;
+  return GetTransferSize(encoded_body_size_, cache_state_);
 }
 
 uint64_t PerformanceResourceTiming::GetEncodedBodySize() const {
@@ -204,7 +225,8 @@ DOMHighResTimeStamp PerformanceResourceTiming::workerStart() const {
   }
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->WorkerStart(), allow_negative_value_);
+      time_origin_, timing->WorkerStart(), allow_negative_value_,
+      cross_origin_isolated_capability_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::WorkerReady() const {
@@ -213,7 +235,8 @@ DOMHighResTimeStamp PerformanceResourceTiming::WorkerReady() const {
     return 0.0;
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->WorkerReady(), allow_negative_value_);
+      time_origin_, timing->WorkerReady(), allow_negative_value_,
+      cross_origin_isolated_capability_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::redirectStart() const {
@@ -231,7 +254,8 @@ DOMHighResTimeStamp PerformanceResourceTiming::redirectEnd() const {
     return 0.0;
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, last_redirect_end_time_, allow_negative_value_);
+      time_origin_, last_redirect_end_time_, allow_negative_value_,
+      cross_origin_isolated_capability_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::fetchStart() const {
@@ -241,7 +265,8 @@ DOMHighResTimeStamp PerformanceResourceTiming::fetchStart() const {
 
   if (!last_redirect_end_time_.is_null()) {
     return Performance::MonotonicTimeToDOMHighResTimeStamp(
-        time_origin_, timing->RequestTime(), allow_negative_value_);
+        time_origin_, timing->RequestTime(), allow_negative_value_,
+        cross_origin_isolated_capability_);
   }
 
   if (DOMHighResTimeStamp worker_ready_time = WorkerReady())
@@ -258,7 +283,8 @@ DOMHighResTimeStamp PerformanceResourceTiming::domainLookupStart() const {
     return fetchStart();
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->DnsStart(), allow_negative_value_);
+      time_origin_, timing->DnsStart(), allow_negative_value_,
+      cross_origin_isolated_capability_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::domainLookupEnd() const {
@@ -269,7 +295,8 @@ DOMHighResTimeStamp PerformanceResourceTiming::domainLookupEnd() const {
     return domainLookupStart();
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->DnsEnd(), allow_negative_value_);
+      time_origin_, timing->DnsEnd(), allow_negative_value_,
+      cross_origin_isolated_capability_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::connectStart() const {
@@ -286,7 +313,8 @@ DOMHighResTimeStamp PerformanceResourceTiming::connectStart() const {
     connect_start = timing->DnsEnd();
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, connect_start, allow_negative_value_);
+      time_origin_, connect_start, allow_negative_value_,
+      cross_origin_isolated_capability_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::connectEnd() const {
@@ -298,11 +326,12 @@ DOMHighResTimeStamp PerformanceResourceTiming::connectEnd() const {
     return connectStart();
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->ConnectEnd(), allow_negative_value_);
+      time_origin_, timing->ConnectEnd(), allow_negative_value_,
+      cross_origin_isolated_capability_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::secureConnectionStart() const {
-  if (!AllowTimingDetails() || !is_secure_context_)
+  if (!AllowTimingDetails() || !is_secure_transport_)
     return 0.0;
 
   // Step 2 of
@@ -313,7 +342,8 @@ DOMHighResTimeStamp PerformanceResourceTiming::secureConnectionStart() const {
   ResourceLoadTiming* timing = GetResourceLoadTiming();
   if (timing && !timing->SslStart().is_null()) {
     return Performance::MonotonicTimeToDOMHighResTimeStamp(
-        time_origin_, timing->SslStart(), allow_negative_value_);
+        time_origin_, timing->SslStart(), allow_negative_value_,
+        cross_origin_isolated_capability_);
   }
   // We would add a DCHECK(false) here but this case may happen, for instance on
   // SXG where the behavior has not yet been properly defined. See
@@ -330,7 +360,8 @@ DOMHighResTimeStamp PerformanceResourceTiming::requestStart() const {
     return connectEnd();
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->SendStart(), allow_negative_value_);
+      time_origin_, timing->SendStart(), allow_negative_value_,
+      cross_origin_isolated_capability_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::responseStart() const {
@@ -347,7 +378,8 @@ DOMHighResTimeStamp PerformanceResourceTiming::responseStart() const {
     return requestStart();
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, response_start, allow_negative_value_);
+      time_origin_, response_start, allow_negative_value_,
+      cross_origin_isolated_capability_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::responseEnd() const {
@@ -355,7 +387,8 @@ DOMHighResTimeStamp PerformanceResourceTiming::responseEnd() const {
     return responseStart();
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, response_end_, allow_negative_value_);
+      time_origin_, response_end_, allow_negative_value_,
+      cross_origin_isolated_capability_);
 }
 
 uint64_t PerformanceResourceTiming::transferSize() const {
@@ -438,10 +471,12 @@ void PerformanceResourceTiming::AddPerformanceEntry(
   }
 
   switch (mojo_performance_mark_or_measure->entry_type) {
+    // TODO(yoav): Pipe in unsafe timers for traces, in case this is an
+    // important use case.
     case mojom::blink::PerformanceMarkOrMeasure::EntryType::kMark:
       worker_timing_.emplace_back(MakeGarbageCollected<PerformanceMark>(
-          name, mojo_performance_mark_or_measure->start_time, serialized_detail,
-          exception_state));
+          name, mojo_performance_mark_or_measure->start_time, base::TimeTicks(),
+          serialized_detail, exception_state));
       break;
     case mojom::blink::PerformanceMarkOrMeasure::EntryType::kMeasure:
       ScriptState* script_state;

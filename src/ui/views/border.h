@@ -28,8 +28,10 @@ class View;
 // Border class.
 //
 // The border class is used to display a border around a view.
-// To set a border on a view, just call SetBorder on the view, for example:
-// view->SetBorder(CreateSolidBorder(1, SkColorSetRGB(25, 25, 112));
+// To set a border on a view, call SetBorder on the view, for example:
+// view->SetBorder(CreateSolidBorder(1, view->GetNativeTheme()->GetSystemColor(
+//            ui::NativeTheme::kColorId_UnfocusedBorderColor)));
+// Make sure the border color is updated on theme changes.
 // Once set on a view, the border is owned by the view.
 //
 // IMPORTANT NOTE: not all views support borders at this point. In order to
@@ -109,8 +111,10 @@ VIEWS_EXPORT std::unique_ptr<Border> CreateSolidSidedBorder(int top,
 // equivalent to changing the insets of |border| without changing how or what it
 // paints. Example:
 //
-// view->SetBorder(CreatePaddedBorder(CreateSolidBorder(1, SK_ColorRED),
-//                                    gfx::Insets(2, 0, 0, 0)));
+// view->SetBorder(CreatePaddedBorder(
+//     CreateSolidBorder(1, view->GetNativeTheme()->GetSystemColor(
+//         ui::NativeTheme::kColorId_UnfocusedBorderColor)),
+//     gfx::Insets(2, 0, 0, 0)));
 //
 // yields a single dip red border and an additional 2dip of unpainted padding
 // above the view content (below the border).

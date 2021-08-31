@@ -39,13 +39,13 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
-#include "third_party/blink/renderer/core/html/custom/v0_custom_element_definition.h"
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
+class ContainerQueryEvaluator;
 class Element;
 class HTMLElement;
 class ResizeObservation;
@@ -79,6 +79,11 @@ class ElementRareData : public NodeRareData {
   void SetShadowRoot(ShadowRoot& shadow_root) {
     DCHECK(!shadow_root_);
     shadow_root_ = &shadow_root;
+  }
+
+  EditContext* GetEditContext() const { return edit_context_.Get(); }
+  void SetEditContext(EditContext* edit_context) {
+    edit_context_ = edit_context;
   }
 
   NamedNodeMap* AttributeMap() const { return attribute_map_.Get(); }
@@ -125,13 +130,6 @@ class ElementRareData : public NodeRareData {
 
   bool HasPseudoElements() const;
   void ClearPseudoElements();
-
-  void V0SetCustomElementDefinition(V0CustomElementDefinition* definition) {
-    v0_custom_element_definition_ = definition;
-  }
-  V0CustomElementDefinition* GetV0CustomElementDefinition() const {
-    return v0_custom_element_definition_.Get();
-  }
 
   void SetCustomElementDefinition(CustomElementDefinition* definition) {
     custom_element_definition_ = definition;
@@ -204,6 +202,12 @@ class ElementRareData : public NodeRareData {
   DisplayLockContext* GetDisplayLockContext() const {
     return display_lock_context_;
   }
+  ContainerQueryEvaluator* GetContainerQueryEvaluator() const {
+    return container_query_evaluator_;
+  }
+  void SetContainerQueryEvaluator(ContainerQueryEvaluator* evaluator) {
+    container_query_evaluator_ = evaluator;
+  }
 
   const AtomicString& GetNonce() const { return nonce_; }
   void SetNonce(const AtomicString& nonce) { nonce_ = nonce; }
@@ -216,6 +220,7 @@ class ElementRareData : public NodeRareData {
 
   Member<DatasetDOMStringMap> dataset_;
   Member<ShadowRoot> shadow_root_;
+  Member<EditContext> edit_context_;
   Member<DOMTokenList> class_list_;
   Member<DOMTokenList> part_;
   std::unique_ptr<NamesMap> part_names_map_;
@@ -228,8 +233,6 @@ class ElementRareData : public NodeRareData {
   Member<ElementIntersectionObserverData> intersection_observer_data_;
   Member<ResizeObserverDataMap> resize_observer_data_;
 
-  // TODO(davaajav):remove this field when v0 custom elements are deprecated
-  Member<V0CustomElementDefinition> v0_custom_element_definition_;
   Member<CustomElementDefinition> custom_element_definition_;
   AtomicString is_value_;
   Member<ElementInternals> element_internals_;
@@ -239,6 +242,7 @@ class ElementRareData : public NodeRareData {
   Member<AccessibleNode> accessible_node_;
 
   Member<DisplayLockContext> display_lock_context_;
+  Member<ContainerQueryEvaluator> container_query_evaluator_;
   bool did_attach_internals_ = false;
   bool should_force_legacy_layout_for_child_ = false;
   bool style_should_force_legacy_layout_ = false;

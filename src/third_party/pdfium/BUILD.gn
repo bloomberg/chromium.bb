@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/clang/clang.gni")
 import("//testing/test.gni")
 import("pdfium.gni")
 
@@ -47,6 +48,16 @@ config("pdfium_common_config") {
   if (is_clang) {
     # Override -Wno-c++11-narrowing.
     cflags += [ "-Wc++11-narrowing" ]
+
+    # Catch misuse of cppgc in XFA.
+    if (pdf_enable_xfa && clang_use_chrome_plugins) {
+      cflags += [
+        "-Xclang",
+        "-add-plugin",
+        "-Xclang",
+        "blink-gc-plugin",
+      ]
+    }
   }
 
   if (!is_win && !is_clang) {
@@ -94,23 +105,23 @@ config("pdfium_core_config") {
     ":pdfium_common_config",
     ":pdfium_public_config",
     "//build/config/compiler:noshadowing",
+    "//build/config/compiler:no_size_t_to_int_warning",
   ]
   defines = []
-  if (is_linux || is_chromeos) {
-    if (current_cpu == "x64") {
-      defines += [ "_FX_CPU_=_FX_X64_" ]
-      cflags += [ "-fPIC" ]
-    } else if (current_cpu == "x86") {
-      defines += [ "_FX_CPU_=_FX_X86_" ]
-    }
-  }
   if (is_win) {
     cflags += [
       "/wd4324",
       "/wd4577",
     ]
   }
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+}
+
+config("pdfium_strict_config") {
+  configs = [
+    ":pdfium_core_config",
+    "//build/config/compiler:wexit_time_destructors",
+    "//build/config/compiler:wglobal_constructors",
+  ]
 }
 
 source_set("pdfium_public_headers_impl") {
@@ -151,7 +162,7 @@ group("pdfium_public_headers") {
 
 component("pdfium") {
   libs = []
-  configs += [ ":pdfium_core_config" ]
+  configs += [ ":pdfium_strict_config" ]
   public_configs = [ ":pdfium_public_config" ]
 
   deps = [
@@ -351,9 +362,7 @@ executable("pdfium_diff") {
     "testing/image_diff",
     "//build/win:default_exe_manifest",
   ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  configs += [ ":pdfium_core_config" ]
+  configs += [ ":pdfium_strict_config" ]
 }
 
 if (pdf_is_standalone) {

@@ -6,14 +6,14 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
-#include "cc/animation/keyframed_animation_curve.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/picture_layer.h"
@@ -38,6 +38,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/animation/keyframe/keyframed_animation_curve.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
@@ -149,8 +150,8 @@ class LayerTest : public testing::Test {
     params.task_graph_runner = &task_graph_runner_;
     params.mutator_host = animation_host_.get();
 
-    layer_tree_host_.reset(new StrictMock<MockLayerTreeHost>(
-        &single_thread_client_, std::move(params)));
+    layer_tree_host_ = std::make_unique<StrictMock<MockLayerTreeHost>>(
+        &single_thread_client_, std::move(params));
   }
 
   void TearDown() override {
@@ -1562,12 +1563,16 @@ TEST_F(LayerTest, SetLayerTreeHostNotUsingLayerListsManagesElementId) {
 // commit to be pushed. See https://crbug.com/1083244.
 TEST_F(LayerTest, PushAnimationCountsLazily) {
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(0);
-  animation_host_->SetAnimationCounts(0, /* current_frame_had_raf = */ true,
-                                      /* next_frame_has_pending_raf = */ true);
+  animation_host_->SetAnimationCounts(0);
+  animation_host_->SetCurrentFrameHadRaf(true);
+  animation_host_->SetNextFrameHasPendingRaf(true);
+  animation_host_->SetHasSmilAnimation(true);
   EXPECT_FALSE(host_impl_.animation_host()->CurrentFrameHadRAF());
+  EXPECT_FALSE(host_impl_.animation_host()->HasSmilAnimation());
   EXPECT_FALSE(animation_host_->needs_push_properties());
   animation_host_->PushPropertiesTo(host_impl_.animation_host());
   EXPECT_TRUE(host_impl_.animation_host()->CurrentFrameHadRAF());
+  EXPECT_TRUE(host_impl_.animation_host()->HasSmilAnimation());
 }
 
 TEST_F(LayerTest, SetElementIdNotUsingLayerLists) {
@@ -1719,7 +1724,7 @@ TEST_F(LayerTest, UpdatingClipRect) {
   // Setting a filter that moves pixels.
   FilterOperations move_pixel_filters;
   move_pixel_filters.Append(
-      FilterOperation::CreateBlurFilter(2, SkBlurImageFilter::kClamp_TileMode));
+      FilterOperation::CreateBlurFilter(2, SkTileMode::kClamp));
   ASSERT_TRUE(move_pixel_filters.HasFilterThatMovesPixels());
   clipped_3->SetFilters(move_pixel_filters);
 

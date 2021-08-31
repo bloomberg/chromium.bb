@@ -11,7 +11,6 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,7 +18,6 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_form_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/pattern_provider/test_pattern_provider.h"
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -66,6 +64,19 @@ void AddFieldSuggestionToForm(
   field_suggestion->set_primary_type_prediction(field_type);
 }
 
+void AddFieldOverrideToForm(
+    ::autofill::AutofillQueryResponse_FormSuggestion* form_suggestion,
+    autofill::FormFieldData field_data,
+    ServerFieldType field_type) {
+  AddFieldSuggestionToForm(form_suggestion, field_data, field_type);
+
+  DCHECK_GT(form_suggestion->field_suggestions().size(), 0);
+  form_suggestion
+      ->mutable_field_suggestions(form_suggestion->field_suggestions().size() -
+                                  1)
+      ->set_primary_type_prediction_is_override(true);
+}
+
 }  // namespace
 
 class FormStructureTestImpl : public test::FormStructureTest {
@@ -74,28 +85,14 @@ class FormStructureTestImpl : public test::FormStructureTest {
     return base::NumberToString(StrToHash64Bit(str));
   }
 
-  void SetUp() override {
-    // By default this trial is enabled on tests.
-    EnableAutofillMetadataFieldTrial();
-  }
-
  protected:
-  void InitFeature(base::test::ScopedFeatureList* feature_list,
-                   const base::Feature& feature,
-                   bool is_enabled) {
-    if (is_enabled)
-      feature_list->InitAndEnableFeature(feature);
-    else
-      feature_list->InitAndDisableFeature(feature);
-  }
-
   bool FormShouldBeParsed(const FormData form) {
     return FormStructure(form).ShouldBeParsed();
   }
 
   bool FormIsAutofillable(const FormData& form) {
     FormStructure form_structure(form);
-    form_structure.DetermineHeuristicTypes();
+    form_structure.DetermineHeuristicTypes(nullptr, nullptr);
     return form_structure.IsAutofillable();
   }
 
@@ -105,12 +102,6 @@ class FormStructureTestImpl : public test::FormStructureTest {
 
   bool FormShouldBeQueried(const FormData& form) {
     return FormStructure(form).ShouldBeQueried();
-  }
-
-  void DisableAutofillMetadataFieldTrial() {
-    field_trial_ = nullptr;
-    scoped_feature_list_.Reset();
-    scoped_feature_list_.Init();
   }
 
   void SetUpForEncoder() {
@@ -126,21 +117,9 @@ class FormStructureTestImpl : public test::FormStructureTest {
     return FieldRendererId(++id_counter_);
   }
 
- protected:
-  TestPatternProvider test_pattern_provider_;
-
  private:
-  void EnableAutofillMetadataFieldTrial() {
-    scoped_feature_list_.Reset();
-    scoped_feature_list_.Init();
-    field_trial_ = base::FieldTrialList::CreateFieldTrial(
-        "AutofillFieldMetadata", "Enabled");
-    field_trial_->group();
-  }
-
   uint32_t id_counter_ = 10;
   base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_refptr<base::FieldTrial> field_trial_;
 };
 
 class ParameterizedFormStructureTest
@@ -150,14 +129,14 @@ class ParameterizedFormStructureTest
 TEST_F(FormStructureTestImpl, FieldCount) {
   CheckFormStructureTestData({{{.description_for_logging = "FieldCount",
                                 .fields = {{.role = ServerFieldType::USERNAME},
-                                           {.label = "Password",
-                                            .name = "password",
+                                           {.label = u"Password",
+                                            .name = u"password",
                                             .form_control_type = "password"},
-                                           {.label = "Submit",
-                                            .name = "",
+                                           {.label = u"Submit",
+                                            .name = u"",
                                             .form_control_type = "submit"},
-                                           {.label = "address1",
-                                            .name = "address1",
+                                           {.label = u"address1",
+                                            .name = u"address1",
                                             .should_autocomplete = false}}},
                                {
                                    .determine_heuristic_type = true,
@@ -169,16 +148,17 @@ TEST_F(FormStructureTestImpl, FieldCount) {
 TEST_F(FormStructureTestImpl, AutofillCount) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "AutofillCount",
-         .fields =
-             {{.role = ServerFieldType::USERNAME},
-              {.label = "Password",
-               .name = "password",
-               .form_control_type = "password"},
-              {.role = ServerFieldType::EMAIL_ADDRESS},
-              {.role = ServerFieldType::ADDRESS_HOME_CITY},
-              {.role = ServerFieldType::ADDRESS_HOME_STATE,
-               .form_control_type = "select-one"},
-              {.label = "Submit", .name = "", .form_control_type = "submit"}}},
+         .fields = {{.role = ServerFieldType::USERNAME},
+                    {.label = u"Password",
+                     .name = u"password",
+                     .form_control_type = "password"},
+                    {.role = ServerFieldType::EMAIL_ADDRESS},
+                    {.role = ServerFieldType::ADDRESS_HOME_CITY},
+                    {.role = ServerFieldType::ADDRESS_HOME_STATE,
+                     .form_control_type = "select-one"},
+                    {.label = u"Submit",
+                     .name = u"",
+                     .form_control_type = "submit"}}},
         {
             .determine_heuristic_type = true,
             .autofill_count = 3,
@@ -188,16 +168,16 @@ TEST_F(FormStructureTestImpl, AutofillCount) {
        {{.description_for_logging = "AutofillCountWithNonFillableField",
          .fields =
              {{.role = ServerFieldType::USERNAME},
-              {.label = "Password",
-               .name = "password",
+              {.label = u"Password",
+               .name = u"password",
                .form_control_type = "password"},
               {.role = ServerFieldType::EMAIL_ADDRESS},
               {.role = ServerFieldType::ADDRESS_HOME_CITY},
               {.role = ServerFieldType::ADDRESS_HOME_STATE,
                .form_control_type = "select-one"},
-              {.label = "Submit", .name = "", .form_control_type = "submit"},
-              {.label = "address1",
-               .name = "address1",
+              {.label = u"Submit", .name = u"", .form_control_type = "submit"},
+              {.label = u"address1",
+               .name = u"address1",
                .should_autocomplete = false}}},
         {
             .determine_heuristic_type = true,
@@ -229,8 +209,8 @@ TEST_F(FormStructureTestImpl, IsAutofillable) {
 
   // Start with a username field. It should be picked up by the password but
   // not by autofill.
-  field.label = ASCIIToUTF16("username");
-  field.name = ASCIIToUTF16("username");
+  field.label = u"username";
+  field.name = u"username";
   field.form_control_type = "text";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -240,8 +220,8 @@ TEST_F(FormStructureTestImpl, IsAutofillable) {
 
   // Add a password field. The form should be picked up by the password but
   // not by autofill.
-  field.label = ASCIIToUTF16("password");
-  field.name = ASCIIToUTF16("password");
+  field.label = u"password";
+  field.name = u"password";
   field.form_control_type = "password";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -250,8 +230,8 @@ TEST_F(FormStructureTestImpl, IsAutofillable) {
 
   // Add an auto-fillable fields. With just one auto-fillable field, this should
   // be picked up by autofill only if there is no minimum field enforcement.
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullname");
+  field.label = u"Full Name";
+  field.name = u"fullname";
   field.form_control_type = "text";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -260,8 +240,8 @@ TEST_F(FormStructureTestImpl, IsAutofillable) {
 
   // Add an auto-fillable fields. With just one auto-fillable field, this should
   // be picked up by autofill only if there is no minimum field enforcement.
-  field.label = ASCIIToUTF16("Address Line 1");
-  field.name = ASCIIToUTF16("address1");
+  field.label = u"Address Line 1";
+  field.name = u"address1";
   field.form_control_type = "text";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -269,8 +249,8 @@ TEST_F(FormStructureTestImpl, IsAutofillable) {
   EXPECT_FALSE(FormIsAutofillable(form));
 
   // We now have three auto-fillable fields. It's always autofillable.
-  field.label = ASCIIToUTF16("Email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"Email";
+  field.name = u"email";
   field.form_control_type = "email";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -296,7 +276,7 @@ TEST_F(FormStructureTestImpl, ShouldBeParsed) {
   FormFieldData checkable_field;
   checkable_field.check_status =
       FormFieldData::CheckStatus::kCheckableButUnchecked;
-  checkable_field.name = ASCIIToUTF16("radiobtn");
+  checkable_field.name = u"radiobtn";
   checkable_field.form_control_type = "radio";
   checkable_field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(checkable_field);
@@ -305,7 +285,7 @@ TEST_F(FormStructureTestImpl, ShouldBeParsed) {
   EXPECT_FALSE(FormShouldBeParsed(form)) << "one checkable";
 
   // Add a second checkable field.
-  checkable_field.name = ASCIIToUTF16("checkbox");
+  checkable_field.name = u"checkbox";
   checkable_field.form_control_type = "checkbox";
   checkable_field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(checkable_field);
@@ -315,8 +295,8 @@ TEST_F(FormStructureTestImpl, ShouldBeParsed) {
 
   // Add a text field.
   FormFieldData field;
-  field.label = ASCIIToUTF16("username");
-  field.name = ASCIIToUTF16("username");
+  field.label = u"username";
+  field.name = u"username";
   field.form_control_type = "text";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -326,14 +306,14 @@ TEST_F(FormStructureTestImpl, ShouldBeParsed) {
   EXPECT_TRUE(FormShouldBeParsed(form)) << "username";
 
   // We now have three text fields, though only two are auto-fillable.
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = u"First Name";
+  field.name = u"firstname";
   field.form_control_type = "text";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = u"Last Name";
+  field.name = u"lastname";
   field.form_control_type = "text";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -353,20 +333,20 @@ TEST_F(FormStructureTestImpl, ShouldBeParsed) {
   // field.
   form.fields.clear();
 
-  field.label = ASCIIToUTF16("Email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"Email";
+  field.name = u"email";
   field.form_control_type = "email";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("State");
-  field.name = ASCIIToUTF16("state");
+  field.label = u"State";
+  field.name = u"state";
   field.form_control_type = "select-one";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.form_control_type = "select-one";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -379,16 +359,16 @@ TEST_F(FormStructureTestImpl, ShouldBeParsed) {
 
   // We have only one field, which is password.
   form.fields.clear();
-  field.label = ASCIIToUTF16("Password");
-  field.name = ASCIIToUTF16("pw");
+  field.label = u"Password";
+  field.name = u"pw";
   field.form_control_type = "password";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
   EXPECT_TRUE(FormShouldBeParsed(form)) << "password";
 
   // We have two fields, which are passwords, should be parsed.
-  field.label = ASCIIToUTF16("New password");
-  field.name = ASCIIToUTF16("new_pw");
+  field.label = u"New password";
+  field.name = u"new_pw";
   field.form_control_type = "password";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -400,22 +380,22 @@ TEST_F(FormStructureTestImpl, ShouldBeParsed_BadScheme) {
   FormData form;
   FormFieldData field;
 
-  field.label = ASCIIToUTF16("Name");
-  field.name = ASCIIToUTF16("name");
+  field.label = u"Name";
+  field.name = u"name";
   field.form_control_type = "text";
   field.autocomplete_attribute = "name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"Email";
+  field.name = u"email";
   field.form_control_type = "text";
   field.autocomplete_attribute = "email";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.form_control_type = "text";
   field.autocomplete_attribute = "address-line1";
   field.unique_renderer_id = MakeFieldRendererId();
@@ -484,15 +464,15 @@ TEST_F(FormStructureTestImpl, ShouldBeParsed_TwoFields_HasAutocomplete) {
   form.url = GURL("http://www.foo.com/");
   FormFieldData field;
 
-  field.label = ASCIIToUTF16("Name");
-  field.name = ASCIIToUTF16("name");
+  field.label = u"Name";
+  field.name = u"name";
   field.form_control_type = "name";
   field.autocomplete_attribute = "name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("Address");
+  field.label = u"Address";
+  field.name = u"Address";
   field.form_control_type = "select-one";
   field.autocomplete_attribute = "";
   field.unique_renderer_id = MakeFieldRendererId();
@@ -508,8 +488,8 @@ TEST_F(FormStructureTestImpl, ShouldBeParsed_TwoFields_HasAutocomplete) {
 TEST_F(FormStructureTestImpl, DetermineHeuristicTypes_AutocompleteFalse) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "DetermineHeuristicTypes_AutocompleteFalse",
-         .fields = {{.label = "Name",
-                     .name = "name",
+         .fields = {{.label = u"Name",
+                     .name = u"name",
                      .autocomplete_attribute = "false"},
                     {.role = ServerFieldType::EMAIL_ADDRESS,
                      .autocomplete_attribute = "false"},
@@ -528,16 +508,17 @@ TEST_F(FormStructureTestImpl, DetermineHeuristicTypes_AutocompleteFalse) {
 TEST_F(FormStructureTestImpl, HeuristicsContactInfo) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "HeuristicsContactInfo",
-         .fields =
-             {{.role = ServerFieldType::NAME_FIRST},
-              {.role = ServerFieldType::NAME_LAST},
-              {.role = ServerFieldType::EMAIL_ADDRESS},
-              {.role = ServerFieldType::PHONE_HOME_NUMBER},
-              {.label = "Ext:", .name = "phoneextension"},
-              {.label = "Address", .name = "address"},
-              {.role = ServerFieldType::ADDRESS_HOME_CITY},
-              {.role = ServerFieldType::ADDRESS_HOME_ZIP},
-              {.label = "Submit", .name = "", .form_control_type = "submit"}}},
+         .fields = {{.role = ServerFieldType::NAME_FIRST},
+                    {.role = ServerFieldType::NAME_LAST},
+                    {.role = ServerFieldType::EMAIL_ADDRESS},
+                    {.role = ServerFieldType::PHONE_HOME_NUMBER},
+                    {.label = u"Ext:", .name = u"phoneextension"},
+                    {.label = u"Address", .name = u"address"},
+                    {.role = ServerFieldType::ADDRESS_HOME_CITY},
+                    {.role = ServerFieldType::ADDRESS_HOME_ZIP},
+                    {.label = u"Submit",
+                     .name = u"",
+                     .form_control_type = "submit"}}},
         {
             .determine_heuristic_type = true,
             .field_count = 9,
@@ -553,17 +534,17 @@ TEST_F(FormStructureTestImpl, HeuristicsContactInfo) {
 TEST_F(FormStructureTestImpl, HeuristicsAutocompleteAttribute) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "HeuristicsAutocompleteAttribute",
-         .fields = {{.label = "",
-                     .name = "field1",
+         .fields = {{.label = u"",
+                     .name = u"field1",
                      .autocomplete_attribute = "given-name"},
-                    {.label = "",
-                     .name = "field2",
+                    {.label = u"",
+                     .name = u"field2",
                      .autocomplete_attribute = "family-name"},
-                    {.label = "",
-                     .name = "field3",
+                    {.label = u"",
+                     .name = u"field3",
                      .autocomplete_attribute = "email"},
-                    {.label = "",
-                     .name = "field4",
+                    {.label = u"",
+                     .name = u"field4",
                      .autocomplete_attribute = "upi-vpa"}}},
         {
             .determine_heuristic_type = true,
@@ -576,50 +557,6 @@ TEST_F(FormStructureTestImpl, HeuristicsAutocompleteAttribute) {
         {.expected_html_type = {HTML_TYPE_GIVEN_NAME, HTML_TYPE_FAMILY_NAME,
                                 HTML_TYPE_EMAIL, HTML_TYPE_UNRECOGNIZED},
          .expected_heuristic_type = {UNKNOWN_TYPE, UNKNOWN_TYPE, UNKNOWN_TYPE,
-                                     UNKNOWN_TYPE}}}});
-}
-
-// // Verify that the heuristics are not run for non checkout formless forms.
-TEST_F(FormStructureTestImpl, Heuristics_FormlessNonCheckoutForm) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
-
-  CheckFormStructureTestData(
-      {{{.description_for_logging = "Heuristics_NonCheckoutForm",
-         .fields = {{.role = ServerFieldType::NAME_FIRST,
-                     .autocomplete_attribute = "given-name"},
-                    {.role = ServerFieldType::NAME_LAST,
-                     .autocomplete_attribute = "family-name"},
-                    {.role = ServerFieldType::EMAIL_ADDRESS,
-                     .autocomplete_attribute = "email"}}},
-        {
-            .determine_heuristic_type = true,
-            .is_autofillable = true,
-            .field_count = 3,
-            .autofill_count = 3,
-        },
-        {.expected_html_type = {HTML_TYPE_GIVEN_NAME, HTML_TYPE_FAMILY_NAME,
-                                HTML_TYPE_EMAIL},
-         .expected_heuristic_type = {NAME_FIRST, NAME_LAST, EMAIL_ADDRESS}}},
-
-       {{.description_for_logging = "Heuristics_FormlessNonCheckoutForm",
-         .fields = {{.role = ServerFieldType::NAME_FIRST,
-                     .autocomplete_attribute = "given-name"},
-                    {.role = ServerFieldType::NAME_LAST,
-                     .autocomplete_attribute = "family-name"},
-                    {.role = ServerFieldType::EMAIL_ADDRESS,
-                     .autocomplete_attribute = "email"}},
-         .is_form_tag = false},
-        {
-            .determine_heuristic_type = true,
-            .is_autofillable = true,
-            .field_count = 3,
-            .autofill_count = 3,
-        },
-        {.expected_html_type = {HTML_TYPE_GIVEN_NAME, HTML_TYPE_FAMILY_NAME,
-                                HTML_TYPE_EMAIL},
-         .expected_heuristic_type = {UNKNOWN_TYPE, UNKNOWN_TYPE,
                                      UNKNOWN_TYPE}}}});
 }
 
@@ -636,29 +573,34 @@ TEST_F(FormStructureTestImpl, StripCommonNameAffix) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$firstname");
+  field.label = u"First Name";
+  field.name = u"ctl01$ctl00$ShippingAddressCreditPhone$firstname";
+  field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$lastname");
+  field.label = u"Last Name";
+  field.name = u"ctl01$ctl00$ShippingAddressCreditPhone$lastname";
+  field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Email");
-  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$email");
+  field.label = u"Email";
+  field.name = u"ctl01$ctl00$ShippingAddressCreditPhone$email";
+  field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Phone");
-  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$phone");
+  field.label = u"Phone";
+  field.name = u"ctl01$ctl00$ShippingAddressCreditPhone$phone";
+  field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = base::string16();
-  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$submit");
+  field.label = std::u16string();
+  field.name = u"ctl01$ctl00$ShippingAddressCreditPhone$submit";
   field.form_control_type = "submit";
+  field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
 
   // Expect the correct number of fields.
@@ -666,22 +608,20 @@ TEST_F(FormStructureTestImpl, StripCommonNameAffix) {
   ASSERT_EQ(4U, form_structure->autofill_count());
 
   // First name.
-  EXPECT_EQ(ASCIIToUTF16("firstname"),
-            form_structure->field(0)->parseable_name());
+  EXPECT_EQ(u"firstname", form_structure->field(0)->parseable_name());
   EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
   // Last name.
-  EXPECT_EQ(ASCIIToUTF16("lastname"),
-            form_structure->field(1)->parseable_name());
+  EXPECT_EQ(u"lastname", form_structure->field(1)->parseable_name());
   EXPECT_EQ(NAME_LAST, form_structure->field(1)->heuristic_type());
   // Email.
-  EXPECT_EQ(ASCIIToUTF16("email"), form_structure->field(2)->parseable_name());
+  EXPECT_EQ(u"email", form_structure->field(2)->parseable_name());
   EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(2)->heuristic_type());
   // Phone.
-  EXPECT_EQ(ASCIIToUTF16("phone"), form_structure->field(3)->parseable_name());
+  EXPECT_EQ(u"phone", form_structure->field(3)->parseable_name());
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
             form_structure->field(3)->heuristic_type());
   // Submit.
-  EXPECT_EQ(ASCIIToUTF16("submit"), form_structure->field(4)->parseable_name());
+  EXPECT_EQ(u"submit", form_structure->field(4)->parseable_name());
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(4)->heuristic_type());
 }
 
@@ -697,16 +637,16 @@ TEST_F(FormStructureTestImpl, StripCommonNameAffix_SmallPrefix) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("Address 1");
-  field.name = ASCIIToUTF16("address1");
+  field.label = u"Address 1";
+  field.name = u"address1";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address 2");
-  field.name = ASCIIToUTF16("address2");
+  field.label = u"Address 2";
+  field.name = u"address2";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address 3");
-  field.name = ASCIIToUTF16("address3");
+  field.label = u"Address 3";
+  field.name = u"address3";
   form.fields.push_back(field);
 
   std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
@@ -715,14 +655,11 @@ TEST_F(FormStructureTestImpl, StripCommonNameAffix_SmallPrefix) {
   ASSERT_EQ(3U, form_structure->field_count());
 
   // Address 1.
-  EXPECT_EQ(ASCIIToUTF16("address1"),
-            form_structure->field(0)->parseable_name());
+  EXPECT_EQ(u"address1", form_structure->field(0)->parseable_name());
   // Address 2.
-  EXPECT_EQ(ASCIIToUTF16("address2"),
-            form_structure->field(1)->parseable_name());
+  EXPECT_EQ(u"address2", form_structure->field(1)->parseable_name());
   // Address 3
-  EXPECT_EQ(ASCIIToUTF16("address3"),
-            form_structure->field(2)->parseable_name());
+  EXPECT_EQ(u"address3", form_structure->field(2)->parseable_name());
 }
 
 // All fields share both a common prefix and suffix which could confuse the
@@ -738,29 +675,24 @@ TEST_F(FormStructureTestImpl, StripCommonNameAffix_PrefixAndSuffix) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name =
-      ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$firstname_data");
+  field.label = u"First Name";
+  field.name = u"ctl01$ctl00$ShippingAddressCreditPhone$firstname_data";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name =
-      ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$lastname_data");
+  field.label = u"Last Name";
+  field.name = u"ctl01$ctl00$ShippingAddressCreditPhone$lastname_data";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Email");
-  field.name =
-      ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$email_data");
+  field.label = u"Email";
+  field.name = u"ctl01$ctl00$ShippingAddressCreditPhone$email_data";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Phone");
-  field.name =
-      ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$phone_data");
+  field.label = u"Phone";
+  field.name = u"ctl01$ctl00$ShippingAddressCreditPhone$phone_data";
   form.fields.push_back(field);
 
-  field.label = base::string16();
-  field.name =
-      ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$submit_data");
+  field.label = std::u16string();
+  field.name = u"ctl01$ctl00$ShippingAddressCreditPhone$submit_data";
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
@@ -770,17 +702,15 @@ TEST_F(FormStructureTestImpl, StripCommonNameAffix_PrefixAndSuffix) {
   ASSERT_EQ(5U, form_structure->field_count());
 
   // First name.
-  EXPECT_EQ(ASCIIToUTF16("firstname"),
-            form_structure->field(0)->parseable_name());
+  EXPECT_EQ(u"firstname", form_structure->field(0)->parseable_name());
   // Last name.
-  EXPECT_EQ(ASCIIToUTF16("lastname"),
-            form_structure->field(1)->parseable_name());
+  EXPECT_EQ(u"lastname", form_structure->field(1)->parseable_name());
   // Email.
-  EXPECT_EQ(ASCIIToUTF16("email"), form_structure->field(2)->parseable_name());
+  EXPECT_EQ(u"email", form_structure->field(2)->parseable_name());
   // Phone.
-  EXPECT_EQ(ASCIIToUTF16("phone"), form_structure->field(3)->parseable_name());
+  EXPECT_EQ(u"phone", form_structure->field(3)->parseable_name());
   // Submit.
-  EXPECT_EQ(ASCIIToUTF16("submit"), form_structure->field(4)->parseable_name());
+  EXPECT_EQ(u"submit", form_structure->field(4)->parseable_name());
 }
 
 // Only some fields share a long common long prefix, no fields share a suffix.
@@ -796,24 +726,24 @@ TEST_F(FormStructureTestImpl, StripCommonNameAffix_SelectiveLongPrefix) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$firstname");
+  field.label = u"First Name";
+  field.name = u"ctl01$ctl00$ShippingAddressCreditPhone$firstname";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$lastname");
+  field.label = u"Last Name";
+  field.name = u"ctl01$ctl00$ShippingAddressCreditPhone$lastname";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"Email";
+  field.name = u"email";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Phone");
-  field.name = ASCIIToUTF16("phone");
+  field.label = u"Phone";
+  field.name = u"phone";
   form.fields.push_back(field);
 
-  field.label = base::string16();
-  field.name = ASCIIToUTF16("ctl01$ctl00$ShippingAddressCreditPhone$submit");
+  field.label = std::u16string();
+  field.name = u"ctl01$ctl00$ShippingAddressCreditPhone$submit";
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
@@ -823,17 +753,15 @@ TEST_F(FormStructureTestImpl, StripCommonNameAffix_SelectiveLongPrefix) {
   ASSERT_EQ(5U, form_structure->field_count());
 
   // First name.
-  EXPECT_EQ(ASCIIToUTF16("firstname"),
-            form_structure->field(0)->parseable_name());
+  EXPECT_EQ(u"firstname", form_structure->field(0)->parseable_name());
   // Last name.
-  EXPECT_EQ(ASCIIToUTF16("lastname"),
-            form_structure->field(1)->parseable_name());
+  EXPECT_EQ(u"lastname", form_structure->field(1)->parseable_name());
   // Email.
-  EXPECT_EQ(ASCIIToUTF16("email"), form_structure->field(2)->parseable_name());
+  EXPECT_EQ(u"email", form_structure->field(2)->parseable_name());
   // Phone.
-  EXPECT_EQ(ASCIIToUTF16("phone"), form_structure->field(3)->parseable_name());
+  EXPECT_EQ(u"phone", form_structure->field(3)->parseable_name());
   // Submit.
-  EXPECT_EQ(ASCIIToUTF16("submit"), form_structure->field(4)->parseable_name());
+  EXPECT_EQ(u"submit", form_structure->field(4)->parseable_name());
 }
 
 // Only some fields share a long common short prefix, no fields share a suffix.
@@ -850,24 +778,24 @@ TEST_F(FormStructureTestImpl,
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = u"First Name";
+  field.name = u"firstname";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = u"Last Name";
+  field.name = u"lastname";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Street Name");
-  field.name = ASCIIToUTF16("address_streetname");
+  field.label = u"Street Name";
+  field.name = u"address_streetname";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Phone");
-  field.name = ASCIIToUTF16("address_housenumber");
+  field.label = u"Phone";
+  field.name = u"address_housenumber";
   form.fields.push_back(field);
 
-  field.label = base::string16();
-  field.name = ASCIIToUTF16("address_apartmentnumber");
+  field.label = std::u16string();
+  field.name = u"address_apartmentnumber";
   form.fields.push_back(field);
 
   std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
@@ -876,19 +804,15 @@ TEST_F(FormStructureTestImpl,
   ASSERT_EQ(5U, form_structure->field_count());
 
   // First name.
-  EXPECT_EQ(ASCIIToUTF16("firstname"),
-            form_structure->field(0)->parseable_name());
+  EXPECT_EQ(u"firstname", form_structure->field(0)->parseable_name());
   // Last name.
-  EXPECT_EQ(ASCIIToUTF16("lastname"),
-            form_structure->field(1)->parseable_name());
+  EXPECT_EQ(u"lastname", form_structure->field(1)->parseable_name());
   // Email.
-  EXPECT_EQ(ASCIIToUTF16("address_streetname"),
-            form_structure->field(2)->parseable_name());
+  EXPECT_EQ(u"address_streetname", form_structure->field(2)->parseable_name());
   // Phone.
-  EXPECT_EQ(ASCIIToUTF16("address_housenumber"),
-            form_structure->field(3)->parseable_name());
+  EXPECT_EQ(u"address_housenumber", form_structure->field(3)->parseable_name());
   // Submit.
-  EXPECT_EQ(ASCIIToUTF16("address_apartmentnumber"),
+  EXPECT_EQ(u"address_apartmentnumber",
             form_structure->field(4)->parseable_name());
 }
 
@@ -897,18 +821,18 @@ TEST_F(FormStructureTestImpl,
 TEST_F(FormStructureTestImpl, StripCommonNamePrefix) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "StripCommonNamePrefix",
-         .fields = {{.role = ServerFieldType::NAME_FIRST,
-                     .name =
-                         "ctl01$ctl00$ShippingAddressCreditPhone$firstname"},
-                    {.role = ServerFieldType::NAME_LAST,
-                     .name = "ctl01$ctl00$ShippingAddressCreditPhone$lastname"},
-                    {.role = ServerFieldType::EMAIL_ADDRESS,
-                     .name = "ctl01$ctl00$ShippingAddressCreditPhone$email"},
-                    {.role = ServerFieldType::PHONE_HOME_NUMBER,
-                     .name = "ctl01$ctl00$ShippingAddressCreditPhone$phone"},
-                    {.label = "Submit",
-                     .name = "ctl01$ctl00$ShippingAddressCreditPhone$submit",
-                     .form_control_type = "submit"}}},
+         .fields =
+             {{.role = ServerFieldType::NAME_FIRST,
+               .name = u"ctl01$ctl00$ShippingAddressCreditPhone$firstname"},
+              {.role = ServerFieldType::NAME_LAST,
+               .name = u"ctl01$ctl00$ShippingAddressCreditPhone$lastname"},
+              {.role = ServerFieldType::EMAIL_ADDRESS,
+               .name = u"ctl01$ctl00$ShippingAddressCreditPhone$email"},
+              {.role = ServerFieldType::PHONE_HOME_NUMBER,
+               .name = u"ctl01$ctl00$ShippingAddressCreditPhone$phone"},
+              {.label = u"Submit",
+               .name = u"ctl01$ctl00$ShippingAddressCreditPhone$submit",
+               .form_control_type = "submit"}}},
         {.determine_heuristic_type = true,
          .is_autofillable = true,
          .field_count = 5,
@@ -922,9 +846,9 @@ TEST_F(FormStructureTestImpl, StripCommonNamePrefix) {
 TEST_F(FormStructureTestImpl, StripCommonNamePrefix_SmallPrefix) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "StripCommonNamePrefix_SmallPrefix",
-         .fields = {{.label = "Address 1", .name = "address1"},
-                    {.label = "Address 2", .name = "address2"},
-                    {.label = "Address 3", .name = "address3"}}},
+         .fields = {{.label = u"Address 1", .name = u"address1"},
+                    {.label = u"Address 2", .name = u"address2"},
+                    {.label = u"Address 3", .name = u"address3"}}},
         {.determine_heuristic_type = true,
          .is_autofillable = true,
          .field_count = 3,
@@ -937,7 +861,7 @@ TEST_F(FormStructureTestImpl, IsCompleteCreditCardForm_Minimal) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "IsCompleteCreditCardForm_Minimal",
          .fields = {{.role = ServerFieldType::CREDIT_CARD_NUMBER},
-                    {.label = "Expiration", .name = "cc_exp"},
+                    {.label = u"Expiration", .name = u"cc_exp"},
                     {.role = ServerFieldType::ADDRESS_HOME_ZIP}}},
         {.determine_heuristic_type = true,
          .is_complete_credit_card_form = {true, true}},
@@ -947,13 +871,13 @@ TEST_F(FormStructureTestImpl, IsCompleteCreditCardForm_Minimal) {
 TEST_F(FormStructureTestImpl, IsCompleteCreditCardForm_Full) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "IsCompleteCreditCardForm_Full",
-         .fields = {{.label = "Name on Card", .name = "name_on_card"},
+         .fields = {{.label = u"Name on Card", .name = u"name_on_card"},
                     {.role = ServerFieldType::CREDIT_CARD_NUMBER},
-                    {.label = "Exp Month", .name = "ccmonth"},
-                    {.label = "Exp Year", .name = "ccyear"},
-                    {.label = "Verification", .name = "verification"},
-                    {.label = "Submit",
-                     .name = "submit",
+                    {.label = u"Exp Month", .name = u"ccmonth"},
+                    {.label = u"Exp Year", .name = u"ccyear"},
+                    {.label = u"Verification", .name = u"verification"},
+                    {.label = u"Submit",
+                     .name = u"submit",
                      .form_control_type = "submit"}}},
         {.determine_heuristic_type = true,
          .is_complete_credit_card_form = {true, true}},
@@ -974,13 +898,13 @@ TEST_F(FormStructureTestImpl, IsCompleteCreditCardForm_OnlyCCNumber) {
 TEST_F(FormStructureTestImpl, IsCompleteCreditCardForm_AddressForm) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "IsCompleteCreditCardForm_AddressForm",
-         .fields = {{.role = ServerFieldType::NAME_FIRST, .name = ""},
-                    {.role = ServerFieldType::NAME_LAST, .name = ""},
-                    {.role = ServerFieldType::EMAIL_ADDRESS, .name = ""},
-                    {.role = ServerFieldType::PHONE_HOME_NUMBER, .name = ""},
-                    {.label = "Address", .name = ""},
-                    {.label = "Address", .name = ""},
-                    {.role = ServerFieldType::ADDRESS_HOME_ZIP, .name = ""}}},
+         .fields = {{.role = ServerFieldType::NAME_FIRST, .name = u""},
+                    {.role = ServerFieldType::NAME_LAST, .name = u""},
+                    {.role = ServerFieldType::EMAIL_ADDRESS, .name = u""},
+                    {.role = ServerFieldType::PHONE_HOME_NUMBER, .name = u""},
+                    {.label = u"Address", .name = u""},
+                    {.label = u"Address", .name = u""},
+                    {.role = ServerFieldType::ADDRESS_HOME_ZIP, .name = u""}}},
         {.determine_heuristic_type = true,
          .is_complete_credit_card_form = {true, false}},
         {}}});
@@ -991,14 +915,14 @@ TEST_F(FormStructureTestImpl, IsCompleteCreditCardForm_AddressForm) {
 TEST_F(FormStructureTestImpl, HeuristicsAutocompleteAttributePhoneTypes) {
   CheckFormStructureTestData(
       {{{.description_for_logging = "HeuristicsAutocompleteAttributePhoneTypes",
-         .fields = {{.label = "",
-                     .name = "field1",
+         .fields = {{.label = u"",
+                     .name = u"field1",
                      .autocomplete_attribute = "tel-local"},
-                    {.label = "",
-                     .name = "field2",
+                    {.label = u"",
+                     .name = u"field2",
                      .autocomplete_attribute = "tel-local-prefix"},
-                    {.label = "",
-                     .name = "field3",
+                    {.label = u"",
+                     .name = u"field3",
                      .autocomplete_attribute = "tel-local-suffix"}}},
         {.determine_heuristic_type = true,
          .is_autofillable = true,
@@ -1061,7 +985,7 @@ TEST_F(FormStructureTestImpl,
                                        "UnrecognizedAutocompleteAttribute",
             .fields = {{.role = ServerFieldType::NAME_FIRST,
                         .autocomplete_attribute = "unrecognized"},
-                       {.label = "Middle Name", .name = "middlename"},
+                       {.label = u"Middle Name", .name = u"middlename"},
                        {.role = ServerFieldType::NAME_LAST},
                        {.role = ServerFieldType::EMAIL_ADDRESS}},
         },
@@ -1084,13 +1008,13 @@ TEST_F(FormStructureTestImpl,
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = u"First Name";
+  field.name = u"firstname";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = u"Last Name";
+  field.name = u"lastname";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -1101,7 +1025,7 @@ TEST_F(FormStructureTestImpl,
   // Default configuration.
   {
     FormStructure form_structure(form);
-    form_structure.DetermineHeuristicTypes();
+    form_structure.DetermineHeuristicTypes(nullptr, nullptr);
     ASSERT_EQ(2U, form_structure.field_count());
     ASSERT_EQ(0U, form_structure.autofill_count());
     EXPECT_EQ(UNKNOWN_TYPE, form_structure.field(0)->heuristic_type());
@@ -1124,14 +1048,14 @@ TEST_F(FormStructureTestImpl,
   field.form_control_type = "text";
 
   // Set a valid autocompelete attribute to the first field.
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = u"First Name";
+  field.name = u"firstname";
   field.autocomplete_attribute = "given-name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = u"Last Name";
+  field.name = u"lastname";
   field.autocomplete_attribute = "";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -1147,7 +1071,7 @@ TEST_F(FormStructureTestImpl,
     FormData form_copy = form;
     form_copy.fields.pop_back();
     FormStructure form_structure(form_copy);
-    form_structure.DetermineHeuristicTypes();
+    form_structure.DetermineHeuristicTypes(nullptr, nullptr);
     ASSERT_EQ(1U, form_structure.field_count());
     ASSERT_EQ(1U, form_structure.autofill_count());
     EXPECT_EQ(UNKNOWN_TYPE, form_structure.field(0)->heuristic_type());
@@ -1169,30 +1093,30 @@ TEST_F(FormStructureTestImpl, PasswordFormShouldBeQueried) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = u"First Name";
+  field.name = u"firstname";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = u"Last Name";
+  field.name = u"lastname";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"Email";
+  field.name = u"email";
   field.autocomplete_attribute = "username";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Password");
-  field.name = ASCIIToUTF16("Password");
+  field.label = u"Password";
+  field.name = u"Password";
   field.form_control_type = "password";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes();
+  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
   EXPECT_TRUE(form_structure.has_password_field());
   EXPECT_TRUE(form_structure.ShouldBeQueried());
   EXPECT_TRUE(form_structure.ShouldBeUploaded());
@@ -1257,7 +1181,7 @@ TEST_F(FormStructureTestImpl, HeuristicsAutocompleteAttributeWithSections) {
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes();
+  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
   EXPECT_TRUE(form_structure.IsAutofillable());
 
   // Expect the correct number of fields.
@@ -1312,7 +1236,7 @@ TEST_F(FormStructureTestImpl,
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes();
+  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
 
   // Expect the correct number of fields.
   ASSERT_EQ(6U, form_structure.field_count());
@@ -1346,7 +1270,7 @@ TEST_F(FormStructureTestImpl,
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes();
+  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
 
   // Expect the correct number of fields.
   ASSERT_EQ(2U, form_structure.field_count());
@@ -1371,28 +1295,28 @@ TEST_F(FormStructureTestImpl,
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.name = ASCIIToUTF16("one");
+  field.name = u"one";
   field.autocomplete_attribute = "address-line1";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.name = base::string16();
+  field.name = std::u16string();
   field.autocomplete_attribute = "section-foo email";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.name = base::string16();
+  field.name = std::u16string();
   field.autocomplete_attribute = "name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.name = ASCIIToUTF16("two");
+  field.name = u"two";
   field.autocomplete_attribute = "address-line1";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes();
+  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
 
   // Expect the correct number of fields.
   ASSERT_EQ(4U, form_structure.field_count());
@@ -1401,8 +1325,8 @@ TEST_F(FormStructureTestImpl,
   // Normally, the two separate address fields would cause us to detect two
   // separate sections; but because there is an author-specified section in this
   // form, we do not apply these usual heuristics.
-  EXPECT_EQ(ASCIIToUTF16("one"), form_structure.field(0)->name);
-  EXPECT_EQ(ASCIIToUTF16("two"), form_structure.field(3)->name);
+  EXPECT_EQ(u"one", form_structure.field(0)->name);
+  EXPECT_EQ(u"two", form_structure.field(3)->name);
   EXPECT_EQ(form_structure.field(0)->section, form_structure.field(3)->section);
 }
 
@@ -1414,59 +1338,59 @@ TEST_F(FormStructureTestImpl, HeuristicsSample8) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("Your First Name:");
-  field.name = ASCIIToUTF16("bill.first");
+  field.label = u"Your First Name:";
+  field.name = u"bill.first";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Your Last Name:");
-  field.name = ASCIIToUTF16("bill.last");
+  field.label = u"Your Last Name:";
+  field.name = u"bill.last";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Street Address Line 1:");
-  field.name = ASCIIToUTF16("bill.street1");
+  field.label = u"Street Address Line 1:";
+  field.name = u"bill.street1";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Street Address Line 2:");
-  field.name = ASCIIToUTF16("bill.street2");
+  field.label = u"Street Address Line 2:";
+  field.name = u"bill.street2";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("bill.city");
+  field.label = u"City";
+  field.name = u"bill.city";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("State (U.S.):");
-  field.name = ASCIIToUTF16("bill.state");
+  field.label = u"State (U.S.):";
+  field.name = u"bill.state";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Zip/Postal Code:");
-  field.name = ASCIIToUTF16("BillTo.PostalCode");
+  field.label = u"Zip/Postal Code:";
+  field.name = u"BillTo.PostalCode";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country:");
-  field.name = ASCIIToUTF16("bill.country");
+  field.label = u"Country:";
+  field.name = u"bill.country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Phone Number:");
-  field.name = ASCIIToUTF16("BillTo.Phone");
+  field.label = u"Phone Number:";
+  field.name = u"BillTo.Phone";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = base::string16();
-  field.name = ASCIIToUTF16("Submit");
+  field.label = std::u16string();
+  field.name = u"Submit";
   field.form_control_type = "submit";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(10U, form_structure->field_count());
   ASSERT_EQ(9U, form_structure->autofill_count());
@@ -1502,45 +1426,45 @@ TEST_F(FormStructureTestImpl, HeuristicsSample6) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("E-mail address");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"E-mail address";
+  field.name = u"email";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Full name");
-  field.name = ASCIIToUTF16("name");
+  field.label = u"Full name";
+  field.name = u"name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Company");
-  field.name = ASCIIToUTF16("company");
+  field.label = u"Company";
+  field.name = u"company";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City";
+  field.name = u"city";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Zip Code");
-  field.name = ASCIIToUTF16("Home.PostalCode");
+  field.label = u"Zip Code";
+  field.name = u"Home.PostalCode";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = base::string16();
-  field.name = ASCIIToUTF16("Submit");
-  field.value = ASCIIToUTF16("continue");
+  field.label = std::u16string();
+  field.name = u"Submit";
+  field.value = u"continue";
   field.form_control_type = "submit";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(7U, form_structure->field_count());
   ASSERT_EQ(6U, form_structure->autofill_count());
@@ -1572,49 +1496,49 @@ TEST_F(FormStructureTestImpl, HeuristicsLabelsOnly) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = base::string16();
+  field.label = u"First Name";
+  field.name = std::u16string();
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = base::string16();
+  field.label = u"Last Name";
+  field.name = std::u16string();
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Email");
-  field.name = base::string16();
+  field.label = u"Email";
+  field.name = std::u16string();
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Phone");
-  field.name = base::string16();
+  field.label = u"Phone";
+  field.name = std::u16string();
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = base::string16();
+  field.label = u"Address";
+  field.name = std::u16string();
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = base::string16();
+  field.label = u"Address";
+  field.name = std::u16string();
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Zip code");
-  field.name = base::string16();
+  field.label = u"Zip code";
+  field.name = std::u16string();
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = base::string16();
-  field.name = ASCIIToUTF16("Submit");
+  field.label = std::u16string();
+  field.name = u"Submit";
   field.form_control_type = "submit";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(8U, form_structure->field_count());
   ASSERT_EQ(7U, form_structure->autofill_count());
@@ -1646,39 +1570,39 @@ TEST_F(FormStructureTestImpl, HeuristicsCreditCardInfo) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("Name on Card");
-  field.name = ASCIIToUTF16("name_on_card");
+  field.label = u"Name on Card";
+  field.name = u"name_on_card";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Card Number");
-  field.name = ASCIIToUTF16("card_number");
+  field.label = u"Card Number";
+  field.name = u"card_number";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Exp Month");
-  field.name = ASCIIToUTF16("ccmonth");
+  field.label = u"Exp Month";
+  field.name = u"ccmonth";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Exp Year");
-  field.name = ASCIIToUTF16("ccyear");
+  field.label = u"Exp Year";
+  field.name = u"ccyear";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Verification");
-  field.name = ASCIIToUTF16("verification");
+  field.label = u"Verification";
+  field.name = u"verification";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = base::string16();
-  field.name = ASCIIToUTF16("Submit");
+  field.label = std::u16string();
+  field.name = u"Submit";
   field.form_control_type = "submit";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(6U, form_structure->field_count());
   ASSERT_EQ(5U, form_structure->autofill_count());
@@ -1707,46 +1631,46 @@ TEST_F(FormStructureTestImpl, HeuristicsCreditCardInfoWithUnknownCardField) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("Name on Card");
-  field.name = ASCIIToUTF16("name_on_card");
+  field.label = u"Name on Card";
+  field.name = u"name_on_card";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   // This is not a field we know how to process.  But we should skip over it
   // and process the other fields in the card block.
-  field.label = ASCIIToUTF16("Card image");
-  field.name = ASCIIToUTF16("card_image");
+  field.label = u"Card image";
+  field.name = u"card_image";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Card Number");
-  field.name = ASCIIToUTF16("card_number");
+  field.label = u"Card Number";
+  field.name = u"card_number";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Exp Month");
-  field.name = ASCIIToUTF16("ccmonth");
+  field.label = u"Exp Month";
+  field.name = u"ccmonth";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Exp Year");
-  field.name = ASCIIToUTF16("ccyear");
+  field.label = u"Exp Year";
+  field.name = u"ccyear";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Verification");
-  field.name = ASCIIToUTF16("verification");
+  field.label = u"Verification";
+  field.name = u"verification";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = base::string16();
-  field.name = ASCIIToUTF16("Submit");
+  field.label = std::u16string();
+  field.name = u"Submit";
   field.form_control_type = "submit";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(7U, form_structure->field_count());
   ASSERT_EQ(5U, form_structure->autofill_count());
@@ -1777,28 +1701,28 @@ TEST_F(FormStructureTestImpl, ThreeAddressLines) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("Address Line1");
-  field.name = ASCIIToUTF16("Address");
+  field.label = u"Address Line1";
+  field.name = u"Address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address Line2");
-  field.name = ASCIIToUTF16("Address");
+  field.label = u"Address Line2";
+  field.name = u"Address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address Line3");
-  field.name = ASCIIToUTF16("Address");
+  field.label = u"Address Line3";
+  field.name = u"Address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City";
+  field.name = u"city";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(4U, form_structure->field_count());
   ASSERT_EQ(4U, form_structure->autofill_count());
@@ -1822,28 +1746,28 @@ TEST_F(FormStructureTestImpl, SurplusAddressLinesIgnored) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("Address Line1");
-  field.name = ASCIIToUTF16("shipping.address.addressLine1");
+  field.label = u"Address Line1";
+  field.name = u"shipping.address.addressLine1";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address Line2");
-  field.name = ASCIIToUTF16("shipping.address.addressLine2");
+  field.label = u"Address Line2";
+  field.name = u"shipping.address.addressLine2";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address Line3");
-  field.name = ASCIIToUTF16("billing.address.addressLine3");
+  field.label = u"Address Line3";
+  field.name = u"billing.address.addressLine3";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address Line4");
-  field.name = ASCIIToUTF16("billing.address.addressLine4");
+  field.label = u"Address Line4";
+  field.name = u"billing.address.addressLine4";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
   ASSERT_EQ(4U, form_structure->field_count());
   ASSERT_EQ(3U, form_structure->autofill_count());
 
@@ -1870,28 +1794,28 @@ TEST_F(FormStructureTestImpl, ThreeAddressLinesExpedia) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("Street:");
-  field.name = ASCIIToUTF16("FOPIH_RgWebCC_0_IHAddress_ads1");
+  field.label = u"Street:";
+  field.name = u"FOPIH_RgWebCC_0_IHAddress_ads1";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Suite or Apt:");
-  field.name = ASCIIToUTF16("FOPIH_RgWebCC_0_IHAddress_adap");
+  field.label = u"Suite or Apt:";
+  field.name = u"FOPIH_RgWebCC_0_IHAddress_adap";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Street address second line");
-  field.name = ASCIIToUTF16("FOPIH_RgWebCC_0_IHAddress_ads2");
+  field.label = u"Street address second line";
+  field.name = u"FOPIH_RgWebCC_0_IHAddress_ads2";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City:");
-  field.name = ASCIIToUTF16("FOPIH_RgWebCC_0_IHAddress_adct");
+  field.label = u"City:";
+  field.name = u"FOPIH_RgWebCC_0_IHAddress_adct";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(4U, form_structure->field_count());
   EXPECT_EQ(4U, form_structure->autofill_count());
@@ -1917,23 +1841,23 @@ TEST_F(FormStructureTestImpl, TwoAddressLinesEbay) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("Address Line1");
-  field.name = ASCIIToUTF16("address1");
+  field.label = u"Address Line1";
+  field.name = u"address1";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Floor number, suite number, etc");
-  field.name = ASCIIToUTF16("address2");
+  field.label = u"Floor number, suite number, etc";
+  field.name = u"address2";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City:");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City:";
+  field.name = u"city";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(3U, form_structure->field_count());
   ASSERT_EQ(3U, form_structure->autofill_count());
@@ -1954,23 +1878,23 @@ TEST_F(FormStructureTestImpl, HeuristicsStateWithProvince) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("Address Line1");
-  field.name = ASCIIToUTF16("Address");
+  field.label = u"Address Line1";
+  field.name = u"Address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address Line2");
-  field.name = ASCIIToUTF16("Address");
+  field.label = u"Address Line2";
+  field.name = u"Address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("State/Province/Region");
-  field.name = ASCIIToUTF16("State");
+  field.label = u"State/Province/Region";
+  field.name = u"State";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(3U, form_structure->field_count());
   ASSERT_EQ(3U, form_structure->autofill_count());
@@ -1992,63 +1916,63 @@ TEST_F(FormStructureTestImpl, HeuristicsWithBilling) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name*:");
-  field.name = ASCIIToUTF16("editBillingAddress$firstNameBox");
+  field.label = u"First Name*:";
+  field.name = u"editBillingAddress$firstNameBox";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name*:");
-  field.name = ASCIIToUTF16("editBillingAddress$lastNameBox");
+  field.label = u"Last Name*:";
+  field.name = u"editBillingAddress$lastNameBox";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Company Name:");
-  field.name = ASCIIToUTF16("editBillingAddress$companyBox");
+  field.label = u"Company Name:";
+  field.name = u"editBillingAddress$companyBox";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address*:");
-  field.name = ASCIIToUTF16("editBillingAddress$addressLine1Box");
+  field.label = u"Address*:";
+  field.name = u"editBillingAddress$addressLine1Box";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Apt/Suite :");
-  field.name = ASCIIToUTF16("editBillingAddress$addressLine2Box");
+  field.label = u"Apt/Suite :";
+  field.name = u"editBillingAddress$addressLine2Box";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City*:");
-  field.name = ASCIIToUTF16("editBillingAddress$cityBox");
+  field.label = u"City*:";
+  field.name = u"editBillingAddress$cityBox";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("State/Province*:");
-  field.name = ASCIIToUTF16("editBillingAddress$stateDropDown");
+  field.label = u"State/Province*:";
+  field.name = u"editBillingAddress$stateDropDown";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country*:");
-  field.name = ASCIIToUTF16("editBillingAddress$countryDropDown");
+  field.label = u"Country*:";
+  field.name = u"editBillingAddress$countryDropDown";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Postal Code*:");
-  field.name = ASCIIToUTF16("editBillingAddress$zipCodeBox");
+  field.label = u"Postal Code*:";
+  field.name = u"editBillingAddress$zipCodeBox";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Phone*:");
-  field.name = ASCIIToUTF16("editBillingAddress$phoneBox");
+  field.label = u"Phone*:";
+  field.name = u"editBillingAddress$phoneBox";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Email Address*:");
-  field.name = ASCIIToUTF16("email$emailBox");
+  field.label = u"Email Address*:";
+  field.name = u"email$emailBox";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(11U, form_structure->field_count());
   ASSERT_EQ(11U, form_structure->autofill_count());
@@ -2075,34 +1999,34 @@ TEST_F(FormStructureTestImpl, ThreePartPhoneNumber) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("Phone:");
-  field.name = ASCIIToUTF16("dayphone1");
+  field.label = u"Phone:";
+  field.name = u"dayphone1";
   field.max_length = 0;
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("-");
-  field.name = ASCIIToUTF16("dayphone2");
+  field.label = u"-";
+  field.name = u"dayphone2";
   field.max_length = 3;  // Size of prefix is 3.
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("-");
-  field.name = ASCIIToUTF16("dayphone3");
+  field.label = u"-";
+  field.name = u"dayphone3";
   field.max_length = 4;  // Size of suffix is 4.  If unlimited size is
                          // passed, phone will be parsed as
                          // <country code> - <area code> - <phone>.
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("ext.:");
-  field.name = ASCIIToUTF16("dayphone4");
+  field.label = u"ext.:";
+  field.name = u"dayphone4";
   field.max_length = 0;
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
   ASSERT_EQ(4U, form_structure->field_count());
   ASSERT_EQ(4U, form_structure->autofill_count());
@@ -2125,33 +2049,33 @@ TEST_F(FormStructureTestImpl, HeuristicsInfernoCC) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("Name on Card");
-  field.name = ASCIIToUTF16("name_on_card");
+  field.label = u"Name on Card";
+  field.name = u"name_on_card";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("billing_address");
+  field.label = u"Address";
+  field.name = u"billing_address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Card Number");
-  field.name = ASCIIToUTF16("card_number");
+  field.label = u"Card Number";
+  field.name = u"card_number";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Expiration Date");
-  field.name = ASCIIToUTF16("expiration_month");
+  field.label = u"Expiration Date";
+  field.name = u"expiration_month";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Expiration Year");
-  field.name = ASCIIToUTF16("expiration_year");
+  field.label = u"Expiration Year";
+  field.name = u"expiration_year";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
 
   // Expect the correct number of fields.
@@ -2181,38 +2105,38 @@ TEST_F(FormStructureTestImpl, HeuristicsInferCCNames_NamesNotFirst) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("Card number");
-  field.name = ASCIIToUTF16("ccnumber");
+  field.label = u"Card number";
+  field.name = u"ccnumber";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("First name");
-  field.name = ASCIIToUTF16("first_name");
+  field.label = u"First name";
+  field.name = u"first_name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last name");
-  field.name = ASCIIToUTF16("last_name");
+  field.label = u"Last name";
+  field.name = u"last_name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Expiration date");
-  field.name = ASCIIToUTF16("ccexpiresmonth");
+  field.label = u"Expiration date";
+  field.name = u"ccexpiresmonth";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = base::string16();
-  field.name = ASCIIToUTF16("ccexpiresyear");
+  field.label = std::u16string();
+  field.name = u"ccexpiresyear";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("cvc number");
-  field.name = ASCIIToUTF16("csc");
+  field.label = u"cvc number";
+  field.name = u"csc";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
 
   // Expect the correct number of fields.
@@ -2246,38 +2170,38 @@ TEST_F(FormStructureTestImpl, HeuristicsInferCCNames_NamesFirst) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("Cardholder Name");
-  field.name = ASCIIToUTF16("cc_first_name");
+  field.label = u"Cardholder Name";
+  field.name = u"cc_first_name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last name");
-  field.name = ASCIIToUTF16("last_name");
+  field.label = u"Last name";
+  field.name = u"last_name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Card number");
-  field.name = ASCIIToUTF16("ccnumber");
+  field.label = u"Card number";
+  field.name = u"ccnumber";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Expiration date");
-  field.name = ASCIIToUTF16("ccexpiresmonth");
+  field.label = u"Expiration date";
+  field.name = u"ccexpiresmonth";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = base::string16();
-  field.name = ASCIIToUTF16("ccexpiresyear");
+  field.label = std::u16string();
+  field.name = u"ccexpiresyear";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("cvc number");
-  field.name = ASCIIToUTF16("csc");
+  field.label = u"cvc number";
+  field.name = u"csc";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
   EXPECT_TRUE(form_structure->IsAutofillable());
 
   // Expect the correct number of fields.
@@ -2307,28 +2231,28 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("Name on Card");
-  field.name = ASCIIToUTF16("name_on_card");
+  field.label = u"Name on Card";
+  field.name = u"name_on_card";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("billing_address");
+  field.label = u"Address";
+  field.name = u"billing_address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Card Number");
-  field.name = ASCIIToUTF16("card_number");
+  field.label = u"Card Number";
+  field.name = u"card_number";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Expiration Date");
-  field.name = ASCIIToUTF16("expiration_month");
+  field.label = u"Expiration Date";
+  field.name = u"expiration_month";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Expiration Year");
-  field.name = ASCIIToUTF16("expiration_year");
+  field.label = u"Expiration Year";
+  field.name = u"expiration_year";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -2336,8 +2260,8 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest) {
   FormFieldData checkable_field;
   checkable_field.check_status =
       FormFieldData::CheckStatus::kCheckableButUnchecked;
-  checkable_field.label = ASCIIToUTF16("Checkable1");
-  checkable_field.name = ASCIIToUTF16("Checkable1");
+  checkable_field.label = u"Checkable1";
+  checkable_field.name = u"Checkable1";
   checkable_field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(checkable_field);
 
@@ -2355,16 +2279,11 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest) {
   AutofillPageQueryRequest::Form* query_form = query.add_forms();
   query_form->set_signature(form_structure.form_signature().value());
 
-  test::FillQueryField(query_form->add_fields(), 412125936U, "name_on_card",
-                       "text");
-  test::FillQueryField(query_form->add_fields(), 1917667676U, "billing_address",
-                       "text");
-  test::FillQueryField(query_form->add_fields(), 2226358947U, "card_number",
-                       "text");
-  test::FillQueryField(query_form->add_fields(), 747221617U, "expiration_month",
-                       "text");
-  test::FillQueryField(query_form->add_fields(), 4108155786U, "expiration_year",
-                       "text");
+  query_form->add_fields()->set_signature(412125936U);
+  query_form->add_fields()->set_signature(1917667676U);
+  query_form->add_fields()->set_signature(2226358947U);
+  query_form->add_fields()->set_signature(747221617U);
+  query_form->add_fields()->set_signature(4108155786U);
 
   std::string expected_query_string;
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
@@ -2397,8 +2316,8 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest) {
 
   // Add 5 address fields - this should be still a valid form.
   for (size_t i = 0; i < 5; ++i) {
-    field.label = ASCIIToUTF16("Address");
-    field.name = ASCIIToUTF16("address");
+    field.label = u"Address";
+    field.name = u"address";
     field.unique_renderer_id = MakeFieldRendererId();
     form.fields.push_back(field);
   }
@@ -2413,19 +2332,13 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest) {
   query_form = query.add_forms();
   query_form->set_signature(form_structure3.form_signature().value());
 
-  test::FillQueryField(query_form->add_fields(), 412125936U, "name_on_card",
-                       "text");
-  test::FillQueryField(query_form->add_fields(), 1917667676U, "billing_address",
-                       "text");
-  test::FillQueryField(query_form->add_fields(), 2226358947U, "card_number",
-                       "text");
-  test::FillQueryField(query_form->add_fields(), 747221617U, "expiration_month",
-                       "text");
-  test::FillQueryField(query_form->add_fields(), 4108155786U, "expiration_year",
-                       "text");
+  query_form->add_fields()->set_signature(412125936U);
+  query_form->add_fields()->set_signature(1917667676U);
+  query_form->add_fields()->set_signature(2226358947U);
+  query_form->add_fields()->set_signature(747221617U);
+  query_form->add_fields()->set_signature(4108155786U);
   for (int i = 0; i < 5; ++i) {
-    test::FillQueryField(query_form->add_fields(), 509334676U, "address",
-                         "text");
+    query_form->add_fields()->set_signature(509334676U);
   }
 
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
@@ -2440,7 +2353,7 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest) {
   EXPECT_EQ(expected_query_string, encoded_query_string);
 
   // |form_structures4| will have the same signature as |form_structure3|.
-  form.fields.back().name = ASCIIToUTF16("address123456789");
+  form.fields.back().name = u"address123456789";
 
   FormStructure form_structure4(form);
   forms.push_back(&form_structure4);
@@ -2460,8 +2373,8 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest) {
   // Add 300 address fields - the form is not valid anymore, but previous ones
   // are. The result should be the same as in previous test.
   for (size_t i = 0; i < 300; ++i) {
-    field.label = ASCIIToUTF16("Address");
-    field.name = ASCIIToUTF16("address");
+    field.label = u"Address";
+    field.name = u"address";
     field.unique_renderer_id = MakeFieldRendererId();
     malformed_form.fields.push_back(field);
   }
@@ -2580,29 +2493,29 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithMatchingValidities) {
   form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
 
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = u"First Name";
+  field.name = u"firstname";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST},
       {AutofillProfile::UNVALIDATED});
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = u"Last Name";
+  field.name = u"lastname";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST},
       {AutofillProfile::UNVALIDATED});
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"Email";
+  field.name = u"email";
   field.form_control_type = "email";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS},
@@ -2610,8 +2523,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithMatchingValidities) {
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Phone");
-  field.name = ASCIIToUTF16("phone");
+  field.label = u"Phone";
+  field.name = u"phone";
   field.form_control_type = "number";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities,
@@ -2619,8 +2532,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithMatchingValidities) {
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.form_control_type = "select-one";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities,
@@ -2632,8 +2545,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithMatchingValidities) {
   FormFieldData checkable_field;
   checkable_field.check_status =
       FormFieldData::CheckStatus::kCheckableButUnchecked;
-  checkable_field.label = ASCIIToUTF16("Checkable1");
-  checkable_field.name = ASCIIToUTF16("Checkable1");
+  checkable_field.label = u"Checkable1";
+  checkable_field.name = u"Checkable1";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities,
       {ADDRESS_HOME_COUNTRY}, {AutofillProfile::VALID});
@@ -2700,7 +2613,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithMatchingValidities) {
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload,
+      available_field_types, false, std::string(), true, true, &encoded_upload,
       &signatures));
 
   std::string encoded_upload_string;
@@ -2713,7 +2626,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithMatchingValidities) {
 
   AutofillUploadContents encoded_upload2;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, true, std::string(), true, &encoded_upload2,
+      available_field_types, true, std::string(), true, true, &encoded_upload2,
       &signatures));
 
   encoded_upload2.SerializeToString(&encoded_upload_string);
@@ -2724,8 +2637,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithMatchingValidities) {
   ////////////////
   // Add 2 address fields - this should be still a valid form.
   for (size_t i = 0; i < 2; ++i) {
-    field.label = ASCIIToUTF16("Address");
-    field.name = ASCIIToUTF16("address");
+    field.label = u"Address";
+    field.name = u"address";
     field.form_control_type = "text";
     field.unique_renderer_id = MakeFieldRendererId();
     form.fields.push_back(field);
@@ -2768,7 +2681,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithMatchingValidities) {
 
   AutofillUploadContents encoded_upload3;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload3,
+      available_field_types, false, std::string(), true, true, &encoded_upload3,
       &signatures));
 
   encoded_upload3.SerializeToString(&encoded_upload_string);
@@ -2786,29 +2699,29 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithNonMatchingValidities) {
   form.url = GURL("http://www.foo.com/");
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
 
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = u"First Name";
+  field.name = u"firstname";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST},
       {AutofillProfile::UNVALIDATED});
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = u"Last Name";
+  field.name = u"lastname";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST},
       {AutofillProfile::UNVALIDATED});
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"Email";
+  field.name = u"email";
   field.form_control_type = "email";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS},
@@ -2816,8 +2729,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithNonMatchingValidities) {
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Phone");
-  field.name = ASCIIToUTF16("phone");
+  field.label = u"Phone";
+  field.name = u"phone";
   field.form_control_type = "number";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities,
@@ -2825,8 +2738,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithNonMatchingValidities) {
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.form_control_type = "select-one";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities,
@@ -2838,8 +2751,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithNonMatchingValidities) {
   FormFieldData checkable_field;
   checkable_field.check_status =
       FormFieldData::CheckStatus::kCheckableButUnchecked;
-  checkable_field.label = ASCIIToUTF16("Checkable1");
-  checkable_field.name = ASCIIToUTF16("Checkable1");
+  checkable_field.label = u"Checkable1";
+  checkable_field.name = u"Checkable1";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities,
       {ADDRESS_HOME_COUNTRY}, {AutofillProfile::VALID});
@@ -2904,7 +2817,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithNonMatchingValidities) {
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload,
+      available_field_types, false, std::string(), true, true, &encoded_upload,
       &signatures));
 
   std::string encoded_upload_string;
@@ -2924,29 +2837,29 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithMultipleValidities) {
   form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
 
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = u"First Name";
+  field.name = u"firstname";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST},
       {AutofillProfile::UNVALIDATED, AutofillProfile::VALID});
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = u"Last Name";
+  field.name = u"lastname";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST},
       {AutofillProfile::UNVALIDATED, AutofillProfile::VALID});
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"Email";
+  field.name = u"email";
   field.form_control_type = "email";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS},
@@ -2954,8 +2867,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithMultipleValidities) {
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Phone");
-  field.name = ASCIIToUTF16("phone");
+  field.label = u"Phone";
+  field.name = u"phone";
   field.form_control_type = "number";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities,
@@ -2964,8 +2877,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithMultipleValidities) {
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.form_control_type = "select-one";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities,
@@ -2977,8 +2890,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithMultipleValidities) {
   FormFieldData checkable_field;
   checkable_field.check_status =
       FormFieldData::CheckStatus::kCheckableButUnchecked;
-  checkable_field.label = ASCIIToUTF16("Checkable1");
-  checkable_field.name = ASCIIToUTF16("Checkable1");
+  checkable_field.label = u"Checkable1";
+  checkable_field.name = u"Checkable1";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities,
       {ADDRESS_HOME_COUNTRY}, {AutofillProfile::VALID, AutofillProfile::VALID});
@@ -3045,7 +2958,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithMultipleValidities) {
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload,
+      available_field_types, false, std::string(), true, true, &encoded_upload,
       &signatures));
 
   std::string encoded_upload_string;
@@ -3062,35 +2975,35 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest) {
   form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
 
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = u"First Name";
+  field.name = u"firstname";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = u"Last Name";
+  field.name = u"lastname";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST});
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"Email";
+  field.name = u"email";
   field.form_control_type = "email";
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Phone");
-  field.name = ASCIIToUTF16("phone");
+  field.label = u"Phone";
+  field.name = u"phone";
   field.form_control_type = "number";
   test::InitializePossibleTypesAndValidities(possible_field_types,
                                              possible_field_types_validities,
@@ -3098,8 +3011,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest) {
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.form_control_type = "select-one";
   test::InitializePossibleTypesAndValidities(possible_field_types,
                                              possible_field_types_validities,
@@ -3111,8 +3024,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest) {
   FormFieldData checkable_field;
   checkable_field.check_status =
       FormFieldData::CheckStatus::kCheckableButUnchecked;
-  checkable_field.label = ASCIIToUTF16("Checkable1");
-  checkable_field.name = ASCIIToUTF16("Checkable1");
+  checkable_field.label = u"Checkable1";
+  checkable_field.name = u"Checkable1";
   test::InitializePossibleTypesAndValidities(possible_field_types,
                                              possible_field_types_validities,
                                              {ADDRESS_HOME_COUNTRY});
@@ -3180,7 +3093,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest) {
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload,
+      available_field_types, false, std::string(), true, true, &encoded_upload,
       &signatures));
   EXPECT_EQ(signatures, expected_signatures);
 
@@ -3194,7 +3107,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest) {
 
   AutofillUploadContents encoded_upload2;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, true, std::string(), true, &encoded_upload2,
+      available_field_types, true, std::string(), true, true, &encoded_upload2,
       &signatures));
   EXPECT_EQ(signatures, expected_signatures);
 
@@ -3203,8 +3116,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest) {
 
   // Add 2 address fields - this should be still a valid form.
   for (size_t i = 0; i < 2; ++i) {
-    field.label = ASCIIToUTF16("Address");
-    field.name = ASCIIToUTF16("address");
+    field.label = u"Address";
+    field.name = u"address";
     field.form_control_type = "text";
     field.unique_renderer_id = MakeFieldRendererId();
     form.fields.push_back(field);
@@ -3252,7 +3165,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest) {
 
   AutofillUploadContents encoded_upload3;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload3,
+      available_field_types, false, std::string(), true, true, &encoded_upload3,
       &signatures));
   EXPECT_EQ(signatures, expected_signatures);
 
@@ -3261,8 +3174,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest) {
   // Add 300 address fields - now the form is invalid, as it has too many
   // fields.
   for (size_t i = 0; i < 300; ++i) {
-    field.label = ASCIIToUTF16("Address");
-    field.name = ASCIIToUTF16("address");
+    field.label = u"Address";
+    field.name = u"address";
     field.form_control_type = "text";
     field.unique_renderer_id = MakeFieldRendererId();
     form.fields.push_back(field);
@@ -3283,7 +3196,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest) {
 
   AutofillUploadContents encoded_upload4;
   EXPECT_FALSE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload4,
+      available_field_types, false, std::string(), true, true, &encoded_upload4,
       &signatures));
 }
 
@@ -3297,27 +3210,27 @@ TEST_F(FormStructureTestImpl,
   form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
 
   FormFieldData field;
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = u"First Name";
+  field.name = u"firstname";
   field.autocomplete_attribute = "given-name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = u"Last Name";
+  field.name = u"lastname";
   field.autocomplete_attribute = "family-name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST});
 
-  field.label = ASCIIToUTF16("Email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"Email";
+  field.name = u"email";
   field.form_control_type = "email";
   field.autocomplete_attribute = "email";
   field.unique_renderer_id = MakeFieldRendererId();
@@ -3325,16 +3238,16 @@ TEST_F(FormStructureTestImpl,
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
 
-  field.label = ASCIIToUTF16("username");
-  field.name = ASCIIToUTF16("username");
+  field.label = u"username";
+  field.name = u"username";
   field.form_control_type = "text";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {USERNAME});
 
-  field.label = ASCIIToUTF16("password");
-  field.name = ASCIIToUTF16("password");
+  field.label = u"password";
+  field.name = u"password";
   field.form_control_type = "password";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -3353,13 +3266,13 @@ TEST_F(FormStructureTestImpl,
     form_structure->field(i)->set_possible_types_validities(
         possible_field_types_validities[i]);
 
-    if (form_structure->field(i)->name == ASCIIToUTF16("password")) {
+    if (form_structure->field(i)->name == u"password") {
       form_structure->field(i)->set_generation_type(
           AutofillUploadContents::Field::
               MANUALLY_TRIGGERED_GENERATION_ON_SIGN_UP_FORM);
       form_structure->field(i)->set_generated_password_changed(true);
     }
-    if (form_structure->field(i)->name == ASCIIToUTF16("username")) {
+    if (form_structure->field(i)->name == u"username") {
       form_structure->field(i)->set_vote_type(
           AutofillUploadContents::Field::CREDENTIALS_REUSED);
     }
@@ -3418,7 +3331,8 @@ TEST_F(FormStructureTestImpl,
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, true, "42", true, &encoded_upload, &signatures));
+      available_field_types, true, "42", true, true, &encoded_upload,
+      &signatures));
 
   std::string encoded_upload_string;
   encoded_upload.SerializeToString(&encoded_upload_string);
@@ -3434,29 +3348,29 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithAutocomplete) {
   form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
 
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = u"First Name";
+  field.name = u"firstname";
   field.autocomplete_attribute = "given-name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = u"Last Name";
+  field.name = u"lastname";
   field.autocomplete_attribute = "family-name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST});
 
-  field.label = ASCIIToUTF16("Email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"Email";
+  field.name = u"email";
   field.form_control_type = "email";
   field.autocomplete_attribute = "email";
   field.unique_renderer_id = MakeFieldRendererId();
@@ -3507,7 +3421,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithAutocomplete) {
   AutofillUploadContents encoded_upload;
   std::vector<FormSignature> signatures;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, true, std::string(), true, &encoded_upload,
+      available_field_types, true, std::string(), true, true, &encoded_upload,
       &signatures));
 
   std::string encoded_upload_string;
@@ -3516,8 +3430,6 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithAutocomplete) {
 }
 
 TEST_F(FormStructureTestImpl, EncodeUploadRequestWithPropertiesMask) {
-  DisableAutofillMetadataFieldTrial();
-
   std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
   std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
@@ -3526,29 +3438,29 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequestWithPropertiesMask) {
   form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
 
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = u"First Name";
+  field.name = u"firstname";
   field.name_attribute = field.name;
-  field.id_attribute = ASCIIToUTF16("first_name");
+  field.id_attribute = u"first_name";
   field.autocomplete_attribute = "given-name";
-  field.css_classes = ASCIIToUTF16("class1 class2");
+  field.css_classes = u"class1 class2";
   field.properties_mask = FieldPropertiesFlags::kHadFocus;
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = u"Last Name";
+  field.name = u"lastname";
   field.name_attribute = field.name;
-  field.id_attribute = ASCIIToUTF16("last_name");
+  field.id_attribute = u"last_name";
   field.autocomplete_attribute = "family-name";
-  field.css_classes = ASCIIToUTF16("class1 class2");
+  field.css_classes = u"class1 class2";
   field.properties_mask =
       FieldPropertiesFlags::kHadFocus | FieldPropertiesFlags::kUserTyped;
   field.unique_renderer_id = MakeFieldRendererId();
@@ -3556,13 +3468,13 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequestWithPropertiesMask) {
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST});
 
-  field.label = ASCIIToUTF16("Email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"Email";
+  field.name = u"email";
   field.name_attribute = field.name;
-  field.id_attribute = ASCIIToUTF16("e-mail");
+  field.id_attribute = u"e-mail";
   field.form_control_type = "email";
   field.autocomplete_attribute = "email";
-  field.css_classes = ASCIIToUTF16("class1 class2");
+  field.css_classes = u"class1 class2";
   field.properties_mask =
       FieldPropertiesFlags::kHadFocus | FieldPropertiesFlags::kUserTyped;
   field.unique_renderer_id = MakeFieldRendererId();
@@ -3617,7 +3529,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequestWithPropertiesMask) {
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, true, std::string(), true, &encoded_upload,
+      available_field_types, true, std::string(), true,
+      /*is_raw_metadata_uploading_enabled=*/false, &encoded_upload,
       &signatures));
 
   std::string encoded_upload_string;
@@ -3634,29 +3547,29 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_ObservedSubmissionFalse) {
   form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
 
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = u"First Name";
+  field.name = u"firstname";
   field.name_attribute = field.name;
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = u"Last Name";
+  field.name = u"lastname";
   field.name_attribute = field.name;
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST});
 
-  field.label = ASCIIToUTF16("Email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"Email";
+  field.name = u"email";
   field.name_attribute = field.name;
   field.form_control_type = "email";
   field.unique_renderer_id = MakeFieldRendererId();
@@ -3708,7 +3621,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_ObservedSubmissionFalse) {
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
       available_field_types, true, std::string(),
-      /* observed_submission= */ false, &encoded_upload, &signatures));
+      /* observed_submission= */ false, true, &encoded_upload, &signatures));
 
   std::string encoded_upload_string;
   encoded_upload.SerializeToString(&encoded_upload_string);
@@ -3724,7 +3637,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithLabels) {
   form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -3735,13 +3648,13 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithLabels) {
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
 
-  field.label = ASCIIToUTF16("Last Name");
+  field.label = u"Last Name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST});
 
-  field.label = ASCIIToUTF16("Email");
+  field.label = u"Email";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
@@ -3790,7 +3703,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithLabels) {
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, true, std::string(), true, &encoded_upload,
+      available_field_types, true, std::string(), true, true, &encoded_upload,
       &signatures));
 
   std::string encoded_upload_string;
@@ -3813,15 +3726,15 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithCssClassesAndIds) {
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
 
-  field.css_classes = ASCIIToUTF16("last_name_field");
-  field.id_attribute = ASCIIToUTF16("lastname_id");
+  field.css_classes = u"last_name_field";
+  field.id_attribute = u"lastname_id";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST});
 
-  field.css_classes = ASCIIToUTF16("email_field required_field");
-  field.id_attribute = ASCIIToUTF16("email_id");
+  field.css_classes = u"email_field required_field";
+  field.id_attribute = u"email_id";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
@@ -3878,7 +3791,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithCssClassesAndIds) {
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, true, std::string(), true, &encoded_upload,
+      available_field_types, true, std::string(), true, true, &encoded_upload,
       &signatures));
 
   std::string encoded_upload_string;
@@ -3896,9 +3809,9 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithFormName) {
   form.is_form_tag = true;
 
   // Setting the form name which we expect to see in the upload.
-  form.name = ASCIIToUTF16("myform");
+  form.name = u"myform";
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -3963,7 +3876,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithFormName) {
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, true, std::string(), true, &encoded_upload,
+      available_field_types, true, std::string(), true, true, &encoded_upload,
       &signatures));
 
   std::string encoded_upload_string;
@@ -3980,7 +3893,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequestPartialMetadata) {
   form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -3993,8 +3906,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequestPartialMetadata) {
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = u"Last Name";
+  field.name = u"lastname";
   field.name_attribute = field.name;
   field.autocomplete_attribute = "family-name";
   field.unique_renderer_id = MakeFieldRendererId();
@@ -4002,7 +3915,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequestPartialMetadata) {
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST});
 
-  field.label = ASCIIToUTF16("Email");
+  field.label = u"Email";
   field.form_control_type = "email";
   field.autocomplete_attribute = "email";
   field.unique_renderer_id = MakeFieldRendererId();
@@ -4053,7 +3966,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequestPartialMetadata) {
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, true, std::string(), true, &encoded_upload,
+      available_field_types, true, std::string(), true, true, &encoded_upload,
       &signatures));
 
   std::string encoded_upload_string;
@@ -4062,9 +3975,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequestPartialMetadata) {
 }
 
 // Sending field metadata to the server is disabled.
-TEST_F(FormStructureTestImpl, EncodeUploadRequest_DisabledMetadataTrial) {
-  DisableAutofillMetadataFieldTrial();
-
+TEST_F(FormStructureTestImpl, EncodeUploadRequest_DisabledMetadata) {
+  // Metadata uploading is disabled by a parameter of |EncodeUploadRequest|.
   std::unique_ptr<FormStructure> form_structure;
   std::vector<ServerFieldTypeSet> possible_field_types;
   std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
@@ -4073,40 +3985,40 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_DisabledMetadataTrial) {
   form.is_form_tag = true;
 
   form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
 
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = u"First Name";
+  field.name = u"firstname";
   field.name_attribute = field.name;
-  field.id_attribute = ASCIIToUTF16("first_name");
+  field.id_attribute = u"first_name";
   field.autocomplete_attribute = "given-name";
-  field.css_classes = ASCIIToUTF16("class1 class2");
+  field.css_classes = u"class1 class2";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = u"Last Name";
+  field.name = u"lastname";
   field.name_attribute = field.name;
-  field.id_attribute = ASCIIToUTF16("last_name");
+  field.id_attribute = u"last_name";
   field.autocomplete_attribute = "family-name";
-  field.css_classes = ASCIIToUTF16("class1 class2");
+  field.css_classes = u"class1 class2";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST});
 
-  field.label = ASCIIToUTF16("Email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"Email";
+  field.name = u"email";
   field.name_attribute = field.name;
-  field.id_attribute = ASCIIToUTF16("e-mail");
+  field.id_attribute = u"e-mail";
   field.form_control_type = "email";
   field.autocomplete_attribute = "email";
-  field.css_classes = ASCIIToUTF16("class1 class2");
+  field.css_classes = u"class1 class2";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
@@ -4154,7 +4066,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_DisabledMetadataTrial) {
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, true, std::string(), true, &encoded_upload,
+      available_field_types, true, std::string(), true,
+      /*is_raw_metadata_uploading_enabled=*/false, &encoded_upload,
       &signatures));
 
   std::string encoded_upload_string;
@@ -4172,20 +4085,20 @@ TEST_F(FormStructureTestImpl, CheckDataPresence) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("first");
+  field.label = u"First Name";
+  field.name = u"first";
   field.name_attribute = field.name;
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("last");
+  field.label = u"Last Name";
+  field.name = u"last";
   field.name_attribute = field.name;
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"Email";
+  field.name = u"email";
   field.name_attribute = field.name;
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -4235,7 +4148,7 @@ TEST_F(FormStructureTestImpl, CheckDataPresence) {
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure.EncodeUploadRequest(available_field_types, false,
-                                                 std::string(), true,
+                                                 std::string(), true, true,
                                                  &encoded_upload, &signatures));
 
   std::string encoded_upload_string;
@@ -4266,7 +4179,7 @@ TEST_F(FormStructureTestImpl, CheckDataPresence) {
 
   AutofillUploadContents encoded_upload2;
   EXPECT_TRUE(form_structure.EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload2,
+      available_field_types, false, std::string(), true, true, &encoded_upload2,
       &signatures));
 
   encoded_upload2.SerializeToString(&encoded_upload_string);
@@ -4320,7 +4233,7 @@ TEST_F(FormStructureTestImpl, CheckDataPresence) {
 
   AutofillUploadContents encoded_upload3;
   EXPECT_TRUE(form_structure.EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload3,
+      available_field_types, false, std::string(), true, true, &encoded_upload3,
       &signatures));
 
   encoded_upload3.SerializeToString(&encoded_upload_string);
@@ -4352,7 +4265,7 @@ TEST_F(FormStructureTestImpl, CheckDataPresence) {
 
   AutofillUploadContents encoded_upload4;
   EXPECT_TRUE(form_structure.EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload4,
+      available_field_types, false, std::string(), true, true, &encoded_upload4,
       &signatures));
 
   encoded_upload4.SerializeToString(&encoded_upload_string);
@@ -4420,7 +4333,7 @@ TEST_F(FormStructureTestImpl, CheckDataPresence) {
 
   AutofillUploadContents encoded_upload5;
   EXPECT_TRUE(form_structure.EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload5,
+      available_field_types, false, std::string(), true, true, &encoded_upload5,
       &signatures));
 
   encoded_upload5.SerializeToString(&encoded_upload_string);
@@ -4461,32 +4374,32 @@ TEST_F(FormStructureTestImpl, CheckMultipleTypes) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"email";
+  field.name = u"email";
   field.name_attribute = field.name;
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {EMAIL_ADDRESS});
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("first");
+  field.label = u"First Name";
+  field.name = u"first";
   field.name_attribute = field.name;
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_FIRST});
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("last");
+  field.label = u"Last Name";
+  field.name = u"last";
   field.name_attribute = field.name;
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
   test::InitializePossibleTypesAndValidities(
       possible_field_types, possible_field_types_validities, {NAME_LAST});
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.name_attribute = field.name;
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -4530,7 +4443,7 @@ TEST_F(FormStructureTestImpl, CheckMultipleTypes) {
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload,
+      available_field_types, false, std::string(), true, true, &encoded_upload,
       &signatures));
 
   std::string encoded_upload_string;
@@ -4554,7 +4467,7 @@ TEST_F(FormStructureTestImpl, CheckMultipleTypes) {
 
   AutofillUploadContents encoded_upload2;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload2,
+      available_field_types, false, std::string(), true, true, &encoded_upload2,
       &signatures));
 
   encoded_upload2.SerializeToString(&encoded_upload_string);
@@ -4572,7 +4485,7 @@ TEST_F(FormStructureTestImpl, CheckMultipleTypes) {
 
   AutofillUploadContents encoded_upload3;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload3,
+      available_field_types, false, std::string(), true, true, &encoded_upload3,
       &signatures));
 
   encoded_upload3.SerializeToString(&encoded_upload_string);
@@ -4598,7 +4511,7 @@ TEST_F(FormStructureTestImpl, CheckMultipleTypes) {
 
   AutofillUploadContents encoded_upload4;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload4,
+      available_field_types, false, std::string(), true, true, &encoded_upload4,
       &signatures));
 
   encoded_upload4.SerializeToString(&encoded_upload_string);
@@ -4611,17 +4524,17 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_PasswordsRevealed) {
 
   // Add 3 fields, to make the form uploadable.
   FormFieldData field;
-  field.name = ASCIIToUTF16("email");
+  field.name = u"email";
   field.name_attribute = field.name;
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.name = ASCIIToUTF16("first");
+  field.name = u"first";
   field.name_attribute = field.name;
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.name = ASCIIToUTF16("last");
+  field.name = u"last";
   field.name_attribute = field.name;
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -4633,7 +4546,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_PasswordsRevealed) {
   EXPECT_TRUE(form_structure.EncodeUploadRequest(
       {{}} /* available_field_types */, false /* form_was_autofilled */,
       std::string() /* login_form_signature */, true /* observed_submission */,
-      &upload, &signatures));
+      true /* is_raw_metadata_uploading_enabled */, &upload, &signatures));
   EXPECT_EQ(true, upload.passwords_revealed());
 }
 
@@ -4644,7 +4557,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_IsFormTag) {
     FormData form;
     form.url = GURL("http://www.foo.com/");
     FormFieldData field;
-    field.name = ASCIIToUTF16("email");
+    field.name = u"email";
     field.unique_renderer_id = MakeFieldRendererId();
     form.fields.push_back(field);
 
@@ -4657,7 +4570,8 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_IsFormTag) {
     EXPECT_TRUE(form_structure.EncodeUploadRequest(
         {{}} /* available_field_types */, false /* form_was_autofilled */,
         std::string() /* login_form_signature */,
-        true /* observed_submission */, &upload, &signatures));
+        true /* observed_submission */,
+        false /* is_raw_metadata_uploading_enabled */, &upload, &signatures));
     EXPECT_EQ(is_form_tag, upload.has_form_tag());
   }
 }
@@ -4682,11 +4596,10 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_RichMetadata) {
   };
 
   FormData form;
-  form.id_attribute = ASCIIToUTF16("form-id");
+  form.id_attribute = u"form-id";
   form.url = GURL("http://www.foo.com/");
-  form.button_titles = {
-      std::make_pair(ASCIIToUTF16("Submit"),
-                     mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
+  form.button_titles = {std::make_pair(
+      u"Submit", mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
   form.full_url = GURL("http://www.foo.com/?foo=bar");
   for (const auto& f : kFieldMetadata) {
     FormFieldData field;
@@ -4714,7 +4627,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_RichMetadata) {
   ASSERT_TRUE(form_structure.EncodeUploadRequest(
       {{}} /* available_field_types */, false /* form_was_autofilled */,
       std::string() /* login_form_signature */, true /* observed_submission */,
-      &upload, &signatures));
+      false /* is_raw_metadata_uploading_enabled */, &upload, &signatures));
 
   const auto form_signature = form_structure.form_signature();
 
@@ -4831,15 +4744,15 @@ TEST_F(FormStructureTestImpl, Metadata_OnlySendFullUrlWithUserConsent) {
     SCOPED_TRACE(testing::Message() << " has_consent=" << has_consent);
     SetUpForEncoder();
     FormData form;
-    form.id_attribute = ASCIIToUTF16("form-id");
+    form.id_attribute = u"form-id";
     form.url = GURL("http://www.foo.com/");
     form.full_url = GURL("http://www.foo.com/?foo=bar");
 
     // One form field needed to be valid form.
     FormFieldData field;
     field.form_control_type = "text";
-    field.label = ASCIIToUTF16("email");
-    field.name = ASCIIToUTF16("email");
+    field.label = u"email";
+    field.name = u"email";
     field.unique_renderer_id = MakeFieldRendererId();
     form.fields.push_back(field);
 
@@ -4857,7 +4770,7 @@ TEST_F(FormStructureTestImpl, Metadata_OnlySendFullUrlWithUserConsent) {
     form_structure.set_randomized_encoder(RandomizedEncoder::Create(&prefs));
     AutofillUploadContents upload = AutofillUploadContents();
     std::vector<FormSignature> signatures;
-    form_structure.EncodeUploadRequest({}, true, "", true, &upload,
+    form_structure.EncodeUploadRequest({}, true, "", true, true, &upload,
                                        &signatures);
 
     EXPECT_EQ(has_consent, upload.randomized_form_metadata().has_url());
@@ -4872,19 +4785,19 @@ TEST_F(FormStructureTestImpl, CheckFormSignature) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"email";
+  field.name = u"email";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("first");
+  field.label = u"First Name";
+  field.name = u"first";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   // Checkable fields shouldn't affect the signature.
-  field.label = ASCIIToUTF16("Select");
-  field.name = ASCIIToUTF16("Select");
+  field.label = u"Select";
+  field.name = u"Select";
   field.form_control_type = "checkbox";
   field.check_status = FormFieldData::CheckStatus::kCheckableButUnchecked;
   field.unique_renderer_id = MakeFieldRendererId();
@@ -4907,7 +4820,7 @@ TEST_F(FormStructureTestImpl, CheckFormSignature) {
                 std::string("https://login.facebook.com&&email&first")),
             form_structure->FormSignatureAsStr());
 
-  form.name = ASCIIToUTF16("login_form");
+  form.name = u"login_form";
   form_structure = std::make_unique<FormStructure>(form);
   EXPECT_EQ(FormStructureTestImpl::Hash64Bit(std::string(
                 "https://login.facebook.com&login_form&email&first")),
@@ -4915,24 +4828,24 @@ TEST_F(FormStructureTestImpl, CheckFormSignature) {
 
   // Checks how digits are removed from field names.
   field.check_status = FormFieldData::CheckStatus::kNotCheckable;
-  field.label = ASCIIToUTF16("Random Field label");
-  field.name = ASCIIToUTF16("random1234");
+  field.label = u"Random Field label";
+  field.name = u"random1234";
   field.form_control_type = "text";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Random Field label2");
-  field.name = ASCIIToUTF16("random12345");
+  field.label = u"Random Field label2";
+  field.name = u"random12345";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Random Field label3");
-  field.name = ASCIIToUTF16("1ran12dom12345678");
+  field.label = u"Random Field label3";
+  field.name = u"1ran12dom12345678";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Random Field label3");
-  field.name = ASCIIToUTF16("12345ran123456dom123");
+  field.label = u"Random Field label3";
+  field.name = u"12345ran123456dom123";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -4945,25 +4858,25 @@ TEST_F(FormStructureTestImpl, CheckFormSignature) {
 
 TEST_F(FormStructureTestImpl, ToFormData) {
   FormData form;
-  form.name = ASCIIToUTF16("the-name");
+  form.name = u"the-name";
   form.url = GURL("http://cool.com");
   form.action = form.url.Resolve("/login");
 
   FormFieldData field;
-  field.label = ASCIIToUTF16("username");
-  field.name = ASCIIToUTF16("username");
+  field.label = u"username";
+  field.name = u"username";
   field.form_control_type = "text";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("password");
-  field.name = ASCIIToUTF16("password");
+  field.label = u"password";
+  field.name = u"password";
   field.form_control_type = "password";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = base::string16();
-  field.name = ASCIIToUTF16("Submit");
+  field.label = std::u16string();
+  field.name = u"Submit";
   field.form_control_type = "submit";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -4973,26 +4886,26 @@ TEST_F(FormStructureTestImpl, ToFormData) {
 
 TEST_F(FormStructureTestImpl, SkipFieldTest) {
   FormData form;
-  form.name = ASCIIToUTF16("the-name");
+  form.name = u"the-name";
   form.url = GURL("http://cool.com");
   form.action = form.url.Resolve("/login");
 
   FormFieldData field;
-  field.label = ASCIIToUTF16("username");
-  field.name = ASCIIToUTF16("username");
+  field.label = u"username";
+  field.name = u"username";
   field.form_control_type = "text";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("select");
-  field.name = ASCIIToUTF16("select");
+  field.label = u"select";
+  field.name = u"select";
   field.form_control_type = "checkbox";
   field.check_status = FormFieldData::CheckStatus::kCheckableButUnchecked;
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = base::string16();
-  field.name = ASCIIToUTF16("email");
+  field.label = std::u16string();
+  field.name = u"email";
   field.form_control_type = "text";
   field.check_status = FormFieldData::CheckStatus::kNotCheckable;
   field.unique_renderer_id = MakeFieldRendererId();
@@ -5010,9 +4923,8 @@ TEST_F(FormStructureTestImpl, SkipFieldTest) {
   AutofillPageQueryRequest::Form* query_form = query.add_forms();
   query_form->set_signature(form_structure.form_signature().value());
 
-  test::FillQueryField(query_form->add_fields(), 239111655U, "username",
-                       "text");
-  test::FillQueryField(query_form->add_fields(), 420638584U, "email", "text");
+  query_form->add_fields()->set_signature(239111655U);
+  query_form->add_fields()->set_signature(420638584U);
 
   std::string expected_query_string;
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
@@ -5031,25 +4943,25 @@ TEST_F(FormStructureTestImpl, SkipFieldTest) {
 
 TEST_F(FormStructureTestImpl, EncodeQueryRequest_WithLabels) {
   FormData form;
-  form.name = ASCIIToUTF16("the-name");
+  form.name = u"the-name";
   form.url = GURL("http://cool.com");
   form.action = form.url.Resolve("/login");
 
   FormFieldData field;
   // No label on the first field.
-  field.name = ASCIIToUTF16("username");
+  field.name = u"username";
   field.form_control_type = "text";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Enter your Email address");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"Enter your Email address";
+  field.name = u"email";
   field.form_control_type = "text";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Enter your Password");
-  field.name = ASCIIToUTF16("password");
+  field.label = u"Enter your Password";
+  field.name = u"password";
   field.form_control_type = "password";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -5066,11 +4978,9 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest_WithLabels) {
   AutofillPageQueryRequest::Form* query_form = query.add_forms();
   query_form->set_signature(form_structure.form_signature().value());
 
-  test::FillQueryField(query_form->add_fields(), 239111655U, "username",
-                       "text");
-  test::FillQueryField(query_form->add_fields(), 420638584U, "email", "text");
-  test::FillQueryField(query_form->add_fields(), 2051817934U, "password",
-                       "password");
+  query_form->add_fields()->set_signature(239111655U);
+  query_form->add_fields()->set_signature(420638584U);
+  query_form->add_fields()->set_signature(2051817934U);
 
   std::string expected_query_string;
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
@@ -5085,30 +4995,30 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest_WithLabels) {
 
 TEST_F(FormStructureTestImpl, EncodeQueryRequest_WithLongLabels) {
   FormData form;
-  form.name = ASCIIToUTF16("the-name");
+  form.name = u"the-name";
   form.url = GURL("http://cool.com");
   form.action = form.url.Resolve("/login");
 
   FormFieldData field;
   // No label on the first field.
-  field.name = ASCIIToUTF16("username");
+  field.name = u"username";
   field.form_control_type = "text";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   // This label will be truncated in the XML request.
-  field.label = ASCIIToUTF16(
-      "Enter Your Really Really Really (Really!) Long Email Address Which We "
-      "Hope To Get In Order To Send You Unwanted Publicity Because That's What "
-      "Marketers Do! We Know That Your Email Address Has The Possibility Of "
-      "Exceeding A Certain Number Of Characters...");
-  field.name = ASCIIToUTF16("email");
+  field.label =
+      u"Enter Your Really Really Really (Really!) Long Email Address Which We "
+      u"Hope To Get In Order To Send You Unwanted Publicity Because That's "
+      u"What Marketers Do! We Know That Your Email Address Has The Possibility "
+      u"Of Exceeding A Certain Number Of Characters...";
+  field.name = u"email";
   field.form_control_type = "text";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Enter your Password");
-  field.name = ASCIIToUTF16("password");
+  field.label = u"Enter your Password";
+  field.name = u"password";
   field.form_control_type = "password";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -5125,11 +5035,9 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest_WithLongLabels) {
   AutofillPageQueryRequest::Form* query_form = query.add_forms();
   query_form->set_signature(form_structure.form_signature().value());
 
-  test::FillQueryField(query_form->add_fields(), 239111655U, "username",
-                       "text");
-  test::FillQueryField(query_form->add_fields(), 420638584U, "email", "text");
-  test::FillQueryField(query_form->add_fields(), 2051817934U, "password",
-                       "password");
+  query_form->add_fields()->set_signature(239111655U);
+  query_form->add_fields()->set_signature(420638584U);
+  query_form->add_fields()->set_signature(2051817934U);
 
   std::string expected_query_string;
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
@@ -5150,15 +5058,15 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest_MissingNames) {
   form.action = form.url.Resolve("/login");
 
   FormFieldData field;
-  field.label = ASCIIToUTF16("username");
-  field.name = ASCIIToUTF16("username");
+  field.label = u"username";
+  field.name = u"username";
   field.form_control_type = "text";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = base::string16();
+  field.label = std::u16string();
   // No name set for this field.
-  field.name = ASCIIToUTF16("");
+  field.name = u"";
   field.form_control_type = "text";
   field.check_status = FormFieldData::CheckStatus::kNotCheckable;
   field.unique_renderer_id = MakeFieldRendererId();
@@ -5177,67 +5085,13 @@ TEST_F(FormStructureTestImpl, EncodeQueryRequest_MissingNames) {
   AutofillPageQueryRequest::Form* query_form = query.add_forms();
   query_form->set_signature(form_structure.form_signature().value());
 
-  test::FillQueryField(query_form->add_fields(), 239111655U, "username",
-                       "text");
-  test::FillQueryField(query_form->add_fields(), 1318412689U, nullptr, "text");
+  query_form->add_fields()->set_signature(239111655U);
+  query_form->add_fields()->set_signature(1318412689U);
 
   std::string expected_query_string;
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
 
   const FormSignature kExpectedSignature(16416961345885087496UL);
-
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_query,
-                                                &encoded_signatures));
-  ASSERT_EQ(1U, encoded_signatures.size());
-  EXPECT_EQ(kExpectedSignature, encoded_signatures.front());
-
-  std::string encoded_query_string;
-  encoded_query.SerializeToString(&encoded_query_string);
-  EXPECT_EQ(expected_query_string, encoded_query_string);
-}
-
-// Sending field metadata to the server is disabled.
-TEST_F(FormStructureTestImpl, EncodeQueryRequest_DisabledMetadataTrial) {
-  DisableAutofillMetadataFieldTrial();
-
-  FormData form;
-  // No name set for the form.
-  form.url = GURL("http://cool.com");
-  form.action = form.url.Resolve("/login");
-
-  FormFieldData field;
-  field.label = ASCIIToUTF16("username");
-  field.name = ASCIIToUTF16("username");
-  field.form_control_type = "text";
-  field.unique_renderer_id = MakeFieldRendererId();
-  form.fields.push_back(field);
-
-  field.label = base::string16();
-  field.name = ASCIIToUTF16("country");
-  field.form_control_type = "text";
-  field.check_status = FormFieldData::CheckStatus::kNotCheckable;
-  field.unique_renderer_id = MakeFieldRendererId();
-  form.fields.push_back(field);
-
-  FormStructure form_structure(form);
-  std::vector<FormStructure*> forms;
-  forms.push_back(&form_structure);
-  std::vector<FormSignature> encoded_signatures;
-  AutofillPageQueryRequest encoded_query;
-
-  // Create the expected query and serialize it to a string.
-  AutofillPageQueryRequest query;
-  query.set_client_version(GetProductNameAndVersionForUserAgent());
-  AutofillPageQueryRequest::Form* query_form = query.add_forms();
-  query_form->set_signature(form_structure.form_signature().value());
-
-  test::FillQueryField(query_form->add_fields(), 239111655U, nullptr, nullptr);
-  test::FillQueryField(query_form->add_fields(), 3654076265U, nullptr, nullptr);
-
-  std::string expected_query_string;
-  ASSERT_TRUE(query.SerializeToString(&expected_query_string));
-
-  const FormSignature kExpectedSignature(7635954436925888745UL);
 
   ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_query,
                                                 &encoded_signatures));
@@ -5255,12 +5109,12 @@ TEST_F(FormStructureTestImpl, PossibleValues) {
 
   FormFieldData field;
   field.autocomplete_attribute = "billing country";
-  field.option_contents.push_back(ASCIIToUTF16("Down Under"));
-  field.option_values.push_back(ASCIIToUTF16("AU"));
-  field.option_contents.push_back(ASCIIToUTF16("Fr"));
-  field.option_values.push_back(ASCIIToUTF16(""));
-  field.option_contents.push_back(ASCIIToUTF16("Germany"));
-  field.option_values.push_back(ASCIIToUTF16("GRMNY"));
+  field.option_contents.push_back(u"Down Under");
+  field.option_values.push_back(u"AU");
+  field.option_contents.push_back(u"Fr");
+  field.option_values.push_back(u"");
+  field.option_contents.push_back(u"Germany");
+  field.option_values.push_back(u"GRMNY");
   field.unique_renderer_id = MakeFieldRendererId();
   form_data.fields.push_back(field);
 
@@ -5269,16 +5123,16 @@ TEST_F(FormStructureTestImpl, PossibleValues) {
   form_structure.ParseFieldTypesFromAutocompleteAttributes();
 
   // All values in <option> value= or contents are returned, set to upper case.
-  std::set<base::string16> possible_values =
+  std::set<std::u16string> possible_values =
       form_structure.PossibleValues(ADDRESS_BILLING_COUNTRY);
   EXPECT_EQ(5U, possible_values.size());
-  EXPECT_EQ(1U, possible_values.count(ASCIIToUTF16("AU")));
-  EXPECT_EQ(1U, possible_values.count(ASCIIToUTF16("FR")));
-  EXPECT_EQ(1U, possible_values.count(ASCIIToUTF16("DOWN UNDER")));
-  EXPECT_EQ(1U, possible_values.count(ASCIIToUTF16("GERMANY")));
-  EXPECT_EQ(1U, possible_values.count(ASCIIToUTF16("GRMNY")));
-  EXPECT_EQ(0U, possible_values.count(ASCIIToUTF16("Fr")));
-  EXPECT_EQ(0U, possible_values.count(ASCIIToUTF16("DE")));
+  EXPECT_EQ(1U, possible_values.count(u"AU"));
+  EXPECT_EQ(1U, possible_values.count(u"FR"));
+  EXPECT_EQ(1U, possible_values.count(u"DOWN UNDER"));
+  EXPECT_EQ(1U, possible_values.count(u"GERMANY"));
+  EXPECT_EQ(1U, possible_values.count(u"GRMNY"));
+  EXPECT_EQ(0U, possible_values.count(u"Fr"));
+  EXPECT_EQ(0U, possible_values.count(u"DE"));
 
   // No field for the given type; empty value set.
   EXPECT_EQ(0U, form_structure.PossibleValues(ADDRESS_HOME_COUNTRY).size());
@@ -5292,6 +5146,110 @@ TEST_F(FormStructureTestImpl, PossibleValues) {
   FormStructure form_structure2(form_data);
   form_structure2.ParseFieldTypesFromAutocompleteAttributes();
   EXPECT_EQ(0U, form_structure2.PossibleValues(ADDRESS_BILLING_COUNTRY).size());
+}
+
+// Test that server predictions get precedence over htmll types if they are
+// overrides.
+TEST_F(FormStructureTestImpl, ParseQueryResponse_ServerPredictionIsOverride) {
+  FormData form_data;
+  FormFieldData field;
+  form_data.url = GURL("http://foo.com");
+  field.form_control_type = "text";
+
+  // Just some field.
+  field.label = u"some field";
+  field.name = u"some_field";
+  // But this field has an autocomplete attribute.
+  field.autocomplete_attribute = "name";
+  field.unique_renderer_id = MakeFieldRendererId();
+  form_data.fields.push_back(field);
+
+  // Some other field.
+  field.label = u"some other field";
+  field.name = u"some_other_field";
+  // Which has the same attribute.
+  field.autocomplete_attribute = "name";
+  field.unique_renderer_id = MakeFieldRendererId();
+  form_data.fields.push_back(field);
+
+  // Setup the query response with an override for the name field to be a first
+  // name.
+  AutofillQueryResponse response;
+  auto* form_suggestion = response.add_form_suggestions();
+  AddFieldOverrideToForm(form_suggestion, form_data.fields[0], NAME_FIRST);
+  AddFieldSuggestionToForm(form_suggestion, form_data.fields[1], NAME_LAST);
+
+  std::string response_string = SerializeAndEncode(response);
+
+  // Disable the feature which gives overrides precedence.
+  {
+    base::test::ScopedFeatureList scoped_feature;
+    scoped_feature.InitAndDisableFeature(
+        features::kAutofillServerTypeTakesPrecedence);
+
+    // Parse the response and update the field type predictions.
+    FormStructure form(form_data);
+    form.DetermineHeuristicTypes(nullptr, nullptr);
+    std::vector<FormStructure*> forms{&form};
+    FormStructure::ParseApiQueryResponse(
+        response_string, forms, test::GetEncodedSignatures(forms), nullptr);
+    ASSERT_EQ(form.field_count(), 2U);
+
+    // Validate the type predictions.
+    EXPECT_EQ(UNKNOWN_TYPE, form.field(0)->heuristic_type());
+    EXPECT_EQ(HTML_TYPE_NAME, form.field(0)->html_type());
+    EXPECT_EQ(NAME_FIRST, form.field(0)->server_type());
+    EXPECT_EQ(UNKNOWN_TYPE, form.field(1)->heuristic_type());
+    EXPECT_EQ(HTML_TYPE_NAME, form.field(1)->html_type());
+    EXPECT_EQ(NAME_LAST, form.field(1)->server_type());
+
+    // Validate that the overrides are set correctly.
+    EXPECT_TRUE(form.field(0)->server_type_prediction_is_override());
+    EXPECT_FALSE(form.field(1)->server_type_prediction_is_override());
+
+    // Validate that the html prediction won.
+    EXPECT_EQ(form.field(0)->Type().GetStorableType(), NAME_FULL);
+    EXPECT_EQ(form.field(1)->Type().GetStorableType(), NAME_FULL);
+  }
+
+  // Enable the feature to give overrides precedence.
+  {
+    base::test::ScopedFeatureList scoped_feature;
+    scoped_feature.InitAndEnableFeature(
+        features::kAutofillServerTypeTakesPrecedence);
+
+    // Parse the response and update the field type predictions.
+    FormStructure form(form_data);
+    form.DetermineHeuristicTypes(nullptr, nullptr);
+    std::vector<FormStructure*> forms{&form};
+    FormStructure::ParseApiQueryResponse(
+        response_string, forms, test::GetEncodedSignatures(forms), nullptr);
+    ASSERT_EQ(form.field_count(), 2U);
+
+    // Validate the type predictions.
+    EXPECT_EQ(UNKNOWN_TYPE, form.field(0)->heuristic_type());
+    EXPECT_EQ(HTML_TYPE_NAME, form.field(0)->html_type());
+    EXPECT_EQ(NAME_FIRST, form.field(0)->server_type());
+    EXPECT_EQ(UNKNOWN_TYPE, form.field(1)->heuristic_type());
+    EXPECT_EQ(HTML_TYPE_NAME, form.field(1)->html_type());
+    EXPECT_EQ(NAME_LAST, form.field(1)->server_type());
+
+    // Validate that the overrides are set correctly.
+    EXPECT_TRUE(form.field(0)->server_type_prediction_is_override());
+    EXPECT_FALSE(form.field(1)->server_type_prediction_is_override());
+
+    // Validate that the server prediction won for the first field.
+    EXPECT_EQ(form.field(0)->Type().GetStorableType(), NAME_FIRST);
+    EXPECT_EQ(form.field(1)->Type().GetStorableType(), NAME_FULL);
+
+    // Validate that the server override cannot be altered.
+    form.field(0)->SetTypeTo(AutofillType(NAME_FULL));
+    EXPECT_EQ(form.field(0)->Type().GetStorableType(), NAME_FIRST);
+
+    // Validate that that the non-override can be altered.
+    form.field(1)->SetTypeTo(AutofillType(NAME_FIRST));
+    EXPECT_EQ(form.field(1)->Type().GetStorableType(), NAME_FIRST);
+  }
 }
 
 // Test the heuristic prediction for NAME_LAST_SECOND overrides server
@@ -5308,24 +5266,27 @@ TEST_F(FormStructureTestImpl,
   field.form_control_type = "text";
 
   // First name field.
-  field.label = ASCIIToUTF16("Nombre");
-  field.name = ASCIIToUTF16("Nombre");
+  field.label = u"Nombre";
+  field.name = u"Nombre";
+  field.unique_renderer_id = MakeFieldRendererId();
   form_data.fields.push_back(field);
 
   // First last name field.
   // Should be identified by local heuristics.
-  field.label = ASCIIToUTF16("Apellido Paterno");
-  field.name = ASCIIToUTF16("apellido_paterno");
+  field.label = u"Apellido Paterno";
+  field.name = u"apellido_paterno";
+  field.unique_renderer_id = MakeFieldRendererId();
   form_data.fields.push_back(field);
 
   // Second last name field.
   // Should be identified by local heuristics.
-  field.label = ASCIIToUTF16("Apellido Materno");
-  field.name = ASCIIToUTF16("apellido materno");
+  field.label = u"Apellido Materno";
+  field.name = u"apellido materno";
+  field.unique_renderer_id = MakeFieldRendererId();
   form_data.fields.push_back(field);
 
   FormStructure form(form_data);
-  form.DetermineHeuristicTypes();
+  form.DetermineHeuristicTypes(nullptr, nullptr);
 
   // Setup the query response.
   AutofillQueryResponse response;
@@ -5391,27 +5352,31 @@ TEST_F(FormStructureTestImpl,
   field.form_control_type = "text";
 
   // Field for the name.
-  field.label = ASCIIToUTF16("Name");
-  field.name = ASCIIToUTF16("Name");
+  field.label = u"Name";
+  field.name = u"Name";
+  field.unique_renderer_id = MakeFieldRendererId();
   form_data.fields.push_back(field);
 
   // Field for the street name.
-  field.label = ASCIIToUTF16("Street Name");
-  field.name = ASCIIToUTF16("street_name");
+  field.label = u"Street Name";
+  field.name = u"street_name";
+  field.unique_renderer_id = MakeFieldRendererId();
   form_data.fields.push_back(field);
 
   // Field for the house number.
-  field.label = ASCIIToUTF16("House Number");
-  field.name = ASCIIToUTF16("house_number");
+  field.label = u"House Number";
+  field.name = u"house_number";
+  field.unique_renderer_id = MakeFieldRendererId();
   form_data.fields.push_back(field);
 
   // Field for the postal code.
-  field.label = ASCIIToUTF16("ZIP");
-  field.name = ASCIIToUTF16("ZIP");
+  field.label = u"ZIP";
+  field.name = u"ZIP";
+  field.unique_renderer_id = MakeFieldRendererId();
   form_data.fields.push_back(field);
 
   FormStructure form(form_data);
-  form.DetermineHeuristicTypes();
+  form.DetermineHeuristicTypes(nullptr, nullptr);
 
   // Setup the query response.
   AutofillQueryResponse response;
@@ -5472,21 +5437,24 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_TooManyTypes) {
   form_data.url = GURL("http://foo.com");
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("fname");
+  field.label = u"First Name";
+  field.name = u"fname";
+  field.unique_renderer_id = MakeFieldRendererId();
   form_data.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lname");
+  field.label = u"Last Name";
+  field.name = u"lname";
+  field.unique_renderer_id = MakeFieldRendererId();
   form_data.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"email";
+  field.name = u"email";
   field.autocomplete_attribute = "address-level2";
+  field.unique_renderer_id = MakeFieldRendererId();
   form_data.fields.push_back(field);
 
   FormStructure form(form_data);
-  form.DetermineHeuristicTypes();
+  form.DetermineHeuristicTypes(nullptr, nullptr);
 
   // Setup the query response.
   AutofillQueryResponse response;
@@ -5543,24 +5511,24 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_UnknownType) {
   form_data.url = GURL("http://foo.com");
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("fname");
+  field.label = u"First Name";
+  field.name = u"fname";
   field.unique_renderer_id = MakeFieldRendererId();
   form_data.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lname");
+  field.label = u"Last Name";
+  field.name = u"lname";
   field.unique_renderer_id = MakeFieldRendererId();
   form_data.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"email";
+  field.name = u"email";
   field.autocomplete_attribute = "address-level2";
   field.unique_renderer_id = MakeFieldRendererId();
   form_data.fields.push_back(field);
 
   FormStructure form(form_data);
-  form.DetermineHeuristicTypes();
+  form.DetermineHeuristicTypes(nullptr, nullptr);
 
   // Setup the query response.
   AutofillQueryResponse response;
@@ -5605,19 +5573,19 @@ TEST_F(FormStructureTestImpl, ParseApiQueryResponse) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("fullname");
-  field.name = ASCIIToUTF16("fullname");
+  field.label = u"fullname";
+  field.name = u"fullname";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   // Checkable fields should be ignored in parsing
   FormFieldData checkable_field;
-  checkable_field.label = ASCIIToUTF16("radio_button");
+  checkable_field.label = u"radio_button";
   checkable_field.form_control_type = "radio";
   checkable_field.check_status =
       FormFieldData::CheckStatus::kCheckableButUnchecked;
@@ -5630,13 +5598,13 @@ TEST_F(FormStructureTestImpl, ParseApiQueryResponse) {
 
   // Make form 2 data.
   FormData form2;
-  field.label = ASCIIToUTF16("email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"email";
+  field.name = u"email";
   field.unique_renderer_id = MakeFieldRendererId();
   form2.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("password");
-  field.name = ASCIIToUTF16("password");
+  field.label = u"password";
+  field.name = u"password";
   field.form_control_type = "password";
   field.unique_renderer_id = MakeFieldRendererId();
   form2.fields.push_back(field);
@@ -5701,8 +5669,8 @@ TEST_F(FormStructureTestImpl,
   form.url = GURL("http://foo.com");
   FormFieldData field;
   field.form_control_type = "email";
-  field.label = ASCIIToUTF16("emailaddress");
-  field.name = ASCIIToUTF16("emailaddress");
+  field.label = u"emailaddress";
+  field.name = u"emailaddress";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -5731,8 +5699,8 @@ TEST_F(FormStructureTestImpl, ParseApiQueryResponseWhenPayloadNotBase64) {
   form.url = GURL("http://foo.com");
   FormFieldData field;
   field.form_control_type = "email";
-  field.label = ASCIIToUTF16("emailaddress");
-  field.name = ASCIIToUTF16("emailaddress");
+  field.label = u"emailaddress";
+  field.name = u"emailaddress";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -5771,15 +5739,15 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_AuthorDefinedTypes) {
   form.url = GURL("http://foo.com");
   FormFieldData field;
 
-  field.label = ASCIIToUTF16("email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"email";
+  field.name = u"email";
   field.form_control_type = "text";
   field.autocomplete_attribute = "email";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("password");
-  field.name = ASCIIToUTF16("password");
+  field.label = u"password";
+  field.name = u"password";
   field.form_control_type = "password";
   field.autocomplete_attribute = "new-password";
   field.unique_renderer_id = MakeFieldRendererId();
@@ -5788,7 +5756,7 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_AuthorDefinedTypes) {
   FormStructure form_structure(form);
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
-  forms.front()->DetermineHeuristicTypes();
+  forms.front()->DetermineHeuristicTypes(nullptr, nullptr);
 
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
@@ -5816,23 +5784,23 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_RationalizeLoneField) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("fullname");
-  field.name = ASCIIToUTF16("fullname");
+  field.label = u"fullname";
+  field.name = u"fullname";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("height");
-  field.name = ASCIIToUTF16("height");
+  field.label = u"height";
+  field.name = u"height";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"email";
+  field.name = u"email";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -5867,18 +5835,18 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_RationalizeCCName) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("fname");
+  field.label = u"First Name";
+  field.name = u"fname";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lname");
+  field.label = u"Last Name";
+  field.name = u"lname";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("email");
-  field.name = ASCIIToUTF16("email");
+  field.label = u"email";
+  field.name = u"email";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -5912,28 +5880,28 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_RationalizeMultiMonth_1) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("Cardholder");
-  field.name = ASCIIToUTF16("fullname");
+  field.label = u"Cardholder";
+  field.name = u"fullname";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Card Number");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Card Number";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Month)");
-  field.name = ASCIIToUTF16("expiry_month");
+  field.label = u"Month)";
+  field.name = u"expiry_month";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Year");
-  field.name = ASCIIToUTF16("expiry_year");
+  field.label = u"Year";
+  field.name = u"expiry_year";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Quantity");
-  field.name = ASCIIToUTF16("quantity");
+  field.label = u"Quantity";
+  field.name = u"quantity";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -5976,23 +5944,23 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_RationalizeMultiMonth_2) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("Cardholder");
-  field.name = ASCIIToUTF16("fullname");
+  field.label = u"Cardholder";
+  field.name = u"fullname";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Card Number");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Card Number";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Expiry Date (MMYY)");
-  field.name = ASCIIToUTF16("expiry");
+  field.label = u"Expiry Date (MMYY)";
+  field.name = u"expiry";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Quantity");
-  field.name = ASCIIToUTF16("quantity");
+  field.label = u"Quantity";
+  field.name = u"quantity";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -6025,140 +5993,6 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_RationalizeMultiMonth_2) {
   EXPECT_EQ(UNKNOWN_TYPE, forms[0]->field(3)->Type().GetStorableType());
 }
 
-TEST_F(FormStructureTestImpl, SetStrippedParseableNames) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(kAutofillLabelAffixRemoval);
-}
-
-TEST_F(FormStructureTestImpl, IsValidParseableName) {
-  // Parseable name should not be empty.
-  EXPECT_FALSE(FormStructure::IsValidParseableName(ASCIIToUTF16("")));
-  // Parseable name should not be solely numerical.
-  EXPECT_FALSE(FormStructure::IsValidParseableName(ASCIIToUTF16("1265125")));
-
-  // Valid parseable name cases.
-  EXPECT_TRUE(FormStructure::IsValidParseableName(ASCIIToUTF16("a23")));
-  EXPECT_TRUE(FormStructure::IsValidParseableName(ASCIIToUTF16("*)&%@")));
-}
-
-TEST_F(FormStructureTestImpl, FindLongestCommonAffixLength) {
-  auto String16ToStringPiece16 = [](std::vector<base::string16>& vin,
-                                    std::vector<base::StringPiece16>& vout) {
-    vout.clear();
-    for (auto& str : vin)
-      vout.push_back(str);
-  };
-
-  // Normal prefix case.
-  std::vector<base::string16> strings;
-  std::vector<base::StringPiece16> stringPieces;
-  strings.push_back(ASCIIToUTF16("123456XXX123456789"));
-  strings.push_back(ASCIIToUTF16("12345678XXX012345678_foo"));
-  strings.push_back(ASCIIToUTF16("1234567890123456"));
-  strings.push_back(ASCIIToUTF16("1234567XXX901234567890"));
-  String16ToStringPiece16(strings, stringPieces);
-  size_t affixLength =
-      FormStructure::FindLongestCommonAffixLength(stringPieces, false);
-  EXPECT_EQ(ASCIIToUTF16("123456").size(), affixLength);
-
-  // Normal suffix case.
-  strings.clear();
-  strings.push_back(ASCIIToUTF16("black and gold dress"));
-  strings.push_back(ASCIIToUTF16("work_address"));
-  strings.push_back(ASCIIToUTF16("123456XXX1234_home_address"));
-  strings.push_back(ASCIIToUTF16("1234567890123456_city_address"));
-  String16ToStringPiece16(strings, stringPieces);
-  affixLength = FormStructure::FindLongestCommonAffixLength(stringPieces, true);
-  EXPECT_EQ(ASCIIToUTF16("dress").size(), affixLength);
-
-  // Handles no common prefix.
-  strings.clear();
-  strings.push_back(ASCIIToUTF16("1234567890123456"));
-  strings.push_back(ASCIIToUTF16("4567890123456789"));
-  strings.push_back(ASCIIToUTF16("7890123456789012"));
-  String16ToStringPiece16(strings, stringPieces);
-  affixLength =
-      FormStructure::FindLongestCommonAffixLength(stringPieces, false);
-  EXPECT_EQ(ASCIIToUTF16("").size(), affixLength);
-
-  // Handles no common suffix.
-  strings.clear();
-  strings.push_back(ASCIIToUTF16("1234567890123456"));
-  strings.push_back(ASCIIToUTF16("4567890123456789"));
-  strings.push_back(ASCIIToUTF16("7890123456789012"));
-  String16ToStringPiece16(strings, stringPieces);
-  affixLength = FormStructure::FindLongestCommonAffixLength(stringPieces, true);
-  EXPECT_EQ(ASCIIToUTF16("").size(), affixLength);
-
-  // Only one string, prefix case.
-  strings.clear();
-  strings.push_back(ASCIIToUTF16("1234567890"));
-  String16ToStringPiece16(strings, stringPieces);
-  affixLength =
-      FormStructure::FindLongestCommonAffixLength(stringPieces, false);
-  EXPECT_EQ(ASCIIToUTF16("1234567890").size(), affixLength);
-
-  // Only one string, suffix case.
-  strings.clear();
-  strings.push_back(ASCIIToUTF16("1234567890"));
-  String16ToStringPiece16(strings, stringPieces);
-  affixLength = FormStructure::FindLongestCommonAffixLength(stringPieces, true);
-  EXPECT_EQ(ASCIIToUTF16("1234567890").size(), affixLength);
-
-  // Empty vector, prefix case.
-  strings.clear();
-  String16ToStringPiece16(strings, stringPieces);
-  affixLength =
-      FormStructure::FindLongestCommonAffixLength(stringPieces, false);
-  EXPECT_EQ(ASCIIToUTF16("").size(), affixLength);
-
-  // Empty vector, suffix case.
-  strings.clear();
-  String16ToStringPiece16(strings, stringPieces);
-  affixLength = FormStructure::FindLongestCommonAffixLength(stringPieces, true);
-  EXPECT_EQ(ASCIIToUTF16("").size(), affixLength);
-}
-
-TEST_F(FormStructureTestImpl, FindLongestCommonPrefix) {
-  // Normal case: All strings are longer than threshold; some are common.
-  std::vector<base::string16> strings;
-  strings.push_back(ASCIIToUTF16("1234567890123456789"));
-  strings.push_back(ASCIIToUTF16("123456789012345678_foo"));
-  strings.push_back(ASCIIToUTF16("1234567890123456"));
-  strings.push_back(ASCIIToUTF16("12345678901234567890"));
-  base::string16 prefix = FormStructure::FindLongestCommonPrefix(strings);
-  EXPECT_EQ(ASCIIToUTF16("1234567890123456"), prefix);
-
-  // Handles no common prefix.
-  strings.clear();
-  strings.push_back(ASCIIToUTF16("1234567890123456"));
-  strings.push_back(ASCIIToUTF16("4567890123456789"));
-  strings.push_back(ASCIIToUTF16("7890123456789012"));
-  prefix = FormStructure::FindLongestCommonPrefix(strings);
-  EXPECT_EQ(ASCIIToUTF16(""), prefix);
-
-  // Some strings less than threshold length.
-  strings.clear();
-  strings.push_back(ASCIIToUTF16("12345678901234567890"));
-  strings.push_back(ASCIIToUTF16("1234567890123456"));
-  strings.push_back(ASCIIToUTF16(""));
-  strings.push_back(ASCIIToUTF16("12345"));
-  strings.push_back(ASCIIToUTF16("12345678"));
-  prefix = FormStructure::FindLongestCommonPrefix(strings);
-  EXPECT_EQ(ASCIIToUTF16("1234567890123456"), prefix);
-
-  // Only one string.
-  strings.clear();
-  strings.push_back(ASCIIToUTF16("1234567890123456"));
-  prefix = FormStructure::FindLongestCommonPrefix(strings);
-  EXPECT_EQ(ASCIIToUTF16("1234567890123456"), prefix);
-
-  // Empty vector.
-  strings.clear();
-  prefix = FormStructure::FindLongestCommonPrefix(strings);
-  EXPECT_EQ(ASCIIToUTF16(""), prefix);
-}
-
 TEST_P(ParameterizedFormStructureTest,
        RationalizePhoneNumber_RunsOncePerSection) {
   bool section_with_renderer_ids = GetParam();
@@ -6175,23 +6009,23 @@ TEST_P(ParameterizedFormStructureTest,
   field.form_control_type = "text";
   field.max_length = 10000;
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Home Phone");
-  field.name = ASCIIToUTF16("homePhoneNumber");
+  field.label = u"Home Phone";
+  field.name = u"homePhoneNumber";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Cell Phone");
-  field.name = ASCIIToUTF16("cellPhoneNumber");
+  field.label = u"Cell Phone";
+  field.name = u"cellPhoneNumber";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -6214,9 +6048,12 @@ TEST_P(ParameterizedFormStructureTest,
       response_string, forms, test::GetEncodedSignatures(forms), nullptr);
 
   if (section_with_renderer_ids) {
-    EXPECT_FALSE(form_structure.phone_rationalized_["fullName_11-default"]);
-    form_structure.RationalizePhoneNumbersInSection("fullName_11-default");
-    EXPECT_TRUE(form_structure.phone_rationalized_["fullName_11-default"]);
+    EXPECT_FALSE(form_structure.phone_rationalized_
+                     ["fullName_00000000000000000000000000000000_11-default"]);
+    form_structure.RationalizePhoneNumbersInSection(
+        "fullName_00000000000000000000000000000000_11-default");
+    EXPECT_TRUE(form_structure.phone_rationalized_
+                    ["fullName_00000000000000000000000000000000_11-default"]);
   } else {
     EXPECT_FALSE(form_structure.phone_rationalized_["fullName_1-default"]);
     form_structure.RationalizePhoneNumbersInSection("fullName_1-default");
@@ -6243,18 +6080,18 @@ TEST_F(FormStructureTestImpl, RationalizeRepeatedFields_OneAddress) {
   field.form_control_type = "text";
   field.max_length = 10000;
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City";
+  field.name = u"city";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -6293,23 +6130,23 @@ TEST_F(FormStructureTestImpl, RationalizeRepreatedFields_TwoAddresses) {
   field.form_control_type = "text";
   field.max_length = 10000;
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City";
+  field.name = u"city";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -6350,28 +6187,28 @@ TEST_F(FormStructureTestImpl, RationalizeRepreatedFields_ThreeAddresses) {
   field.form_control_type = "text";
   field.max_length = 10000;
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City";
+  field.name = u"city";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -6416,33 +6253,33 @@ TEST_F(FormStructureTestImpl, RationalizeRepreatedFields_FourAddresses) {
   field.form_control_type = "text";
   field.max_length = 10000;
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City";
+  field.name = u"city";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -6493,38 +6330,38 @@ TEST_F(FormStructureTestImpl,
   field.form_control_type = "text";
   field.max_length = 10000;
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.section = "Billing";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.section = "Billing";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City";
+  field.name = u"city";
   field.section = "Billing";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.section = "Shipping";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.section = "Shipping";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City";
+  field.name = u"city";
   field.section = "Shipping";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -6579,94 +6416,94 @@ TEST_F(
   field.max_length = 10000;
 
   // Shipping
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.section = "Shipping";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.section = "Shipping";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.section = "Shipping";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City";
+  field.name = u"city";
   field.section = "Shipping";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   // Billing
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.section = "Billing";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.section = "Billing";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.section = "Billing";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.section = "Billing";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City";
+  field.name = u"city";
   field.section = "Billing";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   // Work address (not realistic)
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.section = "Work";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.section = "Work";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.section = "Work";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.section = "Work";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.section = "Work";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City";
+  field.name = u"city";
   field.section = "Work";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -6747,33 +6584,33 @@ TEST_F(FormStructureTestImpl,
   field.form_control_type = "text";
   field.max_length = 10000;
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City";
+  field.name = u"city";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City";
+  field.name = u"city";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -6781,7 +6618,7 @@ TEST_F(FormStructureTestImpl,
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
   // Will identify the sections based on the heuristics types.
-  form_structure.DetermineHeuristicTypes();
+  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
 
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
@@ -6828,49 +6665,49 @@ TEST_F(
   field.max_length = 10000;
 
   // Shipping
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City";
+  field.name = u"city";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   // Billing
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City";
+  field.name = u"city";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -6878,7 +6715,7 @@ TEST_F(
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
   // Will identify the sections based on the heuristics types.
-  form_structure.DetermineHeuristicTypes();
+  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
 
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
@@ -6926,56 +6763,56 @@ TEST_F(FormStructureTestImpl,
   field.form_control_type = "text";
   field.max_length = 10000;
   // First Section
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("State");
-  field.name = ASCIIToUTF16("state");
+  field.label = u"State";
+  field.name = u"state";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   // Second Section
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("State");
-  field.name = ASCIIToUTF16("state");
+  field.label = u"State";
+  field.name = u"state";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   // Third Section
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("State");
-  field.name = ASCIIToUTF16("state");
+  field.label = u"State";
+  field.name = u"state";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   // Fourth Section
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -6984,7 +6821,7 @@ TEST_F(FormStructureTestImpl,
   forms.push_back(&form_structure);
 
   // Will identify the sections based on the heuristics types.
-  form_structure.DetermineHeuristicTypes();
+  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
 
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
@@ -7038,30 +6875,30 @@ TEST_F(FormStructureTestImpl,
 
   field.section = "shipping";
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City";
+  field.name = u"city";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("State");
-  field.name = ASCIIToUTF16("state");
+  field.label = u"State";
+  field.name = u"state";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   field.section = "billing";
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country2");
+  field.label = u"Country";
+  field.name = u"country2";
   field.form_control_type = "select-one";
   field.is_focusable = false;  // hidden
   field.unique_renderer_id = MakeFieldRendererId();
@@ -7069,27 +6906,27 @@ TEST_F(FormStructureTestImpl,
 
   field.is_focusable = true;  // visible
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country2");
+  field.label = u"Country";
+  field.name = u"country2";
   field.form_control_type = "select-one";
   field.is_focusable = false;  // hidden
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country2");
+  field.label = u"Country";
+  field.name = u"country2";
   field.form_control_type = "select-one";
   field.is_focusable = false;  // hidden
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country2");
+  field.label = u"Country";
+  field.name = u"country2";
   field.form_control_type = "select-one";
   field.is_focusable = false;  // hidden
   field.unique_renderer_id = MakeFieldRendererId();
@@ -7097,30 +6934,30 @@ TEST_F(FormStructureTestImpl,
 
   field.is_focusable = true;  // visible
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("State");
-  field.name = ASCIIToUTF16("state");
+  field.label = u"State";
+  field.name = u"state";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   field.section = "billing-2";
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("State");
-  field.name = ASCIIToUTF16("state");
+  field.label = u"State";
+  field.name = u"state";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -7185,13 +7022,13 @@ TEST_F(FormStructureTestImpl,
   field.form_control_type = "text";
   field.max_length = 10000;
   // First Section
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.form_control_type = "select-one";
   field.is_focusable = false;  // hidden
   field.unique_renderer_id = MakeFieldRendererId();
@@ -7199,18 +7036,18 @@ TEST_F(FormStructureTestImpl,
 
   field.is_focusable = true;  // visible
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country2");
+  field.label = u"Country";
+  field.name = u"country2";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("city");
-  field.name = ASCIIToUTF16("City");
+  field.label = u"city";
+  field.name = u"City";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("State");
-  field.name = ASCIIToUTF16("state2");
+  field.label = u"State";
+  field.name = u"state2";
   field.form_control_type = "select-one";
   field.role = FormFieldData::RoleAttribute::kPresentation;  // hidden
   field.unique_renderer_id = MakeFieldRendererId();
@@ -7218,35 +7055,35 @@ TEST_F(FormStructureTestImpl,
 
   field.role = FormFieldData::RoleAttribute::kOther;  // visible
 
-  field.label = ASCIIToUTF16("State");
-  field.name = ASCIIToUTF16("state");
+  field.label = u"State";
+  field.name = u"state";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   // Second Section
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("city");
-  field.name = ASCIIToUTF16("City");
+  field.label = u"city";
+  field.name = u"City";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("State");
-  field.name = ASCIIToUTF16("state");
+  field.label = u"State";
+  field.name = u"state";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   // Third Section
-  field.label = ASCIIToUTF16("city");
-  field.name = ASCIIToUTF16("City");
+  field.label = u"city";
+  field.name = u"City";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("State");
-  field.name = ASCIIToUTF16("state2");
+  field.label = u"State";
+  field.name = u"state2";
   field.form_control_type = "select-one";
   field.role = FormFieldData::RoleAttribute::kPresentation;  // hidden
   field.unique_renderer_id = MakeFieldRendererId();
@@ -7254,18 +7091,18 @@ TEST_F(FormStructureTestImpl,
 
   field.role = FormFieldData::RoleAttribute::kOther;  // visible
 
-  field.label = ASCIIToUTF16("State");
-  field.name = ASCIIToUTF16("state");
+  field.label = u"State";
+  field.name = u"state";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country2");
+  field.label = u"Country";
+  field.name = u"country2";
   field.form_control_type = "select-one";
   field.is_focusable = false;  // hidden
   field.unique_renderer_id = MakeFieldRendererId();
@@ -7276,7 +7113,7 @@ TEST_F(FormStructureTestImpl,
   forms.push_back(&form_structure);
 
   // Will identify the sections based on the heuristics types.
-  form_structure.DetermineHeuristicTypes();
+  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
   AutofillQueryResponse response;
   auto* form_suggestion = response.add_form_suggestions();
   AddFieldSuggestionToForm(form_suggestion, form.fields[0], NAME_FULL);
@@ -7344,20 +7181,20 @@ TEST_F(FormStructureTestImpl,
 
   field.section = "billing";
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country2");
+  field.label = u"Country";
+  field.name = u"country2";
   field.form_control_type = "select-one";
   field.is_focusable = false;  // hidden
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country3");
+  field.label = u"Country";
+  field.name = u"country3";
   field.form_control_type = "select-one";
   field.is_focusable = false;  // hidden
   field.unique_renderer_id = MakeFieldRendererId();
@@ -7365,13 +7202,13 @@ TEST_F(FormStructureTestImpl,
 
   field.is_focusable = true;  // visible
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("State");
-  field.name = ASCIIToUTF16("state");
+  field.label = u"State";
+  field.name = u"state";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -7413,20 +7250,20 @@ TEST_F(FormStructureTestImpl,
 
   field.section = "billing";
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country2");
+  field.label = u"Country";
+  field.name = u"country2";
   field.form_control_type = "select-one";
   field.is_focusable = false;  // hidden
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country3");
+  field.label = u"Country";
+  field.name = u"country3";
   field.form_control_type = "select-one";
   field.is_focusable = false;  // hidden
   field.unique_renderer_id = MakeFieldRendererId();
@@ -7434,19 +7271,19 @@ TEST_F(FormStructureTestImpl,
 
   field.is_focusable = true;  // visible
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("State");
-  field.name = ASCIIToUTF16("state");
+  field.label = u"State";
+  field.name = u"state";
   field.is_focusable = false;  // hidden
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("State");
-  field.name = ASCIIToUTF16("state2");
+  field.label = u"State";
+  field.name = u"state2";
   field.is_focusable = true;  // visible
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -7490,14 +7327,8 @@ INSTANTIATE_TEST_SUITE_P(All, ParameterizedFormStructureTest, testing::Bool());
 // Tests that, when the flag is off, we will not set the predicted type to
 // unknown for fields that have no server data and autocomplete off, and when
 // the flag is ON, we will overwrite the predicted type.
-TEST_P(ParameterizedFormStructureTest,
+TEST_F(ParameterizedFormStructureTest,
        NoServerData_AutocompleteOff_FlagDisabled_NoOverwrite) {
-  base::test::ScopedFeatureList scoped_features;
-
-  bool flag_enabled = GetParam();
-  scoped_features.InitWithFeatureState(features::kAutofillOffNoServerData,
-                                       flag_enabled);
-
   FormData form;
   form.url = GURL("http://foo.com");
   FormFieldData field;
@@ -7506,27 +7337,27 @@ TEST_P(ParameterizedFormStructureTest,
   field.should_autocomplete = false;
 
   // Autocomplete Off, with server data.
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstName");
+  field.label = u"First Name";
+  field.name = u"firstName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   // Autocomplete Off, without server data.
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastName");
+  field.label = u"Last Name";
+  field.name = u"lastName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   // Autocomplete On, with server data.
   field.should_autocomplete = true;
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
   // Autocomplete On, without server data.
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -7541,7 +7372,7 @@ TEST_P(ParameterizedFormStructureTest,
 
   FormStructure form_structure(form);
   // Will identify the sections based on the heuristics types.
-  form_structure.DetermineHeuristicTypes();
+  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
@@ -7554,8 +7385,7 @@ TEST_P(ParameterizedFormStructureTest,
   ASSERT_EQ(4U, forms[0]->field_count());
 
   // Only NAME_LAST should be affected by the flag.
-  EXPECT_EQ(flag_enabled ? UNKNOWN_TYPE : NAME_LAST,
-            forms[0]->field(1)->Type().GetStorableType());
+  EXPECT_EQ(NAME_LAST, forms[0]->field(1)->Type().GetStorableType());
 
   EXPECT_EQ(NAME_FIRST, forms[0]->field(0)->Type().GetStorableType());
   EXPECT_EQ(ADDRESS_HOME_LINE1, forms[0]->field(2)->Type().GetStorableType());
@@ -7564,13 +7394,7 @@ TEST_P(ParameterizedFormStructureTest,
 
 // Tests that we never overwrite the CVC heuristic-predicted type, even if there
 // is no server data (votes) for every CC fields.
-TEST_P(ParameterizedFormStructureTest, NoServerDataCCFields_CVC_NoOverwrite) {
-  base::test::ScopedFeatureList scoped_features;
-
-  bool flag_enabled = GetParam();
-  scoped_features.InitWithFeatureState(features::kAutofillOffNoServerData,
-                                       flag_enabled);
-
+TEST_F(ParameterizedFormStructureTest, NoServerDataCCFields_CVC_NoOverwrite) {
   FormData form;
   form.url = GURL("http://foo.com");
   FormFieldData field;
@@ -7579,23 +7403,23 @@ TEST_P(ParameterizedFormStructureTest, NoServerDataCCFields_CVC_NoOverwrite) {
   field.should_autocomplete = false;
 
   // All fields with autocomplete off and no server data.
-  field.label = ASCIIToUTF16("Cardholder Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Cardholder Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Credit Card Number");
-  field.name = ASCIIToUTF16("cc-number");
+  field.label = u"Credit Card Number";
+  field.name = u"cc-number";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Expiration Date");
-  field.name = ASCIIToUTF16("exp-date");
+  field.label = u"Expiration Date";
+  field.name = u"exp-date";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("CVC");
-  field.name = ASCIIToUTF16("cvc");
+  field.label = u"CVC";
+  field.name = u"cvc";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -7611,7 +7435,7 @@ TEST_P(ParameterizedFormStructureTest, NoServerDataCCFields_CVC_NoOverwrite) {
   FormStructure form_structure(form);
 
   // Will identify the sections based on the heuristics types.
-  form_structure.DetermineHeuristicTypes();
+  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
@@ -7623,18 +7447,11 @@ TEST_P(ParameterizedFormStructureTest, NoServerDataCCFields_CVC_NoOverwrite) {
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(4U, forms[0]->field_count());
 
-  // If flag is enabled, fields should have been overwritten to Unknown.
-  if (flag_enabled) {
-    EXPECT_EQ(UNKNOWN_TYPE, forms[0]->field(0)->Type().GetStorableType());
-    EXPECT_EQ(UNKNOWN_TYPE, forms[0]->field(1)->Type().GetStorableType());
-    EXPECT_EQ(UNKNOWN_TYPE, forms[0]->field(2)->Type().GetStorableType());
-  } else {
-    EXPECT_EQ(CREDIT_CARD_NAME_FULL,
-              forms[0]->field(0)->Type().GetStorableType());
-    EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->Type().GetStorableType());
-    EXPECT_EQ(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR,
-              forms[0]->field(2)->Type().GetStorableType());
-  }
+  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
+            forms[0]->field(0)->Type().GetStorableType());
+  EXPECT_EQ(CREDIT_CARD_NUMBER, forms[0]->field(1)->Type().GetStorableType());
+  EXPECT_EQ(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR,
+            forms[0]->field(2)->Type().GetStorableType());
 
   // Regardless of the flag, the CVC field should not have been overwritten.
   EXPECT_EQ(CREDIT_CARD_VERIFICATION_CODE,
@@ -7643,13 +7460,7 @@ TEST_P(ParameterizedFormStructureTest, NoServerDataCCFields_CVC_NoOverwrite) {
 
 // Tests that we never overwrite the CVC heuristic-predicted type, even if there
 // is server data (votes) for every other CC fields.
-TEST_P(ParameterizedFormStructureTest, WithServerDataCCFields_CVC_NoOverwrite) {
-  base::test::ScopedFeatureList scoped_features;
-
-  bool flag_enabled = GetParam();
-  scoped_features.InitWithFeatureState(features::kAutofillOffNoServerData,
-                                       flag_enabled);
-
+TEST_F(ParameterizedFormStructureTest, WithServerDataCCFields_CVC_NoOverwrite) {
   FormData form;
   form.url = GURL("http://foo.com");
   FormFieldData field;
@@ -7658,23 +7469,23 @@ TEST_P(ParameterizedFormStructureTest, WithServerDataCCFields_CVC_NoOverwrite) {
   field.should_autocomplete = false;
 
   // All fields with autocomplete off and no server data.
-  field.label = ASCIIToUTF16("Cardholder Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Cardholder Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Credit Card Number");
-  field.name = ASCIIToUTF16("cc-number");
+  field.label = u"Credit Card Number";
+  field.name = u"cc-number";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Expiration Date");
-  field.name = ASCIIToUTF16("exp-date");
+  field.label = u"Expiration Date";
+  field.name = u"exp-date";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("CVC");
-  field.name = ASCIIToUTF16("cvc");
+  field.label = u"CVC";
+  field.name = u"cvc";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -7692,7 +7503,7 @@ TEST_P(ParameterizedFormStructureTest, WithServerDataCCFields_CVC_NoOverwrite) {
   FormStructure form_structure(form);
 
   // Will identify the sections based on the heuristics types.
-  form_structure.DetermineHeuristicTypes();
+  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
@@ -7753,23 +7564,23 @@ TEST_P(RationalizationFieldTypeFilterTest, Rationalization_Rules_Filter_Out) {
   field.should_autocomplete = true;
 
   // Just adding >=3 random fields to trigger rationalization.
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstName");
+  field.label = u"First Name";
+  field.name = u"firstName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastName");
+  field.label = u"Last Name";
+  field.name = u"lastName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Address");
-  field.name = ASCIIToUTF16("address");
+  field.label = u"Address";
+  field.name = u"address";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Something under test");
-  field.name = ASCIIToUTF16("tested-thing");
+  field.label = u"Something under test";
+  field.name = u"tested-thing";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -7785,7 +7596,7 @@ TEST_P(RationalizationFieldTypeFilterTest, Rationalization_Rules_Filter_Out) {
   FormStructure form_structure(form);
 
   // Will identify the sections based on the heuristics types.
-  form_structure.DetermineHeuristicTypes();
+  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
@@ -7819,23 +7630,23 @@ TEST_P(RationalizationFieldTypeRelationshipsTest,
   field.should_autocomplete = true;
 
   // Just adding >=3 random fields to trigger rationalization.
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstName");
+  field.label = u"First Name";
+  field.name = u"firstName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastName");
+  field.label = u"Last Name";
+  field.name = u"lastName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Some field with required type");
-  field.name = ASCIIToUTF16("some-name");
+  field.label = u"Some field with required type";
+  field.name = u"some-name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Something under test");
-  field.name = ASCIIToUTF16("tested-thing");
+  field.label = u"Something under test";
+  field.name = u"tested-thing";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -7853,7 +7664,7 @@ TEST_P(RationalizationFieldTypeRelationshipsTest,
   FormStructure form_structure(form);
 
   // Will identify the sections based on the heuristics types.
-  form_structure.DetermineHeuristicTypes();
+  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
@@ -7875,6 +7686,109 @@ TEST_P(RationalizationFieldTypeRelationshipsTest,
             forms[0]->field(3)->Type().GetStorableType());
 }
 
+// When two fields have the same signature and the server response has multiple
+// predictions for that signature, apply the server predictions in the order
+// that they were received.
+TEST_F(FormStructureTestImpl, ParseQueryResponse_RankEqualSignatures) {
+  FormData form_data;
+  FormFieldData field;
+  form_data.url = GURL("http://foo.com");
+  field.form_control_type = "text";
+
+  field.label = u"First Name";
+  field.name = u"name";
+  field.unique_renderer_id = MakeFieldRendererId();
+  form_data.fields.push_back(field);
+
+  field.label = u"Last Name";
+  field.name = u"name";
+  field.unique_renderer_id = MakeFieldRendererId();
+  form_data.fields.push_back(field);
+
+  field.label = u"email";
+  field.name = u"email";
+  field.autocomplete_attribute = "address-level2";
+  field.unique_renderer_id = MakeFieldRendererId();
+  form_data.fields.push_back(field);
+
+  ASSERT_EQ(CalculateFieldSignatureForField(form_data.fields[0]),
+            CalculateFieldSignatureForField(form_data.fields[1]));
+
+  FormStructure form(form_data);
+  form.DetermineHeuristicTypes(nullptr, nullptr);
+
+  // Setup the query response.
+  AutofillQueryResponse response;
+  auto* form_suggestion = response.add_form_suggestions();
+  AddFieldSuggestionToForm(form_suggestion, form_data.fields[0], NAME_FIRST);
+  AddFieldSuggestionToForm(form_suggestion, form_data.fields[1], NAME_LAST);
+  AddFieldSuggestionToForm(form_suggestion, form_data.fields[2], EMAIL_ADDRESS);
+
+  std::string response_string = SerializeAndEncode(response);
+
+  // Parse the response and update the field type predictions.
+  std::vector<FormStructure*> forms{&form};
+  FormStructure::ParseApiQueryResponse(
+      response_string, forms, test::GetEncodedSignatures(forms), nullptr);
+  ASSERT_EQ(form.field_count(), 3U);
+
+  EXPECT_EQ(NAME_FIRST, form.field(0)->server_type());
+  EXPECT_EQ(NAME_LAST, form.field(1)->server_type());
+  EXPECT_EQ(EMAIL_ADDRESS, form.field(2)->server_type());
+}
+
+// When two fields have the same signature and the server response has one
+// prediction, apply the prediction to every field with that signature.
+TEST_F(FormStructureTestImpl,
+       ParseQueryResponse_EqualSignaturesFewerPredictions) {
+  FormData form_data;
+  FormFieldData field;
+  form_data.url = GURL("http://foo.com");
+  field.form_control_type = "text";
+
+  field.label = u"First Name";
+  field.name = u"name";
+  field.unique_renderer_id = MakeFieldRendererId();
+  form_data.fields.push_back(field);
+
+  field.label = u"Last Name";
+  field.name = u"name";
+  field.unique_renderer_id = MakeFieldRendererId();
+  form_data.fields.push_back(field);
+
+  field.label = u"email";
+  field.name = u"email";
+  field.autocomplete_attribute = "address-level2";
+  field.unique_renderer_id = MakeFieldRendererId();
+  form_data.fields.push_back(field);
+
+  ASSERT_EQ(CalculateFieldSignatureForField(form_data.fields[0]),
+            CalculateFieldSignatureForField(form_data.fields[1]));
+
+  FormStructure form(form_data);
+  form.DetermineHeuristicTypes(nullptr, nullptr);
+
+  // Setup the query response.
+  AutofillQueryResponse response;
+  auto* form_suggestion = response.add_form_suggestions();
+  AddFieldSuggestionToForm(form_suggestion, form_data.fields[0], NAME_FIRST);
+  AddFieldSuggestionToForm(form_suggestion, form_data.fields[2], EMAIL_ADDRESS);
+
+  std::string response_string = SerializeAndEncode(response);
+
+  // Parse the response and update the field type predictions.
+  std::vector<FormStructure*> forms{&form};
+  FormStructure::ParseApiQueryResponse(
+      response_string, forms, test::GetEncodedSignatures(forms), nullptr);
+  ASSERT_EQ(form.field_count(), 3U);
+
+  EXPECT_EQ(NAME_FIRST, form.field(0)->server_type());
+  // This field gets the same signature as the previous one, because they have
+  // the same signature.
+  EXPECT_EQ(NAME_FIRST, form.field(1)->server_type());
+  EXPECT_EQ(EMAIL_ADDRESS, form.field(2)->server_type());
+}
+
 TEST_F(FormStructureTestImpl, AllowBigForms) {
   FormData form;
   form.url = GURL("http://foo.com");
@@ -7882,7 +7796,7 @@ TEST_F(FormStructureTestImpl, AllowBigForms) {
   // Check that the form with 250 fields are processed correctly.
   for (size_t i = 0; i < 250; ++i) {
     field.form_control_type = "text";
-    field.name = ASCIIToUTF16("text") + base::NumberToString16(i);
+    field.name = u"text" + base::NumberToString16(i);
     field.unique_renderer_id = MakeFieldRendererId();
     form.fields.push_back(field);
   }
@@ -7904,7 +7818,7 @@ TEST_F(FormStructureTestImpl, AllowBigForms) {
 TEST_F(FormStructureTestImpl, OneFieldPasswordFormShouldNotBeUpload) {
   FormData form;
   FormFieldData field;
-  field.name = ASCIIToUTF16("Password");
+  field.name = u"Password";
   field.form_control_type = "password";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -7926,12 +7840,12 @@ TEST_F(FormStructureTestImpl, CreateForPasswordManagerUpload) {
   ASSERT_EQ(FieldSignature(100u), form->field(2)->GetFieldSignature());
   EXPECT_TRUE(form->EncodeUploadRequest(
       {} /* available_field_types */, false /* form_was_autofilled */,
-      "" /*login_form_signature*/, true /*observed_submission*/, &upload,
-      &signatures));
+      "" /*login_form_signature*/, true /*observed_submission*/,
+      true /* is_raw_metadata_uploading_enabled */, &upload, &signatures));
 }
 
 // Tests if a new logical form is started with the second appearance of a field
-// of type |NAME|.
+// of type |FieldTypeGroup::kName|.
 TEST_P(ParameterizedFormStructureTest, NoAutocompleteSectionNames) {
   bool section_with_renderer_ids = GetParam();
   base::test::ScopedFeatureList scoped_features;
@@ -7948,33 +7862,33 @@ TEST_P(ParameterizedFormStructureTest, NoAutocompleteSectionNames) {
   field.form_control_type = "text";
   field.max_length = 10000;
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Phone");
-  field.name = ASCIIToUTF16("phone");
+  field.label = u"Phone";
+  field.name = u"phone";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Phone");
-  field.name = ASCIIToUTF16("phone");
+  field.label = u"Phone";
+  field.name = u"phone";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -7995,12 +7909,18 @@ TEST_P(ParameterizedFormStructureTest, NoAutocompleteSectionNames) {
   ASSERT_EQ(6U, form_structure.field_count());
 
   if (section_with_renderer_ids) {
-    EXPECT_EQ("fullName_11-default", form_structure.field(0)->section);
-    EXPECT_EQ("fullName_11-default", form_structure.field(1)->section);
-    EXPECT_EQ("fullName_11-default", form_structure.field(2)->section);
-    EXPECT_EQ("fullName_14-default", form_structure.field(3)->section);
-    EXPECT_EQ("fullName_14-default", form_structure.field(4)->section);
-    EXPECT_EQ("fullName_14-default", form_structure.field(5)->section);
+    EXPECT_EQ("fullName_00000000000000000000000000000000_11-default",
+              form_structure.field(0)->section);
+    EXPECT_EQ("fullName_00000000000000000000000000000000_11-default",
+              form_structure.field(1)->section);
+    EXPECT_EQ("fullName_00000000000000000000000000000000_11-default",
+              form_structure.field(2)->section);
+    EXPECT_EQ("fullName_00000000000000000000000000000000_14-default",
+              form_structure.field(3)->section);
+    EXPECT_EQ("fullName_00000000000000000000000000000000_14-default",
+              form_structure.field(4)->section);
+    EXPECT_EQ("fullName_00000000000000000000000000000000_14-default",
+              form_structure.field(5)->section);
   } else {
     EXPECT_EQ("fullName_1-default", form_structure.field(0)->section);
     EXPECT_EQ("fullName_1-default", form_structure.field(1)->section);
@@ -8023,41 +7943,41 @@ TEST_F(FormStructureTestImpl, NoSplitByRecurringPhoneFieldType) {
   field.form_control_type = "text";
   field.max_length = 10000;
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Phone");
-  field.name = ASCIIToUTF16("phone");
+  field.label = u"Phone";
+  field.name = u"phone";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Mobile Number");
-  field.name = ASCIIToUTF16("mobileNumber");
+  field.label = u"Mobile Number";
+  field.name = u"mobileNumber";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.autocomplete_attribute = "section-blue billing name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Phone");
-  field.name = ASCIIToUTF16("phone");
+  field.label = u"Phone";
+  field.name = u"phone";
   field.autocomplete_attribute = "section-blue billing tel";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Mobile Number");
-  field.name = ASCIIToUTF16("mobileNumber");
+  field.label = u"Mobile Number";
+  field.name = u"mobileNumber";
   field.autocomplete_attribute = "section-blue billing tel";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
@@ -8105,26 +8025,26 @@ TEST_P(ParameterizedFormStructureTest, SplitByRecurringFieldType) {
   field.form_control_type = "text";
   field.max_length = 10000;
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.autocomplete_attribute = "section-blue shipping name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.autocomplete_attribute = "section-blue shipping country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.autocomplete_attribute = "section-blue shipping name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.autocomplete_attribute = "";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -8147,7 +8067,8 @@ TEST_P(ParameterizedFormStructureTest, SplitByRecurringFieldType) {
   EXPECT_EQ("blue-shipping-default", form_structure.field(1)->section);
   EXPECT_EQ("blue-shipping-default", form_structure.field(2)->section);
   if (section_with_renderer_ids) {
-    EXPECT_EQ("country_14-default", form_structure.field(3)->section);
+    EXPECT_EQ("country_00000000000000000000000000000000_14-default",
+              form_structure.field(3)->section);
   } else {
     EXPECT_EQ("country_2-default", form_structure.field(3)->section);
   }
@@ -8173,26 +8094,26 @@ TEST_P(ParameterizedFormStructureTest,
   field.form_control_type = "text";
   field.max_length = 10000;
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.autocomplete_attribute = "section-blue shipping name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.autocomplete_attribute = "section-blue billing country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.autocomplete_attribute = "";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.autocomplete_attribute = "";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -8216,7 +8137,8 @@ TEST_P(ParameterizedFormStructureTest,
   EXPECT_EQ("blue-billing-default", form_structure.field(1)->section);
   EXPECT_EQ("blue-billing-default", form_structure.field(2)->section);
   if (section_with_renderer_ids) {
-    EXPECT_EQ("country_14-default", form_structure.field(3)->section);
+    EXPECT_EQ("country_00000000000000000000000000000000_14-default",
+              form_structure.field(3)->section);
   } else {
     EXPECT_EQ("country_2-default", form_structure.field(3)->section);
   }
@@ -8234,26 +8156,26 @@ TEST_F(FormStructureTestImpl, SplitByNewAutocompleteSectionName) {
   field.form_control_type = "text";
   field.max_length = 10000;
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.autocomplete_attribute = "section-blue shipping name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City";
+  field.name = u"city";
   field.autocomplete_attribute = "";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.autocomplete_attribute = "section-blue billing name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City";
+  field.name = u"city";
   field.autocomplete_attribute = "";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -8293,25 +8215,25 @@ TEST_F(
   field.form_control_type = "text";
   field.max_length = 10000;
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.autocomplete_attribute = "section-blue shipping country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.autocomplete_attribute = "section-blue billing name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("City");
-  field.name = ASCIIToUTF16("city");
+  field.label = u"City";
+  field.name = u"city";
   field.autocomplete_attribute = "";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -8349,13 +8271,13 @@ TEST_F(FormStructureTestImpl, FromEmptyAutocompleteSectionToDefinedOne) {
   field.form_control_type = "text";
   field.max_length = 10000;
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.autocomplete_attribute = "section-blue shipping country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -8390,19 +8312,19 @@ TEST_F(FormStructureTestImpl,
   field.form_control_type = "text";
   field.max_length = 10000;
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Phone");
-  field.name = ASCIIToUTF16("phone");
+  field.label = u"Phone";
+  field.name = u"phone";
   field.is_focusable = false;  // hidden
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("FullName");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"FullName";
+  field.name = u"fullName";
   field.is_focusable = true;  // visible
   field.autocomplete_attribute = "shipping name";
   field.unique_renderer_id = MakeFieldRendererId();
@@ -8439,14 +8361,14 @@ TEST_F(FormStructureTestImpl, IgnoreAribtraryAutocompleteSectionName) {
   field.form_control_type = "text";
   field.max_length = 10000;
 
-  field.label = ASCIIToUTF16("Full Name");
-  field.name = ASCIIToUTF16("fullName");
+  field.label = u"Full Name";
+  field.name = u"fullName";
   field.autocomplete_attribute = "section-red ship name";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Country");
-  field.name = ASCIIToUTF16("country");
+  field.label = u"Country";
+  field.name = u"country";
   field.autocomplete_attribute = "section-blue shipping country";
   field.unique_renderer_id = MakeFieldRendererId();
   form.fields.push_back(field);
@@ -8466,6 +8388,50 @@ TEST_F(FormStructureTestImpl, IgnoreAribtraryAutocompleteSectionName) {
 
   EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
   EXPECT_EQ("blue-shipping-default", form_structure.field(1)->section);
+}
+
+TEST_F(FormStructureTestImpl, FindFieldsEligibleForManualFilling) {
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  FieldRendererId full_name_renderer_id = MakeFieldRendererId();
+  field.label = u"Full Name";
+  field.name = u"fullName";
+  field.unique_renderer_id = full_name_renderer_id;
+  form.fields.push_back(field);
+
+  FieldRendererId country_renderer_id = MakeFieldRendererId();
+  field.label = u"Country";
+  field.name = u"country";
+  field.unique_renderer_id = country_renderer_id;
+  form.fields.push_back(field);
+
+  FieldRendererId unknown_renderer_id = MakeFieldRendererId();
+  field.label = u"Unknown";
+  field.name = u"unknown";
+  field.unique_renderer_id = unknown_renderer_id;
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+
+  form_structure.set_server_field_type_for_testing(0, CREDIT_CARD_NAME_FULL);
+  form_structure.set_server_field_type_for_testing(1, ADDRESS_HOME_COUNTRY);
+  form_structure.set_server_field_type_for_testing(2, UNKNOWN_TYPE);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+  std::vector<FieldRendererId> expected_result;
+  // Only credit card related and unknown fields are elible for manual filling.
+  expected_result.push_back(full_name_renderer_id);
+  expected_result.push_back(unknown_renderer_id);
+
+  EXPECT_EQ(expected_result,
+            FormStructure::FindFieldsEligibleForManualFilling(forms));
 }
 
 }  // namespace autofill

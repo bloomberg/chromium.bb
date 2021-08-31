@@ -4,6 +4,8 @@
 
 package org.chromium.shape_detection;
 
+import android.os.Build;
+
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -17,6 +19,7 @@ import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Batch;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.shape_detection.mojom.BarcodeDetection;
 import org.chromium.shape_detection.mojom.BarcodeDetectionProvider;
@@ -35,8 +38,9 @@ import java.util.concurrent.TimeUnit;
 @RunWith(ParameterizedRunner.class)
 @Batch(Batch.UNIT_TESTS)
 @UseRunnerDelegate(BaseJUnit4RunnerDelegate.class)
+@DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N_MR1, message = "crbug.com/1153716")
 public class BarcodeDetectionImplTest {
-    private static final org.chromium.skia.mojom.Bitmap QR_CODE_BITMAP =
+    private static final org.chromium.skia.mojom.BitmapN32 QR_CODE_BITMAP =
             TestUtils.mojoBitmapFromFile("qr_code.png");
 
     private static final int[] SUPPORTED_FORMATS = {BarcodeFormat.AZTEC, BarcodeFormat.CODE_128,
@@ -65,13 +69,13 @@ public class BarcodeDetectionImplTest {
         return toReturn;
     }
 
-    private static BarcodeDetectionResult[] detect(org.chromium.skia.mojom.Bitmap mojoBitmap) {
+    private static BarcodeDetectionResult[] detect(org.chromium.skia.mojom.BitmapN32 mojoBitmap) {
         BarcodeDetectorOptions options = new BarcodeDetectorOptions();
         return detectWithOptions(mojoBitmap, options);
     }
 
     private static BarcodeDetectionResult[] detectWithHint(
-            org.chromium.skia.mojom.Bitmap mojoBitmap, int format) {
+            org.chromium.skia.mojom.BitmapN32 mojoBitmap, int format) {
         Assert.assertTrue(BarcodeFormat.isKnownValue(format));
         BarcodeDetectorOptions options = new BarcodeDetectorOptions();
         options.formats = new int[] {format};
@@ -79,7 +83,7 @@ public class BarcodeDetectionImplTest {
     }
 
     private static BarcodeDetectionResult[] detectWithOptions(
-            org.chromium.skia.mojom.Bitmap mojoBitmap, BarcodeDetectorOptions options) {
+            org.chromium.skia.mojom.BitmapN32 mojoBitmap, BarcodeDetectorOptions options) {
         BarcodeDetection detector = new BarcodeDetectionImpl(options);
 
         final ArrayBlockingQueue<BarcodeDetectionResult[]> queue = new ArrayBlockingQueue<>(1);
@@ -169,7 +173,7 @@ public class BarcodeDetectionImplTest {
         if (!TestUtils.IS_GMS_CORE_SUPPORTED) {
             return;
         }
-        org.chromium.skia.mojom.Bitmap bitmap = TestUtils.mojoBitmapFromFile(inputFile);
+        org.chromium.skia.mojom.BitmapN32 bitmap = TestUtils.mojoBitmapFromFile(inputFile);
         BarcodeDetectionResult[] results = detectWithHint(bitmap, format);
         Assert.assertEquals(1, results.length);
         Assert.assertEquals(value, results[0].rawValue);
@@ -189,7 +193,7 @@ public class BarcodeDetectionImplTest {
         if (!TestUtils.IS_GMS_CORE_SUPPORTED) {
             return;
         }
-        org.chromium.skia.mojom.Bitmap bitmap = TestUtils.mojoBitmapFromFile(inputFile);
+        org.chromium.skia.mojom.BitmapN32 bitmap = TestUtils.mojoBitmapFromFile(inputFile);
         BarcodeDetectionResult[] results = detect(bitmap);
         Assert.assertEquals(1, results.length);
         Assert.assertEquals(value, results[0].rawValue);

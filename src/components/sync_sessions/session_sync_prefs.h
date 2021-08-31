@@ -22,8 +22,10 @@ class SessionSyncPrefs {
   explicit SessionSyncPrefs(PrefService* pref_service);
   ~SessionSyncPrefs();
 
-  std::string GetSyncSessionsGUID() const;
-  void SetSyncSessionsGUID(const std::string& guid);
+  std::string GetLegacySyncSessionsGUID() const;
+  void ClearLegacySyncSessionsGUID();
+
+  void SetLegacySyncSessionsGUIDForTesting(const std::string& guid);
 
  private:
   PrefService* const pref_service_;

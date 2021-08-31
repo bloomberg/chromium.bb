@@ -29,10 +29,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LINE_BOX_LIST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LINE_BOX_LIST_H_
 
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/api/hit_test_action.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -134,8 +134,8 @@ class InlineBoxList {
   // For block flows, each box represents the root inline box for a line in the
   // paragraph.
   // For inline flows, each box represents a portion of that inline.
-  InlineBoxType* first_;
-  InlineBoxType* last_;
+  InlineBoxType* first_ = nullptr;
+  InlineBoxType* last_ = nullptr;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT InlineBoxList<InlineFlowBox>;

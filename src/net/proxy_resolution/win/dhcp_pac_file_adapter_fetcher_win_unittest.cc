@@ -4,6 +4,8 @@
 
 #include "net/proxy_resolution/win/dhcp_pac_file_adapter_fetcher_win.h"
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -172,7 +174,7 @@ class FetcherClient {
   TestCompletionCallback callback_;
   std::unique_ptr<URLRequestContext> url_request_context_;
   std::unique_ptr<MockDhcpPacFileAdapterFetcher> fetcher_;
-  base::string16 pac_text_;
+  std::u16string pac_text_;
 };
 
 TEST(DhcpPacFileAdapterFetcher, NormalCaseURLNotInDhcp) {
@@ -184,7 +186,7 @@ TEST(DhcpPacFileAdapterFetcher, NormalCaseURLNotInDhcp) {
   client.WaitForResult(ERR_PAC_NOT_IN_DHCP);
   ASSERT_TRUE(client.fetcher_->DidFinish());
   EXPECT_THAT(client.fetcher_->GetResult(), IsError(ERR_PAC_NOT_IN_DHCP));
-  EXPECT_EQ(base::string16(), client.fetcher_->GetPacScript());
+  EXPECT_EQ(std::u16string(), client.fetcher_->GetPacScript());
 }
 
 TEST(DhcpPacFileAdapterFetcher, NormalCaseURLInDhcp) {
@@ -195,8 +197,7 @@ TEST(DhcpPacFileAdapterFetcher, NormalCaseURLInDhcp) {
   client.WaitForResult(OK);
   ASSERT_TRUE(client.fetcher_->DidFinish());
   EXPECT_THAT(client.fetcher_->GetResult(), IsOk());
-  EXPECT_EQ(base::string16(STRING16_LITERAL("bingo")),
-            client.fetcher_->GetPacScript());
+  EXPECT_EQ(std::u16string(u"bingo"), client.fetcher_->GetPacScript());
   EXPECT_EQ(GURL(kPacUrl), client.fetcher_->GetPacURL());
 }
 
@@ -221,7 +222,7 @@ TEST(DhcpPacFileAdapterFetcher, TimeoutDuringDhcp) {
 
   ASSERT_TRUE(client.fetcher_->DidFinish());
   EXPECT_THAT(client.fetcher_->GetResult(), IsError(ERR_TIMED_OUT));
-  EXPECT_EQ(base::string16(), client.fetcher_->GetPacScript());
+  EXPECT_EQ(std::u16string(), client.fetcher_->GetPacScript());
   EXPECT_EQ(GURL(), client.fetcher_->GetPacURL());
   client.FinishTestAllowCleanup();
 }
@@ -236,7 +237,7 @@ TEST(DhcpPacFileAdapterFetcher, CancelWhileDhcp) {
   ASSERT_FALSE(client.fetcher_->DidFinish());
   ASSERT_TRUE(client.fetcher_->WasCancelled());
   EXPECT_THAT(client.fetcher_->GetResult(), IsError(ERR_ABORTED));
-  EXPECT_EQ(base::string16(), client.fetcher_->GetPacScript());
+  EXPECT_EQ(std::u16string(), client.fetcher_->GetPacScript());
   EXPECT_EQ(GURL(), client.fetcher_->GetPacURL());
   client.FinishTestAllowCleanup();
 }
@@ -259,7 +260,7 @@ TEST(DhcpPacFileAdapterFetcher, CancelWhileFetcher) {
   ASSERT_FALSE(client.fetcher_->DidFinish());
   ASSERT_TRUE(client.fetcher_->WasCancelled());
   EXPECT_THAT(client.fetcher_->GetResult(), IsError(ERR_ABORTED));
-  EXPECT_EQ(base::string16(), client.fetcher_->GetPacScript());
+  EXPECT_EQ(std::u16string(), client.fetcher_->GetPacScript());
   // GetPacURL() still returns the URL fetched in this case.
   EXPECT_EQ(GURL(kPacUrl), client.fetcher_->GetPacURL());
   client.FinishTestAllowCleanup();
@@ -276,8 +277,7 @@ TEST(DhcpPacFileAdapterFetcher, CancelAtCompletion) {
   // are identical expectations to the NormalCaseURLInDhcp test.
   ASSERT_TRUE(client.fetcher_->DidFinish());
   EXPECT_THAT(client.fetcher_->GetResult(), IsOk());
-  EXPECT_EQ(base::string16(STRING16_LITERAL("bingo")),
-            client.fetcher_->GetPacScript());
+  EXPECT_EQ(std::u16string(u"bingo"), client.fetcher_->GetPacScript());
   EXPECT_EQ(GURL(kPacUrl), client.fetcher_->GetPacURL());
   client.FinishTestAllowCleanup();
 }
@@ -312,17 +312,17 @@ TEST(DhcpPacFileAdapterFetcher, MockDhcpRealFetch) {
 
   FetcherClient client;
   TestURLRequestContext url_request_context;
-  client.fetcher_.reset(new MockDhcpRealFetchPacFileAdapterFetcher(
+  client.fetcher_ = std::make_unique<MockDhcpRealFetchPacFileAdapterFetcher>(
       &url_request_context,
       base::ThreadPool::CreateTaskRunner(
           {base::MayBlock(),
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})));
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
   client.fetcher_->configured_url_ = configured_url.spec();
   client.RunTest();
   client.WaitForResult(OK);
   ASSERT_TRUE(client.fetcher_->DidFinish());
   EXPECT_THAT(client.fetcher_->GetResult(), IsOk());
-  EXPECT_EQ(base::string16(STRING16_LITERAL("-downloadable.pac-\n")),
+  EXPECT_EQ(std::u16string(u"-downloadable.pac-\n"),
             client.fetcher_->GetPacScript());
   EXPECT_EQ(configured_url,
             client.fetcher_->GetPacURL());

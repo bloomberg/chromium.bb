@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import sys
 
 from telemetry.testing import serially_executed_browser_test_case
@@ -22,7 +23,7 @@ class SimpleShardingTest(
   @classmethod
   def GenerateTestCases_PassingTest(cls, options):
     del options  # unused
-    for i in xrange(10):
+    for i in range(10):
       yield 'passing_test_' + str(i), (i,)
 
   def PassingTest(self, a):

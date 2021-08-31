@@ -13,8 +13,8 @@
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/clipboard/file_info.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/dragdrop/file_info/file_info.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/display/screen.h"
@@ -24,10 +24,6 @@
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
-
-#if defined(OS_CHROMEOS)
-#include "content/public/browser/download_item_utils.h"
-#endif
 
 void DragDownloadItem(const download::DownloadItem* download,
                       const gfx::Image* icon,

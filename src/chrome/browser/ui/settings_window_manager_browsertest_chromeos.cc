@@ -9,57 +9,47 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
+#include "chrome/browser/ash/login/test/login_manager_mixin.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/settings_window_manager_observer_chromeos.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/constants/chromeos_features.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
+#include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
+#include "ui/display/types/display_constants.h"
 #include "url/gurl.h"
 
 namespace {
 
-class SettingsWindowTestObserver
-    : public chrome::SettingsWindowManagerObserver {
- public:
-  SettingsWindowTestObserver() = default;
-  ~SettingsWindowTestObserver() override = default;
-
-  void OnNewSettingsWindow(Browser* settings_browser) override {
-    browser_ = settings_browser;
-    ++new_settings_count_;
-  }
-
-  Browser* browser() { return browser_; }
-  size_t new_settings_count() const { return new_settings_count_; }
-
- private:
-  Browser* browser_ = nullptr;
-  size_t new_settings_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(SettingsWindowTestObserver);
-};
+// Return the number of windows that hosts OS Settings.
+size_t GetNumberOfSettingsWindows() {
+  auto* browser_list = BrowserList::GetInstance();
+  return std::count_if(browser_list->begin(), browser_list->end(),
+                       [](Browser* browser) {
+                         return web_app::IsBrowserForSystemWebApp(
+                             browser, web_app::SystemAppType::SETTINGS);
+                       });
+}
 
 }  // namespace
 
 class SettingsWindowManagerTest : public InProcessBrowserTest {
  public:
   SettingsWindowManagerTest()
-      : settings_manager_(chrome::SettingsWindowManager::GetInstance()) {
-    settings_manager_->AddObserver(&observer_);
-  }
+      : settings_manager_(chrome::SettingsWindowManager::GetInstance()) {}
 
   void SetUpOnMainThread() override {
     // Install the Settings App.
@@ -68,13 +58,12 @@ class SettingsWindowManagerTest : public InProcessBrowserTest {
         .InstallSystemAppsForTesting();
   }
 
-  ~SettingsWindowManagerTest() override {
-    settings_manager_->RemoveObserver(&observer_);
-  }
+  ~SettingsWindowManagerTest() override = default;
 
   void ShowSettingsForProfile(Profile* profile) {
     settings_manager_->ShowChromePageForProfile(
-        profile, GURL(chrome::kChromeUISettingsURL));
+        profile, GURL(chrome::kChromeUISettingsURL),
+        display::kInvalidDisplayId);
   }
 
   void CloseNonDefaultBrowsers() {
@@ -91,7 +80,6 @@ class SettingsWindowManagerTest : public InProcessBrowserTest {
 
  protected:
   chrome::SettingsWindowManager* settings_manager_;
-  SettingsWindowTestObserver observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsWindowManagerTest);
 };
@@ -99,18 +87,18 @@ class SettingsWindowManagerTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenSettingsWindow) {
   // Open a settings window.
   settings_manager_->ShowOSSettings(browser()->profile());
+  web_app::FlushSystemWebAppLaunchesForTesting(browser()->profile());
   Browser* settings_browser =
       settings_manager_->FindBrowserForProfile(browser()->profile());
   ASSERT_TRUE(settings_browser);
-  // Ensure the observer fired correctly.
-  EXPECT_EQ(1u, observer_.new_settings_count());
-  EXPECT_EQ(settings_browser, observer_.browser());
+  EXPECT_EQ(1u, GetNumberOfSettingsWindows());
 
   // Open the settings again: no new window.
   settings_manager_->ShowOSSettings(browser()->profile());
+  web_app::FlushSystemWebAppLaunchesForTesting(browser()->profile());
   EXPECT_EQ(settings_browser,
             settings_manager_->FindBrowserForProfile(browser()->profile()));
-  EXPECT_EQ(1u, observer_.new_settings_count());
+  EXPECT_EQ(1u, GetNumberOfSettingsWindows());
 
   // Launching via LaunchService should also de-dupe to the same browser.
   web_app::AppId settings_app_id = *web_app::GetAppIdForSystemWebApp(
@@ -123,9 +111,10 @@ IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenSettingsWindow) {
               apps::mojom::LaunchContainer::kLaunchContainerWindow,
               WindowOpenDisposition::NEW_WINDOW,
               apps::mojom::AppLaunchSource::kSourceCommandLine));
+  web_app::FlushSystemWebAppLaunchesForTesting(browser()->profile());
   EXPECT_EQ(contents,
             settings_browser->tab_strip_model()->GetActiveWebContents());
-  EXPECT_EQ(1u, observer_.new_settings_count());
+  EXPECT_EQ(1u, GetNumberOfSettingsWindows());
 
   // Close the settings window.
   CloseBrowserSynchronously(settings_browser);
@@ -133,10 +122,11 @@ IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenSettingsWindow) {
 
   // Open a new settings window.
   settings_manager_->ShowOSSettings(browser()->profile());
+  web_app::FlushSystemWebAppLaunchesForTesting(browser()->profile());
   Browser* settings_browser2 =
       settings_manager_->FindBrowserForProfile(browser()->profile());
   ASSERT_TRUE(settings_browser2);
-  EXPECT_EQ(2u, observer_.new_settings_count());
+  EXPECT_EQ(1u, GetNumberOfSettingsWindows());
 
   CloseBrowserSynchronously(settings_browser2);
 }
@@ -150,6 +140,7 @@ IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenChromePages) {
 
   // Settings should open a new browser window.
   settings_manager_->ShowOSSettings(browser()->profile());
+  web_app::FlushSystemWebAppLaunchesForTesting(browser()->profile());
   EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
 
   // About should reuse the existing Settings window.
@@ -183,18 +174,21 @@ IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenSettings) {
 
   // OS settings opens in a new window.
   settings_manager_->ShowOSSettings(browser()->profile());
-  EXPECT_EQ(1u, observer_.new_settings_count());
+  web_app::FlushSystemWebAppLaunchesForTesting(browser()->profile());
+  EXPECT_EQ(1u, GetNumberOfSettingsWindows());
   EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
 
+  // The opened Settings window should be the active browser.
   content::WebContents* web_contents =
-      observer_.browser()->tab_strip_model()->GetWebContentsAt(0);
+      chrome::FindLastActive()->tab_strip_model()->GetWebContentsAt(0);
   EXPECT_EQ(chrome::kChromeUIOSSettingsHost, web_contents->GetURL().host());
 
   // Showing an OS sub-page reuses the OS settings window.
   settings_manager_->ShowOSSettings(
       browser()->profile(),
       chromeos::settings::mojom::kBluetoothDevicesSubpagePath);
-  EXPECT_EQ(1u, observer_.new_settings_count());
+  web_app::FlushSystemWebAppLaunchesForTesting(browser()->profile());
+  EXPECT_EQ(1u, GetNumberOfSettingsWindows());
   EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
 
   // Close the settings window.
@@ -206,16 +200,29 @@ IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenSettings) {
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, KioskMode) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kForceAppMode);
+class SettingsWindowManagerLoginTest : public MixinBasedInProcessBrowserTest {
+ public:
+  SettingsWindowManagerLoginTest() = default;
+  SettingsWindowManagerLoginTest(const SettingsWindowManagerLoginTest&) =
+      delete;
+  SettingsWindowManagerLoginTest& operator=(
+      const SettingsWindowManagerLoginTest&) = delete;
+  ~SettingsWindowManagerLoginTest() override = default;
 
-  // Open settings window.
-  settings_manager_->ShowOSSettings(browser()->profile());
-  Browser* settings_browser =
-      settings_manager_->FindBrowserForProfile(browser()->profile());
-  ASSERT_TRUE(settings_browser);
+ private:
+  LoginManagerMixin login_manager_{&mixin_host_, {}};
+};
 
-  // In kiosk mode, browser should be created, but it should not be a system web
-  // app.
-  EXPECT_EQ(settings_browser->app_controller(), nullptr);
+// Regression test for crash. https://crbug.com/1174525
+IN_PROC_BROWSER_TEST_F(SettingsWindowManagerLoginTest, OpenBeforeLogin) {
+  // Precondition: We're not signed in.
+  ASSERT_FALSE(session_manager::SessionManager::Get()->IsSessionStarted());
+
+  // Try to open OS settings.
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      ash::ProfileHelper::GetSigninProfile());
+
+  // We didn't crash, and nothing opened.
+  EXPECT_EQ(0u, BrowserList::GetInstance()->size());
+  EXPECT_EQ(0u, GetNumberOfSettingsWindows());
 }

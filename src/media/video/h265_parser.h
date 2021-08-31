@@ -250,12 +250,10 @@ struct MEDIA_EXPORT H265SPS {
   int bit_depth_y;
   int bit_depth_c;
   int max_pic_order_cnt_lsb;
-  int sps_max_latency_pictures[kMaxSubLayers];
   int ctb_log2_size_y;
   int pic_width_in_ctbs_y;
   int pic_height_in_ctbs_y;
   int pic_size_in_ctbs_y;
-  int max_tb_log2_size_y;
   int wp_offset_half_range_y;
   int wp_offset_half_range_c;
 
@@ -362,6 +360,10 @@ struct MEDIA_EXPORT H265SliceHeader {
   size_t header_size;  // calculated, not including emulation prevention bytes
   size_t header_emulation_prevention_bytes;
 
+  // Calculated, but needs to be preserved when we copy slice dependent data
+  // so put it at the front.
+  bool irap_pic;
+
   // Syntax elements.
   bool first_slice_segment_in_pic_flag;
   bool no_output_of_prior_pics_flag;
@@ -405,7 +407,6 @@ struct MEDIA_EXPORT H265SliceHeader {
   // Calculated.
   int curr_rps_idx;
   int num_pic_total_curr;
-  bool irap_pic;
   // Number of bits st_ref_pic_set takes after removing emulation prevention
   // bytes.
   int st_rps_bits;
@@ -479,7 +480,12 @@ class MEDIA_EXPORT H265Parser {
 
   // Parse a slice header, returning it in |*shdr|. |*nalu| must be set to
   // the NALU returned from AdvanceToNextNALU() and corresponding to |*shdr|.
-  Result ParseSliceHeader(const H265NALU& nalu, H265SliceHeader* shdr);
+  // |prior_shdr| should be the last parsed header in decoding order for
+  // handling dependent slice segments. If |prior_shdr| is null and this is a
+  // dependent slice segment, an error will be returned.
+  Result ParseSliceHeader(const H265NALU& nalu,
+                          H265SliceHeader* shdr,
+                          H265SliceHeader* prior_shdr);
 
   static VideoCodecProfile ProfileIDCToVideoCodecProfile(int profile_idc);
 

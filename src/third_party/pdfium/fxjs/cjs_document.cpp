@@ -29,6 +29,7 @@
 #include "fxjs/cjs_field.h"
 #include "fxjs/cjs_icon.h"
 #include "fxjs/js_resources.h"
+#include "third_party/base/check.h"
 
 const JSPropertySpec CJS_Document::PropertySpecs[] = {
     {"ADBE", get_ADBE_static, set_ADBE_static},
@@ -484,7 +485,7 @@ CJS_Result CJS_Document::removeField(
       continue;
 
     IPDF_Page* pPage = pWidget->GetPage();
-    ASSERT(pPage);
+    DCHECK(pPage);
 
     // If there is currently no pageview associated with the page being used
     // do not create one. We may be in the process of tearing down the document
@@ -522,7 +523,7 @@ CJS_Result CJS_Document::resetForm(
 
   CPDF_InteractiveForm* pPDFForm = GetCoreInteractiveForm();
   if (params.empty()) {
-    pPDFForm->ResetForm(NotificationOption::kNotify);
+    pPDFForm->ResetForm();
     m_pFormFillEnv->SetChangeMark();
     return CJS_Result::Success();
   }
@@ -544,7 +545,7 @@ CJS_Result CJS_Document::resetForm(
   }
 
   if (!aFields.empty()) {
-    pPDFForm->ResetForm(aFields, true, NotificationOption::kNotify);
+    pPDFForm->ResetForm(aFields, true);
     m_pFormFillEnv->SetChangeMark();
   }
 
@@ -605,7 +606,7 @@ CJS_Result CJS_Document::submitForm(
   if (pRuntime->GetArrayLength(aFields) == 0 && bEmpty) {
     if (pPDFForm->CheckRequiredFields(nullptr, true)) {
       pRuntime->BeginBlock();
-      GetSDKInteractiveForm()->SubmitForm(strURL, false);
+      GetSDKInteractiveForm()->SubmitForm(strURL);
       pRuntime->EndBlock();
     }
     return CJS_Result::Success();

@@ -25,8 +25,7 @@ void DummyCommand(
     const base::DictionaryValue& params,
     const std::string& session_id,
     const CommandCallback& callback) {
-  callback.Run(status, std::unique_ptr<base::Value>(new base::Value(1)),
-               "session_id", false);
+  callback.Run(status, std::make_unique<base::Value>(1), "session_id", false);
 }
 
 void OnResponse(net::HttpServerResponseInfo* response_to_set,
@@ -59,7 +58,7 @@ TEST(HttpHandlerTest, HandleUnknownCommand) {
 
 TEST(HttpHandlerTest, HandleNewSession) {
   HttpHandler handler("/base/");
-  handler.command_map_.reset(new HttpHandler::CommandMap());
+  handler.command_map_ = std::make_unique<HttpHandler::CommandMap>();
   handler.command_map_->push_back(
       CommandMapping(kPost, internal::kNewSessionPathPattern,
                      base::BindRepeating(&DummyCommand, Status(kOk))));
@@ -141,7 +140,7 @@ TEST(MatchesCommandTest, DiffMethod) {
   ASSERT_FALSE(internal::MatchesCommand(
       "get", "path", command, &session_id, &params));
   ASSERT_TRUE(session_id.empty());
-  ASSERT_EQ(0u, params.size());
+  ASSERT_EQ(0u, params.DictSize());
 }
 
 TEST(MatchesCommandTest, DiffPathLength) {
@@ -176,7 +175,7 @@ TEST(MatchesCommandTest, Substitution) {
   ASSERT_TRUE(internal::MatchesCommand(
       "post", "path/1/space/2/3", command, &session_id, &params));
   ASSERT_EQ("1", session_id);
-  ASSERT_EQ(2u, params.size());
+  ASSERT_EQ(2u, params.DictSize());
   std::string param;
   ASSERT_TRUE(params.GetString("a", &param));
   ASSERT_EQ("2", param);
